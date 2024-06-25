@@ -1,0 +1,29 @@
+[flake8]
+# Suggested config from pytorch that we can adapt
+select = B,C,E,F,N,P,T4,W,B9,TOR0,TOR1,TOR2
+max-line-length = 120
+# C408 ignored because we like the dict keyword argument syntax
+# E501 is not flexible enough, we're using B950 instead
+# N812 ignored because import torch.nn.functional as F is PyTorch convention
+# N817 ignored because importing using acronyms is convention (DistributedDataParallel as DDP)
+# E731 allow usage of assigning lambda expressions
+# E701 let black auto-format statements on one line
+# E704 let black auto-format statements on one line
+ignore =
+    E203,E305,E402,E501,E721,E741,F405,F821,F841,F999,W503,W504,C408,E302,W291,E303,N812,N817,E731,E701,E704
+    # shebang has extra meaning in fbcode lints, so I think it's not worth trying
+    # to line this up with executable bit
+    EXE001,
+    # these ignores are from flake8-bugbear; please fix!
+    B007,B008,B950
+optional-ascii-coding = True
+exclude =
+    ./.git,
+    ./docs
+    ./build
+    ./scripts,
+    ./venv,
+    *.pyi
+    .pre-commit-config.yaml
+    *.md
+    .flake8
