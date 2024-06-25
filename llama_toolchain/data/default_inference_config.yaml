@@ -1,0 +1,14 @@
+inference_config:
+  impl_config:
+    impl_type: "inline"
+    checkpoint_config:
+      checkpoint:
+        checkpoint_type: "pytorch"
+        checkpoint_dir: {checkpoint_dir}/
+        tokenizer_path: {checkpoint_dir}/tokenizer.model
+        model_parallel_size: {model_parallel_size}
+        quantization_format: bf16
+    quantization: null
+    torch_seed: null
+    max_seq_len: 16384
+    max_batch_size: 1

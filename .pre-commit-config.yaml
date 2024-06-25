@@ -1,0 +1,53 @@
+exclude: 'build'
+
+default_language_version:
+    python: python3
+
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 6306a48f7dae5861702d573c9c247e4e9498e867
+    hooks:
+    -   id: trailing-whitespace
+    -   id: check-ast
+    -   id: check-merge-conflict
+    -   id: check-added-large-files
+        args: ['--maxkb=1000']
+    -   id: end-of-file-fixer
+        exclude: '^(.*\.svg)$'
+
+# Temporarily disabling this
+#    -   id: no-commit-to-branch
+#        args: ['--branch=main']
+
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.4
+    hooks:
+    -   id: insert-license
+        files: \.py$|\.sh$
+        args:
+          - --license-filepath
+          - docs/license_header.txt
+
+-   repo: https://github.com/pycqa/flake8
+    rev: 34cbf8ef3950f43d09b85e2e45c15ae5717dc37b
+    hooks:
+    -   id: flake8
+        additional_dependencies:
+          - flake8-bugbear == 22.4.25
+          - pep8-naming == 0.12.1
+          - torchfix
+        args: ['--config=.flake8']
+
+-   repo: https://github.com/omnilib/ufmt
+    rev: v2.7.0
+    hooks:
+    -   id: ufmt
+        additional_dependencies:
+          - black == 24.4.2
+          - usort == 1.0.8
+
+# - repo: https://github.com/jsh9/pydoclint
+#   rev: d88180a8632bb1602a4d81344085cf320f288c5a
+#   hooks:
+#     - id: pydoclint
+#       args: [--config=pyproject.toml]
