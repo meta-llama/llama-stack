@@ -1,0 +1,115 @@
+openapi: 3.0.0
+info:
+  title: Bulk Generations as a Service
+  version: 0.0.1
+components:
+  schemas:
+    BatchInference:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: Unique identifier for the job
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the job was created
+        status:
+          type: string
+          description: Current status of the job (running, completed)
+        input_file_path:
+          type: string
+          description: Path to the file containing successful results
+        success_file_path:
+          type: string
+          description: Path to the file containing successful results
+        error_file_path:
+          type: string
+          description: Path to the file containing error logs
+        metadata:
+          type: object
+          additionalProperties: true
+          description: User provided metadata
+paths:
+  /bulk_inference/submit_job:
+    post:
+      summary: Submit a batch inference job
+      description: Submit a batch inference job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  description: Model identifier
+                prompts:
+                  type: string
+                  description: Path to a JSONL file where each line is a JSON for a single inference API call
+                  format: path
+                batch_size:
+                  type: integer
+                  description: Number of prompts to process in one batch
+                temperature:
+                  type: number
+                  format: float
+                  description: Temperature setting for the generation
+                top_p:
+                  type: number
+                  format: float
+                  description: Top p setting for the generation
+                max_gen_len:
+                  type: integer
+                  description: Maximum generation length
+                num_generations:
+                  type: integer
+                  description: Number of generations to produce
+                logprobs:
+                  type: boolean
+                  description: Whether to include log probabilities in the output
+                output:
+                  type: string
+                  description: Output path where results should be stored
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Additional metadata for the job
+      responses:
+        '200':
+          description: Job successfully submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchInference'
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+
+  /bulk_inference/job_status:
+    get:
+      summary: Get the status of a submitted job
+      description: Get the status of a submitted job
+      parameters:
+        - in: query
+          name: job_id
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the job
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchInference'
+        '400':
+          description: Invalid job ID provided
+        '404':
+          description: Job not found
+        '500':
+          description: Internal server error
+
