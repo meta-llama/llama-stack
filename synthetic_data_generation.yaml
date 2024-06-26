@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: API for Synthetic Data Generation. This combines other serivces like batch inference and reward model scoring.
+  version: 0.0.1
+paths:
+  /synthetic_data_generation/submit_job:
+    post:
+      summary: Submit a job for synthetic data generation.
+      description: Batch Inference > Reward Scoring > Filtering > Response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                # batch inference params
+                model:
+                  type: string
+                  description: Model identifier for batch inference.
+                prompts_path:
+                  type: string
+                  description: Path to prompts, JSONL where each row is formatted for batch inference.
+                batch_size:
+                  type: integer
+                  description: Number of prompts to process in each batch.
+                # TODO: May-be put all these generation related params in a struct
+                temperature:
+                  type: number
+                  format: float
+                  description: Temperature parameter for generation.
+                top_p:
+                  type: number
+                  format: float
+                  description: Top-p parameter for generation.
+                max_gen_len:
+                  type: integer
+                  description: Maximum length of generated responses.
+                num_generations:
+                  type: integer
+                  description: Number of generations per prompt.
+                # reward model scoring params
+                reward_model:
+                  type: string
+                  description: Identifier for the reward model used for scoring.
+                scoring_function:
+                  type: string
+                  description: Scoring function to apply.
+                # params for filtering responses
+                # filtering function will have a signature as
+                # def filter_responses(List[PromptResponseScore]) --> List[PromptResponseScore]: ...
+                filtering_function:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the filtering function, can be a simple threshold or a pre-registered function.
+                    params:
+                      type: object
+                      additionalProperties: true
+                      description: JSON object containing parameters for the filtering function.
+      responses:
+        '200':
+          description: Job successfully created and processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGeneration'
+
+/synthetic_data_generation/job_status:
+    get:
+      summary: Get the status of a submitted job
+      description: Get the status of a submitted job
+      parameters:
+        - in: query
+          name: job_id
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the job
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGeneration'
+        '400':
+          description: Invalid job ID provided
+        '404':
+          description: Job not found
+
+components:
+  schemas:
+    PromptResponseScore:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Carry forwarded from the user provided id from prompt.
+        index:
+          type: integer
+          description: Index of the generation.
+        prompt:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        response:
+          $ref: '#/components/schemas/Completion'
+        score:
+          type: number
+          format: float
+          description: Final score after filtering.
+        raw_score:
+          type: number
+          format: float
+          description: Raw score from the reward model.
+    SyntheticDataGeneration:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: Unique identifier for the job.
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the job was created.
+        status:
+          type: string
+          description: Current status of the job, can indicate the stage or success/failure.
+        output_file_path:
+          type: string
+          description: Path to the output jsonl file where each row is a json encoded PromptResponseScore object.
+    Message:
+      type: object
+      properties:
+        # As Defined in /batch_inference
+    Completion:
+      type: object
+      properties:
+        # As Defined in /batch_inference
