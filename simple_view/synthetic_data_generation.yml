@@ -1,0 +1,58 @@
+# Synthetic Data Generation API
+== Schema ==
+
+FilteringFunction:
+  name: str
+  params: json
+
+SyntheticDataPoint:
+  custom_id: str
+  index: int
+  prompt: List[Message]
+  response: Message
+  logprob: float
+  score: float
+
+SyntheticDataGenerationJob:
+  job_id: str  # id provided by the api
+  created: string # format - date-time
+  status: string  # enum (validating, running, completed, failed)
+  input_file_path: Path  # jsonl style file where each row contains custom_id and message_list
+  success_file_path: Path  # jsonl each line is SyntheticDataPoint
+  error_file_path: Path  # custom_ids where we failed with some info
+  metadata: json
+
+== Callsites ==
+
+callsite:
+  /synthetic_data_gen/submit_job
+request_type:
+  post
+description:
+  Submit a job to generate synthetic data using llm + reward model scoring + filtering
+request:
+  # batch inference params
+  model: str
+  prompt_file_path: Path  # jsonl style file where each line is a json encoded List[Message] + custom_id
+  options: Options
+  num_generations: int
+  # reward model scoring params
+  reward_model: str
+  scoring_function: ScoringFunction
+  # filtering params
+  filtering_function: FilteringFunction
+  metadata: json
+
+response:
+  synth_data_gen_job: SyntheticDataGenerationJob
+
+callsite:
+  /synthetic_data_gen/job_status
+request_type:
+  get
+description:
+  Get status for an already submitted job
+request:
+  job_id: str  # unique identifier for the job
+response:
+  synth_data_gen_job: SyntheticDataGenerationJob
