@@ -1,40 +1,13 @@
 openapi: 3.0.0
 info:
-  title: Batch Generations as a Service
+  title: Batch Inference API
   version: 0.0.1
-components:
-  schemas:
-    BatchInference:
-      type: object
-      properties:
-        job_id:
-          type: string
-          description: Unique identifier for the job
-        created:
-          type: string
-          format: date-time
-          description: Timestamp when the job was created
-        status:
-          type: string
-          description: Current status of the job (running, completed)
-        input_file_path:
-          type: string
-          description: Path to the file containing successful results
-        success_file_path:
-          type: string
-          description: Path to the file containing successful results
-        error_file_path:
-          type: string
-          description: Path to the file containing error logs
-        metadata:
-          type: object
-          additionalProperties: true
-          description: User provided metadata
 paths:
   /batch_inference/submit_job:
     post:
       summary: Submit a batch inference job
-      description: Submit a batch inference job
+      description: |
+        This endpoint allows clients to submit a batch inference job using a model and a prompt file.
       requestBody:
         required: true
         content:
@@ -44,72 +17,151 @@ paths:
               properties:
                 model:
                   type: string
-                  description: Model identifier
-                prompts:
-                  type: string
-                  description: Path to a JSONL file where each line is a JSON for a single inference API call
-                  format: path
-                batch_size:
-                  type: integer
-                  description: Number of prompts to process in one batch
-                temperature:
-                  type: number
-                  format: float
-                  description: Temperature setting for the generation
-                top_p:
-                  type: number
-                  format: float
-                  description: Top p setting for the generation
-                max_gen_len:
-                  type: integer
-                  description: Maximum generation length
+                  description: "The model identifier to be used for inference."
+                prompt_file_path:
+                  $ref: '#/components/schemas/Path'
+                  description: "Path to a JSONL file where each line is a JSON-encoded list of messages."
+                options:
+                  $ref: '#/components/schemas/Options'
                 num_generations:
                   type: integer
-                  description: Number of generations to produce
-                logprobs:
-                  type: boolean
-                  description: Whether to include log probabilities in the output
-                output:
-                  type: string
-                  description: Output path where results should be stored
-                metadata:
-                  type: object
-                  additionalProperties: true
-                  description: Additional metadata for the job
+                  description: "Number of generations to produce."
       responses:
         '200':
-          description: Job successfully submitted
+          description: Batch inference job successfully submitted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatchInference'
-        '400':
-          description: Invalid request parameters
-        '500':
-          description: Internal server error
 
   /batch_inference/job_status:
     get:
-      summary: Get the status of a submitted job
-      description: Get the status of a submitted job
+      summary: Get status for an already submitted job
+      description: |
+        Retrieve the status and details of a previously submitted batch inference job using its unique job ID.
       parameters:
         - in: query
           name: job_id
-          required: true
           schema:
             type: string
-          description: Unique identifier for the job
+          required: true
+          description: "Unique identifier for the batch inference job."
       responses:
         '200':
-          description: Job status retrieved successfully
+          description: Batch inference job status retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatchInference'
-        '400':
-          description: Invalid job ID provided
-        '404':
-          description: Job not found
-        '500':
-          description: Internal server error
 
+components:
+  schemas:
+    Message:
+      type: object
+      properties:
+        role:
+          type: string
+        text:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAttachment'
+        eot:
+          type: boolean
+          description: "End of transmission flag."
+        tool_call:
+          type: boolean
+          description: "Indicates if it's a tool call - builtin, custom, or ipython."
+        is_complete:
+          type: boolean
+          description: "For streaming, indicates if the message is complete."
+        is_header_complete:
+          type: boolean
+          description: "For streaming, indicates if the header of the message is complete."
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Additional metadata as JSON."
+
+    MediaAttachment:
+      type: object
+      properties:
+        attachment_type:
+          $ref: '#/components/schemas/MediaAttachmentType'
+        data_type:
+          $ref: '#/components/schemas/MediaAttachmentDataType'
+        data:
+          type: string
+
+    MediaAttachmentType:
+      type: string
+      enum:
+        - image
+        - video
+        - audio
+        - text
+      description: "Type of media attachment."
+
+    MediaAttachmentDataType:
+      type: string
+      enum:
+        - raw_bytes
+        - filepath
+        - uri
+      description: "Data type of the media attachment."
+
+    BatchInference:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: "ID provided by the API for the job."
+        created:
+          type: string
+          format: date-time
+          description: "Timestamp when the job was created."
+        status:
+          type: string
+          enum:
+            - validating
+            - running
+            - completed
+            - failed
+          description: "Current status of the job."
+        input_file_path:
+          $ref: '#/components/schemas/Path'
+        success_file_path:
+          $ref: '#/components/schemas/Path'
+        error_file_path:
+          $ref: '#/components/schemas/Path'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Additional metadata related to the job."
+
+    Options:
+      type: object
+      properties:
+        logprobs:
+          type: boolean
+        max_tokens:
+          type: integer
+        temperature:
+          type: number
+        top_p:
+          type: number
+
+    Path:
+      type: object
+      properties:
+        value:
+          type: string
+          description: "The path value."
+        type:
+          type: string
+          enum:
+            - raw_bytes
+            - filepath
+            - uri
+          description: "Data Type of the path."
