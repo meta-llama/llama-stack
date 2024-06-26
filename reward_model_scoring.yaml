@@ -150,6 +150,8 @@ paths:
             schema:
               type: object
               properties:
+                # TODO: Maybe take local path but api first uploads and generates handle 
+                # which is returned in the repsonse.
                 prompt_response_path:
                   type: string
                   description: File path for a JSONL where each line is a JSON encoded `PromptResponsePair` object
