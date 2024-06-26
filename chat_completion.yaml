@@ -1,107 +1,13 @@
 openapi: 3.0.0
 info:
-  title: Single Inference API (chat_completion)
+  title: Chat Completion API
   version: 0.0.1
-components:
-  schemas:
-    Tool:
-      type: object
-      description: A tool that can be used by an agent to perform specific tasks.
-      properties:
-        name:
-          type: string
-          description: The name of the tool.
-        description:
-          type: string
-          description: A brief description of what the tool does and how it should be used.
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ToolParameter'
-        returnValue:
-          $ref: '#/components/schemas/ToolReturnValue'
-    ToolParameter:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [string, int, float, list, bool]
-          description: The data type of the parameter.
-        itemType:
-          type: string
-          description: The type of items in the parameter if it is a list.
-        description:
-          type: string
-          description: Details about what the parameter is used for and any constraints.
-    ToolReturnValue:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [string, int, float, list, bool]
-          description: The data type of the return value.
-        itemType:
-          type: string
-          description: The type of items in the return value if it is a list.
-        description:
-          type: string
-          description: Details about the significance of the return value.
-    Attachment:
-      type: object
-      properties:
-        uri:
-          type: string
-          description: URI of the attachment.
-        mime-type:
-          type: string
-          description: MIME type of the attachment.
-    Message:
-      type: object
-      properties:
-        role:
-          type: string
-          description: Role of the entity in the message.
-        text:
-          type: string
-          description: Text content of the message.
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attachment'
-    Completion:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the completion.
-        role:
-          type: string
-          description: Role of the entity generating the completion.
-        text:
-          type: string
-          description: Text content of the completion.
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attachment'
-        tokens:
-          type: array
-          items:
-            type: integer
-        logprobs:
-          type: array
-          items:
-            type: number
-        finish_reason:
-          type: string
-          description: Reason for completion termination.
-        # TODO: Add `tool_choice` --
-        # for eg. "auto": use model's guess, how to force to use particular tool, how to disbale inbuilt tools
 paths:
   /chat_completion/:
     post:
       summary: Submit a chat completion request
-      description: Submit a chat completion request
+      description: |
+        This endpoint allows clients to submit a chat completion request.
       requestBody:
         required: true
         content:
@@ -115,31 +21,13 @@ paths:
                     $ref: '#/components/schemas/Message'
                 model:
                   type: string
-                  description: Model identifier
-                logprobs:
-                  type: boolean
-                  description: Whether to include log probabilities in the output
-                max_tokens:
-                  type: integer
-                  description: Maximum number of tokens to generate
+                options:
+                  $ref: '#/components/schemas/Options'
                 n_completions:
                   type: integer
-                  description: Number of completions to generate
-                temperature:
-                  type: number
-                  format: float
-                  description: Temperature setting for the generation
-                top_p:
-                  type: number
-                  format: float
-                  description: Top p setting for the generation
-                tools:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Tool'
       responses:
         '200':
-          description: Chat completion request processed successfully
+          description: Successful response
           content:
             application/json:
               schema:
@@ -147,11 +35,106 @@ paths:
                 properties:
                   id:
                     type: string
-                    description: Unique identifier for the completion request
-                  completions:
+                  candidates:
                     type: array
                     items:
                       $ref: '#/components/schemas/Completion'
-                  model:
+                  model_called:
                     type: string
-                    description: Model used for generating completions
+                  usage:
+                    $ref: '#/components/schemas/TokenUsage'
+components:
+  schemas:
+    Message:
+      type: object
+      properties:
+        role:
+          type: string
+        text:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAttachment'
+        eot:
+          type: boolean
+          description: "End of transmission flag."
+        tool_call:
+          type: boolean
+          description: "Indicates if it's a tool call - builtin, custom, or ipython."
+        is_complete:
+          type: boolean
+          description: "For streaming, indicates if the message is complete."
+        is_header_complete:
+          type: boolean
+          description: "For streaming, indicates if the header of the message is complete."
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Additional metadata as JSON."
+    MediaAttachment:
+      type: object
+      properties:
+        attachment_type:
+          $ref: '#/components/schemas/MediaAttachmentType'
+        data_type:
+          $ref: '#/components/schemas/MediaAttachmentDataType'
+        data:
+          type: string
+    MediaAttachmentType:
+      type: string
+      enum:
+        - image
+        - video
+        - audio
+        - text
+      description: "Type of media attachment."
+    MediaAttachmentDataType:
+      type: string
+      enum:
+        - raw_bytes
+        - filepath
+        - uri
+      description: "Data type of the media attachment."
+    Completion:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          $ref: '#/components/schemas/Message'
+        tokens:
+          type: array
+          items:
+            type: integer
+        logprobs:
+          type: array
+          items:
+            type: number
+        finish_reason:
+          type: string
+          enum:
+            - stop
+            - safety
+            - max-length
+          description: "Reason for completion termination."
+    Options:
+      type: object
+      properties:
+        logprobs:
+          type: boolean
+        max_tokens:
+          type: integer
+        temperature:
+          type: number
+        top_p:
+          type: number
+    TokenUsage:
+      type: object
+      properties:
+        input_tokens:
+          type: integer
+        output_tokens:
+          type: integer
+        total_tokens:
+          type: integer
