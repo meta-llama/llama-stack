@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Bulk Generations as a Service
+  title: Batch Generations as a Service
   version: 0.0.1
 components:
   schemas:
@@ -31,7 +31,7 @@ components:
           additionalProperties: true
           description: User provided metadata
 paths:
-  /bulk_inference/submit_job:
+  /batch_inference/submit_job:
     post:
       summary: Submit a batch inference job
       description: Submit a batch inference job
@@ -88,7 +88,7 @@ paths:
         '500':
           description: Internal server error
 
-  /bulk_inference/job_status:
+  /batch_inference/job_status:
     get:
       summary: Get the status of a submitted job
       description: Get the status of a submitted job
