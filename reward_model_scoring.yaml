@@ -100,27 +100,29 @@ components:
           description: User provided metadata carried forward in the response.
 paths:
   /reward_model_scoring/:
-    get:
+    post:
       summary: Score a pair of prompt and response using a reward model
       description: Take a pair of prompt and responses and score them using a reward model
-      parameters:
-        - in: query
-          name: messages
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Message'
-          required: true
-        - in: query
-          name: response
-          schema:
-            $ref: '#/components/schemas/Completion'
-          required: true
-        - in: query
-          name: scoring_function
-          schema:
-            type: string
-          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reward_model:
+                  type: string
+                  description: Unique identifier for the reward model 
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Message'
+                  description: List[Message] same as what is used in /chat_completion api 
+                response:
+                  $ref: '#/components/schemas/Completion'
+                  description: Completion same as what is used in /chat_completion api 
+                scoring_function:
+                  type: string
       responses:
         '200':
           description: Scoring completed successfully
@@ -138,7 +140,7 @@ paths:
                   score:
                     type: number
                     format: float
-
+                    
   /batch_reward_model_scoring/:
     post:
       summary: Batch score multiple pairs of prompts and responses
@@ -150,7 +152,10 @@ paths:
             schema:
               type: object
               properties:
-                # TODO: Maybe take local path but api first uploads and generates handle 
+                reward_model:
+                  type: string
+                  description: Unique identifier for the reward model 
+                # TODO: Maybe take local path and api first uploads and generates handle 
                 # which is returned in the repsonse.
                 prompt_response_path:
                   type: string
