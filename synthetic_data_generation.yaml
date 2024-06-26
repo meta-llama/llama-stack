@@ -20,7 +20,7 @@ paths:
                   description: Model identifier for batch inference.
                 prompts_path:
                   type: string
-                  description: Path to prompts, JSONL where each row is formatted for batch inference.
+                  description: Path to prompts, JSONL for batch inference
                 batch_size:
                   type: integer
                   description: Number of prompts to process in each batch.

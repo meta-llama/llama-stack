@@ -1,108 +1,13 @@
 openapi: 3.0.0
 info:
-  title: Reward Model Service
-  version: 1.0.0
-components:
-  schemas:
-    Message:
-      # TODO: Keep in sync with /chat_completion
-      type: object
-      properties:
-        role:
-          type: string
-          description: Role of the entity in the message.
-        text:
-          type: string
-          description: Text content of the message.
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attachment'
-    Completion:
-      # TODO: Keep in sync with /chat_completion
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the completion.
-        role:
-          type: string
-        text:
-          type: string
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attachment'
-        tokens:
-          type: array
-          items:
-            type: integer
-        logprobs:
-          type: array
-          items:
-            type: number
-        finish_reason:
-          type: string
-    # Not Used in API but this json encoded version will be used in batch callsite
-    PromptResponsePair:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the prompt-response pair.
-        prompt:
-          type: array
-          items:
-            $ref: '#/components/schemas/Message'
-        response:
-          $ref: '#/components/schemas/Completion'
-    # Not Used in API but this json encoded version will be used in batch callsite
-    PromptResponseScore:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier carried over from the user provided id.
-        raw_score:
-          type: number
-          format: float
-          description: Raw score before any scoring function is applied.
-        score:
-          type: number
-          format: float
-          description: Final score after applying the scoring function.
-    BatchRewardModelScoring:
-      type: object
-      properties:
-        job_id:
-          type: string
-          description: Unique identifier for the job.
-        created:
-          type: string
-          format: date-time
-          description: Timestamp when the job was created.
-        status:
-          type: string
-          enum: [started, completed, running]
-          description: Current status of the job.
-        input_path:
-          type: string
-          description: User provided input path.
-        success_file_path:
-          type: string
-          description: Path to the success file containing scores.
-        error_file_path:
-          type: string
-          description: Path to the error file.
-        metadata:
-          type: object
-          additionalProperties: true
-          description: User provided metadata carried forward in the response.
+  title: Reward Model Service API
+  version: 0.0.1
 paths:
   /reward_model_scoring/:
     post:
-      summary: Score a pair of prompt and response using a reward model
-      description: Take a pair of prompt and responses and score them using a reward model
+      summary: Score a prompt-response pair using a reward model
+      description: |
+        This endpoint scores a given prompt-response pair using a specified reward model and scoring function.
       requestBody:
         required: true
         content:
@@ -110,19 +15,18 @@ paths:
             schema:
               type: object
               properties:
-                reward_model:
-                  type: string
-                  description: Unique identifier for the reward model 
-                messages:
+                prompt_with_response:
                   type: array
                   items:
                     $ref: '#/components/schemas/Message'
-                  description: List[Message] same as what is used in /chat_completion api 
-                response:
-                  $ref: '#/components/schemas/Completion'
-                  description: Completion same as what is used in /chat_completion api 
-                scoring_function:
+                  description: "Prompt and response joined as a list of messages."
+                reward_model:
                   type: string
+                  description: "Identifier for the reward model to be used."
+                scoring_function:
+                  $ref: '#/components/schemas/ScoringFunction'
+                options:
+                  $ref: '#/components/schemas/Options'
       responses:
         '200':
           description: Scoring completed successfully
@@ -133,18 +37,18 @@ paths:
                 properties:
                   id:
                     type: string
-                    description: Unique identifier for the scoring request
-                  raw_score:
+                  logprob:
                     type: number
                     format: float
                   score:
                     type: number
                     format: float
-                    
-  /batch_reward_model_scoring/:
+
+  /reward_model_scoring/submit_job/:
     post:
-      summary: Batch score multiple pairs of prompts and responses
-      description: Take a pair of prompt and responses and score them using a reward model
+      summary: Batch scoring using reward models
+      description: |
+        Submit a batch job for scoring multiple prompt-response pairs using a reward model.
       requestBody:
         required: true
         content:
@@ -154,24 +58,105 @@ paths:
               properties:
                 reward_model:
                   type: string
-                  description: Unique identifier for the reward model 
-                # TODO: Maybe take local path and api first uploads and generates handle 
-                # which is returned in the repsonse.
-                prompt_response_path:
-                  type: string
-                  description: File path for a JSONL where each line is a JSON encoded `PromptResponsePair` object
+                  description: "Identifier for the reward model to be used."
+                prompt_with_response_path:
+                  $ref: '#/components/schemas/Path'
+                  description: "Path to a JSONL file where each line is a List[Message] and custom_id."
                 scoring_function:
-                  type: string
-                  description: String used to resolve to the appropriate scoring function from a registry
+                  $ref: '#/components/schemas/ScoringFunction'
                 metadata:
                   type: object
                   additionalProperties: true
-                  description: Metadata to carry forward in the response
+                  description: "Metadata to carry forward in the response."
       responses:
         '200':
-          description: Batch scoring job submitted successfully
+          description: Batch scoring job successfully submitted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BatchRewardModelScoring'
+                $ref: '#/components/schemas/BatchRewardModelScoringJob'
 
+  /reward_model_scoring/submit_job/job_status:
+    get:
+      summary: Get status for an already submitted job
+      description: |
+        Retrieve the status and details of a previously submitted batch scoring job using its unique job ID.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: "Unique identifier for the batch scoring job."
+      responses:
+        '200':
+          description: Batch scoring job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchRewardModelScoringJob'
+
+components:
+  schemas:
+    Message:
+      # reuse from /chat_completion
+
+    Options:
+      type: object
+      properties:
+        logprobs:
+          type: boolean
+        max_tokens:
+          type: integer
+        temperature:
+          type: number
+        top_p:
+          type: number
+        # TODO: Add/Remove more reward model specific params
+
+    ScoringFunction:
+      type: object
+      properties:
+        name:
+          type: string
+        params:
+          type: object
+          additionalProperties: true
+
+    Path:
+      type: object
+      properties:
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+            - raw_bytes
+            - filepath
+            - uri
+
+    BatchRewardModelScoringJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+        created:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - validating
+            - running
+            - completed
+            - failed
+        input_file_path:
+          $ref: '#/components/schemas/Path'
+        success_file_path:
+          $ref: '#/components/schemas/Path'
+        error_file_path:
+          $ref: '#/components/schemas/Path'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Metadata carried forward from the job submission."

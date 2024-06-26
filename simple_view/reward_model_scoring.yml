@@ -1,0 +1,70 @@
+# Reward Model Service
+== Schema ==
+Message:
+  # Same as /chat_completion
+
+Options:
+  logprobs: bool
+  max_tokens: int
+  temperature: float
+  top_p: float
+  #TODO: Figure out what other reward model specific params
+
+ScoringFunction:
+  name: str
+  params: json
+
+BatchRewardModelScoringJob:
+  job_id: str
+  created: str  # format date-time
+  status: string  # enum (validating, running, completed, failed)
+  input_file_path: Path
+  success_file_path: Path  # jsonl where each row has {custom_id: <from input>, logprob: <float>, score: float}
+  error_file_path: Path  # jsonl where each row has {custom_id: <from input>, error: <error_info>}
+  metadata: json  # carry forward from job submission api
+
+
+== Callsites ==
+
+callsite:
+  reward_model_scoring/
+request_type:
+  post
+description:
+  Score a prompt-response pair using a reward model
+request:
+  prompt_with_response: List[Message]  # prompt and response joined as a List[Message]
+  reward_model: str
+  scoring_function: ScoringFunction
+  options: Options
+response:
+  id: str
+  logprob: float
+  score: float
+
+
+callsite:
+  reward_model_scoring/submit_job/
+request_type:
+  post
+description:
+  Batch scoring using reward models
+request:
+  reward_model: str
+  prompt_with_response_path: Path  # jsonl file where each line is a List[Message] and custom_id
+  scoring_function: ScoringFunction
+  metadata: json  # anything to carry forward over in the response
+response:
+  batch_reward_model_scoring_job: BatchRewardModelScoringJob
+
+
+callsite:
+  /reward_model_scoring/submit_job/job_status
+request_type:
+  get
+description:
+  Get status for an already submitted job
+request:
+  job_id: str  # unique identifier for the job
+response:
+  batch_reward_model_scoring_job: BatchRewardModelScoringJob
