@@ -1,0 +1,134 @@
+# Fine Tuning APIs
+== Schema ==
+
+TrainingDataItem:
+  dialog: List[Message]
+  keep_loss: List[bool]
+
+
+WandBLogger:
+  project: str
+
+DiskLogger:
+  # log_dir will be pre-configured in environment
+  filename: str
+
+FullFineTuneOptions:
+  enable_activation_checkpointing: True
+  memory_efficient_fsdp_wrap: True
+  fsdp_cpu_offload: True
+
+LoraFineTuneOptions:
+  lora_attn_modules: ['q_proj', 'v_proj']
+  apply_lora_to_mlp: False
+  apply_lora_to_output: False
+  lora_rank: 8
+  lora_alpha: 16
+
+FineTuningOptions:
+  n_epochs: int
+  batch_size: int
+  lr: float
+  gradient_accumulation_steps: int
+  seed: int
+  shuffle: bool
+
+  # Unions in OpenAPI with a reference field that can help disambiguate
+  custom_training_options:
+    discriminator:
+      propertyName: fine_tuning_type
+    mapping:
+      fft: FullFineTuneOptions
+      lora: LoraFineTuneOptions
+
+  # other options that can be passed in
+  extras: json
+
+Config:
+  model: str # model that you want to fine tune
+  data: Path  # jsonl with each row representing a TrainingDataItem
+  validation_data: Path  # same as data but to get validation metrics on
+
+  # fine tuning args
+  fine_tuning_options: FineTuningOptions
+
+  # metric logging
+  logger:
+    discriminator:
+      propertyName: log_type
+    mapping:
+      disk: DiskLogger
+      wandb: WandBLogger
+
+  # Override options
+  # eg. --nproc_per_node 4 insted of defaults,
+  # this might be impl specific and can allow for various customizations
+  overrides: str
+  metadata: json  # to carry over to job details
+
+FineTuningJob:
+  job_id: str
+  created: str  # format date-time
+  finished_at: str  # format date-time
+  status: str  # enum - validation, queued, running, failed, success, cancelled
+  error_path: Path  # error logging
+  checkpoints: List[Path]  # checkpoints for various epochs
+  logs: Path  # local path / wandb uri
+  input_config: Config  # config used to submit this job
+  metadata: json  # carried over rom user provided input
+
+Log:
+  message: string  # The log message.
+  timestamp: string  # format: date-time
+
+== Callsites ==
+
+callsite:
+  /fine_tuning/jobs/submit
+request_type:
+  post
+description:
+  Submit a fine tuning job
+request:
+  config: Config
+response:
+  fine_tuning_job: FineTuningJob
+
+
+callsite:
+  /fine_tuning/jobs/status
+request_type:
+  get
+description:
+  Gets last N fine tuning jobs
+request:
+  job_id: str
+response:
+  fine_tuning_job: FineTuningJob
+
+
+callsite:
+  /fine_tuning/jobs/cancel
+request_type:
+  post
+description:
+  Cancel provided job
+request:
+  job_id: str
+response:
+  fine_tuning_job: FineTuningJob
+
+
+callsite:
+  /fine_tuning/jobs/tail
+request_type:
+  get
+description:
+  Tail logs of a particular job
+request:
+  job_id: str
+response:
+  logs: List[Log]
+  streaming:
+    enabled: True
+    chunkSize: 1024

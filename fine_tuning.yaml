@@ -1,0 +1,266 @@
+openapi: 3.0.0
+info:
+  title: Fine Tuning API
+  version: 1.0.0
+  description: API for managing fine tuning jobs for machine learning models.
+
+paths:
+  /fine_tuning/jobs/submit:
+    post:
+      summary: Submit a fine tuning job
+      description: Submit a fine tuning job with the specified configuration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Config'
+      responses:
+        200:
+          description: Successfully submitted the fine tuning job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTuningJob'
+
+  /fine_tuning/jobs/status:
+    get:
+      summary: Gets last N fine tuning jobs
+      description: Retrieve the status of the last N fine tuning jobs based on the provided job ID.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: The ID of the job to retrieve status for.
+      responses:
+        200:
+          description: Successfully retrieved the job status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTuningJob'
+
+  /fine_tuning/jobs/cancel:
+    post:
+      summary: Cancel provided job
+      description: Cancel the fine tuning job with the specified job ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_id:
+                  type: string
+      responses:
+        200:
+          description: Successfully cancelled the fine tuning job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTuningJob'
+
+  /fine_tuning/jobs/tail:
+    get:
+      summary: Tail logs of a particular job
+      description: Stream the logs of a particular job in real-time. This endpoint supports streaming responses.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: The ID of the job to tail logs for.
+      responses:
+        200:
+          description: Streaming logs in real-time.
+          content:
+            application/x-ndjson:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Log'
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                default: 'application/x-ndjson'
+            Transfer-Encoding:
+              schema:
+                type: string
+                default: 'chunked'
+
+components:
+  schemas:
+    Message:
+      # keep in sync with /chat_completion
+
+    TrainingDataItem:
+      type: object
+      properties:
+        dialog:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        keep_loss:
+          type: array
+          items:
+            type: boolean
+
+    WandBLogger:
+      type: object
+      properties:
+        project:
+          type: string
+          description: The project name in WandB where logs will be stored.
+
+    DiskLogger:
+      type: object
+      properties:
+        filename:
+          type: string
+          description: The filename where logs will be stored on disk.
+
+    FullFineTuneOptions:
+      type: object
+      properties:
+        enable_activation_checkpointing:
+          type: boolean
+          default: true
+        memory_efficient_fsdp_wrap:
+          type: boolean
+          default: true
+        fsdp_cpu_offload:
+          type: boolean
+          default: true
+
+    LoraFineTuneOptions:
+      type: object
+      properties:
+        lora_attn_modules:
+          type: array
+          items:
+            type: string
+        apply_lora_to_mlp:
+          type: boolean
+          default: false
+        apply_lora_to_output:
+          type: boolean
+          default: false
+        lora_rank:
+          type: integer
+        lora_alpha:
+          type: integer
+
+    FineTuningOptions:
+      type: object
+      properties:
+        n_epochs:
+          type: integer
+        batch_size:
+          type: integer
+        lr:
+          type: number
+          format: float
+        gradient_accumulation_steps:
+          type: integer
+        seed:
+          type: integer
+        shuffle:
+          type: boolean
+        custom_training_options:
+          oneOf:
+            - $ref: '#/components/schemas/FullFineTuneOptions'
+            - $ref: '#/components/schemas/LoraFineTuneOptions'
+          discriminator:
+            propertyName: finetuning_type
+        extras:
+          # json to put other config overrides that are required by torchtune
+          type: object
+          additionalProperties: true
+
+    Config:
+      type: object
+      properties:
+        model:
+          type: string
+          description: The model identifier that you want to fine tune.
+        data:
+          type: string
+          format: uri
+          description: Path to the JSONL file with each row representing a TrainingDataItem.
+        validation_data:
+          type: string
+          format: uri
+          description: Path to the JSONL file used for validation metrics.
+        fine_tuning_options:
+          $ref: '#/components/schemas/FineTuningOptions'
+        logger:
+          oneOf:
+            - $ref: '#/components/schemas/DiskLogger'
+            - $ref: '#/components/schemas/WandBLogger'
+          discriminator:
+            propertyName: log_type
+        overrides:
+          # eg. --nproc_per_node 4 instead of default that we need to pass through to torchrun
+          # when running locally
+          type: string
+          description: Custom override options for the fine tuning process.
+        metadata:
+          type: object
+          additionalProperties: true
+
+    FineTuningJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: Unique identifier for the fine tuning job.
+        created:
+          type: string
+          format: date-time
+          description: The creation date and time of the job.
+        finished_at:
+          type: string
+          format: date-time
+          description: The completion date and time of the job.
+        status:
+          type: string
+          enum: [validation, queued, running, failed, success, cancelled]
+          description: The current status of the job.
+        error_path:
+          type: string
+          format: uri
+          description: Path to the error log file.
+        checkpoints:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: List of paths to checkpoint files for various epochs.
+        logs:
+          type: string
+          format: uri
+          description: Path to the logs, either local or a WandB URI.
+        input_config:
+          $ref: '#/components/schemas/Config'
+        metadata:
+          type: object
+          additionalProperties: true
+
+    Log:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The log message.
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp of the log message.
