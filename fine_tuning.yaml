@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Fine Tuning API
-  version: 1.0.0
+  version: 0.0.1
   description: API for managing fine tuning jobs for machine learning models.
 
 paths:
