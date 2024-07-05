@@ -512,29 +512,27 @@ components:
         attachments:
           type: array
           items:
-            $ref: '#/components/schemas/MediaAttachment'
+            $ref: '#/components/schemas/Attachment'
         metadata:
           type: object
           additionalProperties: true
           description: "Additional metadata as JSON."
-    MediaAttachment:
+    Attachment:
       type: object
       properties:
         type:
-          $ref: '#/components/schemas/MediaAttachmentType'
+          $ref: '#/components/schemas/AttachmentType'
         kind:
-          $ref: '#/components/schemas/MediaAttachmentKind'
+          $ref: '#/components/schemas/AttachmentKind'
         data:
           type: string
-    MediaAttachmentType:
+    AttachmentType:
       type: string
       enum:
         - image
-        - video
-        - audio
         - text
-      description: "Type of media attachment."
-    MediaAttachmentKind:
+      description: "Type of media attachment. Currently only support image and text."
+    AttachmentKind:
       type: string
       enum:
         - raw_bytes
