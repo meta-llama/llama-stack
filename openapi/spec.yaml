@@ -1,0 +1,1069 @@
+openapi: 3.0.0
+info:
+  title: Llama Stack API
+  version: 0.0.1
+paths:
+# quantization API
+  /quantize:
+# inference APIs
+  /inference:
+    post:
+      summary: Submit a chat completion request
+      description: |
+        This endpoint allows clients to submit a chat completion request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Message'
+                model:
+                  type: string
+                options:
+                  $ref: '#/components/schemas/Options'
+                n_completions:
+                  type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  candidates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Completion'
+                  model_called:
+                    type: string
+                  usage:
+                    $ref: '#/components/schemas/TokenUsage'
+  /batch_inference/jobs/submit:
+    post:
+      summary: Submit a batch inference job
+      description: |
+        This endpoint allows clients to submit a batch inference job using a model and a prompt file.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  description: "The model identifier to be used for inference."
+                prompt_file_path:
+                  $ref: '#/components/schemas/Path'
+                  description: "Path to a JSONL file where each line is a JSON-encoded list of messages."
+                options:
+                  $ref: '#/components/schemas/Options'
+                num_generations:
+                  type: integer
+                  description: "Number of generations to produce."
+      responses:
+        '200':
+          description: Batch inference job successfully submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchInferenceJob'
+  /batch_inference/jobs/status:
+    get:
+      summary: Get status for an already submitted job
+      description: |
+        Retrieve the status and details of a previously submitted batch inference job using its unique job ID.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: "Unique identifier for the batch inference job."
+      responses:
+        '200':
+          description: Batch inference job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchInferenceJob'
+  /batch_inference/jobs/cancel:
+    post:
+      summary: Cancel provided job
+      description: Cancel the batch inference job with the specified job ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_id:
+                  type: string
+      responses:
+        200:
+          description: Successfully cancelled the fine tuning job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchInferenceJob'
+
+# finetuning APIs
+  /fine_tuning/jobs/submit:
+    post:
+      summary: Submit a fine tuning job
+      description: Submit a fine tuning job with the specified configuration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Config'
+      responses:
+        200:
+          description: Successfully submitted the fine tuning job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTuningJob'
+  /fine_tuning/jobs/status:
+    get:
+      summary: Gets last N fine tuning jobs
+      description: Retrieve the status of the last N fine tuning jobs based on the provided job ID.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: The ID of the job to retrieve status for.
+      responses:
+        200:
+          description: Successfully retrieved the job status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTuningJob'
+  /fine_tuning/jobs/cancel:
+    post:
+      summary: Cancel provided job
+      description: Cancel the fine tuning job with the specified job ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_id:
+                  type: string
+      responses:
+        200:
+          description: Successfully cancelled the fine tuning job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTuningJob'
+  /fine_tuning/jobs/tail:
+    get:
+      summary: Tail logs of a particular job
+      description: Stream the logs of a particular job in real-time. This endpoint supports streaming responses.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: The ID of the job to tail logs for.
+      responses:
+        200:
+          description: Streaming logs in real-time.
+          content:
+            application/x-ndjson:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Log'
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                default: 'application/x-ndjson'
+            Transfer-Encoding:
+              schema:
+                type: string
+                default: 'chunked'
+# reward scoring APIs
+  /reward_scoring:
+    post:
+      summary: Score a prompt-response pair using a reward model
+      description: |
+        This endpoint scores a given prompt-response pair using a specified reward model and scoring function.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt_with_response:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Message'
+                  description: "Prompt and response joined as a list of messages."
+                reward:
+                  type: string
+                  description: "Identifier for the reward model to be used."
+                scoring_function:
+                  $ref: '#/components/schemas/ScoringFunction'
+                options:
+                  $ref: '#/components/schemas/Options'
+      responses:
+        '200':
+          description: Scoring completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  logprob:
+                    type: number
+                    format: float
+                  score:
+                    type: number
+                    format: float
+  /batch_reward_scoring/jobs/submit:
+    post:
+      summary: Batch scoring using reward models
+      description: |
+        Submit a batch job for scoring multiple prompt-response pairs using a reward model.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reward_model:
+                  type: string
+                  description: "Identifier for the reward model to be used."
+                prompt_with_response_path:
+                  $ref: '#/components/schemas/Path'
+                  description: "Path to a JSONL file where each line is a List[Message] and custom_id."
+                scoring_function:
+                  $ref: '#/components/schemas/ScoringFunction'
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: "Metadata to carry forward in the response."
+      responses:
+        '200':
+          description: Batch scoring job successfully submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchRewardScoringJob'
+  /batch_reward_scoring/jobs/status:
+    get:
+      summary: Get status for an already submitted job
+      description: |
+        Retrieve the status and details of a previously submitted batch scoring job using its unique job ID.
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: "Unique identifier for the batch scoring job."
+      responses:
+        '200':
+          description: Batch scoring job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchRewardScoringJob'
+  /batch_reward_scoring/jobs/cancel:
+    post:
+      summary: Cancel provided job
+      description: Cancel the batch reward scoring job with the specified job ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_id:
+                  type: string
+      responses:
+        200:
+          description: Successfully cancelled the batch reward scoring job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchRewardScoringJob'
+# synthetic data generation APIs
+  /synthetic_data_gen/jobs/submit:
+    post:
+      summary: Submit a job to generate synthetic data
+      description: Submit a job to generate synthetic data using llm + reward model scoring + filtering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  description: Model used for batch inference
+                prompt_file_path:
+                  type: string
+                  format: path
+                  description: Path to the JSONL file containing message_lists and custom IDs
+                options:
+                  $ref: '#/components/schemas/Options'
+                num_generations:
+                  type: integer
+                  description: Number of generations to produce
+                reward_model:
+                  type: string
+                  description: Model used for scoring
+                scoring_function:
+                  $ref: '#/components/schemas/ScoringFunction'
+                filtering_function:
+                  $ref: '#/components/schemas/FilteringFunction'
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Additional metadata for the job
+      responses:
+        '200':
+          description: Job successfully submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGenJob'
+  /synthetic_data_gen/jobs/status:
+    get:
+      summary: Get job status
+      description: Get status for an already submitted job
+      parameters:
+        - in: query
+          name: job_id
+          schema:
+            type: string
+          required: true
+          description: Unique identifier for the job
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGenJob'
+  /synthetic_data_gen/jobs/cancel:
+    post:
+      summary: Cancel provided job
+      description: Cancel the synthetic data gen job with the specified job ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_id:
+                  type: string
+      responses:
+        200:
+          description: Successfully cancelled the synthetic data gen job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGenJob'
+# RAG APIs
+  /embedding:
+  /batch_embedding/jobs/submit:
+  /batch_embedding/jobs/status:
+  /batch_embedding/jobs/cancel:
+# Agentic APIs
+  /agents/execute:
+    post:
+      summary: Execute an agent with the provided turn history and user step
+      description: >
+        This endpoint allows for the execution of a specified agent, taking into account the historical steps and a new user step to generate a response turn.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent:
+                  $ref: '#/components/schemas/Agent'
+                turnHistory:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Step'
+                userStep:
+                  $ref: '#/components/schemas/Step'
+      responses:
+        '200':
+          description: Successfully executed the agent and returned the resulting turn.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turn'
+  /memory/create_bank:
+    post:
+      summary: Create a memory bank
+      description: Creates a new memory bank that stores a corpora of text content/facts to later query.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the memory bank.
+                description:
+                  type: string
+                  description: A brief description of the memory bank's purpose and contents.
+      responses:
+        '200':
+          description: Successfully created the memory bank.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryBank'
+  /memory/add_to_bank:
+    post:
+      summary: Add a memory nugget to a memory bank
+      description: Stores some text corpus as a nugget within the provided memory bank to be queried at a later time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bankId:
+                  type: string
+                  description: The ID of the memory bank to add the nugget to.
+                content:
+                  type: string
+                  description: The content to embed and add as a nugget.
+      responses:
+        '200':
+          description: Successfully added the memory nugget to the memory bank.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryNugget'
+  /memory/fetch_memories:
+    get:
+      summary: Fetch memories from multiple memory banks
+      description: Embeds input, queries for nuggets across specified memory banks.
+      parameters:
+        - in: query
+          name: bankIds
+          description: A list of memory bank IDs to fetch memories from.
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successfully fetched memories from the specified memory banks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MemoryNugget'
+
+components:
+  schemas:
+    ModelInputMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, tool]
+        text:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAttachment'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Additional metadata as JSON."
+    MediaAttachment:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/MediaAttachmentType'
+        kind:
+          $ref: '#/components/schemas/MediaAttachmentKind'
+        data:
+          type: string
+    MediaAttachmentType:
+      type: string
+      enum:
+        - image
+        - video
+        - audio
+        - text
+      description: "Type of media attachment."
+    MediaAttachmentKind:
+      type: string
+      enum:
+        - raw_bytes
+        - filepath
+        - uri
+      description: "How media attachment is provided."
+    ModelOutputMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAttachment'
+        tokens:
+          type: array
+          items:
+            type: integer
+        tool_call:
+          type: object
+          $ref: '#/components/schemas/ToolCall'
+          # optional
+        eot:
+          type: boolean
+          description: "End of turn flag."
+        is_complete:
+          type: boolean
+          description: "For streaming, indicates if the message is complete."
+        is_header_complete:
+          type: boolean
+          description: "For streaming, indicates if the header of the message is complete."
+        log_probs:
+          type: array
+          items:
+            type: number
+        finish_reason:
+          type: string
+          enum:
+            - stop
+            - safety
+            - max-length
+          description: "Reason for completion termination."
+    Options:
+      type: object
+      properties:
+        logprobs:
+          type: boolean
+        max_tokens:
+          type: integer
+        temperature:
+          type: number
+        top_p:
+          type: number
+    TokenUsage:
+      type: object
+      properties:
+        input_tokens:
+          type: integer
+        output_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+    Path:
+      type: object
+      properties:
+        value:
+          type: string
+          description: "The path value."
+        type:
+          type: string
+          enum:
+            - raw_bytes
+            - filepath
+            - uri
+          description: "Data Type of the path."
+    BatchInferenceJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: "ID provided by the API for the job."
+        created:
+          type: string
+          format: date-time
+          description: "Timestamp when the job was created."
+        status:
+          type: string
+          enum:
+            - validating
+            - running
+            - completed
+            - failed
+          description: "Current status of the job."
+        input_file_path:
+          $ref: '#/components/schemas/Path'
+        success_file_path:
+          $ref: '#/components/schemas/Path'
+        error_file_path:
+          $ref: '#/components/schemas/Path'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Additional metadata related to the job."
+    TrainingDataItem:
+      type: object
+      properties:
+        dialog:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        keep_loss:
+          type: array
+          items:
+            type: boolean
+    WandBLogger:
+        type: object
+        properties:
+          project:
+            type: string
+            description: The project name in WandB where logs will be stored.
+    DiskLogger:
+      type: object
+      properties:
+        filename:
+          type: string
+          description: The filename where logs will be stored on disk.
+    FullFineTuneOptions:
+      type: object
+      properties:
+        enable_activation_checkpointing:
+          type: boolean
+          default: true
+        memory_efficient_fsdp_wrap:
+          type: boolean
+          default: true
+        fsdp_cpu_offload:
+          type: boolean
+          default: true
+    LoraFineTuneOptions:
+      type: object
+      properties:
+        lora_attn_modules:
+          type: array
+          items:
+            type: string
+        apply_lora_to_mlp:
+          type: boolean
+          default: false
+        apply_lora_to_output:
+          type: boolean
+          default: false
+        lora_rank:
+          type: integer
+        lora_alpha:
+          type: integer
+    FineTuningOptions:
+      type: object
+      properties:
+        n_epochs:
+          type: integer
+        batch_size:
+          type: integer
+        lr:
+          type: number
+          format: float
+        gradient_accumulation_steps:
+          type: integer
+        seed:
+          type: integer
+        shuffle:
+          type: boolean
+        custom_training_options:
+          oneOf:
+            - $ref: '#/components/schemas/FullFineTuneOptions'
+            - $ref: '#/components/schemas/LoraFineTuneOptions'
+          discriminator:
+            propertyName: finetuning_type
+        extras:
+          # json to put other config overrides that are required by torchtune
+          type: object
+          additionalProperties: true
+    Config:
+      type: object
+      properties:
+        model:
+          type: string
+          description: The model identifier that you want to fine tune.
+        data:
+          type: string
+          format: uri
+          description: Path to the JSONL file with each row representing a TrainingDataItem.
+        validation_data:
+          type: string
+          format: uri
+          description: Path to the JSONL file used for validation metrics.
+        fine_tuning_options:
+          $ref: '#/components/schemas/FineTuningOptions'
+        logger:
+          oneOf:
+            - $ref: '#/components/schemas/DiskLogger'
+            - $ref: '#/components/schemas/WandBLogger'
+          discriminator:
+            propertyName: log_type
+        overrides:
+          # eg. --nproc_per_node 4 instead of default that we need to pass through to torchrun
+          # when running locally
+          type: string
+          description: Custom override options for the fine tuning process.
+        metadata:
+          type: object
+          additionalProperties: true
+    FineTuningJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: Unique identifier for the fine tuning job.
+        created:
+          type: string
+          format: date-time
+          description: The creation date and time of the job.
+        finished_at:
+          type: string
+          format: date-time
+          description: The completion date and time of the job.
+        status:
+          type: string
+          enum: [validation, queued, running, failed, success, cancelled]
+          description: The current status of the job.
+        error_path:
+          type: string
+          format: uri
+          description: Path to the error log file.
+        checkpoints:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: List of paths to checkpoint files for various epochs.
+        logs:
+          type: string
+          format: uri
+          description: Path to the logs, either local or a WandB URI.
+        input_config:
+          $ref: '#/components/schemas/Config'
+        metadata:
+          type: object
+          additionalProperties: true
+    Log:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The log message.
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp of the log message.
+    ScoringFunction:
+      type: object
+      properties:
+        name:
+          type: string
+        params:
+          type: object
+          additionalProperties: true
+    BatchRewardScoringJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+        created:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - validating
+            - running
+            - completed
+            - failed
+        input_file_path:
+          $ref: '#/components/schemas/Path'
+        success_file_path:
+          $ref: '#/components/schemas/Path'
+        error_file_path:
+          $ref: '#/components/schemas/Path'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Metadata carried forward from the job submission."
+    FilteringFunction:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the filtering function
+        params:
+          type: object
+          additionalProperties: true
+          description: JSON object containing parameters for the filtering function
+    SyntheticDataPoint:
+      type: object
+      properties:
+        custom_id:
+          type: string
+          description: Custom identifier for the data point
+        index:
+          type: integer
+          description: Index of the data point
+        prompt:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          description: List of messages used as prompt
+        response:
+          $ref: '#/components/schemas/Message'
+        logprob:
+          type: number
+          format: float
+          description: Log probability of the response
+        score:
+          type: number
+          format: float
+          description: Score of the response based on the reward model
+    SyntheticDataGenJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: ID provided by the API
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the job was created
+        status:
+          type: string
+          enum: [validating, running, completed, failed]
+          description: Current status of the job
+        input_file_path:
+          type: string
+          format: path
+          description: Path to the input JSONL file
+        success_file_path:
+          type: string
+          format: path
+          description: Path to the JSONL file containing successful results
+        error_file_path:
+          type: string
+          format: path
+          description: Path to the JSONL file containing errors
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata about the job
+    ToolChainDeploymentConfig:
+      type: object
+      description: Holds deployment configuration for different parts of the toolchain
+      properties:
+        inferenceProvider:
+          type: string
+          description: The URI for the inference provider
+        batchInferenceProvider:
+    Agent:
+      type: object
+      description: Represents an AI agent with specific tools and a model configuration.
+      properties:
+        name:
+          type: string
+          description: The name of the agent.
+        description:
+          type: string
+          description: A brief description of the agent's purpose and capabilities.
+        tools:
+          type: array
+          description: A collection of tools that the agent can utilize.
+          items:
+            $ref: '#/components/schemas/Tool'
+        model:
+          type: string
+          enum: [llama31_405, llama3_70, llama3_8]
+          description: The model identifier that the agent uses for processing.
+    ToolDefinition:
+      type: object
+      description: A tool that can be used by an agent to perform specific tasks.
+      properties:
+        name:
+          type: string
+          description: The name of the tool.
+        tool_type:
+          type: string
+          enum: [builtin, zeroshot]
+        description:
+          type: string
+          description: A brief description of what the tool does and how it should be used.
+        parameters:
+          type: array
+          description: The parameters that the tool requires to function properly.
+          items:
+            $ref: '#/components/schemas/ToolParameter'
+        returnValue:
+          $ref: '#/components/schemas/ToolReturnValue'
+    ToolCall:
+      type: object
+      description: A tool that can be used by an agent to perform specific tasks.
+      properties:
+        name:
+          type: string
+          description: The name of the tool.
+        arguments:
+          type: array
+          description: The parameters that the tool requires to function properly.
+          items:
+            type: object
+        returnValue:
+          type: object
+
+    ToolParameter:
+      type: object
+      description: Defines a parameter that a tool requires to operate.
+      properties:
+        type:
+          type: string
+          enum: [string, int, float, list, bool]
+          description: The data type of the parameter.
+        itemType:
+          type: string
+          description: The type of items in the parameter if it is a list.
+        description:
+          type: string
+          description: Details about what the parameter is used for and any constraints.
+    ToolReturnValue:
+      type: object
+      description: Describes the return value of a tool after execution.
+      properties:
+        type:
+          type: object
+        description:
+          type: string
+          description: Documentation of the return value
+    Step:
+      type: object
+      description: Represents a step in the interaction with an agent, such as a user query or an agent response. Each step captures a discrete part of the conversation, including user inputs, agent responses, or interactions with tools.
+      properties:
+        id:
+          type: string
+          description: A unique identifier for the step, facilitating tracking and referencing within the interaction flow.
+        role:
+          type: string
+          enum: [assistant, user]
+          description: The role of the actor in this step, indicating whether the step originated from the user or the assistant.
+        stepType:
+          type: string
+          enum: [user_response, assistant_response, tool_request, tool_response]
+          description: The type of step, categorizing the nature of the interaction such as a user response, an assistant response, a request to a tool, or a response from a tool.
+        messages:
+          type: array
+          description: All messages corresponding to the step
+          items:
+            $ref: '#/components/schemas/Message'
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp when the step occurred, providing a temporal context to the interaction.
+        metadata:
+          type: object
+          additionalProperties: true
+          description: A flexible structure to store additional metadata about the step, such as contextual information, execution details, or any other relevant data that supports the interaction process.
+    Turn:
+      type: object
+      description: Represents a complete turn in the interaction between the user and the agent. A turn consists of one or more steps that capture the sequence of interactions, including user inputs, agent responses, and any tool interactions that occur within a single conversational exchange.
+      properties:
+        id:
+          type: string
+          description: A unique identifier for the turn, which helps in tracking and referencing specific turns within a session.
+        steps:
+          type: array
+          description: An ordered list of steps that occurred during this turn. Each step can be a user query, an agent response, or a tool interaction.
+          items:
+            $ref: '#/components/schemas/Step'
+        startTime:
+          type: string
+          format: date-time
+          description: The timestamp marking the start of the turn. This helps in analyzing the timing and duration of interactions.
+        endTime:
+          type: string
+          format: date-time
+          description: The timestamp marking the end of the turn. This is useful for performance metrics and understanding user-agent interaction patterns.
+        status:
+          type: string
+          enum: [completed, failed]
+          description: The status of the turn, indicating whether the turn was completed successfully or failed due to an error.
+        metadata:
+          type: object
+          additionalProperties: true
+          description: A flexible structure to store additional metadata about the turn, such as such as contextual information, execution details, or any other relevant data that needs to be persisted or passed along with the turn.
+    MemoryBank:
+      type: object
+      description: Represents a memory bank.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the memory bank.
+        name:
+          type: string
+          description: The name of the memory bank.
+        description:
+          type: string
+          description: A brief description of the memory bank's purpose and contents.
+    MemoryNugget:
+      type: object
+      description: Represents a memory nugget.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the memory nugget.
+        content:
+          type: string
+          description: The embedded content of the memory nugget.
+    AgenticSystemDeploymentConfig:
+      type: object
+      description: Holds global deployment configuration needed to make different API calls across the stack.
+      properties:
+        braveSearchKey:
+          type: string
+          description: The API key to use for agent-invoked Brave search.
+        wolframAlphaKey:
+          type: string
+          description: The API key to use for agent-invoked Wolfram search.
