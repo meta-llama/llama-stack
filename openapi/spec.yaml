@@ -396,10 +396,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/SyntheticDataGenJob'
 # RAG APIs
-  /embedding:
-  /batch_embedding/jobs/submit:
-  /batch_embedding/jobs/status:
-  /batch_embedding/jobs/cancel:
+  /vector_store
+  /vector_store/create
+  /vector_store/drop
+  /vector_store/update
+  /vector_store/insert/jobs/submit:
+  /vector_store/insert/jobs/status:
+  /vector_store/insert/jobs/cancel:
+  /vector_store/delete/jobs/submit:
+  /vector_store/delete/jobs/status:
+  /vector_store/delete/jobs/cancel:
 # Agentic APIs
   /agents/execute:
     post:
@@ -428,55 +434,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Turn'
-  /memory/create_bank:
-    post:
-      summary: Create a memory bank
-      description: Creates a new memory bank that stores a corpora of text content/facts to later query.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: The name of the memory bank.
-                description:
-                  type: string
-                  description: A brief description of the memory bank's purpose and contents.
-      responses:
-        '200':
-          description: Successfully created the memory bank.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemoryBank'
-  /memory/add_to_bank:
-    post:
-      summary: Add a memory nugget to a memory bank
-      description: Stores some text corpus as a nugget within the provided memory bank to be queried at a later time.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                bankId:
-                  type: string
-                  description: The ID of the memory bank to add the nugget to.
-                content:
-                  type: string
-                  description: The content to embed and add as a nugget.
-      responses:
-        '200':
-          description: Successfully added the memory nugget to the memory bank.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemoryNugget'
-  /memory/fetch_memories:
     get:
       summary: Fetch memories from multiple memory banks
       description: Embeds input, queries for nuggets across specified memory banks.
@@ -519,26 +476,14 @@ components:
           description: "Additional metadata as JSON."
     Attachment:
       type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/AttachmentType'
-        kind:
-          $ref: '#/components/schemas/AttachmentKind'
-        data:
+      description: Represents a file (text or media).
+      properites:
+        uri:
           type: string
-    AttachmentType:
-      type: string
-      enum:
-        - image
-        - text
-      description: "Type of media attachment. Currently only support image and text."
-    AttachmentKind:
-      type: string
-      enum:
-        - raw_bytes
-        - filepath
-        - uri
-      description: "How media attachment is provided."
+          description: The path at which the attachment resides.
+        mime-type:
+          type: string
+          description: The attachment's MIME type.
     ModelOutputMessage:
       type: object
       properties:
@@ -546,10 +491,6 @@ components:
           type: string
         text:
           type: string
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAttachment'
         tokens:
           type: array
           items:
@@ -662,7 +603,7 @@ components:
         filename:
           type: string
           description: The filename where logs will be stored on disk.
-    FullFineTuneOptions:
+    FullFineTuningOptions:
       type: object
       properties:
         enable_activation_checkpointing:
@@ -674,7 +615,7 @@ components:
         fsdp_cpu_offload:
           type: boolean
           default: true
-    LoraFineTuneOptions:
+    LoraFineTuningOptions:
       type: object
       properties:
         lora_attn_modules:
@@ -709,8 +650,8 @@ components:
           type: boolean
         custom_training_options:
           oneOf:
-            - $ref: '#/components/schemas/FullFineTuneOptions'
-            - $ref: '#/components/schemas/LoraFineTuneOptions'
+            - $ref: '#/components/schemas/FullFineTuningOptions'
+            - $ref: '#/components/schemas/LoraFineTuningOptions'
           discriminator:
             propertyName: finetuning_type
         extras:
@@ -899,6 +840,7 @@ components:
           type: string
           description: The URI for the inference provider
         batchInferenceProvider:
+        metricLoggerProvider: WandB
     Agent:
       type: object
       description: Represents an AI agent with specific tools and a model configuration.
@@ -1032,9 +974,9 @@ components:
           type: object
           additionalProperties: true
           description: A flexible structure to store additional metadata about the turn, such as such as contextual information, execution details, or any other relevant data that needs to be persisted or passed along with the turn.
-    MemoryBank:
+    VectorStore:
       type: object
-      description: Represents a memory bank.
+      description: Store for RAG
       properties:
         id:
           type: string
@@ -1045,16 +987,23 @@ components:
         description:
           type: string
           description: A brief description of the memory bank's purpose and contents.
-    MemoryNugget:
+    VectorStoreInsertJob:
       type: object
-      description: Represents a memory nugget.
+      description: Represents a job that is uploading a file into a vector store
       properties:
         id:
           type: string
-          description: The unique identifier of the memory nugget.
+          description: The unique identifier of the insert job
         content:
           type: string
           description: The embedded content of the memory nugget.
+    VectorStoreDeleteJob:
+      type: object
+      description: Represents a job that is removing contents of a file from a vector store
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the delete job
     AgenticSystemDeploymentConfig:
       type: object
       description: Holds global deployment configuration needed to make different API calls across the stack.
