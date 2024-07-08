@@ -1,6 +1,147 @@
 components:
   responses: {}
   schemas:
+    AgenticSystemExecuteRequest:
+      additionalProperties: false
+      properties:
+        available_tools:
+          items:
+            oneOf:
+            - enum:
+              - web_search
+              - math
+              - image_gen
+              - code_interpreter
+              title: Builtin tools are tools the model is natively aware of and was
+                potentially fine-tuned with.
+              type: string
+            - additionalProperties: false
+              properties:
+                parameters:
+                  additionalProperties:
+                    oneOf:
+                    - type: 'null'
+                    - type: boolean
+                    - type: number
+                    - type: string
+                    - type: array
+                    - type: object
+                  type: object
+                tool_name:
+                  type: string
+              required:
+              - tool_name
+              - parameters
+              type: object
+          type: array
+        executable_tools:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        message:
+          $ref: '#/components/schemas/Message'
+        message_history:
+          items:
+            $ref: '#/components/schemas/Message'
+          type: array
+        model:
+          default: llama3_8b_chat
+          enum:
+          - llama3_8b_chat
+          - llama3_70b_chat
+          type: string
+        sampling_params:
+          additionalProperties: false
+          properties:
+            strategy:
+              default: greedy
+              type: string
+            temperature:
+              default: 0.0
+              type: number
+            top_k:
+              default: 0
+              type: integer
+            top_p:
+              default: 0.95
+              type: number
+          required:
+          - temperature
+          - strategy
+          - top_p
+          - top_k
+          type: object
+        stream:
+          default: false
+          type: boolean
+      required:
+      - message
+      - message_history
+      - model
+      - sampling_params
+      - available_tools
+      - executable_tools
+      - stream
+      type: object
+    AgenticSystemExecuteResponse:
+      additionalProperties: false
+      properties:
+        content:
+          oneOf:
+          - type: string
+          - $ref: '#/components/schemas/Attachment'
+          - items:
+              oneOf:
+              - type: string
+              - $ref: '#/components/schemas/Attachment'
+            type: array
+        logprobs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        stop_reason:
+          enum:
+          - not_stopped
+          - finished_ok
+          - max_tokens
+          title: Stop reasons are used to indicate why the model stopped generating
+            text.
+          type: string
+        tool_calls:
+          items:
+            additionalProperties: false
+            properties:
+              arguments:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              tool_name:
+                type: string
+            required:
+            - tool_name
+            - arguments
+            title: A tool call is a request to a tool.
+            type: object
+          type: array
+      required:
+      - content
+      - stop_reason
+      - tool_calls
+      title: Normal chat completion response.
+      type: object
     Attachment:
       additionalProperties: false
       properties:
@@ -17,6 +158,36 @@ components:
     ChatCompletionRequest:
       additionalProperties: false
       properties:
+        available_tools:
+          items:
+            oneOf:
+            - enum:
+              - web_search
+              - math
+              - image_gen
+              - code_interpreter
+              title: Builtin tools are tools the model is natively aware of and was
+                potentially fine-tuned with.
+              type: string
+            - additionalProperties: false
+              properties:
+                parameters:
+                  additionalProperties:
+                    oneOf:
+                    - type: 'null'
+                    - type: boolean
+                    - type: number
+                    - type: string
+                    - type: array
+                    - type: object
+                  type: object
+                tool_name:
+                  type: string
+              required:
+              - tool_name
+              - parameters
+              type: object
+          type: array
         logprobs:
           default: false
           type: boolean
@@ -64,6 +235,7 @@ components:
       - message_history
       - model
       - sampling_params
+      - available_tools
       - max_tokens
       - stream
       - logprobs
@@ -122,7 +294,6 @@ components:
           type: array
       required:
       - content
-      - stop_reason
       - tool_calls
       title: Normal chat completion response.
       type: object
@@ -214,7 +385,6 @@ components:
           type: string
       required:
       - content
-      - stop_reason
       title: Normal completion response.
       type: object
     Message:
@@ -258,27 +428,6 @@ components:
             title: A tool call is a request to a tool.
             type: object
           type: array
-        tool_definitions:
-          items:
-            additionalProperties: false
-            properties:
-              parameters:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              tool_name:
-                type: string
-            required:
-            - tool_name
-            - parameters
-            type: object
-          type: array
         tool_responses:
           items:
             additionalProperties: false
@@ -295,11 +444,10 @@ components:
       required:
       - role
       - content
-      - tool_definitions
       - tool_calls
       - tool_responses
       type: object
-    StreamedChatCompletionResponse:
+    StreamedAgenticSystemExecuteResponse:
       additionalProperties: false
       properties:
         stop_reason:
@@ -337,6 +485,43 @@ components:
       - stop_reason
       title: Streamed chat completion response.
       type: object
+    StreamedChatCompletionResponse:
+      additionalProperties: false
+      properties:
+        stop_reason:
+          enum:
+          - not_stopped
+          - finished_ok
+          - max_tokens
+          title: Stop reasons are used to indicate why the model stopped generating
+            text.
+          type: string
+        text_delta:
+          type: string
+        tool_call:
+          additionalProperties: false
+          properties:
+            arguments:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            tool_name:
+              type: string
+          required:
+          - tool_name
+          - arguments
+          title: A tool call is a request to a tool.
+          type: object
+      required:
+      - text_delta
+      title: Streamed chat completion response.
+      type: object
     StreamedCompletionResponse:
       additionalProperties: false
       properties:
@@ -362,7 +547,6 @@ components:
           type: string
       required:
       - text_delta
-      - stop_reason
       title: streamed completion response.
       type: object
     URL:
@@ -377,15 +561,24 @@ jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
   /agentic/system/execute:
-    get:
+    post:
       parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgenticSystemExecuteRequest'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: string
-          description: OK
+                oneOf:
+                - $ref: '#/components/schemas/AgenticSystemExecuteResponse'
+                - $ref: '#/components/schemas/StreamedAgenticSystemExecuteResponse'
+          description: Normal chat completion response. **OR** Streamed chat completion
+            response.
       tags:
       - AgenticSystem
   /chat_completion:
@@ -434,21 +627,36 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: AgenticSystem
 - name: Inference
+- name: AgenticSystem
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemExecuteRequest"
+    />
+  name: AgenticSystemExecuteRequest
 - description: 'Attachments are used to refer to external resources, such as images,
     videos, audio, etc.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/Attachment" />'
   name: Attachment
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
-    />
-  name: ChatCompletionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Message" />
   name: Message
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
+- description: 'Normal chat completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemExecuteResponse"
+    />'
+  name: AgenticSystemExecuteResponse
+- description: 'Streamed chat completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/StreamedAgenticSystemExecuteResponse"
+    />'
+  name: StreamedAgenticSystemExecuteResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
+    />
+  name: ChatCompletionRequest
 - description: 'Normal chat completion response.
 
 
@@ -481,12 +689,15 @@ x-tagGroups:
   - Inference
 - name: Types
   tags:
+  - AgenticSystemExecuteRequest
+  - AgenticSystemExecuteResponse
   - Attachment
   - ChatCompletionRequest
   - ChatCompletionResponse
   - CompletionRequest
   - CompletionResponse
   - Message
+  - StreamedAgenticSystemExecuteResponse
   - StreamedChatCompletionResponse
   - StreamedCompletionResponse
   - URL

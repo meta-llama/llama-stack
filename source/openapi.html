@@ -30,14 +30,21 @@
     ],
     "paths": {
         "/agentic/system/execute": {
-            "get": {
+            "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Normal chat completion response. **OR** Streamed chat completion response.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/AgenticSystemExecuteResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/StreamedAgenticSystemExecuteResponse"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -46,7 +53,17 @@
                 "tags": [
                     "AgenticSystem"
                 ],
-                "parameters": []
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AgenticSystemExecuteRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/chat_completion": {
@@ -127,24 +144,7 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
-            "Attachment": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "url",
-                    "mime_type"
-                ],
-                "title": "Attachments are used to refer to external resources, such as images, videos, audio, etc."
-            },
-            "ChatCompletionRequest": {
+            "AgenticSystemExecuteRequest": {
                 "type": "object",
                 "properties": {
                     "message": {
@@ -192,15 +192,69 @@
                             "top_k"
                         ]
                     },
-                    "max_tokens": {
-                        "type": "integer",
-                        "default": 0
+                    "available_tools": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "web_search",
+                                        "math",
+                                        "image_gen",
+                                        "code_interpreter"
+                                    ],
+                                    "title": "Builtin tools are tools the model is natively aware of and was potentially fine-tuned with."
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "tool_name": {
+                                            "type": "string"
+                                        },
+                                        "parameters": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "tool_name",
+                                        "parameters"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "executable_tools": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "uniqueItems": true
                     },
                     "stream": {
-                        "type": "boolean",
-                        "default": false
-                    },
-                    "logprobs": {
                         "type": "boolean",
                         "default": false
                     }
@@ -211,10 +265,27 @@
                     "message_history",
                     "model",
                     "sampling_params",
-                    "max_tokens",
-                    "stream",
-                    "logprobs"
+                    "available_tools",
+                    "executable_tools",
+                    "stream"
                 ]
+            },
+            "Attachment": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "url",
+                    "mime_type"
+                ],
+                "title": "Attachments are used to refer to external resources, such as images, videos, audio, etc."
             },
             "Message": {
                 "type": "object",
@@ -250,47 +321,6 @@
                                 }
                             }
                         ]
-                    },
-                    "tool_definitions": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "tool_name": {
-                                    "type": "string"
-                                },
-                                "parameters": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "null"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "array"
-                                            },
-                                            {
-                                                "type": "object"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "tool_name",
-                                "parameters"
-                            ]
-                        }
                     },
                     "tool_calls": {
                         "type": "array",
@@ -358,7 +388,6 @@
                 "required": [
                     "role",
                     "content",
-                    "tool_definitions",
                     "tool_calls",
                     "tool_responses"
                 ]
@@ -368,7 +397,7 @@
                 "format": "uri",
                 "pattern": "^(https?://|file://|data:)"
             },
-            "ChatCompletionResponse": {
+            "AgenticSystemExecuteResponse": {
                 "type": "object",
                 "properties": {
                     "content": {
@@ -479,7 +508,7 @@
                 ],
                 "title": "Normal chat completion response."
             },
-            "StreamedChatCompletionResponse": {
+            "StreamedAgenticSystemExecuteResponse": {
                 "type": "object",
                 "properties": {
                     "text_delta": {
@@ -538,6 +567,305 @@
                 "required": [
                     "text_delta",
                     "stop_reason"
+                ],
+                "title": "Streamed chat completion response."
+            },
+            "ChatCompletionRequest": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "$ref": "#/components/schemas/Message"
+                    },
+                    "message_history": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        }
+                    },
+                    "model": {
+                        "type": "string",
+                        "enum": [
+                            "llama3_8b_chat",
+                            "llama3_70b_chat"
+                        ],
+                        "default": "llama3_8b_chat"
+                    },
+                    "sampling_params": {
+                        "type": "object",
+                        "properties": {
+                            "temperature": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "strategy": {
+                                "type": "string",
+                                "default": "greedy"
+                            },
+                            "top_p": {
+                                "type": "number",
+                                "default": 0.95
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "default": 0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "temperature",
+                            "strategy",
+                            "top_p",
+                            "top_k"
+                        ]
+                    },
+                    "available_tools": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "web_search",
+                                        "math",
+                                        "image_gen",
+                                        "code_interpreter"
+                                    ],
+                                    "title": "Builtin tools are tools the model is natively aware of and was potentially fine-tuned with."
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "tool_name": {
+                                            "type": "string"
+                                        },
+                                        "parameters": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "tool_name",
+                                        "parameters"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "max_tokens": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "stream": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "logprobs": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "message",
+                    "message_history",
+                    "model",
+                    "sampling_params",
+                    "available_tools",
+                    "max_tokens",
+                    "stream",
+                    "logprobs"
+                ]
+            },
+            "ChatCompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Attachment"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Attachment"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "tool_calls": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "tool_name": {
+                                    "type": "string"
+                                },
+                                "arguments": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "tool_name",
+                                "arguments"
+                            ],
+                            "title": "A tool call is a request to a tool."
+                        }
+                    },
+                    "stop_reason": {
+                        "type": "string",
+                        "enum": [
+                            "not_stopped",
+                            "finished_ok",
+                            "max_tokens"
+                        ],
+                        "title": "Stop reasons are used to indicate why the model stopped generating text."
+                    },
+                    "logprobs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "tool_calls"
+                ],
+                "title": "Normal chat completion response."
+            },
+            "StreamedChatCompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "text_delta": {
+                        "type": "string"
+                    },
+                    "stop_reason": {
+                        "type": "string",
+                        "enum": [
+                            "not_stopped",
+                            "finished_ok",
+                            "max_tokens"
+                        ],
+                        "title": "Stop reasons are used to indicate why the model stopped generating text."
+                    },
+                    "tool_call": {
+                        "type": "object",
+                        "properties": {
+                            "tool_name": {
+                                "type": "string"
+                            },
+                            "arguments": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "tool_name",
+                            "arguments"
+                        ],
+                        "title": "A tool call is a request to a tool."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "text_delta"
                 ],
                 "title": "Streamed chat completion response."
             },
@@ -689,8 +1017,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "content",
-                    "stop_reason"
+                    "content"
                 ],
                 "title": "Normal completion response."
             },
@@ -737,8 +1064,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "text_delta",
-                    "stop_reason"
+                    "text_delta"
                 ],
                 "title": "streamed completion response."
             }
@@ -752,18 +1078,18 @@
     ],
     "tags": [
         {
+            "name": "Inference"
+        },
+        {
             "name": "AgenticSystem"
         },
         {
-            "name": "Inference"
+            "name": "AgenticSystemExecuteRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteRequest\" />"
         },
         {
             "name": "Attachment",
             "description": "Attachments are used to refer to external resources, such as images, videos, audio, etc.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
-        },
-        {
-            "name": "ChatCompletionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
         },
         {
             "name": "Message",
@@ -772,6 +1098,18 @@
         {
             "name": "URL",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
+        },
+        {
+            "name": "AgenticSystemExecuteResponse",
+            "description": "Normal chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteResponse\" />"
+        },
+        {
+            "name": "StreamedAgenticSystemExecuteResponse",
+            "description": "Streamed chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/StreamedAgenticSystemExecuteResponse\" />"
+        },
+        {
+            "name": "ChatCompletionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
         },
         {
             "name": "ChatCompletionResponse",
@@ -805,12 +1143,15 @@
         {
             "name": "Types",
             "tags": [
+                "AgenticSystemExecuteRequest",
+                "AgenticSystemExecuteResponse",
                 "Attachment",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
                 "CompletionRequest",
                 "CompletionResponse",
                 "Message",
+                "StreamedAgenticSystemExecuteResponse",
                 "StreamedChatCompletionResponse",
                 "StreamedCompletionResponse",
                 "URL"
