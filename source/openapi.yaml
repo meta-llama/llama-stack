@@ -1,7 +1,7 @@
 components:
   responses: {}
   schemas:
-    AgenticSystemExecuteRequest:
+    AgenticSystemCreateRequest:
       additionalProperties: false
       properties:
         available_tools:
@@ -39,73 +39,61 @@ components:
             type: string
           type: array
           uniqueItems: true
-        message:
-          $ref: '#/components/schemas/Message'
-        message_history:
-          items:
-            $ref: '#/components/schemas/Message'
-          type: array
+        instructions:
+          type: string
         model:
-          default: llama3_8b_chat
           enum:
           - llama3_8b_chat
           - llama3_70b_chat
           type: string
-        sampling_params:
-          additionalProperties: false
-          properties:
-            strategy:
-              default: greedy
-              type: string
-            temperature:
-              default: 0.0
-              type: number
-            top_k:
-              default: 0
-              type: integer
-            top_p:
-              default: 0.95
-              type: number
-          required:
-          - temperature
-          - strategy
-          - top_p
-          - top_k
-          type: object
+      required:
+      - instructions
+      - model
+      - available_tools
+      - executable_tools
+      type: object
+    AgenticSystemCreateResponse:
+      additionalProperties: false
+      properties:
+        agent_id:
+          type: string
+      required:
+      - agent_id
+      type: object
+    AgenticSystemExecuteRequest:
+      additionalProperties: false
+      properties:
+        agent_id:
+          type: string
+        messages:
+          items:
+            $ref: '#/components/schemas/Message'
+          type: array
         stream:
           default: false
           type: boolean
+        turn_history:
+          items:
+            $ref: '#/components/schemas/AgenticSystemTurn'
+          type: array
       required:
-      - message
-      - message_history
-      - model
-      - sampling_params
-      - available_tools
-      - executable_tools
+      - agent_id
+      - messages
+      - turn_history
       - stream
       type: object
     AgenticSystemExecuteResponse:
       additionalProperties: false
       properties:
-        content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/Attachment'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
-            type: array
-        logprobs:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
+        turn:
+          $ref: '#/components/schemas/AgenticSystemTurn'
+      required:
+      - turn
+      title: non-stream response from the agentic system.
+      type: object
+    AgenticSystemExecuteResponseStreamChunk:
+      additionalProperties: false
+      properties:
         stop_reason:
           enum:
           - not_stopped
@@ -114,33 +102,159 @@ components:
           title: Stop reasons are used to indicate why the model stopped generating
             text.
           type: string
-        tool_calls:
+        turn:
+          $ref: '#/components/schemas/AgenticSystemTurn'
+      required:
+      - turn
+      title: Streamed agent execution response.
+      type: object
+    AgenticSystemTurn:
+      additionalProperties: false
+      properties:
+        response_message:
+          $ref: '#/components/schemas/Message'
+        steps:
           items:
-            additionalProperties: false
-            properties:
-              arguments:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              tool_name:
-                type: string
-            required:
-            - tool_name
-            - arguments
-            title: A tool call is a request to a tool.
-            type: object
+            oneOf:
+            - additionalProperties: false
+              properties:
+                logprobs:
+                  additionalProperties:
+                    oneOf:
+                    - type: 'null'
+                    - type: boolean
+                    - type: number
+                    - type: string
+                    - type: array
+                    - type: object
+                  type: object
+                step_type:
+                  default: model_inference
+                  enum:
+                  - model_inference
+                  - tool_execution
+                  - safety_filtering
+                  - memory_retrieval
+                  title: The type of execution step.
+                  type: string
+                text:
+                  type: string
+              required:
+              - step_type
+              - text
+              type: object
+            - additionalProperties: false
+              properties:
+                step_type:
+                  default: tool_execution
+                  enum:
+                  - model_inference
+                  - tool_execution
+                  - safety_filtering
+                  - memory_retrieval
+                  title: The type of execution step.
+                  type: string
+                tool_calls:
+                  items:
+                    additionalProperties: false
+                    properties:
+                      arguments:
+                        additionalProperties:
+                          oneOf:
+                          - type: 'null'
+                          - type: boolean
+                          - type: number
+                          - type: string
+                          - type: array
+                          - type: object
+                        type: object
+                      tool_name:
+                        type: string
+                    required:
+                    - tool_name
+                    - arguments
+                    title: A tool call is a request to a tool.
+                    type: object
+                  type: array
+                tool_responses:
+                  items:
+                    additionalProperties: false
+                    properties:
+                      response:
+                        type: string
+                      tool_name:
+                        type: string
+                    required:
+                    - tool_name
+                    - response
+                    type: object
+                  type: array
+              required:
+              - step_type
+              - tool_calls
+              - tool_responses
+              type: object
+            - additionalProperties: false
+              properties:
+                step_type:
+                  default: safety_filtering
+                  enum:
+                  - model_inference
+                  - tool_execution
+                  - safety_filtering
+                  - memory_retrieval
+                  title: The type of execution step.
+                  type: string
+                violation:
+                  additionalProperties: false
+                  properties:
+                    details:
+                      type: string
+                    suggested_user_response:
+                      type: string
+                    violation_type:
+                      type: string
+                  required:
+                  - violation_type
+                  - details
+                  type: object
+              required:
+              - step_type
+              type: object
+            - additionalProperties: false
+              properties:
+                documents:
+                  items:
+                    type: string
+                  type: array
+                scores:
+                  items:
+                    type: number
+                  type: array
+                step_type:
+                  default: memory_retrieval
+                  enum:
+                  - model_inference
+                  - tool_execution
+                  - safety_filtering
+                  - memory_retrieval
+                  title: The type of execution step.
+                  type: string
+              required:
+              - step_type
+              - documents
+              - scores
+              type: object
+          type: array
+        user_messages:
+          items:
+            $ref: '#/components/schemas/Message'
           type: array
       required:
-      - content
-      - stop_reason
-      - tool_calls
-      title: Normal chat completion response.
+      - user_messages
+      - steps
+      - response_message
+      title: A single turn in an interaction with an Agentic System.
       type: object
     Attachment:
       additionalProperties: false
@@ -201,7 +315,6 @@ components:
             $ref: '#/components/schemas/Message'
           type: array
         model:
-          default: llama3_8b_chat
           enum:
           - llama3_8b_chat
           - llama3_70b_chat
@@ -232,8 +345,8 @@ components:
           type: boolean
       required:
       - message
-      - message_history
       - model
+      - message_history
       - sampling_params
       - available_tools
       - max_tokens
@@ -297,6 +410,44 @@ components:
       - tool_calls
       title: Normal chat completion response.
       type: object
+    ChatCompletionResponseStreamChunk:
+      additionalProperties: false
+      properties:
+        stop_reason:
+          enum:
+          - not_stopped
+          - finished_ok
+          - max_tokens
+          title: Stop reasons are used to indicate why the model stopped generating
+            text.
+          type: string
+        text_delta:
+          type: string
+        tool_call:
+          additionalProperties: false
+          properties:
+            arguments:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            tool_name:
+              type: string
+          required:
+          - tool_name
+          - arguments
+          title: A tool call is a request to a tool.
+          type: object
+      required:
+      - text_delta
+      title: Streamed chat completion response. The actual response is a series of
+        such objects.
+      type: object
     CompletionRequest:
       additionalProperties: false
       properties:
@@ -316,7 +467,6 @@ components:
           default: 0
           type: integer
         model:
-          default: llama3_8b
           enum:
           - llama3_8b
           - llama3_70b
@@ -387,6 +537,33 @@ components:
       - content
       title: Normal completion response.
       type: object
+    CompletionResponseStreamChunk:
+      additionalProperties: false
+      properties:
+        logprobs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        stop_reason:
+          enum:
+          - not_stopped
+          - finished_ok
+          - max_tokens
+          title: Stop reasons are used to indicate why the model stopped generating
+            text.
+          type: string
+        text_delta:
+          type: string
+      required:
+      - text_delta
+      title: streamed completion response.
+      type: object
     Message:
       additionalProperties: false
       properties:
@@ -447,108 +624,6 @@ components:
       - tool_calls
       - tool_responses
       type: object
-    StreamedAgenticSystemExecuteResponse:
-      additionalProperties: false
-      properties:
-        stop_reason:
-          enum:
-          - not_stopped
-          - finished_ok
-          - max_tokens
-          title: Stop reasons are used to indicate why the model stopped generating
-            text.
-          type: string
-        text_delta:
-          type: string
-        tool_call:
-          additionalProperties: false
-          properties:
-            arguments:
-              additionalProperties:
-                oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-              type: object
-            tool_name:
-              type: string
-          required:
-          - tool_name
-          - arguments
-          title: A tool call is a request to a tool.
-          type: object
-      required:
-      - text_delta
-      - stop_reason
-      title: Streamed chat completion response.
-      type: object
-    StreamedChatCompletionResponse:
-      additionalProperties: false
-      properties:
-        stop_reason:
-          enum:
-          - not_stopped
-          - finished_ok
-          - max_tokens
-          title: Stop reasons are used to indicate why the model stopped generating
-            text.
-          type: string
-        text_delta:
-          type: string
-        tool_call:
-          additionalProperties: false
-          properties:
-            arguments:
-              additionalProperties:
-                oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-              type: object
-            tool_name:
-              type: string
-          required:
-          - tool_name
-          - arguments
-          title: A tool call is a request to a tool.
-          type: object
-      required:
-      - text_delta
-      title: Streamed chat completion response.
-      type: object
-    StreamedCompletionResponse:
-      additionalProperties: false
-      properties:
-        logprobs:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        stop_reason:
-          enum:
-          - not_stopped
-          - finished_ok
-          - max_tokens
-          title: Stop reasons are used to indicate why the model stopped generating
-            text.
-          type: string
-        text_delta:
-          type: string
-      required:
-      - text_delta
-      title: streamed completion response.
-      type: object
     URL:
       format: uri
       pattern: ^(https?://|file://|data:)
@@ -560,7 +635,25 @@ info:
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
-  /agentic/system/execute:
+  /agentic_system/create:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgenticSystemCreateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgenticSystemCreateResponse'
+          description: OK
+      tags:
+      - AgenticSystem
+  /agentic_system/execute:
     post:
       parameters: []
       requestBody:
@@ -576,9 +669,9 @@ paths:
               schema:
                 oneOf:
                 - $ref: '#/components/schemas/AgenticSystemExecuteResponse'
-                - $ref: '#/components/schemas/StreamedAgenticSystemExecuteResponse'
-          description: Normal chat completion response. **OR** Streamed chat completion
-            response.
+                - $ref: '#/components/schemas/AgenticSystemExecuteResponseStreamChunk'
+          description: non-stream response from the agentic system. **OR** Streamed
+            agent execution response.
       tags:
       - AgenticSystem
   /chat_completion:
@@ -597,9 +690,9 @@ paths:
               schema:
                 oneOf:
                 - $ref: '#/components/schemas/ChatCompletionResponse'
-                - $ref: '#/components/schemas/StreamedChatCompletionResponse'
+                - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
           description: Normal chat completion response. **OR** Streamed chat completion
-            response.
+            response. The actual response is a series of such objects.
       tags:
       - Inference
   /completion:
@@ -618,7 +711,7 @@ paths:
               schema:
                 oneOf:
                 - $ref: '#/components/schemas/CompletionResponse'
-                - $ref: '#/components/schemas/StreamedCompletionResponse'
+                - $ref: '#/components/schemas/CompletionResponseStreamChunk'
           description: Normal completion response. **OR** streamed completion response.
       tags:
       - Inference
@@ -629,9 +722,20 @@ servers:
 tags:
 - name: Inference
 - name: AgenticSystem
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
+    />
+  name: AgenticSystemCreateRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
+    />
+  name: AgenticSystemCreateResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemExecuteRequest"
     />
   name: AgenticSystemExecuteRequest
+- description: 'A single turn in an interaction with an Agentic System.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurn" />'
+  name: AgenticSystemTurn
 - description: 'Attachments are used to refer to external resources, such as images,
     videos, audio, etc.
 
@@ -642,18 +746,18 @@ tags:
   name: Message
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
-- description: 'Normal chat completion response.
+- description: 'non-stream response from the agentic system.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemExecuteResponse"
     />'
   name: AgenticSystemExecuteResponse
-- description: 'Streamed chat completion response.
+- description: 'Streamed agent execution response.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/StreamedAgenticSystemExecuteResponse"
+    <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemExecuteResponseStreamChunk"
     />'
-  name: StreamedAgenticSystemExecuteResponse
+  name: AgenticSystemExecuteResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
@@ -662,12 +766,13 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponse" />'
   name: ChatCompletionResponse
-- description: 'Streamed chat completion response.
+- description: 'Streamed chat completion response. The actual response is a series
+    of such objects.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/StreamedChatCompletionResponse"
+    <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponseStreamChunk"
     />'
-  name: StreamedChatCompletionResponse
+  name: ChatCompletionResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
     />
   name: CompletionRequest
@@ -679,9 +784,9 @@ tags:
 - description: 'streamed completion response.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/StreamedCompletionResponse"
+    <SchemaDefinition schemaRef="#/components/schemas/CompletionResponseStreamChunk"
     />'
-  name: StreamedCompletionResponse
+  name: CompletionResponseStreamChunk
 x-tagGroups:
 - name: Operations
   tags:
@@ -689,15 +794,18 @@ x-tagGroups:
   - Inference
 - name: Types
   tags:
+  - AgenticSystemCreateRequest
+  - AgenticSystemCreateResponse
   - AgenticSystemExecuteRequest
   - AgenticSystemExecuteResponse
+  - AgenticSystemExecuteResponseStreamChunk
+  - AgenticSystemTurn
   - Attachment
   - ChatCompletionRequest
   - ChatCompletionResponse
+  - ChatCompletionResponseStreamChunk
   - CompletionRequest
   - CompletionResponse
+  - CompletionResponseStreamChunk
   - Message
-  - StreamedAgenticSystemExecuteResponse
-  - StreamedChatCompletionResponse
-  - StreamedCompletionResponse
   - URL

@@ -29,11 +29,41 @@
         }
     ],
     "paths": {
-        "/agentic/system/execute": {
+        "/agentic_system/create": {
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Normal chat completion response. **OR** Streamed chat completion response.",
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AgenticSystemCreateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "AgenticSystem"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AgenticSystemCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/agentic_system/execute": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "non-stream response from the agentic system. **OR** Streamed agent execution response.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -42,7 +72,7 @@
                                             "$ref": "#/components/schemas/AgenticSystemExecuteResponse"
                                         },
                                         {
-                                            "$ref": "#/components/schemas/StreamedAgenticSystemExecuteResponse"
+                                            "$ref": "#/components/schemas/AgenticSystemExecuteResponseStreamChunk"
                                         }
                                     ]
                                 }
@@ -70,7 +100,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Normal chat completion response. **OR** Streamed chat completion response.",
+                        "description": "Normal chat completion response. **OR** Streamed chat completion response. The actual response is a series of such objects.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -79,7 +109,7 @@
                                             "$ref": "#/components/schemas/ChatCompletionResponse"
                                         },
                                         {
-                                            "$ref": "#/components/schemas/StreamedChatCompletionResponse"
+                                            "$ref": "#/components/schemas/ChatCompletionResponseStreamChunk"
                                         }
                                     ]
                                 }
@@ -116,7 +146,7 @@
                                             "$ref": "#/components/schemas/CompletionResponse"
                                         },
                                         {
-                                            "$ref": "#/components/schemas/StreamedCompletionResponse"
+                                            "$ref": "#/components/schemas/CompletionResponseStreamChunk"
                                         }
                                     ]
                                 }
@@ -144,52 +174,17 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
-            "AgenticSystemExecuteRequest": {
+            "AgenticSystemCreateRequest": {
                 "type": "object",
                 "properties": {
-                    "message": {
-                        "$ref": "#/components/schemas/Message"
-                    },
-                    "message_history": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Message"
-                        }
+                    "instructions": {
+                        "type": "string"
                     },
                     "model": {
                         "type": "string",
                         "enum": [
                             "llama3_8b_chat",
                             "llama3_70b_chat"
-                        ],
-                        "default": "llama3_8b_chat"
-                    },
-                    "sampling_params": {
-                        "type": "object",
-                        "properties": {
-                            "temperature": {
-                                "type": "number",
-                                "default": 0.0
-                            },
-                            "strategy": {
-                                "type": "string",
-                                "default": "greedy"
-                            },
-                            "top_p": {
-                                "type": "number",
-                                "default": 0.95
-                            },
-                            "top_k": {
-                                "type": "integer",
-                                "default": 0
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "temperature",
-                            "strategy",
-                            "top_p",
-                            "top_k"
                         ]
                     },
                     "available_tools": {
@@ -253,6 +248,45 @@
                             "type": "string"
                         },
                         "uniqueItems": true
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "instructions",
+                    "model",
+                    "available_tools",
+                    "executable_tools"
+                ]
+            },
+            "AgenticSystemCreateResponse": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_id"
+                ]
+            },
+            "AgenticSystemExecuteRequest": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    },
+                    "messages": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        }
+                    },
+                    "turn_history": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgenticSystemTurn"
+                        }
                     },
                     "stream": {
                         "type": "boolean",
@@ -261,14 +295,244 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "message",
-                    "message_history",
-                    "model",
-                    "sampling_params",
-                    "available_tools",
-                    "executable_tools",
+                    "agent_id",
+                    "messages",
+                    "turn_history",
                     "stream"
                 ]
+            },
+            "AgenticSystemTurn": {
+                "type": "object",
+                "properties": {
+                    "user_messages": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        }
+                    },
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "step_type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "model_inference",
+                                                "tool_execution",
+                                                "safety_filtering",
+                                                "memory_retrieval"
+                                            ],
+                                            "title": "The type of execution step.",
+                                            "default": "model_inference"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "logprobs": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "step_type",
+                                        "text"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "step_type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "model_inference",
+                                                "tool_execution",
+                                                "safety_filtering",
+                                                "memory_retrieval"
+                                            ],
+                                            "title": "The type of execution step.",
+                                            "default": "tool_execution"
+                                        },
+                                        "tool_calls": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "tool_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "arguments": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "null"
+                                                                },
+                                                                {
+                                                                    "type": "boolean"
+                                                                },
+                                                                {
+                                                                    "type": "number"
+                                                                },
+                                                                {
+                                                                    "type": "string"
+                                                                },
+                                                                {
+                                                                    "type": "array"
+                                                                },
+                                                                {
+                                                                    "type": "object"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "tool_name",
+                                                    "arguments"
+                                                ],
+                                                "title": "A tool call is a request to a tool."
+                                            }
+                                        },
+                                        "tool_responses": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "tool_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "response": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "tool_name",
+                                                    "response"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "step_type",
+                                        "tool_calls",
+                                        "tool_responses"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "step_type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "model_inference",
+                                                "tool_execution",
+                                                "safety_filtering",
+                                                "memory_retrieval"
+                                            ],
+                                            "title": "The type of execution step.",
+                                            "default": "safety_filtering"
+                                        },
+                                        "violation": {
+                                            "type": "object",
+                                            "properties": {
+                                                "violation_type": {
+                                                    "type": "string"
+                                                },
+                                                "details": {
+                                                    "type": "string"
+                                                },
+                                                "suggested_user_response": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "violation_type",
+                                                "details"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "step_type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "step_type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "model_inference",
+                                                "tool_execution",
+                                                "safety_filtering",
+                                                "memory_retrieval"
+                                            ],
+                                            "title": "The type of execution step.",
+                                            "default": "memory_retrieval"
+                                        },
+                                        "documents": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "scores": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "step_type",
+                                        "documents",
+                                        "scores"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "response_message": {
+                        "$ref": "#/components/schemas/Message"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "user_messages",
+                    "steps",
+                    "response_message"
+                ],
+                "title": "A single turn in an interaction with an Agentic System."
             },
             "Attachment": {
                 "type": "object",
@@ -400,119 +664,21 @@
             "AgenticSystemExecuteResponse": {
                 "type": "object",
                 "properties": {
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    },
-                    "stop_reason": {
-                        "type": "string",
-                        "enum": [
-                            "not_stopped",
-                            "finished_ok",
-                            "max_tokens"
-                        ],
-                        "title": "Stop reasons are used to indicate why the model stopped generating text."
-                    },
-                    "tool_calls": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "tool_name": {
-                                    "type": "string"
-                                },
-                                "arguments": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "null"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "array"
-                                            },
-                                            {
-                                                "type": "object"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "tool_name",
-                                "arguments"
-                            ],
-                            "title": "A tool call is a request to a tool."
-                        }
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
+                    "turn": {
+                        "$ref": "#/components/schemas/AgenticSystemTurn"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "content",
-                    "stop_reason",
-                    "tool_calls"
+                    "turn"
                 ],
-                "title": "Normal chat completion response."
+                "title": "non-stream response from the agentic system."
             },
-            "StreamedAgenticSystemExecuteResponse": {
+            "AgenticSystemExecuteResponseStreamChunk": {
                 "type": "object",
                 "properties": {
-                    "text_delta": {
-                        "type": "string"
+                    "turn": {
+                        "$ref": "#/components/schemas/AgenticSystemTurn"
                     },
                     "stop_reason": {
                         "type": "string",
@@ -522,53 +688,13 @@
                             "max_tokens"
                         ],
                         "title": "Stop reasons are used to indicate why the model stopped generating text."
-                    },
-                    "tool_call": {
-                        "type": "object",
-                        "properties": {
-                            "tool_name": {
-                                "type": "string"
-                            },
-                            "arguments": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "tool_name",
-                            "arguments"
-                        ],
-                        "title": "A tool call is a request to a tool."
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "text_delta",
-                    "stop_reason"
+                    "turn"
                 ],
-                "title": "Streamed chat completion response."
+                "title": "Streamed agent execution response."
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -576,19 +702,18 @@
                     "message": {
                         "$ref": "#/components/schemas/Message"
                     },
-                    "message_history": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Message"
-                        }
-                    },
                     "model": {
                         "type": "string",
                         "enum": [
                             "llama3_8b_chat",
                             "llama3_70b_chat"
-                        ],
-                        "default": "llama3_8b_chat"
+                        ]
+                    },
+                    "message_history": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        }
                     },
                     "sampling_params": {
                         "type": "object",
@@ -689,8 +814,8 @@
                 "additionalProperties": false,
                 "required": [
                     "message",
-                    "message_history",
                     "model",
+                    "message_history",
                     "sampling_params",
                     "available_tools",
                     "max_tokens",
@@ -808,7 +933,7 @@
                 ],
                 "title": "Normal chat completion response."
             },
-            "StreamedChatCompletionResponse": {
+            "ChatCompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
                     "text_delta": {
@@ -867,7 +992,7 @@
                 "required": [
                     "text_delta"
                 ],
-                "title": "Streamed chat completion response."
+                "title": "Streamed chat completion response. The actual response is a series of such objects."
             },
             "CompletionRequest": {
                 "type": "object",
@@ -900,8 +1025,7 @@
                         "enum": [
                             "llama3_8b",
                             "llama3_70b"
-                        ],
-                        "default": "llama3_8b"
+                        ]
                     },
                     "sampling_params": {
                         "type": "object",
@@ -1021,7 +1145,7 @@
                 ],
                 "title": "Normal completion response."
             },
-            "StreamedCompletionResponse": {
+            "CompletionResponseStreamChunk": {
                 "type": "object",
                 "properties": {
                     "text_delta": {
@@ -1084,8 +1208,20 @@
             "name": "AgenticSystem"
         },
         {
+            "name": "AgenticSystemCreateRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateRequest\" />"
+        },
+        {
+            "name": "AgenticSystemCreateResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateResponse\" />"
+        },
+        {
             "name": "AgenticSystemExecuteRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteRequest\" />"
+        },
+        {
+            "name": "AgenticSystemTurn",
+            "description": "A single turn in an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurn\" />"
         },
         {
             "name": "Attachment",
@@ -1101,11 +1237,11 @@
         },
         {
             "name": "AgenticSystemExecuteResponse",
-            "description": "Normal chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteResponse\" />"
+            "description": "non-stream response from the agentic system.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteResponse\" />"
         },
         {
-            "name": "StreamedAgenticSystemExecuteResponse",
-            "description": "Streamed chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/StreamedAgenticSystemExecuteResponse\" />"
+            "name": "AgenticSystemExecuteResponseStreamChunk",
+            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteResponseStreamChunk\" />"
         },
         {
             "name": "ChatCompletionRequest",
@@ -1116,8 +1252,8 @@
             "description": "Normal chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponse\" />"
         },
         {
-            "name": "StreamedChatCompletionResponse",
-            "description": "Streamed chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/StreamedChatCompletionResponse\" />"
+            "name": "ChatCompletionResponseStreamChunk",
+            "description": "Streamed chat completion response. The actual response is a series of such objects.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseStreamChunk\" />"
         },
         {
             "name": "CompletionRequest",
@@ -1128,8 +1264,8 @@
             "description": "Normal completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponse\" />"
         },
         {
-            "name": "StreamedCompletionResponse",
-            "description": "streamed completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/StreamedCompletionResponse\" />"
+            "name": "CompletionResponseStreamChunk",
+            "description": "streamed completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponseStreamChunk\" />"
         }
     ],
     "x-tagGroups": [
@@ -1143,17 +1279,20 @@
         {
             "name": "Types",
             "tags": [
+                "AgenticSystemCreateRequest",
+                "AgenticSystemCreateResponse",
                 "AgenticSystemExecuteRequest",
                 "AgenticSystemExecuteResponse",
+                "AgenticSystemExecuteResponseStreamChunk",
+                "AgenticSystemTurn",
                 "Attachment",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
+                "ChatCompletionResponseStreamChunk",
                 "CompletionRequest",
                 "CompletionResponse",
+                "CompletionResponseStreamChunk",
                 "Message",
-                "StreamedAgenticSystemExecuteResponse",
-                "StreamedChatCompletionResponse",
-                "StreamedCompletionResponse",
                 "URL"
             ]
         }
