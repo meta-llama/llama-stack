@@ -18,6 +18,7 @@ from model_types import (
     PretrainedModel,
     SamplingParams,
     StopReason,
+    ShieldConfig,
     ToolCall,
     ToolDefinition,
     ToolResponse,
@@ -118,12 +119,15 @@ class AgenticSystemCreateRequest:
     instructions: str
     model: InstructModel
 
-    # zero-shot tool definitions as input to the model
-    available_tools: List[Union[BuiltinTool, ToolDefinition]] = field(
-        default_factory=list
-    )
+    # zero-shot or built-in tool configurations as input to the model
+    available_tools: List[ToolDefinition] = field(default_factory=list)
 
+    # tools which aren't executable are emitted as tool calls which the users can
+    # execute themselves.
     executable_tools: Set[str] = field(default_factory=set)
+
+    input_shields: List[ShieldConfig] = field(default_factory=list)
+    output_shields: List[ShieldConfig] = field(default_factory=list)
 
 
 @json_schema_type

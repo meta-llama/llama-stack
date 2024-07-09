@@ -174,6 +174,50 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
+            "ShieldConfig": {
+                "type": "object",
+                "properties": {
+                    "shield_type": {
+                        "type": "string",
+                        "enum": [
+                            "llama_guard",
+                            "prompt_guard",
+                            "code_guard"
+                        ],
+                        "title": "The type of safety shield."
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shield_type",
+                    "params"
+                ]
+            },
             "AgenticSystemCreateRequest": {
                 "type": "object",
                 "properties": {
@@ -190,55 +234,67 @@
                     "available_tools": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string",
-                                    "enum": [
-                                        "web_search",
-                                        "math",
-                                        "image_gen",
-                                        "code_interpreter"
-                                    ],
-                                    "title": "Builtin tools are tools the model is natively aware of and was potentially fine-tuned with."
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "tool_name": {
-                                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "tool_name": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "web_search",
+                                                "math",
+                                                "image_gen",
+                                                "code_interpreter"
+                                            ]
                                         },
-                                        "parameters": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "null"
-                                                    },
-                                                    {
-                                                        "type": "boolean"
-                                                    },
-                                                    {
-                                                        "type": "number"
-                                                    },
-                                                    {
-                                                        "type": "string"
-                                                    },
-                                                    {
-                                                        "type": "array"
-                                                    },
-                                                    {
-                                                        "type": "object"
-                                                    }
-                                                ]
-                                            }
+                                        {
+                                            "type": "string"
                                         }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "tool_name",
-                                        "parameters"
                                     ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "input_shields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShieldConfig"
+                                    }
+                                },
+                                "output_shields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShieldConfig"
+                                    }
                                 }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "tool_name",
+                                "input_shields",
+                                "output_shields"
                             ]
                         }
                     },
@@ -248,6 +304,18 @@
                             "type": "string"
                         },
                         "uniqueItems": true
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldConfig"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldConfig"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -255,7 +323,9 @@
                     "instructions",
                     "model",
                     "available_tools",
-                    "executable_tools"
+                    "executable_tools",
+                    "input_shields",
+                    "output_shields"
                 ]
             },
             "AgenticSystemCreateResponse": {
@@ -897,14 +967,26 @@
                                         "math",
                                         "image_gen",
                                         "code_interpreter"
-                                    ],
-                                    "title": "Builtin tools are tools the model is natively aware of and was potentially fine-tuned with."
+                                    ]
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "tool_name": {
-                                            "type": "string"
+                                            "oneOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "web_search",
+                                                        "math",
+                                                        "image_gen",
+                                                        "code_interpreter"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ]
                                         },
                                         "parameters": {
                                             "type": "object",
@@ -930,12 +1012,25 @@
                                                     }
                                                 ]
                                             }
+                                        },
+                                        "input_shields": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShieldConfig"
+                                            }
+                                        },
+                                        "output_shields": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShieldConfig"
+                                            }
                                         }
                                     },
                                     "additionalProperties": false,
                                     "required": [
                                         "tool_name",
-                                        "parameters"
+                                        "input_shields",
+                                        "output_shields"
                                     ]
                                 }
                             ]
@@ -1345,10 +1440,14 @@
     ],
     "tags": [
         {
+            "name": "Inference"
+        },
+        {
             "name": "AgenticSystem"
         },
         {
-            "name": "Inference"
+            "name": "ShieldConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldConfig\" />"
         },
         {
             "name": "AgenticSystemCreateRequest",
@@ -1436,6 +1535,7 @@
                 "CompletionResponse",
                 "CompletionResponseStreamChunk",
                 "Message",
+                "ShieldConfig",
                 "URL"
             ]
         }

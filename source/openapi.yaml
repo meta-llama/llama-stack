@@ -6,39 +6,50 @@ components:
       properties:
         available_tools:
           items:
-            oneOf:
-            - enum:
-              - web_search
-              - math
-              - image_gen
-              - code_interpreter
-              title: Builtin tools are tools the model is natively aware of and was
-                potentially fine-tuned with.
-              type: string
-            - additionalProperties: false
-              properties:
-                parameters:
-                  additionalProperties:
-                    oneOf:
-                    - type: 'null'
-                    - type: boolean
-                    - type: number
-                    - type: string
-                    - type: array
-                    - type: object
-                  type: object
-                tool_name:
+            additionalProperties: false
+            properties:
+              input_shields:
+                items:
+                  $ref: '#/components/schemas/ShieldConfig'
+                type: array
+              output_shields:
+                items:
+                  $ref: '#/components/schemas/ShieldConfig'
+                type: array
+              parameters:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              tool_name:
+                oneOf:
+                - enum:
+                  - web_search
+                  - math
+                  - image_gen
+                  - code_interpreter
                   type: string
-              required:
-              - tool_name
-              - parameters
-              type: object
+                - type: string
+            required:
+            - tool_name
+            - input_shields
+            - output_shields
+            type: object
           type: array
         executable_tools:
           items:
             type: string
           type: array
           uniqueItems: true
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldConfig'
+          type: array
         instructions:
           type: string
         model:
@@ -46,11 +57,17 @@ components:
           - llama3_8b_chat
           - llama3_70b_chat
           type: string
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldConfig'
+          type: array
       required:
       - instructions
       - model
       - available_tools
       - executable_tools
+      - input_shields
+      - output_shields
       type: object
     AgenticSystemCreateResponse:
       additionalProperties: false
@@ -375,11 +392,17 @@ components:
               - math
               - image_gen
               - code_interpreter
-              title: Builtin tools are tools the model is natively aware of and was
-                potentially fine-tuned with.
               type: string
             - additionalProperties: false
               properties:
+                input_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldConfig'
+                  type: array
+                output_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldConfig'
+                  type: array
                 parameters:
                   additionalProperties:
                     oneOf:
@@ -391,10 +414,18 @@ components:
                     - type: object
                   type: object
                 tool_name:
-                  type: string
+                  oneOf:
+                  - enum:
+                    - web_search
+                    - math
+                    - image_gen
+                    - code_interpreter
+                    type: string
+                  - type: string
               required:
               - tool_name
-              - parameters
+              - input_shields
+              - output_shields
               type: object
           type: array
         logprobs:
@@ -719,6 +750,30 @@ components:
       - tool_calls
       - tool_responses
       type: object
+    ShieldConfig:
+      additionalProperties: false
+      properties:
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        shield_type:
+          enum:
+          - llama_guard
+          - prompt_guard
+          - code_guard
+          title: The type of safety shield.
+          type: string
+      required:
+      - shield_type
+      - params
+      type: object
     URL:
       format: uri
       pattern: ^(https?://|file://|data:)
@@ -815,8 +870,10 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: AgenticSystem
 - name: Inference
+- name: AgenticSystem
+- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
+  name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
     />
   name: AgenticSystemCreateRequest
@@ -903,4 +960,5 @@ x-tagGroups:
   - CompletionResponse
   - CompletionResponseStreamChunk
   - Message
+  - ShieldConfig
   - URL

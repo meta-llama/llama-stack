@@ -9,6 +9,7 @@ from model_types import (
     Message,
     PretrainedModel,
     SamplingParams,
+    SafetyViolation,
     StopReason,
     ToolCall,
     ToolDefinition,
@@ -49,13 +50,6 @@ class ToolExecutionStep(ExecutionStepBase):
     # we could be calling multiple tools in a single step (in parallel)
     tool_calls: List[ToolCall]
     tool_responses: List[ToolResponse]
-
-
-@dataclass
-class SafetyViolation:
-    violation_type: str
-    details: str
-    suggested_user_response: Optional[str] = None
 
 
 @dataclass
