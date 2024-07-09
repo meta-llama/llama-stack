@@ -3,6 +3,12 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Protocol, Set, Union
 
 import yaml
+from agentic_system_types import (
+    AgenticSystemTurn,
+    ExecutionStepType,
+    IndexedMemoryDocument,
+    SafetyViolation,
+)
 
 from model_types import (
     BuiltinTool,
@@ -15,9 +21,6 @@ from model_types import (
     ToolCall,
     ToolDefinition,
     ToolResponse,
-)
-from agentic_system_types import (
-    AgenticSystemTurn,
 )
 
 from pyopenapi import Info, Options, Server, Specification, webmethod
@@ -146,13 +149,29 @@ class AgenticSystemExecuteResponse:
     turn: AgenticSystemTurn
 
 
+class AgenticSystemExecuteResponseEventType(Enum):
+    """The type of event."""
+
+    step_start = "step_start"
+    step_end = "step_end"
+    step_progress = "step_progress"
+
+
 @json_schema_type
 @dataclass
 class AgenticSystemExecuteResponseStreamChunk:
     """Streamed agent execution response."""
 
-    # TODO: make things streamable
-    turn: AgenticSystemTurn
+    event_type: AgenticSystemExecuteResponseEventType
+
+    step_uuid: str
+    step_type: ExecutionStepType
+
+    violation: Optional[SafetyViolation] = None
+    tool_call: Optional[ToolCall] = None
+    tool_response_delta: Optional[ToolResponse] = None
+    response_text_delta: Optional[str] = None
+    retrieved_document: Optional[IndexedMemoryDocument] = None
 
     stop_reason: Optional[StopReason] = None
 

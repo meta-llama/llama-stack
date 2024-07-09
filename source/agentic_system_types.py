@@ -32,6 +32,7 @@ class ExecutionStepBase:
     """An agentic system turn can consist of one or more such execution steps."""
 
     step_type: ExecutionStepType
+    uuid: str
 
 
 @dataclass
@@ -64,9 +65,15 @@ class SafetyFilteringStep(ExecutionStepBase):
 
 
 @dataclass
+class IndexedMemoryDocument:
+    index_id: str
+    content: str
+
+
+@dataclass
 class MemoryRetrievalStep(ExecutionStepBase):
     step_type = ExecutionStepType.memory_retrieval
-    documents: List[str]
+    documents: List[IndexedMemoryDocument]
     scores: List[float]
 
 

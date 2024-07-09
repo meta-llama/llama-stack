@@ -94,6 +94,36 @@ components:
     AgenticSystemExecuteResponseStreamChunk:
       additionalProperties: false
       properties:
+        event_type:
+          enum:
+          - step_start
+          - step_end
+          - step_progress
+          title: The type of event.
+          type: string
+        response_text_delta:
+          type: string
+        retrieved_document:
+          additionalProperties: false
+          properties:
+            content:
+              type: string
+            index_id:
+              type: string
+          required:
+          - index_id
+          - content
+          type: object
+        step_type:
+          enum:
+          - model_inference
+          - tool_execution
+          - safety_filtering
+          - memory_retrieval
+          title: The type of execution step.
+          type: string
+        step_uuid:
+          type: string
         stop_reason:
           enum:
           - not_stopped
@@ -102,10 +132,54 @@ components:
           title: Stop reasons are used to indicate why the model stopped generating
             text.
           type: string
-        turn:
-          $ref: '#/components/schemas/AgenticSystemTurn'
+        tool_call:
+          additionalProperties: false
+          properties:
+            arguments:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            tool_name:
+              type: string
+          required:
+          - tool_name
+          - arguments
+          title: A tool call is a request to a tool.
+          type: object
+        tool_response_delta:
+          additionalProperties: false
+          properties:
+            response:
+              type: string
+            tool_name:
+              type: string
+          required:
+          - tool_name
+          - response
+          type: object
+        violation:
+          additionalProperties: false
+          properties:
+            details:
+              type: string
+            suggested_user_response:
+              type: string
+            violation_type:
+              type: string
+          required:
+          - violation_type
+          - details
+          type: object
       required:
-      - turn
+      - event_type
+      - step_uuid
+      - step_type
       title: Streamed agent execution response.
       type: object
     AgenticSystemTurn:
@@ -139,8 +213,11 @@ components:
                   type: string
                 text:
                   type: string
+                uuid:
+                  type: string
               required:
               - step_type
+              - uuid
               - text
               type: object
             - additionalProperties: false
@@ -189,8 +266,11 @@ components:
                     - response
                     type: object
                   type: array
+                uuid:
+                  type: string
               required:
               - step_type
+              - uuid
               - tool_calls
               - tool_responses
               type: object
@@ -204,6 +284,8 @@ components:
                   - safety_filtering
                   - memory_retrieval
                   title: The type of execution step.
+                  type: string
+                uuid:
                   type: string
                 violation:
                   additionalProperties: false
@@ -220,12 +302,22 @@ components:
                   type: object
               required:
               - step_type
+              - uuid
               type: object
             - additionalProperties: false
               properties:
                 documents:
                   items:
-                    type: string
+                    additionalProperties: false
+                    properties:
+                      content:
+                        type: string
+                      index_id:
+                        type: string
+                    required:
+                    - index_id
+                    - content
+                    type: object
                   type: array
                 scores:
                   items:
@@ -240,8 +332,11 @@ components:
                   - memory_retrieval
                   title: The type of execution step.
                   type: string
+                uuid:
+                  type: string
               required:
               - step_type
+              - uuid
               - documents
               - scores
               type: object
@@ -720,8 +815,8 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: Inference
 - name: AgenticSystem
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
     />
   name: AgenticSystemCreateRequest

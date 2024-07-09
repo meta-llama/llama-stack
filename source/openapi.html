@@ -328,6 +328,9 @@
                                             "title": "The type of execution step.",
                                             "default": "model_inference"
                                         },
+                                        "uuid": {
+                                            "type": "string"
+                                        },
                                         "text": {
                                             "type": "string"
                                         },
@@ -360,6 +363,7 @@
                                     "additionalProperties": false,
                                     "required": [
                                         "step_type",
+                                        "uuid",
                                         "text"
                                     ]
                                 },
@@ -376,6 +380,9 @@
                                             ],
                                             "title": "The type of execution step.",
                                             "default": "tool_execution"
+                                        },
+                                        "uuid": {
+                                            "type": "string"
                                         },
                                         "tool_calls": {
                                             "type": "array",
@@ -442,6 +449,7 @@
                                     "additionalProperties": false,
                                     "required": [
                                         "step_type",
+                                        "uuid",
                                         "tool_calls",
                                         "tool_responses"
                                     ]
@@ -459,6 +467,9 @@
                                             ],
                                             "title": "The type of execution step.",
                                             "default": "safety_filtering"
+                                        },
+                                        "uuid": {
+                                            "type": "string"
                                         },
                                         "violation": {
                                             "type": "object",
@@ -482,7 +493,8 @@
                                     },
                                     "additionalProperties": false,
                                     "required": [
-                                        "step_type"
+                                        "step_type",
+                                        "uuid"
                                     ]
                                 },
                                 {
@@ -499,10 +511,26 @@
                                             "title": "The type of execution step.",
                                             "default": "memory_retrieval"
                                         },
+                                        "uuid": {
+                                            "type": "string"
+                                        },
                                         "documents": {
                                             "type": "array",
                                             "items": {
-                                                "type": "string"
+                                                "type": "object",
+                                                "properties": {
+                                                    "index_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "content": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "index_id",
+                                                    "content"
+                                                ]
                                             }
                                         },
                                         "scores": {
@@ -515,6 +543,7 @@
                                     "additionalProperties": false,
                                     "required": [
                                         "step_type",
+                                        "uuid",
                                         "documents",
                                         "scores"
                                     ]
@@ -677,8 +706,120 @@
             "AgenticSystemExecuteResponseStreamChunk": {
                 "type": "object",
                 "properties": {
-                    "turn": {
-                        "$ref": "#/components/schemas/AgenticSystemTurn"
+                    "event_type": {
+                        "type": "string",
+                        "enum": [
+                            "step_start",
+                            "step_end",
+                            "step_progress"
+                        ],
+                        "title": "The type of event."
+                    },
+                    "step_uuid": {
+                        "type": "string"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "model_inference",
+                            "tool_execution",
+                            "safety_filtering",
+                            "memory_retrieval"
+                        ],
+                        "title": "The type of execution step."
+                    },
+                    "violation": {
+                        "type": "object",
+                        "properties": {
+                            "violation_type": {
+                                "type": "string"
+                            },
+                            "details": {
+                                "type": "string"
+                            },
+                            "suggested_user_response": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "violation_type",
+                            "details"
+                        ]
+                    },
+                    "tool_call": {
+                        "type": "object",
+                        "properties": {
+                            "tool_name": {
+                                "type": "string"
+                            },
+                            "arguments": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "tool_name",
+                            "arguments"
+                        ],
+                        "title": "A tool call is a request to a tool."
+                    },
+                    "tool_response_delta": {
+                        "type": "object",
+                        "properties": {
+                            "tool_name": {
+                                "type": "string"
+                            },
+                            "response": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "tool_name",
+                            "response"
+                        ]
+                    },
+                    "response_text_delta": {
+                        "type": "string"
+                    },
+                    "retrieved_document": {
+                        "type": "object",
+                        "properties": {
+                            "index_id": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "index_id",
+                            "content"
+                        ]
                     },
                     "stop_reason": {
                         "type": "string",
@@ -692,7 +833,9 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "turn"
+                    "event_type",
+                    "step_uuid",
+                    "step_type"
                 ],
                 "title": "Streamed agent execution response."
             },
@@ -1202,10 +1345,10 @@
     ],
     "tags": [
         {
-            "name": "Inference"
+            "name": "AgenticSystem"
         },
         {
-            "name": "AgenticSystem"
+            "name": "Inference"
         },
         {
             "name": "AgenticSystemCreateRequest",
