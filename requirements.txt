@@ -1,2 +1,4 @@
 json-strong-typing
 python-openapi
+flask
+requests

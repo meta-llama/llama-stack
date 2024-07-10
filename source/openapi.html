@@ -96,6 +96,28 @@
                 }
             }
         },
+        "/agentic_system/delete": {
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "AgenticSystem"
+                ],
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/chat_completion": {
             "post": {
                 "responses": {
@@ -1440,10 +1462,10 @@
     ],
     "tags": [
         {
-            "name": "Inference"
+            "name": "AgenticSystem"
         },
         {
-            "name": "AgenticSystem"
+            "name": "Inference"
         },
         {
             "name": "ShieldConfig",

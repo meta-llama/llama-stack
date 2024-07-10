@@ -803,6 +803,19 @@ paths:
           description: OK
       tags:
       - AgenticSystem
+  /agentic_system/delete:
+    delete:
+      parameters:
+      - in: query
+        name: agent_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+      tags:
+      - AgenticSystem
   /agentic_system/execute:
     post:
       parameters: []
@@ -870,8 +883,8 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: Inference
 - name: AgenticSystem
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"

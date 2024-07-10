@@ -196,6 +196,12 @@ class AgenticSystem(Protocol):
         AgenticSystemExecuteResponse, AgenticSystemExecuteResponseStreamChunk
     ]: ...
 
+    @webmethod(route="/agentic_system/delete")
+    def delete_agentic_system(
+        self,
+        agent_id: str,
+    ) -> None: ...
+
 
 class LlamaStackEndpoints(Inference, AgenticSystem): ...
 
