@@ -237,7 +237,6 @@ class AgenticSystemExecuteResponseStreamChunk:
 
 
 class AgenticSystem(Protocol):
-    """Set of methods that can be called on the agentic system."""
 
     @webmethod(route="/agentic_system/create")
     def create_agentic_system(
