@@ -1965,7 +1965,7 @@
                     "prompts": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "filtering_function": {
@@ -1980,6 +1980,9 @@
                         ],
                         "title": "The type of filtering function.",
                         "default": "none"
+                    },
+                    "reward_scoring": {
+                        "type": "object"
                     }
                 },
                 "additionalProperties": false,
@@ -1989,39 +1992,80 @@
                 ],
                 "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
             },
+            "KScoredPromptGenerations": {
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "$ref": "#/components/schemas/Message"
+                    },
+                    "k_scored_generations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageScore"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "prompt",
+                    "k_scored_generations"
+                ]
+            },
+            "MessageScore": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "$ref": "#/components/schemas/Message"
+                    },
+                    "score": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "message",
+                    "score"
+                ],
+                "title": "A single message and its score."
+            },
             "SyntheticDataGenerationResponse": {
                 "type": "object",
                 "properties": {
                     "synthetic_data": {
                         "type": "array",
                         "items": {
-                            "type": "array",
-                            "minItems": 3,
-                            "maxItems": 3,
-                            "prefixItems": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "number"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/KScoredPromptGenerations"
                         }
                     },
                     "statistics": {
                         "type": "object",
                         "additionalProperties": {
-                            "type": "number"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "synthetic_data",
-                    "statistics"
+                    "synthetic_data"
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
@@ -2070,42 +2114,6 @@
                     "model"
                 ],
                 "title": "Request to score a reward function. A list of prompts and a list of responses per prompt."
-            },
-            "KScoredPromptGenerations": {
-                "type": "object",
-                "properties": {
-                    "prompt": {
-                        "$ref": "#/components/schemas/Message"
-                    },
-                    "k_scored_generations": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MessageScore"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "prompt",
-                    "k_scored_generations"
-                ]
-            },
-            "MessageScore": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "$ref": "#/components/schemas/Message"
-                    },
-                    "score": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "message",
-                    "score"
-                ],
-                "title": "A single message and its score."
             },
             "RewardScoringResponse": {
                 "type": "object",
@@ -2398,7 +2406,10 @@
     ],
     "tags": [
         {
-            "name": "Finetuning"
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "Datasets"
@@ -2407,13 +2418,10 @@
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "RewardScoring"
+            "name": "Finetuning"
         },
         {
             "name": "AgenticSystem"
-        },
-        {
-            "name": "Inference"
         },
         {
             "name": "ShieldConfig",
@@ -2504,20 +2512,20 @@
             "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
         },
         {
-            "name": "SyntheticDataGenerationResponse",
-            "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
-        },
-        {
-            "name": "RewardScoringRequest",
-            "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
-        },
-        {
             "name": "KScoredPromptGenerations",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KScoredPromptGenerations\" />"
         },
         {
             "name": "MessageScore",
             "description": "A single message and its score.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/MessageScore\" />"
+        },
+        {
+            "name": "SyntheticDataGenerationResponse",
+            "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
+        },
+        {
+            "name": "RewardScoringRequest",
+            "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
         },
         {
             "name": "RewardScoringResponse",

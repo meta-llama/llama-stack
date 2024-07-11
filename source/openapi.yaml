@@ -1157,8 +1157,10 @@ components:
           type: string
         prompts:
           items:
-            type: string
+            $ref: '#/components/schemas/Message'
           type: array
+        reward_scoring:
+          type: object
       required:
       - prompts
       - filtering_function
@@ -1170,21 +1172,20 @@ components:
       properties:
         statistics:
           additionalProperties:
-            type: number
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         synthetic_data:
           items:
-            maxItems: 3
-            minItems: 3
-            prefixItems:
-            - type: string
-            - type: string
-            - type: number
-            type: array
+            $ref: '#/components/schemas/KScoredPromptGenerations'
           type: array
       required:
       - synthetic_data
-      - statistics
       title: Response from the synthetic data generation. Batch of (prompt, response,
         score) tuples that pass the threshold.
       type: object
@@ -1468,12 +1469,12 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: Finetuning
+- name: RewardScoring
+- name: Inference
 - name: Datasets
 - name: SyntheticDataGeneration
-- name: RewardScoring
+- name: Finetuning
 - name: AgenticSystem
-- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -1575,6 +1576,14 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
     />'
   name: SyntheticDataGenerationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/KScoredPromptGenerations"
+    />
+  name: KScoredPromptGenerations
+- description: 'A single message and its score.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/MessageScore" />'
+  name: MessageScore
 - description: 'Response from the synthetic data generation. Batch of (prompt, response,
     score) tuples that pass the threshold.
 
@@ -1588,14 +1597,6 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
   name: RewardScoringRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/KScoredPromptGenerations"
-    />
-  name: KScoredPromptGenerations
-- description: 'A single message and its score.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/MessageScore" />'
-  name: MessageScore
 - description: 'Response from the reward scoring. Batch of (prompt, response, score)
     tuples that pass the threshold.
 
