@@ -29,6 +29,7 @@ from model_types import (
     InstructModel,
     Message,
     PretrainedModel,
+    RewardModel,
     SamplingParams,
     ShieldConfig,
     StopReason,
@@ -245,9 +246,7 @@ class RewardScoringRequest:
     """Request to score a reward function. A list of prompts and a list of responses per prompt."""
 
     prompt_generations: List[KPromptGenerations]
-
-    # TODO(ragho): create a RewardModel enum tye
-    model: str
+    model: RewardModel
 
 
 @json_schema_type

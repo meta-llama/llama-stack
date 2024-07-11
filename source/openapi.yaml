@@ -1039,6 +1039,8 @@ components:
       additionalProperties: false
       properties:
         model:
+          enum:
+          - llama3_405b_reward
           type: string
         prompt_generations:
           items:
@@ -1412,12 +1414,12 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: Inference
-- name: SyntheticDataGeneration
-- name: Datasets
-- name: AgenticSystem
-- name: Finetuning
 - name: RewardScoring
+- name: Inference
+- name: AgenticSystem
+- name: Datasets
+- name: SyntheticDataGeneration
+- name: Finetuning
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"

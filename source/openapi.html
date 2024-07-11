@@ -1976,7 +1976,10 @@
                         }
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "llama3_405b_reward"
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -2313,22 +2316,22 @@
     ],
     "tags": [
         {
+            "name": "RewardScoring"
+        },
+        {
             "name": "Inference"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Datasets"
         },
         {
             "name": "AgenticSystem"
         },
         {
-            "name": "Finetuning"
+            "name": "Datasets"
         },
         {
-            "name": "RewardScoring"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Finetuning"
         },
         {
             "name": "ShieldConfig",

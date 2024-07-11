@@ -137,3 +137,6 @@ class PretrainedModel(Enum):
 class InstructModel(Enum):
     llama3_8b_chat = "llama3_8b_chat"
     llama3_70b_chat = "llama3_70b_chat"
+
+class RewardModel(Enum):
+    llama3_405b_reward = "llama3_405b_reward"
