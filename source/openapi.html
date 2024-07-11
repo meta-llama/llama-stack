@@ -2627,7 +2627,7 @@
                     "k_scored_generations": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MessageScore"
+                            "$ref": "#/components/schemas/ScoredMessage"
                         }
                     }
                 },
@@ -2637,7 +2637,7 @@
                     "k_scored_generations"
                 ]
             },
-            "MessageScore": {
+            "ScoredMessage": {
                 "type": "object",
                 "properties": {
                     "message": {
@@ -2651,8 +2651,7 @@
                 "required": [
                     "message",
                     "score"
-                ],
-                "title": "A single message and its score."
+                ]
             },
             "SyntheticDataGenerationResponse": {
                 "type": "object",
@@ -3151,25 +3150,25 @@
     ],
     "tags": [
         {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Inference"
-        },
-        {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Datasets"
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "PostTraining"
         },
         {
-            "name": "MemoryBanks"
+            "name": "Inference"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Datasets"
         },
         {
             "name": "ShieldConfig",
@@ -3280,8 +3279,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KScoredPromptGenerations\" />"
         },
         {
-            "name": "MessageScore",
-            "description": "A single message and its score.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/MessageScore\" />"
+            "name": "ScoredMessage",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
         },
         {
             "name": "SyntheticDataGenerationResponse",
@@ -3368,7 +3367,6 @@
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "Message",
-                "MessageScore",
                 "OptimizerConfig",
                 "PostTrainingJobArtifactsResponse",
                 "PostTrainingJobLogStream",
@@ -3378,6 +3376,7 @@
                 "QLoraFinetuningConfig",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
+                "ScoredMessage",
                 "ShieldConfig",
                 "SyntheticDataGenerationRequest",
                 "SyntheticDataGenerationResponse",

@@ -302,9 +302,7 @@ class KPromptGenerations:
 
 @json_schema_type
 @dataclass
-class MessageScore:
-    """A single message and its score."""
-
+class ScoredMessage:
     message: Message
     score: float
 
@@ -313,7 +311,7 @@ class MessageScore:
 @dataclass
 class KScoredPromptGenerations:
     prompt: Message
-    k_scored_generations: List[MessageScore]
+    k_scored_generations: List[ScoredMessage]
 
 
 @json_schema_type
