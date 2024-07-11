@@ -72,11 +72,13 @@ class LoraFinetuningConfig:
     alpha: int
 
 
+@json_schema_type
 @dataclass
 class QLoraFinetuningConfig(LoraFinetuningConfig):
     pass
 
 
+@json_schema_type
 @dataclass
 class DoraFinetuningConfig(LoraFinetuningConfig):
     pass
@@ -84,14 +86,14 @@ class DoraFinetuningConfig(LoraFinetuningConfig):
 
 @json_schema_type
 @dataclass
-class FinetuningJobLogStream:
+class PostTrainingJobLogStream:
     """Stream of logs from a finetuning job."""
 
     job_uuid: str
     log_lines: List[str]
 
 
-class FinetuningJobStatus(Enum):
+class PostTrainingJobStatus(Enum):
     running = "running"
     completed = "completed"
     failed = "failed"
@@ -102,3 +104,16 @@ class FinetuningJobStatus(Enum):
 class Checkpoint:
     iters: int
     path: URL
+
+
+class RLHFAlgorithm(Enum):
+    dpo = "dpo"
+
+
+@json_schema_type
+@dataclass
+class DPOAlignmentConfig:
+    reward_scale: float
+    reward_clip: float
+    epsilon: float
+    gamma: float

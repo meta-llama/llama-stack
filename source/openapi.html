@@ -299,7 +299,7 @@
                 "parameters": []
             }
         },
-        "/finetuning/job/artifacts": {
+        "/post_training/job/artifacts": {
             "get": {
                 "responses": {
                     "200": {
@@ -307,14 +307,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FinetuningJobArtifactsResponse"
+                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "Finetuning"
+                    "PostTraining"
                 ],
                 "parameters": [
                     {
@@ -328,7 +328,7 @@
                 ]
             }
         },
-        "/finetuning/job/status": {
+        "/post_training/job/status": {
             "get": {
                 "responses": {
                     "200": {
@@ -336,14 +336,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FinetuningJobStatusResponse"
+                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "Finetuning"
+                    "PostTraining"
                 ],
                 "parameters": [
                     {
@@ -357,7 +357,7 @@
                 ]
             }
         },
-        "/finetuning/job/logs": {
+        "/post_training/job/logs": {
             "get": {
                 "responses": {
                     "200": {
@@ -365,14 +365,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/FinetuningJobLogStream"
+                                    "$ref": "#/components/schemas/PostTrainingJobLogStream"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "Finetuning"
+                    "PostTraining"
                 ],
                 "parameters": [
                     {
@@ -664,6 +664,29 @@
                 }
             }
         },
+        "/post_training/preference_optimize/": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "PostTraining"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PostTrainingRLHFRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/reward_scoring/score": {
             "post": {
                 "responses": {
@@ -694,7 +717,7 @@
                 }
             }
         },
-        "/finetuning/text_generation/train": {
+        "/post_training/supervised_fine_tune/": {
             "post": {
                 "responses": {
                     "200": {
@@ -702,14 +725,14 @@
                     }
                 },
                 "tags": [
-                    "Finetuning"
+                    "PostTraining"
                 ],
                 "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/FinetuningTrainRequest"
+                                "$ref": "#/components/schemas/PostTrainingSFTRequest"
                             }
                         }
                     },
@@ -1697,7 +1720,7 @@
                     "name"
                 ]
             },
-            "FinetuningJobArtifactsResponse": {
+            "PostTrainingJobArtifactsResponse": {
                 "type": "object",
                 "properties": {
                     "job_uuid": {
@@ -1730,7 +1753,7 @@
                 ],
                 "title": "Artifacts of a finetuning job."
             },
-            "FinetuningJobStatusResponse": {
+            "PostTrainingJobStatusResponse": {
                 "type": "object",
                 "properties": {
                     "job_uuid": {
@@ -1810,7 +1833,7 @@
                 ],
                 "title": "Status of a finetuning job."
             },
-            "FinetuningJobLogStream": {
+            "PostTrainingJobLogStream": {
                 "type": "object",
                 "properties": {
                     "job_uuid": {
@@ -2672,6 +2695,191 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
+            "DPOAlignmentConfig": {
+                "type": "object",
+                "properties": {
+                    "reward_scale": {
+                        "type": "number"
+                    },
+                    "reward_clip": {
+                        "type": "number"
+                    },
+                    "epsilon": {
+                        "type": "number"
+                    },
+                    "gamma": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "reward_scale",
+                    "reward_clip",
+                    "epsilon",
+                    "gamma"
+                ]
+            },
+            "OptimizerConfig": {
+                "type": "object",
+                "properties": {
+                    "optimizer_type": {
+                        "type": "string",
+                        "enum": [
+                            "adam",
+                            "adamw",
+                            "sgd"
+                        ]
+                    },
+                    "lr": {
+                        "type": "number"
+                    },
+                    "lr_min": {
+                        "type": "number"
+                    },
+                    "weight_decay": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "optimizer_type",
+                    "lr",
+                    "lr_min",
+                    "weight_decay"
+                ]
+            },
+            "PostTrainingRLHFRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "finetuned_model": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "dataset": {
+                        "$ref": "#/components/schemas/Dataset"
+                    },
+                    "validation_dataset": {
+                        "$ref": "#/components/schemas/Dataset"
+                    },
+                    "algorithm": {
+                        "type": "string",
+                        "enum": [
+                            "dpo"
+                        ]
+                    },
+                    "algorithm_config": {
+                        "$ref": "#/components/schemas/DPOAlignmentConfig"
+                    },
+                    "optimizer_config": {
+                        "$ref": "#/components/schemas/OptimizerConfig"
+                    },
+                    "training_config": {
+                        "$ref": "#/components/schemas/TrainingConfig"
+                    },
+                    "hyperparam_search_config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "logger_config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "finetuned_model",
+                    "dataset",
+                    "validation_dataset",
+                    "algorithm",
+                    "algorithm_config",
+                    "optimizer_config",
+                    "training_config",
+                    "hyperparam_search_config",
+                    "logger_config"
+                ],
+                "title": "Request to finetune a model."
+            },
+            "TrainingConfig": {
+                "type": "object",
+                "properties": {
+                    "n_epochs": {
+                        "type": "integer"
+                    },
+                    "batch_size": {
+                        "type": "integer"
+                    },
+                    "shuffle": {
+                        "type": "boolean"
+                    },
+                    "n_iters": {
+                        "type": "integer"
+                    },
+                    "enable_activation_checkpointing": {
+                        "type": "boolean"
+                    },
+                    "memory_efficient_fsdp_wrap": {
+                        "type": "boolean"
+                    },
+                    "fsdp_cpu_offload": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "n_epochs",
+                    "batch_size",
+                    "shuffle",
+                    "n_iters",
+                    "enable_activation_checkpointing",
+                    "memory_efficient_fsdp_wrap",
+                    "fsdp_cpu_offload"
+                ]
+            },
             "RewardScoringRequest": {
                 "type": "object",
                 "properties": {
@@ -2727,7 +2935,69 @@
                 ],
                 "title": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold."
             },
-            "FinetuningTrainRequest": {
+            "DoraFinetuningConfig": {
+                "type": "object",
+                "properties": {
+                    "lora_attn_modules": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "apply_lora_to_mlp": {
+                        "type": "boolean"
+                    },
+                    "apply_lora_to_output": {
+                        "type": "boolean"
+                    },
+                    "rank": {
+                        "type": "integer"
+                    },
+                    "alpha": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "lora_attn_modules",
+                    "apply_lora_to_mlp",
+                    "apply_lora_to_output",
+                    "rank",
+                    "alpha"
+                ]
+            },
+            "LoraFinetuningConfig": {
+                "type": "object",
+                "properties": {
+                    "lora_attn_modules": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "apply_lora_to_mlp": {
+                        "type": "boolean"
+                    },
+                    "apply_lora_to_output": {
+                        "type": "boolean"
+                    },
+                    "rank": {
+                        "type": "integer"
+                    },
+                    "alpha": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "lora_attn_modules",
+                    "apply_lora_to_mlp",
+                    "apply_lora_to_output",
+                    "rank",
+                    "alpha"
+                ]
+            },
+            "PostTrainingSFTRequest": {
                 "type": "object",
                 "properties": {
                     "job_uuid": {
@@ -2761,66 +3031,10 @@
                                 "$ref": "#/components/schemas/LoraFinetuningConfig"
                             },
                             {
-                                "type": "object",
-                                "properties": {
-                                    "lora_attn_modules": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "apply_lora_to_mlp": {
-                                        "type": "boolean"
-                                    },
-                                    "apply_lora_to_output": {
-                                        "type": "boolean"
-                                    },
-                                    "rank": {
-                                        "type": "integer"
-                                    },
-                                    "alpha": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "lora_attn_modules",
-                                    "apply_lora_to_mlp",
-                                    "apply_lora_to_output",
-                                    "rank",
-                                    "alpha"
-                                ]
+                                "$ref": "#/components/schemas/QLoraFinetuningConfig"
                             },
                             {
-                                "type": "object",
-                                "properties": {
-                                    "lora_attn_modules": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "apply_lora_to_mlp": {
-                                        "type": "boolean"
-                                    },
-                                    "apply_lora_to_output": {
-                                        "type": "boolean"
-                                    },
-                                    "rank": {
-                                        "type": "integer"
-                                    },
-                                    "alpha": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "lora_attn_modules",
-                                    "apply_lora_to_mlp",
-                                    "apply_lora_to_output",
-                                    "rank",
-                                    "alpha"
-                                ]
+                                "$ref": "#/components/schemas/DoraFinetuningConfig"
                             }
                         ]
                     },
@@ -2896,7 +3110,7 @@
                 ],
                 "title": "Request to finetune a model."
             },
-            "LoraFinetuningConfig": {
+            "QLoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
                     "lora_attn_modules": {
@@ -2926,71 +3140,6 @@
                     "rank",
                     "alpha"
                 ]
-            },
-            "OptimizerConfig": {
-                "type": "object",
-                "properties": {
-                    "optimizer_type": {
-                        "type": "string",
-                        "enum": [
-                            "adam",
-                            "adamw",
-                            "sgd"
-                        ]
-                    },
-                    "lr": {
-                        "type": "number"
-                    },
-                    "lr_min": {
-                        "type": "number"
-                    },
-                    "weight_decay": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "optimizer_type",
-                    "lr",
-                    "lr_min",
-                    "weight_decay"
-                ]
-            },
-            "TrainingConfig": {
-                "type": "object",
-                "properties": {
-                    "n_epochs": {
-                        "type": "integer"
-                    },
-                    "batch_size": {
-                        "type": "integer"
-                    },
-                    "shuffle": {
-                        "type": "boolean"
-                    },
-                    "n_iters": {
-                        "type": "integer"
-                    },
-                    "enable_activation_checkpointing": {
-                        "type": "boolean"
-                    },
-                    "memory_efficient_fsdp_wrap": {
-                        "type": "boolean"
-                    },
-                    "fsdp_cpu_offload": {
-                        "type": "boolean"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "n_epochs",
-                    "batch_size",
-                    "shuffle",
-                    "n_iters",
-                    "enable_activation_checkpointing",
-                    "memory_efficient_fsdp_wrap",
-                    "fsdp_cpu_offload"
-                ]
             }
         },
         "responses": {}
@@ -3002,25 +3151,25 @@
     ],
     "tags": [
         {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Finetuning"
-        },
-        {
             "name": "AgenticSystem"
+        },
+        {
+            "name": "RewardScoring"
         },
         {
             "name": "Inference"
         },
         {
+            "name": "SyntheticDataGeneration"
+        },
+        {
             "name": "Datasets"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "MemoryBanks"
         },
         {
             "name": "ShieldConfig",
@@ -3075,16 +3224,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
         },
         {
-            "name": "FinetuningJobArtifactsResponse",
-            "description": "Artifacts of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobArtifactsResponse\" />"
+            "name": "PostTrainingJobArtifactsResponse",
+            "description": "Artifacts of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobArtifactsResponse\" />"
         },
         {
-            "name": "FinetuningJobStatusResponse",
-            "description": "Status of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobStatusResponse\" />"
+            "name": "PostTrainingJobStatusResponse",
+            "description": "Status of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobStatusResponse\" />"
         },
         {
-            "name": "FinetuningJobLogStream",
-            "description": "Stream of logs from a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobLogStream\" />"
+            "name": "PostTrainingJobLogStream",
+            "description": "Stream of logs from a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobLogStream\" />"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -3139,6 +3288,22 @@
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         },
         {
+            "name": "DPOAlignmentConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DPOAlignmentConfig\" />"
+        },
+        {
+            "name": "OptimizerConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerConfig\" />"
+        },
+        {
+            "name": "PostTrainingRLHFRequest",
+            "description": "Request to finetune a model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingRLHFRequest\" />"
+        },
+        {
+            "name": "TrainingConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
+        },
+        {
             "name": "RewardScoringRequest",
             "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
         },
@@ -3147,20 +3312,20 @@
             "description": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringResponse\" />"
         },
         {
-            "name": "FinetuningTrainRequest",
-            "description": "Request to finetune a model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningTrainRequest\" />"
+            "name": "DoraFinetuningConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DoraFinetuningConfig\" />"
         },
         {
             "name": "LoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LoraFinetuningConfig\" />"
         },
         {
-            "name": "OptimizerConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerConfig\" />"
+            "name": "PostTrainingSFTRequest",
+            "description": "Request to finetune a model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingSFTRequest\" />"
         },
         {
-            "name": "TrainingConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
+            "name": "QLoraFinetuningConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
         }
     ],
     "x-tagGroups": [
@@ -3169,9 +3334,9 @@
             "tags": [
                 "AgenticSystem",
                 "Datasets",
-                "Finetuning",
                 "Inference",
                 "MemoryBanks",
+                "PostTraining",
                 "RewardScoring",
                 "SyntheticDataGeneration"
             ]
@@ -3195,18 +3360,22 @@
                 "CompletionResponse",
                 "CompletionResponseStreamChunk",
                 "CreateDatasetRequest",
+                "DPOAlignmentConfig",
                 "Dataset",
                 "Dialog",
-                "FinetuningJobArtifactsResponse",
-                "FinetuningJobLogStream",
-                "FinetuningJobStatusResponse",
-                "FinetuningTrainRequest",
+                "DoraFinetuningConfig",
                 "KScoredPromptGenerations",
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "Message",
                 "MessageScore",
                 "OptimizerConfig",
+                "PostTrainingJobArtifactsResponse",
+                "PostTrainingJobLogStream",
+                "PostTrainingJobStatusResponse",
+                "PostTrainingRLHFRequest",
+                "PostTrainingSFTRequest",
+                "QLoraFinetuningConfig",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
                 "ShieldConfig",

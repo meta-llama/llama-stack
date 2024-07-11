@@ -879,6 +879,23 @@ components:
       - dataset
       title: Request to create a dataset.
       type: object
+    DPOAlignmentConfig:
+      additionalProperties: false
+      properties:
+        epsilon:
+          type: number
+        gamma:
+          type: number
+        reward_clip:
+          type: number
+        reward_scale:
+          type: number
+      required:
+      - reward_scale
+      - reward_clip
+      - epsilon
+      - gamma
+      type: object
     Dataset:
       additionalProperties: false
       properties:
@@ -923,195 +940,27 @@ components:
       - message
       - message_history
       type: object
-    FinetuningJobArtifactsResponse:
+    DoraFinetuningConfig:
       additionalProperties: false
       properties:
-        checkpoints:
-          items:
-            additionalProperties: false
-            properties:
-              iters:
-                type: integer
-              path:
-                $ref: '#/components/schemas/URL'
-            required:
-            - iters
-            - path
-            type: object
-          type: array
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      - checkpoints
-      title: Artifacts of a finetuning job.
-      type: object
-    FinetuningJobLogStream:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-        log_lines:
+        alpha:
+          type: integer
+        apply_lora_to_mlp:
+          type: boolean
+        apply_lora_to_output:
+          type: boolean
+        lora_attn_modules:
           items:
             type: string
           type: array
+        rank:
+          type: integer
       required:
-      - job_uuid
-      - log_lines
-      title: Stream of logs from a finetuning job.
-      type: object
-    FinetuningJobStatusResponse:
-      additionalProperties: false
-      properties:
-        checkpoints:
-          items:
-            additionalProperties: false
-            properties:
-              iters:
-                type: integer
-              path:
-                $ref: '#/components/schemas/URL'
-            required:
-            - iters
-            - path
-            type: object
-          type: array
-        completed_at:
-          format: date-time
-          type: string
-        job_uuid:
-          type: string
-        resources_allocated:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        scheduled_at:
-          format: date-time
-          type: string
-        started_at:
-          format: date-time
-          type: string
-        status:
-          enum:
-          - running
-          - completed
-          - failed
-          - scheduled
-          type: string
-      required:
-      - job_uuid
-      - status
-      - checkpoints
-      title: Status of a finetuning job.
-      type: object
-    FinetuningTrainRequest:
-      additionalProperties: false
-      properties:
-        algorithm:
-          enum:
-          - full
-          - lora
-          - qlora
-          - dora
-          type: string
-        algorithm_config:
-          oneOf:
-          - $ref: '#/components/schemas/LoraFinetuningConfig'
-          - additionalProperties: false
-            properties:
-              alpha:
-                type: integer
-              apply_lora_to_mlp:
-                type: boolean
-              apply_lora_to_output:
-                type: boolean
-              lora_attn_modules:
-                items:
-                  type: string
-                type: array
-              rank:
-                type: integer
-            required:
-            - lora_attn_modules
-            - apply_lora_to_mlp
-            - apply_lora_to_output
-            - rank
-            - alpha
-            type: object
-          - additionalProperties: false
-            properties:
-              alpha:
-                type: integer
-              apply_lora_to_mlp:
-                type: boolean
-              apply_lora_to_output:
-                type: boolean
-              lora_attn_modules:
-                items:
-                  type: string
-                type: array
-              rank:
-                type: integer
-            required:
-            - lora_attn_modules
-            - apply_lora_to_mlp
-            - apply_lora_to_output
-            - rank
-            - alpha
-            type: object
-        dataset:
-          $ref: '#/components/schemas/Dataset'
-        hyperparam_search_config:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        job_uuid:
-          type: string
-        logger_config:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        model:
-          enum:
-          - llama3_8b
-          - llama3_70b
-          type: string
-        optimizer_config:
-          $ref: '#/components/schemas/OptimizerConfig'
-        training_config:
-          $ref: '#/components/schemas/TrainingConfig'
-        validation_dataset:
-          $ref: '#/components/schemas/Dataset'
-      required:
-      - job_uuid
-      - model
-      - dataset
-      - validation_dataset
-      - algorithm
-      - algorithm_config
-      - optimizer_config
-      - training_config
-      - hyperparam_search_config
-      - logger_config
-      title: Request to finetune a model.
+      - lora_attn_modules
+      - apply_lora_to_mlp
+      - apply_lora_to_output
+      - rank
+      - alpha
       type: object
     KScoredPromptGenerations:
       additionalProperties: false
@@ -1258,6 +1107,232 @@ components:
       - lr
       - lr_min
       - weight_decay
+      type: object
+    PostTrainingJobArtifactsResponse:
+      additionalProperties: false
+      properties:
+        checkpoints:
+          items:
+            additionalProperties: false
+            properties:
+              iters:
+                type: integer
+              path:
+                $ref: '#/components/schemas/URL'
+            required:
+            - iters
+            - path
+            type: object
+          type: array
+        job_uuid:
+          type: string
+      required:
+      - job_uuid
+      - checkpoints
+      title: Artifacts of a finetuning job.
+      type: object
+    PostTrainingJobLogStream:
+      additionalProperties: false
+      properties:
+        job_uuid:
+          type: string
+        log_lines:
+          items:
+            type: string
+          type: array
+      required:
+      - job_uuid
+      - log_lines
+      title: Stream of logs from a finetuning job.
+      type: object
+    PostTrainingJobStatusResponse:
+      additionalProperties: false
+      properties:
+        checkpoints:
+          items:
+            additionalProperties: false
+            properties:
+              iters:
+                type: integer
+              path:
+                $ref: '#/components/schemas/URL'
+            required:
+            - iters
+            - path
+            type: object
+          type: array
+        completed_at:
+          format: date-time
+          type: string
+        job_uuid:
+          type: string
+        resources_allocated:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        scheduled_at:
+          format: date-time
+          type: string
+        started_at:
+          format: date-time
+          type: string
+        status:
+          enum:
+          - running
+          - completed
+          - failed
+          - scheduled
+          type: string
+      required:
+      - job_uuid
+      - status
+      - checkpoints
+      title: Status of a finetuning job.
+      type: object
+    PostTrainingRLHFRequest:
+      additionalProperties: false
+      properties:
+        algorithm:
+          enum:
+          - dpo
+          type: string
+        algorithm_config:
+          $ref: '#/components/schemas/DPOAlignmentConfig'
+        dataset:
+          $ref: '#/components/schemas/Dataset'
+        finetuned_model:
+          $ref: '#/components/schemas/URL'
+        hyperparam_search_config:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        job_uuid:
+          type: string
+        logger_config:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        optimizer_config:
+          $ref: '#/components/schemas/OptimizerConfig'
+        training_config:
+          $ref: '#/components/schemas/TrainingConfig'
+        validation_dataset:
+          $ref: '#/components/schemas/Dataset'
+      required:
+      - job_uuid
+      - finetuned_model
+      - dataset
+      - validation_dataset
+      - algorithm
+      - algorithm_config
+      - optimizer_config
+      - training_config
+      - hyperparam_search_config
+      - logger_config
+      title: Request to finetune a model.
+      type: object
+    PostTrainingSFTRequest:
+      additionalProperties: false
+      properties:
+        algorithm:
+          enum:
+          - full
+          - lora
+          - qlora
+          - dora
+          type: string
+        algorithm_config:
+          oneOf:
+          - $ref: '#/components/schemas/LoraFinetuningConfig'
+          - $ref: '#/components/schemas/QLoraFinetuningConfig'
+          - $ref: '#/components/schemas/DoraFinetuningConfig'
+        dataset:
+          $ref: '#/components/schemas/Dataset'
+        hyperparam_search_config:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        job_uuid:
+          type: string
+        logger_config:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        model:
+          enum:
+          - llama3_8b
+          - llama3_70b
+          type: string
+        optimizer_config:
+          $ref: '#/components/schemas/OptimizerConfig'
+        training_config:
+          $ref: '#/components/schemas/TrainingConfig'
+        validation_dataset:
+          $ref: '#/components/schemas/Dataset'
+      required:
+      - job_uuid
+      - model
+      - dataset
+      - validation_dataset
+      - algorithm
+      - algorithm_config
+      - optimizer_config
+      - training_config
+      - hyperparam_search_config
+      - logger_config
+      title: Request to finetune a model.
+      type: object
+    QLoraFinetuningConfig:
+      additionalProperties: false
+      properties:
+        alpha:
+          type: integer
+        apply_lora_to_mlp:
+          type: boolean
+        apply_lora_to_output:
+          type: boolean
+        lora_attn_modules:
+          items:
+            type: string
+          type: array
+        rank:
+          type: integer
+      required:
+      - lora_attn_modules
+      - apply_lora_to_mlp
+      - apply_lora_to_output
+      - rank
+      - alpha
       type: object
     RewardScoringRequest:
       additionalProperties: false
@@ -1581,71 +1656,6 @@ paths:
           description: OK
       tags:
       - Datasets
-  /finetuning/job/artifacts:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FinetuningJobArtifactsResponse'
-          description: OK
-      tags:
-      - Finetuning
-  /finetuning/job/logs:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FinetuningJobLogStream'
-          description: OK
-      tags:
-      - Finetuning
-  /finetuning/job/status:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FinetuningJobStatusResponse'
-          description: OK
-      tags:
-      - Finetuning
-  /finetuning/text_generation/train:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FinetuningTrainRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Finetuning
   /memory_banks/create:
     post:
       parameters:
@@ -1787,6 +1797,85 @@ paths:
           description: OK
       tags:
       - MemoryBanks
+  /post_training/job/artifacts:
+    get:
+      parameters:
+      - in: query
+        name: job_uuid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
+          description: OK
+      tags:
+      - PostTraining
+  /post_training/job/logs:
+    get:
+      parameters:
+      - in: query
+        name: job_uuid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostTrainingJobLogStream'
+          description: OK
+      tags:
+      - PostTraining
+  /post_training/job/status:
+    get:
+      parameters:
+      - in: query
+        name: job_uuid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostTrainingJobStatusResponse'
+          description: OK
+      tags:
+      - PostTraining
+  /post_training/preference_optimize/:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTrainingRLHFRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - PostTraining
+  /post_training/supervised_fine_tune/:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTrainingSFTRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - PostTraining
   /reward_scoring/score:
     post:
       parameters: []
@@ -1828,13 +1917,13 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: RewardScoring
-- name: MemoryBanks
-- name: SyntheticDataGeneration
-- name: Finetuning
 - name: AgenticSystem
+- name: RewardScoring
 - name: Inference
+- name: SyntheticDataGeneration
 - name: Datasets
+- name: PostTraining
+- name: MemoryBanks
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -1888,20 +1977,20 @@ tags:
 - description: 'Artifacts of a finetuning job.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/FinetuningJobArtifactsResponse"
+    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJobArtifactsResponse"
     />'
-  name: FinetuningJobArtifactsResponse
+  name: PostTrainingJobArtifactsResponse
 - description: 'Status of a finetuning job.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/FinetuningJobStatusResponse"
+    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJobStatusResponse"
     />'
-  name: FinetuningJobStatusResponse
+  name: PostTrainingJobStatusResponse
 - description: 'Stream of logs from a finetuning job.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/FinetuningJobLogStream" />'
-  name: FinetuningJobLogStream
+    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJobLogStream" />'
+  name: PostTrainingJobLogStream
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -1961,6 +2050,19 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
     />'
   name: SyntheticDataGenerationResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
+    />
+  name: DPOAlignmentConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerConfig"
+    />
+  name: OptimizerConfig
+- description: 'Request to finetune a model.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingRLHFRequest" />'
+  name: PostTrainingRLHFRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
+  name: TrainingConfig
 - description: 'Request to score a reward function. A list of prompts and a list of
     responses per prompt.
 
@@ -1973,27 +2075,28 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringResponse" />'
   name: RewardScoringResponse
-- description: 'Request to finetune a model.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/FinetuningTrainRequest" />'
-  name: FinetuningTrainRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
+    />
+  name: DoraFinetuningConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/LoraFinetuningConfig"
     />
   name: LoraFinetuningConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerConfig"
+- description: 'Request to finetune a model.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingSFTRequest" />'
+  name: PostTrainingSFTRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
-  name: OptimizerConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
-  name: TrainingConfig
+  name: QLoraFinetuningConfig
 x-tagGroups:
 - name: Operations
   tags:
   - AgenticSystem
   - Datasets
-  - Finetuning
   - Inference
   - MemoryBanks
+  - PostTraining
   - RewardScoring
   - SyntheticDataGeneration
 - name: Types
@@ -2014,18 +2117,22 @@ x-tagGroups:
   - CompletionResponse
   - CompletionResponseStreamChunk
   - CreateDatasetRequest
+  - DPOAlignmentConfig
   - Dataset
   - Dialog
-  - FinetuningJobArtifactsResponse
-  - FinetuningJobLogStream
-  - FinetuningJobStatusResponse
-  - FinetuningTrainRequest
+  - DoraFinetuningConfig
   - KScoredPromptGenerations
   - LoraFinetuningConfig
   - MemoryBank
   - Message
   - MessageScore
   - OptimizerConfig
+  - PostTrainingJobArtifactsResponse
+  - PostTrainingJobLogStream
+  - PostTrainingJobStatusResponse
+  - PostTrainingRLHFRequest
+  - PostTrainingSFTRequest
+  - QLoraFinetuningConfig
   - RewardScoringRequest
   - RewardScoringResponse
   - ShieldConfig
