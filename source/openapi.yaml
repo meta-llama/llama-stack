@@ -2015,14 +2015,37 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inference
-  x-displayName: Set of methods that can be called on the inference service.
-- name: RewardScoring
-- name: AgenticSystem
+- description: "Multi-step tool-use concretely helps address many common problems\
+    \ with LLMs that users may \n    face:\n    1. Finding accurate and up-to-date\
+    \ information. LLMs are limited to training data and knowledge cut off date. \n\
+    \    2. Current LLMs are limited in their understanding and reasoning abilities\
+    \ for solving more complex math problems, processing and analyzing data. Tools\
+    \ like code-execution or APIs like Wolfram can help bridge the gap.\n    3. Users\
+    \ may need help with a task that requires multiple tools to execute or a task\
+    \ that has multiple steps (e.g., graph plotting, etc.)\n    4. Our current LLMs\
+    \ are not able to generate other modalities (images, voice, video) directly. \n\
+    \nFinally, we want the underlying LLM to remain broadly steerable and adaptable\
+    \ to use cases which \nneed varying levels of safety protection. To enable this,\
+    \ we want to shift safety into a two-tiered \nsystem: \n    1. a set of \"always\
+    \ on\" safety checks are always performed at the model level, and\n    2. a set\
+    \ of configurable safety checks which can be run at the overall system level."
+  name: AgenticSystem
+  x-displayName: 'The Llama 3 models released by Meta in July should not just be seen
+    as a model,      but really as a system starting the transition towards an entity
+    capable of performing      "agentic" tasks. By that we mean the following specific
+    capabilities:      1. Ability to act as the central planner -- break a task down
+    and perform multi-step reasoning.      2. Ability to perceive multimodal inputs
+    -- text, images, files and eventually speech and video in later iterations.     3.
+    Ability to use tools -         a. built-in: the model has built-in knowledge of
+    tools like search or code interpreter         b. zero-shot: the model can learn
+    to call tools using previously unseen, in-context tool definitions'
 - name: SyntheticDataGeneration
-- name: PostTraining
 - name: Datasets
 - name: MemoryBanks
+- name: Inference
+  x-displayName: Set of methods that can be called on the inference service.
+- name: PostTraining
+- name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
