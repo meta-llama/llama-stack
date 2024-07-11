@@ -1008,6 +1008,32 @@ components:
       - uuid
       - name
       type: object
+    MemoryBankDocument:
+      additionalProperties: false
+      properties:
+        content:
+          contentEncoding: base64
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        mime_type:
+          type: string
+        uuid:
+          type: string
+      required:
+      - uuid
+      - content
+      - metadata
+      - mime_type
+      type: object
     Message:
       additionalProperties: false
       properties:
@@ -1655,6 +1681,142 @@ paths:
           description: OK
       tags:
       - Datasets
+  /memory_bank/delete:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                type: string
+              type: array
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_bank/get:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                type: string
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/MemoryBankDocument'
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_bank/insert:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                additionalProperties: false
+                properties:
+                  content:
+                    contentEncoding: base64
+                    type: string
+                  metadata:
+                    additionalProperties:
+                      oneOf:
+                      - type: 'null'
+                      - type: boolean
+                      - type: number
+                      - type: string
+                      - type: array
+                      - type: object
+                    type: object
+                  mime_type:
+                    type: string
+                  uuid:
+                    type: string
+                required:
+                - uuid
+                - content
+                - metadata
+                - mime_type
+                type: object
+              type: array
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_bank/update:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                additionalProperties: false
+                properties:
+                  content:
+                    contentEncoding: base64
+                    type: string
+                  metadata:
+                    additionalProperties:
+                      oneOf:
+                      - type: 'null'
+                      - type: boolean
+                      - type: number
+                      - type: string
+                      - type: array
+                      - type: object
+                    type: object
+                  mime_type:
+                    type: string
+                  uuid:
+                    type: string
+                required:
+                - uuid
+                - content
+                - metadata
+                - mime_type
+                type: object
+              type: array
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
   /memory_banks/create:
     post:
       parameters:
@@ -1705,27 +1867,6 @@ paths:
           description: OK
       tags:
       - MemoryBanks
-  /memory_banks/delete:
-    post:
-      parameters:
-      - in: query
-        name: bank_uuid
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                type: string
-              type: array
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - MemoryBanks
   /memory_banks/drop:
     delete:
       parameters:
@@ -1748,51 +1889,6 @@ paths:
             application/jsonl:
               schema:
                 $ref: '#/components/schemas/MemoryBank'
-          description: OK
-      tags:
-      - MemoryBanks
-  /memory_banks/insert:
-    post:
-      parameters:
-      - in: query
-        name: bank_uuid
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                additionalProperties: false
-                properties:
-                  content:
-                    contentEncoding: base64
-                    type: string
-                  metadata:
-                    additionalProperties:
-                      oneOf:
-                      - type: 'null'
-                      - type: boolean
-                      - type: number
-                      - type: string
-                      - type: array
-                      - type: object
-                    type: object
-                  mime_type:
-                    type: string
-                  uuid:
-                    type: string
-                required:
-                - uuid
-                - content
-                - metadata
-                - mime_type
-                type: object
-              type: array
-        required: true
-      responses:
-        '200':
           description: OK
       tags:
       - MemoryBanks
@@ -1916,13 +2012,13 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: SyntheticDataGeneration
-- name: MemoryBanks
-- name: AgenticSystem
 - name: PostTraining
-- name: Inference
 - name: RewardScoring
+- name: AgenticSystem
+- name: MemoryBanks
+- name: Inference
 - name: Datasets
+- name: SyntheticDataGeneration
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -2046,6 +2142,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
     />'
   name: SyntheticDataGenerationResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
+    />
+  name: MemoryBankDocument
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
@@ -2120,6 +2219,7 @@ x-tagGroups:
   - KScoredPromptGenerations
   - LoraFinetuningConfig
   - MemoryBank
+  - MemoryBankDocument
   - Message
   - OptimizerConfig
   - PostTrainingJobArtifactsResponse

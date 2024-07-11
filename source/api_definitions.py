@@ -270,27 +270,41 @@ class MemoryBanks(Protocol):
 
     @webmethod(route="/memory_banks/get")
     def get_memory_banks(
-        self,
+        self
     ) -> List[MemoryBank]: ...
 
-    @webmethod(route="/memory_banks/insert")
+    @webmethod(route="/memory_banks/drop")
+    def remove_memory_bank(
+        self,
+        bank_uuid: str,
+    ) -> None: ...
+
+    @webmethod(route="/memory_bank/insert")
     def post_insert_memory_documents(
         self,
         bank_uuid: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
 
-    @webmethod(route="/memory_banks/delete")
+    @webmethod(route="/memory_bank/update")
+    def post_update_memory_documents(
+        self,
+        bank_uuid: str,
+        documents: List[MemoryBankDocument],
+    ) -> None: ...
+
+    @webmethod(route="/memory_bank/get")
+    def post_get_memory_documents(
+        self,
+        bank_uuid: str,
+        document_uuids: List[str],
+    ) -> List[MemoryBankDocument]: ...
+
+    @webmethod(route="/memory_bank/delete")
     def post_delete_memory_documents(
         self,
         bank_uuid: str,
         document_uuids: List[str],
-    ) -> None: ...
-
-    @webmethod(route="/memory_banks/drop")
-    def remove_memory_bank(
-        self,
-        bank_uuid: str,
     ) -> None: ...
 
 

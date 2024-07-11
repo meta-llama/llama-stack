@@ -520,7 +520,7 @@
                 }
             }
         },
-        "/memory_banks/delete": {
+        "/memory_bank/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -585,7 +585,49 @@
                 }
             }
         },
-        "/memory_banks/insert": {
+        "/memory_bank/get": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBankDocument"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/memory_bank/insert": {
             "post": {
                 "responses": {
                     "200": {
@@ -733,6 +775,85 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/PostTrainingSFTRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/memory_bank/update": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "contentEncoding": "base64"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "uuid",
+                                        "content",
+                                        "metadata",
+                                        "mime_type"
+                                    ]
+                                }
                             }
                         }
                     },
@@ -2694,6 +2815,53 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
+            "MemoryBankDocument": {
+                "type": "object",
+                "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uuid",
+                    "content",
+                    "metadata",
+                    "mime_type"
+                ]
+            },
             "DPOAlignmentConfig": {
                 "type": "object",
                 "properties": {
@@ -3150,25 +3318,25 @@
     ],
     "tags": [
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "AgenticSystem"
-        },
-        {
             "name": "PostTraining"
-        },
-        {
-            "name": "Inference"
         },
         {
             "name": "RewardScoring"
         },
         {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Inference"
+        },
+        {
             "name": "Datasets"
+        },
+        {
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "ShieldConfig",
@@ -3287,6 +3455,10 @@
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         },
         {
+            "name": "MemoryBankDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
+        },
+        {
             "name": "DPOAlignmentConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DPOAlignmentConfig\" />"
         },
@@ -3366,6 +3538,7 @@
                 "KScoredPromptGenerations",
                 "LoraFinetuningConfig",
                 "MemoryBank",
+                "MemoryBankDocument",
                 "Message",
                 "OptimizerConfig",
                 "PostTrainingJobArtifactsResponse",
