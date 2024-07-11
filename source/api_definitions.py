@@ -265,7 +265,7 @@ class AgenticSystem(Protocol):
 
 class MemoryBanks(Protocol):
     @webmethod(route="/memory_banks/create")
-    def create_memory_bank(
+    def post_create_memory_bank(
         self,
         bank_uuid: str,
         bank_name: str,
@@ -298,7 +298,7 @@ class MemoryBanks(Protocol):
     ) -> None: ...
 
     @webmethod(route="/memory_bank/get")
-    def post_get_memory_documents(
+    def get_memory_documents(
         self,
         bank_uuid: str,
         document_uuids: List[str],

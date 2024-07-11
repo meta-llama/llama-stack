@@ -2015,13 +2015,13 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: RewardScoring
-- name: PostTraining
-- name: AgenticSystem
-- name: Datasets
 - name: SyntheticDataGeneration
-- name: Inference
+- name: RewardScoring
+- name: Datasets
+- name: PostTraining
 - name: MemoryBanks
+- name: AgenticSystem
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -2072,6 +2072,9 @@ tags:
   name: Dataset
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
   name: MemoryBank
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
+    />
+  name: MemoryBankDocument
 - description: 'Artifacts of a finetuning job.
 
 
@@ -2145,9 +2148,6 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
     />'
   name: SyntheticDataGenerationResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
-    />
-  name: MemoryBankDocument
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig

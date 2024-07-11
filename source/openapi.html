@@ -119,93 +119,6 @@
                 }
             }
         },
-        "/memory_banks/create": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "bank_name",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "uuid": {
-                                            "type": "string"
-                                        },
-                                        "content": {
-                                            "type": "string",
-                                            "contentEncoding": "base64"
-                                        },
-                                        "metadata": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "null"
-                                                    },
-                                                    {
-                                                        "type": "boolean"
-                                                    },
-                                                    {
-                                                        "type": "number"
-                                                    },
-                                                    {
-                                                        "type": "string"
-                                                    },
-                                                    {
-                                                        "type": "array"
-                                                    },
-                                                    {
-                                                        "type": "object"
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        "mime_type": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "uuid",
-                                        "content",
-                                        "metadata",
-                                        "mime_type"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/agentic_system/delete": {
             "delete": {
                 "responses": {
@@ -297,6 +210,48 @@
                     "MemoryBanks"
                 ],
                 "parameters": []
+            }
+        },
+        "/memory_bank/get": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBankDocument"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/post_training/job/artifacts": {
@@ -520,6 +475,93 @@
                 }
             }
         },
+        "/memory_banks/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "bank_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "contentEncoding": "base64"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "uuid",
+                                        "content",
+                                        "metadata",
+                                        "mime_type"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/synthetic_data_generation/generate": {
             "post": {
                 "responses": {
@@ -543,48 +585,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory_bank/get": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
                             }
                         }
                     },
@@ -1841,6 +1841,53 @@
                     "name"
                 ]
             },
+            "MemoryBankDocument": {
+                "type": "object",
+                "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uuid",
+                    "content",
+                    "metadata",
+                    "mime_type"
+                ]
+            },
             "PostTrainingJobArtifactsResponse": {
                 "type": "object",
                 "properties": {
@@ -2815,53 +2862,6 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
-            "MemoryBankDocument": {
-                "type": "object",
-                "properties": {
-                    "uuid": {
-                        "type": "string"
-                    },
-                    "content": {
-                        "type": "string",
-                        "contentEncoding": "base64"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "uuid",
-                    "content",
-                    "metadata",
-                    "mime_type"
-                ]
-            },
             "DPOAlignmentConfig": {
                 "type": "object",
                 "properties": {
@@ -3318,25 +3318,25 @@
     ],
     "tags": [
         {
+            "name": "SyntheticDataGeneration"
+        },
+        {
             "name": "RewardScoring"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "AgenticSystem"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Inference"
+            "name": "PostTraining"
         },
         {
             "name": "MemoryBanks"
+        },
+        {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "ShieldConfig",
@@ -3389,6 +3389,10 @@
         {
             "name": "MemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
+        },
+        {
+            "name": "MemoryBankDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "PostTrainingJobArtifactsResponse",
@@ -3453,10 +3457,6 @@
         {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
-        },
-        {
-            "name": "MemoryBankDocument",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "DPOAlignmentConfig",
