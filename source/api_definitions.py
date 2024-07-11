@@ -550,7 +550,33 @@ if __name__ == "__main__":
             info=Info(
                 title="[DRAFT] Llama Stack Specification",
                 version="0.0.1",
-                description="""This is the specification of the llama stack that provides 
+                description="""
+                
+                Meta has built out a fairly sophisticated platform internally to post train, evaluate, and 
+                serve Llama models to support Meta’s products. Given the newer capabilities of the llama models, 
+                the model development and model serving capabilities of the platform need to be enhanced in 
+                specific ways in order to best leverage the models. For example, the inference platform needs 
+                to support code execution to take advantage of the built-in knowledge of tools of the model. 
+                The largest models are of high enough quality to be used to generate synthetic data or be used 
+                as reward models. There are specific fine tuning and quantization techniques that we have found 
+                result in the best performing Llama models. We would like to share ways in which an LLM Ops 
+                toolchain can be designed by leveraging our learnings in getting Llama models to power Meta’s products.
+
+                In addition, the Llama 3 models Meta will release in July should not just be seen as a model, but 
+                really as a system starting the transition towards an entity capable of performing "agentic" tasks 
+                which require the ability to act as the central planner and break a task down and perform multi-step 
+                reasoning and call tools for specific operations. In addition, there needs to be general model-level 
+                safety checks as well as task-specific safety checks that are performed at a system level. 
+
+                We are defining the Llama Stack as a set of APIs and standards by synthesizing our learnings while 
+                working with Llama models. The APIs are divided into the llama-toolchain-api and the llama-agentic-system-api. 
+                These APIs provide a coherent way for model developers to fine tune and serve Llama models, and agentic app 
+                developers to leverage all the capabilities of the Llama models seamlessly. We would like to work with the 
+                ecosystem to enhance and simplify the API. In addition, we will be releasing a plug-in architecture to allow 
+                creating distributions of the llama stack with different implementations.
+
+
+                This is the specification of the llama stack that provides 
                 a set of endpoints and their corresponding interfaces that are tailored to 
                 best leverage Llama Models. The specification is still in draft and subject to change.""",
             ),
