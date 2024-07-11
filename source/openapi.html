@@ -19,9 +19,9 @@
             spec = {
     "openapi": "3.1.0",
     "info": {
-        "title": "[DRAFT] Llama Stack Specification RFC",
-        "version": "0.0.0",
-        "description": "This is the specification of the llama stack that allows"
+        "title": "[DRAFT] Llama Stack Specification",
+        "version": "0.0.1",
+        "description": "This is the specification of the llama stack that provides \n                a set of endpoints and their corresponding interfaces that are tailored to \n                best leverage Llama Models. The specification is still in draft and subject to change."
     },
     "servers": [
         {
@@ -3318,25 +3318,26 @@
     ],
     "tags": [
         {
-            "name": "PostTraining"
+            "name": "Inference",
+            "x-displayName": "Set of methods that can be called on the inference service."
         },
         {
             "name": "RewardScoring"
         },
         {
-            "name": "Inference"
-        },
-        {
-            "name": "Datasets"
+            "name": "AgenticSystem"
         },
         {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "MemoryBanks"
+            "name": "PostTraining"
         },
         {
-            "name": "AgenticSystem"
+            "name": "Datasets"
+        },
+        {
+            "name": "MemoryBanks"
         },
         {
             "name": "ShieldConfig",
