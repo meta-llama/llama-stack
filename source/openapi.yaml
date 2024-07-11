@@ -750,6 +750,70 @@ components:
       - tool_calls
       - tool_responses
       type: object
+    RewardScoringRequest:
+      additionalProperties: false
+      properties:
+        model:
+          type: string
+        prompt_generations:
+          items:
+            additionalProperties: false
+            properties:
+              generation:
+                $ref: '#/components/schemas/Message'
+              message_history:
+                items:
+                  $ref: '#/components/schemas/Message'
+                type: array
+              prompt:
+                $ref: '#/components/schemas/Message'
+            required:
+            - prompt
+            - message_history
+            - generation
+            type: object
+          type: array
+      required:
+      - prompt_generations
+      - model
+      title: Request to score a reward function. A list of prompts and a list of responses
+        per prompt.
+      type: object
+    RewardScoringResponse:
+      additionalProperties: false
+      properties:
+        scored_generations:
+          items:
+            additionalProperties: false
+            properties:
+              prompt_generation:
+                additionalProperties: false
+                properties:
+                  generation:
+                    $ref: '#/components/schemas/Message'
+                  message_history:
+                    items:
+                      $ref: '#/components/schemas/Message'
+                    type: array
+                  prompt:
+                    $ref: '#/components/schemas/Message'
+                required:
+                - prompt
+                - message_history
+                - generation
+                type: object
+              score:
+                type: number
+            required:
+            - prompt_generation
+            - score
+            type: object
+          type: array
+      required:
+      - scored_generations
+      title: Response from the reward scoring. Batch of (prompt, response, score)
+        tuples that pass the threshold.
+      type: object
     ShieldConfig:
       additionalProperties: false
       properties:
@@ -773,6 +837,53 @@ components:
       required:
       - shield_type
       - params
+      type: object
+    SyntheticDataGenerationRequest:
+      additionalProperties: false
+      properties:
+        filtering_function:
+          default: none
+          enum:
+          - none
+          - random
+          - top_k
+          - top_p
+          - top_k_top_p
+          - sigmoid
+          title: The type of filtering function.
+          type: string
+        prompts:
+          items:
+            type: string
+          type: array
+      required:
+      - prompts
+      - filtering_function
+      title: Request to generate synthetic data. A small batch of prompts and a filtering
+        function
+      type: object
+    SyntheticDataGenerationResponse:
+      additionalProperties: false
+      properties:
+        statistics:
+          additionalProperties:
+            type: number
+          type: object
+        synthetic_data:
+          items:
+            maxItems: 3
+            minItems: 3
+            prefixItems:
+            - type: string
+            - type: string
+            - type: number
+            type: array
+          type: array
+      required:
+      - synthetic_data
+      - statistics
+      title: Response from the synthetic data generation. Batch of (prompt, response,
+        score) tuples that pass the threshold.
       type: object
     URL:
       format: uri
@@ -878,13 +989,51 @@ paths:
           description: Normal completion response. **OR** streamed completion response.
       tags:
       - Inference
+  /reward_scoring/score:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewardScoringRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardScoringResponse'
+          description: OK
+      tags:
+      - RewardScoring
+  /synthetic_data_generation/generate:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyntheticDataGenerationRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheticDataGenerationResponse'
+          description: OK
+      tags:
+      - SyntheticDataGeneration
 security:
 - Default: []
 servers:
 - url: http://llama.meta.com
 tags:
-- name: AgenticSystem
+- name: RewardScoring
 - name: Inference
+- name: SyntheticDataGeneration
+- name: AgenticSystem
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -952,11 +1101,39 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/CompletionResponseStreamChunk"
     />'
   name: CompletionResponseStreamChunk
+- description: 'Request to generate synthetic data. A small batch of prompts and a
+    filtering function
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
+    />'
+  name: SyntheticDataGenerationRequest
+- description: 'Response from the synthetic data generation. Batch of (prompt, response,
+    score) tuples that pass the threshold.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
+    />'
+  name: SyntheticDataGenerationResponse
+- description: 'Request to score a reward function. A list of prompts and a list of
+    responses per prompt.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
+  name: RewardScoringRequest
+- description: 'Response from the reward scoring. Batch of (prompt, response, score)
+    tuples that pass the threshold.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/RewardScoringResponse" />'
+  name: RewardScoringResponse
 x-tagGroups:
 - name: Operations
   tags:
   - AgenticSystem
   - Inference
+  - RewardScoring
+  - SyntheticDataGeneration
 - name: Types
   tags:
   - AgenticSystemCreateRequest
@@ -973,5 +1150,9 @@ x-tagGroups:
   - CompletionResponse
   - CompletionResponseStreamChunk
   - Message
+  - RewardScoringRequest
+  - RewardScoringResponse
   - ShieldConfig
+  - SyntheticDataGenerationRequest
+  - SyntheticDataGenerationResponse
   - URL

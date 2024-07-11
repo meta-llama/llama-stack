@@ -191,6 +191,66 @@
                     "required": true
                 }
             }
+        },
+        "/synthetic_data_generation/generate": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SyntheticDataGenerationResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "SyntheticDataGeneration"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/reward_scoring/score": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardScoringResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "RewardScoring"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RewardScoringRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
         }
     },
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
@@ -1451,6 +1511,161 @@
                     "text_delta"
                 ],
                 "title": "streamed completion response."
+            },
+            "SyntheticDataGenerationRequest": {
+                "type": "object",
+                "properties": {
+                    "prompts": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "filtering_function": {
+                        "type": "string",
+                        "enum": [
+                            "none",
+                            "random",
+                            "top_k",
+                            "top_p",
+                            "top_k_top_p",
+                            "sigmoid"
+                        ],
+                        "title": "The type of filtering function.",
+                        "default": "none"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "prompts",
+                    "filtering_function"
+                ],
+                "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
+            },
+            "SyntheticDataGenerationResponse": {
+                "type": "object",
+                "properties": {
+                    "synthetic_data": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "minItems": 3,
+                            "maxItems": 3,
+                            "prefixItems": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ]
+                        }
+                    },
+                    "statistics": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "synthetic_data",
+                    "statistics"
+                ],
+                "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
+            },
+            "RewardScoringRequest": {
+                "type": "object",
+                "properties": {
+                    "prompt_generations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "prompt": {
+                                    "$ref": "#/components/schemas/Message"
+                                },
+                                "message_history": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message"
+                                    }
+                                },
+                                "generation": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "prompt",
+                                "message_history",
+                                "generation"
+                            ]
+                        }
+                    },
+                    "model": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "prompt_generations",
+                    "model"
+                ],
+                "title": "Request to score a reward function. A list of prompts and a list of responses per prompt."
+            },
+            "RewardScoringResponse": {
+                "type": "object",
+                "properties": {
+                    "scored_generations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "prompt_generation": {
+                                    "type": "object",
+                                    "properties": {
+                                        "prompt": {
+                                            "$ref": "#/components/schemas/Message"
+                                        },
+                                        "message_history": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Message"
+                                            }
+                                        },
+                                        "generation": {
+                                            "$ref": "#/components/schemas/Message"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "prompt",
+                                        "message_history",
+                                        "generation"
+                                    ]
+                                },
+                                "score": {
+                                    "type": "number"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "prompt_generation",
+                                "score"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "scored_generations"
+                ],
+                "title": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold."
             }
         },
         "responses": {}
@@ -1462,10 +1677,16 @@
     ],
     "tags": [
         {
-            "name": "AgenticSystem"
+            "name": "RewardScoring"
         },
         {
             "name": "Inference"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "ShieldConfig",
@@ -1530,6 +1751,22 @@
         {
             "name": "CompletionResponseStreamChunk",
             "description": "streamed completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponseStreamChunk\" />"
+        },
+        {
+            "name": "SyntheticDataGenerationRequest",
+            "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
+        },
+        {
+            "name": "SyntheticDataGenerationResponse",
+            "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
+        },
+        {
+            "name": "RewardScoringRequest",
+            "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
+        },
+        {
+            "name": "RewardScoringResponse",
+            "description": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringResponse\" />"
         }
     ],
     "x-tagGroups": [
@@ -1537,7 +1774,9 @@
             "name": "Operations",
             "tags": [
                 "AgenticSystem",
-                "Inference"
+                "Inference",
+                "RewardScoring",
+                "SyntheticDataGeneration"
             ]
         },
         {
@@ -1557,7 +1796,11 @@
                 "CompletionResponse",
                 "CompletionResponseStreamChunk",
                 "Message",
+                "RewardScoringRequest",
+                "RewardScoringResponse",
                 "ShieldConfig",
+                "SyntheticDataGenerationRequest",
+                "SyntheticDataGenerationResponse",
                 "URL"
             ]
         }
