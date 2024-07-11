@@ -2023,13 +2023,13 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
+- name: AgenticSystem
+- name: RewardScoring
+- name: PostTraining
 - name: Datasets
 - name: Inference
-- name: PostTraining
-- name: RewardScoring
-- name: SyntheticDataGeneration
 - name: MemoryBanks
-- name: AgenticSystem
+- name: SyntheticDataGeneration
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"

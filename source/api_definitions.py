@@ -278,7 +278,7 @@ class MemoryBanks(Protocol):
     ) -> List[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/drop")
-    def remove_memory_bank(
+    def delete_memory_bank(
         self,
         bank_uuid: str,
     ) -> str: ...
@@ -305,7 +305,7 @@ class MemoryBanks(Protocol):
     ) -> List[MemoryBankDocument]: ...
 
     @webmethod(route="/memory_bank/delete")
-    def remove_memory_documents(
+    def delete_memory_documents(
         self,
         bank_uuid: str,
         document_uuids: List[str],

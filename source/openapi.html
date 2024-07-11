@@ -163,6 +163,77 @@
                 ]
             }
         },
+        "/memory_banks/drop": {
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/memory_bank/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/datasets/get": {
             "get": {
                 "responses": {
@@ -818,77 +889,6 @@
                                         "metadata",
                                         "mime_type"
                                     ]
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory_banks/drop": {
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/memory_bank/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
                                 }
                             }
                         }
@@ -3332,25 +3332,25 @@
     ],
     "tags": [
         {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
             "name": "Datasets"
         },
         {
             "name": "Inference"
         },
         {
-            "name": "PostTraining"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
             "name": "MemoryBanks"
         },
         {
-            "name": "AgenticSystem"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "ShieldConfig",
