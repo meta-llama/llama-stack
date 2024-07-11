@@ -281,7 +281,7 @@ class MemoryBanks(Protocol):
     def remove_memory_bank(
         self,
         bank_uuid: str,
-    ) -> None: ...
+    ) -> str: ...
 
     @webmethod(route="/memory_bank/insert")
     def post_insert_memory_documents(
@@ -309,7 +309,7 @@ class MemoryBanks(Protocol):
         self,
         bank_uuid: str,
         document_uuids: List[str],
-    ) -> None: ...
+    ) -> List[str]: ...
 
 
 @dataclass

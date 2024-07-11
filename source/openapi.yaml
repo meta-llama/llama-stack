@@ -1702,6 +1702,10 @@ paths:
         required: true
       responses:
         '200':
+          content:
+            application/jsonl:
+              schema:
+                type: string
           description: OK
       tags:
       - MemoryBanks
@@ -1880,6 +1884,10 @@ paths:
           type: string
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                type: string
           description: OK
       tags:
       - MemoryBanks
@@ -2015,13 +2023,13 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: SyntheticDataGeneration
-- name: RewardScoring
 - name: Datasets
+- name: Inference
 - name: PostTraining
+- name: RewardScoring
+- name: SyntheticDataGeneration
 - name: MemoryBanks
 - name: AgenticSystem
-- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"

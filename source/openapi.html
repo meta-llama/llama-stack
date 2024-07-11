@@ -830,7 +830,14 @@
             "delete": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -852,7 +859,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -3318,25 +3332,25 @@
     ],
     "tags": [
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Datasets"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "PostTraining"
         },
         {
             "name": "RewardScoring"
         },
         {
-            "name": "Datasets"
-        },
-        {
-            "name": "PostTraining"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "MemoryBanks"
         },
         {
             "name": "AgenticSystem"
-        },
-        {
-            "name": "Inference"
         },
         {
             "name": "ShieldConfig",
