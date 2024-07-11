@@ -96,3 +96,9 @@ class FinetuningJobStatus(Enum):
     completed = "completed"
     failed = "failed"
     scheduled = "scheduled"
+
+
+@dataclass
+class Checkpoint:
+    iters: int
+    path: URL

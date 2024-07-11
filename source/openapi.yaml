@@ -747,6 +747,29 @@ components:
       - metadata
       title: Dataset to be used for training or evaluating language models.
       type: object
+    FinetuningJobArtifactsResponse:
+      additionalProperties: false
+      properties:
+        checkpoints:
+          items:
+            additionalProperties: false
+            properties:
+              iters:
+                type: integer
+              path:
+                $ref: '#/components/schemas/URL'
+            required:
+            - iters
+            - path
+            type: object
+          type: array
+        job_uuid:
+          type: string
+      required:
+      - job_uuid
+      - checkpoints
+      title: Artifacts of a finetuning job.
+      type: object
     FinetuningJobLogStream:
       additionalProperties: false
       properties:
@@ -764,6 +787,19 @@ components:
     FinetuningJobStatusResponse:
       additionalProperties: false
       properties:
+        checkpoints:
+          items:
+            additionalProperties: false
+            properties:
+              iters:
+                type: integer
+              path:
+                $ref: '#/components/schemas/URL'
+            required:
+            - iters
+            - path
+            type: object
+          type: array
         completed_at:
           format: date-time
           type: string
@@ -795,6 +831,7 @@ components:
       required:
       - job_uuid
       - status
+      - checkpoints
       title: Status of a finetuning job.
       type: object
     FinetuningTrainRequest:
@@ -1325,6 +1362,23 @@ paths:
           description: OK
       tags:
       - Datasets
+  /finetuning/job/artifacts:
+    get:
+      parameters:
+      - in: query
+        name: job_uuid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinetuningJobArtifactsResponse'
+          description: OK
+      tags:
+      - Finetuning
   /finetuning/job/logs:
     get:
       parameters:
@@ -1414,12 +1468,12 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: RewardScoring
-- name: Inference
-- name: AgenticSystem
+- name: Finetuning
 - name: Datasets
 - name: SyntheticDataGeneration
-- name: Finetuning
+- name: RewardScoring
+- name: AgenticSystem
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -1468,6 +1522,12 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/Dataset" />'
   name: Dataset
+- description: 'Artifacts of a finetuning job.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/FinetuningJobArtifactsResponse"
+    />'
+  name: FinetuningJobArtifactsResponse
 - description: 'Status of a finetuning job.
 
 
@@ -1581,6 +1641,7 @@ x-tagGroups:
   - CompletionResponseStreamChunk
   - CreateDatasetRequest
   - Dataset
+  - FinetuningJobArtifactsResponse
   - FinetuningJobLogStream
   - FinetuningJobStatusResponse
   - FinetuningTrainRequest

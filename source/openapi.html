@@ -192,6 +192,35 @@
                 ]
             }
         },
+        "/finetuning/job/artifacts": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FinetuningJobArtifactsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Finetuning"
+                ],
+                "parameters": [
+                    {
+                        "name": "job_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/finetuning/job/status": {
             "get": {
                 "responses": {
@@ -1276,6 +1305,39 @@
                 ],
                 "title": "Dataset to be used for training or evaluating language models."
             },
+            "FinetuningJobArtifactsResponse": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "checkpoints": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "iters": {
+                                    "type": "integer"
+                                },
+                                "path": {
+                                    "$ref": "#/components/schemas/URL"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "iters",
+                                "path"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "checkpoints"
+                ],
+                "title": "Artifacts of a finetuning job."
+            },
             "FinetuningJobStatusResponse": {
                 "type": "object",
                 "properties": {
@@ -1327,12 +1389,32 @@
                                 }
                             ]
                         }
+                    },
+                    "checkpoints": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "iters": {
+                                    "type": "integer"
+                                },
+                                "path": {
+                                    "$ref": "#/components/schemas/URL"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "iters",
+                                "path"
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "job_uuid",
-                    "status"
+                    "status",
+                    "checkpoints"
                 ],
                 "title": "Status of a finetuning job."
             },
@@ -2316,13 +2398,7 @@
     ],
     "tags": [
         {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "AgenticSystem"
+            "name": "Finetuning"
         },
         {
             "name": "Datasets"
@@ -2331,7 +2407,13 @@
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Finetuning"
+            "name": "RewardScoring"
+        },
+        {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "ShieldConfig",
@@ -2380,6 +2462,10 @@
         {
             "name": "Dataset",
             "description": "Dataset to be used for training or evaluating language models.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
+        },
+        {
+            "name": "FinetuningJobArtifactsResponse",
+            "description": "Artifacts of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobArtifactsResponse\" />"
         },
         {
             "name": "FinetuningJobStatusResponse",
@@ -2484,6 +2570,7 @@
                 "CompletionResponseStreamChunk",
                 "CreateDatasetRequest",
                 "Dataset",
+                "FinetuningJobArtifactsResponse",
                 "FinetuningJobLogStream",
                 "FinetuningJobStatusResponse",
                 "FinetuningTrainRequest",

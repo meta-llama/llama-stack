@@ -12,6 +12,7 @@ from agentic_system_types import (
 )
 
 from finetuning_types import (
+    Checkpoint,
     Dataset,
     DoraFinetuningConfig,
     FinetuningAlgorithm,
@@ -233,6 +234,7 @@ class MessageScore:
     message: Message
     score: float
 
+
 @json_schema_type
 @dataclass
 class KScoredPromptGenerations:
@@ -375,6 +377,19 @@ class FinetuningJobStatusResponse:
 
     resources_allocated: Optional[Dict[str, Any]] = None
 
+    checkpoints: List[Checkpoint] = field(default_factory=list)
+
+
+@json_schema_type
+@dataclass
+class FinetuningJobArtifactsResponse:
+    """Artifacts of a finetuning job."""
+
+    job_uuid: str
+    checkpoints: List[Checkpoint] = field(default_factory=list)
+
+    # TODO(ashwin): metrics, evals
+
 
 class Finetuning(Protocol):
     @webmethod(route="/finetuning/text_generation/train")
@@ -392,6 +407,11 @@ class Finetuning(Protocol):
 
     @webmethod(route="/finetuning/job/cancel")
     def cancel_training_job(self, job_uuid: str) -> None: ...
+
+    @webmethod(route="/finetuning/job/artifacts")
+    def get_training_job_artifacts(
+        self, job_uuid: str
+    ) -> FinetuningJobArtifactsResponse: ...
 
 
 class LlamaStackEndpoints(
