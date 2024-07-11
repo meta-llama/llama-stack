@@ -8,7 +8,7 @@ paths:
 # inference APIs
   /inference:
     post:
-      summary: Submit a chat completion request
+      summary: Submit an inference request
       description: |
         This endpoint allows clients to submit a chat completion request.
       requestBody:
@@ -396,16 +396,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/SyntheticDataGenJob'
 # RAG APIs
-  /vector_store
-  /vector_store/create
-  /vector_store/drop
-  /vector_store/update
+  /vector_store:
+  /vector_store/create:
+  /vector_store/drop:
   /vector_store/insert/jobs/submit:
   /vector_store/insert/jobs/status:
   /vector_store/insert/jobs/cancel:
   /vector_store/delete/jobs/submit:
   /vector_store/delete/jobs/status:
   /vector_store/delete/jobs/cancel:
+  /vector_store/insert: # a index single document
+  /vector_store/retrieve: # a single retrieval query
 # Agentic APIs
   /agents/execute:
     post:
@@ -458,6 +459,16 @@ paths:
 
 components:
   schemas:
+    Attachment:
+      type: object
+      description: Represents a file (text or media).
+      properites:
+        uri:
+          type: string
+          description: The path at which the attachment resides.
+        mime-type:
+          type: string
+          description: The attachment's MIME type.
     ModelInputMessage:
       type: object
       properties:
@@ -474,16 +485,6 @@ components:
           type: object
           additionalProperties: true
           description: "Additional metadata as JSON."
-    Attachment:
-      type: object
-      description: Represents a file (text or media).
-      properites:
-        uri:
-          type: string
-          description: The path at which the attachment resides.
-        mime-type:
-          type: string
-          description: The attachment's MIME type.
     ModelOutputMessage:
       type: object
       properties:
@@ -832,15 +833,6 @@ components:
           type: object
           additionalProperties: true
           description: Additional metadata about the job
-    ToolChainDeploymentConfig:
-      type: object
-      description: Holds deployment configuration for different parts of the toolchain
-      properties:
-        inferenceProvider:
-          type: string
-          description: The URI for the inference provider
-        batchInferenceProvider:
-        metricLoggerProvider: WandB
     Agent:
       type: object
       description: Represents an AI agent with specific tools and a model configuration.
@@ -894,7 +886,6 @@ components:
             type: object
         returnValue:
           type: object
-
     ToolParameter:
       type: object
       description: Defines a parameter that a tool requires to operate.
@@ -1004,6 +995,8 @@ components:
         id:
           type: string
           description: The unique identifier of the delete job
+    
+    # deployment configs
     AgenticSystemDeploymentConfig:
       type: object
       description: Holds global deployment configuration needed to make different API calls across the stack.
@@ -1014,3 +1007,12 @@ components:
         wolframAlphaKey:
           type: string
           description: The API key to use for agent-invoked Wolfram search.
+    ToolChainDeploymentConfig:
+      type: object
+      description: Holds deployment configuration for different parts of the toolchain
+      properties:
+        inferenceProvider:
+          type: string
+          description: The URI for the inference provider
+        batchInferenceProvider:
+        metricLoggerProvider: WandB
