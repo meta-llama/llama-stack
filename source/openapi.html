@@ -386,6 +386,66 @@
                 ]
             }
         },
+        "/batch_chat_completion": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatCompletionResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inference"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchChatCompletionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/batch_completion": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CompletionResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inference"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchCompletionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/chat_completion": {
             "post": {
                 "responses": {
@@ -1770,12 +1830,9 @@
                 ],
                 "title": "Stream of logs from a finetuning job."
             },
-            "ChatCompletionRequest": {
+            "BatchChatCompletionRequest": {
                 "type": "object",
                 "properties": {
-                    "message": {
-                        "$ref": "#/components/schemas/Message"
-                    },
                     "model": {
                         "type": "string",
                         "enum": [
@@ -1783,10 +1840,10 @@
                             "llama3_70b_chat"
                         ]
                     },
-                    "message_history": {
+                    "batch_dialogs": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Message"
+                            "$ref": "#/components/schemas/Dialog"
                         }
                     },
                     "sampling_params": {
@@ -1820,90 +1877,73 @@
                     "available_tools": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string",
-                                    "enum": [
-                                        "web_search",
-                                        "math",
-                                        "image_gen",
-                                        "code_interpreter"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "tool_name": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "web_search",
-                                                        "math",
-                                                        "image_gen",
-                                                        "code_interpreter"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "string"
-                                                }
+                            "type": "object",
+                            "properties": {
+                                "tool_name": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "web_search",
+                                                "math",
+                                                "image_gen",
+                                                "code_interpreter"
                                             ]
                                         },
-                                        "parameters": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "null"
-                                                    },
-                                                    {
-                                                        "type": "boolean"
-                                                    },
-                                                    {
-                                                        "type": "number"
-                                                    },
-                                                    {
-                                                        "type": "string"
-                                                    },
-                                                    {
-                                                        "type": "array"
-                                                    },
-                                                    {
-                                                        "type": "object"
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        "input_shields": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ShieldConfig"
-                                            }
-                                        },
-                                        "output_shields": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ShieldConfig"
-                                            }
+                                        {
+                                            "type": "string"
                                         }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "tool_name",
-                                        "input_shields",
-                                        "output_shields"
                                     ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "input_shields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShieldConfig"
+                                    }
+                                },
+                                "output_shields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShieldConfig"
+                                    }
                                 }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "tool_name",
+                                "input_shields",
+                                "output_shields"
                             ]
                         }
                     },
                     "max_tokens": {
                         "type": "integer",
                         "default": 0
-                    },
-                    "stream": {
-                        "type": "boolean",
-                        "default": false
                     },
                     "logprobs": {
                         "type": "boolean",
@@ -1912,14 +1952,31 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "message",
                     "model",
-                    "message_history",
+                    "batch_dialogs",
                     "sampling_params",
                     "available_tools",
                     "max_tokens",
-                    "stream",
                     "logprobs"
+                ]
+            },
+            "Dialog": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "$ref": "#/components/schemas/Message"
+                    },
+                    "message_history": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "message",
+                    "message_history"
                 ]
             },
             "ChatCompletionResponse": {
@@ -2031,6 +2088,287 @@
                     "tool_calls"
                 ],
                 "title": "Normal chat completion response."
+            },
+            "BatchCompletionRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string",
+                        "enum": [
+                            "llama3_8b",
+                            "llama3_70b"
+                        ]
+                    },
+                    "content_batch": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/Attachment"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/Attachment"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "sampling_params": {
+                        "type": "object",
+                        "properties": {
+                            "temperature": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "strategy": {
+                                "type": "string",
+                                "default": "greedy"
+                            },
+                            "top_p": {
+                                "type": "number",
+                                "default": 0.95
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "default": 0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "temperature",
+                            "strategy",
+                            "top_p",
+                            "top_k"
+                        ]
+                    },
+                    "max_tokens": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "logprobs": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "content_batch",
+                    "sampling_params",
+                    "max_tokens",
+                    "logprobs"
+                ]
+            },
+            "CompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Attachment"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Attachment"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "stop_reason": {
+                        "type": "string",
+                        "enum": [
+                            "not_stopped",
+                            "finished_ok",
+                            "max_tokens"
+                        ],
+                        "title": "Stop reasons are used to indicate why the model stopped generating text."
+                    },
+                    "logprobs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content"
+                ],
+                "title": "Normal completion response."
+            },
+            "ChatCompletionRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string",
+                        "enum": [
+                            "llama3_8b_chat",
+                            "llama3_70b_chat"
+                        ]
+                    },
+                    "dialog": {
+                        "$ref": "#/components/schemas/Dialog"
+                    },
+                    "sampling_params": {
+                        "type": "object",
+                        "properties": {
+                            "temperature": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "strategy": {
+                                "type": "string",
+                                "default": "greedy"
+                            },
+                            "top_p": {
+                                "type": "number",
+                                "default": 0.95
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "default": 0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "temperature",
+                            "strategy",
+                            "top_p",
+                            "top_k"
+                        ]
+                    },
+                    "available_tools": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "tool_name": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "web_search",
+                                                "math",
+                                                "image_gen",
+                                                "code_interpreter"
+                                            ]
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "input_shields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShieldConfig"
+                                    }
+                                },
+                                "output_shields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShieldConfig"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "tool_name",
+                                "input_shields",
+                                "output_shields"
+                            ]
+                        }
+                    },
+                    "max_tokens": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "stream": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "logprobs": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "dialog",
+                    "sampling_params",
+                    "available_tools",
+                    "max_tokens",
+                    "stream",
+                    "logprobs"
+                ]
             },
             "ChatCompletionResponseStreamChunk": {
                 "type": "object",
@@ -2176,73 +2514,6 @@
                     "stream",
                     "logprobs"
                 ]
-            },
-            "CompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    },
-                    "stop_reason": {
-                        "type": "string",
-                        "enum": [
-                            "not_stopped",
-                            "finished_ok",
-                            "max_tokens"
-                        ],
-                        "title": "Stop reasons are used to indicate why the model stopped generating text."
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "content"
-                ],
-                "title": "Normal completion response."
             },
             "CompletionResponseStreamChunk": {
                 "type": "object",
@@ -2409,14 +2680,8 @@
                         "items": {
                             "type": "object",
                             "properties": {
-                                "prompt": {
-                                    "$ref": "#/components/schemas/Message"
-                                },
-                                "message_history": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Message"
-                                    }
+                                "dialog": {
+                                    "$ref": "#/components/schemas/Dialog"
                                 },
                                 "k_generations": {
                                     "type": "array",
@@ -2427,8 +2692,7 @@
                             },
                             "additionalProperties": false,
                             "required": [
-                                "prompt",
-                                "message_history",
+                                "dialog",
                                 "k_generations"
                             ]
                         }
@@ -2738,13 +3002,10 @@
     ],
     "tags": [
         {
-            "name": "Inference"
+            "name": "RewardScoring"
         },
         {
             "name": "MemoryBanks"
-        },
-        {
-            "name": "AgenticSystem"
         },
         {
             "name": "SyntheticDataGeneration"
@@ -2753,10 +3014,13 @@
             "name": "Finetuning"
         },
         {
-            "name": "Datasets"
+            "name": "AgenticSystem"
         },
         {
-            "name": "RewardScoring"
+            "name": "Inference"
+        },
+        {
+            "name": "Datasets"
         },
         {
             "name": "ShieldConfig",
@@ -2823,12 +3087,28 @@
             "description": "Stream of logs from a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobLogStream\" />"
         },
         {
-            "name": "ChatCompletionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
+            "name": "BatchChatCompletionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchChatCompletionRequest\" />"
+        },
+        {
+            "name": "Dialog",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Dialog\" />"
         },
         {
             "name": "ChatCompletionResponse",
             "description": "Normal chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponse\" />"
+        },
+        {
+            "name": "BatchCompletionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionRequest\" />"
+        },
+        {
+            "name": "CompletionResponse",
+            "description": "Normal completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponse\" />"
+        },
+        {
+            "name": "ChatCompletionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
         },
         {
             "name": "ChatCompletionResponseStreamChunk",
@@ -2837,10 +3117,6 @@
         {
             "name": "CompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequest\" />"
-        },
-        {
-            "name": "CompletionResponse",
-            "description": "Normal completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponse\" />"
         },
         {
             "name": "CompletionResponseStreamChunk",
@@ -2910,6 +3186,8 @@
                 "AgenticSystemExecuteResponseStreamChunk",
                 "AgenticSystemTurn",
                 "Attachment",
+                "BatchChatCompletionRequest",
+                "BatchCompletionRequest",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
                 "ChatCompletionResponseStreamChunk",
@@ -2918,6 +3196,7 @@
                 "CompletionResponseStreamChunk",
                 "CreateDatasetRequest",
                 "Dataset",
+                "Dialog",
                 "FinetuningJobArtifactsResponse",
                 "FinetuningJobLogStream",
                 "FinetuningJobStatusResponse",

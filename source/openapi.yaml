@@ -433,52 +433,49 @@ components:
       title: Attachments are used to refer to external resources, such as images,
         videos, audio, etc.
       type: object
-    ChatCompletionRequest:
+    BatchChatCompletionRequest:
       additionalProperties: false
       properties:
         available_tools:
           items:
-            oneOf:
-            - enum:
-              - web_search
-              - math
-              - image_gen
-              - code_interpreter
-              type: string
-            - additionalProperties: false
-              properties:
-                input_shields:
-                  items:
-                    $ref: '#/components/schemas/ShieldConfig'
-                  type: array
-                output_shields:
-                  items:
-                    $ref: '#/components/schemas/ShieldConfig'
-                  type: array
-                parameters:
-                  additionalProperties:
-                    oneOf:
-                    - type: 'null'
-                    - type: boolean
-                    - type: number
-                    - type: string
-                    - type: array
-                    - type: object
-                  type: object
-                tool_name:
+            additionalProperties: false
+            properties:
+              input_shields:
+                items:
+                  $ref: '#/components/schemas/ShieldConfig'
+                type: array
+              output_shields:
+                items:
+                  $ref: '#/components/schemas/ShieldConfig'
+                type: array
+              parameters:
+                additionalProperties:
                   oneOf:
-                  - enum:
-                    - web_search
-                    - math
-                    - image_gen
-                    - code_interpreter
-                    type: string
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
                   - type: string
-              required:
-              - tool_name
-              - input_shields
-              - output_shields
-              type: object
+                  - type: array
+                  - type: object
+                type: object
+              tool_name:
+                oneOf:
+                - enum:
+                  - web_search
+                  - math
+                  - image_gen
+                  - code_interpreter
+                  type: string
+                - type: string
+            required:
+            - tool_name
+            - input_shields
+            - output_shields
+            type: object
+          type: array
+        batch_dialogs:
+          items:
+            $ref: '#/components/schemas/Dialog'
           type: array
         logprobs:
           default: false
@@ -486,12 +483,141 @@ components:
         max_tokens:
           default: 0
           type: integer
-        message:
-          $ref: '#/components/schemas/Message'
-        message_history:
+        model:
+          enum:
+          - llama3_8b_chat
+          - llama3_70b_chat
+          type: string
+        sampling_params:
+          additionalProperties: false
+          properties:
+            strategy:
+              default: greedy
+              type: string
+            temperature:
+              default: 0.0
+              type: number
+            top_k:
+              default: 0
+              type: integer
+            top_p:
+              default: 0.95
+              type: number
+          required:
+          - temperature
+          - strategy
+          - top_p
+          - top_k
+          type: object
+      required:
+      - model
+      - batch_dialogs
+      - sampling_params
+      - available_tools
+      - max_tokens
+      - logprobs
+      type: object
+    BatchCompletionRequest:
+      additionalProperties: false
+      properties:
+        content_batch:
           items:
-            $ref: '#/components/schemas/Message'
+            oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Attachment'
+            - items:
+                oneOf:
+                - type: string
+                - $ref: '#/components/schemas/Attachment'
+              type: array
           type: array
+        logprobs:
+          default: false
+          type: boolean
+        max_tokens:
+          default: 0
+          type: integer
+        model:
+          enum:
+          - llama3_8b
+          - llama3_70b
+          type: string
+        sampling_params:
+          additionalProperties: false
+          properties:
+            strategy:
+              default: greedy
+              type: string
+            temperature:
+              default: 0.0
+              type: number
+            top_k:
+              default: 0
+              type: integer
+            top_p:
+              default: 0.95
+              type: number
+          required:
+          - temperature
+          - strategy
+          - top_p
+          - top_k
+          type: object
+      required:
+      - model
+      - content_batch
+      - sampling_params
+      - max_tokens
+      - logprobs
+      type: object
+    ChatCompletionRequest:
+      additionalProperties: false
+      properties:
+        available_tools:
+          items:
+            additionalProperties: false
+            properties:
+              input_shields:
+                items:
+                  $ref: '#/components/schemas/ShieldConfig'
+                type: array
+              output_shields:
+                items:
+                  $ref: '#/components/schemas/ShieldConfig'
+                type: array
+              parameters:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              tool_name:
+                oneOf:
+                - enum:
+                  - web_search
+                  - math
+                  - image_gen
+                  - code_interpreter
+                  type: string
+                - type: string
+            required:
+            - tool_name
+            - input_shields
+            - output_shields
+            type: object
+          type: array
+        dialog:
+          $ref: '#/components/schemas/Dialog'
+        logprobs:
+          default: false
+          type: boolean
+        max_tokens:
+          default: 0
+          type: integer
         model:
           enum:
           - llama3_8b_chat
@@ -522,9 +648,8 @@ components:
           default: false
           type: boolean
       required:
-      - message
       - model
-      - message_history
+      - dialog
       - sampling_params
       - available_tools
       - max_tokens
@@ -784,6 +909,19 @@ components:
       - content_url
       - metadata
       title: Dataset to be used for training or evaluating language models.
+      type: object
+    Dialog:
+      additionalProperties: false
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        message_history:
+          items:
+            $ref: '#/components/schemas/Message'
+          type: array
+      required:
+      - message
+      - message_history
       type: object
     FinetuningJobArtifactsResponse:
       additionalProperties: false
@@ -1132,19 +1270,14 @@ components:
           items:
             additionalProperties: false
             properties:
+              dialog:
+                $ref: '#/components/schemas/Dialog'
               k_generations:
                 items:
                   $ref: '#/components/schemas/Message'
                 type: array
-              message_history:
-                items:
-                  $ref: '#/components/schemas/Message'
-                type: array
-              prompt:
-                $ref: '#/components/schemas/Message'
             required:
-            - prompt
-            - message_history
+            - dialog
             - k_generations
             type: object
           type: array
@@ -1327,6 +1460,42 @@ paths:
             agent execution response.
       tags:
       - AgenticSystem
+  /batch_chat_completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchChatCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+          description: OK
+      tags:
+      - Inference
+  /batch_completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
+          description: OK
+      tags:
+      - Inference
   /chat_completion:
     post:
       parameters: []
@@ -1659,13 +1828,13 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: Inference
+- name: RewardScoring
 - name: MemoryBanks
-- name: AgenticSystem
 - name: SyntheticDataGeneration
 - name: Finetuning
+- name: AgenticSystem
+- name: Inference
 - name: Datasets
-- name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -1733,14 +1902,27 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/FinetuningJobLogStream" />'
   name: FinetuningJobLogStream
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
-  name: ChatCompletionRequest
+  name: BatchChatCompletionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/Dialog" />
+  name: Dialog
 - description: 'Normal chat completion response.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponse" />'
   name: ChatCompletionResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequest"
+    />
+  name: BatchCompletionRequest
+- description: 'Normal completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/CompletionResponse" />'
+  name: CompletionResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
+    />
+  name: ChatCompletionRequest
 - description: 'Streamed chat completion response. The actual response is a series
     of such objects.
 
@@ -1751,11 +1933,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
     />
   name: CompletionRequest
-- description: 'Normal completion response.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/CompletionResponse" />'
-  name: CompletionResponse
 - description: 'streamed completion response.
 
 
@@ -1828,6 +2005,8 @@ x-tagGroups:
   - AgenticSystemExecuteResponseStreamChunk
   - AgenticSystemTurn
   - Attachment
+  - BatchChatCompletionRequest
+  - BatchCompletionRequest
   - ChatCompletionRequest
   - ChatCompletionResponse
   - ChatCompletionResponseStreamChunk
@@ -1836,6 +2015,7 @@ x-tagGroups:
   - CompletionResponseStreamChunk
   - CreateDatasetRequest
   - Dataset
+  - Dialog
   - FinetuningJobArtifactsResponse
   - FinetuningJobLogStream
   - FinetuningJobStatusResponse
