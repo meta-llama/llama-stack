@@ -550,9 +550,7 @@ if __name__ == "__main__":
             info=Info(
                 title="[DRAFT] Llama Stack Specification",
                 version="0.0.1",
-                description="""
-                
-                Meta has built out a fairly sophisticated platform internally to post train, evaluate, and 
+                description="""Meta has built out a fairly sophisticated platform internally to post train, evaluate, and 
                 serve Llama models to support Meta’s products. Given the newer capabilities of the llama models, 
                 the model development and model serving capabilities of the platform need to be enhanced in 
                 specific ways in order to best leverage the models. For example, the inference platform needs 

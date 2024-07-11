@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "\n                \n                Meta has built out a fairly sophisticated platform internally to post train, evaluate, and \n                serve Llama models to support Meta’s products. Given the newer capabilities of the llama models, \n                the model development and model serving capabilities of the platform need to be enhanced in \n                specific ways in order to best leverage the models. For example, the inference platform needs \n                to support code execution to take advantage of the built-in knowledge of tools of the model. \n                The largest models are of high enough quality to be used to generate synthetic data or be used \n                as reward models. There are specific fine tuning and quantization techniques that we have found \n                result in the best performing Llama models. We would like to share ways in which an LLM Ops \n                toolchain can be designed by leveraging our learnings in getting Llama models to power Meta’s products.\n\n                In addition, the Llama 3 models Meta will release in July should not just be seen as a model, but \n                really as a system starting the transition towards an entity capable of performing \"agentic\" tasks \n                which require the ability to act as the central planner and break a task down and perform multi-step \n                reasoning and call tools for specific operations. In addition, there needs to be general model-level \n                safety checks as well as task-specific safety checks that are performed at a system level. \n\n                We are defining the Llama Stack as a set of APIs and standards by synthesizing our learnings while \n                working with Llama models. The APIs are divided into the llama-toolchain-api and the llama-agentic-system-api. \n                These APIs provide a coherent way for model developers to fine tune and serve Llama models, and agentic app \n                developers to leverage all the capabilities of the Llama models seamlessly. We would like to work with the \n                ecosystem to enhance and simplify the API. In addition, we will be releasing a plug-in architecture to allow \n                creating distributions of the llama stack with different implementations.\n\n\n                This is the specification of the llama stack that provides \n                a set of endpoints and their corresponding interfaces that are tailored to \n                best leverage Llama Models. The specification is still in draft and subject to change."
+        "description": "Meta has built out a fairly sophisticated platform internally to post train, evaluate, and \n                serve Llama models to support Meta’s products. Given the newer capabilities of the llama models, \n                the model development and model serving capabilities of the platform need to be enhanced in \n                specific ways in order to best leverage the models. For example, the inference platform needs \n                to support code execution to take advantage of the built-in knowledge of tools of the model. \n                The largest models are of high enough quality to be used to generate synthetic data or be used \n                as reward models. There are specific fine tuning and quantization techniques that we have found \n                result in the best performing Llama models. We would like to share ways in which an LLM Ops \n                toolchain can be designed by leveraging our learnings in getting Llama models to power Meta’s products.\n\n                In addition, the Llama 3 models Meta will release in July should not just be seen as a model, but \n                really as a system starting the transition towards an entity capable of performing \"agentic\" tasks \n                which require the ability to act as the central planner and break a task down and perform multi-step \n                reasoning and call tools for specific operations. In addition, there needs to be general model-level \n                safety checks as well as task-specific safety checks that are performed at a system level. \n\n                We are defining the Llama Stack as a set of APIs and standards by synthesizing our learnings while \n                working with Llama models. The APIs are divided into the llama-toolchain-api and the llama-agentic-system-api. \n                These APIs provide a coherent way for model developers to fine tune and serve Llama models, and agentic app \n                developers to leverage all the capabilities of the Llama models seamlessly. We would like to work with the \n                ecosystem to enhance and simplify the API. In addition, we will be releasing a plug-in architecture to allow \n                creating distributions of the llama stack with different implementations.\n\n\n                This is the specification of the llama stack that provides \n                a set of endpoints and their corresponding interfaces that are tailored to \n                best leverage Llama Models. The specification is still in draft and subject to change."
     },
     "servers": [
         {
@@ -3332,25 +3332,25 @@
     ],
     "tags": [
         {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Inference"
-        },
-        {
             "name": "MemoryBanks"
         },
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "RewardScoring"
+            "name": "Datasets"
         },
         {
             "name": "AgenticSystem"
         },
         {
-            "name": "Datasets"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "ShieldConfig",
