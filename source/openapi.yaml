@@ -1563,83 +1563,6 @@ paths:
             agent execution response.
       tags:
       - AgenticSystem
-  /batch_chat_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchChatCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/ChatCompletionResponse'
-          description: OK
-      tags:
-      - Inference
-  /batch_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/CompletionResponse'
-          description: OK
-      tags:
-      - Inference
-  /chat_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChatCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/ChatCompletionResponse'
-                - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
-          description: Normal chat completion response. **OR** Streamed chat completion
-            response. The actual response is a series of such objects.
-      tags:
-      - Inference
-  /completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/CompletionResponse'
-                - $ref: '#/components/schemas/CompletionResponseStreamChunk'
-          description: Normal completion response. **OR** streamed completion response.
-      tags:
-      - Inference
   /datasets/create:
     post:
       parameters: []
@@ -1684,6 +1607,83 @@ paths:
           description: OK
       tags:
       - Datasets
+  /inference/batch_chat_completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchChatCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+          description: OK
+      tags:
+      - Inference
+  /inference/batch_completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
+          description: OK
+      tags:
+      - Inference
+  /inference/chat_completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/ChatCompletionResponse'
+                - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
+          description: Normal chat completion response. **OR** Streamed chat completion
+            response. The actual response is a series of such objects.
+      tags:
+      - Inference
+  /inference/completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/CompletionResponse'
+                - $ref: '#/components/schemas/CompletionResponseStreamChunk'
+          description: Normal completion response. **OR** streamed completion response.
+      tags:
+      - Inference
   /memory_bank/delete:
     post:
       parameters:
@@ -2015,14 +2015,13 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: PostTraining
-- name: Inference
-  x-displayName: Set of methods that can be called on the inference service.
-- name: MemoryBanks
-- name: Datasets
-- name: AgenticSystem
-- name: SyntheticDataGeneration
 - name: RewardScoring
+- name: PostTraining
+- name: AgenticSystem
+- name: Datasets
+- name: SyntheticDataGeneration
+- name: Inference
+- name: MemoryBanks
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"

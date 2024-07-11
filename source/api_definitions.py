@@ -143,22 +143,26 @@ class BatchChatCompletionRequest:
 
 
 class Inference(Protocol):
-    """Set of methods that can be called on the inference service."""
+
+    @webmethod(route="/inference/completion")
     def post_completion(
         self,
         request: CompletionRequest,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
 
+    @webmethod(route="/inference/chat_completion")
     def post_chat_completion(
         self,
         request: ChatCompletionRequest,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
 
+    @webmethod(route="/inference/batch_completion")
     def post_batch_completion(
         self,
         request: BatchCompletionRequest,
     ) -> List[CompletionResponse]: ...
 
+    @webmethod(route="/inference/batch_chat_completion")
     def post_batch_chat_completion(
         self,
         request: BatchChatCompletionRequest,

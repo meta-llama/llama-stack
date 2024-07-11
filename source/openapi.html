@@ -386,7 +386,7 @@
                 ]
             }
         },
-        "/batch_chat_completion": {
+        "/inference/batch_chat_completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -416,7 +416,7 @@
                 }
             }
         },
-        "/batch_completion": {
+        "/inference/batch_completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -446,7 +446,7 @@
                 }
             }
         },
-        "/chat_completion": {
+        "/inference/chat_completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -483,7 +483,7 @@
                 }
             }
         },
-        "/completion": {
+        "/inference/completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -3318,26 +3318,25 @@
     ],
     "tags": [
         {
+            "name": "RewardScoring"
+        },
+        {
             "name": "PostTraining"
-        },
-        {
-            "name": "Inference",
-            "x-displayName": "Set of methods that can be called on the inference service."
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Datasets"
         },
         {
             "name": "AgenticSystem"
         },
         {
+            "name": "Datasets"
+        },
+        {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "RewardScoring"
+            "name": "Inference"
+        },
+        {
+            "name": "MemoryBanks"
         },
         {
             "name": "ShieldConfig",
