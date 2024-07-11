@@ -19,13 +19,13 @@
             spec = {
     "openapi": "3.1.0",
     "info": {
-        "title": "Llama Stack specification",
-        "version": "0.1",
-        "description": "This is the llama stack"
+        "title": "[DRAFT] Llama Stack Specification RFC",
+        "version": "0.0.0",
+        "description": "This is the specification of the llama stack that allows"
     },
     "servers": [
         {
-            "url": "http://llama.meta.com"
+            "url": "http://any-hosted-llama-stack.com"
         }
     ],
     "paths": {
@@ -520,41 +520,6 @@
                 }
             }
         },
-        "/memory_bank/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/synthetic_data_generation/generate": {
             "post": {
                 "responses": {
@@ -881,6 +846,41 @@
                         }
                     }
                 ]
+            }
+        },
+        "/memory_bank/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         }
     },
@@ -3324,12 +3324,6 @@
             "name": "RewardScoring"
         },
         {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
             "name": "Inference"
         },
         {
@@ -3337,6 +3331,12 @@
         },
         {
             "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "ShieldConfig",

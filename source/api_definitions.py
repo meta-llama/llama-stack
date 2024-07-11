@@ -143,7 +143,7 @@ class BatchChatCompletionRequest:
 
 
 class Inference(Protocol):
-
+    """Set of methods that can be called on the inference service."""
     def post_completion(
         self,
         request: CompletionRequest,
@@ -301,7 +301,7 @@ class MemoryBanks(Protocol):
     ) -> List[MemoryBankDocument]: ...
 
     @webmethod(route="/memory_bank/delete")
-    def post_delete_memory_documents(
+    def remove_memory_documents(
         self,
         bank_uuid: str,
         document_uuids: List[str],
@@ -542,11 +542,13 @@ if __name__ == "__main__":
     spec = Specification(
         LlamaStackEndpoints,
         Options(
-            server=Server(url="http://llama.meta.com"),
+            server=Server(url="http://any-hosted-llama-stack.com"),
             info=Info(
-                title="Llama Stack specification",
-                version="0.1",
-                description="This is the llama stack",
+                title="[DRAFT] Llama Stack Specification",
+                version="0.0.1",
+                description="""This is the specification of the llama stack that provides 
+                a set of endpoints and their corresponding interfaces that are tailored to 
+                best leverage Llama Models. The specification is still in draft and subject to change.""",
             ),
         ),
     )

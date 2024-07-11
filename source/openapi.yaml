@@ -1502,9 +1502,9 @@ components:
       pattern: ^(https?://|file://|data:)
       type: string
 info:
-  description: This is the llama stack
-  title: Llama Stack specification
-  version: '0.1'
+  description: This is the specification of the llama stack that allows
+  title: '[DRAFT] Llama Stack Specification RFC'
+  version: 0.0.0
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
@@ -2010,15 +2010,15 @@ paths:
 security:
 - Default: []
 servers:
-- url: http://llama.meta.com
+- url: http://any-hosted-llama-stack.com
 tags:
 - name: PostTraining
 - name: RewardScoring
-- name: AgenticSystem
-- name: MemoryBanks
 - name: Inference
 - name: Datasets
 - name: SyntheticDataGeneration
+- name: MemoryBanks
+- name: AgenticSystem
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
