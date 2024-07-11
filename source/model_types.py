@@ -121,6 +121,13 @@ class Message:
     tool_responses: List[ToolResponse] = field(default_factory=list)
 
 
+@json_schema_type
+@dataclass
+class Dialog:
+    message: Message
+    message_history: List[Message] = None
+
+
 @dataclass
 class SamplingParams:
     temperature: float = 0.0

@@ -1469,12 +1469,12 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: RewardScoring
-- name: Inference
-- name: Datasets
 - name: SyntheticDataGeneration
-- name: Finetuning
+- name: Datasets
 - name: AgenticSystem
+- name: Inference
+- name: Finetuning
+- name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"

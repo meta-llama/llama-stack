@@ -27,6 +27,7 @@ from finetuning_types import (
 from model_types import (
     BuiltinTool,
     Content,
+    Dialog,
     InstructModel,
     Message,
     PretrainedModel,
@@ -128,6 +129,45 @@ class Inference(Protocol):
         self,
         request: ChatCompletionRequest,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
+
+
+@json_schema_type
+@dataclass
+class BatchCompletionRequest:
+    content_batch: List[Content]
+    model: PretrainedModel
+    sampling_params: SamplingParams = SamplingParams()
+    max_tokens: int = 0
+    logprobs: bool = False
+
+
+@json_schema_type
+@dataclass
+class BatchChatCompletionRequest:
+    model: InstructModel
+    batch_messages: List[Dialog]
+    sampling_params: SamplingParams = SamplingParams()
+
+    # zero-shot tool definitions as input to the model
+    available_tools: List[Union[BuiltinTool, ToolDefinition]] = field(
+        default_factory=list
+    )
+
+    max_tokens: int = 0
+    logprobs: bool = False
+
+
+class BatchInference(Protocol):
+    """Batch inference calls"""
+    def post_batch_completion(
+        self,
+        request: BatchCompletionRequest,
+    ) -> List[CompletionResponse]: ...
+
+    def post_batch_chat_completion(
+        self,
+        request: BatchChatCompletionRequest,
+    ) -> List[ChatCompletionResponse]: ...
 
 
 @dataclass
