@@ -291,10 +291,10 @@ class SyntheticDataGenerationRequest:
 @json_schema_type
 @dataclass
 class SyntheticDataGenerationResponse:
-     """Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."""
+    """Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."""
 
-     synthetic_data: List[KScoredPromptGenerations]
-     statistics: Optional[Dict[str, Any]] = None
+    synthetic_data: List[KScoredPromptGenerations]
+    statistics: Optional[Dict[str, Any]] = None
 
 
 class SyntheticDataGeneration(Protocol):
