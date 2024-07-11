@@ -49,7 +49,7 @@ class Attachment:
     url: URL
     mime_type: str
 
-
+# TODO(ashwin): make this better named maybe InterleavedTextMedia
 Content = Union[
     str,
     Attachment,
@@ -77,7 +77,7 @@ class ToolCall:
 @dataclass
 class ToolResponse:
     tool_name: str
-    response: str
+    content: Content
 
 
 # TODO: we need to document the parameters for the tool calls

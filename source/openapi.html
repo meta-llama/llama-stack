@@ -96,6 +96,29 @@
                 }
             }
         },
+        "/datasets/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/agentic_system/delete": {
             "delete": {
                 "responses": {
@@ -109,6 +132,115 @@
                 "parameters": [
                     {
                         "name": "agent_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/datasets/delete": {
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/datasets/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dataset"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/finetuning/job/status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FinetuningJobStatusResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Finetuning"
+                ],
+                "parameters": [
+                    {
+                        "name": "job_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/finetuning/job/logs": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FinetuningJobLogStream"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Finetuning"
+                ],
+                "parameters": [
+                    {
+                        "name": "job_uuid",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -245,6 +377,29 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RewardScoringRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/finetuning/text_generation/train": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Finetuning"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FinetuningTrainRequest"
                             }
                         }
                     },
@@ -586,14 +741,34 @@
                                                     "tool_name": {
                                                         "type": "string"
                                                     },
-                                                    "response": {
-                                                        "type": "string"
+                                                    "content": {
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "$ref": "#/components/schemas/Attachment"
+                                                            },
+                                                            {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "oneOf": [
+                                                                        {
+                                                                            "type": "string"
+                                                                        },
+                                                                        {
+                                                                            "$ref": "#/components/schemas/Attachment"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false,
                                                 "required": [
                                                     "tool_name",
-                                                    "response"
+                                                    "content"
                                                 ]
                                             }
                                         }
@@ -817,14 +992,34 @@
                                 "tool_name": {
                                     "type": "string"
                                 },
-                                "response": {
-                                    "type": "string"
+                                "content": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Attachment"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "$ref": "#/components/schemas/Attachment"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
                                 }
                             },
                             "additionalProperties": false,
                             "required": [
                                 "tool_name",
-                                "response"
+                                "content"
                             ]
                         }
                     }
@@ -944,14 +1139,34 @@
                             "tool_name": {
                                 "type": "string"
                             },
-                            "response": {
-                                "type": "string"
+                            "content": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/Attachment"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/Attachment"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
                             }
                         },
                         "additionalProperties": false,
                         "required": [
                             "tool_name",
-                            "response"
+                            "content"
                         ]
                     },
                     "response_text_delta": {
@@ -990,6 +1205,156 @@
                     "step_type"
                 ],
                 "title": "Streamed agent execution response."
+            },
+            "CreateDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "dataset": {
+                        "$ref": "#/components/schemas/Dataset"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uuid",
+                    "dataset"
+                ],
+                "title": "Request to create a dataset."
+            },
+            "Dataset": {
+                "type": "object",
+                "properties": {
+                    "columns": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "enum": [
+                                "dialog",
+                                "text",
+                                "media",
+                                "number",
+                                "json"
+                            ]
+                        }
+                    },
+                    "content_url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "columns",
+                    "content_url",
+                    "metadata"
+                ],
+                "title": "Dataset to be used for training or evaluating language models."
+            },
+            "FinetuningJobStatusResponse": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "running",
+                            "completed",
+                            "failed",
+                            "scheduled"
+                        ]
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "resources_allocated": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "status"
+                ],
+                "title": "Status of a finetuning job."
+            },
+            "FinetuningJobLogStream": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "log_lines": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "log_lines"
+                ],
+                "title": "Stream of logs from a finetuning job."
             },
             "ChatCompletionRequest": {
                 "type": "object",
@@ -1666,6 +2031,271 @@
                     "scored_generations"
                 ],
                 "title": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold."
+            },
+            "FinetuningTrainRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "model": {
+                        "type": "string",
+                        "enum": [
+                            "llama3_8b",
+                            "llama3_70b"
+                        ]
+                    },
+                    "dataset": {
+                        "$ref": "#/components/schemas/Dataset"
+                    },
+                    "validation_dataset": {
+                        "$ref": "#/components/schemas/Dataset"
+                    },
+                    "algorithm": {
+                        "type": "string",
+                        "enum": [
+                            "full",
+                            "lora",
+                            "qlora",
+                            "dora"
+                        ]
+                    },
+                    "algorithm_config": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/LoraFinetuningConfig"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "lora_attn_modules": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "apply_lora_to_mlp": {
+                                        "type": "boolean"
+                                    },
+                                    "apply_lora_to_output": {
+                                        "type": "boolean"
+                                    },
+                                    "rank": {
+                                        "type": "integer"
+                                    },
+                                    "alpha": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "lora_attn_modules",
+                                    "apply_lora_to_mlp",
+                                    "apply_lora_to_output",
+                                    "rank",
+                                    "alpha"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "lora_attn_modules": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "apply_lora_to_mlp": {
+                                        "type": "boolean"
+                                    },
+                                    "apply_lora_to_output": {
+                                        "type": "boolean"
+                                    },
+                                    "rank": {
+                                        "type": "integer"
+                                    },
+                                    "alpha": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "lora_attn_modules",
+                                    "apply_lora_to_mlp",
+                                    "apply_lora_to_output",
+                                    "rank",
+                                    "alpha"
+                                ]
+                            }
+                        ]
+                    },
+                    "optimizer_config": {
+                        "$ref": "#/components/schemas/OptimizerConfig"
+                    },
+                    "training_config": {
+                        "$ref": "#/components/schemas/TrainingConfig"
+                    },
+                    "hyperparam_search_config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "logger_config": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "model",
+                    "dataset",
+                    "validation_dataset",
+                    "algorithm",
+                    "algorithm_config",
+                    "optimizer_config",
+                    "training_config",
+                    "hyperparam_search_config",
+                    "logger_config"
+                ],
+                "title": "Request to finetune a model."
+            },
+            "LoraFinetuningConfig": {
+                "type": "object",
+                "properties": {
+                    "lora_attn_modules": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "apply_lora_to_mlp": {
+                        "type": "boolean"
+                    },
+                    "apply_lora_to_output": {
+                        "type": "boolean"
+                    },
+                    "rank": {
+                        "type": "integer"
+                    },
+                    "alpha": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "lora_attn_modules",
+                    "apply_lora_to_mlp",
+                    "apply_lora_to_output",
+                    "rank",
+                    "alpha"
+                ]
+            },
+            "OptimizerConfig": {
+                "type": "object",
+                "properties": {
+                    "optimizer_type": {
+                        "type": "string",
+                        "enum": [
+                            "adam",
+                            "adamw",
+                            "sgd"
+                        ]
+                    },
+                    "lr": {
+                        "type": "number"
+                    },
+                    "lr_min": {
+                        "type": "number"
+                    },
+                    "weight_decay": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "optimizer_type",
+                    "lr",
+                    "lr_min",
+                    "weight_decay"
+                ]
+            },
+            "TrainingConfig": {
+                "type": "object",
+                "properties": {
+                    "n_epochs": {
+                        "type": "integer"
+                    },
+                    "batch_size": {
+                        "type": "integer"
+                    },
+                    "shuffle": {
+                        "type": "boolean"
+                    },
+                    "n_iters": {
+                        "type": "integer"
+                    },
+                    "enable_activation_checkpointing": {
+                        "type": "boolean"
+                    },
+                    "memory_efficient_fsdp_wrap": {
+                        "type": "boolean"
+                    },
+                    "fsdp_cpu_offload": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "n_epochs",
+                    "batch_size",
+                    "shuffle",
+                    "n_iters",
+                    "enable_activation_checkpointing",
+                    "memory_efficient_fsdp_wrap",
+                    "fsdp_cpu_offload"
+                ]
             }
         },
         "responses": {}
@@ -1677,16 +2307,22 @@
     ],
     "tags": [
         {
+            "name": "SyntheticDataGeneration"
+        },
+        {
             "name": "RewardScoring"
+        },
+        {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Finetuning"
         },
         {
             "name": "Inference"
         },
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "AgenticSystem"
+            "name": "Datasets"
         },
         {
             "name": "ShieldConfig",
@@ -1729,6 +2365,22 @@
             "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemExecuteResponseStreamChunk\" />"
         },
         {
+            "name": "CreateDatasetRequest",
+            "description": "Request to create a dataset.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetRequest\" />"
+        },
+        {
+            "name": "Dataset",
+            "description": "Dataset to be used for training or evaluating language models.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
+        },
+        {
+            "name": "FinetuningJobStatusResponse",
+            "description": "Status of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobStatusResponse\" />"
+        },
+        {
+            "name": "FinetuningJobLogStream",
+            "description": "Stream of logs from a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningJobLogStream\" />"
+        },
+        {
             "name": "ChatCompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
         },
@@ -1767,6 +2419,22 @@
         {
             "name": "RewardScoringResponse",
             "description": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringResponse\" />"
+        },
+        {
+            "name": "FinetuningTrainRequest",
+            "description": "Request to finetune a model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningTrainRequest\" />"
+        },
+        {
+            "name": "LoraFinetuningConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LoraFinetuningConfig\" />"
+        },
+        {
+            "name": "OptimizerConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerConfig\" />"
+        },
+        {
+            "name": "TrainingConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
         }
     ],
     "x-tagGroups": [
@@ -1774,6 +2442,8 @@
             "name": "Operations",
             "tags": [
                 "AgenticSystem",
+                "Datasets",
+                "Finetuning",
                 "Inference",
                 "RewardScoring",
                 "SyntheticDataGeneration"
@@ -1795,12 +2465,20 @@
                 "CompletionRequest",
                 "CompletionResponse",
                 "CompletionResponseStreamChunk",
+                "CreateDatasetRequest",
+                "Dataset",
+                "FinetuningJobLogStream",
+                "FinetuningJobStatusResponse",
+                "FinetuningTrainRequest",
+                "LoraFinetuningConfig",
                 "Message",
+                "OptimizerConfig",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
                 "ShieldConfig",
                 "SyntheticDataGenerationRequest",
                 "SyntheticDataGenerationResponse",
+                "TrainingConfig",
                 "URL"
             ]
         }
