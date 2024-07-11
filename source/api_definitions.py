@@ -218,17 +218,25 @@ class AgenticSystem(Protocol):
 
 
 @dataclass
-class PromptGeneration:
-    # TODO(ashwin): probably create a Dialog type which is used everywhere including chat completion
+class KPromptGenerations:
     prompt: Message
     message_history: List[Message]
-    generation: Message
+    k_generations: List[Message]
 
 
+@json_schema_type
 @dataclass
-class ScoredPromptGeneration:
-    prompt_generation: PromptGeneration
+class MessageScore:
+    """A single message and its score."""
+
+    message: Message
     score: float
+
+@json_schema_type
+@dataclass
+class KScoredPromptGenerations:
+    prompt: Message
+    k_scored_generations: List[MessageScore]
 
 
 @json_schema_type
@@ -236,7 +244,7 @@ class ScoredPromptGeneration:
 class RewardScoringRequest:
     """Request to score a reward function. A list of prompts and a list of responses per prompt."""
 
-    prompt_generations: List[PromptGeneration]
+    prompt_generations: List[KPromptGenerations]
 
     # TODO(ragho): create a RewardModel enum tye
     model: str
@@ -247,7 +255,7 @@ class RewardScoringRequest:
 class RewardScoringResponse:
     """Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold."""
 
-    scored_generations: List[ScoredPromptGeneration]
+    scored_generations: List[KScoredPromptGenerations]
 
 
 class RewardScoring(Protocol):

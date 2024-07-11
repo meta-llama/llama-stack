@@ -1960,15 +1960,18 @@
                                         "$ref": "#/components/schemas/Message"
                                     }
                                 },
-                                "generation": {
-                                    "$ref": "#/components/schemas/Message"
+                                "k_generations": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message"
+                                    }
                                 }
                             },
                             "additionalProperties": false,
                             "required": [
                                 "prompt",
                                 "message_history",
-                                "generation"
+                                "k_generations"
                             ]
                         }
                     },
@@ -1983,46 +1986,49 @@
                 ],
                 "title": "Request to score a reward function. A list of prompts and a list of responses per prompt."
             },
+            "KScoredPromptGenerations": {
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "$ref": "#/components/schemas/Message"
+                    },
+                    "k_scored_generations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageScore"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "prompt",
+                    "k_scored_generations"
+                ]
+            },
+            "MessageScore": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "$ref": "#/components/schemas/Message"
+                    },
+                    "score": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "message",
+                    "score"
+                ],
+                "title": "A single message and its score."
+            },
             "RewardScoringResponse": {
                 "type": "object",
                 "properties": {
                     "scored_generations": {
                         "type": "array",
                         "items": {
-                            "type": "object",
-                            "properties": {
-                                "prompt_generation": {
-                                    "type": "object",
-                                    "properties": {
-                                        "prompt": {
-                                            "$ref": "#/components/schemas/Message"
-                                        },
-                                        "message_history": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Message"
-                                            }
-                                        },
-                                        "generation": {
-                                            "$ref": "#/components/schemas/Message"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "prompt",
-                                        "message_history",
-                                        "generation"
-                                    ]
-                                },
-                                "score": {
-                                    "type": "number"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "prompt_generation",
-                                "score"
-                            ]
+                            "$ref": "#/components/schemas/KScoredPromptGenerations"
                         }
                     }
                 },
@@ -2307,10 +2313,13 @@
     ],
     "tags": [
         {
+            "name": "Inference"
+        },
+        {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "RewardScoring"
+            "name": "Datasets"
         },
         {
             "name": "AgenticSystem"
@@ -2319,10 +2328,7 @@
             "name": "Finetuning"
         },
         {
-            "name": "Inference"
-        },
-        {
-            "name": "Datasets"
+            "name": "RewardScoring"
         },
         {
             "name": "ShieldConfig",
@@ -2417,6 +2423,14 @@
             "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
         },
         {
+            "name": "KScoredPromptGenerations",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KScoredPromptGenerations\" />"
+        },
+        {
+            "name": "MessageScore",
+            "description": "A single message and its score.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/MessageScore\" />"
+        },
+        {
             "name": "RewardScoringResponse",
             "description": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringResponse\" />"
         },
@@ -2470,8 +2484,10 @@
                 "FinetuningJobLogStream",
                 "FinetuningJobStatusResponse",
                 "FinetuningTrainRequest",
+                "KScoredPromptGenerations",
                 "LoraFinetuningConfig",
                 "Message",
+                "MessageScore",
                 "OptimizerConfig",
                 "RewardScoringRequest",
                 "RewardScoringResponse",

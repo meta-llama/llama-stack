@@ -900,6 +900,19 @@ components:
       - logger_config
       title: Request to finetune a model.
       type: object
+    KScoredPromptGenerations:
+      additionalProperties: false
+      properties:
+        k_scored_generations:
+          items:
+            $ref: '#/components/schemas/MessageScore'
+          type: array
+        prompt:
+          $ref: '#/components/schemas/Message'
+      required:
+      - prompt
+      - k_scored_generations
+      type: object
     LoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -989,6 +1002,18 @@ components:
       - tool_calls
       - tool_responses
       type: object
+    MessageScore:
+      additionalProperties: false
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        score:
+          type: number
+      required:
+      - message
+      - score
+      title: A single message and its score.
+      type: object
     OptimizerConfig:
       additionalProperties: false
       properties:
@@ -1019,8 +1044,10 @@ components:
           items:
             additionalProperties: false
             properties:
-              generation:
-                $ref: '#/components/schemas/Message'
+              k_generations:
+                items:
+                  $ref: '#/components/schemas/Message'
+                type: array
               message_history:
                 items:
                   $ref: '#/components/schemas/Message'
@@ -1030,7 +1057,7 @@ components:
             required:
             - prompt
             - message_history
-            - generation
+            - k_generations
             type: object
           type: array
       required:
@@ -1044,30 +1071,7 @@ components:
       properties:
         scored_generations:
           items:
-            additionalProperties: false
-            properties:
-              prompt_generation:
-                additionalProperties: false
-                properties:
-                  generation:
-                    $ref: '#/components/schemas/Message'
-                  message_history:
-                    items:
-                      $ref: '#/components/schemas/Message'
-                    type: array
-                  prompt:
-                    $ref: '#/components/schemas/Message'
-                required:
-                - prompt
-                - message_history
-                - generation
-                type: object
-              score:
-                type: number
-            required:
-            - prompt_generation
-            - score
-            type: object
+            $ref: '#/components/schemas/KScoredPromptGenerations'
           type: array
       required:
       - scored_generations
@@ -1408,12 +1412,12 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
+- name: Inference
 - name: SyntheticDataGeneration
-- name: RewardScoring
+- name: Datasets
 - name: AgenticSystem
 - name: Finetuning
-- name: Inference
-- name: Datasets
+- name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
@@ -1522,6 +1526,14 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
   name: RewardScoringRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/KScoredPromptGenerations"
+    />
+  name: KScoredPromptGenerations
+- description: 'A single message and its score.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/MessageScore" />'
+  name: MessageScore
 - description: 'Response from the reward scoring. Batch of (prompt, response, score)
     tuples that pass the threshold.
 
@@ -1570,8 +1582,10 @@ x-tagGroups:
   - FinetuningJobLogStream
   - FinetuningJobStatusResponse
   - FinetuningTrainRequest
+  - KScoredPromptGenerations
   - LoraFinetuningConfig
   - Message
+  - MessageScore
   - OptimizerConfig
   - RewardScoringRequest
   - RewardScoringResponse
