@@ -52,6 +52,10 @@ components:
           type: array
         instructions:
           type: string
+        memory_bank_uuids:
+          items:
+            type: string
+          type: array
         model:
           enum:
           - llama3_8b_chat
@@ -61,26 +65,30 @@ components:
           items:
             $ref: '#/components/schemas/ShieldConfig'
           type: array
+        uuid:
+          type: string
       required:
+      - uuid
       - instructions
       - model
       - available_tools
       - executable_tools
+      - memory_bank_uuids
       - input_shields
       - output_shields
       type: object
     AgenticSystemCreateResponse:
       additionalProperties: false
       properties:
-        agent_id:
+        agent_uuid:
           type: string
       required:
-      - agent_id
+      - agent_uuid
       type: object
     AgenticSystemExecuteRequest:
       additionalProperties: false
       properties:
-        agent_id:
+        agent_uuid:
           type: string
         messages:
           items:
@@ -94,7 +102,7 @@ components:
             $ref: '#/components/schemas/AgenticSystemTurn'
           type: array
       required:
-      - agent_id
+      - agent_uuid
       - messages
       - turn_history
       - stream
@@ -124,12 +132,27 @@ components:
           additionalProperties: false
           properties:
             content:
+              contentEncoding: base64
               type: string
-            index_id:
+            metadata:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            mime_type:
+              type: string
+            uuid:
               type: string
           required:
-          - index_id
+          - uuid
           - content
+          - metadata
+          - mime_type
           type: object
         step_type:
           enum:
@@ -342,12 +365,27 @@ components:
                     additionalProperties: false
                     properties:
                       content:
+                        contentEncoding: base64
                         type: string
-                      index_id:
+                      metadata:
+                        additionalProperties:
+                          oneOf:
+                          - type: 'null'
+                          - type: boolean
+                          - type: number
+                          - type: string
+                          - type: array
+                          - type: object
+                        type: object
+                      mime_type:
+                        type: string
+                      uuid:
                         type: string
                     required:
-                    - index_id
+                    - uuid
                     - content
+                    - metadata
+                    - mime_type
                     type: object
                   type: array
                 scores:
@@ -972,6 +1010,17 @@ components:
       - rank
       - alpha
       type: object
+    MemoryBank:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        uuid:
+          type: string
+      required:
+      - uuid
+      - name
+      type: object
     Message:
       additionalProperties: false
       properties:
@@ -1428,6 +1477,147 @@ paths:
           description: OK
       tags:
       - Finetuning
+  /memory_banks/create:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: bank_name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                additionalProperties: false
+                properties:
+                  content:
+                    contentEncoding: base64
+                    type: string
+                  metadata:
+                    additionalProperties:
+                      oneOf:
+                      - type: 'null'
+                      - type: boolean
+                      - type: number
+                      - type: string
+                      - type: array
+                      - type: object
+                    type: object
+                  mime_type:
+                    type: string
+                  uuid:
+                    type: string
+                required:
+                - uuid
+                - content
+                - metadata
+                - mime_type
+                type: object
+              type: array
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_banks/delete:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                type: string
+              type: array
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_banks/drop:
+    delete:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_banks/get:
+    get:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/MemoryBank'
+          description: OK
+      tags:
+      - MemoryBanks
+  /memory_banks/insert:
+    post:
+      parameters:
+      - in: query
+        name: bank_uuid
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                additionalProperties: false
+                properties:
+                  content:
+                    contentEncoding: base64
+                    type: string
+                  metadata:
+                    additionalProperties:
+                      oneOf:
+                      - type: 'null'
+                      - type: boolean
+                      - type: number
+                      - type: string
+                      - type: array
+                      - type: object
+                    type: object
+                  mime_type:
+                    type: string
+                  uuid:
+                    type: string
+                required:
+                - uuid
+                - content
+                - metadata
+                - mime_type
+                type: object
+              type: array
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
   /reward_scoring/score:
     post:
       parameters: []
@@ -1469,11 +1659,12 @@ security:
 servers:
 - url: http://llama.meta.com
 tags:
-- name: SyntheticDataGeneration
-- name: Datasets
-- name: AgenticSystem
 - name: Inference
+- name: MemoryBanks
+- name: AgenticSystem
+- name: SyntheticDataGeneration
 - name: Finetuning
+- name: Datasets
 - name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldConfig" />
   name: ShieldConfig
@@ -1523,6 +1714,8 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/Dataset" />'
   name: Dataset
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
+  name: MemoryBank
 - description: 'Artifacts of a finetuning job.
 
 
@@ -1623,6 +1816,7 @@ x-tagGroups:
   - Datasets
   - Finetuning
   - Inference
+  - MemoryBanks
   - RewardScoring
   - SyntheticDataGeneration
 - name: Types
@@ -1648,6 +1842,7 @@ x-tagGroups:
   - FinetuningTrainRequest
   - KScoredPromptGenerations
   - LoraFinetuningConfig
+  - MemoryBank
   - Message
   - MessageScore
   - OptimizerConfig

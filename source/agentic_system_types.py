@@ -58,16 +58,25 @@ class SafetyFilteringStep(ExecutionStepBase):
     violation: Optional[SafetyViolation] = None
 
 
+@json_schema_type
 @dataclass
-class IndexedMemoryDocument:
-    index_id: str
-    content: str
+class MemoryBank:
+    uuid: str
+    name: str
+
+
+@dataclass
+class MemoryBankDocument:
+    uuid: str
+    content: bytes
+    metadata: Dict[str, Any]
+    mime_type: str
 
 
 @dataclass
 class MemoryRetrievalStep(ExecutionStepBase):
     step_type = ExecutionStepType.memory_retrieval
-    documents: List[IndexedMemoryDocument]
+    documents: List[MemoryBankDocument]
     scores: List[float]
 
 

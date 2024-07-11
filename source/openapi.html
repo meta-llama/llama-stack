@@ -119,6 +119,93 @@
                 }
             }
         },
+        "/memory_banks/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "bank_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "contentEncoding": "base64"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "uuid",
+                                        "content",
+                                        "metadata",
+                                        "mime_type"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/agentic_system/delete": {
             "delete": {
                 "responses": {
@@ -190,6 +277,26 @@
                         }
                     }
                 ]
+            }
+        },
+        "/memory_banks/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBank"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": []
             }
         },
         "/finetuning/job/artifacts": {
@@ -353,6 +460,41 @@
                 }
             }
         },
+        "/memory_banks/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/synthetic_data_generation/generate": {
             "post": {
                 "responses": {
@@ -376,6 +518,85 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/memory_banks/insert": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "contentEncoding": "base64"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "boolean"
+                                                    },
+                                                    {
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array"
+                                                    },
+                                                    {
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "uuid",
+                                        "content",
+                                        "metadata",
+                                        "mime_type"
+                                    ]
+                                }
                             }
                         }
                     },
@@ -435,6 +656,28 @@
                     "required": true
                 }
             }
+        },
+        "/memory_banks/drop": {
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
         }
     },
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
@@ -487,6 +730,9 @@
             "AgenticSystemCreateRequest": {
                 "type": "object",
                 "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
                     "instructions": {
                         "type": "string"
                     },
@@ -571,6 +817,12 @@
                         },
                         "uniqueItems": true
                     },
+                    "memory_bank_uuids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "input_shields": {
                         "type": "array",
                         "items": {
@@ -586,10 +838,12 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "uuid",
                     "instructions",
                     "model",
                     "available_tools",
                     "executable_tools",
+                    "memory_bank_uuids",
                     "input_shields",
                     "output_shields"
                 ]
@@ -597,19 +851,19 @@
             "AgenticSystemCreateResponse": {
                 "type": "object",
                 "properties": {
-                    "agent_id": {
+                    "agent_uuid": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "agent_id"
+                    "agent_uuid"
                 ]
             },
             "AgenticSystemExecuteRequest": {
                 "type": "object",
                 "properties": {
-                    "agent_id": {
+                    "agent_uuid": {
                         "type": "string"
                     },
                     "messages": {
@@ -631,7 +885,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "agent_id",
+                    "agent_uuid",
                     "messages",
                     "turn_history",
                     "stream"
@@ -875,17 +1129,48 @@
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
-                                                    "index_id": {
+                                                    "uuid": {
                                                         "type": "string"
                                                     },
                                                     "content": {
+                                                        "type": "string",
+                                                        "contentEncoding": "base64"
+                                                    },
+                                                    "metadata": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "null"
+                                                                },
+                                                                {
+                                                                    "type": "boolean"
+                                                                },
+                                                                {
+                                                                    "type": "number"
+                                                                },
+                                                                {
+                                                                    "type": "string"
+                                                                },
+                                                                {
+                                                                    "type": "array"
+                                                                },
+                                                                {
+                                                                    "type": "object"
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "mime_type": {
                                                         "type": "string"
                                                     }
                                                 },
                                                 "additionalProperties": false,
                                                 "required": [
-                                                    "index_id",
-                                                    "content"
+                                                    "uuid",
+                                                    "content",
+                                                    "metadata",
+                                                    "mime_type"
                                                 ]
                                             }
                                         },
@@ -1204,17 +1489,48 @@
                     "retrieved_document": {
                         "type": "object",
                         "properties": {
-                            "index_id": {
+                            "uuid": {
                                 "type": "string"
                             },
                             "content": {
+                                "type": "string",
+                                "contentEncoding": "base64"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            },
+                            "mime_type": {
                                 "type": "string"
                             }
                         },
                         "additionalProperties": false,
                         "required": [
-                            "index_id",
-                            "content"
+                            "uuid",
+                            "content",
+                            "metadata",
+                            "mime_type"
                         ]
                     },
                     "stop_reason": {
@@ -1304,6 +1620,22 @@
                     "metadata"
                 ],
                 "title": "Dataset to be used for training or evaluating language models."
+            },
+            "MemoryBank": {
+                "type": "object",
+                "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uuid",
+                    "name"
+                ]
             },
             "FinetuningJobArtifactsResponse": {
                 "type": "object",
@@ -2406,19 +2738,22 @@
     ],
     "tags": [
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Inference"
         },
         {
-            "name": "Datasets"
+            "name": "MemoryBanks"
         },
         {
             "name": "AgenticSystem"
         },
         {
-            "name": "Inference"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Finetuning"
+        },
+        {
+            "name": "Datasets"
         },
         {
             "name": "RewardScoring"
@@ -2470,6 +2805,10 @@
         {
             "name": "Dataset",
             "description": "Dataset to be used for training or evaluating language models.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
+        },
+        {
+            "name": "MemoryBank",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
         },
         {
             "name": "FinetuningJobArtifactsResponse",
@@ -2556,6 +2895,7 @@
                 "Datasets",
                 "Finetuning",
                 "Inference",
+                "MemoryBanks",
                 "RewardScoring",
                 "SyntheticDataGeneration"
             ]
@@ -2584,6 +2924,7 @@
                 "FinetuningTrainRequest",
                 "KScoredPromptGenerations",
                 "LoraFinetuningConfig",
+                "MemoryBank",
                 "Message",
                 "MessageScore",
                 "OptimizerConfig",
