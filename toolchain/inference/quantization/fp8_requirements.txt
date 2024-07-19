@@ -1,0 +1,5 @@
+fairscale
+fire
+tiktoken
+blobfile
+fbgemm-gpu==0.8.0rc4
