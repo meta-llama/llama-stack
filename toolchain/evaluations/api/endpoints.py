@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from pyopenapi import webmethod
 
-from models.llama3_1.api.datatypes import * # noqa: F403
+from models.llama3_1.api.datatypes import *  # noqa: F403
 from .datatypes import *  # noqa: F403
 from toolchain.dataset.api.datatypes import *  # noqa: F403
 from toolchain.common.training_types import *  # noqa: F403

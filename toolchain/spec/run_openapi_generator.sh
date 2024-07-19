@@ -1,5 +1,5 @@
 #!/bin/bash
 
-set -x 
+set -x
 
 PYTHONPATH=../../../oss-ops:../.. python3 -m toolchain.spec.generate

@@ -1,10 +1,11 @@
 from enum import Enum
 from typing import Any, Dict, Optional
 
+from models.llama3_1.api.datatypes import URL
+
 from pydantic import BaseModel
 
 from strong_typing.schema import json_schema_type
-from models.llama3_1.api.datatypes import URL
 
 
 @json_schema_type
