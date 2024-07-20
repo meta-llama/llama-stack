@@ -11,7 +11,7 @@ from .base import (  # noqa: F401
 from .code_scanner import CodeScannerShield  # noqa: F401
 from .contrib.third_party_shield import ThirdPartyShield  # noqa: F401
 from .llama_guard import LlamaGuardShield  # noqa: F401
-from .prompt_guard import PromptGuardShield  # noqa: F401
+from .prompt_guard import InjectionShield, JailbreakShield, PromptGuardShield  # noqa: F401
 from .shield_runner import SafetyException, ShieldRunnerMixin  # noqa: F401
 
 transformers.logging.set_verbosity_error()

@@ -16,6 +16,8 @@ class BuiltinShield(Enum):
     prompt_guard = "prompt_guard"
     code_scanner_guard = "code_scanner_guard"
     third_party_shield = "third_party_shield"
+    injection_shield = "injection_shield"
+    jailbreak_shield = "jailbreak_shield"
 
 
 ShieldType = Union[BuiltinShield, str]
