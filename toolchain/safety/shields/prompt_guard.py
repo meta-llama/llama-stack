@@ -3,7 +3,7 @@ from typing import List
 
 import torch
 
-from models.llama3.datatypes import Message
+from models.llama3_1.api.datatypes import Message
 from termcolor import cprint
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 

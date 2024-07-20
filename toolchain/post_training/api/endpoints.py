@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from pyopenapi import webmethod
 from strong_typing.schema import json_schema_type
 
-from models.llama3.datatypes import *  # noqa: F403
+from models.llama3_1.api.datatypes import *  # noqa: F403
 from toolchain.dataset.api.datatypes import *  # noqa: F403
 from toolchain.common.training_types import *  # noqa: F403
 from .datatypes import *  # noqa: F403

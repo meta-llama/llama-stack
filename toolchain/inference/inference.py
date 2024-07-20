@@ -1,6 +1,6 @@
 from typing import AsyncGenerator
 
-from models.llama3.datatypes import StopReason
+from models.llama3_1.api.datatypes import StopReason
 
 from .api.config import CheckpointType, GeneratorArgs, InlineImplConfig
 from .api.datatypes import (

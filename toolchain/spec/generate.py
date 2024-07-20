@@ -4,7 +4,7 @@ import yaml
 
 from pyopenapi import Info, Options, Server, Specification
 
-from models.llama3.datatypes import *  # noqa: F403
+from models.llama3_1.api.datatypes import *  # noqa: F403
 from toolchain.dataset.api import *  # noqa: F403
 from toolchain.evaluations.api import *  # noqa: F403
 from toolchain.inference.api import *  # noqa: F403

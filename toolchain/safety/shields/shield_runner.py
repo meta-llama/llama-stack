@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
 
-from models.llama3.datatypes import Message, Role
+from models.llama3_1.api.datatypes import Message, Role
 
 from .base import OnViolationAction, ShieldBase, ShieldResponse
 

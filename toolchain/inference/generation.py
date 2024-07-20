@@ -16,11 +16,11 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from models.llama3.args import ModelArgs
-from models.llama3.chat_format import ChatFormat, ModelInput
-from models.llama3.datatypes import Message
-from models.llama3.model import Transformer
-from models.llama3.tokenizer import Tokenizer
+from models.llama3_1.api.args import ModelArgs
+from models.llama3_1.api.chat_format import ChatFormat, ModelInput
+from models.llama3_1.api.datatypes import Message
+from models.llama3_1.api.model import Transformer
+from models.llama3_1.api.tokenizer import Tokenizer
 from termcolor import cprint
 
 

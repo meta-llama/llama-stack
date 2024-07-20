@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from strong_typing.schema import json_schema_type
 from typing_extensions import Annotated
 
-from models.llama3.datatypes import *  # noqa: F403
+from models.llama3_1.api.datatypes import *  # noqa: F403
 
 
 class LogProbConfig(BaseModel):

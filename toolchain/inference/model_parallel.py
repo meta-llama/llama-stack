@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Generator, List, Optional
 
-from models.llama3.chat_format import ChatFormat
-from models.llama3.datatypes import Message
-from models.llama3.tokenizer import Tokenizer
+from models.llama3_1.api.chat_format import ChatFormat
+from models.llama3_1.api.datatypes import Message
+from models.llama3_1.api.tokenizer import Tokenizer
 
 from .api.config import GeneratorArgs
 from .generation import Llama

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Union
 
-from models.llama3.datatypes import Attachment, Message
+from models.llama3_1.api.datatypes import Attachment, Message
 from toolchain.safety.api.datatypes import *  # noqa: F403
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"

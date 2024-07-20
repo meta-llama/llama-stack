@@ -1,7 +1,7 @@
 import sys
 from typing import List
 
-from models.llama3.datatypes import Message
+from models.llama3_1.api.datatypes import Message
 
 parent_dir = "../.."
 sys.path.append(parent_dir)

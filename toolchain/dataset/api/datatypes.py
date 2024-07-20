@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 from strong_typing.schema import json_schema_type
-from models.llama3.datatypes import URL
+from models.llama3_1.api.datatypes import URL
 
 
 @json_schema_type
