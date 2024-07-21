@@ -21,19 +21,19 @@ class QuantizationType(Enum):
 
 @json_schema_type
 class Fp8QuantizationConfig(BaseModel):
-    quantization_type: Literal[QuantizationType.fp8.value] = QuantizationType.fp8.value
+    type: Literal[QuantizationType.fp8.value] = QuantizationType.fp8.value
 
 
 @json_schema_type
 class Bf16QuantizationConfig(BaseModel):
-    quantization_type: Literal[QuantizationType.bf16.value] = (
+    type: Literal[QuantizationType.bf16.value] = (
         QuantizationType.bf16.value
     )
 
 
 QuantizationConfig = Annotated[
     Union[Bf16QuantizationConfig, Fp8QuantizationConfig],
-    Field(discriminator="quantization_type"),
+    Field(discriminator="type"),
 ]
 
 
