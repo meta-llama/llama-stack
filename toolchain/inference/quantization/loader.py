@@ -2,28 +2,40 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import os
-
 from typing import Optional
 
 import torch
+from torch import Tensor
+
+from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
 from models.llama3_1.api.model import Transformer, TransformerBlock
+
+from termcolor import cprint
 
 from toolchain.inference.api.config import (
     CheckpointQuantizationFormat,
     InlineImplConfig,
 )
-from toolchain.inference.api.datatypes import (
-    QuantizationType,
-)
+from toolchain.inference.api.datatypes import QuantizationType
 
-from termcolor import cprint
 
 def is_fbgemm_available() -> bool:
     try:
         import fbgemm_gpu.experimental.gen_ai  # noqa: F401
+
         return True
     except (ImportError, ModuleNotFoundError):
         return False
+
+
+def swiglu_wrapper(
+    self,
+    x: Tensor,
+):
+    from .fp8_impls import ffn_swiglu
+
+    out = ffn_swiglu(x, self.w1.weight, self.w3.weight, self.w2.weight)
+    return reduce_from_model_parallel_region(out)
 
 
 def convert_to_quantized_model(
@@ -38,8 +50,6 @@ def convert_to_quantized_model(
         raise ValueError("Only FP8 quantization is supported")
 
     from .fp8_impls import Fp8ScaledWeights, load_fp8, quantize_fp8
-
-
 
     checkpoint = config.checkpoint_config.checkpoint
     # Move weights to GPU with quantization
@@ -57,6 +67,8 @@ def convert_to_quantized_model(
             if isinstance(block, TransformerBlock):
                 if block.layer_id == 0 or block.layer_id == (model.n_layers - 1):
                     continue
+
+                block.feed_forward.forward = swiglu_wrapper.__get__(block.feed_forward)
                 block.feed_forward.w1.weight = load_fp8(
                     block.feed_forward.w1.weight,
                     fp8_scales[
@@ -84,6 +96,7 @@ def convert_to_quantized_model(
             if isinstance(block, TransformerBlock):
                 if block.layer_id == 0 or block.layer_id == (model.n_layers - 1):
                     continue
+                block.feed_forward.forward = swiglu_wrapper.__get__(block.feed_forward)
                 block.feed_forward.w1.weight = quantize_fp8(
                     block.feed_forward.w1.weight,
                     fp8_activation_scale_ub,

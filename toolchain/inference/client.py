@@ -5,12 +5,13 @@ from typing import AsyncGenerator
 import fire
 import httpx
 
-from .api.endpoints import (
+from .api import (
     ChatCompletionRequest,
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
     InstructModel,
     ModelInference,
+    UserMessage,
 )
 
 
@@ -57,7 +58,7 @@ async def run_main(host: str, port: int):
     )
     async for event in client.chat_completion(
         ChatCompletionRequest(
-            model=InstructModel.llama3_70b_chat,
+            model=InstructModel.llama3_8b_chat,
             messages=[message],
             stream=True,
         )
