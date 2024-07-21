@@ -2,9 +2,9 @@ model_inference_config:
   impl_type: "inline"
   inline_config:
     checkpoint_type: "pytorch"
-    checkpoint_dir: /home/ashwin/local/checkpoints/Meta-Llama-3.1-8B-Instruct-20240710150000
-    tokenizer_path: /home/ashwin/local/checkpoints/Meta-Llama-3.1-8B-Instruct-20240710150000/tokenizer.model
-    model_parallel_size: 1
+    checkpoint_dir: /home/ashwin/local/checkpoints/Meta-Llama-3.1-70B-Instruct-20240710150000
+    tokenizer_path: /home/ashwin/local/checkpoints/Meta-Llama-3.1-70B-Instruct-20240710150000/tokenizer.model
+    model_parallel_size: 8
     max_seq_len: 2048
     max_batch_size: 1
     quantization: 

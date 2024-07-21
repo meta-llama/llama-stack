@@ -13,8 +13,6 @@ from toolchain.common.deployment_types import RestAPIExecutionConfig
 @json_schema_type
 class BuiltinShield(Enum):
     llama_guard = "llama_guard"
-    injection_shield = "injection_shield"
-    jailbreak_shield = "jailbreak_shield"
     code_scanner_guard = "code_scanner_guard"
     third_party_shield = "third_party_shield"
     injection_shield = "injection_shield"
