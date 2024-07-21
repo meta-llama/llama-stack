@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail 
+
 # Function to prompt the user for input and set the variables
 read_input() {
     read -p "Enter the checkpoint directory (e.g., /home/dalton/models/Meta-Llama-3.1-8B-Instruct-20240710150000): " checkpoint_dir
