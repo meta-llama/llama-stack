@@ -30,7 +30,7 @@ create_parent_dir() {
 # Function to output the YAML configuration
 output_yaml() {
     cat <<EOL > ${yaml_output_path}
-model_inference_config:
+inference_config:
   impl_type: "inline"
   inline_config:
     checkpoint_type: "pytorch"

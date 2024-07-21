@@ -148,13 +148,13 @@ components:
           type: string
         step_details:
           oneOf:
-          - $ref: '#/components/schemas/ModelInferenceStep'
+          - $ref: '#/components/schemas/InferenceStep'
           - $ref: '#/components/schemas/ToolExecutionStep'
           - $ref: '#/components/schemas/ShieldCallStep'
           - $ref: '#/components/schemas/MemoryRetrievalStep'
         step_type:
           enum:
-          - model_inference
+          - inference
           - tool_execution
           - shield_call
           - memory_retrieval
@@ -176,7 +176,7 @@ components:
           type: string
         step_type:
           enum:
-          - model_inference
+          - inference
           - tool_execution
           - shield_call
           - memory_retrieval
@@ -210,7 +210,7 @@ components:
           type: string
         step_type:
           enum:
-          - model_inference
+          - inference
           - tool_execution
           - shield_call
           - memory_retrieval
@@ -263,171 +263,23 @@ components:
       - url
       - mime_type
       type: object
-    BatchChatCompletionRequest:
-      additionalProperties: false
-      properties:
-        available_tools:
-          items:
-            $ref: '#/components/schemas/ToolDefinition'
-          type: array
-        logprobs:
-          additionalProperties: false
-          properties:
-            top_k:
-              type: integer
-          type: object
-        messages_batch:
-          items:
-            items:
-              oneOf:
-              - $ref: '#/components/schemas/UserMessage'
-              - $ref: '#/components/schemas/SystemMessage'
-              - $ref: '#/components/schemas/ToolResponseMessage'
-              - $ref: '#/components/schemas/CompletionMessage'
-            type: array
-          type: array
-        model:
-          $ref: '#/components/schemas/InstructModel'
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-      required:
-      - model
-      - messages_batch
-      type: object
-    BatchCompletionRequest:
-      additionalProperties: false
-      properties:
-        content_batch:
-          items:
-            oneOf:
-            - type: string
-            - $ref: '#/components/schemas/Attachment'
-            - items:
-                oneOf:
-                - type: string
-                - $ref: '#/components/schemas/Attachment'
-              type: array
-          type: array
-        logprobs:
-          additionalProperties: false
-          properties:
-            top_k:
-              type: integer
-          type: object
-        model:
-          $ref: '#/components/schemas/PretrainedModel'
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-      required:
-      - model
-      - content_batch
-      type: object
     Bf16QuantizationConfig:
       additionalProperties: false
       properties:
-        quantization_type:
+        type:
           const: bf16
           type: string
       required:
-      - quantization_type
+      - type
       type: object
     BuiltinShield:
       enum:
       - llama_guard
-      - prompt_guard
       - code_scanner_guard
       - third_party_shield
+      - injection_shield
+      - jailbreak_shield
       type: string
-    ChatCompletionRequest:
-      additionalProperties: false
-      properties:
-        available_tools:
-          items:
-            $ref: '#/components/schemas/ToolDefinition'
-          type: array
-        logprobs:
-          additionalProperties: false
-          properties:
-            top_k:
-              type: integer
-          type: object
-        messages:
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
-          type: array
-        model:
-          $ref: '#/components/schemas/InstructModel'
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-        stream:
-          type: boolean
-      required:
-      - model
-      - messages
-      type: object
-    ChatCompletionResponse:
-      additionalProperties: false
-      properties:
-        completion_message:
-          $ref: '#/components/schemas/CompletionMessage'
-        logprobs:
-          items:
-            $ref: '#/components/schemas/TokenLogProbs'
-          type: array
-      required:
-      - completion_message
-      type: object
-    ChatCompletionResponseEvent:
-      additionalProperties: false
-      properties:
-        delta:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ToolCallDelta'
-        event_type:
-          $ref: '#/components/schemas/ChatCompletionResponseEventType'
-        logprobs:
-          items:
-            $ref: '#/components/schemas/TokenLogProbs'
-          type: array
-        stop_reason:
-          $ref: '#/components/schemas/StopReason'
-      required:
-      - event_type
-      - delta
-      title: Chat completion response event.
-      type: object
-    ChatCompletionResponseEventType:
-      enum:
-      - start
-      - complete
-      - progress
-      type: string
-    ChatCompletionResponseStreamChunk:
-      additionalProperties: false
-      properties:
-        event:
-          $ref: '#/components/schemas/ChatCompletionResponseEvent'
-      required:
-      - event
-      title: SSE-stream of these events.
-      type: object
     CompletionMessage:
       additionalProperties: false
       properties:
@@ -454,65 +306,6 @@ components:
       - content
       - stop_reason
       - tool_calls
-      type: object
-    CompletionRequest:
-      additionalProperties: false
-      properties:
-        content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/Attachment'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
-            type: array
-        logprobs:
-          additionalProperties: false
-          properties:
-            top_k:
-              type: integer
-          type: object
-        model:
-          $ref: '#/components/schemas/PretrainedModel'
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-        stream:
-          type: boolean
-      required:
-      - model
-      - content
-      type: object
-    CompletionResponse:
-      additionalProperties: false
-      properties:
-        completion_message:
-          $ref: '#/components/schemas/CompletionMessage'
-        logprobs:
-          items:
-            $ref: '#/components/schemas/TokenLogProbs'
-          type: array
-      required:
-      - completion_message
-      type: object
-    CompletionResponseStreamChunk:
-      additionalProperties: false
-      properties:
-        delta:
-          type: string
-        logprobs:
-          items:
-            $ref: '#/components/schemas/TokenLogProbs'
-          type: array
-        stop_reason:
-          $ref: '#/components/schemas/StopReason'
-      required:
-      - delta
-      title: streamed completion response.
       type: object
     CreateDatasetRequest:
       additionalProperties: false
@@ -737,11 +530,35 @@ components:
     Fp8QuantizationConfig:
       additionalProperties: false
       properties:
-        quantization_type:
+        type:
           const: fp8
           type: string
       required:
-      - quantization_type
+      - type
+      type: object
+    InferenceStep:
+      additionalProperties: false
+      properties:
+        completed_at:
+          format: date-time
+          type: string
+        model_response:
+          $ref: '#/components/schemas/CompletionMessage'
+        started_at:
+          format: date-time
+          type: string
+        step_id:
+          type: string
+        step_type:
+          const: inference
+          type: string
+        turn_id:
+          type: string
+      required:
+      - turn_id
+      - step_id
+      - step_type
+      - model_response
       type: object
     InstructModel:
       enum:
@@ -842,30 +659,6 @@ components:
       - memory_bank_ids
       - documents
       - scores
-      type: object
-    ModelInferenceStep:
-      additionalProperties: false
-      properties:
-        completed_at:
-          format: date-time
-          type: string
-        model_response:
-          $ref: '#/components/schemas/CompletionMessage'
-        started_at:
-          format: date-time
-          type: string
-        step_id:
-          type: string
-        step_type:
-          const: model_inference
-          type: string
-        turn_id:
-          type: string
-      required:
-      - turn_id
-      - step_id
-      - step_type
-      - model_response
       type: object
     OnViolationAction:
       enum:
@@ -1408,16 +1201,6 @@ components:
       - role
       - content
       type: object
-    TokenLogProbs:
-      additionalProperties: false
-      properties:
-        logprobs_by_token:
-          additionalProperties:
-            type: number
-          type: object
-      required:
-      - logprobs_by_token
-      type: object
     ToolCall:
       additionalProperties: false
       properties:
@@ -1477,32 +1260,11 @@ components:
       type: object
     ToolCallParseStatus:
       enum:
-      - start
+      - started
       - in_progress
       - failure
       - success
       type: string
-    ToolDefinition:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        parameters:
-          additionalProperties:
-            $ref: '#/components/schemas/ToolParamDefinition'
-          type: object
-        tool_name:
-          oneOf:
-          - enum:
-            - brave_search
-            - wolfram_alpha
-            - photogen
-            - code_interpreter
-            type: string
-          - type: string
-      required:
-      - tool_name
-      type: object
     ToolExecutionStep:
       additionalProperties: false
       properties:
@@ -1686,7 +1448,7 @@ components:
         steps:
           items:
             oneOf:
-            - $ref: '#/components/schemas/ModelInferenceStep'
+            - $ref: '#/components/schemas/InferenceStep'
             - $ref: '#/components/schemas/ToolExecutionStep'
             - $ref: '#/components/schemas/ShieldCallStep'
             - $ref: '#/components/schemas/MemoryRetrievalStep'
@@ -1729,7 +1491,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-07-19 11:49:56.794897"
+    \ draft and subject to change.\n                Generated at 2024-07-21 12:19:33.327857"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -1761,58 +1523,6 @@ paths:
         required: true
         schema:
           type: string
-      responses:
-        '200':
-          description: OK
-      tags:
-      - AgenticSystem
-  /agentic_system/memory_bank/attach:
-    post:
-      parameters:
-      - in: query
-        name: agent_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: session_id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                type: string
-              type: array
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - AgenticSystem
-  /agentic_system/memory_bank/detach:
-    post:
-      parameters:
-      - in: query
-        name: agent_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: session_id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                type: string
-              type: array
-        required: true
       responses:
         '200':
           description: OK
@@ -1969,19 +1679,6 @@ paths:
           description: OK
       tags:
       - Evaluations
-  /evaluate/job/cancel:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Evaluations
   /evaluate/job/logs:
     get:
       parameters:
@@ -2082,78 +1779,6 @@ paths:
           description: OK
       tags:
       - Evaluations
-  /inference/batch_chat_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchChatCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/ChatCompletionResponse'
-          description: OK
-      tags:
-      - ModelInference
-  /inference/batch_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/CompletionResponse'
-          description: OK
-      tags:
-      - ModelInference
-  /inference/chat_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChatCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
-          description: SSE-stream of these events.
-      tags:
-      - ModelInference
-  /inference/completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CompletionResponseStreamChunk'
-          description: streamed completion response.
-      tags:
-      - ModelInference
   /memory_bank/delete:
     post:
       parameters:
@@ -2335,19 +1960,6 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/job/cancel:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: OK
-      tags:
-      - PostTraining
   /post_training/job/logs:
     get:
       parameters:
@@ -2471,22 +2083,29 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
+- name: RewardScoring
+- name: PostTraining
 - name: AgenticSystem
 - name: Datasets
-- name: ModelInference
-- name: SyntheticDataGeneration
 - name: MemoryBanks
-- name: PostTraining
 - name: Evaluations
-- name: RewardScoring
+- name: SyntheticDataGeneration
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
+    />
+  name: AgenticSystemCreateRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemInstanceConfig"
+    />
+  name: AgenticSystemInstanceConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemToolDefinition"
+    />
+  name: AgenticSystemToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
-- description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
-    />
-  name: BatchChatCompletionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Bf16QuantizationConfig"
     />
   name: Bf16QuantizationConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinShield" />
+  name: BuiltinShield
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
     />
   name: CompletionMessage
@@ -2495,19 +2114,28 @@ tags:
   name: Fp8QuantizationConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/InstructModel" />
   name: InstructModel
+- description: <SchemaDefinition schemaRef="#/components/schemas/OnViolationAction"
+    />
+  name: OnViolationAction
+- description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIExecutionConfig"
+    />
+  name: RestAPIExecutionConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIMethod" />
+  name: RestAPIMethod
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams" />
   name: SamplingParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingStrategy"
     />
   name: SamplingStrategy
+- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
+    />
+  name: ShieldDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/StopReason" />
   name: StopReason
 - description: <SchemaDefinition schemaRef="#/components/schemas/SystemMessage" />
   name: SystemMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolCall" />
   name: ToolCall
-- description: <SchemaDefinition schemaRef="#/components/schemas/ToolDefinition" />
-  name: ToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolParamDefinition"
     />
   name: ToolParamDefinition
@@ -2518,74 +2146,6 @@ tags:
   name: URL
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponse"
-    />
-  name: ChatCompletionResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/TokenLogProbs" />
-  name: TokenLogProbs
-- description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequest"
-    />
-  name: BatchCompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/PretrainedModel"
-    />
-  name: PretrainedModel
-- description: <SchemaDefinition schemaRef="#/components/schemas/CompletionResponse"
-    />
-  name: CompletionResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
-    />
-  name: ChatCompletionRequest
-- description: 'Chat completion response event.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponseEvent"
-    />'
-  name: ChatCompletionResponseEvent
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponseEventType"
-    />
-  name: ChatCompletionResponseEventType
-- description: 'SSE-stream of these events.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponseStreamChunk"
-    />'
-  name: ChatCompletionResponseStreamChunk
-- description: <SchemaDefinition schemaRef="#/components/schemas/ToolCallDelta" />
-  name: ToolCallDelta
-- description: <SchemaDefinition schemaRef="#/components/schemas/ToolCallParseStatus"
-    />
-  name: ToolCallParseStatus
-- description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
-    />
-  name: CompletionRequest
-- description: 'streamed completion response.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/CompletionResponseStreamChunk"
-    />'
-  name: CompletionResponseStreamChunk
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
-    />
-  name: AgenticSystemCreateRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemInstanceConfig"
-    />
-  name: AgenticSystemInstanceConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemToolDefinition"
-    />
-  name: AgenticSystemToolDefinition
-- description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinShield" />
-  name: BuiltinShield
-- description: <SchemaDefinition schemaRef="#/components/schemas/OnViolationAction"
-    />
-  name: OnViolationAction
-- description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIExecutionConfig"
-    />
-  name: RestAPIExecutionConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIMethod" />
-  name: RestAPIMethod
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
-    />
-  name: ShieldDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
     />
   name: AgenticSystemCreateResponse
@@ -2622,19 +2182,23 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseTurnStartPayload"
     />
   name: AgenticSystemTurnResponseTurnStartPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
+  name: InferenceStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
     />
   name: MemoryBankDocument
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
     />
   name: MemoryRetrievalStep
-- description: <SchemaDefinition schemaRef="#/components/schemas/ModelInferenceStep"
-    />
-  name: ModelInferenceStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldCallStep" />
   name: ShieldCallStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldResponse" />
   name: ShieldResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ToolCallDelta" />
+  name: ToolCallDelta
+- description: <SchemaDefinition schemaRef="#/components/schemas/ToolCallParseStatus"
+    />
+  name: ToolCallParseStatus
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolExecutionStep"
     />
   name: ToolExecutionStep
@@ -2785,6 +2349,9 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/PostTrainingSFTRequest" />'
   name: PostTrainingSFTRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/PretrainedModel"
+    />
+  name: PretrainedModel
 - description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
   name: QLoraFinetuningConfig
@@ -2795,7 +2362,6 @@ x-tagGroups:
   - Datasets
   - Evaluations
   - MemoryBanks
-  - ModelInference
   - PostTraining
   - RewardScoring
   - SyntheticDataGeneration
@@ -2816,19 +2382,9 @@ x-tagGroups:
   - AgenticSystemTurnResponseTurnCompletePayload
   - AgenticSystemTurnResponseTurnStartPayload
   - Attachment
-  - BatchChatCompletionRequest
-  - BatchCompletionRequest
   - Bf16QuantizationConfig
   - BuiltinShield
-  - ChatCompletionRequest
-  - ChatCompletionResponse
-  - ChatCompletionResponseEvent
-  - ChatCompletionResponseEventType
-  - ChatCompletionResponseStreamChunk
   - CompletionMessage
-  - CompletionRequest
-  - CompletionResponse
-  - CompletionResponseStreamChunk
   - CreateDatasetRequest
   - DPOAlignmentConfig
   - DialogGenerations
@@ -2842,12 +2398,12 @@ x-tagGroups:
   - EvaluationJobStatusResponse
   - FinetuningAlgorithm
   - Fp8QuantizationConfig
+  - InferenceStep
   - InstructModel
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
-  - ModelInferenceStep
   - OnViolationAction
   - OptimizerConfig
   - PostTrainingJob
@@ -2877,11 +2433,9 @@ x-tagGroups:
   - SyntheticDataGenerationRequest
   - SyntheticDataGenerationResponse
   - SystemMessage
-  - TokenLogProbs
   - ToolCall
   - ToolCallDelta
   - ToolCallParseStatus
-  - ToolDefinition
   - ToolExecutionStep
   - ToolParamDefinition
   - ToolResponse

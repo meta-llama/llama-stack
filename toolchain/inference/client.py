@@ -10,12 +10,12 @@ from .api import (
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
     InstructModel,
-    ModelInference,
+    Inference,
     UserMessage,
 )
 
 
-class ModelInferenceClient(ModelInference):
+class InferenceClient(Inference):
     def __init__(self, base_url: str):
         self.base_url = base_url
 
@@ -48,7 +48,7 @@ class ModelInferenceClient(ModelInference):
 
 
 async def run_main(host: str, port: int):
-    client = ModelInferenceClient(f"http://{host}:{port}")
+    client = InferenceClient(f"http://{host}:{port}")
 
     message = UserMessage(content="hello world, help me out here")
     req = ChatCompletionRequest(

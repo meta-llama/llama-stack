@@ -90,7 +90,7 @@ class BatchChatCompletionResponse(BaseModel):
     completion_message_batch: List[CompletionMessage]
 
 
-class ModelInference(Protocol):
+class Inference(Protocol):
 
     @webmethod(route="/inference/completion")
     async def completion(

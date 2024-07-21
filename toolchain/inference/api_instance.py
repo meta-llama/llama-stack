@@ -1,12 +1,12 @@
-from .api.config import ImplType, ModelInferenceConfig
+from .api.config import ImplType, InferenceConfig
 
 
-async def get_inference_api_instance(config: ModelInferenceConfig):
+async def get_inference_api_instance(config: InferenceConfig):
     if config.impl_config.impl_type == ImplType.inline.value:
-        from .inference import ModelInferenceImpl
+        from .inference import InferenceImpl
 
-        return ModelInferenceImpl(config.impl_config)
+        return InferenceImpl(config.impl_config)
 
-    from .client import ModelInferenceClient
+    from .client import InferenceClient
 
-    return ModelInferenceClient(config.impl_config.url)
+    return InferenceClient(config.impl_config.url)

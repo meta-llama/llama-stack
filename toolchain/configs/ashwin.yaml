@@ -1,4 +1,4 @@
-model_inference_config:
+inference_config:
   impl_type: "inline"
   inline_config:
     checkpoint_type: "pytorch"
@@ -7,5 +7,5 @@ model_inference_config:
     model_parallel_size: 8
     max_seq_len: 2048
     max_batch_size: 1
-    quantization: 
+    quantization:
       type: "fp8"

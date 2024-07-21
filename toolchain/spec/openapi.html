@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-07-19 11:49:56.794897"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-07-21 12:19:33.327857"
     },
     "servers": [
         {
@@ -29,213 +29,6 @@
         }
     ],
     "paths": {
-        "/agentic_system/memory_bank/attach": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "AgenticSystem"
-                ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "session_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/inference/batch_chat_completion": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ChatCompletionResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "ModelInference"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/BatchChatCompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/inference/batch_completion": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CompletionResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "ModelInference"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/BatchCompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/job/cancel": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/post_training/job/cancel": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "PostTraining"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/inference/chat_completion": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "SSE-stream of these events.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ChatCompletionResponseStreamChunk"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "ModelInference"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ChatCompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/inference/completion": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "streamed completion response.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CompletionResponseStreamChunk"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "ModelInference"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/agentic_system/create": {
             "post": {
                 "responses": {
@@ -442,49 +235,6 @@
                 "parameters": [
                     {
                         "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/agentic_system/memory_bank/detach": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "AgenticSystem"
-                ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "session_id",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1262,6 +1012,133 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
+            "AgenticSystemCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "$ref": "#/components/schemas/InstructModel"
+                    },
+                    "instance_config": {
+                        "$ref": "#/components/schemas/AgenticSystemInstanceConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "instance_config"
+                ]
+            },
+            "AgenticSystemInstanceConfig": {
+                "type": "object",
+                "properties": {
+                    "instructions": {
+                        "type": "string"
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "available_tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgenticSystemToolDefinition"
+                        }
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "quantization_config": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
+                            }
+                        ]
+                    },
+                    "debug_prefix_messages": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/SystemMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolResponseMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CompletionMessage"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "instructions"
+                ]
+            },
+            "AgenticSystemToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "tool_name": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "brave_search",
+                                    "wolfram_alpha",
+                                    "photogen",
+                                    "code_interpreter"
+                                ]
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ToolParamDefinition"
+                        }
+                    },
+                    "execution_config": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_name"
+                ]
+            },
             "Attachment": {
                 "type": "object",
                 "properties": {
@@ -1278,80 +1155,27 @@
                     "mime_type"
                 ]
             },
-            "BatchChatCompletionRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/InstructModel"
-                    },
-                    "messages_batch": {
-                        "type": "array",
-                        "items": {
-                            "type": "array",
-                            "items": {
-                                "oneOf": [
-                                    {
-                                        "$ref": "#/components/schemas/UserMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/SystemMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/ToolResponseMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/CompletionMessage"
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "available_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDefinition"
-                        }
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "properties": {
-                            "top_k": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "messages_batch"
-                ]
-            },
             "Bf16QuantizationConfig": {
                 "type": "object",
                 "properties": {
-                    "quantization_type": {
+                    "type": {
                         "type": "string",
                         "const": "bf16"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "quantization_type"
+                    "type"
+                ]
+            },
+            "BuiltinShield": {
+                "type": "string",
+                "enum": [
+                    "llama_guard",
+                    "code_scanner_guard",
+                    "third_party_shield",
+                    "injection_shield",
+                    "jailbreak_shield"
                 ]
             },
             "CompletionMessage": {
@@ -1405,14 +1229,14 @@
             "Fp8QuantizationConfig": {
                 "type": "object",
                 "properties": {
-                    "quantization_type": {
+                    "type": {
                         "type": "string",
                         "const": "fp8"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "quantization_type"
+                    "type"
                 ]
             },
             "InstructModel": {
@@ -1420,6 +1244,57 @@
                 "enum": [
                     "llama3_8b_chat",
                     "llama3_70b_chat"
+                ]
+            },
+            "OnViolationAction": {
+                "type": "integer",
+                "enum": [
+                    0,
+                    1,
+                    2
+                ]
+            },
+            "RestAPIExecutionConfig": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "method": {
+                        "$ref": "#/components/schemas/RestAPIMethod"
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "headers": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "body": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "url",
+                    "method"
+                ]
+            },
+            "RestAPIMethod": {
+                "type": "string",
+                "enum": [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE"
                 ]
             },
             "SamplingParams": {
@@ -1455,6 +1330,41 @@
                     "greedy",
                     "top_p",
                     "top_k"
+                ]
+            },
+            "ShieldDefinition": {
+                "type": "object",
+                "properties": {
+                    "shield_type": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BuiltinShield"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ToolParamDefinition"
+                        }
+                    },
+                    "on_violation_action": {
+                        "$ref": "#/components/schemas/OnViolationAction"
+                    },
+                    "execution_config": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shield_type",
+                    "on_violation_action"
                 ]
             },
             "StopReason": {
@@ -1598,40 +1508,6 @@
                     "arguments"
                 ]
             },
-            "ToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ]
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "tool_name"
-                ]
-            },
             "ToolParamDefinition": {
                 "type": "object",
                 "properties": {
@@ -1750,579 +1626,6 @@
                     "content"
                 ]
             },
-            "ChatCompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "completion_message": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "completion_message"
-                ]
-            },
-            "TokenLogProbs": {
-                "type": "object",
-                "properties": {
-                    "logprobs_by_token": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "number"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "logprobs_by_token"
-                ]
-            },
-            "BatchCompletionRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/PretrainedModel"
-                    },
-                    "content_batch": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/Attachment"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/Attachment"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "properties": {
-                            "top_k": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "content_batch"
-                ]
-            },
-            "PretrainedModel": {
-                "type": "string",
-                "enum": [
-                    "llama3_8b",
-                    "llama3_70b"
-                ]
-            },
-            "CompletionResponse": {
-                "type": "object",
-                "properties": {
-                    "completion_message": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "completion_message"
-                ]
-            },
-            "ChatCompletionRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/InstructModel"
-                    },
-                    "messages": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "available_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDefinition"
-                        }
-                    },
-                    "stream": {
-                        "type": "boolean"
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "properties": {
-                            "top_k": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "messages"
-                ]
-            },
-            "ChatCompletionResponseEvent": {
-                "type": "object",
-                "properties": {
-                    "event_type": {
-                        "$ref": "#/components/schemas/ChatCompletionResponseEventType"
-                    },
-                    "delta": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ToolCallDelta"
-                            }
-                        ]
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    },
-                    "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "event_type",
-                    "delta"
-                ],
-                "title": "Chat completion response event."
-            },
-            "ChatCompletionResponseEventType": {
-                "type": "string",
-                "enum": [
-                    "start",
-                    "complete",
-                    "progress"
-                ]
-            },
-            "ChatCompletionResponseStreamChunk": {
-                "type": "object",
-                "properties": {
-                    "event": {
-                        "$ref": "#/components/schemas/ChatCompletionResponseEvent"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "event"
-                ],
-                "title": "SSE-stream of these events."
-            },
-            "ToolCallDelta": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ToolCall"
-                            }
-                        ]
-                    },
-                    "parse_status": {
-                        "$ref": "#/components/schemas/ToolCallParseStatus"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "content",
-                    "parse_status"
-                ]
-            },
-            "ToolCallParseStatus": {
-                "type": "string",
-                "enum": [
-                    "start",
-                    "in_progress",
-                    "failure",
-                    "success"
-                ]
-            },
-            "CompletionRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/PretrainedModel"
-                    },
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "stream": {
-                        "type": "boolean"
-                    },
-                    "logprobs": {
-                        "type": "object",
-                        "properties": {
-                            "top_k": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "content"
-                ]
-            },
-            "CompletionResponseStreamChunk": {
-                "type": "object",
-                "properties": {
-                    "delta": {
-                        "type": "string"
-                    },
-                    "stop_reason": {
-                        "$ref": "#/components/schemas/StopReason"
-                    },
-                    "logprobs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TokenLogProbs"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "delta"
-                ],
-                "title": "streamed completion response."
-            },
-            "AgenticSystemCreateRequest": {
-                "type": "object",
-                "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/InstructModel"
-                    },
-                    "instance_config": {
-                        "$ref": "#/components/schemas/AgenticSystemInstanceConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model",
-                    "instance_config"
-                ]
-            },
-            "AgenticSystemInstanceConfig": {
-                "type": "object",
-                "properties": {
-                    "instructions": {
-                        "type": "string"
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "available_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AgenticSystemToolDefinition"
-                        }
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
-                    },
-                    "debug_prefix_messages": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "instructions"
-                ]
-            },
-            "AgenticSystemToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "enum": [
-                                    "brave_search",
-                                    "wolfram_alpha",
-                                    "photogen",
-                                    "code_interpreter"
-                                ]
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    },
-                    "execution_config": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "tool_name"
-                ]
-            },
-            "BuiltinShield": {
-                "type": "string",
-                "enum": [
-                    "llama_guard",
-                    "prompt_guard",
-                    "code_scanner_guard",
-                    "third_party_shield"
-                ]
-            },
-            "OnViolationAction": {
-                "type": "integer",
-                "enum": [
-                    0,
-                    1,
-                    2
-                ]
-            },
-            "RestAPIExecutionConfig": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "method": {
-                        "$ref": "#/components/schemas/RestAPIMethod"
-                    },
-                    "params": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    },
-                    "headers": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    },
-                    "body": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "url",
-                    "method"
-                ]
-            },
-            "RestAPIMethod": {
-                "type": "string",
-                "enum": [
-                    "GET",
-                    "POST",
-                    "PUT",
-                    "DELETE"
-                ]
-            },
-            "ShieldDefinition": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinShield"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    },
-                    "on_violation_action": {
-                        "$ref": "#/components/schemas/OnViolationAction"
-                    },
-                    "execution_config": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "shield_type",
-                    "on_violation_action"
-                ]
-            },
             "AgenticSystemCreateResponse": {
                 "type": "object",
                 "properties": {
@@ -2438,7 +1741,7 @@
                     "step_type": {
                         "type": "string",
                         "enum": [
-                            "model_inference",
+                            "inference",
                             "tool_execution",
                             "shield_call",
                             "memory_retrieval"
@@ -2447,7 +1750,7 @@
                     "step_details": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/ModelInferenceStep"
+                                "$ref": "#/components/schemas/InferenceStep"
                             },
                             {
                                 "$ref": "#/components/schemas/ToolExecutionStep"
@@ -2478,7 +1781,7 @@
                     "step_type": {
                         "type": "string",
                         "enum": [
-                            "model_inference",
+                            "inference",
                             "tool_execution",
                             "shield_call",
                             "memory_retrieval"
@@ -2514,7 +1817,7 @@
                     "step_type": {
                         "type": "string",
                         "enum": [
-                            "model_inference",
+                            "inference",
                             "tool_execution",
                             "shield_call",
                             "memory_retrieval"
@@ -2600,6 +1903,39 @@
                 "required": [
                     "event_type",
                     "turn_id"
+                ]
+            },
+            "InferenceStep": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "const": "inference"
+                    },
+                    "model_response": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "step_id",
+                    "step_type",
+                    "model_response"
                 ]
             },
             "MemoryBankDocument": {
@@ -2699,39 +2035,6 @@
                     "scores"
                 ]
             },
-            "ModelInferenceStep": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "step_id": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "step_type": {
-                        "type": "string",
-                        "const": "model_inference"
-                    },
-                    "model_response": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "step_id",
-                    "step_type",
-                    "model_response"
-                ]
-            },
             "ShieldCallStep": {
                 "type": "object",
                 "properties": {
@@ -2792,6 +2095,38 @@
                 "required": [
                     "shield_type",
                     "is_violation"
+                ]
+            },
+            "ToolCallDelta": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolCall"
+                            }
+                        ]
+                    },
+                    "parse_status": {
+                        "$ref": "#/components/schemas/ToolCallParseStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "parse_status"
+                ]
+            },
+            "ToolCallParseStatus": {
+                "type": "string",
+                "enum": [
+                    "started",
+                    "in_progress",
+                    "failure",
+                    "success"
                 ]
             },
             "ToolExecutionStep": {
@@ -2917,7 +2252,7 @@
                         "items": {
                             "oneOf": [
                                 {
-                                    "$ref": "#/components/schemas/ModelInferenceStep"
+                                    "$ref": "#/components/schemas/InferenceStep"
                                 },
                                 {
                                     "$ref": "#/components/schemas/ToolExecutionStep"
@@ -4019,6 +3354,13 @@
                 ],
                 "title": "Request to finetune a model."
             },
+            "PretrainedModel": {
+                "type": "string",
+                "enum": [
+                    "llama3_8b",
+                    "llama3_70b"
+                ]
+            },
             "QLoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
@@ -4060,40 +3402,49 @@
     ],
     "tags": [
         {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
             "name": "AgenticSystem"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "ModelInference"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
             "name": "MemoryBanks"
-        },
-        {
-            "name": "PostTraining"
         },
         {
             "name": "Evaluations"
         },
         {
-            "name": "RewardScoring"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "AgenticSystemCreateRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateRequest\" />"
+        },
+        {
+            "name": "AgenticSystemInstanceConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemInstanceConfig\" />"
+        },
+        {
+            "name": "AgenticSystemToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemToolDefinition\" />"
         },
         {
             "name": "Attachment",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
-            "name": "BatchChatCompletionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchChatCompletionRequest\" />"
-        },
-        {
             "name": "Bf16QuantizationConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Bf16QuantizationConfig\" />"
+        },
+        {
+            "name": "BuiltinShield",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinShield\" />"
         },
         {
             "name": "CompletionMessage",
@@ -4108,12 +3459,28 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InstructModel\" />"
         },
         {
+            "name": "OnViolationAction",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OnViolationAction\" />"
+        },
+        {
+            "name": "RestAPIExecutionConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIExecutionConfig\" />"
+        },
+        {
+            "name": "RestAPIMethod",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIMethod\" />"
+        },
+        {
             "name": "SamplingParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingParams\" />"
         },
         {
             "name": "SamplingStrategy",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingStrategy\" />"
+        },
+        {
+            "name": "ShieldDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefinition\" />"
         },
         {
             "name": "StopReason",
@@ -4126,10 +3493,6 @@
         {
             "name": "ToolCall",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCall\" />"
-        },
-        {
-            "name": "ToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolDefinition\" />"
         },
         {
             "name": "ToolParamDefinition",
@@ -4146,90 +3509,6 @@
         {
             "name": "UserMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserMessage\" />"
-        },
-        {
-            "name": "ChatCompletionResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponse\" />"
-        },
-        {
-            "name": "TokenLogProbs",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TokenLogProbs\" />"
-        },
-        {
-            "name": "BatchCompletionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionRequest\" />"
-        },
-        {
-            "name": "PretrainedModel",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PretrainedModel\" />"
-        },
-        {
-            "name": "CompletionResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponse\" />"
-        },
-        {
-            "name": "ChatCompletionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
-        },
-        {
-            "name": "ChatCompletionResponseEvent",
-            "description": "Chat completion response event.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseEvent\" />"
-        },
-        {
-            "name": "ChatCompletionResponseEventType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseEventType\" />"
-        },
-        {
-            "name": "ChatCompletionResponseStreamChunk",
-            "description": "SSE-stream of these events.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseStreamChunk\" />"
-        },
-        {
-            "name": "ToolCallDelta",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCallDelta\" />"
-        },
-        {
-            "name": "ToolCallParseStatus",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCallParseStatus\" />"
-        },
-        {
-            "name": "CompletionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequest\" />"
-        },
-        {
-            "name": "CompletionResponseStreamChunk",
-            "description": "streamed completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponseStreamChunk\" />"
-        },
-        {
-            "name": "AgenticSystemCreateRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateRequest\" />"
-        },
-        {
-            "name": "AgenticSystemInstanceConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemInstanceConfig\" />"
-        },
-        {
-            "name": "AgenticSystemToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemToolDefinition\" />"
-        },
-        {
-            "name": "BuiltinShield",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinShield\" />"
-        },
-        {
-            "name": "OnViolationAction",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OnViolationAction\" />"
-        },
-        {
-            "name": "RestAPIExecutionConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIExecutionConfig\" />"
-        },
-        {
-            "name": "RestAPIMethod",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIMethod\" />"
-        },
-        {
-            "name": "ShieldDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefinition\" />"
         },
         {
             "name": "AgenticSystemCreateResponse",
@@ -4276,6 +3555,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseTurnStartPayload\" />"
         },
         {
+            "name": "InferenceStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
+        },
+        {
             "name": "MemoryBankDocument",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
@@ -4284,16 +3567,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryRetrievalStep\" />"
         },
         {
-            "name": "ModelInferenceStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelInferenceStep\" />"
-        },
-        {
             "name": "ShieldCallStep",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
         },
         {
             "name": "ShieldResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldResponse\" />"
+        },
+        {
+            "name": "ToolCallDelta",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCallDelta\" />"
+        },
+        {
+            "name": "ToolCallParseStatus",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCallParseStatus\" />"
         },
         {
             "name": "ToolExecutionStep",
@@ -4444,6 +3731,10 @@
             "description": "Request to finetune a model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingSFTRequest\" />"
         },
         {
+            "name": "PretrainedModel",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PretrainedModel\" />"
+        },
+        {
             "name": "QLoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
         }
@@ -4456,7 +3747,6 @@
                 "Datasets",
                 "Evaluations",
                 "MemoryBanks",
-                "ModelInference",
                 "PostTraining",
                 "RewardScoring",
                 "SyntheticDataGeneration"
@@ -4480,19 +3770,9 @@
                 "AgenticSystemTurnResponseTurnCompletePayload",
                 "AgenticSystemTurnResponseTurnStartPayload",
                 "Attachment",
-                "BatchChatCompletionRequest",
-                "BatchCompletionRequest",
                 "Bf16QuantizationConfig",
                 "BuiltinShield",
-                "ChatCompletionRequest",
-                "ChatCompletionResponse",
-                "ChatCompletionResponseEvent",
-                "ChatCompletionResponseEventType",
-                "ChatCompletionResponseStreamChunk",
                 "CompletionMessage",
-                "CompletionRequest",
-                "CompletionResponse",
-                "CompletionResponseStreamChunk",
                 "CreateDatasetRequest",
                 "DPOAlignmentConfig",
                 "DialogGenerations",
@@ -4506,12 +3786,12 @@
                 "EvaluationJobStatusResponse",
                 "FinetuningAlgorithm",
                 "Fp8QuantizationConfig",
+                "InferenceStep",
                 "InstructModel",
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
-                "ModelInferenceStep",
                 "OnViolationAction",
                 "OptimizerConfig",
                 "PostTrainingJob",
@@ -4541,11 +3821,9 @@
                 "SyntheticDataGenerationRequest",
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
-                "TokenLogProbs",
                 "ToolCall",
                 "ToolCallDelta",
                 "ToolCallParseStatus",
-                "ToolDefinition",
                 "ToolExecutionStep",
                 "ToolParamDefinition",
                 "ToolResponse",

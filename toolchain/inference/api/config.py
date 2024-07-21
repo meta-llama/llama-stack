@@ -75,7 +75,7 @@ class RemoteImplConfig(BaseModel):
     url: str = Field(..., description="The URL of the remote module")
 
 
-class ModelInferenceConfig(BaseModel):
+class InferenceConfig(BaseModel):
     impl_config: Annotated[
         Union[InlineImplConfig, RemoteImplConfig],
         Field(discriminator="impl_type"),
@@ -130,7 +130,7 @@ class RemoteImplHydraConfig:
 
 
 @dataclass
-class ModelInferenceHydraConfig:
+class InferenceHydraConfig:
     impl_type: str
     inline_config: Optional[InlineImplHydraConfig] = None
     remote_config: Optional[RemoteImplHydraConfig] = None
@@ -142,18 +142,18 @@ class ModelInferenceHydraConfig:
         if self.impl_type == "remote":
             assert self.remote_config is not None
 
-    def convert_to_model_inferene_config(self):
+    def convert_to_inference_config(self):
         if self.impl_type == "inline":
             inline_config = InlineImplHydraConfig(**self.inline_config)
-            return ModelInferenceConfig(
+            return InferenceConfig(
                 impl_config=inline_config.convert_to_inline_impl_config()
             )
         elif self.impl_type == "remote":
             remote_config = RemoteImplHydraConfig(**self.remote_config)
-            return ModelInferenceConfig(
+            return InferenceConfig(
                 impl_config=remote_config.convert_to_remote_impl_config()
             )
 
 
 cs = ConfigStore.instance()
-cs.store(name="model_inference_config", node=ModelInferenceHydraConfig)
+cs.store(name="inference_config", node=InferenceHydraConfig)

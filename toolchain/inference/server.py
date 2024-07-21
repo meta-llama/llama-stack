@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 from omegaconf import OmegaConf
 
 from toolchain.utils import get_default_config_dir, parse_config
-from .api.config import ModelInferenceHydraConfig
+from .api.config import InferenceHydraConfig
 from .api.endpoints import ChatCompletionRequest, ChatCompletionResponseStreamChunk
 
 from .api_instance import get_inference_api_instance
@@ -43,13 +43,13 @@ async def startup():
     global InferenceApiInstance
 
     config = get_config()
-    hydra_config = ModelInferenceHydraConfig(
-        **OmegaConf.to_container(config["model_inference_config"], resolve=True)
+    hydra_config = InferenceHydraConfig(
+        **OmegaConf.to_container(config["inference_config"], resolve=True)
     )
-    model_inference_config = hydra_config.convert_to_model_inferene_config()
+    inference_config = hydra_config.convert_to_inference_config()
 
     InferenceApiInstance = await get_inference_api_instance(
-        model_inference_config,
+        inference_config,
     )
     await InferenceApiInstance.initialize()
 

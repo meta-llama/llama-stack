@@ -16,7 +16,7 @@ from agentic_system.api import *  # noqa: F403
 
 
 class LlamaStackEndpoints(
-    ModelInference,
+    Inference,
     AgenticSystem,
     RewardScoring,
     SyntheticDataGeneration,

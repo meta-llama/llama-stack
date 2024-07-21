@@ -47,7 +47,7 @@ class InferenceConfigure(Subcommand):
         yaml_output_path
     ):
         yaml_content = textwrap.dedent(f"""
-            model_inference_config:
+            inference_config:
                 impl_type: "inline"
                 inline_config:
                     checkpoint_type: "pytorch"

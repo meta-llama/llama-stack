@@ -18,12 +18,12 @@ from .api.endpoints import (
     ChatCompletionRequest,
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
-    ModelInference,
+    Inference,
 )
 from .model_parallel import LlamaModelParallelGenerator
 
 
-class ModelInferenceImpl(ModelInference):
+class InferenceImpl(Inference):
 
     def __init__(self, config: InlineImplConfig) -> None:
         self.config = config
