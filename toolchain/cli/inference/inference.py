@@ -1,6 +1,7 @@
 import argparse
 import textwrap
 
+from toolchain.cli.inference.configure import InferenceConfigure
 from toolchain.cli.inference.start import InferenceStart
 from toolchain.cli.subcommand import Subcommand
 
@@ -26,3 +27,4 @@ class InferenceParser(Subcommand):
 
         # Add sub-commandsa
         InferenceStart.create(subparsers)
+        InferenceConfigure.create(subparsers)

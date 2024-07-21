@@ -9,7 +9,7 @@ from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError
 from toolchain.cli.subcommand import Subcommand
 
 
-DEFAULT_OUTPUT_DIR = "/tmp/llama_toolchain_cache/"
+DEFAULT_CHECKPOINT_DIR = f"{os.path.expanduser('~')}/.llama/checkpoints/"
 
 
 class Download(Subcommand):
@@ -44,31 +44,27 @@ class Download(Subcommand):
             help="Name of the repository on Hugging Face Hub eg. llhf/Meta-Llama-3.1-70B-Instruct",
         )
         self.parser.add_argument(
-            "--output-dir",
-            type=Path,
-            required=False,
-            default=None,
-            help=f"Directory in which to save the model. Defaults to `{DEFAULT_OUTPUT_DIR}<model_name>`.",
-        )
-        self.parser.add_argument(
             "--hf-token",
             type=str,
             required=False,
             default=os.getenv("HF_TOKEN", None),
             help="Hugging Face API token. Needed for gated models like Llama2. Will also try to read environment variable `HF_TOKEN` as default.",
         )
+        self.parser.add_argument(
+            "--ignore-patterns",
+            type=str,
+            required=False,
+            default="*.safetensors",
+            help="If provided, files matching any of the patterns are not downloaded. Defaults to ignoring "
+            "safetensors files to avoid downloading duplicate weights.",
+        )
 
     def _run_download_cmd(self, args: argparse.Namespace):
         model_name = args.repo_id.split("/")[-1]
 
-        os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
-        output_dir = args.output_dir
-        model_name = args.repo_id.split("/")[-1]
-        if output_dir is None:
-            output_dir = Path(DEFAULT_OUTPUT_DIR) / model_name
-        else:
-            output_dir = Path(output_dir) / model_name
+        os.makedirs(output_dir, exist_ok=True)
 
+        output_dir = Path(output_dir) / model_name
         try:
             true_output_dir = snapshot_download(
                 args.repo_id,
@@ -76,6 +72,7 @@ class Download(Subcommand):
                 # "auto" will download to cache_dir and symlink files to local_dir
                 # avoiding unnecessary duplicate copies
                 local_dir_use_symlinks="auto",
+                ignore_patterns=args.ignore_patterns,
                 token=args.hf_token,
             )
         except GatedRepoError:
