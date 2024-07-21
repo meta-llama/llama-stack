@@ -23,6 +23,17 @@ class LlamaCLIParser:
         Download.create(subparsers)
         InferenceParser.create(subparsers)
 
+        # Import sub-commands from agentic_system if they exist
+        try:
+            from agentic_system.cli.subcommand_modules import (
+                SUBCOMMAND_MODULES,
+            )
+            for module in SUBCOMMAND_MODULES:
+                module.create(subparsers)
+
+        except ImportError:
+            pass
+
     def parse_args(self) -> argparse.Namespace:
         return self.parser.parse_args()
 
