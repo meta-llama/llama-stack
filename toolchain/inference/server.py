@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 
 from omegaconf import OmegaConf
 
-from toolchain.utils import get_config_dir, parse_config
+from toolchain.utils import get_default_config_dir, parse_config
 from .api.config import ModelInferenceHydraConfig
 from .api.endpoints import ChatCompletionRequest, ChatCompletionResponseStreamChunk
 
@@ -100,7 +100,7 @@ def chat_completion(request: Request, exec_request: ChatCompletionRequest):
 
 def main(config_path: str, port: int = 5000, disable_ipv6: bool = False):
     global GLOBAL_CONFIG
-    config_dir = get_config_dir()
+    config_dir = get_default_config_dir()
     GLOBAL_CONFIG = parse_config(config_dir, config_path)
 
     signal.signal(signal.SIGINT, handle_sigint)

@@ -43,6 +43,7 @@ class InferenceStart(Subcommand):
             "--config",
             type=str,
             help="Path to config file",
+            default="inference"
         )
 
     def _run_inference_start_cmd(self, args: argparse.Namespace) -> None:

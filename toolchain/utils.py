@@ -8,6 +8,9 @@ from hydra.core.global_hydra import GlobalHydra
 from omegaconf import OmegaConf
 
 
+DEFAULT_DUMP_DIR = os.path.expanduser("~/.llama/")
+
+
 def get_root_directory():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     while os.path.isfile(os.path.join(current_dir, "__init__.py")):
@@ -16,8 +19,8 @@ def get_root_directory():
     return current_dir
 
 
-def get_config_dir():
-    return os.path.join(get_root_directory(), "toolchain", "configs")
+def get_default_config_dir():
+    return os.path.join(DEFAULT_DUMP_DIR, "configs")
 
 
 def parse_config(config_dir: str, config_path: Optional[str] = None) -> str:

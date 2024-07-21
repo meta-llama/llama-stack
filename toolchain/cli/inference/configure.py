@@ -5,9 +5,11 @@ import textwrap
 from pathlib import Path
 
 from toolchain.cli.subcommand import Subcommand
+from toolchain.utils import DEFAULT_DUMP_DIR
 
 
-CONFIGS_BASE_DIR = f"{os.path.expanduser('~')}/.llama/configs/"
+CONFIGS_BASE_DIR = os.path.join(DEFAULT_DUMP_DIR, "configs")
+
 
 class InferenceConfigure(Subcommand):
     """Llama cli for configuring llama toolchain configs"""
