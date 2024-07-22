@@ -13,6 +13,7 @@ from .api import (
     Inference,
     UserMessage,
 )
+from .event_logger import EventLogger
 
 
 class InferenceClient(Inference):
@@ -56,14 +57,15 @@ async def run_main(host: str, port: int):
         messages=[message],
         stream=True,
     )
-    async for event in client.chat_completion(
+    iterator = client.chat_completion(
         ChatCompletionRequest(
             model=InstructModel.llama3_8b_chat,
             messages=[message],
             stream=True,
         )
-    ):
-        print(event)
+    )
+    async for log in EventLogger().log(iterator):
+        log.print()
 
 
 def main(host: str, port: int):
