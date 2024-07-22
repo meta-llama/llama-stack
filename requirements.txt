@@ -29,4 +29,4 @@ usort==1.0.8
 uvicorn
 zmq
 
-llama_models[llama3_1] @ git+https://github.com/meta-llama/llama-models.git
+llama_models[llama3_1] @ git+ssh://git@github.com/meta-llama/llama-models.git
