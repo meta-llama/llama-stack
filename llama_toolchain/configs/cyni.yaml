@@ -1,9 +1,0 @@
-inference_config:
-  impl_type: "inline"
-  inline_config:
-    checkpoint_type: "pytorch"
-    checkpoint_dir: /home/cyni/local/llama-3
-    tokenizer_path: /home/cyni/local/llama-3/cl_toplang_128k
-    model_parallel_size: 1
-    max_seq_len: 2048
-    max_batch_size: 1

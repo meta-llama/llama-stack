@@ -18,6 +18,7 @@ from .event_logger import EventLogger
 
 class InferenceClient(Inference):
     def __init__(self, base_url: str):
+        print(f"Initializing client for {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:
