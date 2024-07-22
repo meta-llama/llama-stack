@@ -27,9 +27,11 @@ class ModelTemplate(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "sku",
+            "-m",
+            "--model-family",
             type=str,
-            help="Model SKU",
+            default="llama3_1",
+            help="Model Family (llama3_1, llama3_X, etc.)",
         )
         self.parser.add_argument(
             "--template",
