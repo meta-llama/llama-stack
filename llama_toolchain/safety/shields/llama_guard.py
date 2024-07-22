@@ -230,7 +230,7 @@ class LlamaGuardShield(ShieldBase):
             prompt_len = input_ids.shape[1]
             output = self.model.generate(
                 input_ids=input_ids,
-                max_new_tokens=20,
+                max_new_tokens=50,
                 output_scores=True,
                 return_dict_in_generate=True,
                 pad_token_id=0,
