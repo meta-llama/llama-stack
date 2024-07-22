@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 # Function to read the requirements.txt file
@@ -16,15 +16,14 @@ setup(
     description="Llama toolchain",
     entry_points={
         "console_scripts": [
-            'llama = toolchain.cli.llama:main'
+            'llama = llama_toolchain.cli.llama:main'
         ]
     },
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/meta-llama/llama-toolchain",
-    package_dir={ "llama_toolchain": "toolchain"},
-    classifiers=[
-    ],
+    packages=find_packages(),
+    classifiers=[],
     python_requires=">=3.10",
     install_requires=read_requirements(),
     include_package_data=True
