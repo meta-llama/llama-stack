@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from models.llama3_1.api.datatypes import URL
+from llama_models.llama3_1.api.datatypes import URL
 
 from pydantic import BaseModel
 

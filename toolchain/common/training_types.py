@@ -1,4 +1,4 @@
-from models.llama3_1.api.datatypes import URL
+from llama_models.llama3_1.api.datatypes import URL
 from pydantic import BaseModel 
 
 

@@ -4,7 +4,7 @@ from string import Template
 from typing import List, Optional
 
 import torch
-from models.llama3_1.api.datatypes import Message
+from llama_models.llama3_1.api.datatypes import Message
 from termcolor import cprint
 from transformers import AutoModelForCausalLM, AutoTokenizer
 

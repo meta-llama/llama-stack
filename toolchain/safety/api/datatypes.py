@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, Optional, Union
 
-from models.llama3_1.api.datatypes import ToolParamDefinition
+from llama_models.llama3_1.api.datatypes import ToolParamDefinition
 
 from pydantic import BaseModel
 

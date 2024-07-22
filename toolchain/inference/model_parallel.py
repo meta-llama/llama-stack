@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Generator, List, Optional
 
-from models.llama3_1.api.chat_format import ChatFormat
-from models.llama3_1.api.datatypes import Message
-from models.llama3_1.api.tokenizer import Tokenizer
+from llama_models.llama3_1.api.chat_format import ChatFormat
+from llama_models.llama3_1.api.datatypes import Message
+from llama_models.llama3_1.api.tokenizer import Tokenizer
 
 from .api.config import InlineImplConfig
 from .generation import Llama

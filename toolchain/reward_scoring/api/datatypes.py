@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from strong_typing.schema import json_schema_type
 
-from models.llama3_1.api.datatypes import *  # noqa: F403
+from llama_models.llama3_1.api.datatypes import *  # noqa: F403
 
 
 @json_schema_type

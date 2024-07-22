@@ -27,3 +27,5 @@ ufmt==2.7.0
 usort==1.0.8
 uvicorn
 zmq
+
+llama_models[llama3_1] @ git+https://github.com/meta-llama/llama-models.git

@@ -1,6 +1,6 @@
 from typing import AsyncGenerator
 
-from models.llama3_1.api.datatypes import StopReason
+from llama_models.llama3_1.api.datatypes import StopReason
 
 from .api.config import (
     CheckpointQuantizationFormat,
