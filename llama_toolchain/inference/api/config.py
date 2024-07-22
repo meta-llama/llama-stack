@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from .datatypes import QuantizationConfig
+from llama_models.llama3_1.api.datatypes import CheckpointQuantizationFormat
 
 
 class ImplType(Enum):
@@ -18,17 +19,6 @@ class ImplType(Enum):
 class CheckpointType(Enum):
     pytorch = "pytorch"
     huggingface = "huggingface"
-
-
-# This enum represents the format in which weights are specified
-# This does not necessarily always equal what quantization is desired
-# at runtime since there can be on-the-fly conversions done
-class CheckpointQuantizationFormat(Enum):
-    # default format
-    bf16 = "bf16"
-
-    # used for enabling fp8_rowwise inference, some weights are bf16
-    fp8_mixed = "fp8_mixed"
 
 
 class PytorchCheckpoint(BaseModel):
