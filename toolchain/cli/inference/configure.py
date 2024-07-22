@@ -41,22 +41,22 @@ class InferenceConfigure(Subcommand):
         return checkpoint_dir, model_parallel_size
 
     def write_output_yaml(
-        self, 
-        checkpoint_dir, 
-        model_parallel_size, 
+        self,
+        checkpoint_dir,
+        model_parallel_size,
         yaml_output_path
     ):
-        yaml_content = textwrap.dedent(f"""
-            inference_config:
-                impl_type: "inline"
-                inline_config:
-                    checkpoint_type: "pytorch"
-                    checkpoint_dir: {checkpoint_dir}/
-                    tokenizer_path: {checkpoint_dir}/tokenizer.model
-                    model_parallel_size: {model_parallel_size}
-                    max_seq_len: 2048
-                    max_batch_size: 1
-            """)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        default_conf_path = os.path.join(current_dir, "default_configuration.yaml")
+
+        with open(default_conf_path, "r") as f:
+            yaml_content = f.read()
+
+        yaml_content = yaml_content.format(
+            checkpoint_dir=checkpoint_dir,
+            model_parallel_size=model_parallel_size,
+        )
+
         with open(yaml_output_path, 'w') as yaml_file:
             yaml_file.write(yaml_content.strip())
 
@@ -65,7 +65,7 @@ class InferenceConfigure(Subcommand):
     def _run_inference_configure_cmd(self, args: argparse.Namespace) -> None:
         checkpoint_dir, model_parallel_size = self.read_user_inputs()
         checkpoint_dir = os.path.expanduser(checkpoint_dir)
-        
+
         if not (
             checkpoint_dir.endswith("original") or
             checkpoint_dir.endswith("original/")

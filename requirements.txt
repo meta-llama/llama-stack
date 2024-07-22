@@ -1,5 +1,6 @@
 accelerate
 black==24.4.2
+blobfile
 codeshield
 fairscale
 fastapi
