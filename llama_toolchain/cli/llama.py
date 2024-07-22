@@ -25,7 +25,7 @@ class LlamaCLIParser:
 
         # Import sub-commands from agentic_system if they exist
         try:
-            from agentic_system.cli.subcommand_modules import (
+            from llama_agentic_system.cli.subcommand_modules import (
                 SUBCOMMAND_MODULES,
             )
             for module in SUBCOMMAND_MODULES:
