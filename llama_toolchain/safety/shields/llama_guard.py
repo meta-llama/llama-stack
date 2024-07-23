@@ -1,3 +1,4 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
 # This source code is licensed under the terms described in the LICENSE file in
@@ -217,7 +218,7 @@ class LlamaGuardShield(ShieldBase):
         raise ValueError(f"Unexpected response: {response}")
 
     async def run(self, messages: List[Message]) -> ShieldResponse:
-        if  self.disable_input_check and messages[-1].role == Role.user.value:
+        if self.disable_input_check and messages[-1].role == Role.user.value:
             return ShieldResponse(
                 shield_type=BuiltinShield.llama_guard, is_violation=False
             )
