@@ -1,14 +1,20 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Literal, Optional, Union
 
 from hydra.core.config_store import ConfigStore
+from llama_models.llama3_1.api.datatypes import CheckpointQuantizationFormat
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from .datatypes import QuantizationConfig
-from llama_models.llama3_1.api.datatypes import CheckpointQuantizationFormat
 
 
 class ImplType(Enum):

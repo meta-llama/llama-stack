@@ -1,6 +1,14 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 import asyncio
 import json
 from typing import AsyncGenerator
+
+from urllib.request import getproxies
 
 import fire
 import httpx
@@ -9,11 +17,15 @@ from .api import (
     ChatCompletionRequest,
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
-    InstructModel,
     Inference,
+    InstructModel,
     UserMessage,
 )
 from .event_logger import EventLogger
+
+print(getproxies())
+# import sys
+# sys.exit(0)
 
 
 class InferenceClient(Inference):

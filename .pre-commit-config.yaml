@@ -19,14 +19,14 @@ repos:
 #    -   id: no-commit-to-branch
 #        args: ['--branch=main']
 
-# -   repo: https://github.com/Lucas-C/pre-commit-hooks
-#     rev: v1.5.4
-#     hooks:
-#     -   id: insert-license
-#         files: \.py$|\.sh$
-#         args:
-#         - --license-filepath
-#         - docs/license_header.txt
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.4
+    hooks:
+    -   id: insert-license
+        files: \.py$|\.sh$
+        args:
+          - --license-filepath
+          - docs/license_header.txt
 
 -   repo: https://github.com/pycqa/flake8
     rev: 34cbf8ef3950f43d09b85e2e45c15ae5717dc37b

@@ -1,16 +1,17 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 from typing import AsyncGenerator
 
 from llama_models.llama3_1.api.datatypes import StopReason
 
-from .api.config import (
-    CheckpointQuantizationFormat,
-    CheckpointType,
-    InlineImplConfig,
-)
+from .api.config import InlineImplConfig
 from .api.datatypes import (
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
-    QuantizationConfig,
     ToolCallDelta,
     ToolCallParseStatus,
 )

@@ -1,8 +1,18 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 import argparse
 import textwrap
 
+from llama_models.llama3_1.api.interface import (
+    list_jinja_templates,
+    render_jinja_template,
+)
+
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_models.llama3_1.api.interface import render_jinja_template, list_jinja_templates
 
 
 class ModelTemplate(Subcommand):

@@ -1,4 +1,10 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import os
@@ -9,13 +15,13 @@ import torch
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
 from llama_models.llama3_1.api.model import Transformer, TransformerBlock
 
-from termcolor import cprint
-
 from llama_toolchain.inference.api.config import (
     CheckpointQuantizationFormat,
     InlineImplConfig,
 )
 from llama_toolchain.inference.api.datatypes import QuantizationType
+
+from termcolor import cprint
 from torch import Tensor
 
 
@@ -24,7 +30,7 @@ def is_fbgemm_available() -> bool:
         import fbgemm_gpu.experimental.gen_ai  # noqa: F401
 
         return True
-    except (ImportError, ModuleNotFoundError):
+    except ImportError:
         return False
 
 

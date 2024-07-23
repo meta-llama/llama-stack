@@ -1,3 +1,9 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 import argparse
 
 from llama_toolchain.cli.download import Download
@@ -27,9 +33,8 @@ class LlamaCLIParser:
 
         # Import sub-commands from agentic_system if they exist
         try:
-            from llama_agentic_system.cli.subcommand_modules import (
-                SUBCOMMAND_MODULES,
-            )
+            from llama_agentic_system.cli.subcommand_modules import SUBCOMMAND_MODULES
+
             for module in SUBCOMMAND_MODULES:
                 module.create(subparsers)
 

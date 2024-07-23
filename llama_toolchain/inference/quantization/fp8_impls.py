@@ -1,4 +1,10 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import collections
@@ -8,7 +14,7 @@ try:
     import fbgemm_gpu.experimental.gen_ai  # noqa: F401
 
     print("Using efficient FP8 operators in FBGEMM.")
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     print("No efficient FP8 operators. Please install FBGEMM in fp8_requirements.txt.")
     raise
 
@@ -57,8 +63,8 @@ def ffn_swiglu(
             x, w1, w3, w2, w1.activation_scale_ub, num_tokens, is_memory_bounded
         )
 
-    (B, T, D) = x.shape
-    (HD_L, D_) = w1.shape
+    (B, T, D) = x.shape  # noqa: N806
+    (HD_L, D_) = w1.shape  # noqa: N806
     assert D_ == D
 
     assert isinstance(w1, Tensor)
@@ -153,8 +159,8 @@ def ffn_swiglu_fp8_dynamic(
     num_tokens: Optional[Tensor] = None,
     is_memory_bounded: bool = False,
 ) -> Tensor:
-    (B, T, D) = x.shape
-    HD_L = w1.shape[0]
+    (B, T, D) = x.shape  # noqa: N806
+    HD_L = w1.shape[0]  # noqa: N806
     assert HD_L == w3.shape[0]
     x1 = fc_fp8_dynamic(
         x.view(B * T, D),
