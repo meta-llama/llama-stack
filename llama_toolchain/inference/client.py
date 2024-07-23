@@ -6,6 +6,7 @@
 
 import asyncio
 import json
+from termcolor import cprint
 from typing import AsyncGenerator
 
 from urllib.request import getproxies
@@ -65,6 +66,7 @@ async def run_main(host: str, port: int):
     client = InferenceClient(f"http://{host}:{port}")
 
     message = UserMessage(content="hello world, help me out here")
+    cprint(f"User>{message.content}", "green")
     req = ChatCompletionRequest(
         model=InstructModel.llama3_70b_chat,
         messages=[message],

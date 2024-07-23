@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
+from hydra_zen import instantiate
 from omegaconf import OmegaConf
 
 from llama_toolchain.utils import get_default_config_dir, parse_config
@@ -49,11 +50,8 @@ async def startup():
     global InferenceApiInstance
 
     config = get_config()
-    hydra_config = InferenceHydraConfig(
-        **OmegaConf.to_container(config["inference_config"], resolve=True)
-    )
-    inference_config = hydra_config.convert_to_inference_config()
 
+    inference_config = instantiate(config["inference_config"])
     InferenceApiInstance = await get_inference_api_instance(
         inference_config,
     )
