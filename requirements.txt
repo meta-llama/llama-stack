@@ -6,11 +6,12 @@ fairscale
 fastapi
 fire
 flake8
-huggingface-hub
 httpx
+huggingface-hub
 hydra-core
 hydra-zen
 json-strong-typing
+llama_models
 matplotlib
 omegaconf
 pandas
@@ -28,5 +29,3 @@ ufmt==2.7.0
 usort==1.0.8
 uvicorn
 zmq
-
-llama_models[llama3_1] @ git+ssh://git@github.com/meta-llama/llama-models.git
