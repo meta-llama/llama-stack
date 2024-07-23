@@ -11,7 +11,7 @@ huggingface-hub
 hydra-core
 hydra-zen
 json-strong-typing
-llama_models
+llama-models
 matplotlib
 omegaconf
 pandas
