@@ -1,3 +1,15 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 import argparse
 import textwrap
 
@@ -40,10 +52,7 @@ class InferenceStart(Subcommand):
             default=False,
         )
         self.parser.add_argument(
-            "--config",
-            type=str,
-            help="Path to config file",
-            default="inference"
+            "--config", type=str, help="Path to config file", default="inference"
         )
 
     def _run_inference_start_cmd(self, args: argparse.Namespace) -> None:

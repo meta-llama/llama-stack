@@ -1,3 +1,16 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from typing import Generator, List, Optional
@@ -86,7 +99,7 @@ class LlamaModelParallelGenerator:
         logprobs: bool = False,
     ) -> Generator:
         req_obj = InferenceArgs(
-            messages=messages,
+            messages=deepcopy(messages),
             temperature=temperature,
             top_p=top_p,
             max_gen_len=max_gen_len,

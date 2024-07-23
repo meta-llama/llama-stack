@@ -1,3 +1,15 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 from enum import Enum
 from typing import List, Literal, Optional, Union
 
@@ -26,9 +38,7 @@ class Fp8QuantizationConfig(BaseModel):
 
 @json_schema_type
 class Bf16QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.bf16.value] = (
-        QuantizationType.bf16.value
-    )
+    type: Literal[QuantizationType.bf16.value] = QuantizationType.bf16.value
 
 
 QuantizationConfig = Annotated[

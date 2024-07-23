@@ -1,3 +1,15 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 import argparse
 
 from llama_toolchain.cli.download import Download
@@ -11,7 +23,7 @@ class LlamaCLIParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             prog="llama",
-            description="Welcome to the LLama toolchain cli",
+            description="Welcome to the LLama cli",
             add_help=True,
         )
 
@@ -27,9 +39,8 @@ class LlamaCLIParser:
 
         # Import sub-commands from agentic_system if they exist
         try:
-            from llama_agentic_system.cli.subcommand_modules import (
-                SUBCOMMAND_MODULES,
-            )
+            from llama_agentic_system.cli.subcommand_modules import SUBCOMMAND_MODULES
+
             for module in SUBCOMMAND_MODULES:
                 module.create(subparsers)
 

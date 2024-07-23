@@ -1,3 +1,15 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described found in the
+# LICENSE file in the root directory of this source tree.
+
 import asyncio
 from typing import List
 
@@ -6,7 +18,7 @@ from llama_models.llama3_1.api.datatypes import Message, Role
 from .base import OnViolationAction, ShieldBase, ShieldResponse
 
 
-class SafetyException(Exception):
+class SafetyException(Exception):  # noqa: N818
     def __init__(self, response: ShieldResponse):
         self.response = response
         super().__init__(response.violation_return_message)
