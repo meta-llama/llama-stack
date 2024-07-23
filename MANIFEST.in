@@ -1,1 +1,2 @@
+include requirements.txt
 include llama_toolchain/data/*.yaml
