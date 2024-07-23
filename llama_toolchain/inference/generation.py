@@ -48,7 +48,10 @@ class Llama:
         if checkpoint.checkpoint_type != CheckpointType.pytorch.value:
             raise NotImplementedError("HuggingFace checkpoints not supported yet")
 
-        if config.quantization and config.quantization.type == QuantizationType.fp8.value:
+        if (
+            config.quantization
+            and config.quantization.type == QuantizationType.fp8.value
+        ):
             from .quantization.loader import is_fbgemm_available
 
             if not is_fbgemm_available():
@@ -99,8 +102,13 @@ class Llama:
             model_args.vocab_size == tokenizer.n_words
         ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
 
-        # load on CPU in bf16 so that fp8 conversion does not find an unexpected (fp32, e.g.) datatype
-        torch.set_default_tensor_type(torch.BFloat16Tensor)
+        if (
+            config.quantization
+            and config.quantization.type == QuantizationType.fp8.value
+        ):
+            # load on CPU in bf16 so that fp8 conversion does not find an
+            # unexpected (fp32, e.g.) datatype
+            torch.set_default_tensor_type(torch.BFloat16Tensor)
 
         model = Transformer(model_args)
         model.load_state_dict(state_dict, strict=False)

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from typing import Generator, List, Optional
@@ -86,7 +87,7 @@ class LlamaModelParallelGenerator:
         logprobs: bool = False,
     ) -> Generator:
         req_obj = InferenceArgs(
-            messages=messages,
+            messages=deepcopy(messages),
             temperature=temperature,
             top_p=top_p,
             max_gen_len=max_gen_len,
