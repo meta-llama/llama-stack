@@ -48,13 +48,13 @@ class Download(Subcommand):
         self.parser.add_argument(
             "repo_id",
             type=str,
-            help="Name of the repository on Hugging Face Hub eg. llhf/Meta-Llama-3.1-70B-Instruct",
+            help="Name of the repository on Hugging Face Hub eg. meta-llama/Meta-Llama-3.1-70B-Instruct",
         )
         self.parser.add_argument(
             "--hf-token",
             type=str,
             required=False,
-            default=os.getenv("HF_TOKEN", None),
+            default=None,
             help="Hugging Face API token. Needed for gated models like Llama2. Will also try to read environment variable `HF_TOKEN` as default.",
         )
         self.parser.add_argument(
@@ -74,11 +74,9 @@ class Download(Subcommand):
             true_output_dir = snapshot_download(
                 args.repo_id,
                 local_dir=output_dir,
-                # "auto" will download to cache_dir and symlink files to local_dir
-                # avoiding unnecessary duplicate copies
-                local_dir_use_symlinks="auto",
                 ignore_patterns=args.ignore_patterns,
                 token=args.hf_token,
+                library_name="llama-toolchain",
             )
         except GatedRepoError:
             self.parser.error(
