@@ -5,7 +5,7 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 ```
 $ llama --help
 
-Welcome to the Llama Command Line Interface
+Welcome to the Llama CLI
 
 Usage: llama [-h] {download,inference,model} ...
 

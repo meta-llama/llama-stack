@@ -22,44 +22,13 @@ cd llama-toolchain
 pip install -e .
 ```
 
-## Test with cli
+## The Llama CLI
 
-We have built a llama cli to make it easy to configure / run parts of the toolchain
-```
-llama --help
+The `llama` CLI makes it easy to configure and run the Llama toolchain. Read the [CLI reference](docs/cli_reference.md) for details.
 
-usage: llama [-h] {download,inference,model,agentic_system} ...
+## Appendix: Running FP8
 
-Welcome to the llama CLI
-
-options:
-  -h, --help            show this help message and exit
-
-subcommands:
-  {download,inference,model,agentic_system}
-```
-There are several subcommands to help get you started
-
-## Start inference server that can run the llama models
-```bash
-llama inference configure
-llama inference start
-```
-
-
-## Test client
-```bash
-python -m llama_toolchain.inference.client localhost 5000
-
-Initializing client for http://localhost:5000
-User>hello world, help me out here
-Assistant> Hello! I'd be delighted to help you out. What's on your mind? Do you have a question, a problem, or just need someone to chat with? I'm all ears!
-```
-
-
-## Running FP8
-
-You need `fbgemm-gpu` package which requires torch >= 2.4.0 (currently only in nightly, but releasing shortly...).
+If you want to run FP8, you need the `fbgemm-gpu` package which requires `torch >= 2.4.0` (currently only in nightly, but releasing shortly...)
 
 ```bash
 ENV=fp8_env
