@@ -17,7 +17,7 @@ class LlamaCLIParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             prog="llama",
-            description="Welcome to the LLama cli",
+            description="Welcome to the Llama CLI",
             add_help=True,
         )
 

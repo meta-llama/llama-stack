@@ -1,11 +1,12 @@
 # llama-toolchain
 
 This repo contains the API specifications for various components of the Llama Stack as well implementations for some of those APIs like model inference.
-The Stack consists of toolchain-apis and agentic-apis. This repo contains the toolchain-apis
+
+The Llama Stack consists of toolchain-apis and agentic-apis. This repo contains the toolchain-apis.
 
 ## Installation
 
-You can install this repository as a [package](https://pypi.org/project/llama-toolchain/) by just doing `pip install llama-toolchain`
+You can install this repository as a [package](https://pypi.org/project/llama-toolchain/) with `pip install llama-toolchain`
 
 If you want to install from source:
 
@@ -29,7 +30,7 @@ llama --help
 
 usage: llama [-h] {download,inference,model,agentic_system} ...
 
-Welcome to the LLama cli
+Welcome to the llama CLI
 
 options:
   -h, --help            show this help message and exit
