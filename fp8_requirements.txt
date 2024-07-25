@@ -28,4 +28,4 @@ ufmt==2.7.0
 usort==1.0.8
 uvicorn
 zmq
-fbgemm-gpu==0.8.0rc4
+fbgemm-gpu==0.8.0
