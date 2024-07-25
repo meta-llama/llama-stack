@@ -7,8 +7,9 @@ The Stack consists of toolchain-apis and agentic-apis. This repo contains the to
 
 You can install this repository as a [package](https://pypi.org/project/llama-toolchain/) by just doing `pip install llama-toolchain`
 
-If you want to install from source:
+### Install from conda
 
+If you want to install from source:
 ```bash
 mkdir -p ~/local
 cd ~/local
@@ -19,6 +20,26 @@ conda activate toolchain
 
 cd llama-toolchain
 pip install -e .
+```
+
+### In Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+
+pip install llama-toolchain
+```
+
+### For Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate  # For Command Prompt
+# or
+.\venv\Scripts\Activate.ps1  # For PowerShell
+
+pip install llama-toolchain
 ```
 
 ## Test with cli
