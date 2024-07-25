@@ -22,6 +22,31 @@ Subcommands:
 
 First, you need models locally. You can get the models from [HuggingFace](https://huggingface.co/meta-llama) or [directly from Meta](https://llama.meta.com/llama-downloads/). The download command streamlines the process.
 
+
+```
+$ llama download --help
+usage: llama download [-h] [--hf-token HF_TOKEN] [--ignore-patterns IGNORE_PATTERNS] repo_id
+
+Download a model from the Hugging Face Hub
+
+positional arguments:
+  repo_id               Name of the repository on Hugging Face Hub eg. llhf/Meta-Llama-3.1-70B-Instruct
+
+options:
+  -h, --help            show this help message and exit
+  --hf-token HF_TOKEN   Hugging Face API token. Needed for gated models like Llama2. Will also try to read environment variable `HF_TOKEN` as default.
+  --ignore-patterns IGNORE_PATTERNS
+                        If provided, files matching any of the patterns are not downloaded. Defaults to ignoring safetensors files to avoid downloading duplicate weights.
+
+# Here are some examples on how to use this command:
+
+llama download --repo-id meta-llama/Llama-2-7b-hf --hf-token <HF_TOKEN>
+llama download --repo-id meta-llama/Llama-2-7b-hf --output-dir /data/my_custom_dir --hf-token <HF_TOKEN>
+HF_TOKEN=<HF_TOKEN> llama download --repo-id meta-llama/Llama-2-7b-hf
+
+The output directory will be used to load models and tokenizers for inference.
+```
+
 1. Create and get a Hugging Face access token [here](https://huggingface.co/settings/tokens)
 2. Set the `HF_TOKEN` environment variable
 
@@ -29,9 +54,6 @@ First, you need models locally. You can get the models from [HuggingFace](https:
 export HF_TOKEN=YOUR_TOKEN_HERE
 llama download meta-llama/Meta-Llama-3.1-70B-Instruct
 ```
-
-Run `llama download --help` for more information.
-
 
 ## Step 2: Understand the models
 The `llama model` command helps you explore the model’s interface.
