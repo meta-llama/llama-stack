@@ -1,5 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/nightly/cu121
-torch>=2.4.0.dev20240531,<2.4.1
+torch>=2.4.0
 accelerate
 black==24.4.2
 codeshield
