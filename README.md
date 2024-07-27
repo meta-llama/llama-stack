@@ -1,7 +1,7 @@
 # llama-toolchain
 
-![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-toolchain) 
-![Discord](https://img.shields.io/discord/1257833999603335178)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-toolchain)](https://pypi.org/project/llama-toolchain/)
+[![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
 
 This repo contains the API specifications for various components of the Llama Stack as well implementations for some of those APIs like model inference.
 
