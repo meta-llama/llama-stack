@@ -1,5 +1,8 @@
 # llama-toolchain
 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-toolchain) 
+![Discord](https://img.shields.io/discord/1257833999603335178)
+
 This repo contains the API specifications for various components of the Llama Stack as well implementations for some of those APIs like model inference.
 
 The Llama Stack consists of toolchain-apis and agentic-apis. This repo contains the toolchain-apis.
