@@ -153,14 +153,13 @@ Run `llama inference --help` for more information.
 
 ## Step 4. Start the agentic system
 
-The `llama agentic_system` command helps you configure and launch agentic systems. The `llama agentic_system configure` command sets up the configuration file the agentic code expects, and the `llama agentic_system start_app` command streamlines launching.
-
+The `llama agentic_system` command sets up the configuration file the agentic client code expects.
 
 For example, let’s run the included chat app:
 
 ```
 llama agentic_system configure
-llama agentic_system start_app chat
+mesop app/main.py
 ```
 
 For more information run `llama agentic_system --help`.
