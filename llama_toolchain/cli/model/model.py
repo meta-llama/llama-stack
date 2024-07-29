@@ -7,6 +7,8 @@
 import argparse
 import textwrap
 
+from llama_toolchain.cli.model.list import ModelList
+
 from llama_toolchain.cli.model.template import ModelTemplate
 from llama_toolchain.cli.subcommand import Subcommand
 
@@ -31,5 +33,5 @@ class ModelParser(Subcommand):
         subparsers = self.parser.add_subparsers(title="model_subcommands")
 
         # Add sub-commandsa
-        # ModelDescribe.create(subparsers)
         ModelTemplate.create(subparsers)
+        ModelList.create(subparsers)
