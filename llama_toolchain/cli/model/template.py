@@ -46,15 +46,15 @@ class ModelTemplate(Subcommand):
             help="Model Family (llama3_1, llama3_X, etc.)",
         )
         self.parser.add_argument(
-            "--template",
+            "--name",
             type=str,
             help="Usecase template name (system_message, user_message, assistant_message, tool_message)...",
             required=False,
         )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
-        if args.template:
-            template, tokens_info = render_jinja_template(args.template)
+        if args.name:
+            template, tokens_info = render_jinja_template(args.name)
             rendered = ""
             for tok, is_special in tokens_info:
                 if is_special:

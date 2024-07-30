@@ -96,13 +96,13 @@ tool-message-success
 user-message-default
 ```
 
-And fetch an example by passing it to `--template`:
+And fetch an example by passing it to `--name`:
 
 ```
-llama model template --template tool-message-success
+llama model template --name tool-message-success
 
 
-llama model template --template tool-message-success
+llama model template --name tool-message-success
 <|start_header_id|>ipython<|end_header_id|>
 
 
