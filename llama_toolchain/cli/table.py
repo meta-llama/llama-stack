@@ -22,7 +22,6 @@ def format_row(row, col_widths):
             if line.strip() == "":
                 lines.append("")
             else:
-                line = line.strip()
                 lines.extend(
                     textwrap.wrap(
                         line, width, break_long_words=False, replace_whitespace=False
@@ -45,14 +44,18 @@ def format_row(row, col_widths):
 
 
 def print_table(rows, headers=None, separate_rows: bool = False):
+    def itemlen(item):
+        return len(strip_ansi_colors(item))
+
     rows = [[x or "" for x in row] for row in rows]
     if not headers:
-        col_widths = [
-            max(len(strip_ansi_colors(item)) for item in col) for col in zip(*rows)
-        ]
+        col_widths = [max(itemlen(item) for item in col) for col in zip(*rows)]
     else:
         col_widths = [
-            max(len(header), max(len(strip_ansi_colors(item)) for item in col))
+            max(
+                itemlen(header),
+                max(itemlen(item) for item in col),
+            )
             for header, col in zip(headers, zip(*rows))
         ]
     col_widths = [min(w, 80) for w in col_widths]
