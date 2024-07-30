@@ -7,12 +7,21 @@
 import argparse
 import json
 
+from enum import Enum
+
 from llama_models.llama3_1.api.sku_list import llama3_1_model_list
 
 from termcolor import colored
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
+
+
+class EnumEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return super().default(obj)
 
 
 class ModelDescribe(Subcommand):
@@ -48,6 +57,9 @@ class ModelDescribe(Subcommand):
 
         model = by_id[args.model_id]
 
+        sampling_params = model.recommended_sampling_params.dict()
+        for k in ("max_tokens", "repetition_penalty"):
+            del sampling_params[k]
         rows = [
             (
                 colored("Model", "white", attrs=["bold"]),
@@ -57,6 +69,10 @@ class ModelDescribe(Subcommand):
             ("Description", model.description_markdown),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
             ("Weights format", model.quantization_format.value),
+            (
+                "Recommended sampling params",
+                json.dumps(sampling_params, cls=EnumEncoder, indent=4),
+            ),
             ("Model params.json", json.dumps(model.model_args, indent=4)),
         ]
 
