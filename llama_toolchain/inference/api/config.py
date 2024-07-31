@@ -23,6 +23,7 @@ from .datatypes import QuantizationConfig
 class ImplType(Enum):
     inline = "inline"
     remote = "remote"
+    ollama = "ollama"
 
 
 @json_schema_type
@@ -81,9 +82,16 @@ class RemoteImplConfig(BaseModel):
 
 
 @json_schema_type
+class OllamaImplConfig(BaseModel):
+    impl_type: Literal[ImplType.ollama.value] = ImplType.ollama.value
+    model: str = Field(..., description="The name of the model in ollama catalog")
+    url: str = Field(..., description="The URL for the ollama server")
+
+
+@json_schema_type
 class InferenceConfig(BaseModel):
     impl_config: Annotated[
-        Union[InlineImplConfig, RemoteImplConfig],
+        Union[InlineImplConfig, RemoteImplConfig, OllamaImplConfig],
         Field(discriminator="impl_type"),
     ]
 
