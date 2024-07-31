@@ -15,7 +15,7 @@ class RewardScoringRequest(BaseModel):
     """Request to score a reward function. A list of prompts and a list of responses per prompt."""
 
     dialog_generations: List[DialogGenerations]
-    model: RewardModel
+    model: str
 
 
 @json_schema_type

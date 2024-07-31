@@ -16,12 +16,13 @@ import httpx
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError
 
-from llama_models.datatypes import CheckpointQuantizationFormat, ModelDefinition
+from llama_models.datatypes import Model
 from llama_models.sku_list import (
-    llama3_1_model_list,
-    llama_meta_folder_path,
-    llama_meta_pth_size,
+    all_registered_models,
+    llama_meta_net_info,
+    resolve_model,
 )
+from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.utils import DEFAULT_DUMP_DIR
@@ -45,7 +46,7 @@ class Download(Subcommand):
         self.parser.set_defaults(func=self._run_download_cmd)
 
     def _add_arguments(self):
-        models = llama3_1_model_list()
+        models = all_registered_models()
         self.parser.add_argument(
             "--source",
             choices=["meta", "huggingface"],
@@ -53,7 +54,7 @@ class Download(Subcommand):
         )
         self.parser.add_argument(
             "--model-id",
-            choices=[x.sku.value for x in models],
+            choices=[x.descriptor() for x in models],
             required=True,
         )
         self.parser.add_argument(
@@ -80,12 +81,12 @@ safetensors files to avoid downloading duplicate weights.
 """,
         )
 
-    def _hf_download(self, model: ModelDefinition, hf_token: str, ignore_patterns: str):
-        repo_id = model.huggingface_id
+    def _hf_download(self, model: Model, hf_token: str, ignore_patterns: str):
+        repo_id = model.huggingface_repo
         if repo_id is None:
-            raise ValueError(f"No repo id found for model {model.sku.value}")
+            raise ValueError(f"No repo id found for model {model.descriptor()}")
 
-        output_dir = Path(DEFAULT_CHECKPOINT_DIR) / model.sku.value
+        output_dir = Path(DEFAULT_CHECKPOINT_DIR) / model.descriptor()
         os.makedirs(output_dir, exist_ok=True)
         try:
             true_output_dir = snapshot_download(
@@ -111,43 +112,37 @@ safetensors files to avoid downloading duplicate weights.
 
         print(f"Successfully downloaded model to {true_output_dir}")
 
-    def _meta_download(self, model: ModelDefinition, meta_url: str):
-        output_dir = Path(DEFAULT_CHECKPOINT_DIR) / model.sku.value
+    def _meta_download(self, model: Model, meta_url: str):
+        output_dir = Path(DEFAULT_CHECKPOINT_DIR) / model.descriptor()
         os.makedirs(output_dir, exist_ok=True)
 
-        gpus = model.hardware_requirements.gpu_count
-        files = [
-            "tokenizer.model",
-            "params.json",
-        ]
-        if model.quantization_format == CheckpointQuantizationFormat.fp8_mixed:
-            files.extend([f"fp8_scales_{i}.pt" for i in range(gpus)])
-        files.extend([f"consolidated.{i:02d}.pth" for i in range(gpus)])
-
-        folder_path = llama_meta_folder_path(model)
-        pth_size = llama_meta_pth_size(model)
+        info = llama_meta_net_info(model)
 
         # I believe we can use some concurrency here if needed but not sure it is worth it
-        for f in files:
+        for f in info.files:
             output_file = str(output_dir / f)
-            url = meta_url.replace("*", f"{folder_path}/{f}")
-            total_size = pth_size if "consolidated" in f else 0
+            url = meta_url.replace("*", f"{info.folder}/{f}")
+            total_size = info.pth_size if "consolidated" in f else 0
+            cprint(f"Downloading `{f}`...", "white")
             downloader = ResumableDownloader(url, output_file, total_size)
             asyncio.run(downloader.download())
 
     def _run_download_cmd(self, args: argparse.Namespace):
-        by_id = {model.sku.value: model for model in llama3_1_model_list()}
-        assert args.model_id in by_id, f"Unexpected model id {args.model_id}"
+        model = resolve_model(args.model_id)
+        if model is None:
+            self.parser.error(f"Model {args.model_id} not found")
+            return
 
-        model = by_id[args.model_id]
         if args.source == "huggingface":
             self._hf_download(model, args.hf_token, args.ignore_patterns)
         else:
-            if not args.meta_url:
-                self.parser.error(
-                    "Please provide a meta url to download the model from llama.meta.com"
+            meta_url = args.meta_url
+            if not meta_url:
+                meta_url = input(
+                    "Please provide the signed URL you received via email (e.g., https://llama3-1.llamameta.net/*?Policy...): "
                 )
-            self._meta_download(model, args.meta_url)
+                assert meta_url is not None and "llama3-1.llamameta.net" in meta_url
+            self._meta_download(model, meta_url)
 
 
 class ResumableDownloader:
@@ -170,7 +165,10 @@ class ResumableDownloader:
         if self.total_size > 0:
             return
 
-        response = await client.head(self.url, follow_redirects=True)
+        # Force disable compression when trying to retrieve file size
+        response = await client.head(
+            self.url, follow_redirects=True, headers={"Accept-Encoding": "identity"}
+        )
         response.raise_for_status()
         self.url = str(response.url)  # Update URL in case of redirects
         self.total_size = int(response.headers.get("Content-Length", 0))

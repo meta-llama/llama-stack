@@ -13,7 +13,7 @@ from pyopenapi import webmethod
 
 @json_schema_type
 class CompletionRequest(BaseModel):
-    model: PretrainedModel
+    model: str
     content: InterleavedTextAttachment
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
@@ -39,7 +39,7 @@ class CompletionResponseStreamChunk(BaseModel):
 
 @json_schema_type
 class BatchCompletionRequest(BaseModel):
-    model: PretrainedModel
+    model: str
     content_batch: List[InterleavedTextAttachment]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     logprobs: Optional[LogProbConfig] = None
@@ -53,7 +53,7 @@ class BatchCompletionResponse(BaseModel):
 
 @json_schema_type
 class ChatCompletionRequest(BaseModel):
-    model: InstructModel
+    model: str
     messages: List[Message]
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
@@ -80,7 +80,7 @@ class ChatCompletionResponse(BaseModel):
 
 @json_schema_type
 class BatchChatCompletionRequest(BaseModel):
-    model: InstructModel
+    model: str
     messages_batch: List[List[Message]]
     sampling_params: Optional[SamplingParams] = SamplingParams()
 

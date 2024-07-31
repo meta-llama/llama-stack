@@ -25,7 +25,7 @@ class PostTrainingSFTRequest(BaseModel):
 
     job_uuid: str
 
-    model: PretrainedModel
+    model: str
     dataset: TrainEvalDataset
     validation_dataset: TrainEvalDataset
 

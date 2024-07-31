@@ -18,7 +18,6 @@ from .api import (
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
     Inference,
-    InstructModel,
     UserMessage,
 )
 from .event_logger import EventLogger
@@ -67,7 +66,7 @@ async def run_main(host: str, port: int, stream: bool):
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
         ChatCompletionRequest(
-            model=InstructModel.llama3_8b_chat,
+            model="Meta-Llama-3.1-8B-Instruct",
             messages=[message],
             stream=stream,
         )

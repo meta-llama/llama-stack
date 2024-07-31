@@ -22,7 +22,7 @@ class SyntheticDataGenerationRequest(BaseModel):
 
     dialogs: List[Message]
     filtering_function: FilteringFunction = FilteringFunction.none
-    model: Optional[RewardModel] = None
+    model: Optional[str] = None
 
 
 @json_schema_type

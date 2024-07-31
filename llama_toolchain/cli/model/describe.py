@@ -9,7 +9,7 @@ import json
 
 from enum import Enum
 
-from llama_models.sku_list import llama3_1_model_list
+from llama_models.sku_list import resolve_model
 
 from termcolor import colored
 
@@ -47,20 +47,13 @@ class ModelDescribe(Subcommand):
         )
 
     def _run_model_describe_cmd(self, args: argparse.Namespace) -> None:
-        models = llama3_1_model_list()
-        by_id = {model.sku.value: model for model in models}
-
-        if args.model_id not in by_id:
-            print(
+        model = resolve_model(args.model_id)
+        if model is None:
+            self.parser.error(
                 f"Model {args.model_id} not found; try 'llama model list' for a list of available models."
             )
             return
 
-        model = by_id[args.model_id]
-
-        sampling_params = model.recommended_sampling_params.dict()
-        for k in ("max_tokens", "repetition_penalty"):
-            del sampling_params[k]
         rows = [
             (
                 colored("Model", "white", attrs=["bold"]),
@@ -70,12 +63,19 @@ class ModelDescribe(Subcommand):
             ("Description", model.description_markdown),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
             ("Weights format", model.quantization_format.value),
-            (
-                "Recommended sampling params",
-                json.dumps(sampling_params, cls=EnumEncoder, indent=4),
-            ),
             ("Model params.json", json.dumps(model.model_args, indent=4)),
         ]
+
+        if model.recommended_sampling_params is not None:
+            sampling_params = model.recommended_sampling_params.dict()
+            for k in ("max_tokens", "repetition_penalty"):
+                del sampling_params[k]
+            rows.append(
+                (
+                    "Recommended sampling params",
+                    json.dumps(sampling_params, cls=EnumEncoder, indent=4),
+                )
+            )
 
         print_table(
             rows,

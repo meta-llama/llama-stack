@@ -6,7 +6,7 @@
 
 import argparse
 
-from llama_models.sku_list import llama3_1_model_list
+from llama_models.sku_list import all_registered_models
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
@@ -30,21 +30,22 @@ class ModelList(Subcommand):
         pass
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
-        models = llama3_1_model_list()
         headers = [
-            "Model ID",
-            "HuggingFace ID",
+            "Model Descriptor",
+            "HuggingFace Repo",
             "Context Length",
             "Hardware Requirements",
         ]
 
         rows = []
-        for model in models:
+        for model in all_registered_models():
             req = model.hardware_requirements
+
+            descriptor = model.descriptor()
             rows.append(
                 [
-                    model.sku.value,
-                    model.huggingface_id,
+                    descriptor,
+                    model.huggingface_repo,
                     f"{model.max_seq_length // 1024}K",
                     f"{req.gpu_count} GPU{'s' if req.gpu_count > 1 else ''}, each >= {req.memory_gb_per_gpu}GB VRAM",
                 ]
