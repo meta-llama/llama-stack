@@ -9,7 +9,7 @@ import json
 
 from enum import Enum
 
-from llama_models.llama3_1.api.sku_list import llama3_1_model_list
+from llama_models.sku_list import llama3_1_model_list
 
 from termcolor import colored
 
@@ -43,6 +43,7 @@ class ModelDescribe(Subcommand):
             "-m",
             "--model-id",
             type=str,
+            required=True,
         )
 
     def _run_model_describe_cmd(self, args: argparse.Namespace) -> None:

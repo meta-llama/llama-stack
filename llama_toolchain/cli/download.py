@@ -16,11 +16,8 @@ import httpx
 from huggingface_hub import snapshot_download
 from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError
 
-from llama_models.llama3_1.api.datatypes import (
-    CheckpointQuantizationFormat,
-    ModelDefinition,
-)
-from llama_models.llama3_1.api.sku_list import (
+from llama_models.datatypes import CheckpointQuantizationFormat, ModelDefinition
+from llama_models.sku_list import (
     llama3_1_model_list,
     llama_meta_folder_path,
     llama_meta_pth_size,

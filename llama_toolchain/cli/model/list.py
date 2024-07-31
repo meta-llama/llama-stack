@@ -6,7 +6,7 @@
 
 import argparse
 
-from llama_models.llama3_1.api.sku_list import llama3_1_model_list
+from llama_models.sku_list import llama3_1_model_list
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
@@ -27,13 +27,7 @@ class ModelList(Subcommand):
         self.parser.set_defaults(func=self._run_model_list_cmd)
 
     def _add_arguments(self):
-        self.parser.add_argument(
-            "-m",
-            "--model-family",
-            type=str,
-            default="llama3_1",
-            help="Model Family (llama3_1, llama3_X, etc.)",
-        )
+        pass
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
         models = llama3_1_model_list()
