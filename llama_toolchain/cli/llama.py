@@ -6,9 +6,10 @@
 
 import argparse
 
-from llama_toolchain.cli.download import Download
-from llama_toolchain.cli.inference.inference import InferenceParser
-from llama_toolchain.cli.model.model import ModelParser
+from .distribution import DistributionParser
+from .download import Download
+from .inference import InferenceParser
+from .model import ModelParser
 
 
 class LlamaCLIParser:
@@ -30,6 +31,7 @@ class LlamaCLIParser:
         Download.create(subparsers)
         InferenceParser.create(subparsers)
         ModelParser.create(subparsers)
+        DistributionParser.create(subparsers)
 
         # Import sub-commands from agentic_system if they exist
         try:
