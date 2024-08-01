@@ -6,7 +6,10 @@
 
 from termcolor import cprint
 
-from llama_toolchain.inference.api import ChatCompletionResponseEventType
+from llama_toolchain.inference.api import (
+    ChatCompletionResponseEventType, 
+    ChatCompletionResponseStreamChunk
+)
 
 
 class LogEvent:
@@ -25,12 +28,16 @@ class LogEvent:
 
 
 class EventLogger:
-    async def log(self, event_generator, stream=True):
+    async def log(self, event_generator):
         async for chunk in event_generator:
-            event = chunk.event
-            if event.event_type == ChatCompletionResponseEventType.start:
+            if isinstance(chunk, ChatCompletionResponseStreamChunk):
+                event = chunk.event
+                if event.event_type == ChatCompletionResponseEventType.start:
+                    yield LogEvent("Assistant> ", color="cyan", end="")
+                elif event.event_type == ChatCompletionResponseEventType.progress:
+                    yield LogEvent(event.delta, color="yellow", end="")
+                elif event.event_type == ChatCompletionResponseEventType.complete:
+                    yield LogEvent("")
+            else:
                 yield LogEvent("Assistant> ", color="cyan", end="")
-            elif event.event_type == ChatCompletionResponseEventType.progress:
-                yield LogEvent(event.delta, color="yellow", end="")
-            elif event.event_type == ChatCompletionResponseEventType.complete:
-                yield LogEvent("")
+                yield LogEvent(chunk.completion_message.content, color="yellow")

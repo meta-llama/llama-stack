@@ -12,6 +12,10 @@ async def get_inference_api_instance(config: InferenceConfig):
         from .inference import InferenceImpl
 
         return InferenceImpl(config.impl_config)
+    elif config.impl_config.impl_type == ImplType.ollama.value:
+        from .ollama import OllamaInference
+
+        return OllamaInference(config.impl_config)
 
     from .client import InferenceClient
 
