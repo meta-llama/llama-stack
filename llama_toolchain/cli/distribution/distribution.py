@@ -7,6 +7,7 @@
 import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
+from .configure import DistributionConfigure
 from .create import DistributionCreate
 from .install import DistributionInstall
 from .list import DistributionList
@@ -28,3 +29,4 @@ class DistributionParser(Subcommand):
         DistributionList.create(subparsers)
         DistributionInstall.create(subparsers)
         DistributionCreate.create(subparsers)
+        DistributionConfigure.create(subparsers)

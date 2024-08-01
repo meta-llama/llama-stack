@@ -25,10 +25,10 @@ from llama_models.sku_list import (
 from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.utils import DEFAULT_DUMP_DIR
+from llama_toolchain.utils import LLAMA_STACK_CONFIG_DIR
 
 
-DEFAULT_CHECKPOINT_DIR = os.path.join(DEFAULT_DUMP_DIR, "checkpoints")
+DEFAULT_CHECKPOINT_DIR = os.path.join(LLAMA_STACK_CONFIG_DIR, "checkpoints")
 
 
 class Download(Subcommand):
