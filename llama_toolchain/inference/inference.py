@@ -103,13 +103,15 @@ class InferenceImpl(Inference):
                 )
             else:
                 delta = text
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.progress,
-                    delta=delta,
-                    stop_reason=stop_reason,
+
+            if stop_reason is None:
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=delta,
+                        stop_reason=stop_reason,
+                    )
                 )
-            )
 
         if stop_reason is None:
             stop_reason = StopReason.out_of_tokens
