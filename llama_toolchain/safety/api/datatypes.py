@@ -45,13 +45,6 @@ class ShieldDefinition(BaseModel):
 
 
 @json_schema_type
-class ShieldCall(BaseModel):
-    call_id: str
-    shield_type: ShieldType
-    arguments: Dict[str, str]
-
-
-@json_schema_type
 class ShieldResponse(BaseModel):
     shield_type: ShieldType
     # TODO(ashwin): clean this up
