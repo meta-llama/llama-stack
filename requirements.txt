@@ -13,6 +13,7 @@ hydra-zen
 json-strong-typing
 llama-models
 matplotlib
+ollama
 omegaconf
 pandas
 Pillow
