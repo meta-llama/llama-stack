@@ -29,7 +29,7 @@ from llama_models.llama3_1.api.model import Transformer
 from llama_models.llama3_1.api.tokenizer import Tokenizer
 from termcolor import cprint
 
-from .api.config import CheckpointType, InlineImplConfig
+from .api.config import CheckpointType, MetaReferenceImplConfig
 from .api.datatypes import QuantizationType
 
 
@@ -42,7 +42,7 @@ class TokenResult:
 
 class Llama:
     @staticmethod
-    def build(config: InlineImplConfig):
+    def build(config: MetaReferenceImplConfig):
         """
         Build a Llama instance by initializing and loading a model checkpoint.
 

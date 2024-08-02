@@ -12,6 +12,7 @@ from .configure import DistributionConfigure
 from .create import DistributionCreate
 from .install import DistributionInstall
 from .list import DistributionList
+from .start import DistributionStart
 
 
 class DistributionParser(Subcommand):
@@ -31,3 +32,4 @@ class DistributionParser(Subcommand):
         DistributionInstall.create(subparsers)
         DistributionCreate.create(subparsers)
         DistributionConfigure.create(subparsers)
+        DistributionStart.create(subparsers)

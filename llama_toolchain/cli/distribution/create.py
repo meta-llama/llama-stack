@@ -7,6 +7,7 @@
 import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
+from llama_toolchain.distribution.registry import resolve_distribution
 
 
 class DistributionCreate(Subcommand):
@@ -23,7 +24,20 @@ class DistributionCreate(Subcommand):
         self.parser.set_defaults(func=self._run_distribution_create_cmd)
 
     def _add_arguments(self):
-        pass
+        self.parser.add_argument(
+            "--name",
+            type=str,
+            help="Name of the distribution to create",
+            required=True,
+        )
+        # for each ApiSurface the user wants to support, we should
+        # get the list of available adapters, ask which one the user
+        # wants to pick and then ask for their configuration.
 
     def _run_distribution_create_cmd(self, args: argparse.Namespace) -> None:
+        dist = resolve_distribution(args.name)
+        if dist is not None:
+            self.parser.error(f"Distribution with name {args.name} already exists")
+            return
+
         raise NotImplementedError()

@@ -9,7 +9,7 @@ import argparse
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
 
-from llama_toolchain.distribution.datatypes import distribution_dependencies
+from llama_toolchain.distribution.distribution import distribution_dependencies
 from llama_toolchain.distribution.registry import available_distributions
 
 

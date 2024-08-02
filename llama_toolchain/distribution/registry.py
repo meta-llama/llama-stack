@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
+from typing import List, Optional
 
 from llama_toolchain.inference.adapters import available_inference_adapters
 
@@ -63,3 +63,10 @@ def available_distributions() -> List[Distribution]:
             },
         ),
     ]
+
+
+def resolve_distribution(name: str) -> Optional[Distribution]:
+    for dist in available_distributions():
+        if dist.name == name:
+            return dist
+    return None

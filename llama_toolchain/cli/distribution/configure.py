@@ -18,11 +18,13 @@ from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.distribution.datatypes import Distribution, PassthroughApiAdapter
-from llama_toolchain.distribution.registry import available_distributions
+from llama_toolchain.distribution.registry import (
+    available_distributions,
+    resolve_distribution,
+)
 from llama_toolchain.utils import DISTRIBS_BASE_DIR
-from .utils import run_command
 
-DISTRIBS = available_distributions()
+from .utils import run_command
 
 
 class DistributionConfigure(Subcommand):
@@ -43,18 +45,13 @@ class DistributionConfigure(Subcommand):
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Mame of the distribution to configure",
+            help="Name of the distribution to configure",
             default="local-source",
             choices=[d.name for d in available_distributions()],
         )
 
     def _run_distribution_configure_cmd(self, args: argparse.Namespace) -> None:
-        dist = None
-        for d in DISTRIBS:
-            if d.name == args.name:
-                dist = d
-                break
-
+        dist = resolve_distribution(args.name)
         if dist is None:
             self.parser.error(f"Could not find distribution {args.name}")
             return

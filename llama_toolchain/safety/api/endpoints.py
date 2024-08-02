@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from .datatypes import *  # noqa: F403
-from typing import Protocol
+from typing import List, Protocol
 
 from llama_models.llama3_1.api.datatypes import Message
 
@@ -19,7 +19,7 @@ class RunShieldRequest(BaseModel):
     messages: List[Message]
 
 
-class SafetyCheck(Protocol):
+class Safety(Protocol):
 
     @webmethod(route="/safety/run_shield")
     async def run_shield(

@@ -13,7 +13,7 @@ from llama_models.llama3_1.api.chat_format import ChatFormat
 from llama_models.llama3_1.api.datatypes import Message
 from llama_models.llama3_1.api.tokenizer import Tokenizer
 
-from .api.config import InlineImplConfig
+from .api.config import MetaReferenceImplConfig
 from .generation import Llama
 from .parallel_utils import ModelParallelProcessGroup
 
@@ -42,7 +42,7 @@ class ModelRunner:
         )
 
 
-def init_model_cb(config: InlineImplConfig):
+def init_model_cb(config: MetaReferenceImplConfig):
     llama = Llama.build(config)
     return ModelRunner(llama)
 
@@ -58,7 +58,7 @@ class LlamaModelParallelGenerator:
     clear at the callsite why we need to use a context manager.
     """
 
-    def __init__(self, config: InlineImplConfig):
+    def __init__(self, config: MetaReferenceImplConfig):
         self.config = config
 
         # this is a hack because Agent's loop uses this to tokenize and check if input is too long

@@ -8,21 +8,35 @@ import errno
 import os
 import pty
 import select
+import signal
 import subprocess
 import sys
 import termios
-import tty
+
+from termcolor import cprint
 
 
 def run_with_pty(command):
-    old_settings = termios.tcgetattr(sys.stdin)
-
-    # Create a new pseudo-terminal
     master, slave = pty.openpty()
 
+    old_settings = termios.tcgetattr(sys.stdin)
+    original_sigint = signal.getsignal(signal.SIGINT)
+
+    ctrl_c_pressed = False
+
+    def sigint_handler(signum, frame):
+        nonlocal ctrl_c_pressed
+        ctrl_c_pressed = True
+        cprint("\nCtrl-C detected. Aborting...", "white", attrs=["bold"])
+
     try:
-        # ensure the terminal does not echo input
-        tty.setraw(sys.stdin.fileno())
+        # Set up the signal handler
+        signal.signal(signal.SIGINT, sigint_handler)
+
+        new_settings = termios.tcgetattr(sys.stdin)
+        new_settings[3] = new_settings[3] & ~termios.ECHO  # Disable echo
+        new_settings[3] = new_settings[3] & ~termios.ICANON  # Disable canonical mode
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, new_settings)
 
         process = subprocess.Popen(
             command,
@@ -30,26 +44,36 @@ def run_with_pty(command):
             stdout=slave,
             stderr=slave,
             universal_newlines=True,
+            preexec_fn=os.setsid,
         )
 
         # Close the slave file descriptor as it's now owned by the subprocess
         os.close(slave)
 
         def handle_io():
-            while True:
-                rlist, _, _ = select.select([sys.stdin, master], [], [])
+            while not ctrl_c_pressed:
+                try:
+                    rlist, _, _ = select.select([sys.stdin, master], [], [], 0.1)
 
-                if sys.stdin in rlist:
-                    data = os.read(sys.stdin.fileno(), 1024)
-                    if not data:  # EOF
-                        break
-                    os.write(master, data)
+                    if sys.stdin in rlist:
+                        data = os.read(sys.stdin.fileno(), 1024)
+                        if not data:
+                            break
+                        os.write(master, data)
 
-                if master in rlist:
-                    data = os.read(master, 1024)
-                    if not data:
-                        break
-                    os.write(sys.stdout.fileno(), data)
+                    if master in rlist:
+                        data = os.read(master, 1024)
+                        if not data:
+                            break
+                        sys.stdout.buffer.write(data)
+                        sys.stdout.flush()
+
+                except KeyboardInterrupt:
+                    # This will be raised when Ctrl+C is pressed
+                    break
+
+                if process.poll() is not None:
+                    break
 
         handle_io()
     except (EOFError, KeyboardInterrupt):
@@ -58,11 +82,14 @@ def run_with_pty(command):
         if e.errno != errno.EIO:
             raise
     finally:
-        # Restore original terminal settings
+        # Clean up
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+        signal.signal(signal.SIGINT, original_sigint)
 
-    process.wait()
-    os.close(master)
+        os.close(master)
+        if process.poll() is None:
+            process.terminate()
+            process.wait()
 
     return process.returncode
 

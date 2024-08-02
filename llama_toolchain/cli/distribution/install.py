@@ -11,9 +11,13 @@ import shlex
 import pkg_resources
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.datatypes import distribution_dependencies
-from llama_toolchain.distribution.registry import available_distributions
+from llama_toolchain.distribution.distribution import distribution_dependencies
+from llama_toolchain.distribution.registry import (
+    available_distributions,
+    resolve_distribution,
+)
 from llama_toolchain.utils import DISTRIBS_BASE_DIR
+
 from .utils import run_command, run_with_pty
 
 DISTRIBS = available_distributions()
@@ -55,12 +59,7 @@ class DistributionInstall(Subcommand):
             "distribution/install_distribution.sh",
         )
 
-        dist = None
-        for d in DISTRIBS:
-            if d.name == args.name:
-                dist = d
-                break
-
+        dist = resolve_distribution(args.name)
         if dist is None:
             self.parser.error(f"Could not find distribution {args.name}")
             return

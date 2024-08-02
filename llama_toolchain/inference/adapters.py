@@ -19,7 +19,7 @@ def available_inference_adapters() -> List[Adapter]:
                 "zmq",
             ],
             module="llama_toolchain.inference.inference",
-            config_class="llama_toolchain.inference.inference.InlineImplConfig",
+            config_class="llama_toolchain.inference.inference.MetaReferenceImplConfig",
         ),
         SourceAdapter(
             api_surface=ApiSurface.inference,
