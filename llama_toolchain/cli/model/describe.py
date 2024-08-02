@@ -7,21 +7,13 @@
 import argparse
 import json
 
-from enum import Enum
-
 from llama_models.sku_list import resolve_model
 
 from termcolor import colored
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
-
-
-class EnumEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Enum):
-            return obj.value
-        return super().default(obj)
+from llama_toolchain.utils import EnumEncoder
 
 
 class ModelDescribe(Subcommand):

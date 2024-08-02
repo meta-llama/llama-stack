@@ -5,7 +5,9 @@
 # the root directory of this source tree.
 
 import getpass
+import json
 import os
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
@@ -65,3 +67,10 @@ def parse_config(config_dir: str, config_path: Optional[str] = None) -> str:
     print("------------------------")
 
     return config
+
+
+class EnumEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return super().default(obj)
