@@ -46,12 +46,25 @@ class InferenceClient(Inference):
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             ) as response:
+                if response.status_code != 200:
+                    content = await response.aread()
+                    cprint(
+                        f"Error: HTTP {response.status_code} {content.decode()}", "red"
+                    )
+                    return
+
                 async for line in response.aiter_lines():
                     if line.startswith("data:"):
                         data = line[len("data: ") :]
                         try:
                             if request.stream:
-                                yield ChatCompletionResponseStreamChunk(**json.loads(data))
+                                if "error" in data:
+                                    cprint(data, "red")
+                                    continue
+
+                                yield ChatCompletionResponseStreamChunk(
+                                    **json.loads(data)
+                                )
                             else:
                                 yield ChatCompletionResponse(**json.loads(data))
                         except Exception as e:
