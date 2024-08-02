@@ -8,7 +8,6 @@ import argparse
 import textwrap
 
 from llama_toolchain.cli.inference.configure import InferenceConfigure
-from llama_toolchain.cli.inference.start import InferenceStart
 from llama_toolchain.cli.subcommand import Subcommand
 
 
@@ -31,6 +30,5 @@ class InferenceParser(Subcommand):
 
         subparsers = self.parser.add_subparsers(title="inference_subcommands")
 
-        # Add sub-commandsa
-        InferenceStart.create(subparsers)
+        # Add sub-commands
         InferenceConfigure.create(subparsers)
