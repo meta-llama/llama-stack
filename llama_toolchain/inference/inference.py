@@ -16,13 +16,20 @@ from .api.datatypes import (
     ToolCallParseStatus,
 )
 from .api.endpoints import (
-    ChatCompletionResponse,
     ChatCompletionRequest,
+    ChatCompletionResponse,
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
     Inference,
 )
 from .model_parallel import LlamaModelParallelGenerator
+
+
+def get_adapter_impl(config: InlineImplConfig) -> Inference:
+    assert isinstance(
+        config, InlineImplConfig
+    ), f"Unexpected config type: {type(config)}"
+    return InferenceImpl(config)
 
 
 class InferenceImpl(Inference):

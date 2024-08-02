@@ -7,20 +7,16 @@
 import argparse
 import os
 import shlex
-import subprocess
-
-from pathlib import Path
 
 import pkg_resources
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.registry import all_registered_distributions
-from llama_toolchain.utils import LLAMA_STACK_CONFIG_DIR
+from llama_toolchain.distribution.datatypes import distribution_dependencies
+from llama_toolchain.distribution.registry import available_distributions
+from llama_toolchain.utils import DISTRIBS_BASE_DIR
+from .utils import run_command, run_with_pty
 
-
-DISTRIBS_BASE_DIR = Path(LLAMA_STACK_CONFIG_DIR) / "distributions"
-
-DISTRIBS = all_registered_distributions()
+DISTRIBS = available_distributions()
 
 
 class DistributionInstall(Subcommand):
@@ -70,13 +66,19 @@ class DistributionInstall(Subcommand):
             return
 
         os.makedirs(DISTRIBS_BASE_DIR / dist.name, exist_ok=True)
-        run_shell_script(script, args.conda_env, " ".join(dist.pip_packages))
+
+        deps = distribution_dependencies(dist)
+        run_command([script, args.conda_env, " ".join(deps)])
         with open(DISTRIBS_BASE_DIR / dist.name / "conda.env", "w") as f:
             f.write(f"{args.conda_env}\n")
 
-
-def run_shell_script(script_path, *args):
-    command_string = f"{script_path} {' '.join(shlex.quote(str(arg)) for arg in args)}"
-    command_list = shlex.split(command_string)
-    print(f"Running command: {command_list}")
-    subprocess.run(command_list, check=True, text=True)
+        # we need to run configure _within_ the conda environment and need to run with
+        # a pty since configure is
+        python_exe = run_command(
+            shlex.split(f"conda run -n {args.conda_env} which python")
+        ).strip()
+        run_with_pty(
+            shlex.split(
+                f"{python_exe} -m llama_toolchain.cli.llama distribution configure --name {dist.name}"
+            )
+        )

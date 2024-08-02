@@ -6,30 +6,60 @@
 
 from typing import List
 
-from .datatypes import Distribution, DistributionConfigDefaults
+from llama_toolchain.inference.adapters import available_inference_adapters
+
+from .datatypes import ApiSurface, Distribution
+
+# This is currently duplicated from `requirements.txt` with a few minor changes
+# dev-dependencies like "ufmt" etc. are nuked. A few specialized dependencies
+# are moved to the appropriate distribution.
+COMMON_DEPENDENCIES = [
+    "accelerate",
+    "black==24.4.2",
+    "blobfile",
+    "codeshield",
+    "fairscale",
+    "fastapi",
+    "fire",
+    "flake8",
+    "httpx",
+    "huggingface-hub",
+    "hydra-core",
+    "hydra-zen",
+    "json-strong-typing",
+    "llama-models",
+    "omegaconf",
+    "pandas",
+    "Pillow",
+    "pydantic==1.10.13",
+    "pydantic_core==2.18.2",
+    "python-openapi",
+    "requests",
+    "tiktoken",
+    "torch",
+    "transformers",
+    "uvicorn",
+]
 
 
-def all_registered_distributions() -> List[Distribution]:
+def available_distributions() -> List[Distribution]:
+    inference_adapters_by_id = {a.adapter_id: a for a in available_inference_adapters()}
+
     return [
         Distribution(
             name="local-source",
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
-            pip_packages=[],
-            config_defaults=DistributionConfigDefaults(
-                inference={
-                    "max_seq_len": 4096,
-                    "max_batch_size": 1,
-                },
-                safety={},
-            ),
+            additional_pip_packages=COMMON_DEPENDENCIES,
+            adapters={
+                ApiSurface.inference: inference_adapters_by_id["meta-reference"],
+            },
         ),
         Distribution(
             name="local-ollama",
             description="Like local-source, but use ollama for running LLM inference",
-            pip_packages=["ollama"],
-            config_defaults=DistributionConfigDefaults(
-                inference={},
-                safety={},
-            ),
+            additional_pip_packages=COMMON_DEPENDENCIES,
+            adapters={
+                ApiSurface.inference: inference_adapters_by_id["meta-ollama"],
+            },
         ),
     ]

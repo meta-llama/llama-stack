@@ -32,15 +32,7 @@ class PassthroughApiAdapterConfig(BaseModel):
 @json_schema_type
 class PythonImplAdapterConfig(BaseModel):
     type: Literal[AdapterType.python_impl.value] = AdapterType.python_impl.value
-    pip_packages: List[str] = Field(
-        default_factory=list,
-        description="The pip dependencies needed for this implementation",
-    )
-    module: str = Field(..., description="The name of the module to import")
-    entrypoint: str = Field(
-        ...,
-        description="The name of the entrypoint function which creates the implementation for the API",
-    )
+    adapter_id: str
     kwargs: Dict[str, Any] = Field(
         default_factory=dict, description="kwargs to pass to the entrypoint"
     )
@@ -63,21 +55,43 @@ AdapterConfig = Annotated[
 ]
 
 
-class DistributionConfig(BaseModel):
-    inference: AdapterConfig
-    safety: AdapterConfig
-
-    # configs for each API that the stack provides, e.g.
-    # agentic_system: AdapterConfig
-    # post_training: AdapterConfig
+@json_schema_type
+class ApiSurface(Enum):
+    inference = "inference"
+    safety = "safety"
 
 
-class DistributionConfigDefaults(BaseModel):
-    inference: Dict[str, Any] = Field(
-        default_factory=dict, description="Default kwargs for the inference adapter"
+@json_schema_type
+class Adapter(BaseModel):
+    api_surface: ApiSurface
+    adapter_id: str
+
+
+@json_schema_type
+class SourceAdapter(Adapter):
+    pip_packages: List[str] = Field(
+        default_factory=list,
+        description="The pip dependencies needed for this implementation",
     )
-    safety: Dict[str, Any] = Field(
-        default_factory=dict, description="Default kwargs for the safety adapter"
+    module: str = Field(
+        ...,
+        description="""
+Fully-qualified name of the module to import. The module is expected to have
+a `get_adapter_instance()` method which will be passed a validated config object
+of type `config_class`.""",
+    )
+    config_class: str = Field(
+        ...,
+        description="Fully-qualified classname of the config for this adapter",
+    )
+
+
+@json_schema_type
+class PassthroughApiAdapter(Adapter):
+    base_url: str = Field(..., description="The base URL for the llama stack provider")
+    headers: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Headers (e.g., authorization) to send with the request",
     )
 
 
@@ -85,9 +99,22 @@ class Distribution(BaseModel):
     name: str
     description: str
 
-    # you must install the packages to get the functionality needed.
-    # later, we may have a docker image be the main artifact of
-    # a distribution.
-    pip_packages: List[str]
+    adapters: Dict[ApiSurface, Adapter] = Field(
+        default_factory=dict,
+        description="The API surfaces provided by this distribution",
+    )
 
-    config_defaults: DistributionConfigDefaults
+    additional_pip_packages: List[str] = Field(
+        default_factory=list,
+        description="Additional pip packages beyond those required by the adapters",
+    )
+
+
+def distribution_dependencies(distribution: Distribution) -> List[str]:
+    # only consider SourceAdapters when calculating dependencies
+    return [
+        dep
+        for adapter in distribution.adapters.values()
+        if isinstance(adapter, SourceAdapter)
+        for dep in adapter.pip_packages
+    ] + distribution.additional_pip_packages

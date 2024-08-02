@@ -6,6 +6,7 @@
 
 import getpass
 import os
+from pathlib import Path
 from typing import Optional
 
 from hydra import compose, initialize, MissingConfigException
@@ -15,6 +16,8 @@ from omegaconf import OmegaConf
 
 
 LLAMA_STACK_CONFIG_DIR = os.path.expanduser("~/.llama/")
+
+DISTRIBS_BASE_DIR = Path(LLAMA_STACK_CONFIG_DIR) / "distributions"
 
 
 def get_root_directory():

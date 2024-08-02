@@ -9,7 +9,8 @@ import argparse
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
 
-from llama_toolchain.distribution.registry import all_registered_distributions
+from llama_toolchain.distribution.datatypes import distribution_dependencies
+from llama_toolchain.distribution.registry import available_distributions
 
 
 class DistributionList(Subcommand):
@@ -37,12 +38,13 @@ class DistributionList(Subcommand):
         ]
 
         rows = []
-        for dist in all_registered_distributions():
+        for dist in available_distributions():
+            deps = distribution_dependencies(dist)
             rows.append(
                 [
                     dist.name,
                     dist.description,
-                    ", ".join(dist.pip_packages),
+                    ", ".join(deps),
                 ]
             )
         print_table(
