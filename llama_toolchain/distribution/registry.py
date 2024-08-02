@@ -33,6 +33,7 @@ COMMON_DEPENDENCIES = [
     "Pillow",
     "pydantic==1.10.13",
     "pydantic_core==2.18.2",
+    "python-dotenv",
     "python-openapi",
     "requests",
     "tiktoken",
