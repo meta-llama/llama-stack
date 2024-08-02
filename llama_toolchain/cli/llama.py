@@ -8,8 +8,6 @@ import argparse
 
 from .distribution import DistributionParser
 from .download import Download
-
-# from .inference import InferenceParser
 from .model import ModelParser
 
 
@@ -30,7 +28,6 @@ class LlamaCLIParser:
 
         # Add sub-commands
         Download.create(subparsers)
-        # InferenceParser.create(subparsers)
         ModelParser.create(subparsers)
         DistributionParser.create(subparsers)
 

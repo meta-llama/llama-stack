@@ -7,7 +7,6 @@
 import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.registry import resolve_distribution
 
 
 class DistributionCreate(Subcommand):
@@ -35,6 +34,8 @@ class DistributionCreate(Subcommand):
         # wants to pick and then ask for their configuration.
 
     def _run_distribution_create_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.distribution.registry import resolve_distribution
+
         dist = resolve_distribution(args.name)
         if dist is not None:
             self.parser.error(f"Distribution with name {args.name} already exists")

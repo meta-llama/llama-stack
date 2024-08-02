@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from functools import lru_cache
 from typing import List, Optional
 
 from llama_toolchain.inference.adapters import available_inference_adapters
@@ -27,7 +28,7 @@ COMMON_DEPENDENCIES = [
     "hydra-core",
     "hydra-zen",
     "json-strong-typing",
-    "llama-models",
+    "git+ssh://git@github.com/meta-llama/llama-models.git",
     "omegaconf",
     "pandas",
     "Pillow",
@@ -43,6 +44,7 @@ COMMON_DEPENDENCIES = [
 ]
 
 
+@lru_cache()
 def available_distributions() -> List[Distribution]:
     inference_adapters_by_id = {a.adapter_id: a for a in available_inference_adapters()}
 
@@ -66,6 +68,7 @@ def available_distributions() -> List[Distribution]:
     ]
 
 
+@lru_cache()
 def resolve_distribution(name: str) -> Optional[Distribution]:
     for dist in available_distributions():
         if dist.name == name:

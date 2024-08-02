@@ -11,11 +11,7 @@ from pathlib import Path
 import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.registry import resolve_distribution
-from llama_toolchain.distribution.server import main as distribution_server_init
 from llama_toolchain.utils import DISTRIBS_BASE_DIR
-
-from .utils import run_command
 
 
 class DistributionStart(Subcommand):
@@ -52,6 +48,10 @@ class DistributionStart(Subcommand):
         )
 
     def _run_distribution_start_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.distribution.registry import resolve_distribution
+        from llama_toolchain.distribution.server import main as distribution_server_init
+        from .utils import run_command
+
         dist = resolve_distribution(args.name)
         if dist is None:
             self.parser.error(f"Distribution with name {args.name} not found")

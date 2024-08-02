@@ -18,14 +18,7 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.datatypes import Distribution, PassthroughApiAdapter
-from llama_toolchain.distribution.registry import (
-    available_distributions,
-    resolve_distribution,
-)
 from llama_toolchain.utils import DISTRIBS_BASE_DIR, EnumEncoder
-
-from .utils import run_command
 
 
 class DistributionConfigure(Subcommand):
@@ -43,6 +36,7 @@ class DistributionConfigure(Subcommand):
         self.parser.set_defaults(func=self._run_distribution_configure_cmd)
 
     def _add_arguments(self):
+        from llama_toolchain.distribution.registry import available_distributions
         self.parser.add_argument(
             "--name",
             type=str,
@@ -52,6 +46,8 @@ class DistributionConfigure(Subcommand):
         )
 
     def _run_distribution_configure_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.distribution.registry import resolve_distribution
+
         dist = resolve_distribution(args.name)
         if dist is None:
             self.parser.error(f"Could not find distribution {args.name}")
@@ -66,7 +62,10 @@ class DistributionConfigure(Subcommand):
         configure_llama_distribution(dist, conda_env)
 
 
-def configure_llama_distribution(dist: Distribution, conda_env: str):
+def configure_llama_distribution(dist: "Distribution", conda_env: str):
+    from llama_toolchain.distribution.datatypes import PassthroughApiAdapter
+    from .utils import run_command
+
     python_exe = run_command(shlex.split("which python"))
     # simple check
     if conda_env not in python_exe:

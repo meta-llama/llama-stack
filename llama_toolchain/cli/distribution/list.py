@@ -7,10 +7,6 @@
 import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.cli.table import print_table
-
-from llama_toolchain.distribution.distribution import distribution_dependencies
-from llama_toolchain.distribution.registry import available_distributions
 
 
 class DistributionList(Subcommand):
@@ -30,6 +26,10 @@ class DistributionList(Subcommand):
         pass
 
     def _run_distribution_list_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.cli.table import print_table
+        from llama_toolchain.distribution.distribution import distribution_dependencies
+        from llama_toolchain.distribution.registry import available_distributions
+
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
             "Name",
