@@ -25,8 +25,6 @@ COMMON_DEPENDENCIES = [
     "flake8",
     "httpx",
     "huggingface-hub",
-    "hydra-core",
-    "hydra-zen",
     "json-strong-typing",
     "git+ssh://git@github.com/meta-llama/llama-models.git",
     "omegaconf",
@@ -67,9 +65,12 @@ def available_distributions() -> List[Distribution]:
                 "fairscale",
                 "fastapi",
                 "fire",
-                "flake8",
                 "httpx",
                 "huggingface-hub",
+                "json-strong-typing",
+                "pydantic==1.10.13",
+                "pydantic_core==2.18.2",
+                "uvicorn",
             ],
             adapters={
                 ApiSurface.inference: PassthroughApiAdapter(

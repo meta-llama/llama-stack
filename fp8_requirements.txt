@@ -8,8 +8,6 @@ fire
 flake8
 huggingface-hub
 httpx
-hydra-core
-hydra-zen
 json-strong-typing
 matplotlib
 omegaconf

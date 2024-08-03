@@ -30,6 +30,7 @@ class DistributionInstall(Subcommand):
 
     def _add_arguments(self):
         from llama_toolchain.distribution.registry import available_distributions
+
         self.parser.add_argument(
             "--name",
             type=str,
@@ -63,7 +64,7 @@ class DistributionInstall(Subcommand):
         os.makedirs(DISTRIBS_BASE_DIR / dist.name, exist_ok=True)
 
         deps = distribution_dependencies(dist)
-        run_command([script, args.conda_env, " ".join(deps)])
+        run_with_pty([script, args.conda_env, " ".join(deps)])
         with open(DISTRIBS_BASE_DIR / dist.name / "conda.env", "w") as f:
             f.write(f"{args.conda_env}\n")
 

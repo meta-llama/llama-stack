@@ -8,8 +8,6 @@ fire
 flake8
 httpx
 huggingface-hub
-hydra-core
-hydra-zen
 json-strong-typing
 llama-models
 matplotlib
