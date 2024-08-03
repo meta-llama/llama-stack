@@ -157,7 +157,7 @@ def create_dynamic_typed_route(func: Any):
                     )
 
             return StreamingResponse(
-                sse_generator(func(request2)), media_type="text/event-stream"
+                sse_generator(func(request)), media_type="text/event-stream"
             )
 
     else:

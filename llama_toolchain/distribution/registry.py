@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from llama_toolchain.inference.adapters import available_inference_adapters
 
-from .datatypes import ApiSurface, Distribution
+from .datatypes import ApiSurface, Distribution, PassthroughApiAdapter
 
 # This is currently duplicated from `requirements.txt` with a few minor changes
 # dev-dependencies like "ufmt" etc. are nuked. A few specialized dependencies
@@ -55,6 +55,28 @@ def available_distributions() -> List[Distribution]:
             additional_pip_packages=COMMON_DEPENDENCIES,
             adapters={
                 ApiSurface.inference: inference_adapters_by_id["meta-reference"],
+            },
+        ),
+        Distribution(
+            name="full-passthrough",
+            description="Point to remote services for all llama stack APIs",
+            additional_pip_packages=[
+                "python-dotenv",
+                "blobfile",
+                "codeshield",
+                "fairscale",
+                "fastapi",
+                "fire",
+                "flake8",
+                "httpx",
+                "huggingface-hub",
+            ],
+            adapters={
+                ApiSurface.inference: PassthroughApiAdapter(
+                    api_surface=ApiSurface.inference,
+                    adapter_id="inference-passthrough",
+                    base_url="http://localhost:5001",
+                ),
             },
         ),
         Distribution(
