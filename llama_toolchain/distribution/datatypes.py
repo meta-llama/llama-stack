@@ -15,6 +15,7 @@ from strong_typing.schema import json_schema_type
 class ApiSurface(Enum):
     inference = "inference"
     safety = "safety"
+    agentic_system = "agentic_system"
 
 
 @json_schema_type
@@ -39,13 +40,18 @@ class SourceAdapter(Adapter):
     module: str = Field(
         ...,
         description="""
-Fully-qualified name of the module to import. The module is expected to have
-a `get_adapter_instance()` method which will be passed a validated config object
-of type `config_class`.""",
+Fully-qualified name of the module to import. The module is expected to have:
+
+ - `get_adapter_impl(config, deps)`: returns the local implementation
+""",
     )
     config_class: str = Field(
         ...,
         description="Fully-qualified classname of the config for this adapter",
+    )
+    adapter_dependencies: List[ApiSurface] = Field(
+        default_factory=list,
+        description="Higher-level API surfaces may depend on other adapters to provide their functionality",
     )
 
 
@@ -55,6 +61,13 @@ class PassthroughApiAdapter(Adapter):
     headers: Dict[str, str] = Field(
         default_factory=dict,
         description="Headers (e.g., authorization) to send with the request",
+    )
+    module: str = Field(
+        ...,
+        description="""
+Fully-qualified name of the module to import. The module is expected to have:
+ - `get_client_impl(base_url)`: returns a client which can be used to call the remote implementation
+""",
     )
 
 

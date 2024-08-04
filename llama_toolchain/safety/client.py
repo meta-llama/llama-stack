@@ -21,6 +21,10 @@ from .api import (
 )
 
 
+async def get_client_impl(base_url: str):
+    return SafetyClient(base_url)
+
+
 class SafetyClient(Safety):
     def __init__(self, base_url: str):
         print(f"Initializing client for {base_url}")

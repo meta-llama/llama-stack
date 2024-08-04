@@ -144,7 +144,11 @@ def prompt_for_config(
             nested_type = get_non_none_type(field_type)
             print(f"Entering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(nested_type, existing_value)
-        elif inspect.isclass(field_type) and issubclass(field_type, BaseModel):
+        elif (
+            inspect.isclass(field_type)
+            and issubclass(field_type, BaseModel)
+            and len(field_type.__fields__) > 0
+        ):
             print(f"\nEntering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(
                 field_type,

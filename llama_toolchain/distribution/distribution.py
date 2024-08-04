@@ -7,6 +7,7 @@
 import inspect
 from typing import Dict, List
 
+from llama_toolchain.agentic_system.api.endpoints import AgenticSystem
 from llama_toolchain.inference.api.endpoints import Inference
 from llama_toolchain.safety.api.endpoints import Safety
 
@@ -29,6 +30,7 @@ def api_surface_endpoints() -> Dict[ApiSurface, List[ApiSurfaceEndpoint]]:
     protocols = {
         ApiSurface.inference: Inference,
         ApiSurface.safety: Safety,
+        ApiSurface.agentic_system: AgenticSystem,
     }
 
     for surface, protocol in protocols.items():

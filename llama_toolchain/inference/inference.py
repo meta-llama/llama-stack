@@ -6,10 +6,12 @@
 
 import asyncio
 
-from typing import AsyncIterator, Union
+from typing import AsyncIterator, Dict, Union
 
 from llama_models.llama3_1.api.datatypes import StopReason
 from llama_models.sku_list import resolve_model
+
+from llama_toolchain.distribution.datatypes import Adapter, ApiSurface
 
 from .api.config import MetaReferenceImplConfig
 from .api.datatypes import (
@@ -27,7 +29,9 @@ from .api.endpoints import (
 from .model_parallel import LlamaModelParallelGenerator
 
 
-async def get_adapter_impl(config: MetaReferenceImplConfig):
+async def get_adapter_impl(
+    config: MetaReferenceImplConfig, _deps: Dict[ApiSurface, Adapter]
+):
     assert isinstance(
         config, MetaReferenceImplConfig
     ), f"Unexpected config type: {type(config)}"

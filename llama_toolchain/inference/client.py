@@ -23,6 +23,10 @@ from .api import (
 from .event_logger import EventLogger
 
 
+async def get_client_impl(base_url: str):
+    return InferenceClient(base_url)
+
+
 class InferenceClient(Inference):
     def __init__(self, base_url: str):
         print(f"Initializing client for {base_url}")

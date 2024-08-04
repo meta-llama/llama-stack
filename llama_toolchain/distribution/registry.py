@@ -7,6 +7,8 @@
 from functools import lru_cache
 from typing import List, Optional
 
+from llama_toolchain.agentic_system.adapters import available_agentic_system_adapters
+
 from llama_toolchain.inference.adapters import available_inference_adapters
 from llama_toolchain.safety.adapters import available_safety_adapters
 
@@ -43,10 +45,26 @@ COMMON_DEPENDENCIES = [
 ]
 
 
+def client_module(api_surface: ApiSurface) -> str:
+    return f"llama_toolchain.{api_surface.value}.client"
+
+
+def passthrough(api_surface: ApiSurface, port: int) -> PassthroughApiAdapter:
+    return PassthroughApiAdapter(
+        api_surface=api_surface,
+        adapter_id=f"{api_surface.value}-passthrough",
+        base_url=f"http://localhost:{port}",
+        module=client_module(api_surface),
+    )
+
+
 @lru_cache()
 def available_distributions() -> List[Distribution]:
     inference_adapters_by_id = {a.adapter_id: a for a in available_inference_adapters()}
     safety_adapters_by_id = {a.adapter_id: a for a in available_safety_adapters()}
+    agentic_system_adapters_by_id = {
+        a.adapter_id: a for a in available_agentic_system_adapters()
+    }
 
     return [
         Distribution(
@@ -56,6 +74,9 @@ def available_distributions() -> List[Distribution]:
             adapters={
                 ApiSurface.inference: inference_adapters_by_id["meta-reference"],
                 ApiSurface.safety: safety_adapters_by_id["meta-reference"],
+                ApiSurface.agentic_system: agentic_system_adapters_by_id[
+                    "meta-reference"
+                ],
             },
         ),
         Distribution(
@@ -76,16 +97,9 @@ def available_distributions() -> List[Distribution]:
                 "uvicorn",
             ],
             adapters={
-                ApiSurface.inference: PassthroughApiAdapter(
-                    api_surface=ApiSurface.inference,
-                    adapter_id="inference-passthrough",
-                    base_url="http://localhost:5001",
-                ),
-                ApiSurface.safety: PassthroughApiAdapter(
-                    api_surface=ApiSurface.safety,
-                    adapter_id="safety-passthrough",
-                    base_url="http://localhost:5001",
-                ),
+                ApiSurface.inference: passthrough(ApiSurface.inference, 5001),
+                ApiSurface.safety: passthrough(ApiSurface.safety, 5001),
+                ApiSurface.agentic_system: passthrough(ApiSurface.agentic_system, 5001),
             },
         ),
         Distribution(
@@ -95,6 +109,9 @@ def available_distributions() -> List[Distribution]:
             adapters={
                 ApiSurface.inference: inference_adapters_by_id["meta-ollama"],
                 ApiSurface.safety: safety_adapters_by_id["meta-reference"],
+                ApiSurface.agentic_system: agentic_system_adapters_by_id[
+                    "meta-reference"
+                ],
             },
         ),
     ]
