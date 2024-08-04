@@ -54,7 +54,7 @@ class MetaReferenceInferenceImpl(Inference):
 
     async def initialize(self) -> None:
         self.generator = LlamaModelParallelGenerator(self.config)
-        # self.generator.start()
+        self.generator.start()
 
     async def shutdown(self) -> None:
         self.generator.stop()

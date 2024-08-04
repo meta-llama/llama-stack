@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.utils import DISTRIBS_BASE_DIR
+from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
 
 
 class DistributionStart(Subcommand):
@@ -48,9 +48,9 @@ class DistributionStart(Subcommand):
         )
 
     def _run_distribution_start_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.common.exec import run_command
         from llama_toolchain.distribution.registry import resolve_distribution
         from llama_toolchain.distribution.server import main as distribution_server_init
-        from .utils import run_command
 
         dist = resolve_distribution(args.name)
         if dist is None:
@@ -67,6 +67,7 @@ class DistributionStart(Subcommand):
             config = yaml.safe_load(fp)
 
         conda_env = config["conda_env"]
+
         python_exe = run_command(shlex.split("which python"))
         # simple check, unfortunate
         if conda_env not in python_exe:
@@ -80,8 +81,3 @@ class DistributionStart(Subcommand):
             args.port,
             disable_ipv6=args.disable_ipv6,
         )
-        # run_with_pty(
-        #     shlex.split(
-        #         f"conda run -n {conda_env} python -m llama_toolchain.distribution.server {dist.name} {config_yaml} --port 5000"
-        #     )
-        # )

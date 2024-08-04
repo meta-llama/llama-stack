@@ -16,10 +16,7 @@ import httpx
 from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.utils import LLAMA_STACK_CONFIG_DIR
-
-
-DEFAULT_CHECKPOINT_DIR = os.path.join(LLAMA_STACK_CONFIG_DIR, "checkpoints")
+from llama_toolchain.common.config_dirs import DEFAULT_CHECKPOINT_DIR
 
 
 class Download(Subcommand):

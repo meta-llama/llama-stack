@@ -16,6 +16,8 @@ import termios
 from termcolor import cprint
 
 
+# run a command in a pseudo-terminal, with interrupt handling,
+# useful when you want to run interactive things
 def run_with_pty(command):
     master, slave = pty.openpty()
 

@@ -13,7 +13,7 @@ from termcolor import colored
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
-from llama_toolchain.utils import EnumEncoder
+from llama_toolchain.common.serialize import EnumEncoder
 
 
 class ModelDescribe(Subcommand):

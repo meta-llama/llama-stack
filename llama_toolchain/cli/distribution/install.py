@@ -11,7 +11,7 @@ import shlex
 import pkg_resources
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.utils import DISTRIBS_BASE_DIR
+from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
 
 
 class DistributionInstall(Subcommand):
@@ -46,9 +46,9 @@ class DistributionInstall(Subcommand):
         )
 
     def _run_distribution_install_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.common.exec import run_command, run_with_pty
         from llama_toolchain.distribution.distribution import distribution_dependencies
         from llama_toolchain.distribution.registry import resolve_distribution
-        from .utils import run_command, run_with_pty
 
         os.makedirs(DISTRIBS_BASE_DIR, exist_ok=True)
         script = pkg_resources.resource_filename(
