@@ -13,6 +13,7 @@ from .shields import (
     InjectionShield,
     JailbreakShield,
     LlamaGuardShield,
+    PromptGuardShield,
     ShieldBase,
     ThirdPartyShield,
 )
