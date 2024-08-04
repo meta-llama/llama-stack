@@ -15,14 +15,19 @@ from pyopenapi import webmethod
 
 @json_schema_type
 class RunShieldRequest(BaseModel):
-    shield_type: ShieldType
     messages: List[Message]
+    shields: List[ShieldDefinition]
+
+
+@json_schema_type
+class RunShieldResponse(BaseModel):
+    responses: List[ShieldResponse]
 
 
 class Safety(Protocol):
 
-    @webmethod(route="/safety/run_shield")
-    async def run_shield(
+    @webmethod(route="/safety/run_shields")
+    async def run_shields(
         self,
         request: RunShieldRequest,
-    ) -> ShieldResponse: ...
+    ) -> RunShieldResponse: ...

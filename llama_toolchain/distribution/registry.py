@@ -8,6 +8,7 @@ from functools import lru_cache
 from typing import List, Optional
 
 from llama_toolchain.inference.adapters import available_inference_adapters
+from llama_toolchain.safety.adapters import available_safety_adapters
 
 from .datatypes import ApiSurface, Distribution, PassthroughApiAdapter
 
@@ -45,6 +46,7 @@ COMMON_DEPENDENCIES = [
 @lru_cache()
 def available_distributions() -> List[Distribution]:
     inference_adapters_by_id = {a.adapter_id: a for a in available_inference_adapters()}
+    safety_adapters_by_id = {a.adapter_id: a for a in available_safety_adapters()}
 
     return [
         Distribution(
@@ -53,6 +55,7 @@ def available_distributions() -> List[Distribution]:
             additional_pip_packages=COMMON_DEPENDENCIES,
             adapters={
                 ApiSurface.inference: inference_adapters_by_id["meta-reference"],
+                ApiSurface.safety: safety_adapters_by_id["meta-reference"],
             },
         ),
         Distribution(
@@ -78,6 +81,11 @@ def available_distributions() -> List[Distribution]:
                     adapter_id="inference-passthrough",
                     base_url="http://localhost:5001",
                 ),
+                ApiSurface.safety: PassthroughApiAdapter(
+                    api_surface=ApiSurface.safety,
+                    adapter_id="safety-passthrough",
+                    base_url="http://localhost:5001",
+                ),
             },
         ),
         Distribution(
@@ -86,6 +94,7 @@ def available_distributions() -> List[Distribution]:
             additional_pip_packages=COMMON_DEPENDENCIES,
             adapters={
                 ApiSurface.inference: inference_adapters_by_id["meta-ollama"],
+                ApiSurface.safety: safety_adapters_by_id["meta-reference"],
             },
         ),
     ]

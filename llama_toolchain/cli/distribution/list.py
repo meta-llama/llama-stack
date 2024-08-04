@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import argparse
+import json
 
 from llama_toolchain.cli.subcommand import Subcommand
 
@@ -27,24 +28,23 @@ class DistributionList(Subcommand):
 
     def _run_distribution_list_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.cli.table import print_table
-        from llama_toolchain.distribution.distribution import distribution_dependencies
         from llama_toolchain.distribution.registry import available_distributions
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
             "Name",
+            "Adapters",
             "Description",
-            "Dependencies",
         ]
 
         rows = []
         for dist in available_distributions():
-            deps = distribution_dependencies(dist)
+            adapters = {k.value: v.adapter_id for k, v in dist.adapters.items()}
             rows.append(
                 [
                     dist.name,
+                    json.dumps(adapters, indent=2),
                     dist.description,
-                    ", ".join(deps),
                 ]
             )
         print_table(

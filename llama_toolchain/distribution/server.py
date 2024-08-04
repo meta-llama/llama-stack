@@ -136,7 +136,7 @@ async def passthrough(
 
 
 def handle_sigint(*args, **kwargs):
-    print("SIGINT or CTRL-C detected. Exiting gracefully", args)
+    print("SIGINT or CTRL-C detected. Exiting gracefully...")
     loop = asyncio.get_event_loop()
     for task in asyncio.all_tasks(loop):
         task.cancel()
@@ -198,8 +198,16 @@ def create_dynamic_typed_route(func: Any):
 
         async def endpoint(request: request_model):
             try:
-                return func(request)
+                return (
+                    await func(request)
+                    if asyncio.iscoroutinefunction(func)
+                    else func(request)
+                )
             except Exception as e:
+                print(e)
+                import traceback
+
+                traceback.print_exc()
                 raise translate_exception(e) from e
 
     return endpoint

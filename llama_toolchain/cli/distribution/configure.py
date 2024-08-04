@@ -10,8 +10,9 @@ import inspect
 import json
 import shlex
 
+from enum import Enum
 from pathlib import Path
-from typing import get_args, get_origin, Literal, Optional, Union
+from typing import get_args, get_origin, List, Literal, Optional, Union
 
 import yaml
 from pydantic import BaseModel
@@ -101,11 +102,12 @@ def configure_llama_distribution(dist: "Distribution", conda_env: str):
                 (
                     config_type(**existing_config["adapters"][api_surface.value])
                     if existing_config
+                    and api_surface.value in existing_config["adapters"]
                     else None
                 ),
             )
             adapter_configs[api_surface.value] = {
-                adapter_id: adapter.adapter_id,
+                "adapter_id": adapter.adapter_id,
                 **config.dict(),
             }
 
@@ -125,6 +127,16 @@ def instantiate_class_type(fully_qualified_name):
     module_name, class_name = fully_qualified_name.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
+
+
+def is_list_of_primitives(field_type):
+    """Check if a field type is a List of primitive types."""
+    origin = get_origin(field_type)
+    if origin is List or origin is list:
+        args = get_args(field_type)
+        if len(args) == 1 and args[0] in (int, float, str, bool):
+            return True
+    return False
 
 
 def get_literal_values(field):
@@ -178,6 +190,20 @@ def prompt_for_config(
         if get_origin(field_type) is Literal:
             continue
 
+        if inspect.isclass(field_type) and issubclass(field_type, Enum):
+            prompt = f"Choose {field_name} (options: {', '.join(e.name for e in field_type)}):"
+            while True:
+                # this branch does not handle existing and default values yet
+                user_input = input(prompt + " ")
+                try:
+                    config_data[field_name] = field_type[user_input]
+                    break
+                except KeyError:
+                    print(
+                        f"Invalid choice. Please choose from: {', '.join(e.name for e in field_type)}"
+                    )
+            continue
+
         # Check if the field is a discriminated union
         if get_origin(field_type) is Annotated:
             inner_type = get_args(field_type)[0]
@@ -217,7 +243,19 @@ def prompt_for_config(
                             print(f"Invalid {discriminator}. Please try again.")
                     continue
 
-        if inspect.isclass(field_type) and issubclass(field_type, BaseModel):
+        if (
+            is_optional(field_type)
+            and inspect.isclass(get_non_none_type(field_type))
+            and issubclass(get_non_none_type(field_type), BaseModel)
+        ):
+            prompt = f"Do you want to configure {field_name}? (y/n): "
+            if input(prompt).lower() != "y":
+                config_data[field_name] = None
+                continue
+            nested_type = get_non_none_type(field_type)
+            print(f"Entering sub-configuration for {field_name}:")
+            config_data[field_name] = prompt_for_config(nested_type, existing_value)
+        elif inspect.isclass(field_type) and issubclass(field_type, BaseModel):
             print(f"\nEntering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(
                 field_type,
@@ -255,6 +293,26 @@ def prompt_for_config(
                             config_data[field_name] = None
                             break
                         field_type = get_non_none_type(field_type)
+
+                    # Handle List of primitives
+                    if is_list_of_primitives(field_type):
+                        try:
+                            value = json.loads(user_input)
+                            if not isinstance(value, list):
+                                raise ValueError("Input must be a JSON-encoded list")
+                            element_type = get_args(field_type)[0]
+                            config_data[field_name] = [
+                                element_type(item) for item in value
+                            ]
+                            break
+                        except json.JSONDecodeError:
+                            print(
+                                "Invalid JSON. Please enter a valid JSON-encoded list."
+                            )
+                            continue
+                        except ValueError as e:
+                            print(f"{str(e)}")
+                            continue
 
                     # Convert the input to the correct type
                     if inspect.isclass(field_type) and issubclass(
