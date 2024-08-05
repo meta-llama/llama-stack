@@ -47,7 +47,6 @@ async def execute_with_custom_tools(
                 yield chunk
             else:
                 turn = chunk.event.payload.turn
-                break
 
         message = turn.output_message
         if len(message.tool_calls) == 0:

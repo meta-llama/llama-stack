@@ -233,9 +233,10 @@ def topological_sort(adapters: List[Adapter]) -> List[Adapter]:
     def dfs(a: Adapter, visited: Set[ApiSurface], stack: List[ApiSurface]):
         visited.add(a.api_surface)
 
-        for surface in a.adapter_dependencies:
-            if surface not in visited:
-                dfs(by_id[surface], visited, stack)
+        if not isinstance(a, PassthroughApiAdapter):
+            for surface in a.adapter_dependencies:
+                if surface not in visited:
+                    dfs(by_id[surface], visited, stack)
 
         stack.append(a.api_surface)
 
