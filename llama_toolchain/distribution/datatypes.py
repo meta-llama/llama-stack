@@ -12,14 +12,14 @@ from strong_typing.schema import json_schema_type
 
 
 @json_schema_type
-class ApiSurface(Enum):
+class Api(Enum):
     inference = "inference"
     safety = "safety"
     agentic_system = "agentic_system"
 
 
 @json_schema_type
-class ApiSurfaceEndpoint(BaseModel):
+class ApiEndpoint(BaseModel):
     route: str
     method: str
     name: str
@@ -27,7 +27,7 @@ class ApiSurfaceEndpoint(BaseModel):
 
 @json_schema_type
 class Adapter(BaseModel):
-    api_surface: ApiSurface
+    api: Api
     adapter_id: str
 
 
@@ -49,7 +49,7 @@ Fully-qualified name of the module to import. The module is expected to have:
         ...,
         description="Fully-qualified classname of the config for this adapter",
     )
-    adapter_dependencies: List[ApiSurface] = Field(
+    adapter_dependencies: List[Api] = Field(
         default_factory=list,
         description="Higher-level API surfaces may depend on other adapters to provide their functionality",
     )
@@ -75,7 +75,7 @@ class Distribution(BaseModel):
     name: str
     description: str
 
-    adapters: Dict[ApiSurface, Adapter] = Field(
+    adapters: Dict[Api, Adapter] = Field(
         default_factory=dict,
         description="The API surfaces provided by this distribution",
     )

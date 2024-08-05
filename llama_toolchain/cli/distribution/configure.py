@@ -85,24 +85,21 @@ def configure_llama_distribution(dist: "Distribution", conda_env: str):
             existing_config = yaml.safe_load(fp)
 
     adapter_configs = {}
-    for api_surface, adapter in dist.adapters.items():
+    for api, adapter in dist.adapters.items():
         if isinstance(adapter, PassthroughApiAdapter):
-            adapter_configs[api_surface.value] = adapter.dict()
+            adapter_configs[api.value] = adapter.dict()
         else:
-            cprint(
-                f"Configuring API surface: {api_surface.value}", "white", attrs=["bold"]
-            )
+            cprint(f"Configuring API surface: {api.value}", "white", attrs=["bold"])
             config_type = instantiate_class_type(adapter.config_class)
             config = prompt_for_config(
                 config_type,
                 (
-                    config_type(**existing_config["adapters"][api_surface.value])
-                    if existing_config
-                    and api_surface.value in existing_config["adapters"]
+                    config_type(**existing_config["adapters"][api.value])
+                    if existing_config and api.value in existing_config["adapters"]
                     else None
                 ),
             )
-            adapter_configs[api_surface.value] = {
+            adapter_configs[api.value] = {
                 "adapter_id": adapter.adapter_id,
                 **config.dict(),
             }

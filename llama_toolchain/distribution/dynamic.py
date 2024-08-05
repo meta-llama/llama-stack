@@ -17,7 +17,7 @@ def instantiate_class_type(fully_qualified_name):
     return getattr(module, class_name)
 
 
-# returns a class implementing the protocol corresponding to the ApiSurface
+# returns a class implementing the protocol corresponding to the Api
 def instantiate_adapter(
     adapter: SourceAdapter, adapter_config: Dict[str, Any], deps: Dict[str, Adapter]
 ):

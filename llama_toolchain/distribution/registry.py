@@ -12,7 +12,7 @@ from llama_toolchain.agentic_system.adapters import available_agentic_system_ada
 from llama_toolchain.inference.adapters import available_inference_adapters
 from llama_toolchain.safety.adapters import available_safety_adapters
 
-from .datatypes import ApiSurface, Distribution, PassthroughApiAdapter
+from .datatypes import Api, Distribution, PassthroughApiAdapter
 
 # This is currently duplicated from `requirements.txt` with a few minor changes
 # dev-dependencies like "ufmt" etc. are nuked. A few specialized dependencies
@@ -45,16 +45,16 @@ COMMON_DEPENDENCIES = [
 ]
 
 
-def client_module(api_surface: ApiSurface) -> str:
-    return f"llama_toolchain.{api_surface.value}.client"
+def client_module(api: Api) -> str:
+    return f"llama_toolchain.{api.value}.client"
 
 
-def passthrough(api_surface: ApiSurface, port: int) -> PassthroughApiAdapter:
+def passthrough(api: Api, port: int) -> PassthroughApiAdapter:
     return PassthroughApiAdapter(
-        api_surface=api_surface,
-        adapter_id=f"{api_surface.value}-passthrough",
+        api=api,
+        adapter_id=f"{api.value}-passthrough",
         base_url=f"http://localhost:{port}",
-        module=client_module(api_surface),
+        module=client_module(api),
     )
 
 
@@ -72,11 +72,9 @@ def available_distributions() -> List[Distribution]:
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
             additional_pip_packages=COMMON_DEPENDENCIES,
             adapters={
-                ApiSurface.inference: inference_adapters_by_id["meta-reference"],
-                ApiSurface.safety: safety_adapters_by_id["meta-reference"],
-                ApiSurface.agentic_system: agentic_system_adapters_by_id[
-                    "meta-reference"
-                ],
+                Api.inference: inference_adapters_by_id["meta-reference"],
+                Api.safety: safety_adapters_by_id["meta-reference"],
+                Api.agentic_system: agentic_system_adapters_by_id["meta-reference"],
             },
         ),
         Distribution(
@@ -97,9 +95,9 @@ def available_distributions() -> List[Distribution]:
                 "uvicorn",
             ],
             adapters={
-                ApiSurface.inference: passthrough(ApiSurface.inference, 5001),
-                ApiSurface.safety: passthrough(ApiSurface.safety, 5001),
-                ApiSurface.agentic_system: passthrough(ApiSurface.agentic_system, 5001),
+                Api.inference: passthrough(Api.inference, 5001),
+                Api.safety: passthrough(Api.safety, 5001),
+                Api.agentic_system: passthrough(Api.agentic_system, 5001),
             },
         ),
         Distribution(
@@ -107,11 +105,9 @@ def available_distributions() -> List[Distribution]:
             description="Like local-source, but use ollama for running LLM inference",
             additional_pip_packages=COMMON_DEPENDENCIES,
             adapters={
-                ApiSurface.inference: inference_adapters_by_id["meta-ollama"],
-                ApiSurface.safety: safety_adapters_by_id["meta-reference"],
-                ApiSurface.agentic_system: agentic_system_adapters_by_id[
-                    "meta-reference"
-                ],
+                Api.inference: inference_adapters_by_id["meta-ollama"],
+                Api.safety: safety_adapters_by_id["meta-reference"],
+                Api.agentic_system: agentic_system_adapters_by_id["meta-reference"],
             },
         ),
     ]

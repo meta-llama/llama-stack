@@ -6,13 +6,13 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Adapter, ApiSurface, SourceAdapter
+from llama_toolchain.distribution.datatypes import Adapter, Api, SourceAdapter
 
 
 def available_safety_adapters() -> List[Adapter]:
     return [
         SourceAdapter(
-            api_surface=ApiSurface.safety,
+            api=Api.safety,
             adapter_id="meta-reference",
             pip_packages=[
                 "codeshield",

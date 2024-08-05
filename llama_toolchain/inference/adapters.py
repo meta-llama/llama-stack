@@ -6,13 +6,13 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Adapter, ApiSurface, SourceAdapter
+from llama_toolchain.distribution.datatypes import Adapter, Api, SourceAdapter
 
 
 def available_inference_adapters() -> List[Adapter]:
     return [
         SourceAdapter(
-            api_surface=ApiSurface.inference,
+            api=Api.inference,
             adapter_id="meta-reference",
             pip_packages=[
                 "torch",
@@ -22,7 +22,7 @@ def available_inference_adapters() -> List[Adapter]:
             config_class="llama_toolchain.inference.inference.MetaReferenceImplConfig",
         ),
         SourceAdapter(
-            api_surface=ApiSurface.inference,
+            api=Api.inference,
             adapter_id="meta-ollama",
             pip_packages=[
                 "ollama",

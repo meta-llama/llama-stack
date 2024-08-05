@@ -29,7 +29,7 @@ class DistributionCreate(Subcommand):
             help="Name of the distribution to create",
             required=True,
         )
-        # for each ApiSurface the user wants to support, we should
+        # for each Api the user wants to support, we should
         # get the list of available adapters, ask which one the user
         # wants to pick and then ask for their configuration.
 

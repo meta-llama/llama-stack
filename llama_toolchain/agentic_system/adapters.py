@@ -6,13 +6,13 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Adapter, ApiSurface, SourceAdapter
+from llama_toolchain.distribution.datatypes import Adapter, Api, SourceAdapter
 
 
 def available_agentic_system_adapters() -> List[Adapter]:
     return [
         SourceAdapter(
-            api_surface=ApiSurface.agentic_system,
+            api=Api.agentic_system,
             adapter_id="meta-reference",
             pip_packages=[
                 "codeshield",
@@ -22,8 +22,8 @@ def available_agentic_system_adapters() -> List[Adapter]:
             module="llama_toolchain.agentic_system.agentic_system",
             config_class="llama_toolchain.agentic_system.config.AgenticSystemConfig",
             adapter_dependencies=[
-                ApiSurface.inference,
-                ApiSurface.safety,
+                Api.inference,
+                Api.safety,
             ],
         ),
     ]

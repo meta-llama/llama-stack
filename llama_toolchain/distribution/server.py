@@ -36,8 +36,8 @@ from fastapi.routing import APIRoute
 from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 
-from .datatypes import Adapter, ApiSurface, PassthroughApiAdapter
-from .distribution import api_surface_endpoints
+from .datatypes import Adapter, Api, PassthroughApiAdapter
+from .distribution import api_endpoints
 from .dynamic import instantiate_adapter, instantiate_client
 
 from .registry import resolve_distribution
@@ -173,7 +173,7 @@ def create_dynamic_typed_route(func: Any):
     request_model = next(iter(hints.values()))
     response_model = hints["return"]
 
-    # NOTE: I think it is better to just add a method within each ApiSurface
+    # NOTE: I think it is better to just add a method within each Api
     # "Protocol" / adapter-impl to tell what sort of a response this request
     # is going to produce. /chat_completion can produce a streaming or
     # non-streaming response depending on if request.stream is True / False.
@@ -228,23 +228,23 @@ def create_dynamic_typed_route(func: Any):
 
 def topological_sort(adapters: List[Adapter]) -> List[Adapter]:
 
-    by_id = {x.api_surface: x for x in adapters}
+    by_id = {x.api: x for x in adapters}
 
-    def dfs(a: Adapter, visited: Set[ApiSurface], stack: List[ApiSurface]):
-        visited.add(a.api_surface)
+    def dfs(a: Adapter, visited: Set[Api], stack: List[Api]):
+        visited.add(a.api)
 
         if not isinstance(a, PassthroughApiAdapter):
-            for surface in a.adapter_dependencies:
-                if surface not in visited:
-                    dfs(by_id[surface], visited, stack)
+            for api in a.adapter_dependencies:
+                if api not in visited:
+                    dfs(by_id[api], visited, stack)
 
-        stack.append(a.api_surface)
+        stack.append(a.api)
 
     visited = set()
     stack = []
 
     for a in adapters:
-        if a.api_surface not in visited:
+        if a.api not in visited:
             dfs(a, visited, stack)
 
     return [by_id[x] for x in stack]
@@ -262,7 +262,7 @@ def main(
 
     app = FastAPI()
 
-    all_endpoints = api_surface_endpoints()
+    all_endpoints = api_endpoints()
 
     adapter_configs = config["adapters"]
     adapters = topological_sort(dist.adapters.values())
@@ -271,25 +271,25 @@ def main(
     # and then you create the routes.
     impls = {}
     for adapter in adapters:
-        surface = adapter.api_surface
-        if surface.value not in adapter_configs:
+        api = adapter.api
+        if api.value not in adapter_configs:
             raise ValueError(
-                f"Could not find adapter config for {surface}. Please add it to the config"
+                f"Could not find adapter config for {api}. Please add it to the config"
             )
 
-        adapter_config = adapter_configs[surface.value]
-        endpoints = all_endpoints[surface]
+        adapter_config = adapter_configs[api.value]
+        endpoints = all_endpoints[api]
         if isinstance(adapter, PassthroughApiAdapter):
             for endpoint in endpoints:
                 url = adapter.base_url.rstrip("/") + endpoint.route
                 getattr(app, endpoint.method)(endpoint.route)(
                     create_dynamic_passthrough(url)
                 )
-            impls[surface] = instantiate_client(adapter, adapter.base_url.rstrip("/"))
+            impls[api] = instantiate_client(adapter, adapter.base_url.rstrip("/"))
         else:
-            deps = {surface: impls[surface] for surface in adapter.adapter_dependencies}
+            deps = {api: impls[api] for api in adapter.adapter_dependencies}
             impl = instantiate_adapter(adapter, adapter_config, deps)
-            impls[surface] = impl
+            impls[api] = impl
             for endpoint in endpoints:
                 if not hasattr(impl, endpoint.name):
                     # ideally this should be a typing violation already

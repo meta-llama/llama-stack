@@ -7,7 +7,7 @@
 
 from llama_toolchain.agentic_system.api import AgenticSystem
 
-from llama_toolchain.distribution.datatypes import Adapter, ApiSurface
+from llama_toolchain.distribution.datatypes import Adapter, Api
 from llama_toolchain.inference.api import Inference
 from llama_toolchain.safety.api import Safety
 
@@ -44,16 +44,14 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-async def get_adapter_impl(
-    config: AgenticSystemConfig, deps: Dict[ApiSurface, Adapter]
-):
+async def get_adapter_impl(config: AgenticSystemConfig, deps: Dict[Api, Adapter]):
     assert isinstance(
         config, AgenticSystemConfig
     ), f"Unexpected config type: {type(config)}"
 
     impl = MetaReferenceAgenticSystemImpl(
-        deps[ApiSurface.inference],
-        deps[ApiSurface.safety],
+        deps[Api.inference],
+        deps[Api.safety],
     )
     await impl.initialize()
     return impl

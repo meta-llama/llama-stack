@@ -11,7 +11,7 @@ from llama_toolchain.agentic_system.api.endpoints import AgenticSystem
 from llama_toolchain.inference.api.endpoints import Inference
 from llama_toolchain.safety.api.endpoints import Safety
 
-from .datatypes import ApiSurface, ApiSurfaceEndpoint, Distribution, SourceAdapter
+from .datatypes import Api, ApiEndpoint, Distribution, SourceAdapter
 
 
 def distribution_dependencies(distribution: Distribution) -> List[str]:
@@ -24,16 +24,16 @@ def distribution_dependencies(distribution: Distribution) -> List[str]:
     ] + distribution.additional_pip_packages
 
 
-def api_surface_endpoints() -> Dict[ApiSurface, List[ApiSurfaceEndpoint]]:
-    surfaces = {}
+def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
+    apis = {}
 
     protocols = {
-        ApiSurface.inference: Inference,
-        ApiSurface.safety: Safety,
-        ApiSurface.agentic_system: AgenticSystem,
+        Api.inference: Inference,
+        Api.safety: Safety,
+        Api.agentic_system: AgenticSystem,
     }
 
-    for surface, protocol in protocols.items():
+    for api, protocol in protocols.items():
         endpoints = []
         protocol_methods = inspect.getmembers(protocol, predicate=inspect.isfunction)
 
@@ -46,8 +46,8 @@ def api_surface_endpoints() -> Dict[ApiSurface, List[ApiSurfaceEndpoint]]:
 
             # use `post` for all methods right now until we fix up the `webmethod` openapi
             # annotation and write our own openapi generator
-            endpoints.append(ApiSurfaceEndpoint(route=route, method="post", name=name))
+            endpoints.append(ApiEndpoint(route=route, method="post", name=name))
 
-        surfaces[surface] = endpoints
+        apis[api] = endpoints
 
-    return surfaces
+    return apis
