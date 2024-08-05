@@ -10,14 +10,12 @@ from datetime import datetime
 
 from llama_models.llama3_1.api.datatypes import (
     BuiltinTool,
-    InstructModel,
     UserMessage,
     StopReason,
     SystemMessage,
 )
 
 from llama_toolchain.inference.api.config import (
-    ImplType,
     InferenceConfig,
     InlineImplConfig,
     RemoteImplConfig,
@@ -31,11 +29,7 @@ from llama_toolchain.inference.api_instance import (
 from llama_toolchain.inference.api.datatypes import (
     ChatCompletionResponseEventType,
 )
-from llama_toolchain.inference.api.endpoints import (
-    ChatCompletionRequest
-)
-from llama_toolchain.inference.inference import InferenceImpl
-from llama_toolchain.inference.event_logger import EventLogger
+from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
 
 
 HELPER_MSG = """
@@ -56,7 +50,9 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     async def asyncSetUpClass(cls):
         # assert model exists on local
-        model_dir = os.path.expanduser("~/.llama/checkpoints/Meta-Llama-3.1-8B-Instruct/original/")
+        model_dir = os.path.expanduser(
+            "~/.llama/checkpoints/Meta-Llama-3.1-8B-Instruct/original/"
+        )
         assert os.path.isdir(model_dir), HELPER_MSG
 
         tokenizer_path = os.path.join(model_dir, "tokenizer.model")
@@ -73,17 +69,11 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
             ),
             max_seq_len=2048,
         )
-        inference_config = InferenceConfig(
-            impl_config=inline_config
-        )
+        inference_config = InferenceConfig(impl_config=inline_config)
 
         # -- For faster testing iteration --
-        # remote_config = RemoteImplConfig(
-        #     url="http://localhost:5000"
-        # )
-        # inference_config = InferenceConfig(
-        #     impl_config=remote_config
-        # )
+        # remote_config = RemoteImplConfig(url="http://localhost:5000")
+        # inference_config = InferenceConfig(impl_config=remote_config)
 
         cls.api = await get_inference_api_instance(inference_config)
         await cls.api.initialize()
@@ -91,17 +81,20 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
         current_date = datetime.now()
         formatted_date = current_date.strftime("%d %B %Y")
         cls.system_prompt = SystemMessage(
-            content=textwrap.dedent(f"""
+            content=textwrap.dedent(
+                f"""
                 Environment: ipython
                 Tools: brave_search
 
                 Cutting Knowledge Date: December 2023
                 Today Date:{formatted_date}
 
-            """),
+            """
+            ),
         )
         cls.system_prompt_with_custom_tool = SystemMessage(
-            content=textwrap.dedent("""
+            content=textwrap.dedent(
+                """
                 Environment: ipython
                 Tools: brave_search, wolfram_alpha, photogen
 
@@ -140,9 +133,12 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDownClass(cls):
         await cls.api.shutdown()
 
+    async def asyncSetUp(self):
+        self.valid_supported_model = "Meta-Llama3.1-8B-Instruct"
+
     async def test_text(self):
         request = ChatCompletionRequest(
-            model=InstructModel.llama3_8b_chat,
+            model=self.valid_supported_model,
             messages=[
                 UserMessage(
                     content="What is the capital of France?",
@@ -160,7 +156,7 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_text_streaming(self):
         request = ChatCompletionRequest(
-            model=InstructModel.llama3_8b_chat,
+            model=self.valid_supported_model,
             messages=[
                 UserMessage(
                     content="What is the capital of France?",
@@ -175,13 +171,9 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
             events.append(chunk.event)
             # print(f"{chunk.event.event_type:<40} | {str(chunk.event.stop_reason):<26} | {chunk.event.delta} ")
 
+        self.assertEqual(events[0].event_type, ChatCompletionResponseEventType.start)
         self.assertEqual(
-            events[0].event_type,
-            ChatCompletionResponseEventType.start
-        )
-        self.assertEqual(
-            events[-1].event_type,
-            ChatCompletionResponseEventType.complete
+            events[-1].event_type, ChatCompletionResponseEventType.complete
         )
 
         response = ""
@@ -192,7 +184,7 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_custom_tool_call(self):
         request = ChatCompletionRequest(
-            model=InstructModel.llama3_8b_chat,
+            model=self.valid_supported_model,
             messages=[
                 InferenceTests.system_prompt_with_custom_tool,
                 UserMessage(
@@ -214,8 +206,12 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
         # instead of end_of_turn
         # self.assertEqual(completion_message.stop_reason, StopReason.end_of_turn)
 
-        self.assertEqual(len(completion_message.tool_calls), 1, completion_message.tool_calls)
-        self.assertEqual(completion_message.tool_calls[0].tool_name, "get_boiling_point")
+        self.assertEqual(
+            len(completion_message.tool_calls), 1, completion_message.tool_calls
+        )
+        self.assertEqual(
+            completion_message.tool_calls[0].tool_name, "get_boiling_point"
+        )
 
         args = completion_message.tool_calls[0].arguments
         self.assertTrue(isinstance(args, dict))
@@ -223,7 +219,7 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_tool_call_streaming(self):
         request = ChatCompletionRequest(
-            model=InstructModel.llama3_8b_chat,
+            model=self.valid_supported_model,
             messages=[
                 self.system_prompt,
                 UserMessage(
@@ -239,32 +235,21 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
             # print(f"{chunk.event.event_type:<40} | {str(chunk.event.stop_reason):<26} | {chunk.event.delta} ")
             events.append(chunk.event)
 
-        self.assertEqual(
-            events[0].event_type,
-            ChatCompletionResponseEventType.start
-        )
+        self.assertEqual(events[0].event_type, ChatCompletionResponseEventType.start)
         # last event is of type "complete"
         self.assertEqual(
-            events[-1].event_type,
-            ChatCompletionResponseEventType.complete
+            events[-1].event_type, ChatCompletionResponseEventType.complete
         )
         # last but one event should be eom with tool call
         self.assertEqual(
-            events[-2].event_type,
-            ChatCompletionResponseEventType.progress
+            events[-2].event_type, ChatCompletionResponseEventType.progress
         )
-        self.assertEqual(
-            events[-2].stop_reason,
-            StopReason.end_of_message
-        )
-        self.assertEqual(
-            events[-2].delta.content.tool_name,
-            BuiltinTool.brave_search
-        )
+        self.assertEqual(events[-2].stop_reason, StopReason.end_of_message)
+        self.assertEqual(events[-2].delta.content.tool_name, BuiltinTool.brave_search)
 
     async def test_custom_tool_call_streaming(self):
         request = ChatCompletionRequest(
-            model=InstructModel.llama3_8b_chat,
+            model=self.valid_supported_model,
             messages=[
                 InferenceTests.system_prompt_with_custom_tool,
                 UserMessage(
@@ -279,29 +264,15 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
             # print(f"{chunk.event.event_type:<40} | {str(chunk.event.stop_reason):<26} | {chunk.event.delta} ")
             events.append(chunk.event)
 
-        self.assertEqual(
-            events[0].event_type,
-            ChatCompletionResponseEventType.start
-        )
+        self.assertEqual(events[0].event_type, ChatCompletionResponseEventType.start)
         # last event is of type "complete"
         self.assertEqual(
-            events[-1].event_type,
-            ChatCompletionResponseEventType.complete
+            events[-1].event_type, ChatCompletionResponseEventType.complete
         )
-        self.assertEqual(
-            events[-1].stop_reason,
-            StopReason.end_of_turn
-        )
+        self.assertEqual(events[-1].stop_reason, StopReason.end_of_turn)
         # last but one event should be eom with tool call
         self.assertEqual(
-            events[-2].event_type,
-            ChatCompletionResponseEventType.progress
+            events[-2].event_type, ChatCompletionResponseEventType.progress
         )
-        self.assertEqual(
-            events[-2].stop_reason,
-            StopReason.end_of_turn
-        )
-        self.assertEqual(
-            events[-2].delta.content.tool_name,
-            "get_boiling_point"
-        )
+        self.assertEqual(events[-2].stop_reason, StopReason.end_of_turn)
+        self.assertEqual(events[-2].delta.content.tool_name, "get_boiling_point")
