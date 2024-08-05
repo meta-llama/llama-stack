@@ -11,16 +11,16 @@ from llama_toolchain.agentic_system.api.endpoints import AgenticSystem
 from llama_toolchain.inference.api.endpoints import Inference
 from llama_toolchain.safety.api.endpoints import Safety
 
-from .datatypes import Api, ApiEndpoint, Distribution, SourceAdapter
+from .datatypes import Api, ApiEndpoint, Distribution, InlineProviderSpec
 
 
 def distribution_dependencies(distribution: Distribution) -> List[str]:
-    # only consider SourceAdapters when calculating dependencies
+    # only consider InlineProviderSpecs when calculating dependencies
     return [
         dep
-        for adapter in distribution.adapters.values()
-        if isinstance(adapter, SourceAdapter)
-        for dep in adapter.pip_packages
+        for provider_spec in distribution.provider_specs.values()
+        if isinstance(provider_spec, InlineProviderSpec)
+        for dep in provider_spec.pip_packages
     ] + distribution.additional_pip_packages
 
 

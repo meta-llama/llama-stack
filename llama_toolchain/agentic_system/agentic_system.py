@@ -7,7 +7,7 @@
 
 from llama_toolchain.agentic_system.api import AgenticSystem
 
-from llama_toolchain.distribution.datatypes import Adapter, Api
+from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.inference.api import Inference
 from llama_toolchain.safety.api import Safety
 
@@ -44,7 +44,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-async def get_adapter_impl(config: AgenticSystemConfig, deps: Dict[Api, Adapter]):
+async def get_provider_impl(config: AgenticSystemConfig, deps: Dict[Api, ProviderSpec]):
     assert isinstance(
         config, AgenticSystemConfig
     ), f"Unexpected config type: {type(config)}"

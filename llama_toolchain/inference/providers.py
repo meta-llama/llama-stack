@@ -6,14 +6,14 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Adapter, Api, SourceAdapter
+from llama_toolchain.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
-def available_inference_adapters() -> List[Adapter]:
+def available_inference_providers() -> List[ProviderSpec]:
     return [
-        SourceAdapter(
+        InlineProviderSpec(
             api=Api.inference,
-            adapter_id="meta-reference",
+            provider_id="meta-reference",
             pip_packages=[
                 "torch",
                 "zmq",
@@ -21,9 +21,9 @@ def available_inference_adapters() -> List[Adapter]:
             module="llama_toolchain.inference.inference",
             config_class="llama_toolchain.inference.inference.MetaReferenceImplConfig",
         ),
-        SourceAdapter(
+        InlineProviderSpec(
             api=Api.inference,
-            adapter_id="meta-ollama",
+            provider_id="meta-ollama",
             pip_packages=[
                 "ollama",
             ],

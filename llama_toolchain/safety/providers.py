@@ -6,14 +6,14 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Adapter, Api, SourceAdapter
+from llama_toolchain.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
-def available_safety_adapters() -> List[Adapter]:
+def available_safety_providers() -> List[ProviderSpec]:
     return [
-        SourceAdapter(
+        InlineProviderSpec(
             api=Api.safety,
-            adapter_id="meta-reference",
+            provider_id="meta-reference",
             pip_packages=[
                 "codeshield",
                 "torch",

@@ -30,7 +30,7 @@ class DistributionCreate(Subcommand):
             required=True,
         )
         # for each Api the user wants to support, we should
-        # get the list of available adapters, ask which one the user
+        # get the list of available providers, ask which one the user
         # wants to pick and then ask for their configuration.
 
     def _run_distribution_create_cmd(self, args: argparse.Namespace) -> None:

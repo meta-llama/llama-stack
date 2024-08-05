@@ -26,13 +26,13 @@ class ApiEndpoint(BaseModel):
 
 
 @json_schema_type
-class Adapter(BaseModel):
+class ProviderSpec(BaseModel):
     api: Api
-    adapter_id: str
+    provider_id: str
 
 
 @json_schema_type
-class SourceAdapter(Adapter):
+class InlineProviderSpec(ProviderSpec):
     pip_packages: List[str] = Field(
         default_factory=list,
         description="The pip dependencies needed for this implementation",
@@ -42,21 +42,21 @@ class SourceAdapter(Adapter):
         description="""
 Fully-qualified name of the module to import. The module is expected to have:
 
- - `get_adapter_impl(config, deps)`: returns the local implementation
+ - `get_provider_impl(config, deps)`: returns the local implementation
 """,
     )
     config_class: str = Field(
         ...,
-        description="Fully-qualified classname of the config for this adapter",
+        description="Fully-qualified classname of the config for this provider",
     )
-    adapter_dependencies: List[Api] = Field(
+    api_dependencies: List[Api] = Field(
         default_factory=list,
-        description="Higher-level API surfaces may depend on other adapters to provide their functionality",
+        description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
 
 
 @json_schema_type
-class PassthroughApiAdapter(Adapter):
+class RemoteProviderSpec(ProviderSpec):
     base_url: str = Field(..., description="The base URL for the llama stack provider")
     headers: Dict[str, str] = Field(
         default_factory=dict,
@@ -75,12 +75,12 @@ class Distribution(BaseModel):
     name: str
     description: str
 
-    adapters: Dict[Api, Adapter] = Field(
+    provider_specs: Dict[Api, ProviderSpec] = Field(
         default_factory=dict,
-        description="The API surfaces provided by this distribution",
+        description="Provider specifications for each of the APIs provided by this distribution",
     )
 
     additional_pip_packages: List[str] = Field(
         default_factory=list,
-        description="Additional pip packages beyond those required by the adapters",
+        description="Additional pip packages beyond those required by the providers",
     )

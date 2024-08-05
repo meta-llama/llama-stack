@@ -6,14 +6,14 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Adapter, Api, SourceAdapter
+from llama_toolchain.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
-def available_agentic_system_adapters() -> List[Adapter]:
+def available_agentic_system_providers() -> List[ProviderSpec]:
     return [
-        SourceAdapter(
+        InlineProviderSpec(
             api=Api.agentic_system,
-            adapter_id="meta-reference",
+            provider_id="meta-reference",
             pip_packages=[
                 "codeshield",
                 "torch",
@@ -21,7 +21,7 @@ def available_agentic_system_adapters() -> List[Adapter]:
             ],
             module="llama_toolchain.agentic_system.agentic_system",
             config_class="llama_toolchain.agentic_system.config.AgenticSystemConfig",
-            adapter_dependencies=[
+            api_dependencies=[
                 Api.inference,
                 Api.safety,
             ],

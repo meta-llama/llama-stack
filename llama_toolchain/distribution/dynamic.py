@@ -8,7 +8,7 @@ import asyncio
 import importlib
 from typing import Any, Dict
 
-from .datatypes import Adapter, PassthroughApiAdapter, SourceAdapter
+from .datatypes import InlineProviderSpec, ProviderSpec, RemoteProviderSpec
 
 
 def instantiate_class_type(fully_qualified_name):
@@ -18,17 +18,19 @@ def instantiate_class_type(fully_qualified_name):
 
 
 # returns a class implementing the protocol corresponding to the Api
-def instantiate_adapter(
-    adapter: SourceAdapter, adapter_config: Dict[str, Any], deps: Dict[str, Adapter]
+def instantiate_provider(
+    provider_spec: InlineProviderSpec,
+    provider_config: Dict[str, Any],
+    deps: Dict[str, ProviderSpec],
 ):
-    module = importlib.import_module(adapter.module)
+    module = importlib.import_module(provider_spec.module)
 
-    config_type = instantiate_class_type(adapter.config_class)
-    config = config_type(**adapter_config)
-    return asyncio.run(module.get_adapter_impl(config, deps))
+    config_type = instantiate_class_type(provider_spec.config_class)
+    config = config_type(**provider_config)
+    return asyncio.run(module.get_provider_impl(config, deps))
 
 
-def instantiate_client(adapter: PassthroughApiAdapter, base_url: str):
-    module = importlib.import_module(adapter.module)
+def instantiate_client(provider_spec: RemoteProviderSpec, base_url: str):
+    module = importlib.import_module(provider_spec.module)
 
     return asyncio.run(module.get_client_impl(base_url))

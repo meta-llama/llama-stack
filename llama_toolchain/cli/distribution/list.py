@@ -33,17 +33,17 @@ class DistributionList(Subcommand):
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
             "Name",
-            "Adapters",
+            "ProviderSpecs",
             "Description",
         ]
 
         rows = []
         for dist in available_distributions():
-            adapters = {k.value: v.adapter_id for k, v in dist.adapters.items()}
+            providers = {k.value: v.provider_id for k, v in dist.provider_specs.items()}
             rows.append(
                 [
                     dist.name,
-                    json.dumps(adapters, indent=2),
+                    json.dumps(providers, indent=2),
                     dist.description,
                 ]
             )

@@ -8,7 +8,7 @@ import asyncio
 
 from typing import Dict
 
-from llama_toolchain.distribution.datatypes import Adapter, Api
+from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 
 from .config import SafetyConfig
 from .api.endpoints import *  # noqa
@@ -23,7 +23,7 @@ from .shields import (
 )
 
 
-async def get_adapter_impl(config: SafetyConfig, _deps: Dict[Api, Adapter]):
+async def get_provider_impl(config: SafetyConfig, _deps: Dict[Api, ProviderSpec]):
     assert isinstance(config, SafetyConfig), f"Unexpected config type: {type(config)}"
 
     impl = MetaReferenceSafetyImpl(config)
