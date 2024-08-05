@@ -19,8 +19,8 @@ def available_agentic_system_providers() -> List[ProviderSpec]:
                 "torch",
                 "transformers",
             ],
-            module="llama_toolchain.agentic_system.agentic_system",
-            config_class="llama_toolchain.agentic_system.config.AgenticSystemConfig",
+            module="llama_toolchain.agentic_system.meta_reference",
+            config_class="llama_toolchain.agentic_system.meta_reference.AgenticSystemConfig",
             api_dependencies=[
                 Api.inference,
                 Api.safety,

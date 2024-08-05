@@ -12,20 +12,18 @@ from llama_models.llama3_1.api.datatypes import StopReason
 from llama_models.sku_list import resolve_model
 
 from llama_toolchain.distribution.datatypes import Api, ProviderSpec
-
-from .api.config import MetaReferenceImplConfig
-from .api.datatypes import (
+from llama_toolchain.inference.api import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    Inference,
     ToolCallDelta,
     ToolCallParseStatus,
 )
-from .api.endpoints import (
-    ChatCompletionRequest,
-    ChatCompletionResponse,
-    ChatCompletionResponseStreamChunk,
-    Inference,
-)
+
+from .config import MetaReferenceImplConfig
 from .model_parallel import LlamaModelParallelGenerator
 
 

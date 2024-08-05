@@ -19,7 +19,7 @@ def available_safety_providers() -> List[ProviderSpec]:
                 "torch",
                 "transformers",
             ],
-            module="llama_toolchain.safety.safety",
-            config_class="llama_toolchain.safety.config.SafetyConfig",
+            module="llama_toolchain.safety.meta_reference",
+            config_class="llama_toolchain.safety.meta_reference.SafetyConfig",
         ),
     ]

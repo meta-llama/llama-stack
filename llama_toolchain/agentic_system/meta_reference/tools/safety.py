@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_toolchain.agentic_system.safety import ShieldRunnerMixin
+from llama_toolchain.agentic_system.meta_reference.safety import ShieldRunnerMixin
 
 from llama_toolchain.inference.api import Message
 from llama_toolchain.safety.api.datatypes import ShieldDefinition

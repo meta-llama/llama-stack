@@ -22,20 +22,19 @@ from llama_models.sku_list import resolve_model
 
 from ollama import AsyncClient
 
-from .api.config import OllamaImplConfig
-from .api.datatypes import (
-    ChatCompletionResponseEvent,
-    ChatCompletionResponseEventType,
-    ToolCallDelta,
-    ToolCallParseStatus,
-)
-from .api.endpoints import (
+from llama_toolchain.inference.api import (
     ChatCompletionRequest,
     ChatCompletionResponse,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
     CompletionRequest,
     Inference,
+    ToolCallDelta,
+    ToolCallParseStatus,
 )
+
+from .config import OllamaImplConfig
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models

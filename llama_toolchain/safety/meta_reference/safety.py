@@ -11,7 +11,7 @@ from typing import Dict
 from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 
 from .config import SafetyConfig
-from .api.endpoints import *  # noqa
+from llama_toolchain.safety.api import *  # noqa
 from .shields import (
     CodeScannerShield,
     InjectionShield,

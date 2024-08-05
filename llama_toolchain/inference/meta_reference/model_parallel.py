@@ -13,7 +13,7 @@ from llama_models.llama3_1.api.chat_format import ChatFormat
 from llama_models.llama3_1.api.datatypes import Message
 from llama_models.llama3_1.api.tokenizer import Tokenizer
 
-from .api.config import MetaReferenceImplConfig
+from .config import MetaReferenceImplConfig
 from .generation import Llama
 from .parallel_utils import ModelParallelProcessGroup
 

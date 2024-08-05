@@ -18,8 +18,8 @@ def available_inference_providers() -> List[ProviderSpec]:
                 "torch",
                 "zmq",
             ],
-            module="llama_toolchain.inference.inference",
-            config_class="llama_toolchain.inference.inference.MetaReferenceImplConfig",
+            module="llama_toolchain.inference.meta_reference",
+            config_class="llama_toolchain.inference.meta_reference.MetaReferenceImplConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,

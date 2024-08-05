@@ -4,14 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import sys
 from typing import List
 
 from llama_models.llama3_1.api.datatypes import Message
 
-parent_dir = "../.."
-sys.path.append(parent_dir)
-from llama_toolchain.safety.shields.base import (
+from llama_toolchain.safety.meta_reference.shields.base import (
     OnViolationAction,
     ShieldBase,
     ShieldResponse,

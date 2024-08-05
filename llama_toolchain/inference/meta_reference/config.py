@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from strong_typing.schema import json_schema_type
 from typing_extensions import Annotated
 
-from .datatypes import QuantizationConfig
+from llama_toolchain.inference.api import QuantizationConfig
 
 
 @json_schema_type
@@ -63,9 +63,3 @@ class MetaReferenceImplConfig(BaseModel):
     torch_seed: Optional[int] = None
     max_seq_len: int
     max_batch_size: int = 1
-
-
-@json_schema_type
-class OllamaImplConfig(BaseModel):
-    model: str = Field(..., description="The name of the model in ollama catalog")
-    url: str = Field(..., description="The URL for the ollama server")
