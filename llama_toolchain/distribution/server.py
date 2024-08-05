@@ -191,6 +191,10 @@ def create_dynamic_typed_route(func: Any):
                     print("Generator cancelled")
                     await event_gen.aclose()
                 except Exception as e:
+                    print(e)
+                    import traceback
+
+                    traceback.print_exc()
                     yield create_sse_event(
                         {
                             "error": {
