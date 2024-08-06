@@ -50,6 +50,7 @@ class InferenceClient(Inference):
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             ) as response:
+                print("Headers", response.headers)
                 if response.status_code != 200:
                     content = await response.aread()
                     cprint(
