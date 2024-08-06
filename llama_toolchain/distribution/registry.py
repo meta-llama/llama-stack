@@ -7,12 +7,8 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from llama_toolchain.agentic_system.providers import available_agentic_system_providers
-
-from llama_toolchain.inference.providers import available_inference_providers
-from llama_toolchain.safety.providers import available_safety_providers
-
-from .datatypes import Api, Distribution, RemoteProviderSpec
+from .datatypes import Api, DistributionSpec, RemoteProviderSpec
+from .distribution import api_providers
 
 # This is currently duplicated from `requirements.txt` with a few minor changes
 # dev-dependencies like "ufmt" etc. are nuked. A few specialized dependencies
@@ -49,39 +45,30 @@ def client_module(api: Api) -> str:
     return f"llama_toolchain.{api.value}.client"
 
 
-def remote(api: Api, port: int) -> RemoteProviderSpec:
+def remote_spec(api: Api) -> RemoteProviderSpec:
     return RemoteProviderSpec(
         api=api,
         provider_id=f"{api.value}-remote",
-        base_url=f"http://localhost:{port}",
         module=client_module(api),
     )
 
 
 @lru_cache()
-def available_distributions() -> List[Distribution]:
-    inference_providers_by_id = {
-        a.provider_id: a for a in available_inference_providers()
-    }
-    safety_providers_by_id = {a.provider_id: a for a in available_safety_providers()}
-    agentic_system_providers_by_id = {
-        a.provider_id: a for a in available_agentic_system_providers()
-    }
-
+def available_distribution_specs() -> List[DistributionSpec]:
+    providers = api_providers()
     return [
-        Distribution(
-            name="local-inline",
+        DistributionSpec(
+            spec_id="inline",
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
             additional_pip_packages=COMMON_DEPENDENCIES,
             provider_specs={
-                Api.inference: inference_providers_by_id["meta-reference"],
-                Api.safety: safety_providers_by_id["meta-reference"],
-                Api.agentic_system: agentic_system_providers_by_id["meta-reference"],
+                Api.inference: providers[Api.inference]["meta-reference"],
+                Api.safety: providers[Api.safety]["meta-reference"],
+                Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
             },
         ),
-        # NOTE: this hardcodes the ports to which things point to
-        Distribution(
-            name="full-remote",
+        DistributionSpec(
+            spec_id="remote",
             description="Point to remote services for all llama stack APIs",
             additional_pip_packages=[
                 "python-dotenv",
@@ -97,28 +84,24 @@ def available_distributions() -> List[Distribution]:
                 "pydantic_core==2.18.2",
                 "uvicorn",
             ],
-            provider_specs={
-                Api.inference: remote(Api.inference, 5001),
-                Api.safety: remote(Api.safety, 5001),
-                Api.agentic_system: remote(Api.agentic_system, 5001),
-            },
+            provider_specs={x: remote_spec(x) for x in providers},
         ),
-        Distribution(
-            name="local-ollama",
+        DistributionSpec(
+            spec_id="ollama-inline",
             description="Like local-source, but use ollama for running LLM inference",
             additional_pip_packages=COMMON_DEPENDENCIES,
             provider_specs={
-                Api.inference: inference_providers_by_id["meta-ollama"],
-                Api.safety: safety_providers_by_id["meta-reference"],
-                Api.agentic_system: agentic_system_providers_by_id["meta-reference"],
+                Api.inference: providers[Api.inference]["meta-ollama"],
+                Api.safety: providers[Api.safety]["meta-reference"],
+                Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
             },
         ),
     ]
 
 
 @lru_cache()
-def resolve_distribution(name: str) -> Optional[Distribution]:
-    for dist in available_distributions():
-        if dist.name == name:
-            return dist
+def resolve_distribution_spec(spec_id: str) -> Optional[DistributionSpec]:
+    for spec in available_distribution_specs():
+        if spec.spec_id == spec_id:
+            return spec
     return None

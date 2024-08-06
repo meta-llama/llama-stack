@@ -8,13 +8,22 @@ import inspect
 from typing import Dict, List
 
 from llama_toolchain.agentic_system.api.endpoints import AgenticSystem
+from llama_toolchain.agentic_system.providers import available_agentic_system_providers
 from llama_toolchain.inference.api.endpoints import Inference
+from llama_toolchain.inference.providers import available_inference_providers
 from llama_toolchain.safety.api.endpoints import Safety
+from llama_toolchain.safety.providers import available_safety_providers
 
-from .datatypes import Api, ApiEndpoint, Distribution, InlineProviderSpec
+from .datatypes import (
+    Api,
+    ApiEndpoint,
+    DistributionSpec,
+    InlineProviderSpec,
+    ProviderSpec,
+)
 
 
-def distribution_dependencies(distribution: Distribution) -> List[str]:
+def distribution_dependencies(distribution: DistributionSpec) -> List[str]:
     # only consider InlineProviderSpecs when calculating dependencies
     return [
         dep
@@ -51,3 +60,19 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         apis[api] = endpoints
 
     return apis
+
+
+def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
+    inference_providers_by_id = {
+        a.provider_id: a for a in available_inference_providers()
+    }
+    safety_providers_by_id = {a.provider_id: a for a in available_safety_providers()}
+    agentic_system_providers_by_id = {
+        a.provider_id: a for a in available_agentic_system_providers()
+    }
+
+    return {
+        Api.inference: inference_providers_by_id,
+        Api.safety: safety_providers_by_id,
+        Api.agentic_system: agentic_system_providers_by_id,
+    }

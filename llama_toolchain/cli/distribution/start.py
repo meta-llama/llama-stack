@@ -6,7 +6,6 @@
 
 import argparse
 import shlex
-from pathlib import Path
 
 import yaml
 
@@ -49,22 +48,23 @@ class DistributionStart(Subcommand):
 
     def _run_distribution_start_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_command
-        from llama_toolchain.distribution.registry import resolve_distribution
+        from llama_toolchain.distribution.registry import resolve_distribution_spec
         from llama_toolchain.distribution.server import main as distribution_server_init
 
-        dist = resolve_distribution(args.name)
-        if dist is None:
-            self.parser.error(f"Distribution with name {args.name} not found")
+        config_file = DISTRIBS_BASE_DIR / args.name / "config.yaml"
+        if not config_file.exists():
+            self.parser.error(
+                f"Could not find {config_file}. Please run `llama distribution install` first"
+            )
             return
 
-        config_yaml = Path(DISTRIBS_BASE_DIR) / dist.name / "config.yaml"
-        if not config_yaml.exists():
-            raise ValueError(
-                f"Configuration {config_yaml} does not exist. Please run `llama distribution install` or `llama distribution configure` first"
-            )
+        # we need to find the spec from the name
+        with open(config_file, "r") as f:
+            config = yaml.safe_load(f)
 
-        with open(config_yaml, "r") as fp:
-            config = yaml.safe_load(fp)
+        dist = resolve_distribution_spec(config["spec"])
+        if dist is None:
+            raise ValueError(f"Could not find any registered spec `{config['spec']}`")
 
         conda_env = config["conda_env"]
 
@@ -76,8 +76,7 @@ class DistributionStart(Subcommand):
             )
 
         distribution_server_init(
-            dist.name,
-            config_yaml,
+            config_file,
             args.port,
             disable_ipv6=args.disable_ipv6,
         )

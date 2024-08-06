@@ -28,23 +28,23 @@ class DistributionList(Subcommand):
 
     def _run_distribution_list_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.cli.table import print_table
-        from llama_toolchain.distribution.registry import available_distributions
+        from llama_toolchain.distribution.registry import available_distribution_specs
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
-            "Name",
+            "Spec ID",
             "ProviderSpecs",
             "Description",
         ]
 
         rows = []
-        for dist in available_distributions():
-            providers = {k.value: v.provider_id for k, v in dist.provider_specs.items()}
+        for spec in available_distribution_specs():
+            providers = {k.value: v.provider_id for k, v in spec.provider_specs.items()}
             rows.append(
                 [
-                    dist.name,
+                    spec.spec_id,
                     json.dumps(providers, indent=2),
-                    dist.description,
+                    spec.description,
                 ]
             )
         print_table(

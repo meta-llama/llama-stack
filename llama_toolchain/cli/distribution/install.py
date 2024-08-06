@@ -10,6 +10,7 @@ import shlex
 import textwrap
 
 import pkg_resources
+import yaml
 
 from termcolor import cprint
 
@@ -32,26 +33,31 @@ class DistributionInstall(Subcommand):
         self.parser.set_defaults(func=self._run_distribution_install_cmd)
 
     def _add_arguments(self):
-        from llama_toolchain.distribution.registry import available_distributions
+        from llama_toolchain.distribution.registry import available_distribution_specs
 
+        self.parser.add_argument(
+            "--spec",
+            type=str,
+            help="Distribution spec to install (try ollama-inline)",
+            required=True,
+            choices=[d.spec_id for d in available_distribution_specs()],
+        )
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Name of the distribution to install -- (try local-ollama)",
+            help="What should the installation be called locally?",
             required=True,
-            choices=[d.name for d in available_distributions()],
         )
         self.parser.add_argument(
             "--conda-env",
             type=str,
-            help="Specify the name of the conda environment you would like to create or update",
-            required=True,
+            help="conda env in which this distribution will run (default = distribution name)",
         )
 
     def _run_distribution_install_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.distribution.distribution import distribution_dependencies
-        from llama_toolchain.distribution.registry import resolve_distribution
+        from llama_toolchain.distribution.registry import resolve_distribution_spec
 
         os.makedirs(DISTRIBS_BASE_DIR, exist_ok=True)
         script = pkg_resources.resource_filename(
@@ -59,25 +65,36 @@ class DistributionInstall(Subcommand):
             "distribution/install_distribution.sh",
         )
 
-        dist = resolve_distribution(args.name)
+        dist = resolve_distribution_spec(args.spec)
         if dist is None:
-            self.parser.error(f"Could not find distribution {args.name}")
+            self.parser.error(f"Could not find distribution {args.spec}")
             return
 
-        os.makedirs(DISTRIBS_BASE_DIR / dist.name, exist_ok=True)
+        distrib_dir = DISTRIBS_BASE_DIR / args.name
+        os.makedirs(distrib_dir, exist_ok=True)
 
         deps = distribution_dependencies(dist)
-        return_code = run_with_pty([script, args.conda_env, " ".join(deps)])
+        if not args.conda_env:
+            print(f"Using {args.name} as the Conda environment for this distribution")
+
+        conda_env = args.conda_env or args.name
+        return_code = run_with_pty([script, conda_env, " ".join(deps)])
 
         assert return_code == 0, cprint(
-            f"Failed to install distribution {dist.name}", color="red"
+            f"Failed to install distribution {dist.spec_id}", color="red"
         )
 
-        with open(DISTRIBS_BASE_DIR / dist.name / "conda.env", "w") as f:
-            f.write(f"{args.conda_env}\n")
+        config_file = distrib_dir / "config.yaml"
+        with open(config_file, "w") as f:
+            c = {
+                "conda_env": conda_env,
+                "spec": dist.spec_id,
+                "name": args.name,
+            }
+            f.write(yaml.dump(c))
 
         cprint(
-            f"Distribution `{dist.name}` has been installed successfully!",
+            f"Distribution `{args.name}` (with spec {dist.spec_id}) has been installed successfully!",
             color="green",
         )
         print(
@@ -85,8 +102,7 @@ class DistributionInstall(Subcommand):
                 f"""
                 Update your conda environment and configure this distribution by running:
 
-                conda deactivate && conda activate {args.conda_env}
-                llama distribution configure --name {dist.name}
+                conda deactivate && conda activate {conda_env}
+                llama distribution configure --name {args.name}
             """
-            )
-        )
+            ))
