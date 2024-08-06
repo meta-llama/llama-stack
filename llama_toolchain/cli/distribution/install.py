@@ -7,8 +7,11 @@
 import argparse
 import os
 import shlex
+import textwrap
 
 import pkg_resources
+
+from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
@@ -46,7 +49,7 @@ class DistributionInstall(Subcommand):
         )
 
     def _run_distribution_install_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.common.exec import run_command, run_with_pty
+        from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.distribution.distribution import distribution_dependencies
         from llama_toolchain.distribution.registry import resolve_distribution
 
@@ -64,17 +67,26 @@ class DistributionInstall(Subcommand):
         os.makedirs(DISTRIBS_BASE_DIR / dist.name, exist_ok=True)
 
         deps = distribution_dependencies(dist)
-        run_with_pty([script, args.conda_env, " ".join(deps)])
+        return_code = run_with_pty([script, args.conda_env, " ".join(deps)])
+
+        assert return_code == 0, cprint(
+            f"Failed to install distribution {dist.name}", color="red"
+        )
+
         with open(DISTRIBS_BASE_DIR / dist.name / "conda.env", "w") as f:
             f.write(f"{args.conda_env}\n")
 
-        # we need to run configure _within_ the conda environment and need to run with
-        # a pty since configure is
-        python_exe = run_command(
-            shlex.split(f"conda run -n {args.conda_env} which python")
-        ).strip()
-        run_with_pty(
-            shlex.split(
-                f"{python_exe} -m llama_toolchain.cli.llama distribution configure --name {dist.name}"
+        cprint(
+            f"Distribution `{dist.name}` has been installed successfully!",
+            color="green",
+        )
+        print(
+            textwrap.dedent(
+                f"""
+                Update your conda environment and configure this distribution by running:
+
+                conda deactivate && conda activate {args.conda_env}
+                llama distribution configure --name {dist.name}
+            """
             )
         )

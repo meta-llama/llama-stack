@@ -29,7 +29,7 @@ COMMON_DEPENDENCIES = [
     "httpx",
     "huggingface-hub",
     "json-strong-typing",
-    "git+ssh://git@github.com/meta-llama/llama-models.git",
+    "llama-models",
     "omegaconf",
     "pandas",
     "Pillow",

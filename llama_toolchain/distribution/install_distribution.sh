@@ -8,6 +8,10 @@
 
 set -euo pipefail
 
+# Define color codes
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 error_handler() {
   echo "Error occurred in script at line: ${1}" >&2
   exit 1
@@ -23,7 +27,7 @@ ensure_conda_env_python310() {
 
   # Check if conda command is available
   if ! command -v conda &>/dev/null; then
-    echo "Error: conda command not found. Is Conda installed and in your PATH?" >&2
+    echo -e "${RED}Error: conda command not found. Is Conda installed and in your PATH?${NC}" >&2
     exit 1
   fi
 
@@ -49,6 +53,16 @@ ensure_conda_env_python310() {
   if [ -n "$pip_dependencies" ]; then
     echo "Installing pip dependencies: $pip_dependencies"
     conda run -n "${env_name}" pip install $pip_dependencies
+  fi
+
+  # Re-installing llama-toolchain in the new conda environment
+  if git rev-parse --is-inside-work-tree &> /dev/null; then
+    repo_root=$(git rev-parse --show-toplevel)
+    cd "$repo_root"
+    conda run -n "${env_name}" pip install -e .
+  else
+    echo -e "${RED}Not inside a Git repository. Please re-run from within llama-toolchain repository.${NC}"
+    exit 1
   fi
 }
 
