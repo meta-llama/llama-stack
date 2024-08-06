@@ -44,11 +44,13 @@ OLLAMA_SUPPORTED_SKUS = {
 }
 
 
-def get_provider_impl(config: OllamaImplConfig) -> Inference:
+async def get_provider_impl(config: OllamaImplConfig) -> Inference:
     assert isinstance(
         config, OllamaImplConfig
     ), f"Unexpected config type: {type(config)}"
-    return OllamaInference(config)
+    impl = OllamaInference(config)
+    await impl.initialize()
+    return impl
 
 
 class OllamaInference(Inference):

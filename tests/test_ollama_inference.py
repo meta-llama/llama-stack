@@ -10,14 +10,12 @@ from llama_models.llama3_1.api.datatypes import (
     SamplingStrategy,
     SystemMessage,
 )
-from llama_toolchain.inference.api_instance import (
-    get_inference_api_instance,
-)
 from llama_toolchain.inference.api.datatypes import (
     ChatCompletionResponseEventType,
 )
 from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
-from llama_toolchain.inference.api.config import InferenceConfig, OllamaImplConfig
+from llama_toolchain.inference.ollama.config import OllamaImplConfig
+from llama_toolchain.inference.ollama.ollama import get_provider_impl
 
 
 class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
@@ -30,9 +28,7 @@ class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
         )
 
         # setup ollama
-        self.api = await get_inference_api_instance(
-            InferenceConfig(impl_config=ollama_config)
-        )
+        self.api = await get_provider_impl(ollama_config)
         await self.api.initialize()
 
         current_date = datetime.now()
