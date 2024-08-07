@@ -66,13 +66,20 @@ ensure_conda_env_python310() {
   fi
 }
 
-if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <environment_name> <pip_dependencies>" >&2
-  echo "Example: $0 my_env 'numpy pandas scipy'" >&2
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <environment_name> <distribution_name> <pip_dependencies>" >&2
+  echo "Example: $0 my_env local-inline 'numpy pandas scipy'" >&2
   exit 1
 fi
 
 env_name="$1"
-pip_dependencies="$2"
+distribution_name="$2"
+pip_dependencies="$3"
 
 ensure_conda_env_python310 "$env_name" "$pip_dependencies"
+
+eval "$(conda shell.bash hook)"
+conda deactivate && conda activate "$env_name"
+
+python_interp=$(conda run -n "$env_name" which python)
+$python_interp -m llama_toolchain.cli.llama distribution configure --name "$distribution_name"

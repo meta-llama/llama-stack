@@ -73,7 +73,6 @@ def available_distribution_specs() -> List[DistributionSpec]:
             additional_pip_packages=[
                 "python-dotenv",
                 "blobfile",
-                "codeshield",
                 "fairscale",
                 "fastapi",
                 "fire",
@@ -82,6 +81,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 "json-strong-typing",
                 "pydantic==1.10.13",
                 "pydantic_core==2.18.2",
+                "tiktoken",
                 "uvicorn",
             ],
             provider_specs={x: remote_spec(x) for x in providers},

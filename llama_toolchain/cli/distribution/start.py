@@ -5,8 +5,8 @@
 # the root directory of this source tree.
 
 import argparse
-import shlex
 
+import pkg_resources
 import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
@@ -47,9 +47,8 @@ class DistributionStart(Subcommand):
         )
 
     def _run_distribution_start_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.common.exec import run_command
+        from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.distribution.registry import resolve_distribution_spec
-        from llama_toolchain.distribution.server import main as distribution_server_init
 
         config_file = DISTRIBS_BASE_DIR / args.name / "config.yaml"
         if not config_file.exists():
@@ -67,16 +66,17 @@ class DistributionStart(Subcommand):
             raise ValueError(f"Could not find any registered spec `{config['spec']}`")
 
         conda_env = config["conda_env"]
-
-        python_exe = run_command(shlex.split("which python"))
-        # simple check, unfortunate
-        if conda_env not in python_exe:
+        if not conda_env:
             raise ValueError(
-                f"Please re-run start after activating the `{conda_env}` conda environment first"
+                f"Could not find Conda environment for distribution `{args.name}`"
             )
 
-        distribution_server_init(
-            config_file,
-            args.port,
-            disable_ipv6=args.disable_ipv6,
+        script = pkg_resources.resource_filename(
+            "llama_toolchain",
+            "distribution/start_distribution.sh",
         )
+        args = [script, conda_env, config_file, "--port", str(args.port)] + (
+            ["--disable-ipv6"] if args.disable_ipv6 else []
+        )
+
+        run_with_pty(args)
