@@ -30,46 +30,47 @@ class Download(Subcommand):
             description="Download a model from llama.meta.comf or HuggingFace hub",
             formatter_class=argparse.RawTextHelpFormatter,
         )
-        self._add_arguments()
-        self.parser.set_defaults(func=partial(run_download_cmd, parser=self.parser))
+        setup_download_parser(self.parser)
 
-    def _add_arguments(self):
-        from llama_models.sku_list import all_registered_models
 
-        models = all_registered_models()
-        self.parser.add_argument(
-            "--source",
-            choices=["meta", "huggingface"],
-            required=True,
-        )
-        self.parser.add_argument(
-            "--model-id",
-            choices=[x.descriptor() for x in models],
-            required=True,
-        )
-        self.parser.add_argument(
-            "--hf-token",
-            type=str,
-            required=False,
-            default=None,
-            help="Hugging Face API token. Needed for gated models like llama2/3. Will also try to read environment variable `HF_TOKEN` as default.",
-        )
-        self.parser.add_argument(
-            "--meta-url",
-            type=str,
-            required=False,
-            help="For source=meta, URL obtained from llama.meta.com after accepting license terms",
-        )
-        self.parser.add_argument(
-            "--ignore-patterns",
-            type=str,
-            required=False,
-            default="*.safetensors",
-            help="""
+def setup_download_parser(parser: argparse.ArgumentParser) -> None:
+    from llama_models.sku_list import all_registered_models
+
+    models = all_registered_models()
+    parser.add_argument(
+        "--source",
+        choices=["meta", "huggingface"],
+        required=True,
+    )
+    parser.add_argument(
+        "--model-id",
+        choices=[x.descriptor() for x in models],
+        required=True,
+    )
+    parser.add_argument(
+        "--hf-token",
+        type=str,
+        required=False,
+        default=None,
+        help="Hugging Face API token. Needed for gated models like llama2/3. Will also try to read environment variable `HF_TOKEN` as default.",
+    )
+    parser.add_argument(
+        "--meta-url",
+        type=str,
+        required=False,
+        help="For source=meta, URL obtained from llama.meta.com after accepting license terms",
+    )
+    parser.add_argument(
+        "--ignore-patterns",
+        type=str,
+        required=False,
+        default="*.safetensors",
+        help="""
 For source=huggingface, files matching any of the patterns are not downloaded. Defaults to ignoring
 safetensors files to avoid downloading duplicate weights.
 """,
-        )
+    )
+    parser.set_defaults(func=partial(run_download_cmd, parser=parser))
 
 
 def _hf_download(

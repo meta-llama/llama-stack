@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 
 import argparse
-import textwrap
 
 from llama_toolchain.cli.model.describe import ModelDescribe
+from llama_toolchain.cli.model.download import ModelDownload
 from llama_toolchain.cli.model.list import ModelList
 from llama_toolchain.cli.model.template import ModelTemplate
 
@@ -22,18 +22,13 @@ class ModelParser(Subcommand):
         self.parser = subparsers.add_parser(
             "model",
             prog="llama model",
-            description="Describe llama model interfaces",
-            epilog=textwrap.dedent(
-                """
-                Example:
-                    llama model <subcommand> <options>
-                """
-            ),
+            description="Work with llama models",
         )
 
         subparsers = self.parser.add_subparsers(title="model_subcommands")
 
-        # Add sub-commandsa
-        ModelTemplate.create(subparsers)
+        # Add sub-commands
+        ModelDownload.create(subparsers)
         ModelList.create(subparsers)
+        ModelTemplate.create(subparsers)
         ModelDescribe.create(subparsers)
