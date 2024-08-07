@@ -28,15 +28,3 @@ pip install -e .
 ## The Llama CLI
 
 The `llama` CLI makes it easy to configure and run the Llama toolchain. Read the [CLI reference](docs/cli_reference.md) for details.
-
-## Appendix: Running FP8
-
-If you want to run FP8, you need the `fbgemm-gpu` package which requires `torch >= 2.4.0` (currently only in nightly, but releasing shortly...)
-
-```bash
-ENV=fp8_env
-conda create -n $ENV python=3.10
-conda activate $ENV
-
-pip3 install -r fp8_requirements.txt
-```

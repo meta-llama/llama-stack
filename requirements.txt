@@ -1,5 +1,6 @@
 black==24.4.2
 fastapi
+fbgemm-gpu==0.8.0
 fire
 flake8
 httpx

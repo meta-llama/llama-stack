@@ -26,7 +26,6 @@ COMMON_DEPENDENCIES = [
     "huggingface-hub",
     "json-strong-typing",
     "llama-models",
-    "omegaconf",
     "pandas",
     "Pillow",
     "pydantic==1.10.13",
@@ -60,7 +59,10 @@ def available_distribution_specs() -> List[DistributionSpec]:
         DistributionSpec(
             spec_id="inline",
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
-            additional_pip_packages=COMMON_DEPENDENCIES,
+            additional_pip_packages=COMMON_DEPENDENCIES
+            + [
+                "fbgemm-gpu==0.8.0",
+            ],
             provider_specs={
                 Api.inference: providers[Api.inference]["meta-reference"],
                 Api.safety: providers[Api.safety]["meta-reference"],
