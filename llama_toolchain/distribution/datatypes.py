@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 from strong_typing.schema import json_schema_type
@@ -91,9 +91,13 @@ class DistributionSpec(BaseModel):
 
 
 @json_schema_type
-class InstalledDistribution(BaseModel):
+class DistributionConfig(BaseModel):
     """References to a installed / configured DistributionSpec"""
 
     name: str
-    spec_id: str
-    # This is the class which represents the configs written by `configure`
+    spec: str
+    conda_env: str
+    providers: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Provider configurations for each of the APIs provided by this distribution",
+    )

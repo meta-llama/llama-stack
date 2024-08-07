@@ -16,7 +16,6 @@ import httpx
 from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.common.config_dirs import DEFAULT_CHECKPOINT_DIR
 
 
 class Download(Subcommand):
@@ -109,9 +108,10 @@ safetensors files to avoid downloading duplicate weights.
 
     def _meta_download(self, model: "Model", meta_url: str):
         from llama_models.sku_list import llama_meta_net_info
+
         from llama_toolchain.common.model_utils import model_local_dir
 
-        output_dir = model_local_dir(model)
+        output_dir = Path(model_local_dir(model))
         os.makedirs(output_dir, exist_ok=True)
 
         info = llama_meta_net_info(model)

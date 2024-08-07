@@ -8,8 +8,6 @@ import argparse
 import json
 import shlex
 
-from typing import Any, Dict
-
 import yaml
 from termcolor import cprint
 
@@ -40,6 +38,7 @@ class DistributionConfigure(Subcommand):
         )
 
     def _run_distribution_configure_cmd(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.distribution.datatypes import DistributionConfig
         from llama_toolchain.distribution.registry import resolve_distribution_spec
 
         config_file = DISTRIBS_BASE_DIR / args.name / "config.yaml"
@@ -51,16 +50,16 @@ class DistributionConfigure(Subcommand):
 
         # we need to find the spec from the name
         with open(config_file, "r") as f:
-            config = yaml.safe_load(f)
+            config = DistributionConfig(**yaml.safe_load(f))
 
-        dist = resolve_distribution_spec(config["spec"])
+        dist = resolve_distribution_spec(config.spec)
         if dist is None:
-            raise ValueError(f"Could not find any registered spec `{config['spec']}`")
+            raise ValueError(f"Could not find any registered spec `{config.spec}`")
 
         configure_llama_distribution(dist, config)
 
 
-def configure_llama_distribution(dist: "Distribution", config: Dict[str, Any]):
+def configure_llama_distribution(dist: "Distribution", config: "DistributionConfig"):
     from llama_toolchain.common.exec import run_command
     from llama_toolchain.common.prompt_for_config import prompt_for_config
     from llama_toolchain.common.serialize import EnumEncoder
@@ -68,47 +67,39 @@ def configure_llama_distribution(dist: "Distribution", config: Dict[str, Any]):
 
     python_exe = run_command(shlex.split("which python"))
     # simple check
-    conda_env = config["conda_env"]
+    conda_env = config.conda_env
     if conda_env not in python_exe:
         raise ValueError(
             f"Please re-run configure by activating the `{conda_env}` conda environment"
         )
 
-    existing_config = config
-    if "providers" in existing_config:
+    if config.providers:
         cprint(
-            f"Configuration already exists for {config['name']}. Will overwrite...",
+            f"Configuration already exists for {config.name}. Will overwrite...",
             "yellow",
             attrs=["bold"],
         )
 
-    provider_configs = {}
     for api, provider_spec in dist.provider_specs.items():
         cprint(f"Configuring API surface: {api.value}", "white", attrs=["bold"])
         config_type = instantiate_class_type(provider_spec.config_class)
-        config = prompt_for_config(
+        provider_config = prompt_for_config(
             config_type,
             (
-                config_type(**existing_config["providers"][api.value])
-                if existing_config
-                and "providers" in existing_config
-                and api.value in existing_config["providers"]
+                config_type(**config.providers[api.value])
+                if api.value in config.providers
                 else None
             ),
         )
-        provider_configs[api.value] = {
+
+        config.providers[api.value] = {
             "provider_id": provider_spec.provider_id,
-            **config.dict(),
+            **provider_config.dict(),
         }
 
-    dist_config = {
-        **existing_config,
-        "providers": provider_configs,
-    }
-
-    config_path = DISTRIBS_BASE_DIR / existing_config["name"] / "config.yaml"
+    config_path = DISTRIBS_BASE_DIR / config.name / "config.yaml"
     with open(config_path, "w") as fp:
-        dist_config = json.loads(json.dumps(dist_config, cls=EnumEncoder))
+        dist_config = json.loads(json.dumps(config.dict(), cls=EnumEncoder))
         fp.write(yaml.dump(dist_config, sort_keys=False))
 
     print(f"YAML configuration has been written to {config_path}")
