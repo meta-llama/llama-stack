@@ -132,6 +132,9 @@ def _meta_download(model: "Model", meta_url: str):
         downloader = ResumableDownloader(url, output_file, total_size)
         asyncio.run(downloader.download())
 
+    print(f"\nSuccessfully downloaded model to {output_dir}")
+    cprint(f"\nMD5 Checksums are at: {output_dir / 'checklist.chk'}", "white")
+
 
 def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
     from llama_models.sku_list import resolve_model
