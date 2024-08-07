@@ -102,8 +102,8 @@ def configure_llama_distribution(dist: "Distribution", config: Dict[str, Any]):
         }
 
     dist_config = {
-        "providers": provider_configs,
         **existing_config,
+        "providers": provider_configs,
     }
 
     config_path = DISTRIBS_BASE_DIR / existing_config["name"] / "config.yaml"
