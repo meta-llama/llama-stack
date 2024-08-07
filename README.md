@@ -3,11 +3,11 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-toolchain)](https://pypi.org/project/llama-toolchain/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
 
-This repository contains the API specifications and implementations for various components of the Llama Stack.
+This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
 
 The [Llama Stack](https://github.com/meta-llama/llama-toolchain/pull/8) defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to invoking AI agents in production. Beyond definition, we're developing open-source versions and partnering with cloud providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
 
-The Stack APIs are rapidly improving, but still very much Works in Progress and we invite feedback as well as direct contributions.
+The Stack APIs are rapidly improving, but still very much Work in Progress and we invite feedback as well as direct contributions.
 
 
 ## APIs
