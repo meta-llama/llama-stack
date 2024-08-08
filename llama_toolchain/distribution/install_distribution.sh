@@ -10,6 +10,7 @@ set -euo pipefail
 
 # Define color codes
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 error_handler() {
@@ -77,6 +78,8 @@ distribution_name="$2"
 pip_dependencies="$3"
 
 ensure_conda_env_python310 "$env_name" "$pip_dependencies"
+
+echo -e "${GREEN}Successfully setup distribution environment. Starting to configure ....${NC}"
 
 eval "$(conda shell.bash hook)"
 conda deactivate && conda activate "$env_name"

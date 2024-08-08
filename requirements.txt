@@ -6,6 +6,7 @@ flake8
 httpx
 huggingface-hub
 json-strong-typing
+llama-models
 omegaconf
 pre-commit
 pydantic==1.10.13

@@ -41,7 +41,10 @@ def model_checkpoint_dir(model) -> str:
     if not Path(checkpoint_dir / "consolidated.00.pth").exists():
         checkpoint_dir = checkpoint_dir / "original"
 
-    assert checkpoint_dir.exists(), f"Could not find checkpoint dir: {checkpoint_dir}"
+    assert checkpoint_dir.exists(), (
+        f"Could not find checkpoint dir: {checkpoint_dir}."
+        f"Please download model using `llama download {model.descriptor()}`"
+    )
     return str(checkpoint_dir)
 
 

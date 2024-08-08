@@ -10,5 +10,7 @@ from strong_typing.schema import json_schema_type
 
 @json_schema_type
 class OllamaImplConfig(BaseModel):
-    model: str = Field(..., description="The name of the model in ollama catalog")
-    url: str = Field(..., description="The URL for the ollama server")
+    url: str = Field(
+        default="http://localhost:11434",
+        description="The URL for the ollama server",
+    )

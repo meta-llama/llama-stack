@@ -10,14 +10,14 @@ from pydantic import BaseModel
 
 
 class LlamaGuardShieldConfig(BaseModel):
-    model: str
-    excluded_categories: List[str]
+    model: str = "Llama-Guard-3-8B"
+    excluded_categories: List[str] = []
     disable_input_check: bool = False
     disable_output_check: bool = False
 
 
 class PromptGuardShieldConfig(BaseModel):
-    model: str
+    model: str = "Prompt-Guard-86M"
 
 
 class SafetyConfig(BaseModel):
