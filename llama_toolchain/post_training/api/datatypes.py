@@ -7,9 +7,9 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
+from llama_models.schema_utils import json_schema_type
 
-from strong_typing.schema import json_schema_type
+from pydantic import BaseModel
 
 
 class OptimizerType(Enum):

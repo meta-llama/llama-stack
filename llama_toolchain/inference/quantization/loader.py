@@ -17,7 +17,7 @@ from llama_models.llama3_1.api.model import Transformer, TransformerBlock
 
 from llama_toolchain.inference.api.config import (
     CheckpointQuantizationFormat,
-    InlineImplConfig,
+    MetaReferenceImplConfig,
 )
 from llama_toolchain.inference.api.datatypes import QuantizationType
 
@@ -46,7 +46,7 @@ def swiglu_wrapper(
 
 def convert_to_quantized_model(
     model: Transformer,
-    config: InlineImplConfig,
+    config: MetaReferenceImplConfig,
     fp8_activation_scale_ub: Optional[float] = 1200.0,
 ) -> Transformer:
     if config.quantization.type == QuantizationType.bf16.value:

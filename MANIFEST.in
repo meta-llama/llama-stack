@@ -1,2 +1,3 @@
 include requirements.txt
 include llama_toolchain/data/*.yaml
+include llama_toolchain/distribution/*.sh

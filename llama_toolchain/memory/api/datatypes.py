@@ -6,9 +6,9 @@
 
 from typing import Any, Dict
 
-from pydantic import BaseModel
+from llama_models.schema_utils import json_schema_type
 
-from strong_typing.schema import json_schema_type
+from pydantic import BaseModel
 
 
 @json_schema_type

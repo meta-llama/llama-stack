@@ -23,6 +23,10 @@ from .api import (
 from .event_logger import EventLogger
 
 
+async def get_client_impl(base_url: str):
+    return InferenceClient(base_url)
+
+
 class InferenceClient(Inference):
     def __init__(self, base_url: str):
         print(f"Initializing client for {base_url}")
@@ -46,12 +50,25 @@ class InferenceClient(Inference):
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             ) as response:
+                if response.status_code != 200:
+                    content = await response.aread()
+                    cprint(
+                        f"Error: HTTP {response.status_code} {content.decode()}", "red"
+                    )
+                    return
+
                 async for line in response.aiter_lines():
                     if line.startswith("data:"):
                         data = line[len("data: ") :]
                         try:
                             if request.stream:
-                                yield ChatCompletionResponseStreamChunk(**json.loads(data))
+                                if "error" in data:
+                                    cprint(data, "red")
+                                    continue
+
+                                yield ChatCompletionResponseStreamChunk(
+                                    **json.loads(data)
+                                )
                             else:
                                 yield ChatCompletionResponse(**json.loads(data))
                         except Exception as e:
@@ -62,11 +79,11 @@ class InferenceClient(Inference):
 async def run_main(host: str, port: int, stream: bool):
     client = InferenceClient(f"http://{host}:{port}")
 
-    message = UserMessage(content="hello world, help me out here")
+    message = UserMessage(content="hello world, troll me in two-paragraphs about 42")
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
         ChatCompletionRequest(
-            model="Meta-Llama-3.1-8B-Instruct",
+            model="Meta-Llama3.1-8B-Instruct",
             messages=[message],
             stream=stream,
         )

@@ -6,7 +6,7 @@
 
 from typing import List, Protocol
 
-from pyopenapi import webmethod
+from llama_models.schema_utils import webmethod
 
 from .datatypes import *  # noqa: F403
 

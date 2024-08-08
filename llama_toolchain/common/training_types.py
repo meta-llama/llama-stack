@@ -5,8 +5,8 @@
 # the root directory of this source tree.
 
 from llama_models.llama3_1.api.datatypes import URL
+from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
-from strong_typing.schema import json_schema_type
 
 
 @json_schema_type(schema={"description": "Checkpoint created during training runs"})

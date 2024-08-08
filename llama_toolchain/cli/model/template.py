@@ -7,14 +7,9 @@
 import argparse
 import textwrap
 
-from llama_models.llama3_1.api.interface import (
-    list_jinja_templates,
-    render_jinja_template,
-)
 from termcolor import colored
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.cli.table import print_table
 
 
 class ModelTemplate(Subcommand):
@@ -53,6 +48,12 @@ class ModelTemplate(Subcommand):
         )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
+        from llama_models.llama3_1.api.interface import (
+            list_jinja_templates,
+            render_jinja_template,
+        )
+        from llama_toolchain.cli.table import print_table
+
         if args.name:
             template, tokens_info = render_jinja_template(args.name)
             rendered = ""

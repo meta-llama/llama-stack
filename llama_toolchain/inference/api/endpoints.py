@@ -8,7 +8,7 @@ from .datatypes import *  # noqa: F403
 from typing import Optional, Protocol
 
 # this dependency is annoying and we need a forked up version anyway
-from pyopenapi import webmethod
+from llama_models.schema_utils import webmethod
 
 
 @json_schema_type

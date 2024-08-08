@@ -13,25 +13,20 @@ from llama_models.llama3_1.api.datatypes import (
     UserMessage,
     StopReason,
     SystemMessage,
-)
-
-from llama_toolchain.inference.api.config import (
-    InferenceConfig,
-    InlineImplConfig,
-    RemoteImplConfig,
-    ModelCheckpointConfig,
-    PytorchCheckpoint,
-    CheckpointQuantizationFormat,
-)
-from llama_toolchain.inference.api_instance import (
-    get_inference_api_instance,
+    ToolResponseMessage,
 )
 from llama_toolchain.inference.api.datatypes import (
     ChatCompletionResponseEventType,
 )
+from llama_toolchain.inference.meta_reference.inference import get_provider_impl
+from llama_toolchain.inference.meta_reference.config import (
+    MetaReferenceImplConfig,
+)
+
 from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
 
 
+MODEL = "Meta-Llama3.1-8B-Instruct"
 HELPER_MSG = """
 This test needs llama-3.1-8b-instruct models.
 Please donwload using the llama cli
@@ -50,32 +45,18 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     async def asyncSetUpClass(cls):
         # assert model exists on local
-        model_dir = os.path.expanduser(
-            "~/.llama/checkpoints/Meta-Llama-3.1-8B-Instruct/original/"
-        )
+        model_dir = os.path.expanduser(f"~/.llama/checkpoints/{MODEL}/original/")
         assert os.path.isdir(model_dir), HELPER_MSG
 
         tokenizer_path = os.path.join(model_dir, "tokenizer.model")
         assert os.path.exists(tokenizer_path), HELPER_MSG
 
-        inline_config = InlineImplConfig(
-            checkpoint_config=ModelCheckpointConfig(
-                checkpoint=PytorchCheckpoint(
-                    checkpoint_dir=model_dir,
-                    tokenizer_path=tokenizer_path,
-                    model_parallel_size=1,
-                    quantization_format=CheckpointQuantizationFormat.bf16,
-                )
-            ),
+        config = MetaReferenceImplConfig(
+            model=MODEL,
             max_seq_len=2048,
         )
-        inference_config = InferenceConfig(impl_config=inline_config)
 
-        # -- For faster testing iteration --
-        # remote_config = RemoteImplConfig(url="http://localhost:5000")
-        # inference_config = InferenceConfig(impl_config=remote_config)
-
-        cls.api = await get_inference_api_instance(inference_config)
+        cls.api = await get_provider_impl(config, {})
         await cls.api.initialize()
 
         current_date = datetime.now()
@@ -134,7 +115,7 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
         await cls.api.shutdown()
 
     async def asyncSetUp(self):
-        self.valid_supported_model = "Meta-Llama3.1-8B-Instruct"
+        self.valid_supported_model = MODEL
 
     async def test_text(self):
         request = ChatCompletionRequest(
@@ -276,3 +257,33 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(events[-2].stop_reason, StopReason.end_of_turn)
         self.assertEqual(events[-2].delta.content.tool_name, "get_boiling_point")
+
+    async def test_multi_turn(self):
+        request = ChatCompletionRequest(
+            model=self.valid_supported_model,
+            messages=[
+                self.system_prompt,
+                UserMessage(
+                    content="Search the web and tell me who the "
+                    "44th president of the United States was",
+                ),
+                ToolResponseMessage(
+                    call_id="1",
+                    tool_name=BuiltinTool.brave_search,
+                    # content='{"query": "44th president of the United States", "top_k": [{"title": "Barack Obama | The White House", "url": "https://www.whitehouse.gov/about-the-white-house/presidents/barack-obama/", "description": "<strong>Barack Obama</strong> served as the 44th President of the United States. His story is the American story \\u2014 values from the heartland, a middle-class upbringing in a strong family, hard work and education as the means of getting ahead, and the conviction that a life so blessed should be lived in service ...", "type": "search_result"}, {"title": "Barack Obama \\u2013 The White House", "url": "https://trumpwhitehouse.archives.gov/about-the-white-house/presidents/barack-obama/", "description": "After working his way through college with the help of scholarships and student loans, <strong>President Obama</strong> moved to Chicago, where he worked with a group of churches to help rebuild communities devastated by the closure of local steel plants.", "type": "search_result"}, [{"type": "video_result", "url": "https://www.instagram.com/reel/CzMZbJmObn9/", "title": "Fifteen years ago, on Nov. 4, Barack Obama was elected as ...", "description": ""}, {"type": "video_result", "url": "https://video.alexanderstreet.com/watch/the-44th-president-barack-obama?context=channel:barack-obama", "title": "The 44th President (Barack Obama) - Alexander Street, a ...", "description": "You need to enable JavaScript to run this app"}, {"type": "video_result", "url": "https://www.youtube.com/watch?v=iyL7_2-em5k", "title": "Barack Obama for Kids | Learn about the life and contributions ...", "description": "Enjoy the videos and music you love, upload original content, and share it all with friends, family, and the world on YouTube."}, {"type": "video_result", "url": "https://www.britannica.com/video/172743/overview-Barack-Obama", "title": "President of the United States of America Barack Obama | Britannica", "description": "[NARRATOR] Barack Obama was elected the 44th president of the United States in 2008, becoming the first African American to hold the office. Obama vowed to bring change to the political system."}, {"type": "video_result", "url": "https://www.youtube.com/watch?v=rvr2g8-5dcE", "title": "The 44th President: In His Own Words - Toughest Day | Special ...", "description": "President Obama reflects on his toughest day in the Presidency and seeing Secret Service cry for the first time. Watch the premiere of The 44th President: In..."}]]}',
+                    content='"Barack Obama"',
+                ),
+            ],
+            stream=True,
+        )
+        iterator = self.api.chat_completion(request)
+
+        events = []
+        async for chunk in iterator:
+            events.append(chunk.event)
+
+        response = ""
+        for e in events[1:-1]:
+            response += e.delta
+
+        self.assertTrue("obama" in response.lower())

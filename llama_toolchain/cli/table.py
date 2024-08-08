@@ -45,7 +45,7 @@ def format_row(row, col_widths):
 
 def print_table(rows, headers=None, separate_rows: bool = False):
     def itemlen(item):
-        return len(strip_ansi_colors(item))
+        return max([len(line) for line in strip_ansi_colors(item).split("\n")])
 
     rows = [[x or "" for x in row] for row in rows]
     if not headers:

@@ -1,4 +1,6 @@
+.env
 __pycache__
 dist
 *.egg-info
 dev_requirements.txt
+build
