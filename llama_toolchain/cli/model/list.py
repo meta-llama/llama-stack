@@ -27,7 +27,7 @@ class ModelList(Subcommand):
         self.parser.set_defaults(func=self._run_model_list_cmd)
 
     def _add_arguments(self):
-        pass
+        self.parser.add_argument('--show-all', action='store_true', help='Show all models (not just defaults)')
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
         headers = [
@@ -39,6 +39,9 @@ class ModelList(Subcommand):
 
         rows = []
         for model in all_registered_models():
+            if not args.show_all and not model.is_featured:
+                continue
+
             req = model.hardware_requirements
 
             descriptor = model.descriptor()
