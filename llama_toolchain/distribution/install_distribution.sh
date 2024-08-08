@@ -6,6 +6,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
+LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
+
 set -euo pipefail
 
 # Define color codes

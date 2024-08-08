@@ -22,6 +22,14 @@ from .datatypes import (
     ProviderSpec,
 )
 
+# These are the dependencies needed by the distribution server.
+# `llama-toolchain` is automatically installed by the installation script.
+SERVER_DEPENDENCIES = [
+    "fastapi",
+    "python-dotenv",
+    "uvicorn",
+]
+
 
 def distribution_dependencies(distribution: DistributionSpec) -> List[str]:
     # only consider InlineProviderSpecs when calculating dependencies
@@ -30,7 +38,7 @@ def distribution_dependencies(distribution: DistributionSpec) -> List[str]:
         for provider_spec in distribution.provider_specs.values()
         if isinstance(provider_spec, InlineProviderSpec)
         for dep in provider_spec.pip_packages
-    ] + distribution.additional_pip_packages
+    ] + SERVER_DEPENDENCIES
 
 
 def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:

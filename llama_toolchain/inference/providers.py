@@ -15,7 +15,13 @@ def available_inference_providers() -> List[ProviderSpec]:
             api=Api.inference,
             provider_id="meta-reference",
             pip_packages=[
+                "accelerate",
+                "blobfile",
+                "codeshield",
+                "fairscale",
+                "fbgemm-gpu==0.8.0",
                 "torch",
+                "transformers",
                 "zmq",
             ],
             module="llama_toolchain.inference.meta_reference",

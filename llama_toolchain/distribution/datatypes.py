@@ -85,11 +85,6 @@ class DistributionSpec(BaseModel):
         description="Provider specifications for each of the APIs provided by this distribution",
     )
 
-    additional_pip_packages: List[str] = Field(
-        default_factory=list,
-        description="Additional pip packages beyond those required by the providers",
-    )
-
 
 @json_schema_type
 class DistributionConfig(BaseModel):
