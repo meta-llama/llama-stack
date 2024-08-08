@@ -6,10 +6,9 @@
 
 from typing import Protocol
 
-from pydantic import BaseModel
+from llama_models.schema_utils import json_schema_type, webmethod
 
-from pyopenapi import webmethod
-from strong_typing.schema import json_schema_type
+from pydantic import BaseModel
 
 from .datatypes import *  # noqa: F403
 

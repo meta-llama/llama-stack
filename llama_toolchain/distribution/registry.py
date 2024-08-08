@@ -10,32 +10,11 @@ from typing import List, Optional
 from .datatypes import Api, DistributionSpec, RemoteProviderSpec
 from .distribution import api_providers
 
-# This is currently duplicated from `requirements.txt` with a few minor changes
-# dev-dependencies like "ufmt" etc. are nuked. A few specialized dependencies
-# are moved to the appropriate distribution.
+# These are the dependencies needed by the distribution server.
+# `llama-toolchain` is automatically installed by the installation script.
 COMMON_DEPENDENCIES = [
-    "accelerate",
-    "black==24.4.2",
-    "blobfile",
-    "codeshield",
-    "fairscale",
     "fastapi",
-    "fire",
-    "flake8",
-    "httpx",
-    "huggingface-hub",
-    "json-strong-typing",
-    "llama-models",
-    "pandas",
-    "Pillow",
-    "pydantic==1.10.13",
-    "pydantic_core==2.18.2",
     "python-dotenv",
-    "python-openapi",
-    "requests",
-    "tiktoken",
-    "torch",
-    "transformers",
     "uvicorn",
 ]
 
@@ -59,10 +38,22 @@ def available_distribution_specs() -> List[DistributionSpec]:
         DistributionSpec(
             spec_id="inline",
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
-            additional_pip_packages=COMMON_DEPENDENCIES
-            + [
-                "fbgemm-gpu==0.8.0",
-            ],
+            additional_pip_packages=(
+                COMMON_DEPENDENCIES
+                # why do we need any of these? they should be completely covered
+                # by the provider dependencies themselves
+                + [
+                    "accelerate",
+                    "blobfile",
+                    "codeshield",
+                    "fairscale",
+                    "pandas",
+                    "Pillow",
+                    "torch",
+                    "transformers",
+                    "fbgemm-gpu==0.8.0",
+                ]
+            ),
             provider_specs={
                 Api.inference: providers[Api.inference]["meta-reference"],
                 Api.safety: providers[Api.safety]["meta-reference"],
@@ -72,20 +63,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
         DistributionSpec(
             spec_id="remote",
             description="Point to remote services for all llama stack APIs",
-            additional_pip_packages=[
-                "python-dotenv",
-                "blobfile",
-                "fairscale",
-                "fastapi",
-                "fire",
-                "httpx",
-                "huggingface-hub",
-                "json-strong-typing",
-                "pydantic==1.10.13",
-                "pydantic_core==2.18.2",
-                "tiktoken",
-                "uvicorn",
-            ],
+            additional_pip_packages=COMMON_DEPENDENCIES,
             provider_specs={x: remote_spec(x) for x in providers},
         ),
         DistributionSpec(

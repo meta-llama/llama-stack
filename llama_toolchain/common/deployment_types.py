@@ -9,9 +9,9 @@ from typing import Dict, Optional
 
 from llama_models.llama3_1.api.datatypes import URL
 
-from pydantic import BaseModel
+from llama_models.schema_utils import json_schema_type
 
-from strong_typing.schema import json_schema_type
+from pydantic import BaseModel
 
 
 @json_schema_type

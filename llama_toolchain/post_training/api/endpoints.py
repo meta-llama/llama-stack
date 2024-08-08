@@ -8,10 +8,9 @@ from datetime import datetime
 
 from typing import Any, Dict, List, Optional, Protocol
 
-from pydantic import BaseModel, Field
+from llama_models.schema_utils import json_schema_type, webmethod
 
-from pyopenapi import webmethod
-from strong_typing.schema import json_schema_type
+from pydantic import BaseModel, Field
 
 from llama_models.llama3_1.api.datatypes import *  # noqa: F403
 from llama_toolchain.dataset.api.datatypes import *  # noqa: F403

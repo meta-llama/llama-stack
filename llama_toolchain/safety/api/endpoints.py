@@ -10,7 +10,7 @@ from typing import List, Protocol
 from llama_models.llama3_1.api.datatypes import Message
 
 # this dependency is annoying and we need a forked up version anyway
-from pyopenapi import webmethod
+from llama_models.schema_utils import webmethod
 
 
 @json_schema_type

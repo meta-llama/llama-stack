@@ -50,20 +50,30 @@ ensure_conda_env_python310() {
     conda create -n "${env_name}" python="${python_version}" -y
   fi
 
-  # Install pip dependencies
-  if [ -n "$pip_dependencies" ]; then
-    echo "Installing pip dependencies: $pip_dependencies"
-    conda run -n "${env_name}" pip install $pip_dependencies
-  fi
-
   # Re-installing llama-toolchain in the new conda environment
-  if git rev-parse --is-inside-work-tree &> /dev/null; then
+  if git rev-parse --is-inside-work-tree &>/dev/null; then
     repo_root=$(git rev-parse --show-toplevel)
     cd "$repo_root"
     conda run -n "${env_name}" pip install -e .
   else
-    echo -e "${RED}Not inside a Git repository. Please re-run from within llama-toolchain repository.${NC}"
-    exit 1
+    conda run -n "${env_name}" pip install llama-toolchain
+  fi
+
+  if [ -n "$LLAMA_MODELS_DIR" ]; then
+    if [ ! -d "$LLAMA_MODELS_DIR" ]; then
+      echo -e "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
+      exit 1
+    fi
+
+    echo "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR"
+    conda run -n "${env_name}" pip uninstall -y llama-models
+    conda run -n "${env_name}" pip install -e "$LLAMA_MODELS_DIR"
+  fi
+
+  # Install pip dependencies
+  if [ -n "$pip_dependencies" ]; then
+    echo "Installing pip dependencies: $pip_dependencies"
+    conda run -n "${env_name}" pip install $pip_dependencies
   fi
 }
 
@@ -79,10 +89,11 @@ pip_dependencies="$3"
 
 ensure_conda_env_python310 "$env_name" "$pip_dependencies"
 
-echo -e "${GREEN}Successfully setup distribution environment. Starting to configure ....${NC}"
+echo -e "${GREEN}Successfully setup distribution environment. Configuring...${NC}"
 
 eval "$(conda shell.bash hook)"
 conda deactivate && conda activate "$env_name"
 
 python_interp=$(conda run -n "$env_name" which python)
+
 $python_interp -m llama_toolchain.cli.llama distribution configure --name "$distribution_name"

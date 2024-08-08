@@ -26,10 +26,13 @@ Meta has a [bounty program](http://facebook.com/whitehat/info) for the safe
 disclosure of security bugs. In those cases, please go through the process
 outlined on that page and do not file a public issue.
 
-## Coding Style  
+## Coding Style
 * 2 spaces for indentation rather than tabs
 * 80 character line length
 * ...
+
+## Tips
+* If you are developing with a llama-models repository checked out and need your distribution to reflect changes from there, set `LLAMA_MODELS_DIR` to that dir when running any of the `llama` CLI commands.
 
 ## License
 By contributing to Llama, you agree that your contributions will be licensed

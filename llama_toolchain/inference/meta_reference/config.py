@@ -6,8 +6,9 @@
 
 from typing import Optional
 
+from llama_models.schema_utils import json_schema_type
+
 from pydantic import BaseModel
-from strong_typing.schema import json_schema_type
 
 from llama_toolchain.inference.api import QuantizationConfig
 

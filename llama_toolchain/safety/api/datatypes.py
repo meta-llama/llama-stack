@@ -9,9 +9,9 @@ from typing import Dict, Optional, Union
 
 from llama_models.llama3_1.api.datatypes import ToolParamDefinition
 
-from pydantic import BaseModel
+from llama_models.schema_utils import json_schema_type
 
-from strong_typing.schema import json_schema_type
+from pydantic import BaseModel
 
 from llama_toolchain.common.deployment_types import RestAPIExecutionConfig
 

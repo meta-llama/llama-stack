@@ -8,8 +8,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
 
+from llama_models.schema_utils import json_schema_type
+
 from pydantic import BaseModel, Field
-from strong_typing.schema import json_schema_type
 from typing_extensions import Annotated
 
 from llama_toolchain.common.deployment_types import *  # noqa: F403

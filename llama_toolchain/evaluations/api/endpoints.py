@@ -6,9 +6,9 @@
 
 from typing import List, Protocol
 
-from pydantic import BaseModel
+from llama_models.schema_utils import webmethod
 
-from pyopenapi import webmethod
+from pydantic import BaseModel
 
 from llama_models.llama3_1.api.datatypes import *  # noqa: F403
 from .datatypes import *  # noqa: F403
