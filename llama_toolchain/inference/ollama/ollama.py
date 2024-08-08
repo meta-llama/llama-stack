@@ -66,10 +66,7 @@ class OllamaInference(Inference):
         try:
             await self.client.ps()
         except httpx.ConnectError:
-            print(
-                "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
-            )
-            raise
+            raise RuntimeError("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
 
     async def shutdown(self) -> None:
         pass

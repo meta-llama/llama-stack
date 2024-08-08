@@ -15,6 +15,7 @@ def available_safety_providers() -> List[ProviderSpec]:
             api=Api.safety,
             provider_id="meta-reference",
             pip_packages=[
+                "accelerate",
                 "codeshield",
                 "torch",
                 "transformers",

@@ -54,10 +54,14 @@ ensure_conda_env_python310() {
   conda deactivate && conda activate "${env_name}"
 
   # Re-installing llama-toolchain in the new conda environment
-  if git rev-parse --is-inside-work-tree &>/dev/null; then
-    repo_root=$(git rev-parse --show-toplevel)
-    cd "$repo_root"
-    pip install -e .
+  if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
+    if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
+      echo -e "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}" >&2
+      exit 1
+    fi
+
+    echo "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR"
+    pip install -e "$LLAMA_TOOLCHAIN_DIR"
   else
     pip install llama-toolchain
   fi
