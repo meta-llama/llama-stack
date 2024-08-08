@@ -28,7 +28,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
     providers = api_providers()
     return [
         DistributionSpec(
-            spec_id="inline",
+            spec_id="local",
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
             provider_specs={
                 Api.inference: providers[Api.inference]["meta-reference"],
@@ -42,8 +42,8 @@ def available_distribution_specs() -> List[DistributionSpec]:
             provider_specs={x: remote_spec(x) for x in providers},
         ),
         DistributionSpec(
-            spec_id="ollama-inline",
-            description="Like local-source, but use ollama for running LLM inference",
+            spec_id="local-ollama",
+            description="Like local, but use ollama for running LLM inference",
             provider_specs={
                 Api.inference: providers[Api.inference]["meta-ollama"],
                 Api.safety: providers[Api.safety]["meta-reference"],

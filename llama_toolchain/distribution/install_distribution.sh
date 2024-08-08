@@ -96,7 +96,7 @@ ensure_conda_env_python310() {
 
 if [ "$#" -ne 3 ]; then
   echo "Usage: $0 <environment_name> <distribution_name> <pip_dependencies>" >&2
-  echo "Example: $0 my_env local-inline 'numpy pandas scipy'" >&2
+  echo "Example: $0 my_env local-llama-8b 'numpy pandas scipy'" >&2
   exit 1
 fi
 

@@ -36,7 +36,7 @@ class DistributionInstall(Subcommand):
         self.parser.add_argument(
             "--spec",
             type=str,
-            help="Distribution spec to install (try ollama-inline)",
+            help="Distribution spec to install (try local-ollama)",
             required=True,
             choices=[d.spec_id for d in available_distribution_specs()],
         )
