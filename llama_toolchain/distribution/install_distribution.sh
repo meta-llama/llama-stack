@@ -60,7 +60,7 @@ ensure_conda_env_python310() {
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     pip install fastapi libcst
-    pip install --extra-index-url https://test.pypi.org/simple/ llama-toolchain==$TEST_PYPI_VERSION $pip_dependencies
+    pip install --extra-index-url https://test.pypi.org/simple/ llama-models==$TEST_PYPI_VERSION llama-toolchain==$TEST_PYPI_VERSION $pip_dependencies
   else
     # Re-installing llama-toolchain in the new conda environment
     if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
