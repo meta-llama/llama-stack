@@ -9,10 +9,10 @@ import json
 import shlex
 
 import yaml
-from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
+from termcolor import cprint
 
 
 class DistributionConfigure(Subcommand):
