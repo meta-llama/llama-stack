@@ -208,7 +208,7 @@ $ llama distribution list
 +---------------+---------------------------------------------+----------------------------------------------------------------------+
 | Spec ID       | ProviderSpecs                               | Description                                                          |
 +---------------+---------------------------------------------+----------------------------------------------------------------------+
-| inline        | {                                           | Use code from `llama_toolchain` itself to serve all llama stack APIs |
+| local         | {                                           | Use code from `llama_toolchain` itself to serve all llama stack APIs |
 |               |   "inference": "meta-reference",            |                                                                      |
 |               |   "safety": "meta-reference",               |                                                                      |
 |               |   "agentic_system": "meta-reference"        |                                                                      |
@@ -220,7 +220,7 @@ $ llama distribution list
 |               |   "agentic_system": "agentic_system-remote" |                                                                      |
 |               | }                                           |                                                                      |
 +---------------+---------------------------------------------+----------------------------------------------------------------------+
-| ollama-inline | {                                           | Like local-source, but use ollama for running LLM inference          |
+| local-ollama  | {                                           | Like local, but use ollama for running LLM inference                 |
 |               |   "inference": "meta-ollama",               |                                                                      |
 |               |   "safety": "meta-reference",               |                                                                      |
 |               |   "agentic_system": "meta-reference"        |                                                                      |
@@ -229,16 +229,16 @@ $ llama distribution list
 
 ```
 
-As you can see above, each “spec” details the “providers” that make up that spec. For eg. The inline uses the “meta-reference” provider for inference while the ollama-inline relies on a different provider ( ollama ) for inference.
+As you can see above, each “spec” details the “providers” that make up that spec. For eg. The `local` spec uses the “meta-reference” provider for inference while the `local-ollama` spec relies on a different provider ( ollama ) for inference.
 
-Lets install the fully local implementation of the llama-stack – named `inline` above.
+Lets install the fully local implementation of the llama-stack – named `local` above.
 
 To install a distro, we run a simple command providing 2 inputs –
 - **Spec Id** of the distribution that we want to install ( as obtained from the list command )
 - A **Name** by which this installation will be known locally.
 
 ```
-llama distribution install --spec inline --name inline_llama_8b
+llama distribution install --spec local --name local_llama_8b
 ```
 
 This will create a new conda environment (name can be passed optionally) and install dependencies (via pip) as required by the distro.
@@ -246,12 +246,12 @@ This will create a new conda environment (name can be passed optionally) and ins
 Once it runs successfully , you should see some outputs in the form
 
 ```
-$ llama distribution install --spec inline --name inline_llama_8b
+$ llama distribution install --spec local --name local_llama_8b
 ....
 ....
 Successfully installed cfgv-3.4.0 distlib-0.3.8 identify-2.6.0 libcst-1.4.0 llama_toolchain-0.0.2 moreorless-0.4.0 nodeenv-1.9.1 pre-commit-3.8.0 stdlibs-2024.5.15 toml-0.10.2 tomlkit-0.13.0 trailrunner-1.4.0 ufmt-2.7.0 usort-1.0.8 virtualenv-20.26.3
 
-Distribution `inline_llama_8b` (with spec inline) has been installed successfully!
+Distribution `local_llama_8b` (with spec local) has been installed successfully!
 ```
 
 Next step is to configure the distribution that you just installed. We provide a simple CLI tool to enable simple configuration.
@@ -260,12 +260,12 @@ It will ask for some details like model name, paths to models, etc.
 
 NOTE: You will have to download the models if not done already. Follow instructions here on how to download using the llama cli
 ```
-llama distribution configure --name inline_llama_8b
+llama distribution configure --name local_llama_8b
 ```
 
 Here is an example screenshot of how the cli will guide you to fill the configuration
 ```
-$ llama distribution configure --name inline_llama_8b
+$ llama distribution configure --name local_llama_8b
 
 Configuring API surface: inference
 Enter value for model (required): Meta-Llama3.1-8B-Instruct
@@ -278,7 +278,7 @@ Do you want to configure llama_guard_shield? (y/n): n
 Do you want to configure prompt_guard_shield? (y/n): n
 Configuring API surface: agentic_system
 
-YAML configuration has been written to ~/.llama/distributions/inline0/config.yaml
+YAML configuration has been written to ~/.llama/distributions/local0/config.yaml
 ```
 
 As you can see, we did basic configuration above and configured inference to run on model Meta-Llama3.1-8B-Instruct ( obtained from the llama model list command ).
@@ -290,12 +290,12 @@ For how these configurations are stored as yaml, checkout the file printed at th
 
 Now let’s start the distribution using the cli.
 ```
-llama distribution start --name inline_llama_8b --port 5000
+llama distribution start --name local_llama_8b --port 5000
 ```
 You should see the distribution start and print the APIs that it is supporting,
 
 ```
-$ llama distribution start --name inline_llama_8b --port 5000
+$ llama distribution start --name local_llama_8b --port 5000
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
@@ -329,7 +329,7 @@ Lets test with a client
 
 ```
 cd /path/to/llama-toolchain
-conda activate <env-for-distro> # ( Eg. local_inline in above example )
+conda activate <env-for-distribution> # ( Eg. local_llama_8b in above example )
 
 python -m  llama_toolchain.inference.client localhost 5000
 ```
