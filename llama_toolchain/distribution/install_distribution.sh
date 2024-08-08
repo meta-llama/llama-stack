@@ -8,7 +8,7 @@
 
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
-USE_TEST_PYPI=${USE_TEST_PYPI:-}
+TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
 set -euo pipefail
 
@@ -57,40 +57,40 @@ ensure_conda_env_python310() {
   eval "$(conda shell.bash hook)"
   conda deactivate && conda activate "${env_name}"
 
-  PIP_ARGS=""
-  if [ "$USE_TEST_PYPI" = "1" ]; then
+  if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     pip install fastapi libcst
-    PIP_ARGS="--extra-index-url https://test.pypi.org/simple/"
-  fi
-  # Re-installing llama-toolchain in the new conda environment
-  if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
-    if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
-      echo -e "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}" >&2
-      exit 1
-    fi
-
-    echo "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR"
-    pip install -e "$LLAMA_TOOLCHAIN_DIR"
+    pip install --extra-index-url https://test.pypi.org/simple/ llama-toolchain==$TEST_PYPI_VERSION $pip_dependencies
   else
-    pip install $PIP_ARGS llama-toolchain
-  fi
+    # Re-installing llama-toolchain in the new conda environment
+    if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
+      if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
+        echo -e "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}" >&2
+        exit 1
+      fi
 
-  if [ -n "$LLAMA_MODELS_DIR" ]; then
-    if [ ! -d "$LLAMA_MODELS_DIR" ]; then
-      echo -e "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
-      exit 1
+      echo "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR"
+      pip install -e "$LLAMA_TOOLCHAIN_DIR"
+    else
+      pip install $PIP_ARGS llama-toolchain
     fi
 
-    echo "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR"
-    pip uninstall -y llama-models
-    pip install -e "$LLAMA_MODELS_DIR"
-  fi
+    if [ -n "$LLAMA_MODELS_DIR" ]; then
+      if [ ! -d "$LLAMA_MODELS_DIR" ]; then
+        echo -e "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
+        exit 1
+      fi
 
-  # Install pip dependencies
-  if [ -n "$pip_dependencies" ]; then
-    echo "Installing pip dependencies: $pip_dependencies"
-    pip install $PIP_ARGS $pip_dependencies
+      echo "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR"
+      pip uninstall -y llama-models
+      pip install -e "$LLAMA_MODELS_DIR"
+    fi
+
+    # Install pip dependencies
+    if [ -n "$pip_dependencies" ]; then
+      echo "Installing pip dependencies: $pip_dependencies"
+      pip install $PIP_ARGS $pip_dependencies
+    fi
   fi
 }
 
