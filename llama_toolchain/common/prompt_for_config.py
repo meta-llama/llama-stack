@@ -158,7 +158,7 @@ def prompt_for_config(
             and issubclass(get_non_none_type(field_type), BaseModel)
         ):
             prompt = f"Do you want to configure {field_name}? (y/n): "
-            if input(prompt).lower() != "y":
+            if input(prompt).lower() == "n":
                 config_data[field_name] = None
                 continue
             nested_type = get_non_none_type(field_type)
