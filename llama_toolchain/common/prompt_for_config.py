@@ -8,9 +8,10 @@ import inspect
 import json
 from enum import Enum
 
-from typing import get_args, get_origin, List, Literal, Optional, Union
+from typing import Any, get_args, get_origin, List, Literal, Optional, Type, Union
 
 from pydantic import BaseModel
+from pydantic.fields import ModelField
 
 from typing_extensions import Annotated
 
@@ -40,6 +41,23 @@ def is_optional(field_type):
 def get_non_none_type(field_type):
     """Get the non-None type from an Optional type."""
     return next(arg for arg in get_args(field_type) if arg is not type(None))
+
+
+def manually_validate_field(model: Type[BaseModel], field: ModelField, value: Any):
+    validators = field.class_validators.values()
+
+    for validator in validators:
+        if validator.pre:
+            value = validator.func(model, value)
+
+    # Apply type coercion
+    value = field.type_(value)
+
+    for validator in validators:
+        if not validator.pre:
+            value = validator.func(model, value)
+
+    return value
 
 
 # This is somewhat elaborate, but does not purport to be comprehensive in any way.
@@ -85,7 +103,9 @@ def prompt_for_config(
                 # this branch does not handle existing and default values yet
                 user_input = input(prompt + " ")
                 try:
-                    config_data[field_name] = field_type[user_input]
+                    value = field_type[user_input]
+                    validated_value = manually_validate_field(config_type, field, value)
+                    config_data[field_name] = validated_value
                     break
                 except KeyError:
                     print(
@@ -178,51 +198,59 @@ def prompt_for_config(
                     else:
                         print("This field is required. Please provide a value.")
                         continue
+                else:
+                    try:
+                        # Handle Optional types
+                        if is_optional(field_type):
+                            if user_input.lower() == "none":
+                                value = None
+                            else:
+                                field_type = get_non_none_type(field_type)
+                                value = user_input
+
+                        # Handle List of primitives
+                        elif is_list_of_primitives(field_type):
+                            try:
+                                value = json.loads(user_input)
+                                if not isinstance(value, list):
+                                    raise ValueError(
+                                        "Input must be a JSON-encoded list"
+                                    )
+                                element_type = get_args(field_type)[0]
+                                value = [element_type(item) for item in value]
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Invalid JSON. Please enter a valid JSON-encoded list."
+                                )
+                                continue
+                            except ValueError as e:
+                                print(f"{str(e)}")
+                                continue
+
+                        # Convert the input to the correct type
+                        elif inspect.isclass(field_type) and issubclass(
+                            field_type, BaseModel
+                        ):
+                            # For nested BaseModels, we assume a dictionary-like string input
+                            import ast
+
+                            value = field_type(**ast.literal_eval(user_input))
+                        else:
+                            value = field_type(user_input)
+
+                    except ValueError:
+                        print(
+                            f"Invalid input. Expected type: {getattr(field_type, '__name__', str(field_type))}"
+                        )
+                        continue
 
                 try:
-                    # Handle Optional types
-                    if is_optional(field_type):
-                        if user_input.lower() == "none":
-                            config_data[field_name] = None
-                            break
-                        field_type = get_non_none_type(field_type)
-
-                    # Handle List of primitives
-                    if is_list_of_primitives(field_type):
-                        try:
-                            value = json.loads(user_input)
-                            if not isinstance(value, list):
-                                raise ValueError("Input must be a JSON-encoded list")
-                            element_type = get_args(field_type)[0]
-                            config_data[field_name] = [
-                                element_type(item) for item in value
-                            ]
-                            break
-                        except json.JSONDecodeError:
-                            print(
-                                "Invalid JSON. Please enter a valid JSON-encoded list."
-                            )
-                            continue
-                        except ValueError as e:
-                            print(f"{str(e)}")
-                            continue
-
-                    # Convert the input to the correct type
-                    if inspect.isclass(field_type) and issubclass(
-                        field_type, BaseModel
-                    ):
-                        # For nested BaseModels, we assume a dictionary-like string input
-                        import ast
-
-                        config_data[field_name] = field_type(
-                            **ast.literal_eval(user_input)
-                        )
-                    else:
-                        config_data[field_name] = field_type(user_input)
+                    # Validate the field using our manual validation function
+                    validated_value = manually_validate_field(config_type, field, value)
+                    config_data[field_name] = validated_value
                     break
-                except ValueError:
-                    print(
-                        f"Invalid input. Expected type: {getattr(field_type, '__name__', str(field_type))}"
-                    )
+                except ValueError as e:
+                    print(f"Validation error: {str(e)}")
 
     return config_type(**config_data)
