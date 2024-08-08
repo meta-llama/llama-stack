@@ -72,7 +72,7 @@ ensure_conda_env_python310() {
       echo "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR"
       pip install -e "$LLAMA_TOOLCHAIN_DIR"
     else
-      pip install $PIP_ARGS llama-toolchain
+      pip install llama-toolchain
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -89,7 +89,7 @@ ensure_conda_env_python310() {
     # Install pip dependencies
     if [ -n "$pip_dependencies" ]; then
       echo "Installing pip dependencies: $pip_dependencies"
-      pip install $PIP_ARGS $pip_dependencies
+      pip install $pip_dependencies
     fi
   fi
 }
