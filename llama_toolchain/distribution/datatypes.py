@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from llama_models.schema_utils import json_schema_type
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 @json_schema_type
@@ -61,6 +61,13 @@ class RemoteProviderConfig(BaseModel):
     api_key: Optional[str] = Field(
         ..., description="API key, if needed, for the provider"
     )
+
+    @validator("base_url")
+    @classmethod
+    def validate_base_url(cls, base_url: str) -> str:
+        if not base_url.startswith("http"):
+            raise ValueError(f"URL must start with http: {base_url}")
+        return base_url
 
 
 @json_schema_type
