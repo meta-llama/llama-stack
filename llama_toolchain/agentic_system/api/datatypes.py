@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from llama_models.schema_utils import json_schema_type
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
 from llama_toolchain.common.deployment_types import *  # noqa: F403
@@ -42,6 +42,8 @@ class StepType(Enum):
 
 @json_schema_type
 class InferenceStep(StepCommon):
+    model_config = ConfigDict(protected_namespaces=())
+
     step_type: Literal[StepType.inference.value] = StepType.inference.value
     model_response: CompletionMessage
 
@@ -157,6 +159,8 @@ class AgenticSystemTurnResponseStepCompletePayload(BaseModel):
 
 @json_schema_type
 class AgenticSystemTurnResponseStepProgressPayload(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     event_type: Literal[AgenticSystemTurnResponseEventType.step_progress.value] = (
         AgenticSystemTurnResponseEventType.step_progress.value
     )

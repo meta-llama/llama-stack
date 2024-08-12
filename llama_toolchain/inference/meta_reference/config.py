@@ -11,9 +11,9 @@ from llama_models.datatypes import ModelFamily
 from llama_models.schema_utils import json_schema_type
 from llama_models.sku_list import all_registered_models
 
-from llama_toolchain.inference.api import QuantizationConfig
+from pydantic import BaseModel, Field, field_validator
 
-from pydantic import BaseModel, Field, validator
+from llama_toolchain.inference.api import QuantizationConfig
 
 
 @json_schema_type
@@ -27,7 +27,7 @@ class MetaReferenceImplConfig(BaseModel):
     max_seq_len: int
     max_batch_size: int = 1
 
-    @validator("model")
+    @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:
         permitted_models = [

@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any, get_args, get_origin, List, Literal, Optional, Type, Union
 
 from pydantic import BaseModel
-from pydantic.fields import ModelField
+from pydantic_core import PydanticUndefinedType
 
 from typing_extensions import Annotated
 
@@ -43,19 +43,11 @@ def get_non_none_type(field_type):
     return next(arg for arg in get_args(field_type) if arg is not type(None))
 
 
-def manually_validate_field(model: Type[BaseModel], field: ModelField, value: Any):
-    validators = field.class_validators.values()
-
-    for validator in validators:
-        if validator.pre:
-            value = validator.func(model, value)
-
-    # Apply type coercion
-    value = field.type_(value)
-
-    for validator in validators:
-        if not validator.pre:
-            value = validator.func(model, value)
+def manually_validate_field(model: Type[BaseModel], field_name: str, value: Any):
+    validators = model.__pydantic_decorators__.field_validators
+    for _name, validator in validators.items():
+        if field_name in validator.info.fields:
+            validator.func(value)
 
     return value
 
@@ -89,9 +81,11 @@ def prompt_for_config(
             default_value = existing_value
         else:
             default_value = (
-                field.default if not isinstance(field.default, type(Ellipsis)) else None
+                field.default
+                if not isinstance(field.default, PydanticUndefinedType)
+                else None
             )
-        is_required = field.required
+        is_required = field.is_required
 
         # Skip fields with Literal type
         if get_origin(field_type) is Literal:
@@ -247,7 +241,9 @@ def prompt_for_config(
 
                 try:
                     # Validate the field using our manual validation function
-                    validated_value = manually_validate_field(config_type, field, value)
+                    validated_value = manually_validate_field(
+                        config_type, field_name, value
+                    )
                     config_data[field_name] = validated_value
                     break
                 except ValueError as e:
