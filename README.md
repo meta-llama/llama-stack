@@ -47,14 +47,12 @@ You can install this repository as a [package](https://pypi.org/project/llama-to
 If you want to install from source:
 
 ```bash
-mkdir -p ~/local
-cd ~/local
-git clone git@github.com:meta-llama/llama-toolchain.git
+git clone https://github.com/meta-llama/llama-stack.git
 
-conda create -n toolchain python=3.10
-conda activate toolchain
+conda create -n llama-stack python=3.10
+conda activate llama-stack
 
-cd llama-toolchain
+cd llama-stack
 pip install -e .
 ```
 
