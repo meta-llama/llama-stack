@@ -27,7 +27,7 @@ class Download(Subcommand):
         self.parser = subparsers.add_parser(
             "download",
             prog="llama download",
-            description="Download a model from llama.meta.comf or HuggingFace hub",
+            description="Download a model from llama.meta.com or Hugging Face Hub",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         setup_download_parser(self.parser)
