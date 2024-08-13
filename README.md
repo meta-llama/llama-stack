@@ -1,4 +1,4 @@
-# llama-toolchain
+# llama-stack
 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-toolchain)](https://pypi.org/project/llama-toolchain/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
@@ -49,12 +49,12 @@ If you want to install from source:
 ```bash
 mkdir -p ~/local
 cd ~/local
-git clone git@github.com:meta-llama/llama-toolchain.git
+git clone git@github.com:meta-llama/llama-stack.git
 
-conda create -n toolchain python=3.10
-conda activate toolchain
+conda create -n stack python=3.10
+conda activate stack
 
-cd llama-toolchain
+cd llama-stack
 pip install -e .
 ```
 
