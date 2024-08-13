@@ -111,6 +111,12 @@ class Session(BaseModel):
 
 
 @json_schema_type
+class ToolPromptFormat(Enum):
+    json = "json"
+    function_tag = "function_tag"
+
+
+@json_schema_type
 class AgenticSystemInstanceConfig(BaseModel):
     instructions: str
     sampling_params: Optional[SamplingParams] = SamplingParams()
@@ -127,6 +133,9 @@ class AgenticSystemInstanceConfig(BaseModel):
     # if you completely want to replace the messages prefixed by the system,
     # this is debug only
     debug_prefix_messages: Optional[List[Message]] = Field(default_factory=list)
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(
+        default=ToolPromptFormat.function_tag
+    )
 
 
 class AgenticSystemTurnResponseEventType(Enum):

@@ -30,6 +30,7 @@ from .api import (
     AgenticSystemToolDefinition,
     AgenticSystemTurnCreateRequest,
     AgenticSystemTurnResponseStreamChunk,
+    ToolPromptFormat,
 )
 
 
@@ -132,6 +133,7 @@ async def run_main(host: str, port: int):
             output_shields=[],
             quantization_config=None,
             debug_prefix_messages=[],
+            tool_prompt_format=ToolPromptFormat.json,
         ),
     )
 

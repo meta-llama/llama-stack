@@ -8,6 +8,8 @@ import json
 from datetime import datetime
 from typing import List
 
+from llama_toolchain.agentic_system.api.datatypes import ToolPromptFormat
+
 from llama_toolchain.inference.api import (
     BuiltinTool,
     Message,
@@ -19,7 +21,9 @@ from .tools.builtin import SingleMessageBuiltinTool
 
 
 def get_agentic_prefix_messages(
-    builtin_tools: List[SingleMessageBuiltinTool], custom_tools: List[ToolDefinition]
+    builtin_tools: List[SingleMessageBuiltinTool],
+    custom_tools: List[ToolDefinition],
+    tool_prompt_format: ToolPromptFormat,
 ) -> List[Message]:
     messages = []
     content = ""
@@ -44,14 +48,15 @@ Today Date: {formatted_date}\n"""
     content += date_str
 
     if custom_tools:
-        custom_message = get_system_prompt_for_custom_tools(custom_tools)
-        content += custom_message
+        if tool_prompt_format == ToolPromptFormat.function_tag:
+            custom_message = get_system_prompt_for_custom_tools(custom_tools)
+            content += custom_message
+            messages.append(SystemMessage(content=content))
+        else:
+            raise NotImplementedError(
+                f"Tool prompt format {tool_prompt_format} is not supported"
+            )
 
-    # TODO: Replace this hard coded message with instructions coming in the request
-    if False:
-        content += "\nYou are a helpful Assistant."
-
-    messages.append(SystemMessage(content=content))
     return messages
 
 
