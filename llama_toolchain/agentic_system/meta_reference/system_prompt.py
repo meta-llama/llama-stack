@@ -34,13 +34,13 @@ def get_agentic_prefix_messages(
             ]
         )
         if tool_str:
-            content += f"Tools: {tool_str}\n"
+            content += f"Tools: {tool_str}"
 
     current_date = datetime.now()
     formatted_date = current_date.strftime("%d %B %Y")
     date_str = f"""
 Cutting Knowledge Date: December 2023
-Today Date: {formatted_date}\n\n"""
+Today Date: {formatted_date}\n"""
     content += date_str
 
     if custom_tools:
@@ -49,7 +49,7 @@ Today Date: {formatted_date}\n\n"""
 
     # TODO: Replace this hard coded message with instructions coming in the request
     if False:
-        content += "You are a helpful Assistant."
+        content += "\nYou are a helpful Assistant."
 
     messages.append(SystemMessage(content=content))
     return messages
@@ -76,7 +76,6 @@ Reminder:
 - Required parameters MUST be specified
 - Only call one function at a time
 - Put the entire function call reply on one line
-
 """
     return content
 

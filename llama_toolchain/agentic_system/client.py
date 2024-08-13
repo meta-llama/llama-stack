@@ -13,7 +13,12 @@ import fire
 
 import httpx
 
-from llama_models.llama3_1.api.datatypes import BuiltinTool, SamplingParams
+from llama_models.llama3_1.api.datatypes import (
+    BuiltinTool,
+    SamplingParams,
+    ToolParamDefinition,
+    UserMessage,
+)
 
 from .api import (
     AgenticSystem,
@@ -87,7 +92,7 @@ class AgenticSystemClient(AgenticSystem):
 
 async def run_main(host: str, port: int):
     # client to test remote impl of agentic system
-    api = await AgenticSystemClient(f"http://{host}:{port}")
+    api = AgenticSystemClient(f"http://{host}:{port}")
 
     tool_definitions = [
         AgenticSystemToolDefinition(
@@ -102,6 +107,19 @@ async def run_main(host: str, port: int):
         AgenticSystemToolDefinition(
             tool_name=BuiltinTool.code_interpreter,
         ),
+    ]
+    tool_definitions += [
+        AgenticSystemToolDefinition(
+            tool_name="custom_tool",
+            description="a custom tool",
+            parameters={
+                "param1": ToolParamDefinition(
+                    param_type="str",
+                    description="a string parameter",
+                    required=True,
+                )
+            },
+        )
     ]
 
     create_request = AgenticSystemCreateRequest(
@@ -118,8 +136,29 @@ async def run_main(host: str, port: int):
     )
 
     create_response = await api.create_agentic_system(create_request)
-    print(create_response)
-    # TODO: Add chat session / turn apis to test e2e
+    print("Create Response -->", create_response)
+
+    session_response = await api.create_agentic_system_session(
+        AgenticSystemSessionCreateRequest(
+            system_id=create_response.system_id,
+            session_name="test_session",
+        )
+    )
+    print("Session Response -->", session_response)
+
+    turn_response = api.create_agentic_system_turn(
+        AgenticSystemTurnCreateRequest(
+            system_id=create_response.system_id,
+            session_id=session_response.session_id,
+            messages=[
+                UserMessage(content="Who are you?"),
+            ],
+            stream=False,
+        )
+    )
+    print("Turn Response -->")
+    async for chunk in turn_response:
+        print(chunk)
 
 
 def main(host: str, port: int):
