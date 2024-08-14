@@ -21,10 +21,11 @@ def available_agentic_system_providers() -> List[ProviderSpec]:
                 "transformers",
             ],
             module="llama_toolchain.agentic_system.meta_reference",
-            config_class="llama_toolchain.agentic_system.meta_reference.AgenticSystemConfig",
+            config_class="llama_toolchain.agentic_system.meta_reference.MetaReferenceImplConfig",
             api_dependencies=[
                 Api.inference,
                 Api.safety,
+                Api.memory,
             ],
         ),
     ]

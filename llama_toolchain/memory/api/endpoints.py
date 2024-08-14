@@ -6,17 +6,31 @@
 
 from typing import List, Protocol
 
-from llama_models.schema_utils import webmethod
+from llama_models.llama3_1.api.datatypes import InterleavedTextAttachment
 
+from llama_models.schema_utils import webmethod
 from .datatypes import *  # noqa: F403
 
 
-class MemoryBanks(Protocol):
+@json_schema_type
+class RetrieveMemoryDocumentsRequest(BaseModel):
+    query: InterleavedTextAttachment
+    bank_ids: str
+
+
+@json_schema_type
+class RetrieveMemoryDocumentsResponse(BaseModel):
+    documents: List[MemoryBankDocument]
+    scores: List[float]
+
+
+class Memory(Protocol):
     @webmethod(route="/memory_banks/create")
     def create_memory_bank(
         self,
         bank_id: str,
         bank_name: str,
+        embedding_model: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
 
@@ -45,6 +59,12 @@ class MemoryBanks(Protocol):
         bank_id: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
+
+    @webmethod(route="/memory_bank/get")
+    def retrieve_memory_documents(
+        self,
+        request: RetrieveMemoryDocumentsRequest,
+    ) -> List[MemoryBankDocument]: ...
 
     @webmethod(route="/memory_bank/get")
     def get_memory_documents(

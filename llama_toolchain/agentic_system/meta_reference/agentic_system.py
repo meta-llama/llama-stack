@@ -13,16 +13,11 @@ from typing import AsyncGenerator, Dict
 from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.inference.api import Inference
 from llama_toolchain.inference.api.datatypes import BuiltinTool
+from llama_toolchain.memory.api import Memory
 from llama_toolchain.safety.api import Safety
-from llama_toolchain.agentic_system.api.endpoints import *  # noqa
-from llama_toolchain.agentic_system.api import (
-    AgenticSystem,
-    AgenticSystemCreateRequest,
-    AgenticSystemCreateResponse,
-    AgenticSystemSessionCreateRequest,
-    AgenticSystemSessionCreateResponse,
-    AgenticSystemTurnCreateRequest,
-)
+from llama_toolchain.agentic_system.api import *  # noqa: F403
+from .agent_instance import ChatAgent
+from .config import MetaReferenceImplConfig
 
 from llama_toolchain.tools.builtin import (
     BraveSearchTool,
@@ -34,16 +29,16 @@ from llama_toolchain.tools.safety import with_safety
 
 from .agent_instance import AgentInstance
 
-from .config import AgenticSystemConfig
-
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-async def get_provider_impl(config: AgenticSystemConfig, deps: Dict[Api, ProviderSpec]):
+async def get_provider_impl(
+    config: MetaReferenceImplConfig, deps: Dict[Api, ProviderSpec]
+):
     assert isinstance(
-        config, AgenticSystemConfig
+        config, MetaReferenceImplConfig
     ), f"Unexpected config type: {type(config)}"
 
     impl = MetaReferenceAgenticSystemImpl(
@@ -60,11 +55,16 @@ AGENT_INSTANCES_BY_ID = {}
 
 class MetaReferenceAgenticSystemImpl(AgenticSystem):
     def __init__(
-        self, config: AgenticSystemConfig, inference_api: Inference, safety_api: Safety
+        self,
+        config: MetaReferenceImplConfig,
+        inference_api: Inference,
+        safety_api: Safety,
+        memory_api: Memory,
     ):
         self.config = config
         self.inference_api = inference_api
         self.safety_api = safety_api
+        self.memory_api = memory_api
 
     async def initialize(self) -> None:
         pass
@@ -77,7 +77,7 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
 
         builtin_tools = []
         custom_tool_definitions = []
-        cfg = request.instance_config
+        cfg = request.agent_config
         for dfn in cfg.available_tools:
             if isinstance(dfn.tool_name, BuiltinTool):
                 if dfn.tool_name == BuiltinTool.wolfram_alpha:
@@ -107,18 +107,13 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
             else:
                 custom_tool_definitions.append(dfn)
 
-        AGENT_INSTANCES_BY_ID[system_id] = AgentInstance(
-            system_id=system_id,
-            instance_config=request.instance_config,
-            model=request.model,
+        AGENT_INSTANCES_BY_ID[system_id] = ChatAgent(
+            agent_config=cfg,
             inference_api=self.inference_api,
+            safety_api=self.safety_api,
+            memory_api=self.memory_api,
             builtin_tools=builtin_tools,
             custom_tool_definitions=custom_tool_definitions,
-            safety_api=self.safety_api,
-            input_shields=cfg.input_shields,
-            output_shields=cfg.output_shields,
-            prefix_messages=cfg.debug_prefix_messages,
-            tool_prompt_format=cfg.tool_prompt_format,
         )
 
         return AgenticSystemCreateResponse(

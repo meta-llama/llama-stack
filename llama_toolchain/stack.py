@@ -24,7 +24,7 @@ class LlamaStack(
     Datasets,
     Observability,
     PostTraining,
-    MemoryBanks,
+    Memory,
     Evaluations,
 ):
     pass

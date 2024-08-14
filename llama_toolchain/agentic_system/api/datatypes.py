@@ -96,6 +96,8 @@ class Turn(BaseModel):
     ]
     steps: List[Step]
     output_message: CompletionMessage
+    output_attachments: List[Attachment] = Field(default_factory=list)
+
     started_at: datetime
     completed_at: Optional[datetime] = None
 
@@ -111,13 +113,22 @@ class Session(BaseModel):
 
 
 @json_schema_type
-class AgenticSystemInstanceConfig(BaseModel):
-    instructions: str
+class MemoryConfig(BaseModel):
+    memory_bank_id: str
+
+    # this configuration can hold other information we may want to configure
+    # how will the agent use the memory bank API?
+    #
+    #
+
+
+class AgentConfigCommon(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
     # zero-shot or built-in tool configurations as input to the model
     available_tools: Optional[List[AgenticSystemToolDefinition]] = Field(
         default_factory=list
     )
+    memory: Optional[List[MemoryConfig]] = Field(default_factory=list)
 
     input_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
     output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
@@ -128,6 +139,16 @@ class AgenticSystemInstanceConfig(BaseModel):
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
+
+
+@json_schema_type
+class AgentConfig(AgentConfigCommon):
+    model: str
+    instructions: str
+
+
+class AgentConfigOverridablePerTurn(AgentConfigCommon):
+    instructions: Optional[str] = None
 
 
 class AgenticSystemTurnResponseEventType(Enum):

@@ -17,6 +17,7 @@ class Api(Enum):
     inference = "inference"
     safety = "safety"
     agentic_system = "agentic_system"
+    memory = "memory"
 
 
 @json_schema_type

@@ -7,18 +7,17 @@
 from .datatypes import *  # noqa: F403
 from typing import Protocol
 
-# this dependency is annoying and we need a forked up version anyway
 from llama_models.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
 class AgenticSystemCreateRequest(BaseModel):
-    model: str
-    instance_config: AgenticSystemInstanceConfig
+    agent_config: AgentConfig
 
 
 @json_schema_type
 class AgenticSystemCreateResponse(BaseModel):
+    # TODO: rename this to agent_id
     system_id: str
 
 
@@ -34,20 +33,22 @@ class AgenticSystemSessionCreateResponse(BaseModel):
 
 
 @json_schema_type
-# what's the URI?
-class AgenticSystemTurnCreateRequest(BaseModel):
+class AgenticSystemTurnCreateRequest(BaseModel, AgentConfigOverridablePerTurn):
     system_id: str
     session_id: str
 
+    # TODO: figure out how we can simplify this and make why
+    # ToolResponseMessage needs to be here (it is function call
+    # execution from outside the system)
     messages: List[
         Union[
             UserMessage,
             ToolResponseMessage,
         ]
     ]
+    attachments: List[Attachment]
 
     stream: Optional[bool] = False
-    override_config: Optional[AgenticSystemInstanceConfig] = None
 
 
 @json_schema_type(
@@ -92,22 +93,6 @@ class AgenticSystem(Protocol):
         self,
         request: AgenticSystemSessionCreateRequest,
     ) -> AgenticSystemSessionCreateResponse: ...
-
-    @webmethod(route="/agentic_system/memory_bank/attach")
-    async def attach_memory_bank_to_agentic_system(
-        self,
-        agent_id: str,
-        session_id: str,
-        memory_bank_ids: List[str],
-    ) -> None: ...
-
-    @webmethod(route="/agentic_system/memory_bank/detach")
-    async def detach_memory_bank_from_agentic_system(
-        self,
-        agent_id: str,
-        session_id: str,
-        memory_bank_ids: List[str],
-    ) -> None: ...
 
     @webmethod(route="/agentic_system/session/get")
     async def get_agentic_system_session(

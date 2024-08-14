@@ -15,8 +15,8 @@ from llama_models.llama3.api.datatypes import (
 )
 
 from llama_toolchain.agentic_system.api import (
+    AgentConfig,
     AgenticSystemCreateRequest,
-    AgenticSystemInstanceConfig,
     AgenticSystemSessionCreateRequest,
     AgenticSystemToolDefinition,
 )
@@ -100,7 +100,7 @@ async def get_agent_system_instance(
 
     create_request = AgenticSystemCreateRequest(
         model=model,
-        instance_config=AgenticSystemInstanceConfig(
+        agent_config=AgentConfig(
             instructions="You are a helpful assistant",
             available_tools=tool_definitions,
             input_shields=(

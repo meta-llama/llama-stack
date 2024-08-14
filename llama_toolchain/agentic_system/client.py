@@ -24,10 +24,10 @@ from termcolor import cprint
 
 from llama_toolchain.agentic_system.event_logger import EventLogger
 from .api import (
+    AgentConfig,
     AgenticSystem,
     AgenticSystemCreateRequest,
     AgenticSystemCreateResponse,
-    AgenticSystemInstanceConfig,
     AgenticSystemSessionCreateRequest,
     AgenticSystemSessionCreateResponse,
     AgenticSystemToolDefinition,
@@ -129,7 +129,7 @@ async def run_main(host: str, port: int):
 
     create_request = AgenticSystemCreateRequest(
         model="Meta-Llama3.1-8B-Instruct",
-        instance_config=AgenticSystemInstanceConfig(
+        agent_config=AgentConfig(
             instructions="You are a helpful assistant",
             sampling_params=SamplingParams(),
             available_tools=tool_definitions,
