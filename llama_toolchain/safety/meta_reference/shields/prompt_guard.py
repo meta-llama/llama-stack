@@ -18,7 +18,6 @@ from llama_toolchain.safety.api.datatypes import *  # noqa: F403
 
 
 class PromptGuardShield(TextShield):
-
     class Mode(Enum):
         INJECTION = auto()
         JAILBREAK = auto()

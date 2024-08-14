@@ -37,4 +37,5 @@ class SyntheticDataGeneration(Protocol):
     def post_generate(
         self,
         request: SyntheticDataGenerationRequest,
-    ) -> Union[SyntheticDataGenerationResponse]: ...
+    ) -> Union[SyntheticDataGenerationResponse]:
+        ...

@@ -45,7 +45,6 @@ SEMAPHORE = asyncio.Semaphore(1)
 
 
 class MetaReferenceInferenceImpl(Inference):
-
     def __init__(self, config: MetaReferenceImplConfig) -> None:
         self.config = config
         model = resolve_model(config.model)

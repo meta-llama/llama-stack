@@ -26,16 +26,19 @@ class Datasets(Protocol):
     def create_dataset(
         self,
         request: CreateDatasetRequest,
-    ) -> None: ...
+    ) -> None:
+        ...
 
     @webmethod(route="/datasets/get")
     def get_dataset(
         self,
         dataset_uuid: str,
-    ) -> TrainEvalDataset: ...
+    ) -> TrainEvalDataset:
+        ...
 
     @webmethod(route="/datasets/delete")
     def delete_dataset(
         self,
         dataset_uuid: str,
-    ) -> None: ...
+    ) -> None:
+        ...

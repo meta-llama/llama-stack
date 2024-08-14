@@ -23,7 +23,6 @@ class SafetyException(Exception):  # noqa: N818
 
 
 class ShieldRunnerMixin:
-
     def __init__(
         self,
         safety_api: Safety,

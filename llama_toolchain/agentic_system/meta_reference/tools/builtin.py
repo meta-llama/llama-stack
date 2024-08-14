@@ -66,7 +66,6 @@ class SingleMessageBuiltinTool(BaseTool):
 
 
 class PhotogenTool(SingleMessageBuiltinTool):
-
     def __init__(self, dump_dir: str) -> None:
         self.dump_dir = dump_dir
 
@@ -87,7 +86,6 @@ class PhotogenTool(SingleMessageBuiltinTool):
 
 
 class BraveSearchTool(SingleMessageBuiltinTool):
-
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
 
@@ -204,7 +202,6 @@ class BraveSearchTool(SingleMessageBuiltinTool):
 
 
 class WolframAlphaTool(SingleMessageBuiltinTool):
-
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
         self.url = "https://api.wolframalpha.com/v2/query"
@@ -287,7 +284,6 @@ class WolframAlphaTool(SingleMessageBuiltinTool):
 
 
 class CodeInterpreterTool(BaseTool):
-
     def __init__(self) -> None:
         ctx = CodeExecutionContext(
             matplotlib_dump_dir=f"/tmp/{os.environ['USER']}_matplotlib_dump",

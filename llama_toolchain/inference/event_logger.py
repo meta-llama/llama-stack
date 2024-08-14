@@ -7,8 +7,8 @@
 from termcolor import cprint
 
 from llama_toolchain.inference.api import (
-    ChatCompletionResponseEventType, 
-    ChatCompletionResponseStreamChunk
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
 )
 
 

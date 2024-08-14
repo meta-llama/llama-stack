@@ -26,10 +26,8 @@ class SummarizationMetric(Enum):
 
 
 class EvaluationJob(BaseModel):
-
     job_uuid: str
 
 
 class EvaluationJobLogStream(BaseModel):
-
     job_uuid: str

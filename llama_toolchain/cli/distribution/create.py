@@ -10,7 +10,6 @@ from llama_toolchain.cli.subcommand import Subcommand
 
 
 class DistributionCreate(Subcommand):
-
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(

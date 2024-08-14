@@ -217,7 +217,6 @@ def create_dynamic_typed_route(func: Any):
 
 
 def topological_sort(providers: List[ProviderSpec]) -> List[ProviderSpec]:
-
     by_id = {x.api: x for x in providers}
 
     def dfs(a: ProviderSpec, visited: Set[Api], stack: List[Api]):

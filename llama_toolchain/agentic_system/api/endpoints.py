@@ -63,36 +63,40 @@ class AgenticSystemStepResponse(BaseModel):
 
 
 class AgenticSystem(Protocol):
-
     @webmethod(route="/agentic_system/create")
     async def create_agentic_system(
         self,
         request: AgenticSystemCreateRequest,
-    ) -> AgenticSystemCreateResponse: ...
+    ) -> AgenticSystemCreateResponse:
+        ...
 
     @webmethod(route="/agentic_system/turn/create")
     async def create_agentic_system_turn(
         self,
         request: AgenticSystemTurnCreateRequest,
-    ) -> AgenticSystemTurnResponseStreamChunk: ...
+    ) -> AgenticSystemTurnResponseStreamChunk:
+        ...
 
     @webmethod(route="/agentic_system/turn/get")
     async def get_agentic_system_turn(
         self,
         agent_id: str,
         turn_id: str,
-    ) -> Turn: ...
+    ) -> Turn:
+        ...
 
     @webmethod(route="/agentic_system/step/get")
     async def get_agentic_system_step(
         self, agent_id: str, turn_id: str, step_id: str
-    ) -> AgenticSystemStepResponse: ...
+    ) -> AgenticSystemStepResponse:
+        ...
 
     @webmethod(route="/agentic_system/session/create")
     async def create_agentic_system_session(
         self,
         request: AgenticSystemSessionCreateRequest,
-    ) -> AgenticSystemSessionCreateResponse: ...
+    ) -> AgenticSystemSessionCreateResponse:
+        ...
 
     @webmethod(route="/agentic_system/memory_bank/attach")
     async def attach_memory_bank_to_agentic_system(
@@ -100,7 +104,8 @@ class AgenticSystem(Protocol):
         agent_id: str,
         session_id: str,
         memory_bank_ids: List[str],
-    ) -> None: ...
+    ) -> None:
+        ...
 
     @webmethod(route="/agentic_system/memory_bank/detach")
     async def detach_memory_bank_from_agentic_system(
@@ -108,7 +113,8 @@ class AgenticSystem(Protocol):
         agent_id: str,
         session_id: str,
         memory_bank_ids: List[str],
-    ) -> None: ...
+    ) -> None:
+        ...
 
     @webmethod(route="/agentic_system/session/get")
     async def get_agentic_system_session(
@@ -116,15 +122,18 @@ class AgenticSystem(Protocol):
         agent_id: str,
         session_id: str,
         turn_ids: Optional[List[str]] = None,
-    ) -> Session: ...
+    ) -> Session:
+        ...
 
     @webmethod(route="/agentic_system/session/delete")
     async def delete_agentic_system_session(
         self, agent_id: str, session_id: str
-    ) -> None: ...
+    ) -> None:
+        ...
 
     @webmethod(route="/agentic_system/delete")
     async def delete_agentic_system(
         self,
         agent_id: str,
-    ) -> None: ...
+    ) -> None:
+        ...

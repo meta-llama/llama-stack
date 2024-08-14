@@ -36,7 +36,6 @@ llama download --source huggingface --model-id llama3_1_8b_instruct --hf-token <
 
 
 class InferenceTests(unittest.IsolatedAsyncioTestCase):
-
     @classmethod
     def setUpClass(cls):
         # This runs the async setup function

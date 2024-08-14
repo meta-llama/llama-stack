@@ -12,7 +12,6 @@ from llama_toolchain.safety.api.datatypes import *  # noqa: F403
 
 
 class CodeScannerShield(TextShield):
-
     def get_shield_type(self) -> ShieldType:
         return BuiltinShield.code_scanner_guard
 

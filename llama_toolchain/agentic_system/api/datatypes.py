@@ -63,9 +63,9 @@ class ShieldCallStep(StepCommon):
 
 @json_schema_type
 class MemoryRetrievalStep(StepCommon):
-    step_type: Literal[StepType.memory_retrieval.value] = (
+    step_type: Literal[
         StepType.memory_retrieval.value
-    )
+    ] = StepType.memory_retrieval.value
     memory_bank_ids: List[str]
     documents: List[MemoryBankDocument]
     scores: List[float]
@@ -140,9 +140,9 @@ class AgenticSystemTurnResponseEventType(Enum):
 
 @json_schema_type
 class AgenticSystemTurnResponseStepStartPayload(BaseModel):
-    event_type: Literal[AgenticSystemTurnResponseEventType.step_start.value] = (
+    event_type: Literal[
         AgenticSystemTurnResponseEventType.step_start.value
-    )
+    ] = AgenticSystemTurnResponseEventType.step_start.value
     step_type: StepType
     step_id: str
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
@@ -150,9 +150,9 @@ class AgenticSystemTurnResponseStepStartPayload(BaseModel):
 
 @json_schema_type
 class AgenticSystemTurnResponseStepCompletePayload(BaseModel):
-    event_type: Literal[AgenticSystemTurnResponseEventType.step_complete.value] = (
+    event_type: Literal[
         AgenticSystemTurnResponseEventType.step_complete.value
-    )
+    ] = AgenticSystemTurnResponseEventType.step_complete.value
     step_type: StepType
     step_details: Step
 
@@ -161,9 +161,9 @@ class AgenticSystemTurnResponseStepCompletePayload(BaseModel):
 class AgenticSystemTurnResponseStepProgressPayload(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
-    event_type: Literal[AgenticSystemTurnResponseEventType.step_progress.value] = (
+    event_type: Literal[
         AgenticSystemTurnResponseEventType.step_progress.value
-    )
+    ] = AgenticSystemTurnResponseEventType.step_progress.value
     step_type: StepType
     step_id: str
 
@@ -174,17 +174,17 @@ class AgenticSystemTurnResponseStepProgressPayload(BaseModel):
 
 @json_schema_type
 class AgenticSystemTurnResponseTurnStartPayload(BaseModel):
-    event_type: Literal[AgenticSystemTurnResponseEventType.turn_start.value] = (
+    event_type: Literal[
         AgenticSystemTurnResponseEventType.turn_start.value
-    )
+    ] = AgenticSystemTurnResponseEventType.turn_start.value
     turn_id: str
 
 
 @json_schema_type
 class AgenticSystemTurnResponseTurnCompletePayload(BaseModel):
-    event_type: Literal[AgenticSystemTurnResponseEventType.turn_complete.value] = (
+    event_type: Literal[
         AgenticSystemTurnResponseEventType.turn_complete.value
-    )
+    ] = AgenticSystemTurnResponseEventType.turn_complete.value
     turn: Turn
 
 

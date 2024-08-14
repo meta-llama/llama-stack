@@ -97,27 +97,30 @@ class BatchChatCompletionResponse(BaseModel):
 
 
 class Inference(Protocol):
-
     @webmethod(route="/inference/completion")
     async def completion(
         self,
         request: CompletionRequest,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
+    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        ...
 
     @webmethod(route="/inference/chat_completion")
     async def chat_completion(
         self,
         request: ChatCompletionRequest,
-    ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
+    ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]:
+        ...
 
     @webmethod(route="/inference/batch_completion")
     async def batch_completion(
         self,
         request: BatchCompletionRequest,
-    ) -> BatchCompletionResponse: ...
+    ) -> BatchCompletionResponse:
+        ...
 
     @webmethod(route="/inference/batch_chat_completion")
     async def batch_chat_completion(
         self,
         request: BatchChatCompletionRequest,
-    ) -> BatchChatCompletionResponse: ...
+    ) -> BatchChatCompletionResponse:
+        ...

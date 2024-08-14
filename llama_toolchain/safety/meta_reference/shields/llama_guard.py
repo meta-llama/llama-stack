@@ -100,7 +100,6 @@ PROMPT_TEMPLATE = Template(
 
 
 class LlamaGuardShield(ShieldBase):
-
     @staticmethod
     def instance(
         on_violation_action=OnViolationAction.RAISE,
@@ -166,7 +165,6 @@ class LlamaGuardShield(ShieldBase):
         return None
 
     def get_safety_categories(self) -> List[str]:
-
         excluded_categories = self.excluded_categories
         if set(excluded_categories) == set(SAFETY_CATEGORIES_TO_CODE_MAP.values()):
             excluded_categories = []
@@ -181,7 +179,6 @@ class LlamaGuardShield(ShieldBase):
         return categories
 
     def build_prompt(self, messages: List[Message]) -> str:
-
         categories = self.get_safety_categories()
         categories_str = "\n".join(categories)
         conversations_str = "\n\n".join(
@@ -225,7 +222,6 @@ class LlamaGuardShield(ShieldBase):
                 is_violation=False,
             )
         else:
-
             prompt = self.build_prompt(messages)
             llama_guard_input = {
                 "role": "user",

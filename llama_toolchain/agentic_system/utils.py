@@ -27,7 +27,6 @@ from llama_toolchain.safety.api.datatypes import BuiltinShield, ShieldDefinition
 
 
 class AgenticSystemClientWrapper:
-
     def __init__(self, api, system_id, custom_tools):
         self.api = api
         self.system_id = system_id

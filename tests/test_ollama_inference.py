@@ -20,7 +20,6 @@ from llama_toolchain.inference.ollama.ollama import get_provider_impl
 
 
 class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
-
     async def asyncSetUp(self):
         ollama_config = OllamaImplConfig(url="http://localhost:11434")
 

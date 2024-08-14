@@ -14,7 +14,6 @@ CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 
 
 class ShieldBase(ABC):
-
     def __init__(
         self,
         on_violation_action: OnViolationAction = OnViolationAction.RAISE,
@@ -60,7 +59,6 @@ class TextShield(ShieldBase):
 
 
 class DummyShield(TextShield):
-
     def get_shield_type(self) -> ShieldType:
         return "dummy"
 

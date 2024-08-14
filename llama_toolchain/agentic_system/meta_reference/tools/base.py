@@ -11,7 +11,6 @@ from llama_toolchain.inference.api import Message
 
 
 class BaseTool(ABC):
-
     @abstractmethod
     def get_name(self) -> str:
         raise NotImplementedError

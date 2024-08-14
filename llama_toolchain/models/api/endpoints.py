@@ -11,4 +11,5 @@ from llama_models.schema_utils import webmethod  # noqa: F401
 from pydantic import BaseModel  # noqa: F401
 
 
-class Models(Protocol): ...
+class Models(Protocol):
+    ...

@@ -27,7 +27,11 @@ class ModelList(Subcommand):
         self.parser.set_defaults(func=self._run_model_list_cmd)
 
     def _add_arguments(self):
-        self.parser.add_argument('--show-all', action='store_true', help='Show all models (not just defaults)')
+        self.parser.add_argument(
+            "--show-all",
+            action="store_true",
+            help="Show all models (not just defaults)",
+        )
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
         headers = [

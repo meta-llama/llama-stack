@@ -54,7 +54,6 @@ async def get_provider_impl(
 
 
 class OllamaInference(Inference):
-
     def __init__(self, config: OllamaImplConfig) -> None:
         self.config = config
 
@@ -66,7 +65,9 @@ class OllamaInference(Inference):
         try:
             await self.client.ps()
         except httpx.ConnectError:
-            raise RuntimeError("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
+            raise RuntimeError(
+                "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
+            )
 
     async def shutdown(self) -> None:
         pass

@@ -25,9 +25,9 @@ class RunShieldResponse(BaseModel):
 
 
 class Safety(Protocol):
-
     @webmethod(route="/safety/run_shields")
     async def run_shields(
         self,
         request: RunShieldRequest,
-    ) -> RunShieldResponse: ...
+    ) -> RunShieldResponse:
+        ...

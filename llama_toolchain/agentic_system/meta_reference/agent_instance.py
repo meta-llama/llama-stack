@@ -246,7 +246,6 @@ class AgentInstance(ShieldRunnerMixin):
             await self.run_shields(messages, shields)
 
         except SafetyException as e:
-
             yield AgenticSystemTurnResponseStreamChunk(
                 event=AgenticSystemTurnResponseEvent(
                     payload=AgenticSystemTurnResponseStepCompletePayload(
