@@ -29,5 +29,4 @@ class Safety(Protocol):
     async def run_shields(
         self,
         request: RunShieldRequest,
-    ) -> RunShieldResponse:
-        ...
+    ) -> RunShieldResponse: ...

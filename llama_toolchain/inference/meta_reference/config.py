@@ -11,9 +11,9 @@ from llama_models.datatypes import ModelFamily
 from llama_models.schema_utils import json_schema_type
 from llama_models.sku_list import all_registered_models
 
-from pydantic import BaseModel, Field, field_validator
-
 from llama_toolchain.inference.api import QuantizationConfig
+
+from pydantic import BaseModel, Field, field_validator
 
 
 @json_schema_type

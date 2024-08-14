@@ -14,9 +14,9 @@ from pathlib import Path
 
 import httpx
 
-from termcolor import cprint
-
 from llama_toolchain.cli.subcommand import Subcommand
+
+from termcolor import cprint
 
 
 class Download(Subcommand):

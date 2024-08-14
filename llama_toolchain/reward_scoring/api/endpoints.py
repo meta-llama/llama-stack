@@ -30,5 +30,4 @@ class RewardScoring(Protocol):
     def post_score(
         self,
         request: RewardScoringRequest,
-    ) -> Union[RewardScoringResponse]:
-        ...
+    ) -> Union[RewardScoringResponse]: ...

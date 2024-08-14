@@ -7,9 +7,9 @@
 import argparse
 import textwrap
 
-from termcolor import colored
-
 from llama_toolchain.cli.subcommand import Subcommand
+
+from termcolor import colored
 
 
 class ModelTemplate(Subcommand):

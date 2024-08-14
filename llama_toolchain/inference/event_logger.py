@@ -4,12 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from termcolor import cprint
-
 from llama_toolchain.inference.api import (
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
 )
+from termcolor import cprint
 
 
 class LogEvent:

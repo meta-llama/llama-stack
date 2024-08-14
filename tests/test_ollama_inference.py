@@ -4,16 +4,14 @@ from datetime import datetime
 
 from llama_models.llama3_1.api.datatypes import (
     BuiltinTool,
-    UserMessage,
-    StopReason,
     SamplingParams,
     SamplingStrategy,
+    StopReason,
     SystemMessage,
     ToolResponseMessage,
+    UserMessage,
 )
-from llama_toolchain.inference.api.datatypes import (
-    ChatCompletionResponseEventType,
-)
+from llama_toolchain.inference.api.datatypes import ChatCompletionResponseEventType
 from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
 from llama_toolchain.inference.ollama.config import OllamaImplConfig
 from llama_toolchain.inference.ollama.ollama import get_provider_impl

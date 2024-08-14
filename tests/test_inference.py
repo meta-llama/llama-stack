@@ -10,20 +10,16 @@ from datetime import datetime
 
 from llama_models.llama3_1.api.datatypes import (
     BuiltinTool,
-    UserMessage,
     StopReason,
     SystemMessage,
     ToolResponseMessage,
+    UserMessage,
 )
-from llama_toolchain.inference.api.datatypes import (
-    ChatCompletionResponseEventType,
-)
-from llama_toolchain.inference.meta_reference.inference import get_provider_impl
-from llama_toolchain.inference.meta_reference.config import (
-    MetaReferenceImplConfig,
-)
+from llama_toolchain.inference.api.datatypes import ChatCompletionResponseEventType
 
 from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
+from llama_toolchain.inference.meta_reference.config import MetaReferenceImplConfig
+from llama_toolchain.inference.meta_reference.inference import get_provider_impl
 
 
 MODEL = "Meta-Llama3.1-8B-Instruct"

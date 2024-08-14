@@ -9,11 +9,11 @@ import json
 
 from llama_models.sku_list import resolve_model
 
-from termcolor import colored
-
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.cli.table import print_table
 from llama_toolchain.common.serialize import EnumEncoder
+
+from termcolor import colored
 
 
 class ModelDescribe(Subcommand):

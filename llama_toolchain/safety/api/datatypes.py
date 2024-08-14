@@ -11,9 +11,9 @@ from llama_models.llama3_1.api.datatypes import ToolParamDefinition
 
 from llama_models.schema_utils import json_schema_type
 
-from pydantic import BaseModel
-
 from llama_toolchain.common.deployment_types import RestAPIExecutionConfig
+
+from pydantic import BaseModel
 
 
 @json_schema_type
