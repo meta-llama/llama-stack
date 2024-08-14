@@ -134,7 +134,7 @@ class AgenticSystemInstanceConfig(BaseModel):
     # this is debug only
     debug_prefix_messages: Optional[List[Message]] = Field(default_factory=list)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.function_tag
+        default=ToolPromptFormat.json
     )
 
 

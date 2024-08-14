@@ -76,7 +76,7 @@ class AgentInstance(ShieldRunnerMixin):
         output_shields: List[ShieldDefinition],
         max_infer_iters: int = 10,
         prefix_messages: Optional[List[Message]] = None,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.function_tag,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
     ):
         self.system_id = system_id
         self.instance_config = instance_config

@@ -19,7 +19,9 @@ from llama_models.llama3_1.api.datatypes import (
     ToolParamDefinition,
     UserMessage,
 )
+from termcolor import cprint
 
+from llama_toolchain.agentic_system.event_logger import EventLogger
 from .api import (
     AgenticSystem,
     AgenticSystemCreateRequest,
@@ -120,7 +122,18 @@ async def run_main(host: str, port: int):
                     required=True,
                 )
             },
-        )
+        ),
+        AgenticSystemToolDefinition(
+            tool_name="custom_tool_2",
+            description="a second custom tool",
+            parameters={
+                "param2": ToolParamDefinition(
+                    param_type="str",
+                    description="a string parameter",
+                    required=True,
+                )
+            },
+        ),
     ]
 
     create_request = AgenticSystemCreateRequest(
@@ -138,7 +151,7 @@ async def run_main(host: str, port: int):
     )
 
     create_response = await api.create_agentic_system(create_request)
-    print("Create Response -->", create_response)
+    print(create_response)
 
     session_response = await api.create_agentic_system_session(
         AgenticSystemSessionCreateRequest(
@@ -146,21 +159,28 @@ async def run_main(host: str, port: int):
             session_name="test_session",
         )
     )
-    print("Session Response -->", session_response)
+    print(session_response)
 
-    turn_response = api.create_agentic_system_turn(
-        AgenticSystemTurnCreateRequest(
-            system_id=create_response.system_id,
-            session_id=session_response.session_id,
-            messages=[
-                UserMessage(content="Who are you?"),
-            ],
-            stream=False,
+    user_prompts = [
+        "Who are you?",
+        "Write code to check if a number is prime. Use that to check if 7 is prime",
+    ]
+    for content in user_prompts:
+        cprint(f"User> {content}", color="blue")
+        iterator = api.create_agentic_system_turn(
+            AgenticSystemTurnCreateRequest(
+                system_id=create_response.system_id,
+                session_id=session_response.session_id,
+                messages=[
+                    UserMessage(content=content),
+                ],
+                stream=True,
+            )
         )
-    )
-    print("Turn Response -->")
-    async for chunk in turn_response:
-        print(chunk)
+
+        async for event, log in EventLogger().log(iterator):
+            if log is not None:
+                log.print()
 
 
 def main(host: str, port: int):
