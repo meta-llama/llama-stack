@@ -80,7 +80,7 @@ def prompt_for_json(custom_tools: List[ToolDefinition]) -> str:
         Here is a list of functions in JSON format:
         {tool_defs}
 
-        Return function calls in json format.
+        Return function calls in JSON format.
         """
     )
     content = content.lstrip("\n").format(tool_defs=tool_defs)
