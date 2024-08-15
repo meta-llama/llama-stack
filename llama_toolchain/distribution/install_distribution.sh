@@ -108,5 +108,5 @@ ensure_conda_env_python310 "$env_name" "$pip_dependencies"
 
 echo -e "${GREEN}Successfully setup distribution environment. Configuring...${NC}"
 
-python_interp=$(conda run -n "$env_name" which python)
-$python_interp -m llama_toolchain.cli.llama distribution configure --name "$distribution_name"
+which python3
+python3 -m llama_toolchain.cli.llama distribution configure --name "$distribution_name"
