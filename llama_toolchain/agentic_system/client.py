@@ -105,33 +105,24 @@ async def run_main(host: str, port: int):
             tool_name=BuiltinTool.wolfram_alpha,
         ),
         AgenticSystemToolDefinition(
-            tool_name=BuiltinTool.photogen,
-        ),
-        AgenticSystemToolDefinition(
             tool_name=BuiltinTool.code_interpreter,
         ),
     ]
     tool_definitions += [
         AgenticSystemToolDefinition(
-            tool_name="custom_tool",
-            description="a custom tool",
+            tool_name="get_boiling_point",
+            description="Get the boiling point of a imaginary liquids (eg. polyjuice)",
             parameters={
-                "param1": ToolParamDefinition(
+                "liquid_name": ToolParamDefinition(
                     param_type="str",
-                    description="a string parameter",
+                    description="The name of the liquid",
                     required=True,
-                )
-            },
-        ),
-        AgenticSystemToolDefinition(
-            tool_name="custom_tool_2",
-            description="a second custom tool",
-            parameters={
-                "param2": ToolParamDefinition(
+                ),
+                "celcius": ToolParamDefinition(
                     param_type="str",
-                    description="a string parameter",
-                    required=True,
-                )
+                    description="Whether to return the boiling point in Celcius",
+                    required=False,
+                ),
             },
         ),
     ]
@@ -163,7 +154,10 @@ async def run_main(host: str, port: int):
 
     user_prompts = [
         "Who are you?",
+        "what is the 100th prime number?",
+        "Search web for who was 44th President of USA?",
         "Write code to check if a number is prime. Use that to check if 7 is prime",
+        "What is the boiling point of polyjuicepotion ?",
     ]
     for content in user_prompts:
         cprint(f"User> {content}", color="blue")

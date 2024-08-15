@@ -48,15 +48,13 @@ def get_agentic_prefix_messages(
 Cutting Knowledge Date: December 2023
 Today Date: {formatted_date}\n"""
     content += date_str
+    messages.append(SystemMessage(content=content))
 
     if custom_tools:
         if tool_prompt_format == ToolPromptFormat.function_tag:
-            custom_message = prompt_for_function_tag(custom_tools)
-            content += custom_message
-            messages.append(SystemMessage(content=content))
+            text = prompt_for_function_tag(custom_tools)
+            messages.append(UserMessage(content=text))
         elif tool_prompt_format == ToolPromptFormat.json:
-            messages.append(SystemMessage(content=content))
-            # json is added as a user prompt
             text = prompt_for_json(custom_tools)
             messages.append(UserMessage(content=text))
         else:
