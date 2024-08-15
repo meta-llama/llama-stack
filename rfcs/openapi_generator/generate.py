@@ -18,6 +18,7 @@ from typing import Callable, Iterator, List, Tuple
 
 import fire
 import yaml
+
 from llama_models import schema_utils
 from pyopenapi import Info, operations, Options, Server, Specification
 
@@ -29,19 +30,10 @@ from pyopenapi import Info, operations, Options, Server, Specification
 from strong_typing.schema import json_schema_type
 from termcolor import colored
 
-
-# PATCH `json_schema_type` first
 schema_utils.json_schema_type = json_schema_type
 
-from llama_models.llama3_1.api.datatypes import *  # noqa: F403
-from llama_toolchain.agentic_system.api import *  # noqa: F403
-from llama_toolchain.dataset.api import *  # noqa: F403
-from llama_toolchain.evaluations.api import *  # noqa: F403
-from llama_toolchain.inference.api import *  # noqa: F403
-from llama_toolchain.memory.api import *  # noqa: F403
-from llama_toolchain.post_training.api import *  # noqa: F403
-from llama_toolchain.reward_scoring.api import *  # noqa: F403
-from llama_toolchain.synthetic_data_generation.api import *  # noqa: F403
+
+from llama_toolchain.stack import LlamaStack
 
 
 def patched_get_endpoint_functions(
@@ -79,19 +71,8 @@ def patched_get_endpoint_functions(
         yield prefix, operation_name, func_name, func_ref
 
 
+# Patch this so all methods are correctly parsed with correct HTTP methods
 operations._get_endpoint_functions = patched_get_endpoint_functions
-
-
-class LlamaStackEndpoints(
-    Inference,
-    AgenticSystem,
-    RewardScoring,
-    SyntheticDataGeneration,
-    Datasets,
-    PostTraining,
-    MemoryBanks,
-    Evaluations,
-): ...
 
 
 def main(output_dir: str):
@@ -105,7 +86,7 @@ def main(output_dir: str):
     )
     print("")
     spec = Specification(
-        LlamaStackEndpoints,
+        LlamaStack,
         Options(
             server=Server(url="http://any-hosted-llama-stack.com"),
             info=Info(

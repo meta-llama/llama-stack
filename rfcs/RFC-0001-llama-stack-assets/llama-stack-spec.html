@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-15 13:41:52.916332"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-15 17:30:18.232105"
     },
     "servers": [
         {
@@ -349,6 +349,36 @@
                 }
             }
         },
+        "/experiments/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Experiment"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateExperimentRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_banks/create": {
             "post": {
                 "responses": {
@@ -385,6 +415,36 @@
                                 "items": {
                                     "$ref": "#/components/schemas/MemoryBankDocument"
                                 }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/experiments/create_run": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Run"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRunRequest"
                             }
                         }
                     },
@@ -809,6 +869,35 @@
                 ]
             }
         },
+        "/artifacts/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Artifact"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [
+                    {
+                        "name": "artifact_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/datasets/get": {
             "get": {
                 "responses": {
@@ -945,6 +1034,65 @@
                 "parameters": []
             }
         },
+        "/experiments/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Experiment"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [
+                    {
+                        "name": "experiment_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/logging/get_logs": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Log"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LogSearchRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_banks/get": {
             "get": {
                 "responses": {
@@ -1034,6 +1182,35 @@
                     },
                     "required": true
                 }
+            }
+        },
+        "/runs/metrics": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Metric"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [
+                    {
+                        "name": "run_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/post_training/job/artifacts": {
@@ -1178,6 +1355,101 @@
                 }
             }
         },
+        "/experiments/artifacts/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Artifact"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [
+                    {
+                        "name": "experiment_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/experiments/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Experiment"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": []
+            }
+        },
+        "/logging/log_messages": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LogMessagesRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/runs/log_metrics": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LogMetricsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/post_training/preference_optimize": {
             "post": {
                 "responses": {
@@ -1298,6 +1570,36 @@
                 }
             }
         },
+        "/experiments/update": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Experiment"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateExperimentRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_bank/update": {
             "post": {
                 "responses": {
@@ -1326,6 +1628,66 @@
                                 "items": {
                                     "$ref": "#/components/schemas/MemoryBankDocument"
                                 }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/runs/update": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Run"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateRunRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/experiments/artifacts/upload": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Artifact"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Observability"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UploadArtifactRequest"
                             }
                         }
                     },
@@ -2515,6 +2877,108 @@
                     "json"
                 ]
             },
+            "CreateExperimentRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            "Experiment": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ExperimentStatus"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "name",
+                    "status",
+                    "created_at",
+                    "updated_at",
+                    "metadata"
+                ]
+            },
+            "ExperimentStatus": {
+                "type": "string",
+                "enum": [
+                    "not_started",
+                    "running",
+                    "completed",
+                    "failed"
+                ]
+            },
             "MemoryBankDocument": {
                 "type": "object",
                 "properties": {
@@ -2560,6 +3024,98 @@
                     "content",
                     "metadata",
                     "mime_type"
+                ]
+            },
+            "CreateRunRequest": {
+                "type": "object",
+                "properties": {
+                    "experiment_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "experiment_id"
+                ]
+            },
+            "Run": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "experiment_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "ended_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "experiment_id",
+                    "status",
+                    "started_at",
+                    "metadata"
                 ]
             },
             "Checkpoint": {
@@ -3039,6 +3595,74 @@
                     "step"
                 ]
             },
+            "Artifact": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/ArtifactType"
+                    },
+                    "size": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "name",
+                    "type",
+                    "size",
+                    "created_at",
+                    "metadata"
+                ]
+            },
+            "ArtifactType": {
+                "type": "string",
+                "enum": [
+                    "model",
+                    "dataset",
+                    "checkpoint",
+                    "plot",
+                    "metric",
+                    "config",
+                    "code",
+                    "other"
+                ]
+            },
             "EvaluationJobArtifactsResponse": {
                 "type": "object",
                 "properties": {
@@ -3076,6 +3700,90 @@
                     "job_uuid"
                 ]
             },
+            "LogSearchRequest": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    },
+                    "filters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query"
+                ]
+            },
+            "Log": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "additional_info": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "message",
+                    "level",
+                    "timestamp",
+                    "additional_info"
+                ]
+            },
             "MemoryBank": {
                 "type": "object",
                 "properties": {
@@ -3090,6 +3798,44 @@
                 "required": [
                     "memory_bank_id",
                     "memory_bank_name"
+                ]
+            },
+            "Metric": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "boolean"
+                            }
+                        ]
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "run_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "value",
+                    "timestamp",
+                    "run_id"
                 ]
             },
             "PostTrainingJobArtifactsResponse": {
@@ -3212,6 +3958,43 @@
                 "additionalProperties": false,
                 "required": [
                     "job_uuid"
+                ]
+            },
+            "LogMessagesRequest": {
+                "type": "object",
+                "properties": {
+                    "logs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Log"
+                        }
+                    },
+                    "run_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "logs"
+                ]
+            },
+            "LogMetricsRequest": {
+                "type": "object",
+                "properties": {
+                    "run_id": {
+                        "type": "string"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Metric"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "run_id",
+                    "metrics"
                 ]
             },
             "DPOAlignmentConfig": {
@@ -3840,6 +4623,140 @@
                     "synthetic_data"
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
+            },
+            "UpdateExperimentRequest": {
+                "type": "object",
+                "properties": {
+                    "experiment_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ExperimentStatus"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "experiment_id"
+                ]
+            },
+            "UpdateRunRequest": {
+                "type": "object",
+                "properties": {
+                    "run_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "ended_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "run_id"
+                ]
+            },
+            "UploadArtifactRequest": {
+                "type": "object",
+                "properties": {
+                    "experiment_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "artifact_type": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "experiment_id",
+                    "name",
+                    "artifact_type",
+                    "content"
+                ]
             }
         },
         "responses": {}
@@ -3851,19 +4768,19 @@
     ],
     "tags": [
         {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Observability"
+        },
+        {
             "name": "Evaluations"
         },
         {
             "name": "Inference"
         },
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
             "name": "AgenticSystem"
-        },
-        {
-            "name": "RewardScoring"
         },
         {
             "name": "Datasets"
@@ -3872,7 +4789,10 @@
             "name": "PostTraining"
         },
         {
-            "name": "MemoryBanks"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "RewardScoring"
         },
         {
             "name": "Attachment",
@@ -4051,8 +4971,28 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDatasetColumnType\" />"
         },
         {
+            "name": "CreateExperimentRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateExperimentRequest\" />"
+        },
+        {
+            "name": "Experiment",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Experiment\" />"
+        },
+        {
+            "name": "ExperimentStatus",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ExperimentStatus\" />"
+        },
+        {
             "name": "MemoryBankDocument",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
+        },
+        {
+            "name": "CreateRunRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateRunRequest\" />"
+        },
+        {
+            "name": "Run",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Run\" />"
         },
         {
             "name": "Checkpoint",
@@ -4111,6 +5051,14 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemStepResponse\" />"
         },
         {
+            "name": "Artifact",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Artifact\" />"
+        },
+        {
+            "name": "ArtifactType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ArtifactType\" />"
+        },
+        {
             "name": "EvaluationJobArtifactsResponse",
             "description": "Artifacts of a evaluation job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobArtifactsResponse\" />"
         },
@@ -4123,8 +5071,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
+            "name": "LogSearchRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogSearchRequest\" />"
+        },
+        {
+            "name": "Log",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Log\" />"
+        },
+        {
             "name": "MemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
+        },
+        {
+            "name": "Metric",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Metric\" />"
         },
         {
             "name": "PostTrainingJobArtifactsResponse",
@@ -4145,6 +5105,14 @@
         {
             "name": "PostTrainingJob",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
+        },
+        {
+            "name": "LogMessagesRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMessagesRequest\" />"
+        },
+        {
+            "name": "LogMetricsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMetricsRequest\" />"
         },
         {
             "name": "DPOAlignmentConfig",
@@ -4213,6 +5181,18 @@
         {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
+        },
+        {
+            "name": "UpdateExperimentRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateExperimentRequest\" />"
+        },
+        {
+            "name": "UpdateRunRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateRunRequest\" />"
+        },
+        {
+            "name": "UploadArtifactRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UploadArtifactRequest\" />"
         }
     ],
     "x-tagGroups": [
@@ -4224,6 +5204,7 @@
                 "Evaluations",
                 "Inference",
                 "MemoryBanks",
+                "Observability",
                 "PostTraining",
                 "RewardScoring",
                 "SyntheticDataGeneration"
@@ -4241,6 +5222,8 @@
                 "AgenticSystemToolDefinition",
                 "AgenticSystemTurnCreateRequest",
                 "AgenticSystemTurnResponseStreamChunk",
+                "Artifact",
+                "ArtifactType",
                 "Attachment",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
@@ -4258,6 +5241,8 @@
                 "CompletionRequest",
                 "CompletionResponseStreamChunk",
                 "CreateDatasetRequest",
+                "CreateExperimentRequest",
+                "CreateRunRequest",
                 "DPOAlignmentConfig",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
@@ -4268,13 +5253,20 @@
                 "EvaluationJobArtifactsResponse",
                 "EvaluationJobLogStream",
                 "EvaluationJobStatusResponse",
+                "Experiment",
+                "ExperimentStatus",
                 "FinetuningAlgorithm",
                 "Fp8QuantizationConfig",
                 "InferenceStep",
+                "Log",
+                "LogMessagesRequest",
+                "LogMetricsRequest",
+                "LogSearchRequest",
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
+                "Metric",
                 "OnViolationAction",
                 "OptimizerConfig",
                 "PostTrainingJob",
@@ -4290,6 +5282,7 @@
                 "RestAPIMethod",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
+                "Run",
                 "SamplingParams",
                 "SamplingStrategy",
                 "ScoredDialogGenerations",
@@ -4316,6 +5309,9 @@
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UpdateExperimentRequest",
+                "UpdateRunRequest",
+                "UploadArtifactRequest",
                 "UserMessage"
             ]
         }
