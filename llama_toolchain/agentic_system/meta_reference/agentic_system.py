@@ -108,6 +108,7 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
             input_shields=cfg.input_shields,
             output_shields=cfg.output_shields,
             prefix_messages=cfg.debug_prefix_messages,
+            tool_prompt_format=cfg.tool_prompt_format,
         )
 
         return AgenticSystemCreateResponse(
