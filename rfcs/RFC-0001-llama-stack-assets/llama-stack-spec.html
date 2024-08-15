@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-07-23 02:02:16.069876"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-15 13:41:52.916332"
     },
     "servers": [
         {
@@ -349,6 +349,49 @@
                 }
             }
         },
+        "/memory_banks/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "bank_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/MemoryBankDocument"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/agentic_system/delete": {
             "delete": {
                 "responses": {
@@ -530,6 +573,96 @@
                                 "items": {
                                     "type": "string"
                                 }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/evaluate/question_answering/": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluationJob"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Evaluations"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/evaluate/summarization/": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluationJob"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Evaluations"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EvaluateSummarizationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/evaluate/text_generation/": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluationJob"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Evaluations"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EvaluateTextGenerationRequest"
                             }
                         }
                     },
@@ -1010,169 +1143,6 @@
                 "parameters": []
             }
         },
-        "/memory_banks/create": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "bank_name",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/question_answering/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/summarization/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateSummarizationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/text_generation/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateTextGenerationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/synthetic_data_generation/generate": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SyntheticDataGenerationResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "SyntheticDataGeneration"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/memory_bank/insert": {
             "post": {
                 "responses": {
@@ -1298,6 +1268,36 @@
                 }
             }
         },
+        "/synthetic_data_generation/generate": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SyntheticDataGenerationResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "SyntheticDataGeneration"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_bank/update": {
             "post": {
                 "responses": {
@@ -1357,7 +1357,7 @@
                 "type": "object",
                 "properties": {
                     "model": {
-                        "$ref": "#/components/schemas/InstructModel"
+                        "type": "string"
                     },
                     "messages_batch": {
                         "type": "array",
@@ -1497,13 +1497,6 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
-                ]
-            },
-            "InstructModel": {
-                "type": "string",
-                "enum": [
-                    "llama3_8b_chat",
-                    "llama3_70b_chat"
                 ]
             },
             "SamplingParams": {
@@ -1835,7 +1828,7 @@
                 "type": "object",
                 "properties": {
                     "model": {
-                        "$ref": "#/components/schemas/PretrainedModel"
+                        "type": "string"
                     },
                     "content_batch": {
                         "type": "array",
@@ -1892,9 +1885,6 @@
                     "content_batch"
                 ]
             },
-            "PretrainedModel": {
-                "description": "The type of the model. This is used to determine the model family and SKU."
-            },
             "BatchCompletionResponse": {
                 "type": "object",
                 "properties": {
@@ -1914,7 +1904,7 @@
                 "type": "object",
                 "properties": {
                     "model": {
-                        "$ref": "#/components/schemas/InstructModel"
+                        "type": "string"
                     },
                     "messages": {
                         "type": "array",
@@ -2078,7 +2068,7 @@
                 "type": "object",
                 "properties": {
                     "model": {
-                        "$ref": "#/components/schemas/PretrainedModel"
+                        "type": "string"
                     },
                     "content": {
                         "oneOf": [
@@ -2161,7 +2151,7 @@
                 "type": "object",
                 "properties": {
                     "model": {
-                        "$ref": "#/components/schemas/InstructModel"
+                        "type": "string"
                     },
                     "instance_config": {
                         "$ref": "#/components/schemas/AgenticSystemInstanceConfig"
@@ -2525,39 +2515,6 @@
                     "json"
                 ]
             },
-            "InferenceStep": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "step_id": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "step_type": {
-                        "type": "string",
-                        "const": "inference"
-                    },
-                    "model_response": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "step_id",
-                    "step_type",
-                    "model_response"
-                ]
-            },
             "MemoryBankDocument": {
                 "type": "object",
                 "properties": {
@@ -2603,6 +2560,163 @@
                     "content",
                     "metadata",
                     "mime_type"
+                ]
+            },
+            "Checkpoint": {
+                "description": "Checkpoint created during training runs"
+            },
+            "EvaluateQuestionAnsweringRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "dataset": {
+                        "$ref": "#/components/schemas/TrainEvalDataset"
+                    },
+                    "checkpoint": {
+                        "$ref": "#/components/schemas/Checkpoint"
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "em",
+                                "f1"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "dataset",
+                    "checkpoint",
+                    "sampling_params",
+                    "metrics"
+                ],
+                "title": "Request to evaluate question answering."
+            },
+            "EvaluationJob": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ]
+            },
+            "EvaluateSummarizationRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "dataset": {
+                        "$ref": "#/components/schemas/TrainEvalDataset"
+                    },
+                    "checkpoint": {
+                        "$ref": "#/components/schemas/Checkpoint"
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "rouge",
+                                "bleu"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "dataset",
+                    "checkpoint",
+                    "sampling_params",
+                    "metrics"
+                ],
+                "title": "Request to evaluate summarization."
+            },
+            "EvaluateTextGenerationRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    },
+                    "dataset": {
+                        "$ref": "#/components/schemas/TrainEvalDataset"
+                    },
+                    "checkpoint": {
+                        "$ref": "#/components/schemas/Checkpoint"
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "perplexity",
+                                "rouge",
+                                "bleu"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid",
+                    "dataset",
+                    "checkpoint",
+                    "sampling_params",
+                    "metrics"
+                ],
+                "title": "Request to evaluate text generation."
+            },
+            "InferenceStep": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "const": "inference"
+                    },
+                    "model_response": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "step_id",
+                    "step_type",
+                    "model_response"
                 ]
             },
             "MemoryRetrievalStep": {
@@ -2962,18 +3076,6 @@
                     "job_uuid"
                 ]
             },
-            "EvaluationJob": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ]
-            },
             "MemoryBank": {
                 "type": "object",
                 "properties": {
@@ -2989,9 +3091,6 @@
                     "memory_bank_id",
                     "memory_bank_name"
                 ]
-            },
-            "Checkpoint": {
-                "description": "Checkpoint created during training runs"
             },
             "PostTrainingJobArtifactsResponse": {
                 "type": "object",
@@ -3114,272 +3213,6 @@
                 "required": [
                     "job_uuid"
                 ]
-            },
-            "EvaluateQuestionAnsweringRequest": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    },
-                    "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
-                    },
-                    "checkpoint": {
-                        "$ref": "#/components/schemas/Checkpoint"
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "em",
-                                "f1"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid",
-                    "dataset",
-                    "checkpoint",
-                    "sampling_params",
-                    "metrics"
-                ],
-                "title": "Request to evaluate question answering."
-            },
-            "EvaluateSummarizationRequest": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    },
-                    "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
-                    },
-                    "checkpoint": {
-                        "$ref": "#/components/schemas/Checkpoint"
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "rouge",
-                                "bleu"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid",
-                    "dataset",
-                    "checkpoint",
-                    "sampling_params",
-                    "metrics"
-                ],
-                "title": "Request to evaluate summarization."
-            },
-            "EvaluateTextGenerationRequest": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    },
-                    "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
-                    },
-                    "checkpoint": {
-                        "$ref": "#/components/schemas/Checkpoint"
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "perplexity",
-                                "rouge",
-                                "bleu"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid",
-                    "dataset",
-                    "checkpoint",
-                    "sampling_params",
-                    "metrics"
-                ],
-                "title": "Request to evaluate text generation."
-            },
-            "RewardModel": {
-                "type": "string",
-                "enum": [
-                    "llama3_70b_reward",
-                    "llama3_405b_reward"
-                ]
-            },
-            "SyntheticDataGenerationRequest": {
-                "type": "object",
-                "properties": {
-                    "dialogs": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "filtering_function": {
-                        "type": "string",
-                        "enum": [
-                            "none",
-                            "random",
-                            "top_k",
-                            "top_p",
-                            "top_k_top_p",
-                            "sigmoid"
-                        ],
-                        "title": "The type of filtering function."
-                    },
-                    "model": {
-                        "$ref": "#/components/schemas/RewardModel"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dialogs",
-                    "filtering_function"
-                ],
-                "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
-            },
-            "ScoredDialogGenerations": {
-                "type": "object",
-                "properties": {
-                    "dialog": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "scored_generations": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ScoredMessage"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dialog",
-                    "scored_generations"
-                ]
-            },
-            "ScoredMessage": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/UserMessage"
-                            },
-                            {
-                                "$ref": "#/components/schemas/SystemMessage"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ToolResponseMessage"
-                            },
-                            {
-                                "$ref": "#/components/schemas/CompletionMessage"
-                            }
-                        ]
-                    },
-                    "score": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "message",
-                    "score"
-                ]
-            },
-            "SyntheticDataGenerationResponse": {
-                "type": "object",
-                "properties": {
-                    "synthetic_data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ScoredDialogGenerations"
-                        }
-                    },
-                    "statistics": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "synthetic_data"
-                ],
-                "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
             "DPOAlignmentConfig": {
                 "type": "object",
@@ -3627,7 +3460,7 @@
                         }
                     },
                     "model": {
-                        "$ref": "#/components/schemas/RewardModel"
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -3652,6 +3485,70 @@
                     "scored_generations"
                 ],
                 "title": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold."
+            },
+            "ScoredDialogGenerations": {
+                "type": "object",
+                "properties": {
+                    "dialog": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/SystemMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolResponseMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CompletionMessage"
+                                }
+                            ]
+                        }
+                    },
+                    "scored_generations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ScoredMessage"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dialog",
+                    "scored_generations"
+                ]
+            },
+            "ScoredMessage": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/UserMessage"
+                            },
+                            {
+                                "$ref": "#/components/schemas/SystemMessage"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolResponseMessage"
+                            },
+                            {
+                                "$ref": "#/components/schemas/CompletionMessage"
+                            }
+                        ]
+                    },
+                    "score": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "message",
+                    "score"
+                ]
             },
             "DoraFinetuningConfig": {
                 "type": "object",
@@ -3731,7 +3628,7 @@
                         "type": "string"
                     },
                     "model": {
-                        "$ref": "#/components/schemas/PretrainedModel"
+                        "type": "string"
                     },
                     "dataset": {
                         "$ref": "#/components/schemas/TrainEvalDataset"
@@ -3857,6 +3754,92 @@
                     "rank",
                     "alpha"
                 ]
+            },
+            "SyntheticDataGenerationRequest": {
+                "type": "object",
+                "properties": {
+                    "dialogs": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/SystemMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolResponseMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CompletionMessage"
+                                }
+                            ]
+                        }
+                    },
+                    "filtering_function": {
+                        "type": "string",
+                        "enum": [
+                            "none",
+                            "random",
+                            "top_k",
+                            "top_p",
+                            "top_k_top_p",
+                            "sigmoid"
+                        ],
+                        "title": "The type of filtering function."
+                    },
+                    "model": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dialogs",
+                    "filtering_function"
+                ],
+                "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
+            },
+            "SyntheticDataGenerationResponse": {
+                "type": "object",
+                "properties": {
+                    "synthetic_data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ScoredDialogGenerations"
+                        }
+                    },
+                    "statistics": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "synthetic_data"
+                ],
+                "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             }
         },
         "responses": {}
@@ -3868,10 +3851,16 @@
     ],
     "tags": [
         {
-            "name": "PostTraining"
+            "name": "Evaluations"
         },
         {
-            "name": "MemoryBanks"
+            "name": "Inference"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "RewardScoring"
@@ -3880,16 +3869,10 @@
             "name": "Datasets"
         },
         {
-            "name": "Evaluations"
+            "name": "PostTraining"
         },
         {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "SyntheticDataGeneration"
+            "name": "MemoryBanks"
         },
         {
             "name": "Attachment",
@@ -3914,10 +3897,6 @@
         {
             "name": "Fp8QuantizationConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Fp8QuantizationConfig\" />"
-        },
-        {
-            "name": "InstructModel",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InstructModel\" />"
         },
         {
             "name": "SamplingParams",
@@ -3966,10 +3945,6 @@
         {
             "name": "BatchCompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionRequest\" />"
-        },
-        {
-            "name": "PretrainedModel",
-            "description": "The type of the model. This is used to determine the model family and SKU.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PretrainedModel\" />"
         },
         {
             "name": "BatchCompletionResponse",
@@ -4076,12 +4051,32 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDatasetColumnType\" />"
         },
         {
-            "name": "InferenceStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
-        },
-        {
             "name": "MemoryBankDocument",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
+        },
+        {
+            "name": "Checkpoint",
+            "description": "Checkpoint created during training runs\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Checkpoint\" />"
+        },
+        {
+            "name": "EvaluateQuestionAnsweringRequest",
+            "description": "Request to evaluate question answering.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateQuestionAnsweringRequest\" />"
+        },
+        {
+            "name": "EvaluationJob",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJob\" />"
+        },
+        {
+            "name": "EvaluateSummarizationRequest",
+            "description": "Request to evaluate summarization.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSummarizationRequest\" />"
+        },
+        {
+            "name": "EvaluateTextGenerationRequest",
+            "description": "Request to evaluate text generation.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
+        },
+        {
+            "name": "InferenceStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
         },
         {
             "name": "MemoryRetrievalStep",
@@ -4128,16 +4123,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
-            "name": "EvaluationJob",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJob\" />"
-        },
-        {
             "name": "MemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
-        },
-        {
-            "name": "Checkpoint",
-            "description": "Checkpoint created during training runs\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Checkpoint\" />"
         },
         {
             "name": "PostTrainingJobArtifactsResponse",
@@ -4158,38 +4145,6 @@
         {
             "name": "PostTrainingJob",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
-        },
-        {
-            "name": "EvaluateQuestionAnsweringRequest",
-            "description": "Request to evaluate question answering.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateQuestionAnsweringRequest\" />"
-        },
-        {
-            "name": "EvaluateSummarizationRequest",
-            "description": "Request to evaluate summarization.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSummarizationRequest\" />"
-        },
-        {
-            "name": "EvaluateTextGenerationRequest",
-            "description": "Request to evaluate text generation.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
-        },
-        {
-            "name": "RewardModel",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardModel\" />"
-        },
-        {
-            "name": "SyntheticDataGenerationRequest",
-            "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
-        },
-        {
-            "name": "ScoredDialogGenerations",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredDialogGenerations\" />"
-        },
-        {
-            "name": "ScoredMessage",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
-        },
-        {
-            "name": "SyntheticDataGenerationResponse",
-            "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         },
         {
             "name": "DPOAlignmentConfig",
@@ -4224,6 +4179,14 @@
             "description": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringResponse\" />"
         },
         {
+            "name": "ScoredDialogGenerations",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredDialogGenerations\" />"
+        },
+        {
+            "name": "ScoredMessage",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
+        },
+        {
             "name": "DoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DoraFinetuningConfig\" />"
         },
@@ -4242,6 +4205,14 @@
         {
             "name": "QLoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
+        },
+        {
+            "name": "SyntheticDataGenerationRequest",
+            "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
+        },
+        {
+            "name": "SyntheticDataGenerationResponse",
+            "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         }
     ],
     "x-tagGroups": [
@@ -4300,7 +4271,6 @@
                 "FinetuningAlgorithm",
                 "Fp8QuantizationConfig",
                 "InferenceStep",
-                "InstructModel",
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
@@ -4314,12 +4284,10 @@
                 "PostTrainingJobStatusResponse",
                 "PostTrainingRLHFRequest",
                 "PostTrainingSFTRequest",
-                "PretrainedModel",
                 "QLoraFinetuningConfig",
                 "RLHFAlgorithm",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
-                "RewardModel",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
                 "SamplingParams",

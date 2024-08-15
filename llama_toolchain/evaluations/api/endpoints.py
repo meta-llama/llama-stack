@@ -60,19 +60,19 @@ class EvaluationJobArtifactsResponse(BaseModel):
 
 class Evaluations(Protocol):
     @webmethod(route="/evaluate/text_generation/")
-    def post_evaluate_text_generation(
+    def evaluate_text_generation(
         self,
         request: EvaluateTextGenerationRequest,
     ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/question_answering/")
-    def post_evaluate_question_answering(
+    def evaluate_question_answering(
         self,
         request: EvaluateQuestionAnsweringRequest,
     ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/summarization/")
-    def post_evaluate_summarization(
+    def evaluate_summarization(
         self,
         request: EvaluateSummarizationRequest,
     ) -> EvaluationJob: ...

@@ -7,7 +7,7 @@ components:
         instance_config:
           $ref: '#/components/schemas/AgenticSystemInstanceConfig'
         model:
-          $ref: '#/components/schemas/InstructModel'
+          type: string
       required:
       - model
       - instance_config
@@ -170,7 +170,7 @@ components:
             type: array
           type: array
         model:
-          $ref: '#/components/schemas/InstructModel'
+          type: string
         quantization_config:
           oneOf:
           - $ref: '#/components/schemas/Bf16QuantizationConfig'
@@ -212,7 +212,7 @@ components:
               type: integer
           type: object
         model:
-          $ref: '#/components/schemas/PretrainedModel'
+          type: string
         quantization_config:
           oneOf:
           - $ref: '#/components/schemas/Bf16QuantizationConfig'
@@ -279,7 +279,7 @@ components:
             - $ref: '#/components/schemas/CompletionMessage'
           type: array
         model:
-          $ref: '#/components/schemas/InstructModel'
+          type: string
         quantization_config:
           oneOf:
           - $ref: '#/components/schemas/Bf16QuantizationConfig'
@@ -375,7 +375,7 @@ components:
               type: integer
           type: object
         model:
-          $ref: '#/components/schemas/PretrainedModel'
+          type: string
         quantization_config:
           oneOf:
           - $ref: '#/components/schemas/Bf16QuantizationConfig'
@@ -629,11 +629,6 @@ components:
       - step_type
       - model_response
       type: object
-    InstructModel:
-      enum:
-      - llama3_8b_chat
-      - llama3_70b_chat
-      type: string
     LoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -922,7 +917,7 @@ components:
             - type: object
           type: object
         model:
-          $ref: '#/components/schemas/PretrainedModel'
+          type: string
         optimizer_config:
           $ref: '#/components/schemas/OptimizerConfig'
         training_config:
@@ -942,9 +937,6 @@ components:
       - logger_config
       title: Request to finetune a model.
       type: object
-    PretrainedModel:
-      description: The type of the model. This is used to determine the model family
-        and SKU.
     QLoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -1001,11 +993,6 @@ components:
       - PUT
       - DELETE
       type: string
-    RewardModel:
-      enum:
-      - llama3_70b_reward
-      - llama3_405b_reward
-      type: string
     RewardScoringRequest:
       additionalProperties: false
       properties:
@@ -1014,7 +1001,7 @@ components:
             $ref: '#/components/schemas/DialogGenerations'
           type: array
         model:
-          $ref: '#/components/schemas/RewardModel'
+          type: string
       required:
       - dialog_generations
       - model
@@ -1202,7 +1189,7 @@ components:
           title: The type of filtering function.
           type: string
         model:
-          $ref: '#/components/schemas/RewardModel'
+          type: string
       required:
       - dialogs
       - filtering_function
@@ -1551,7 +1538,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-07-23 02:02:16.069876"
+    \ draft and subject to change.\n                Generated at 2024-08-15 13:41:52.916332"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2338,14 +2325,14 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: PostTraining
-- name: MemoryBanks
-- name: RewardScoring
-- name: Datasets
 - name: Evaluations
-- name: AgenticSystem
 - name: Inference
 - name: SyntheticDataGeneration
+- name: AgenticSystem
+- name: RewardScoring
+- name: Datasets
+- name: PostTraining
+- name: MemoryBanks
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
@@ -2362,8 +2349,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/Fp8QuantizationConfig"
     />
   name: Fp8QuantizationConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/InstructModel" />
-  name: InstructModel
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams" />
   name: SamplingParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingStrategy"
@@ -2393,12 +2378,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequest"
     />
   name: BatchCompletionRequest
-- description: 'The type of the model. This is used to determine the model family
-    and SKU.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/PretrainedModel" />'
-  name: PretrainedModel
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
@@ -2489,11 +2468,36 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDatasetColumnType"
     />
   name: TrainEvalDatasetColumnType
-- description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
-  name: InferenceStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
     />
   name: MemoryBankDocument
+- description: 'Checkpoint created during training runs
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/Checkpoint" />'
+  name: Checkpoint
+- description: 'Request to evaluate question answering.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
+    />'
+  name: EvaluateQuestionAnsweringRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJob" />
+  name: EvaluationJob
+- description: 'Request to evaluate summarization.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
+    />'
+  name: EvaluateSummarizationRequest
+- description: 'Request to evaluate text generation.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
+    />'
+  name: EvaluateTextGenerationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
+  name: InferenceStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
     />
   name: MemoryRetrievalStep
@@ -2531,15 +2535,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJob" />
-  name: EvaluationJob
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
   name: MemoryBank
-- description: 'Checkpoint created during training runs
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/Checkpoint" />'
-  name: Checkpoint
 - description: 'Artifacts of a finetuning job.
 
 
@@ -2563,45 +2560,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJob"
     />
   name: PostTrainingJob
-- description: 'Request to evaluate question answering.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
-    />'
-  name: EvaluateQuestionAnsweringRequest
-- description: 'Request to evaluate summarization.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
-    />'
-  name: EvaluateSummarizationRequest
-- description: 'Request to evaluate text generation.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
-    />'
-  name: EvaluateTextGenerationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/RewardModel" />
-  name: RewardModel
-- description: 'Request to generate synthetic data. A small batch of prompts and a
-    filtering function
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
-    />'
-  name: SyntheticDataGenerationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/ScoredDialogGenerations"
-    />
-  name: ScoredDialogGenerations
-- description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
-  name: ScoredMessage
-- description: 'Response from the synthetic data generation. Batch of (prompt, response,
-    score) tuples that pass the threshold.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
-    />'
-  name: SyntheticDataGenerationResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
@@ -2632,6 +2590,11 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringResponse" />'
   name: RewardScoringResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoredDialogGenerations"
+    />
+  name: ScoredDialogGenerations
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
+  name: ScoredMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
     />
   name: DoraFinetuningConfig
@@ -2649,6 +2612,20 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
   name: QLoraFinetuningConfig
+- description: 'Request to generate synthetic data. A small batch of prompts and a
+    filtering function
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
+    />'
+  name: SyntheticDataGenerationRequest
+- description: 'Response from the synthetic data generation. Batch of (prompt, response,
+    score) tuples that pass the threshold.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
+    />'
+  name: SyntheticDataGenerationResponse
 x-tagGroups:
 - name: Operations
   tags:
@@ -2701,7 +2678,6 @@ x-tagGroups:
   - FinetuningAlgorithm
   - Fp8QuantizationConfig
   - InferenceStep
-  - InstructModel
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
@@ -2715,12 +2691,10 @@ x-tagGroups:
   - PostTrainingJobStatusResponse
   - PostTrainingRLHFRequest
   - PostTrainingSFTRequest
-  - PretrainedModel
   - QLoraFinetuningConfig
   - RLHFAlgorithm
   - RestAPIExecutionConfig
   - RestAPIMethod
-  - RewardModel
   - RewardScoringRequest
   - RewardScoringResponse
   - SamplingParams
