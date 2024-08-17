@@ -28,16 +28,16 @@ from llama_models.llama3_1.api.datatypes import Message
 from llama_models.llama3_1.api.tokenizer import Tokenizer
 from llama_models.llama3_1.reference_impl.model import Transformer
 from llama_models.sku_list import resolve_model
+from termcolor import cprint
 
 from llama_toolchain.common.model_utils import model_local_dir
 from llama_toolchain.inference.api import QuantizationType
-from termcolor import cprint
 
 from .config import MetaReferenceImplConfig
 
 
 def model_checkpoint_dir(model) -> str:
-    checkpoint_dir = Path(model_local_dir(model))
+    checkpoint_dir = Path(model_local_dir(model.descriptor()))
     if not Path(checkpoint_dir / "consolidated.00.pth").exists():
         checkpoint_dir = checkpoint_dir / "original"
 

@@ -36,7 +36,7 @@ async def get_provider_impl(config: SafetyConfig, _deps: Dict[Api, ProviderSpec]
 def resolve_and_get_path(model_name: str) -> str:
     model = resolve_model(model_name)
     assert model is not None, f"Could not resolve model {model_name}"
-    model_dir = model_local_dir(model)
+    model_dir = model_local_dir(model.descriptor())
     return model_dir
 
 
