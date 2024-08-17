@@ -245,6 +245,12 @@ This will create a new conda environment (name can be passed optionally) and ins
 
 Once it runs successfully , you should see some outputs in the form
 
+Activate the conda environment for the distribution
+```
+conda init local_llama_8b
+conda activate local_llama_8b
+```
+
 ```
 $ llama distribution install --spec local --name local_llama_8b
 ....
