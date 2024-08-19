@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_models.llama3_1.api.datatypes import Message, Role, UserMessage
+from llama_models.llama3.api.datatypes import Message, Role, UserMessage
 from termcolor import cprint
 
 from llama_toolchain.safety.api.datatypes import (

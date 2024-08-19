@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_models.llama3_1.api.datatypes import Message
+from llama_models.llama3.api.datatypes import Message
 
 from llama_toolchain.safety.meta_reference.shields.base import (
     OnViolationAction,

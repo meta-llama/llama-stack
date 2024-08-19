@@ -9,7 +9,7 @@ import asyncio
 import fire
 import httpx
 
-from llama_models.llama3_1.api.datatypes import UserMessage
+from llama_models.llama3.api.datatypes import UserMessage
 from termcolor import cprint
 
 from .api import (

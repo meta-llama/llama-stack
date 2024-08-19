@@ -22,11 +22,11 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from llama_models.llama3_1.api.args import ModelArgs
-from llama_models.llama3_1.api.chat_format import ChatFormat, ModelInput
-from llama_models.llama3_1.api.datatypes import Message
-from llama_models.llama3_1.api.tokenizer import Tokenizer
-from llama_models.llama3_1.reference_impl.model import Transformer
+from llama_models.llama3.api.args import ModelArgs
+from llama_models.llama3.api.chat_format import ChatFormat, ModelInput
+from llama_models.llama3.api.datatypes import Message
+from llama_models.llama3.api.tokenizer import Tokenizer
+from llama_models.llama3.reference_impl.model import Transformer
 from llama_models.sku_list import resolve_model
 from termcolor import cprint
 

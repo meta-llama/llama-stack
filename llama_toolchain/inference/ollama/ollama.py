@@ -9,15 +9,17 @@ from typing import AsyncGenerator, Dict
 
 import httpx
 
-from llama_models.llama3_1.api.datatypes import (
+from llama_models.llama3.api.datatypes import (
     BuiltinTool,
     CompletionMessage,
     Message,
     StopReason,
     ToolCall,
 )
-from llama_models.llama3_1.api.tool_utils import ToolUtils
+from llama_models.llama3.api.tool_utils import ToolUtils
 from llama_models.sku_list import resolve_model
+from ollama import AsyncClient
+
 from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.inference.api import (
     ChatCompletionRequest,
@@ -30,7 +32,6 @@ from llama_toolchain.inference.api import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-from ollama import AsyncClient
 
 from .config import OllamaImplConfig
 
@@ -64,10 +65,10 @@ class OllamaInference(Inference):
     async def initialize(self) -> None:
         try:
             await self.client.ps()
-        except httpx.ConnectError:
+        except httpx.ConnectError as e:
             raise RuntimeError(
                 "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
-            )
+            ) from e
 
     async def shutdown(self) -> None:
         pass

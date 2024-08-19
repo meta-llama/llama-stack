@@ -7,7 +7,7 @@
 from enum import Enum
 from typing import Dict, Optional
 
-from llama_models.llama3_1.api.datatypes import URL
+from llama_models.llama3.api.datatypes import URL
 
 from llama_models.schema_utils import json_schema_type
 

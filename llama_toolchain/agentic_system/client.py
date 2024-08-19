@@ -13,7 +13,7 @@ import fire
 
 import httpx
 
-from llama_models.llama3_1.api.datatypes import (
+from llama_models.llama3.api.datatypes import (
     BuiltinTool,
     SamplingParams,
     ToolParamDefinition,

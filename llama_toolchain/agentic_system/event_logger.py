@@ -6,15 +6,15 @@
 
 from typing import Optional
 
-from llama_models.llama3_1.api.datatypes import ToolResponseMessage
-from llama_models.llama3_1.api.tool_utils import ToolUtils
+from llama_models.llama3.api.datatypes import ToolResponseMessage
+from llama_models.llama3.api.tool_utils import ToolUtils
+
+from termcolor import cprint
 
 from llama_toolchain.agentic_system.api import (
     AgenticSystemTurnResponseEventType,
     StepType,
 )
-
-from termcolor import cprint
 
 
 class LogEvent:

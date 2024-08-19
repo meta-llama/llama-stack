@@ -7,7 +7,7 @@
 import uuid
 from typing import Any, List, Optional
 
-from llama_models.llama3_1.api.datatypes import BuiltinTool, Message, SamplingParams
+from llama_models.llama3.api.datatypes import BuiltinTool, Message, SamplingParams
 
 from llama_toolchain.agentic_system.api import (
     AgenticSystemCreateRequest,
