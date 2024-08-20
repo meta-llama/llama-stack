@@ -74,6 +74,12 @@ For source=huggingface, files matching any of the patterns are not downloaded. D
 safetensors files to avoid downloading duplicate weights.
 """,
     )
+    parser.add_argument(
+        "--manifest-file",
+        type=str,
+        help="For source=meta, you can download models from a manifest file containing a file => URL mapping",
+        required=False,
+    )
     parser.set_defaults(func=partial(run_download_cmd, parser=parser))
 
 
