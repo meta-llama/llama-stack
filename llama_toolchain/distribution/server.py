@@ -27,7 +27,6 @@ from typing import (
 import fire
 import httpx
 import yaml
-from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -41,8 +40,6 @@ from .distribution import api_endpoints
 from .dynamic import instantiate_client, instantiate_provider
 
 from .registry import resolve_distribution_spec
-
-load_dotenv()
 
 
 def is_async_iterator_type(typ):
