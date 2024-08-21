@@ -27,7 +27,7 @@ class RewardScoringResponse(BaseModel):
 
 class RewardScoring(Protocol):
     @webmethod(route="/reward_scoring/score")
-    def post_score(
+    def reward_score(
         self,
         request: RewardScoringRequest,
     ) -> Union[RewardScoringResponse]: ...

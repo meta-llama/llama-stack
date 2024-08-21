@@ -13,7 +13,7 @@ from .datatypes import *  # noqa: F403
 
 class MemoryBanks(Protocol):
     @webmethod(route="/memory_banks/create")
-    def post_create_memory_bank(
+    def create_memory_bank(
         self,
         bank_id: str,
         bank_name: str,
@@ -33,14 +33,14 @@ class MemoryBanks(Protocol):
     ) -> str: ...
 
     @webmethod(route="/memory_bank/insert")
-    def post_insert_memory_documents(
+    def insert_memory_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
 
     @webmethod(route="/memory_bank/update")
-    def post_update_memory_documents(
+    def update_memory_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],

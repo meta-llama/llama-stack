@@ -34,7 +34,7 @@ class SyntheticDataGenerationResponse(BaseModel):
 
 class SyntheticDataGeneration(Protocol):
     @webmethod(route="/synthetic_data_generation/generate")
-    def post_generate(
+    def synthetic_data_generate(
         self,
         request: SyntheticDataGenerationRequest,
     ) -> Union[SyntheticDataGenerationResponse]: ...

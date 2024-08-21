@@ -95,13 +95,13 @@ class PostTrainingJobArtifactsResponse(BaseModel):
 
 class PostTraining(Protocol):
     @webmethod(route="/post_training/supervised_fine_tune")
-    def post_supervised_fine_tune(
+    def supervised_fine_tune(
         self,
         request: PostTrainingSFTRequest,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post_training/preference_optimize")
-    def post_preference_optimize(
+    def preference_optimize(
         self,
         request: PostTrainingRLHFRequest,
     ) -> PostTrainingJob: ...
