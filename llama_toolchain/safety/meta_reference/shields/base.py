@@ -7,7 +7,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Union
 
-from llama_models.llama3_1.api.datatypes import Attachment, Message
+from llama_models.llama3.api.datatypes import Attachment, Message
 from llama_toolchain.safety.api.datatypes import *  # noqa: F403
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"

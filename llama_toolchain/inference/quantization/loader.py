@@ -13,7 +13,7 @@ from typing import Optional
 import torch
 
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
-from llama_models.llama3_1.api.model import Transformer, TransformerBlock
+from llama_models.llama3.api.model import Transformer, TransformerBlock
 
 from llama_toolchain.inference.api.config import (
     CheckpointQuantizationFormat,

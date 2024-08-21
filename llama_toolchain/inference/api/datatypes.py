@@ -12,7 +12,7 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_models.llama3_1.api.datatypes import *  # noqa: F403
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 
 class LogProbConfig(BaseModel):

@@ -8,7 +8,7 @@ import asyncio
 
 from typing import AsyncIterator, Dict, Union
 
-from llama_models.llama3_1.api.datatypes import StopReason
+from llama_models.llama3.api.datatypes import StopReason
 from llama_models.sku_list import resolve_model
 
 from llama_toolchain.distribution.datatypes import Api, ProviderSpec

@@ -1,9 +1,13 @@
-import os
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
 
-from llama_models.datatypes import Model
+import os
 
 from .config_dirs import DEFAULT_CHECKPOINT_DIR
 
 
-def model_local_dir(model: Model) -> str:
-    return os.path.join(DEFAULT_CHECKPOINT_DIR, model.descriptor())
+def model_local_dir(descriptor: str) -> str:
+    return os.path.join(DEFAULT_CHECKPOINT_DIR, descriptor)

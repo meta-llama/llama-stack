@@ -7,7 +7,7 @@
 import uuid
 from typing import Any, List, Optional
 
-from llama_models.llama3_1.api.datatypes import BuiltinTool, Message, SamplingParams
+from llama_models.llama3.api.datatypes import BuiltinTool, Message, SamplingParams
 
 from llama_toolchain.agentic_system.api import (
     AgenticSystemCreateRequest,
@@ -15,6 +15,7 @@ from llama_toolchain.agentic_system.api import (
     AgenticSystemSessionCreateRequest,
     AgenticSystemToolDefinition,
 )
+from llama_toolchain.agentic_system.api.datatypes import ToolPromptFormat
 from llama_toolchain.agentic_system.client import AgenticSystemClient
 
 from llama_toolchain.agentic_system.tools.custom.execute import (
@@ -64,6 +65,7 @@ async def get_agent_system_instance(
     custom_tools: Optional[List[Any]] = None,
     disable_safety: bool = False,
     model: str = "Meta-Llama3.1-8B-Instruct",
+    tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
 ) -> AgenticSystemClientWrapper:
     custom_tools = custom_tools or []
 
@@ -113,6 +115,7 @@ async def get_agent_system_instance(
                 ]
             ),
             sampling_params=SamplingParams(),
+            tool_prompt_format=tool_prompt_format,
         ),
     )
     create_response = await api.create_agentic_system(create_request)

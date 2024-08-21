@@ -7,7 +7,7 @@
 from .datatypes import *  # noqa: F403
 from typing import List, Protocol
 
-from llama_models.llama3_1.api.datatypes import Message
+from llama_models.llama3.api.datatypes import Message
 
 # this dependency is annoying and we need a forked up version anyway
 from llama_models.schema_utils import webmethod

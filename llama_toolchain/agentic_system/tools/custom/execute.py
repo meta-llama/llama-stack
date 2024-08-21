@@ -6,7 +6,7 @@
 
 from typing import Any, AsyncGenerator, List
 
-from llama_models.llama3_1.api.datatypes import StopReason, ToolResponseMessage
+from llama_models.llama3.api.datatypes import StopReason, ToolResponseMessage
 
 from llama_toolchain.agentic_system.api import (
     AgenticSystem,

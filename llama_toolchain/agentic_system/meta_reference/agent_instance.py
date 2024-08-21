@@ -10,6 +10,8 @@ import uuid
 from datetime import datetime
 from typing import AsyncGenerator, List, Optional
 
+from termcolor import cprint
+
 from llama_toolchain.agentic_system.api.datatypes import (
     AgenticSystemInstanceConfig,
     AgenticSystemTurnResponseEvent,
@@ -24,6 +26,7 @@ from llama_toolchain.agentic_system.api.datatypes import (
     ShieldCallStep,
     StepType,
     ToolExecutionStep,
+    ToolPromptFormat,
     Turn,
 )
 
@@ -51,7 +54,6 @@ from llama_toolchain.safety.api.datatypes import (
     ShieldDefinition,
     ShieldResponse,
 )
-from termcolor import cprint
 from llama_toolchain.agentic_system.api.endpoints import *  # noqa
 
 from .safety import SafetyException, ShieldRunnerMixin
@@ -74,6 +76,7 @@ class AgentInstance(ShieldRunnerMixin):
         output_shields: List[ShieldDefinition],
         max_infer_iters: int = 10,
         prefix_messages: Optional[List[Message]] = None,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
     ):
         self.system_id = system_id
         self.instance_config = instance_config
@@ -86,7 +89,9 @@ class AgentInstance(ShieldRunnerMixin):
             self.prefix_messages = prefix_messages
         else:
             self.prefix_messages = get_agentic_prefix_messages(
-                builtin_tools, custom_tool_definitions
+                builtin_tools,
+                custom_tool_definitions,
+                tool_prompt_format,
             )
 
         for m in self.prefix_messages:
