@@ -51,6 +51,8 @@ components:
           - $ref: '#/components/schemas/Fp8QuantizationConfig'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
       required:
       - instructions
       type: object
@@ -1607,6 +1609,20 @@ components:
       required:
       - param_type
       type: object
+    ToolPromptFormat:
+      description: "`json` --\n    Refers to the json format for calling tools.\n\
+        \    The json format takes the form like\n    {\n        \"type\": \"function\"\
+        ,\n        \"function\" : {\n            \"name\": \"function_name\",\n  \
+        \          \"description\": \"function_description\",\n            \"parameters\"\
+        : {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of\
+        \ how you could define\n    your own user defined format for making tool calls.\n\
+        \    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\
+        \nThe detailed prompts for each of these formats are defined in `system_prompt.py`"
+      enum:
+      - json
+      - function_tag
+      title: This Enum refers to the prompt format for calling zero shot tools
+      type: string
     ToolResponse:
       additionalProperties: false
       properties:
@@ -1851,7 +1867,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-08-15 17:30:18.232105"
+    \ draft and subject to change.\n                Generated at 2024-08-20 19:00:39.110138"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2854,15 +2870,15 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: MemoryBanks
-- name: Observability
-- name: Evaluations
-- name: Inference
-- name: AgenticSystem
-- name: Datasets
-- name: PostTraining
-- name: SyntheticDataGeneration
 - name: RewardScoring
+- name: AgenticSystem
+- name: SyntheticDataGeneration
+- name: Inference
+- name: Datasets
+- name: Observability
+- name: PostTraining
+- name: MemoryBanks
+- name: Evaluations
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
@@ -2967,6 +2983,17 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
     />
   name: ShieldDefinition
+- description: "This Enum refers to the prompt format for calling zero shot tools\n\
+    \n`json` --\n    Refers to the json format for calling tools.\n    The json format\
+    \ takes the form like\n    {\n        \"type\": \"function\",\n        \"function\"\
+    \ : {\n            \"name\": \"function_name\",\n            \"description\":\
+    \ \"function_description\",\n            \"parameters\": {...}\n        }\n  \
+    \  }\n\n`function_tag` --\n    This is an example of how you could define\n  \
+    \  your own user defined format for making tool calls.\n    The function_tag format\
+    \ looks like this,\n    <function=function_name>(parameters)</function>\n\nThe\
+    \ detailed prompts for each of these formats are defined in `system_prompt.py`\n\
+    \n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
+  name: ToolPromptFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
     />
   name: AgenticSystemCreateResponse
@@ -3298,6 +3325,7 @@ x-tagGroups:
   - ToolDefinition
   - ToolExecutionStep
   - ToolParamDefinition
+  - ToolPromptFormat
   - ToolResponse
   - ToolResponseMessage
   - TrainEvalDataset

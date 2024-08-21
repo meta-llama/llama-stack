@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
-from llama_models.llama3_1.api.datatypes import *  # noqa: F403
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from .datatypes import *  # noqa: F403
 
 

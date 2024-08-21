@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_models.llama3_1.api.datatypes import *  # noqa: F403
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_toolchain.agentic_system.api import *  # noqa: F403
 from llama_toolchain.dataset.api import *  # noqa: F403
 from llama_toolchain.evaluations.api import *  # noqa: F403
