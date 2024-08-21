@@ -47,6 +47,7 @@ async def get_provider_impl(config: AgenticSystemConfig, deps: Dict[Api, Provide
     ), f"Unexpected config type: {type(config)}"
 
     impl = MetaReferenceAgenticSystemImpl(
+        config,
         deps[Api.inference],
         deps[Api.safety],
     )
@@ -58,7 +59,10 @@ AGENT_INSTANCES_BY_ID = {}
 
 
 class MetaReferenceAgenticSystemImpl(AgenticSystem):
-    def __init__(self, inference_api: Inference, safety_api: Safety):
+    def __init__(
+        self, config: AgenticSystemConfig, inference_api: Inference, safety_api: Safety
+    ):
+        self.config = config
         self.inference_api = inference_api
         self.safety_api = safety_api
 
@@ -77,9 +81,15 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
         for dfn in cfg.available_tools:
             if isinstance(dfn.tool_name, BuiltinTool):
                 if dfn.tool_name == BuiltinTool.wolfram_alpha:
-                    tool = WolframAlphaTool(os.environ.get("WOLFRAM_ALPHA_API_KEY"))
+                    key = self.config.wolfram_api_key
+                    if not key:
+                        raise ValueError("Wolfram API key not defined in config")
+                    tool = WolframAlphaTool(key)
                 elif dfn.tool_name == BuiltinTool.brave_search:
-                    tool = BraveSearchTool(os.environ.get("BRAVE_SEARCH_API_KEY"))
+                    key = self.config.brave_search_api_key
+                    if not key:
+                        raise ValueError("Brave API key not defined in config")
+                    tool = BraveSearchTool(key)
                 elif dfn.tool_name == BuiltinTool.code_interpreter:
                     tool = CodeInterpreterTool()
                 elif dfn.tool_name == BuiltinTool.photogen:

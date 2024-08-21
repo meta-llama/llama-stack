@@ -26,7 +26,6 @@ from .datatypes import (
 # `llama-toolchain` is automatically installed by the installation script.
 SERVER_DEPENDENCIES = [
     "fastapi",
-    "python-dotenv",
     "uvicorn",
 ]
 
