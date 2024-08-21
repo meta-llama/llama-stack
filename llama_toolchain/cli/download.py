@@ -178,6 +178,9 @@ class ModelEntry(BaseModel):
     model_id: str
     files: Dict[str, str]
 
+    class Config:
+        protected_namespaces = ()
+
 
 class Manifest(BaseModel):
     models: List[ModelEntry]
