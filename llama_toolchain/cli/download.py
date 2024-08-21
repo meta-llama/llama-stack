@@ -170,7 +170,7 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
             meta_url = input(
                 "Please provide the signed URL you received via email (e.g., https://llama3-1.llamameta.net/*?Policy...): "
             )
-            assert meta_url is not None and "llama3-1.llamameta.net" in meta_url
+            assert meta_url is not None and "llamameta.net" in meta_url
         _meta_download(model, meta_url)
 
 
