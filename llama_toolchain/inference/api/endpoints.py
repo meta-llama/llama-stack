@@ -19,7 +19,6 @@ class CompletionRequest(BaseModel):
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
-    quantization_config: Optional[QuantizationConfig] = None
 
 
 @json_schema_type
@@ -43,7 +42,6 @@ class BatchCompletionRequest(BaseModel):
     content_batch: List[InterleavedTextAttachment]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     logprobs: Optional[LogProbConfig] = None
-    quantization_config: Optional[QuantizationConfig] = None
 
 
 @json_schema_type
@@ -62,7 +60,6 @@ class ChatCompletionRequest(BaseModel):
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
-    quantization_config: Optional[QuantizationConfig] = None
 
 
 @json_schema_type
@@ -88,7 +85,6 @@ class BatchChatCompletionRequest(BaseModel):
     available_tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
 
     logprobs: Optional[LogProbConfig] = None
-    quantization_config: Optional[QuantizationConfig] = None
 
 
 @json_schema_type

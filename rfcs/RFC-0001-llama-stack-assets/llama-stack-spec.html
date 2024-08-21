@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-20 19:00:39.110138"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-21 14:16:38.313950"
     },
     "servers": [
         {
@@ -1760,35 +1760,12 @@
                             }
                         },
                         "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "model",
                     "messages_batch"
-                ]
-            },
-            "Bf16QuantizationConfig": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "bf16"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
                 ]
             },
             "BuiltinTool": {
@@ -1846,19 +1823,6 @@
                     "content",
                     "stop_reason",
                     "tool_calls"
-                ]
-            },
-            "Fp8QuantizationConfig": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "fp8"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
                 ]
             },
             "SamplingParams": {
@@ -2229,16 +2193,6 @@
                             }
                         },
                         "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -2307,16 +2261,6 @@
                             }
                         },
                         "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -2469,16 +2413,6 @@
                             }
                         },
                         "additionalProperties": false
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -2551,16 +2485,6 @@
                         "items": {
                             "$ref": "#/components/schemas/ShieldDefinition"
                         }
-                    },
-                    "quantization_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/Bf16QuantizationConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Fp8QuantizationConfig"
-                            }
-                        ]
                     },
                     "debug_prefix_messages": {
                         "type": "array",
@@ -4783,28 +4707,28 @@
             "name": "RewardScoring"
         },
         {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Inference"
-        },
-        {
             "name": "Datasets"
         },
         {
             "name": "Observability"
         },
         {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
             "name": "PostTraining"
         },
         {
             "name": "MemoryBanks"
-        },
-        {
-            "name": "Evaluations"
         },
         {
             "name": "Attachment",
@@ -4815,20 +4739,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchChatCompletionRequest\" />"
         },
         {
-            "name": "Bf16QuantizationConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Bf16QuantizationConfig\" />"
-        },
-        {
             "name": "BuiltinTool",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinTool\" />"
         },
         {
             "name": "CompletionMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionMessage\" />"
-        },
-        {
-            "name": "Fp8QuantizationConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Fp8QuantizationConfig\" />"
         },
         {
             "name": "SamplingParams",
@@ -5245,7 +5161,6 @@
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
-                "Bf16QuantizationConfig",
                 "BuiltinShield",
                 "BuiltinTool",
                 "ChatCompletionRequest",
@@ -5272,7 +5187,6 @@
                 "Experiment",
                 "ExperimentStatus",
                 "FinetuningAlgorithm",
-                "Fp8QuantizationConfig",
                 "InferenceStep",
                 "Log",
                 "LogMessagesRequest",

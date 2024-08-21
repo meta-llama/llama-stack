@@ -151,8 +151,6 @@ class AgenticSystemInstanceConfig(BaseModel):
     input_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
     output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
 
-    quantization_config: Optional[QuantizationConfig] = None
-
     # if you completely want to replace the messages prefixed by the system,
     # this is debug only
     debug_prefix_messages: Optional[List[Message]] = Field(default_factory=list)

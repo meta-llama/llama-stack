@@ -45,10 +45,6 @@ components:
           items:
             $ref: '#/components/schemas/ShieldDefinition'
           type: array
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         tool_prompt_format:
@@ -216,10 +212,6 @@ components:
           type: array
         model:
           type: string
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
       required:
@@ -258,10 +250,6 @@ components:
           type: object
         model:
           type: string
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
       required:
@@ -277,15 +265,6 @@ components:
           type: array
       required:
       - completion_message_batch
-      type: object
-    Bf16QuantizationConfig:
-      additionalProperties: false
-      properties:
-        type:
-          const: bf16
-          type: string
-      required:
-      - type
       type: object
     BuiltinShield:
       enum:
@@ -325,10 +304,6 @@ components:
           type: array
         model:
           type: string
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -421,10 +396,6 @@ components:
           type: object
         model:
           type: string
-        quantization_config:
-          oneOf:
-          - $ref: '#/components/schemas/Bf16QuantizationConfig'
-          - $ref: '#/components/schemas/Fp8QuantizationConfig'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -717,15 +688,6 @@ components:
       - qlora
       - dora
       type: string
-    Fp8QuantizationConfig:
-      additionalProperties: false
-      properties:
-        type:
-          const: fp8
-          type: string
-      required:
-      - type
-      type: object
     InferenceStep:
       additionalProperties: false
       properties:
@@ -1867,7 +1829,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-08-20 19:00:39.110138"
+    \ draft and subject to change.\n                Generated at 2024-08-21 14:16:38.313950"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2871,30 +2833,24 @@ servers:
 - url: http://any-hosted-llama-stack.com
 tags:
 - name: RewardScoring
-- name: AgenticSystem
-- name: SyntheticDataGeneration
-- name: Inference
 - name: Datasets
 - name: Observability
+- name: AgenticSystem
+- name: Inference
+- name: Evaluations
+- name: SyntheticDataGeneration
 - name: PostTraining
 - name: MemoryBanks
-- name: Evaluations
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/Bf16QuantizationConfig"
-    />
-  name: Bf16QuantizationConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
     />
   name: CompletionMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/Fp8QuantizationConfig"
-    />
-  name: Fp8QuantizationConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams" />
   name: SamplingParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingStrategy"
@@ -3252,7 +3208,6 @@ x-tagGroups:
   - BatchChatCompletionResponse
   - BatchCompletionRequest
   - BatchCompletionResponse
-  - Bf16QuantizationConfig
   - BuiltinShield
   - BuiltinTool
   - ChatCompletionRequest
@@ -3279,7 +3234,6 @@ x-tagGroups:
   - Experiment
   - ExperimentStatus
   - FinetuningAlgorithm
-  - Fp8QuantizationConfig
   - InferenceStep
   - Log
   - LogMessagesRequest
