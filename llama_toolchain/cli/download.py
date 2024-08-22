@@ -271,9 +271,10 @@ class ResumableDownloader:
 
             additional_size = self.total_size - self.downloaded_size
             if not self.has_disk_space(additional_size):
+                M = 1024 * 1024  # noqa
                 print(
                     f"Not enough disk space to download `{self.output_file}`. "
-                    f"Required: {(additional_size / M):.2f} MB"
+                    f"Required: {(additional_size // M):.2f} MB"
                 )
                 raise ValueError(
                     f"Not enough disk space to download `{self.output_file}`"
