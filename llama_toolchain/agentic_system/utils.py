@@ -18,7 +18,7 @@ from llama_toolchain.agentic_system.api import (
 from llama_toolchain.agentic_system.api.datatypes import ToolPromptFormat
 from llama_toolchain.agentic_system.client import AgenticSystemClient
 
-from llama_toolchain.agentic_system.tools.custom.execute import (
+from llama_toolchain.agentic_system.meta_reference.execute_with_custom_tools import (
     execute_with_custom_tools,
 )
 from llama_toolchain.safety.api.datatypes import BuiltinShield, ShieldDefinition

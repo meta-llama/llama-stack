@@ -13,9 +13,7 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_toolchain.agentic_system.api import *  # noqa: F403
 
 # TODO: this is symptomatic of us needing to pull more tooling related utilities
-from llama_toolchain.agentic_system.meta_reference.tools.builtin import (
-    interpret_content_as_attachment,
-)
+from llama_toolchain.tools.builtin import interpret_content_as_attachment
 
 
 class CustomTool:
