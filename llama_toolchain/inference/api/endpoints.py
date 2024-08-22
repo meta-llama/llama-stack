@@ -7,6 +7,8 @@
 from .datatypes import *  # noqa: F403
 from typing import Optional, Protocol
 
+from llama_models.llama3.api.datatypes import ToolDefinition
+
 # this dependency is annoying and we need a forked up version anyway
 from llama_models.schema_utils import webmethod
 
@@ -56,7 +58,11 @@ class ChatCompletionRequest(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
     # zero-shot tool definitions as input to the model
-    available_tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
+    tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
+    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(
+        default=ToolPromptFormat.json
+    )
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -82,8 +88,11 @@ class BatchChatCompletionRequest(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
     # zero-shot tool definitions as input to the model
-    available_tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
-
+    tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
+    tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(
+        default=ToolPromptFormat.json
+    )
     logprobs: Optional[LogProbConfig] = None
 
 

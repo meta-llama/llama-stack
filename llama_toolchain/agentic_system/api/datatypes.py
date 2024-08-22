@@ -111,35 +111,6 @@ class Session(BaseModel):
 
 
 @json_schema_type
-class ToolPromptFormat(Enum):
-    """This Enum refers to the prompt format for calling zero shot tools
-
-    `json` --
-        Refers to the json format for calling tools.
-        The json format takes the form like
-        {
-            "type": "function",
-            "function" : {
-                "name": "function_name",
-                "description": "function_description",
-                "parameters": {...}
-            }
-        }
-
-    `function_tag` --
-        This is an example of how you could define
-        your own user defined format for making tool calls.
-        The function_tag format looks like this,
-        <function=function_name>(parameters)</function>
-
-    The detailed prompts for each of these formats are defined in `system_prompt.py`
-    """
-
-    json = "json"
-    function_tag = "function_tag"
-
-
-@json_schema_type
 class AgenticSystemInstanceConfig(BaseModel):
     instructions: str
     sampling_params: Optional[SamplingParams] = SamplingParams()
