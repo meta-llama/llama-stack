@@ -4,8 +4,8 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 
 ### Subcommands 
 1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace. 
-2. `model`: Shows additional properties of the llama models.
-3. `distribution`: A distribution is a set of REST API, this command allows you to manage (list, install, create, configure, start) distributions. You can read more about this here. 
+2. `model`: Lists available models and their properties.
+3. `distribution`: A distribution is a set of REST APIs, this command allows you to manage (list, install, create, configure, start) distributions. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/main/docs/cli_reference.md#step-3-installing-and-configuring-distributions). 
 
 ### Sample Usage
 
@@ -70,8 +70,7 @@ You should see a table like this:
 
 To download models, you can use the llama download command.
 
-Here is an example download command to get the 8B/70B Instruct model. You will need META_URL which can be obtained from --
-https://llama.meta.com/docs/getting_the_models/meta/
+Here is an example download command to get the 8B/70B Instruct model. You will need META_URL which can be obtained from [here](https://llama.meta.com/docs/getting_the_models/meta/)
 ```
 llama download --source meta --model-id Meta-Llama3.1-8B-Instruct --meta-url <META_URL>
 ```
@@ -81,7 +80,7 @@ llama download --source meta --model-id Meta-Llama3.1-70B-Instruct --meta-url <M
 
 You can download from HuggingFace using these commands
 Set your environment variable HF_TOKEN or pass in --hf-token to the command to validate your access.
-You can find your token at https://huggingface.co/settings/tokens
+You can find your token at [here](https://huggingface.co/settings/tokens)
 ```
 llama download --source huggingface --model-id  Meta-Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
 ```
@@ -114,7 +113,7 @@ The `llama model` command helps you explore the model’s interface.
 llama model --help
 ```
 <pre style="font-family: monospace;">
-usage: llama model [-h] {download,list,download,list,template,describe,describe} ...
+usage: llama model [-h] {download,list,template,describe} ...
 
 Work with llama models
 
