@@ -2,6 +2,13 @@
 
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-toolchain` package.
 
+### Subcommands 
+1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace. 
+2. `model`: Shows additional properties of the llama models.
+3. `distribution`: A distribution is a set of REST API, this command allows you to manage (list, install, create, configure, start) distributions. You can read more about this here. 
+
+### Sample Usage
+
 ```
 llama --help
 ```
@@ -93,11 +100,21 @@ llama download --source huggingface --model-id Prompt-Guard-86M --ignore-pattern
 ## Step 2: Understand the models
 The `llama model` command helps you explore the model’s interface.
 
+### 2.1 Subcommands
+1. `download`: Download the model from different sources. (meta, huggingface)
+2. `list`: Lists all the models available for download with hardware requirements to deploy the models. 
+3. `template`: <TODO: What is a template?>
+4. `describe`: Describes all the properties of the model. 
+
+### 2.2 Sample Usage
+
+`llama model <subcommand> <options>`
+
 ```
 llama model --help
 ```
 <pre style="font-family: monospace;">
-usage: llama model [-h] {download,list,template,describe} ...
+usage: llama model [-h] {download,list,download,list,template,describe,describe} ...
 
 Work with llama models
 
@@ -107,11 +124,12 @@ options:
 model_subcommands:
   {download,list,template,describe}
 </pre>
-You can use the describe command to know more about a model:
 
+You can use the describe command to know more about a model:
 ```
 llama model describe -m Meta-Llama3.1-8B-Instruct
 ```
+### 2.3 Describe
 
 <pre style="font-family: monospace;">
 +-----------------------------+---------------------------------------+
@@ -147,7 +165,7 @@ llama model describe -m Meta-Llama3.1-8B-Instruct
 |                             | }                                     |
 +-----------------------------+---------------------------------------+
 </pre>
-
+### 2.4 Template
 You can even run `llama model template` see all of the templates and their tokens:
 
 ```
