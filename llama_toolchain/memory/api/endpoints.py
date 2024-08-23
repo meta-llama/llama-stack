@@ -23,17 +23,6 @@ class MemoryBankDocument(BaseModel):
     metadata: Dict[str, Any]
 
 
-class Chunk(BaseModel):
-    content: InterleavedTextMedia
-    token_count: int
-
-
-@json_schema_type
-class QueryDocumentsResponse(BaseModel):
-    chunks: List[Chunk]
-    scores: List[float]
-
-
 @json_schema_type
 class MemoryBankType(Enum):
     vector = "vector"
@@ -45,6 +34,7 @@ class MemoryBankType(Enum):
 class VectorMemoryBankConfig(BaseModel):
     type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
+    chunk_size_in_tokens: int
 
 
 class KeyValueMemoryBankConfig(BaseModel):
@@ -70,18 +60,39 @@ MemoryBankConfig = Annotated[
 ]
 
 
+class Chunk(BaseModel):
+    content: InterleavedTextMedia
+    token_count: int
+
+
+@json_schema_type
+class QueryDocumentsResponse(BaseModel):
+    chunks: List[Chunk]
+    scores: List[float]
+
+
+@json_schema_type
+class QueryAPI(Protocol):
+    @webmethod(route="/query_documents")
+    def query_documents(
+        self,
+        query: InterleavedTextMedia,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> QueryDocumentsResponse: ...
+
+
 @json_schema_type
 class MemoryBank(BaseModel):
     bank_id: str
     name: str
     config: MemoryBankConfig
-    # if there's a pre-existing store which obeys the MemoryBank REST interface
+    # if there's a pre-existing (reachable-from-distribution) store which supports QueryAPI
     url: Optional[URL] = None
 
 
 class Memory(Protocol):
     @webmethod(route="/memory_banks/create")
-    def create_memory_bank(
+    async def create_memory_bank(
         self,
         name: str,
         config: MemoryBankConfig,
@@ -89,33 +100,35 @@ class Memory(Protocol):
     ) -> MemoryBank: ...
 
     @webmethod(route="/memory_banks/list", method="GET")
-    def list_memory_banks(self) -> List[MemoryBank]: ...
+    async def list_memory_banks(self) -> List[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/get")
-    def get_memory_bank(self, bank_id: str) -> MemoryBank: ...
+    async def get_memory_bank(self, bank_id: str) -> MemoryBank: ...
 
     @webmethod(route="/memory_banks/drop", method="DELETE")
-    def drop_memory_bank(
+    async def drop_memory_bank(
         self,
         bank_id: str,
     ) -> str: ...
 
+    # this will just block now until documents are inserted, but it should
+    # probably return a Job instance which can be polled for completion
     @webmethod(route="/memory_bank/insert")
-    def insert_documents(
+    async def insert_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
 
     @webmethod(route="/memory_bank/update")
-    def update_documents(
+    async def update_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
 
     @webmethod(route="/memory_bank/query")
-    def query_documents(
+    async def query_documents(
         self,
         bank_id: str,
         query: InterleavedTextMedia,
@@ -123,14 +136,14 @@ class Memory(Protocol):
     ) -> QueryDocumentsResponse: ...
 
     @webmethod(route="/memory_bank/documents/get")
-    def get_documents(
+    async def get_documents(
         self,
         bank_id: str,
         document_ids: List[str],
     ) -> List[MemoryBankDocument]: ...
 
     @webmethod(route="/memory_bank/documents/delete")
-    def delete_documents(
+    async def delete_documents(
         self,
         bank_id: str,
         document_ids: List[str],

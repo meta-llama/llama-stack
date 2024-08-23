@@ -101,6 +101,11 @@ class BatchChatCompletionResponse(BaseModel):
     completion_message_batch: List[CompletionMessage]
 
 
+@json_schema_type
+class EmbeddingsResponse(BaseModel):
+    embeddings: List[List[float]]
+
+
 class Inference(Protocol):
     @webmethod(route="/inference/completion")
     async def completion(
@@ -113,6 +118,13 @@ class Inference(Protocol):
         self,
         request: ChatCompletionRequest,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
+
+    @webmethod(route="/inference/embeddings")
+    async def embeddings(
+        self,
+        model: str,
+        contents: List[InterleavedTextMedia],
+    ) -> EmbeddingsResponse: ...
 
     @webmethod(route="/inference/batch_completion")
     async def batch_completion(
