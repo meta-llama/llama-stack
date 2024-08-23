@@ -19,7 +19,7 @@ from llama_toolchain.inference.api import Message
 
 async def execute_with_custom_tools(
     system: AgenticSystem,
-    system_id: str,
+    agent_id: str,
     session_id: str,
     messages: List[Message],
     custom_tools: List[Any],
@@ -35,7 +35,7 @@ async def execute_with_custom_tools(
         n_iter += 1
 
         request = AgenticSystemTurnCreateRequest(
-            system_id=system_id,
+            agent_id=agent_id,
             session_id=session_id,
             messages=current_messages,
             stream=stream,

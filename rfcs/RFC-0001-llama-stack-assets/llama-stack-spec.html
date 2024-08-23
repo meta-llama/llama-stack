@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-21 14:16:38.313950"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-23 06:36:10.417114"
     },
     "servers": [
         {
@@ -29,49 +29,6 @@
         }
     ],
     "paths": {
-        "/agentic_system/memory_bank/attach": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "AgenticSystem"
-                ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "session_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/inference/batch_chat_completion": {
             "post": {
                 "responses": {
@@ -258,7 +215,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/AgenticSystemCreateRequest"
+                                "$ref": "#/components/schemas/AgentConfig"
                             }
                         }
                     },
@@ -267,7 +224,7 @@
             }
         },
         "/agentic_system/session/create": {
-            "post": {
+            "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -283,17 +240,24 @@
                 "tags": [
                     "AgenticSystem"
                 ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/AgenticSystemSessionCreateRequest"
-                            }
+                "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     },
-                    "required": true
-                }
+                    {
+                        "name": "session_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/agentic_system/turn/create": {
@@ -383,23 +347,22 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBank"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
-                    "MemoryBanks"
+                    "Memory"
                 ],
                 "parameters": [
                     {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "bank_name",
+                        "name": "name",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -411,10 +374,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
+                                "$ref": "#/components/schemas/CreateMemoryBankRequest"
                             }
                         }
                     },
@@ -526,6 +486,41 @@
                 ]
             }
         },
+        "/memory_bank/documents/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Memory"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_banks/drop": {
             "delete": {
                 "responses": {
@@ -541,7 +536,7 @@
                     }
                 },
                 "tags": [
-                    "MemoryBanks"
+                    "Memory"
                 ],
                 "parameters": [
                     {
@@ -553,91 +548,6 @@
                         }
                     }
                 ]
-            }
-        },
-        "/memory_bank/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/agentic_system/memory_bank/detach": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "AgenticSystem"
-                ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "session_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
             }
         },
         "/evaluate/question_answering/": {
@@ -927,6 +837,48 @@
                 ]
             }
         },
+        "/memory_bank/documents/get": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBankDocument"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Memory"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/evaluate/job/artifacts": {
             "get": {
                 "responses": {
@@ -1099,7 +1051,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/MemoryBank"
                                 }
@@ -1108,7 +1060,7 @@
                     }
                 },
                 "tags": [
-                    "MemoryBanks"
+                    "Memory"
                 ],
                 "parameters": [
                     {
@@ -1120,68 +1072,6 @@
                         }
                     }
                 ]
-            }
-        },
-        "/memory_banks/list": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBank"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": []
-            }
-        },
-        "/memory_bank/get": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                }
             }
         },
         "/runs/metrics": {
@@ -1328,7 +1218,7 @@
                     }
                 },
                 "tags": [
-                    "MemoryBanks"
+                    "Memory"
                 ],
                 "parameters": [
                     {
@@ -1404,6 +1294,26 @@
                 "parameters": []
             }
         },
+        "/memory_banks/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBank"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Memory"
+                ],
+                "parameters": []
+            }
+        },
         "/logging/log_messages": {
             "post": {
                 "responses": {
@@ -1473,6 +1383,45 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/PostTrainingRLHFRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/memory_bank/query": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QueryDocumentsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Memory"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QueryDocumentsRequest"
                             }
                         }
                     },
@@ -1570,6 +1519,41 @@
                 }
             }
         },
+        "/memory_bank/update": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Memory"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/MemoryBankDocument"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/experiments/update": {
             "post": {
                 "responses": {
@@ -1593,41 +1577,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/UpdateExperimentRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory_bank/update": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
                             }
                         }
                     },
@@ -1699,22 +1648,6 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
-            "Attachment": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "url",
-                    "mime_type"
-                ]
-            },
             "BatchChatCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -1746,11 +1679,17 @@
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
                     },
-                    "available_tools": {
+                    "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDefinition"
                         }
+                    },
+                    "tool_choice": {
+                        "$ref": "#/components/schemas/ToolChoice"
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat"
                     },
                     "logprobs": {
                         "type": "object",
@@ -1790,19 +1729,9 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
+                                    "type": "string"
                                 }
                             }
                         ]
@@ -1881,19 +1810,9 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
+                                    "type": "string"
                                 }
                             }
                         ]
@@ -1995,6 +1914,13 @@
                     "arguments"
                 ]
             },
+            "ToolChoice": {
+                "type": "string",
+                "enum": [
+                    "auto",
+                    "required"
+                ]
+            },
             "ToolDefinition": {
                 "type": "object",
                 "properties": {
@@ -2041,6 +1967,15 @@
                     "param_type"
                 ]
             },
+            "ToolPromptFormat": {
+                "type": "string",
+                "enum": [
+                    "json",
+                    "function_tag"
+                ],
+                "title": "This Enum refers to the prompt format for calling zero shot tools",
+                "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are defined in `system_prompt.py`"
+            },
             "ToolResponseMessage": {
                 "type": "object",
                 "properties": {
@@ -2067,19 +2002,9 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
+                                    "type": "string"
                                 }
                             }
                         ]
@@ -2092,11 +2017,6 @@
                     "tool_name",
                     "content"
                 ]
-            },
-            "URL": {
-                "type": "string",
-                "format": "uri",
-                "pattern": "^(https?://|file://|data:)"
             },
             "UserMessage": {
                 "type": "object",
@@ -2111,19 +2031,9 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
+                                    "type": "string"
                                 }
                             }
                         ]
@@ -2164,19 +2074,9 @@
                                     "type": "string"
                                 },
                                 {
-                                    "$ref": "#/components/schemas/Attachment"
-                                },
-                                {
                                     "type": "array",
                                     "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/Attachment"
-                                            }
-                                        ]
+                                        "type": "string"
                                     }
                                 }
                             ]
@@ -2244,11 +2144,17 @@
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
                     },
-                    "available_tools": {
+                    "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDefinition"
                         }
+                    },
+                    "tool_choice": {
+                        "$ref": "#/components/schemas/ToolChoice"
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat"
                     },
                     "stream": {
                         "type": "boolean"
@@ -2382,19 +2288,9 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
+                                    "type": "string"
                                 }
                             }
                         ]
@@ -2443,102 +2339,160 @@
                 ],
                 "title": "streamed completion response."
             },
-            "AgenticSystemCreateRequest": {
+            "AgentConfig": {
                 "type": "object",
                 "properties": {
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/BraveSearchToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/WolframAlphaToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/PhotogenToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CodeInterpreterToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/FunctionCallToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/MemoryToolDefinition"
+                                }
+                            ]
+                        }
+                    },
+                    "tool_choice": {
+                        "$ref": "#/components/schemas/ToolChoice"
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat"
+                    },
                     "model": {
                         "type": "string"
                     },
-                    "instance_config": {
-                        "$ref": "#/components/schemas/AgenticSystemInstanceConfig"
+                    "instructions": {
+                        "type": "string"
+                    },
+                    "memory_bank_configs": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "vector"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyvalue"
+                                        },
+                                        "keys": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "keys"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyword"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "graph"
+                                        },
+                                        "entities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "entities"
+                                    ]
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "model",
-                    "instance_config"
-                ]
-            },
-            "AgenticSystemInstanceConfig": {
-                "type": "object",
-                "properties": {
-                    "instructions": {
-                        "type": "string"
-                    },
-                    "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
-                    },
-                    "available_tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AgenticSystemToolDefinition"
-                        }
-                    },
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "debug_prefix_messages": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
                     "instructions"
                 ]
             },
-            "AgenticSystemToolDefinition": {
+            "BraveSearchToolDefinition": {
                 "type": "object",
                 "properties": {
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    },
-                    "execution_config": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    },
                     "input_shields": {
                         "type": "array",
                         "items": {
@@ -2550,11 +2504,18 @@
                         "items": {
                             "$ref": "#/components/schemas/ShieldDefinition"
                         }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "brave_search"
+                    },
+                    "remote_execution": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "tool_name"
+                    "type"
                 ]
             },
             "BuiltinShield": {
@@ -2567,12 +2528,223 @@
                     "jailbreak_shield"
                 ]
             },
+            "CodeInterpreterToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "code_interpreter"
+                    },
+                    "enable_inline_code_execution": {
+                        "type": "boolean"
+                    },
+                    "remote_execution": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "enable_inline_code_execution"
+                ]
+            },
+            "FunctionCallToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "function_call"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ToolParamDefinition"
+                        }
+                    },
+                    "remote_execution": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "description",
+                    "parameters"
+                ]
+            },
+            "MemoryBank": {
+                "type": "object",
+                "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "config": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "vector"
+                                    },
+                                    "embedding_model": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "embedding_model"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "keyvalue"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "keyword"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "graph"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
+                    },
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_id",
+                    "name",
+                    "config"
+                ]
+            },
+            "MemoryToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "memory"
+                    },
+                    "memory_banks": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MemoryBank"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "memory_banks"
+                ]
+            },
             "OnViolationAction": {
                 "type": "integer",
                 "enum": [
                     0,
                     1,
                     2
+                ]
+            },
+            "PhotogenToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "photogen"
+                    },
+                    "remote_execution": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "RestAPIExecutionConfig": {
@@ -2653,41 +2825,49 @@
                     "on_violation_action"
                 ]
             },
-            "ToolPromptFormat": {
+            "URL": {
                 "type": "string",
-                "enum": [
-                    "json",
-                    "function_tag"
-                ],
-                "title": "This Enum refers to the prompt format for calling zero shot tools",
-                "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are defined in `system_prompt.py`"
+                "format": "uri",
+                "pattern": "^(https?://|file://|data:)"
+            },
+            "WolframAlphaToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "wolfram_alpha"
+                    },
+                    "remote_execution": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
             },
             "AgenticSystemCreateResponse": {
                 "type": "object",
                 "properties": {
-                    "system_id": {
+                    "agent_id": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "system_id"
-                ]
-            },
-            "AgenticSystemSessionCreateRequest": {
-                "type": "object",
-                "properties": {
-                    "system_id": {
-                        "type": "string"
-                    },
-                    "session_name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "system_id",
-                    "session_name"
+                    "agent_id"
                 ]
             },
             "AgenticSystemSessionCreateResponse": {
@@ -2705,7 +2885,56 @@
             "AgenticSystemTurnCreateRequest": {
                 "type": "object",
                 "properties": {
-                    "system_id": {
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/BraveSearchToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/WolframAlphaToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/PhotogenToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CodeInterpreterToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/FunctionCallToolDefinition"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/MemoryToolDefinition"
+                                }
+                            ]
+                        }
+                    },
+                    "tool_choice": {
+                        "$ref": "#/components/schemas/ToolChoice"
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat"
+                    },
+                    "instructions": {
+                        "type": "string"
+                    },
+                    "agent_id": {
                         "type": "string"
                     },
                     "session_id": {
@@ -2724,18 +2953,37 @@
                             ]
                         }
                     },
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Attachment"
+                        }
+                    },
                     "stream": {
                         "type": "boolean"
-                    },
-                    "override_config": {
-                        "$ref": "#/components/schemas/AgenticSystemInstanceConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "system_id",
+                    "agent_id",
                     "session_id",
                     "messages"
+                ]
+            },
+            "Attachment": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "url",
+                    "mime_type"
                 ]
             },
             "AgenticSystemTurnResponseStreamChunk": {
@@ -2915,51 +3163,76 @@
                     "failed"
                 ]
             },
-            "MemoryBankDocument": {
+            "CreateMemoryBankRequest": {
                 "type": "object",
                 "properties": {
-                    "document_id": {
-                        "type": "string"
+                    "config": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "vector"
+                                    },
+                                    "embedding_model": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "embedding_model"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "keyvalue"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "keyword"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "graph"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
                     },
-                    "content": {
-                        "type": "string",
-                        "contentEncoding": "base64"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "mime_type": {
-                        "type": "string"
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "document_id",
-                    "content",
-                    "metadata",
-                    "mime_type"
+                    "config"
                 ]
             },
             "CreateRunRequest": {
@@ -3211,6 +3484,65 @@
                     "model_response"
                 ]
             },
+            "MemoryBankDocument": {
+                "type": "object",
+                "properties": {
+                    "document_id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "document_id",
+                    "content",
+                    "mime_type",
+                    "metadata"
+                ]
+            },
             "MemoryRetrievalStep": {
                 "type": "object",
                 "properties": {
@@ -3417,19 +3749,9 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/Attachment"
-                            },
-                            {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Attachment"
-                                        }
-                                    ]
+                                    "type": "string"
                                 }
                             }
                         ]
@@ -3486,6 +3808,12 @@
                     "output_message": {
                         "$ref": "#/components/schemas/CompletionMessage"
                     },
+                    "output_attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Attachment"
+                        }
+                    },
                     "started_at": {
                         "type": "string",
                         "format": "date-time"
@@ -3502,6 +3830,7 @@
                     "input_messages",
                     "steps",
                     "output_message",
+                    "output_attachments",
                     "started_at"
                 ],
                 "title": "A single turn in an interaction with an Agentic System."
@@ -3718,22 +4047,6 @@
                     "level",
                     "timestamp",
                     "additional_info"
-                ]
-            },
-            "MemoryBank": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_id": {
-                        "type": "string"
-                    },
-                    "memory_bank_name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_id",
-                    "memory_bank_name"
                 ]
             },
             "Metric": {
@@ -4119,6 +4432,98 @@
                     "enable_activation_checkpointing",
                     "memory_efficient_fsdp_wrap",
                     "fsdp_cpu_offload"
+                ]
+            },
+            "QueryDocumentsRequest": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query"
+                ]
+            },
+            "QueryDocumentsResponse": {
+                "type": "object",
+                "properties": {
+                    "chunks": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "token_count": {
+                                    "type": "integer"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "content",
+                                "token_count"
+                            ]
+                        }
+                    },
+                    "scores": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "chunks",
+                    "scores"
                 ]
             },
             "DialogGenerations": {
@@ -4704,35 +5109,31 @@
     ],
     "tags": [
         {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
             "name": "Observability"
         },
         {
             "name": "AgenticSystem"
         },
         {
-            "name": "Inference"
+            "name": "PostTraining"
+        },
+        {
+            "name": "Memory"
         },
         {
             "name": "Evaluations"
         },
         {
+            "name": "Datasets"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Inference"
+        },
+        {
             "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Attachment",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -4767,6 +5168,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCall\" />"
         },
         {
+            "name": "ToolChoice",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolChoice\" />"
+        },
+        {
             "name": "ToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolDefinition\" />"
         },
@@ -4775,12 +5180,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolParamDefinition\" />"
         },
         {
-            "name": "ToolResponseMessage",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponseMessage\" />"
+            "name": "ToolPromptFormat",
+            "description": "This Enum refers to the prompt format for calling zero shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are defined in `system_prompt.py`\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
         },
         {
-            "name": "URL",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
+            "name": "ToolResponseMessage",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponseMessage\" />"
         },
         {
             "name": "UserMessage",
@@ -4835,24 +5240,40 @@
             "description": "streamed completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponseStreamChunk\" />"
         },
         {
-            "name": "AgenticSystemCreateRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateRequest\" />"
+            "name": "AgentConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentConfig\" />"
         },
         {
-            "name": "AgenticSystemInstanceConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemInstanceConfig\" />"
-        },
-        {
-            "name": "AgenticSystemToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemToolDefinition\" />"
+            "name": "BraveSearchToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BraveSearchToolDefinition\" />"
         },
         {
             "name": "BuiltinShield",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinShield\" />"
         },
         {
+            "name": "CodeInterpreterToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CodeInterpreterToolDefinition\" />"
+        },
+        {
+            "name": "FunctionCallToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
+        },
+        {
+            "name": "MemoryBank",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
+        },
+        {
+            "name": "MemoryToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryToolDefinition\" />"
+        },
+        {
             "name": "OnViolationAction",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OnViolationAction\" />"
+        },
+        {
+            "name": "PhotogenToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PhotogenToolDefinition\" />"
         },
         {
             "name": "RestAPIExecutionConfig",
@@ -4867,16 +5288,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefinition\" />"
         },
         {
-            "name": "ToolPromptFormat",
-            "description": "This Enum refers to the prompt format for calling zero shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are defined in `system_prompt.py`\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
+            "name": "URL",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
+        },
+        {
+            "name": "WolframAlphaToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/WolframAlphaToolDefinition\" />"
         },
         {
             "name": "AgenticSystemCreateResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateResponse\" />"
-        },
-        {
-            "name": "AgenticSystemSessionCreateRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemSessionCreateRequest\" />"
         },
         {
             "name": "AgenticSystemSessionCreateResponse",
@@ -4885,6 +5306,10 @@
         {
             "name": "AgenticSystemTurnCreateRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnCreateRequest\" />"
+        },
+        {
+            "name": "Attachment",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
             "name": "AgenticSystemTurnResponseStreamChunk",
@@ -4915,8 +5340,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ExperimentStatus\" />"
         },
         {
-            "name": "MemoryBankDocument",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
+            "name": "CreateMemoryBankRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateMemoryBankRequest\" />"
         },
         {
             "name": "CreateRunRequest",
@@ -4949,6 +5374,10 @@
         {
             "name": "InferenceStep",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
+        },
+        {
+            "name": "MemoryBankDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "MemoryRetrievalStep",
@@ -5011,10 +5440,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Log\" />"
         },
         {
-            "name": "MemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
-        },
-        {
             "name": "Metric",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Metric\" />"
         },
@@ -5065,6 +5490,14 @@
         {
             "name": "TrainingConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
+        },
+        {
+            "name": "QueryDocumentsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsRequest\" />"
+        },
+        {
+            "name": "QueryDocumentsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
         },
         {
             "name": "DialogGenerations",
@@ -5135,7 +5568,7 @@
                 "Datasets",
                 "Evaluations",
                 "Inference",
-                "MemoryBanks",
+                "Memory",
                 "Observability",
                 "PostTraining",
                 "RewardScoring",
@@ -5145,13 +5578,10 @@
         {
             "name": "Types",
             "tags": [
-                "AgenticSystemCreateRequest",
+                "AgentConfig",
                 "AgenticSystemCreateResponse",
-                "AgenticSystemInstanceConfig",
-                "AgenticSystemSessionCreateRequest",
                 "AgenticSystemSessionCreateResponse",
                 "AgenticSystemStepResponse",
-                "AgenticSystemToolDefinition",
                 "AgenticSystemTurnCreateRequest",
                 "AgenticSystemTurnResponseStreamChunk",
                 "Artifact",
@@ -5161,6 +5591,7 @@
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
+                "BraveSearchToolDefinition",
                 "BuiltinShield",
                 "BuiltinTool",
                 "ChatCompletionRequest",
@@ -5168,11 +5599,13 @@
                 "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
                 "Checkpoint",
+                "CodeInterpreterToolDefinition",
                 "CompletionMessage",
                 "CompletionRequest",
                 "CompletionResponseStreamChunk",
                 "CreateDatasetRequest",
                 "CreateExperimentRequest",
+                "CreateMemoryBankRequest",
                 "CreateRunRequest",
                 "DPOAlignmentConfig",
                 "DialogGenerations",
@@ -5187,6 +5620,7 @@
                 "Experiment",
                 "ExperimentStatus",
                 "FinetuningAlgorithm",
+                "FunctionCallToolDefinition",
                 "InferenceStep",
                 "Log",
                 "LogMessagesRequest",
@@ -5196,9 +5630,11 @@
                 "MemoryBank",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
+                "MemoryToolDefinition",
                 "Metric",
                 "OnViolationAction",
                 "OptimizerConfig",
+                "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
                 "PostTrainingJobLogStream",
@@ -5207,6 +5643,8 @@
                 "PostTrainingRLHFRequest",
                 "PostTrainingSFTRequest",
                 "QLoraFinetuningConfig",
+                "QueryDocumentsRequest",
+                "QueryDocumentsResponse",
                 "RLHFAlgorithm",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
@@ -5229,6 +5667,7 @@
                 "ToolCall",
                 "ToolCallDelta",
                 "ToolCallParseStatus",
+                "ToolChoice",
                 "ToolDefinition",
                 "ToolExecutionStep",
                 "ToolParamDefinition",
@@ -5243,7 +5682,8 @@
                 "UpdateExperimentRequest",
                 "UpdateRunRequest",
                 "UploadArtifactRequest",
-                "UserMessage"
+                "UserMessage",
+                "WolframAlphaToolDefinition"
             ]
         }
     ]

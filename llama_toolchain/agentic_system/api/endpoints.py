@@ -11,20 +11,8 @@ from llama_models.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
-class AgenticSystemCreateRequest(BaseModel):
-    agent_config: AgentConfig
-
-
-@json_schema_type
 class AgenticSystemCreateResponse(BaseModel):
-    # TODO: rename this to agent_id
-    system_id: str
-
-
-@json_schema_type
-class AgenticSystemSessionCreateRequest(BaseModel):
-    system_id: str
-    session_name: str
+    agent_id: str
 
 
 @json_schema_type
@@ -33,8 +21,8 @@ class AgenticSystemSessionCreateResponse(BaseModel):
 
 
 @json_schema_type
-class AgenticSystemTurnCreateRequest(BaseModel, AgentConfigOverridablePerTurn):
-    system_id: str
+class AgenticSystemTurnCreateRequest(AgentConfigOverridablePerTurn):
+    agent_id: str
     session_id: str
 
     # TODO: figure out how we can simplify this and make why
@@ -67,7 +55,7 @@ class AgenticSystem(Protocol):
     @webmethod(route="/agentic_system/create")
     async def create_agentic_system(
         self,
-        request: AgenticSystemCreateRequest,
+        agent_config: AgentConfig,
     ) -> AgenticSystemCreateResponse: ...
 
     @webmethod(route="/agentic_system/turn/create")
@@ -91,7 +79,8 @@ class AgenticSystem(Protocol):
     @webmethod(route="/agentic_system/session/create")
     async def create_agentic_system_session(
         self,
-        request: AgenticSystemSessionCreateRequest,
+        agent_id: str,
+        session_name: str,
     ) -> AgenticSystemSessionCreateResponse: ...
 
     @webmethod(route="/agentic_system/session/get")

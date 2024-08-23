@@ -1,45 +1,74 @@
 components:
   responses: {}
   schemas:
-    AgenticSystemCreateRequest:
+    AgentConfig:
       additionalProperties: false
       properties:
-        instance_config:
-          $ref: '#/components/schemas/AgenticSystemInstanceConfig'
-        model:
-          type: string
-      required:
-      - model
-      - instance_config
-      type: object
-    AgenticSystemCreateResponse:
-      additionalProperties: false
-      properties:
-        system_id:
-          type: string
-      required:
-      - system_id
-      type: object
-    AgenticSystemInstanceConfig:
-      additionalProperties: false
-      properties:
-        available_tools:
-          items:
-            $ref: '#/components/schemas/AgenticSystemToolDefinition'
-          type: array
-        debug_prefix_messages:
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
-          type: array
         input_shields:
           items:
             $ref: '#/components/schemas/ShieldDefinition'
           type: array
         instructions:
+          type: string
+        memory_bank_configs:
+          items:
+            oneOf:
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                type:
+                  const: vector
+                  type: string
+              required:
+              - bank_id
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                keys:
+                  items:
+                    type: string
+                  type: array
+                type:
+                  const: keyvalue
+                  type: string
+              required:
+              - bank_id
+              - type
+              - keys
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                type:
+                  const: keyword
+                  type: string
+              required:
+              - bank_id
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                entities:
+                  items:
+                    type: string
+                  type: array
+                type:
+                  const: graph
+                  type: string
+              required:
+              - bank_id
+              - type
+              - entities
+              type: object
+          type: array
+        model:
           type: string
         output_shields:
           items:
@@ -47,21 +76,31 @@ components:
           type: array
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+        tool_choice:
+          $ref: '#/components/schemas/ToolChoice'
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
+        tools:
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/BraveSearchToolDefinition'
+            - $ref: '#/components/schemas/WolframAlphaToolDefinition'
+            - $ref: '#/components/schemas/PhotogenToolDefinition'
+            - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
+            - $ref: '#/components/schemas/FunctionCallToolDefinition'
+            - $ref: '#/components/schemas/MemoryToolDefinition'
+          type: array
       required:
+      - model
       - instructions
       type: object
-    AgenticSystemSessionCreateRequest:
+    AgenticSystemCreateResponse:
       additionalProperties: false
       properties:
-        session_name:
-          type: string
-        system_id:
+        agent_id:
           type: string
       required:
-      - system_id
-      - session_name
+      - agent_id
       type: object
     AgenticSystemSessionCreateResponse:
       additionalProperties: false
@@ -83,51 +122,53 @@ components:
       required:
       - step
       type: object
-    AgenticSystemToolDefinition:
+    AgenticSystemTurnCreateRequest:
       additionalProperties: false
       properties:
-        description:
+        agent_id:
           type: string
-        execution_config:
-          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
         input_shields:
           items:
             $ref: '#/components/schemas/ShieldDefinition'
           type: array
-        output_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        parameters:
-          additionalProperties:
-            $ref: '#/components/schemas/ToolParamDefinition'
-          type: object
-        tool_name:
-          oneOf:
-          - $ref: '#/components/schemas/BuiltinTool'
-          - type: string
-      required:
-      - tool_name
-      type: object
-    AgenticSystemTurnCreateRequest:
-      additionalProperties: false
-      properties:
+        instructions:
+          type: string
         messages:
           items:
             oneOf:
             - $ref: '#/components/schemas/UserMessage'
             - $ref: '#/components/schemas/ToolResponseMessage'
           type: array
-        override_config:
-          $ref: '#/components/schemas/AgenticSystemInstanceConfig'
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
         session_id:
           type: string
         stream:
           type: boolean
-        system_id:
-          type: string
+        tool_choice:
+          $ref: '#/components/schemas/ToolChoice'
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
+        tools:
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/BraveSearchToolDefinition'
+            - $ref: '#/components/schemas/WolframAlphaToolDefinition'
+            - $ref: '#/components/schemas/PhotogenToolDefinition'
+            - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
+            - $ref: '#/components/schemas/FunctionCallToolDefinition'
+            - $ref: '#/components/schemas/MemoryToolDefinition'
+          type: array
       required:
-      - system_id
+      - agent_id
       - session_id
       - messages
       type: object
@@ -190,10 +231,6 @@ components:
     BatchChatCompletionRequest:
       additionalProperties: false
       properties:
-        available_tools:
-          items:
-            $ref: '#/components/schemas/ToolDefinition'
-          type: array
         logprobs:
           additionalProperties: false
           properties:
@@ -214,6 +251,14 @@ components:
           type: string
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
+        tool_choice:
+          $ref: '#/components/schemas/ToolChoice'
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
+        tools:
+          items:
+            $ref: '#/components/schemas/ToolDefinition'
+          type: array
       required:
       - model
       - messages_batch
@@ -235,11 +280,8 @@ components:
           items:
             oneOf:
             - type: string
-            - $ref: '#/components/schemas/Attachment'
             - items:
-                oneOf:
-                - type: string
-                - $ref: '#/components/schemas/Attachment'
+                type: string
               type: array
           type: array
         logprobs:
@@ -266,6 +308,25 @@ components:
       required:
       - completion_message_batch
       type: object
+    BraveSearchToolDefinition:
+      additionalProperties: false
+      properties:
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: brave_search
+          type: string
+      required:
+      - type
+      type: object
     BuiltinShield:
       enum:
       - llama_guard
@@ -284,10 +345,6 @@ components:
     ChatCompletionRequest:
       additionalProperties: false
       properties:
-        available_tools:
-          items:
-            $ref: '#/components/schemas/ToolDefinition'
-          type: array
         logprobs:
           additionalProperties: false
           properties:
@@ -308,6 +365,14 @@ components:
           $ref: '#/components/schemas/SamplingParams'
         stream:
           type: boolean
+        tool_choice:
+          $ref: '#/components/schemas/ToolChoice'
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
+        tools:
+          items:
+            $ref: '#/components/schemas/ToolDefinition'
+          type: array
       required:
       - model
       - messages
@@ -349,17 +414,36 @@ components:
       type: object
     Checkpoint:
       description: Checkpoint created during training runs
+    CodeInterpreterToolDefinition:
+      additionalProperties: false
+      properties:
+        enable_inline_code_execution:
+          type: boolean
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: code_interpreter
+          type: string
+      required:
+      - type
+      - enable_inline_code_execution
+      type: object
     CompletionMessage:
       additionalProperties: false
       properties:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/Attachment'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
+              type: string
             type: array
         role:
           const: assistant
@@ -382,11 +466,8 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/Attachment'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
+              type: string
             type: array
         logprobs:
           additionalProperties: false
@@ -448,6 +529,51 @@ components:
           type: string
       required:
       - name
+      type: object
+    CreateMemoryBankRequest:
+      additionalProperties: false
+      properties:
+        config:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              embedding_model:
+                type: string
+              type:
+                const: vector
+                type: string
+            required:
+            - type
+            - embedding_model
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: keyvalue
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: keyword
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: graph
+                type: string
+            required:
+            - type
+            type: object
+        url:
+          $ref: '#/components/schemas/URL'
+      required:
+      - config
       type: object
     CreateRunRequest:
       additionalProperties: false
@@ -688,6 +814,33 @@ components:
       - qlora
       - dora
       type: string
+    FunctionCallToolDefinition:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        parameters:
+          additionalProperties:
+            $ref: '#/components/schemas/ToolParamDefinition'
+          type: object
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: function_call
+          type: string
+      required:
+      - type
+      - description
+      - parameters
+      type: object
     InferenceStep:
       additionalProperties: false
       properties:
@@ -806,20 +959,64 @@ components:
     MemoryBank:
       additionalProperties: false
       properties:
-        memory_bank_id:
+        bank_id:
           type: string
-        memory_bank_name:
+        config:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              embedding_model:
+                type: string
+              type:
+                const: vector
+                type: string
+            required:
+            - type
+            - embedding_model
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: keyvalue
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: keyword
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: graph
+                type: string
+            required:
+            - type
+            type: object
+        name:
           type: string
+        url:
+          $ref: '#/components/schemas/URL'
       required:
-      - memory_bank_id
-      - memory_bank_name
+      - bank_id
+      - name
+      - config
       type: object
     MemoryBankDocument:
       additionalProperties: false
       properties:
         content:
-          contentEncoding: base64
-          type: string
+          oneOf:
+          - type: string
+          - items:
+              type: string
+            type: array
+          - $ref: '#/components/schemas/URL'
         document_id:
           type: string
         metadata:
@@ -837,8 +1034,8 @@ components:
       required:
       - document_id
       - content
-      - metadata
       - mime_type
+      - metadata
       type: object
     MemoryRetrievalStep:
       additionalProperties: false
@@ -875,6 +1072,28 @@ components:
       - memory_bank_ids
       - documents
       - scores
+      type: object
+    MemoryToolDefinition:
+      additionalProperties: false
+      properties:
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        memory_banks:
+          items:
+            $ref: '#/components/schemas/MemoryBank'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        type:
+          const: memory
+          type: string
+      required:
+      - type
+      - memory_banks
       type: object
     Metric:
       additionalProperties: false
@@ -924,6 +1143,25 @@ components:
       - lr
       - lr_min
       - weight_decay
+      type: object
+    PhotogenToolDefinition:
+      additionalProperties: false
+      properties:
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: photogen
+          type: string
+      required:
+      - type
       type: object
     PostTrainingJob:
       additionalProperties: false
@@ -1132,6 +1370,56 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
+      type: object
+    QueryDocumentsRequest:
+      additionalProperties: false
+      properties:
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        query:
+          oneOf:
+          - type: string
+          - items:
+              type: string
+            type: array
+      required:
+      - query
+      type: object
+    QueryDocumentsResponse:
+      additionalProperties: false
+      properties:
+        chunks:
+          items:
+            additionalProperties: false
+            properties:
+              content:
+                oneOf:
+                - type: string
+                - items:
+                    type: string
+                  type: array
+              token_count:
+                type: integer
+            required:
+            - content
+            - token_count
+            type: object
+          type: array
+        scores:
+          items:
+            type: number
+          type: array
+      required:
+      - chunks
+      - scores
       type: object
     RLHFAlgorithm:
       enum:
@@ -1430,11 +1718,8 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/Attachment'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
+              type: string
             type: array
         role:
           const: system
@@ -1511,6 +1796,11 @@ components:
       - in_progress
       - failure
       - success
+      type: string
+    ToolChoice:
+      enum:
+      - auto
+      - required
       type: string
     ToolDefinition:
       additionalProperties: false
@@ -1593,11 +1883,8 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/Attachment'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
+              type: string
             type: array
         tool_name:
           oneOf:
@@ -1616,11 +1903,8 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/Attachment'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
+              type: string
             type: array
         role:
           const: ipython
@@ -1705,6 +1989,10 @@ components:
             - $ref: '#/components/schemas/UserMessage'
             - $ref: '#/components/schemas/ToolResponseMessage'
           type: array
+        output_attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
         output_message:
           $ref: '#/components/schemas/CompletionMessage'
         session_id:
@@ -1728,6 +2016,7 @@ components:
       - input_messages
       - steps
       - output_message
+      - output_attachments
       - started_at
       title: A single turn in an interaction with an Agentic System.
       type: object
@@ -1812,11 +2101,8 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/Attachment'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/Attachment'
+              type: string
             type: array
         role:
           const: user
@@ -1825,11 +2111,30 @@ components:
       - role
       - content
       type: object
+    WolframAlphaToolDefinition:
+      additionalProperties: false
+      properties:
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: wolfram_alpha
+          type: string
+      required:
+      - type
+      type: object
 info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-08-21 14:16:38.313950"
+    \ draft and subject to change.\n                Generated at 2024-08-23 06:36:10.417114"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -1842,7 +2147,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgenticSystemCreateRequest'
+              $ref: '#/components/schemas/AgentConfig'
         required: true
       responses:
         '200':
@@ -1866,67 +2171,19 @@ paths:
           description: OK
       tags:
       - AgenticSystem
-  /agentic_system/memory_bank/attach:
-    post:
-      parameters:
-      - in: query
-        name: agent_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: session_id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                type: string
-              type: array
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - AgenticSystem
-  /agentic_system/memory_bank/detach:
-    post:
-      parameters:
-      - in: query
-        name: agent_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: session_id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                type: string
-              type: array
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - AgenticSystem
   /agentic_system/session/create:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AgenticSystemSessionCreateRequest'
+    get:
+      parameters:
+      - in: query
+        name: agent_id
         required: true
+        schema:
+          type: string
+      - in: query
+        name: session_name
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2466,7 +2723,7 @@ paths:
           description: OK
       tags:
       - Observability
-  /memory_bank/delete:
+  /memory_bank/documents/delete:
     post:
       parameters:
       - in: query
@@ -2484,14 +2741,10 @@ paths:
         required: true
       responses:
         '200':
-          content:
-            application/jsonl:
-              schema:
-                type: string
           description: OK
       tags:
-      - MemoryBanks
-  /memory_bank/get:
+      - Memory
+  /memory_bank/documents/get:
     post:
       parameters:
       - in: query
@@ -2515,7 +2768,7 @@ paths:
                 $ref: '#/components/schemas/MemoryBankDocument'
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
   /memory_bank/insert:
     post:
       parameters:
@@ -2536,7 +2789,30 @@ paths:
         '200':
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
+  /memory_bank/query:
+    post:
+      parameters:
+      - in: query
+        name: bank_id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryDocumentsResponse'
+          description: OK
+      tags:
+      - Memory
   /memory_bank/update:
     post:
       parameters:
@@ -2557,17 +2833,12 @@ paths:
         '200':
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
   /memory_banks/create:
     post:
       parameters:
       - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: bank_name
+        name: name
         required: true
         schema:
           type: string
@@ -2575,15 +2846,17 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/MemoryBankDocument'
-              type: array
+              $ref: '#/components/schemas/CreateMemoryBankRequest'
         required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
   /memory_banks/drop:
     delete:
       parameters:
@@ -2600,7 +2873,7 @@ paths:
                 type: string
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
   /memory_banks/get:
     get:
       parameters:
@@ -2612,12 +2885,12 @@ paths:
       responses:
         '200':
           content:
-            application/jsonl:
+            application/json:
               schema:
                 $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
   /memory_banks/list:
     get:
       parameters: []
@@ -2629,7 +2902,7 @@ paths:
                 $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
-      - MemoryBanks
+      - Memory
   /post_training/job/artifacts:
     get:
       parameters:
@@ -2832,17 +3105,15 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: RewardScoring
-- name: Datasets
 - name: Observability
 - name: AgenticSystem
-- name: Inference
-- name: Evaluations
-- name: SyntheticDataGeneration
 - name: PostTraining
-- name: MemoryBanks
-- description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
-  name: Attachment
+- name: Memory
+- name: Evaluations
+- name: Datasets
+- name: RewardScoring
+- name: Inference
+- name: SyntheticDataGeneration
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -2862,16 +3133,27 @@ tags:
   name: SystemMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolCall" />
   name: ToolCall
+- description: <SchemaDefinition schemaRef="#/components/schemas/ToolChoice" />
+  name: ToolChoice
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolDefinition" />
   name: ToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolParamDefinition"
     />
   name: ToolParamDefinition
+- description: "This Enum refers to the prompt format for calling zero shot tools\n\
+    \n`json` --\n    Refers to the json format for calling tools.\n    The json format\
+    \ takes the form like\n    {\n        \"type\": \"function\",\n        \"function\"\
+    \ : {\n            \"name\": \"function_name\",\n            \"description\":\
+    \ \"function_description\",\n            \"parameters\": {...}\n        }\n  \
+    \  }\n\n`function_tag` --\n    This is an example of how you could define\n  \
+    \  your own user defined format for making tool calls.\n    The function_tag format\
+    \ looks like this,\n    <function=function_name>(parameters)</function>\n\nThe\
+    \ detailed prompts for each of these formats are defined in `system_prompt.py`\n\
+    \n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
+  name: ToolPromptFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolResponseMessage"
     />
   name: ToolResponseMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
-  name: URL
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionResponse"
@@ -2917,20 +3199,30 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/CompletionResponseStreamChunk"
     />'
   name: CompletionResponseStreamChunk
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentConfig" />
+  name: AgentConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/BraveSearchToolDefinition"
     />
-  name: AgenticSystemCreateRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemInstanceConfig"
-    />
-  name: AgenticSystemInstanceConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemToolDefinition"
-    />
-  name: AgenticSystemToolDefinition
+  name: BraveSearchToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinShield" />
   name: BuiltinShield
+- description: <SchemaDefinition schemaRef="#/components/schemas/CodeInterpreterToolDefinition"
+    />
+  name: CodeInterpreterToolDefinition
+- description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
+    />
+  name: FunctionCallToolDefinition
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
+  name: MemoryBank
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
+    />
+  name: MemoryToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/OnViolationAction"
     />
   name: OnViolationAction
+- description: <SchemaDefinition schemaRef="#/components/schemas/PhotogenToolDefinition"
+    />
+  name: PhotogenToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIExecutionConfig"
     />
   name: RestAPIExecutionConfig
@@ -2939,29 +3231,22 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
     />
   name: ShieldDefinition
-- description: "This Enum refers to the prompt format for calling zero shot tools\n\
-    \n`json` --\n    Refers to the json format for calling tools.\n    The json format\
-    \ takes the form like\n    {\n        \"type\": \"function\",\n        \"function\"\
-    \ : {\n            \"name\": \"function_name\",\n            \"description\":\
-    \ \"function_description\",\n            \"parameters\": {...}\n        }\n  \
-    \  }\n\n`function_tag` --\n    This is an example of how you could define\n  \
-    \  your own user defined format for making tool calls.\n    The function_tag format\
-    \ looks like this,\n    <function=function_name>(parameters)</function>\n\nThe\
-    \ detailed prompts for each of these formats are defined in `system_prompt.py`\n\
-    \n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
-  name: ToolPromptFormat
+- description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
+  name: URL
+- description: <SchemaDefinition schemaRef="#/components/schemas/WolframAlphaToolDefinition"
+    />
+  name: WolframAlphaToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
     />
   name: AgenticSystemCreateResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemSessionCreateRequest"
-    />
-  name: AgenticSystemSessionCreateRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemSessionCreateResponse"
     />
   name: AgenticSystemSessionCreateResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnCreateRequest"
     />
   name: AgenticSystemTurnCreateRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
+  name: Attachment
 - description: 'Server side event (SSE) stream of these events
 
 
@@ -2989,9 +3274,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ExperimentStatus"
     />
   name: ExperimentStatus
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateMemoryBankRequest"
     />
-  name: MemoryBankDocument
+  name: CreateMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequest"
     />
   name: CreateRunRequest
@@ -3024,6 +3309,9 @@ tags:
   name: EvaluateTextGenerationRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
+    />
+  name: MemoryBankDocument
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
     />
   name: MemoryRetrievalStep
@@ -3070,8 +3358,6 @@ tags:
   name: LogSearchRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Log" />
   name: Log
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
-  name: MemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/Metric" />
   name: Metric
 - description: 'Artifacts of a finetuning job.
@@ -3118,6 +3404,12 @@ tags:
   name: RLHFAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
   name: TrainingConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsRequest"
+    />
+  name: QueryDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsResponse"
+    />
+  name: QueryDocumentsResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/DialogGenerations"
     />
   name: DialogGenerations
@@ -3185,20 +3477,17 @@ x-tagGroups:
   - Datasets
   - Evaluations
   - Inference
-  - MemoryBanks
+  - Memory
   - Observability
   - PostTraining
   - RewardScoring
   - SyntheticDataGeneration
 - name: Types
   tags:
-  - AgenticSystemCreateRequest
+  - AgentConfig
   - AgenticSystemCreateResponse
-  - AgenticSystemInstanceConfig
-  - AgenticSystemSessionCreateRequest
   - AgenticSystemSessionCreateResponse
   - AgenticSystemStepResponse
-  - AgenticSystemToolDefinition
   - AgenticSystemTurnCreateRequest
   - AgenticSystemTurnResponseStreamChunk
   - Artifact
@@ -3208,6 +3497,7 @@ x-tagGroups:
   - BatchChatCompletionResponse
   - BatchCompletionRequest
   - BatchCompletionResponse
+  - BraveSearchToolDefinition
   - BuiltinShield
   - BuiltinTool
   - ChatCompletionRequest
@@ -3215,11 +3505,13 @@ x-tagGroups:
   - ChatCompletionResponseEventType
   - ChatCompletionResponseStreamChunk
   - Checkpoint
+  - CodeInterpreterToolDefinition
   - CompletionMessage
   - CompletionRequest
   - CompletionResponseStreamChunk
   - CreateDatasetRequest
   - CreateExperimentRequest
+  - CreateMemoryBankRequest
   - CreateRunRequest
   - DPOAlignmentConfig
   - DialogGenerations
@@ -3234,6 +3526,7 @@ x-tagGroups:
   - Experiment
   - ExperimentStatus
   - FinetuningAlgorithm
+  - FunctionCallToolDefinition
   - InferenceStep
   - Log
   - LogMessagesRequest
@@ -3243,9 +3536,11 @@ x-tagGroups:
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
+  - MemoryToolDefinition
   - Metric
   - OnViolationAction
   - OptimizerConfig
+  - PhotogenToolDefinition
   - PostTrainingJob
   - PostTrainingJobArtifactsResponse
   - PostTrainingJobLogStream
@@ -3254,6 +3549,8 @@ x-tagGroups:
   - PostTrainingRLHFRequest
   - PostTrainingSFTRequest
   - QLoraFinetuningConfig
+  - QueryDocumentsRequest
+  - QueryDocumentsResponse
   - RLHFAlgorithm
   - RestAPIExecutionConfig
   - RestAPIMethod
@@ -3276,6 +3573,7 @@ x-tagGroups:
   - ToolCall
   - ToolCallDelta
   - ToolCallParseStatus
+  - ToolChoice
   - ToolDefinition
   - ToolExecutionStep
   - ToolParamDefinition
@@ -3291,3 +3589,4 @@ x-tagGroups:
   - UpdateRunRequest
   - UploadArtifactRequest
   - UserMessage
+  - WolframAlphaToolDefinition

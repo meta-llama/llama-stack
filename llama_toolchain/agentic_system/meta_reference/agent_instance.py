@@ -8,7 +8,7 @@
 import copy
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, List
 
 from llama_models.llama3.api.datatypes import ToolPromptFormat
 
@@ -326,7 +326,7 @@ class ChatAgent(ShieldRunnerMixin):
             req = ChatCompletionRequest(
                 model=self.agent_config.model,
                 messages=input_messages,
-                tools=self.agent_config.available_tools,
+                tools=self.agent_config.tools,
                 tool_prompt_format=self.agent_config.tool_prompt_format,
                 stream=True,
                 sampling_params=sampling_params,

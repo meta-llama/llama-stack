@@ -26,9 +26,7 @@ from llama_toolchain.agentic_system.event_logger import EventLogger
 from .api import (
     AgentConfig,
     AgenticSystem,
-    AgenticSystemCreateRequest,
     AgenticSystemCreateResponse,
-    AgenticSystemSessionCreateRequest,
     AgenticSystemSessionCreateResponse,
     AgenticSystemToolDefinition,
     AgenticSystemTurnCreateRequest,
@@ -127,27 +125,23 @@ async def run_main(host: str, port: int):
         ),
     ]
 
-    create_request = AgenticSystemCreateRequest(
+    agent_config = AgentConfig(
         model="Meta-Llama3.1-8B-Instruct",
-        agent_config=AgentConfig(
-            instructions="You are a helpful assistant",
-            sampling_params=SamplingParams(),
-            available_tools=tool_definitions,
-            input_shields=[],
-            output_shields=[],
-            debug_prefix_messages=[],
-            tool_prompt_format=ToolPromptFormat.json,
-        ),
+        instructions="You are a helpful assistant",
+        sampling_params=SamplingParams(),
+        tools=tool_definitions,
+        input_shields=[],
+        output_shields=[],
+        debug_prefix_messages=[],
+        tool_prompt_format=ToolPromptFormat.json,
     )
 
-    create_response = await api.create_agentic_system(create_request)
+    create_response = await api.create_agentic_system(agent_config)
     print(create_response)
 
     session_response = await api.create_agentic_system_session(
-        AgenticSystemSessionCreateRequest(
-            system_id=create_response.system_id,
-            session_name="test_session",
-        )
+        agent_id=create_response.agent_id,
+        session_name="test_session",
     )
     print(session_response)
 
@@ -162,7 +156,7 @@ async def run_main(host: str, port: int):
         cprint(f"User> {content}", color="blue")
         iterator = api.create_agentic_system_turn(
             AgenticSystemTurnCreateRequest(
-                system_id=create_response.system_id,
+                agent_id=create_response.agent_id,
                 session_id=session_response.session_id,
                 messages=[
                     UserMessage(content=content),

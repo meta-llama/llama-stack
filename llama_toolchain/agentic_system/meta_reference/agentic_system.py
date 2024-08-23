@@ -24,7 +24,7 @@ from llama_toolchain.tools.builtin import (
 )
 from llama_toolchain.tools.safety import with_safety
 
-from .agent_instance import AgentInstance, ChatAgent
+from .agent_instance import ChatAgent
 from .config import MetaReferenceImplConfig
 
 
@@ -71,11 +71,11 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
         self,
         request: AgenticSystemCreateRequest,
     ) -> AgenticSystemCreateResponse:
-        system_id = str(uuid.uuid4())
+        agent_id = str(uuid.uuid4())
 
         builtin_tools = []
         cfg = request.agent_config
-        for dfn in cfg.available_tools:
+        for dfn in cfg.tools:
             if isinstance(dfn.tool_name, BuiltinTool):
                 if dfn.tool_name == BuiltinTool.wolfram_alpha:
                     key = self.config.wolfram_api_key
@@ -102,7 +102,7 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
                     )
                 )
 
-        AGENT_INSTANCES_BY_ID[system_id] = ChatAgent(
+        AGENT_INSTANCES_BY_ID[agent_id] = ChatAgent(
             agent_config=cfg,
             inference_api=self.inference_api,
             safety_api=self.safety_api,
@@ -111,16 +111,16 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
         )
 
         return AgenticSystemCreateResponse(
-            system_id=system_id,
+            agent_id=agent_id,
         )
 
     async def create_agentic_system_session(
         self,
         request: AgenticSystemSessionCreateRequest,
     ) -> AgenticSystemSessionCreateResponse:
-        system_id = request.system_id
-        assert system_id in AGENT_INSTANCES_BY_ID, f"System {system_id} not found"
-        agent = AGENT_INSTANCES_BY_ID[system_id]
+        agent_id = request.agent_id
+        assert agent_id in AGENT_INSTANCES_BY_ID, f"System {agent_id} not found"
+        agent = AGENT_INSTANCES_BY_ID[agent_id]
 
         session = agent.create_session(request.session_name)
         return AgenticSystemSessionCreateResponse(
@@ -131,9 +131,9 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
         self,
         request: AgenticSystemTurnCreateRequest,
     ) -> AsyncGenerator:
-        system_id = request.system_id
-        assert system_id in AGENT_INSTANCES_BY_ID, f"System {system_id} not found"
-        agent = AGENT_INSTANCES_BY_ID[system_id]
+        agent_id = request.agent_id
+        assert agent_id in AGENT_INSTANCES_BY_ID, f"System {agent_id} not found"
+        agent = AGENT_INSTANCES_BY_ID[agent_id]
 
         assert (
             request.session_id in agent.sessions
