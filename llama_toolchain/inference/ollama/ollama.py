@@ -32,7 +32,7 @@ from llama_toolchain.inference.api import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-from llama_toolchain.inference.prepare_messages import prepare_messages_for_tools
+from llama_toolchain.inference.prepare_messages import prepare_messages
 from .config import OllamaImplConfig
 
 # TODO: Eventually this will move to the llama cli model list command
@@ -111,7 +111,7 @@ class OllamaInference(Inference):
         return options
 
     async def chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
-        request = prepare_messages_for_tools(request)
+        messages = prepare_messages(request)
         # accumulate sampling params and other options to pass to ollama
         options = self.get_ollama_chat_options(request)
         ollama_model = self.resolve_ollama_model(request.model)
@@ -133,7 +133,7 @@ class OllamaInference(Inference):
         if not request.stream:
             r = await self.client.chat(
                 model=ollama_model,
-                messages=self._messages_to_ollama_messages(request.messages),
+                messages=self._messages_to_ollama_messages(messages),
                 stream=False,
                 options=options,
             )
@@ -161,7 +161,7 @@ class OllamaInference(Inference):
             )
             stream = await self.client.chat(
                 model=ollama_model,
-                messages=self._messages_to_ollama_messages(request.messages),
+                messages=self._messages_to_ollama_messages(messages),
                 stream=True,
                 options=options,
             )

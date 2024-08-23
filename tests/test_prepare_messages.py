@@ -2,12 +2,12 @@ import unittest
 
 from llama_models.llama3.api import *  # noqa: F403
 from llama_toolchain.inference.api import *  # noqa: F403
-from llama_toolchain.inference.prepare_messages import prepare_messages_for_tools
+from llama_toolchain.inference.prepare_messages import prepare_messages
 
 MODEL = "Meta-Llama3.1-8B-Instruct"
 
 
-class ToolUtilsTests(unittest.IsolatedAsyncioTestCase):
+class PrepareMessagesTests(unittest.IsolatedAsyncioTestCase):
     async def test_system_default(self):
         content = "Hello !"
         request = ChatCompletionRequest(
@@ -16,12 +16,10 @@ class ToolUtilsTests(unittest.IsolatedAsyncioTestCase):
                 UserMessage(content=content),
             ],
         )
-        request = prepare_messages_for_tools(request)
-        self.assertEqual(len(request.messages), 2)
-        self.assertEqual(request.messages[-1].content, content)
-        self.assertTrue(
-            "Cutting Knowledge Date: December 2023" in request.messages[0].content
-        )
+        messages = prepare_messages(request)
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[-1].content, content)
+        self.assertTrue("Cutting Knowledge Date: December 2023" in messages[0].content)
 
     async def test_system_builtin_only(self):
         content = "Hello !"
@@ -35,13 +33,11 @@ class ToolUtilsTests(unittest.IsolatedAsyncioTestCase):
                 ToolDefinition(tool_name=BuiltinTool.brave_search),
             ],
         )
-        request = prepare_messages_for_tools(request)
-        self.assertEqual(len(request.messages), 2)
-        self.assertEqual(request.messages[-1].content, content)
-        self.assertTrue(
-            "Cutting Knowledge Date: December 2023" in request.messages[0].content
-        )
-        self.assertTrue("Tools: brave_search" in request.messages[0].content)
+        messages = prepare_messages(request)
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[-1].content, content)
+        self.assertTrue("Cutting Knowledge Date: December 2023" in messages[0].content)
+        self.assertTrue("Tools: brave_search" in messages[0].content)
 
     async def test_system_custom_only(self):
         content = "Hello !"
@@ -65,14 +61,12 @@ class ToolUtilsTests(unittest.IsolatedAsyncioTestCase):
             ],
             tool_prompt_format=ToolPromptFormat.json,
         )
-        request = prepare_messages_for_tools(request)
-        self.assertEqual(len(request.messages), 3)
-        self.assertTrue("Environment: ipython" in request.messages[0].content)
+        messages = prepare_messages(request)
+        self.assertEqual(len(messages), 3)
+        self.assertTrue("Environment: ipython" in messages[0].content)
 
-        self.assertTrue(
-            "Return function calls in JSON format" in request.messages[1].content
-        )
-        self.assertEqual(request.messages[-1].content, content)
+        self.assertTrue("Return function calls in JSON format" in messages[1].content)
+        self.assertEqual(messages[-1].content, content)
 
     async def test_system_custom_and_builtin(self):
         content = "Hello !"
@@ -97,16 +91,14 @@ class ToolUtilsTests(unittest.IsolatedAsyncioTestCase):
                 ),
             ],
         )
-        request = prepare_messages_for_tools(request)
-        self.assertEqual(len(request.messages), 3)
+        messages = prepare_messages(request)
+        self.assertEqual(len(messages), 3)
 
-        self.assertTrue("Environment: ipython" in request.messages[0].content)
-        self.assertTrue("Tools: brave_search" in request.messages[0].content)
+        self.assertTrue("Environment: ipython" in messages[0].content)
+        self.assertTrue("Tools: brave_search" in messages[0].content)
 
-        self.assertTrue(
-            "Return function calls in JSON format" in request.messages[1].content
-        )
-        self.assertEqual(request.messages[-1].content, content)
+        self.assertTrue("Return function calls in JSON format" in messages[1].content)
+        self.assertEqual(messages[-1].content, content)
 
     async def test_user_provided_system_message(self):
         content = "Hello !"
@@ -121,8 +113,8 @@ class ToolUtilsTests(unittest.IsolatedAsyncioTestCase):
                 ToolDefinition(tool_name=BuiltinTool.code_interpreter),
             ],
         )
-        request = prepare_messages_for_tools(request)
-        self.assertEqual(len(request.messages), 2, request.messages)
-        self.assertTrue(request.messages[0].content.endswith(system_prompt))
+        messages = prepare_messages(request)
+        self.assertEqual(len(messages), 2, messages)
+        self.assertTrue(messages[0].content.endswith(system_prompt))
 
-        self.assertEqual(request.messages[-1].content, content)
+        self.assertEqual(messages[-1].content, content)

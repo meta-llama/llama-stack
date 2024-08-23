@@ -22,7 +22,7 @@ from llama_toolchain.inference.api import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-from llama_toolchain.inference.prepare_messages import prepare_messages_for_tools
+from llama_toolchain.inference.prepare_messages import prepare_messages
 from .config import MetaReferenceImplConfig
 from .model_parallel import LlamaModelParallelGenerator
 
@@ -67,7 +67,7 @@ class MetaReferenceInferenceImpl(Inference):
     ) -> AsyncIterator[
         Union[ChatCompletionResponseStreamChunk, ChatCompletionResponse]
     ]:
-        request = prepare_messages_for_tools(request)
+        messages = prepare_messages(request)
         model = resolve_model(request.model)
         if model is None:
             raise RuntimeError(
@@ -99,7 +99,7 @@ class MetaReferenceInferenceImpl(Inference):
             ipython = False
 
             for token_result in self.generator.chat_completion(
-                messages=request.messages,
+                messages=messages,
                 temperature=request.sampling_params.temperature,
                 top_p=request.sampling_params.top_p,
                 max_gen_len=request.sampling_params.max_tokens,
