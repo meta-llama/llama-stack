@@ -20,7 +20,12 @@ setup(
     author="Meta Llama",
     author_email="llama-oss@meta.com",
     description="Llama toolchain",
-    entry_points={"console_scripts": ["llama = llama_toolchain.cli.llama:main"]},
+    entry_points={
+        "console_scripts": [
+            "llama = llama_toolchain.cli.llama:main",
+            "install-wheel-from-presigned = llama_toolchain.cli.scripts.run:install_wheel_from_presigned",
+        ]
+    },
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/meta-llama/llama-toolchain",
