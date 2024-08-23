@@ -46,7 +46,7 @@ class AgenticSystemTurnCreateRequest(BaseModel, AgentConfigOverridablePerTurn):
             ToolResponseMessage,
         ]
     ]
-    attachments: List[Attachment]
+    attachments: Optional[List[Attachment]] = None
 
     stream: Optional[bool] = False
 

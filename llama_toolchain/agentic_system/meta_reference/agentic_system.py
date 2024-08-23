@@ -16,9 +16,6 @@ from llama_toolchain.inference.api.datatypes import BuiltinTool
 from llama_toolchain.memory.api import Memory
 from llama_toolchain.safety.api import Safety
 from llama_toolchain.agentic_system.api import *  # noqa: F403
-from .agent_instance import ChatAgent
-from .config import MetaReferenceImplConfig
-
 from llama_toolchain.tools.builtin import (
     BraveSearchTool,
     CodeInterpreterTool,
@@ -27,7 +24,8 @@ from llama_toolchain.tools.builtin import (
 )
 from llama_toolchain.tools.safety import with_safety
 
-from .agent_instance import AgentInstance
+from .agent_instance import AgentInstance, ChatAgent
+from .config import MetaReferenceImplConfig
 
 
 logger = logging.getLogger()
@@ -76,7 +74,6 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
         system_id = str(uuid.uuid4())
 
         builtin_tools = []
-        custom_tool_definitions = []
         cfg = request.agent_config
         for dfn in cfg.available_tools:
             if isinstance(dfn.tool_name, BuiltinTool):
@@ -104,8 +101,6 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
                         tool, self.safety_api, dfn.input_shields, dfn.output_shields
                     )
                 )
-            else:
-                custom_tool_definitions.append(dfn)
 
         AGENT_INSTANCES_BY_ID[system_id] = ChatAgent(
             agent_config=cfg,
@@ -113,7 +108,6 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
             safety_api=self.safety_api,
             memory_api=self.memory_api,
             builtin_tools=builtin_tools,
-            custom_tool_definitions=custom_tool_definitions,
         )
 
         return AgenticSystemCreateResponse(

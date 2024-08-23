@@ -6,7 +6,7 @@
 
 from typing import List, Protocol
 
-from llama_models.llama3_1.api.datatypes import InterleavedTextAttachment
+from llama_models.llama3.api.datatypes import InterleavedTextMedia
 
 from llama_models.schema_utils import webmethod
 from .datatypes import *  # noqa: F403
@@ -14,7 +14,7 @@ from .datatypes import *  # noqa: F403
 
 @json_schema_type
 class RetrieveMemoryDocumentsRequest(BaseModel):
-    query: InterleavedTextAttachment
+    query: InterleavedTextMedia
     bank_ids: str
 
 
