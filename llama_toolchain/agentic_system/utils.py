@@ -7,7 +7,12 @@
 import uuid
 from typing import Any, List, Optional
 
-from llama_models.llama3.api.datatypes import BuiltinTool, Message, SamplingParams
+from llama_models.llama3.api.datatypes import (
+    BuiltinTool,
+    Message,
+    SamplingParams,
+    ToolPromptFormat,
+)
 
 from llama_toolchain.agentic_system.api import (
     AgenticSystemCreateRequest,
@@ -15,7 +20,6 @@ from llama_toolchain.agentic_system.api import (
     AgenticSystemSessionCreateRequest,
     AgenticSystemToolDefinition,
 )
-from llama_toolchain.agentic_system.api.datatypes import ToolPromptFormat
 from llama_toolchain.agentic_system.client import AgenticSystemClient
 
 from llama_toolchain.agentic_system.meta_reference.execute_with_custom_tools import (

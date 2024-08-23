@@ -17,6 +17,7 @@ from llama_models.llama3.api.datatypes import (
     BuiltinTool,
     SamplingParams,
     ToolParamDefinition,
+    ToolPromptFormat,
     UserMessage,
 )
 from termcolor import cprint
@@ -32,7 +33,6 @@ from .api import (
     AgenticSystemToolDefinition,
     AgenticSystemTurnCreateRequest,
     AgenticSystemTurnResponseStreamChunk,
-    ToolPromptFormat,
 )
 
 

@@ -10,13 +10,11 @@ from llama_models.llama3.api.datatypes import (
     SystemMessage,
     ToolDefinition,
     ToolParamDefinition,
+    ToolPromptFormat,
     ToolResponseMessage,
     UserMessage,
 )
-from llama_toolchain.inference.api.datatypes import (
-    ChatCompletionResponseEventType,
-    ToolPromptFormat,
-)
+from llama_toolchain.inference.api.datatypes import ChatCompletionResponseEventType
 from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
 from llama_toolchain.inference.ollama.config import OllamaImplConfig
 from llama_toolchain.inference.ollama.ollama import get_provider_impl

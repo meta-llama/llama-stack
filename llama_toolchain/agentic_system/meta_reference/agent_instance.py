@@ -10,6 +10,8 @@ import uuid
 from datetime import datetime
 from typing import AsyncGenerator, List, Optional
 
+from llama_models.llama3.api.datatypes import ToolPromptFormat
+
 from termcolor import cprint
 
 from llama_toolchain.agentic_system.api.datatypes import (
@@ -26,12 +28,10 @@ from llama_toolchain.agentic_system.api.datatypes import (
     ShieldCallStep,
     StepType,
     ToolExecutionStep,
-    ToolPromptFormat,
     Turn,
 )
 
 from llama_toolchain.inference.api import ChatCompletionRequest, Inference
-
 from llama_toolchain.inference.api.datatypes import (
     Attachment,
     BuiltinTool,

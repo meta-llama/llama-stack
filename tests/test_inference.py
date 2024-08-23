@@ -14,13 +14,11 @@ from llama_models.llama3.api.datatypes import (
     SystemMessage,
     ToolDefinition,
     ToolParamDefinition,
+    ToolPromptFormat,
     ToolResponseMessage,
     UserMessage,
 )
-from llama_toolchain.inference.api.datatypes import (
-    ChatCompletionResponseEventType,
-    ToolPromptFormat,
-)
+from llama_toolchain.inference.api.datatypes import ChatCompletionResponseEventType
 
 from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
 from llama_toolchain.inference.meta_reference.config import MetaReferenceImplConfig

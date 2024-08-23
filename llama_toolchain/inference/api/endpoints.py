@@ -7,7 +7,7 @@
 from .datatypes import *  # noqa: F403
 from typing import Optional, Protocol
 
-from llama_models.llama3.api.datatypes import ToolDefinition
+from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
 
 # this dependency is annoying and we need a forked up version anyway
 from llama_models.schema_utils import webmethod
@@ -16,7 +16,7 @@ from llama_models.schema_utils import webmethod
 @json_schema_type
 class CompletionRequest(BaseModel):
     model: str
-    content: InterleavedTextAttachment
+    content: InterleavedTextMedia
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
     stream: Optional[bool] = False
@@ -41,7 +41,7 @@ class CompletionResponseStreamChunk(BaseModel):
 @json_schema_type
 class BatchCompletionRequest(BaseModel):
     model: str
-    content_batch: List[InterleavedTextAttachment]
+    content_batch: List[InterleavedTextMedia]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     logprobs: Optional[LogProbConfig] = None
 

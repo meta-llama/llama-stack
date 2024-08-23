@@ -1,7 +1,8 @@
 import textwrap
 
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_toolchain.inference.api import *  # noqa: F403
-from llama_toolchain.common.prompt_templates.system_prompts import (
+from llama_models.llama3.prompt_templates import (
     BuiltinToolGenerator,
     FunctionTagCustomToolGenerator,
     JsonCustomToolGenerator,
