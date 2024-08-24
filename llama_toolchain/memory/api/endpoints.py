@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Protocol
+from typing import List, Optional, Protocol
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -35,6 +35,7 @@ class VectorMemoryBankConfig(BaseModel):
     type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
+    overlap_size_in_tokens: Optional[int] = None
 
 
 class KeyValueMemoryBankConfig(BaseModel):
@@ -103,7 +104,7 @@ class Memory(Protocol):
     async def list_memory_banks(self) -> List[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/get")
-    async def get_memory_bank(self, bank_id: str) -> MemoryBank: ...
+    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/drop", method="DELETE")
     async def drop_memory_bank(

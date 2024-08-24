@@ -32,6 +32,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
             provider_specs={
                 Api.inference: providers[Api.inference]["meta-reference"],
+                Api.memory: providers[Api.memory]["meta-reference-faiss"],
                 Api.safety: providers[Api.safety]["meta-reference"],
                 Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
             },
@@ -48,6 +49,12 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.inference: providers[Api.inference]["meta-ollama"],
                 Api.safety: providers[Api.safety]["meta-reference"],
                 Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
+            },
+        ),
+        DistributionSpec(
+            spec_id="test-memory",
+            provider_specs={
+                Api.memory: providers[Api.memory]["meta-reference-faiss"],
             },
         ),
     ]

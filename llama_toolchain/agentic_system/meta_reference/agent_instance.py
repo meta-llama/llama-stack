@@ -623,7 +623,7 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 for a in attachments
             ]
-            await self.memory_api.insert_documents(bank_id, documents)
+            await self.memory_api.insert_documents(bank.bank_id, documents)
 
         assert len(bank_ids) > 0, "No memory banks configured?"
 
