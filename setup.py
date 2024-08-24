@@ -16,7 +16,7 @@ def read_requirements():
 
 setup(
     name="llama_toolchain",
-    version="0.0.8",
+    version="0.0.9",
     author="Meta Llama",
     author_email="llama-oss@meta.com",
     description="Llama toolchain",
