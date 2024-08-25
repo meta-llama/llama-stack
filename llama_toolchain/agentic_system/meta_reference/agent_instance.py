@@ -631,6 +631,8 @@ class ChatAgent(ShieldRunnerMixin):
                 for a in attachments
             ]
             await self.memory_api.insert_documents(bank.bank_id, documents)
+        elif session.memory_bank:
+            bank_ids.append(session.memory_bank.bank_id)
 
         if not bank_ids:
             # this can happen if the per-session memory bank is not yet populated
