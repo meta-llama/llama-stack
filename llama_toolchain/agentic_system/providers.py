@@ -16,7 +16,10 @@ def available_agentic_system_providers() -> List[ProviderSpec]:
             provider_id="meta-reference",
             pip_packages=[
                 "codeshield",
+                "matplotlib",
                 "pillow",
+                "pandas",
+                "scikit-learn",
                 "torch",
                 "transformers",
             ],

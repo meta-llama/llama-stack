@@ -111,7 +111,7 @@ async def _run_agent(api, tool_definitions, user_prompts, attachments=None):
     )
 
     for content in user_prompts:
-        cprint(f"User> {content}", color="blue")
+        cprint(f"User> {content}", color="white", attrs=["bold"])
         iterator = api.create_agentic_system_turn(
             AgenticSystemTurnCreateRequest(
                 agent_id=create_response.agent_id,

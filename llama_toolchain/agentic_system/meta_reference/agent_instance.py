@@ -596,7 +596,10 @@ class ChatAgent(ShieldRunnerMixin):
                 and self.agent_config.tool_choice == ToolChoice.required
             ):
                 return False
-        return attachments or AgenticSystemTool.memory.value in enabled_tools
+            else:
+                return True
+
+        return AgenticSystemTool.memory.value in enabled_tools
 
     def _memory_tool_definition(self) -> Optional[MemoryToolDefinition]:
         for t in self.agent_config.tools:
@@ -629,7 +632,10 @@ class ChatAgent(ShieldRunnerMixin):
             ]
             await self.memory_api.insert_documents(bank.bank_id, documents)
 
-        assert len(bank_ids) > 0, "No memory banks configured?"
+        if not bank_ids:
+            # this can happen if the per-session memory bank is not yet populated
+            # (i.e., no prior turns uploaded an Attachment)
+            return None, []
 
         query = " ".join(m.content for m in messages)
         tasks = [

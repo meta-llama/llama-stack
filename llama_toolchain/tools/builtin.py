@@ -33,7 +33,7 @@ def interpret_content_as_attachment(content: str) -> Optional[Attachment]:
         snippet = match.group(1)
         data = json.loads(snippet)
         return Attachment(
-            url=URL(uri="file://" + data["filepath"]), mime_type=data["mimetype"]
+            content=URL(uri="file://" + data["filepath"]), mime_type=data["mimetype"]
         )
 
     return None

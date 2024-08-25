@@ -30,6 +30,8 @@ async def get_provider_impl(config: FaissImplConfig, _deps: Dict[Api, ProviderSp
     return impl
 
 
+# This should be a broader utility
+# This should support local file URLs and data URLs also
 async def content_from_doc(doc: MemoryBankDocument) -> str:
     if isinstance(doc.content, URL):
         async with httpx.AsyncClient() as client:
