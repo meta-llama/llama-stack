@@ -7,20 +7,15 @@
 import uuid
 from typing import Any, List, Optional
 
-from llama_models.llama3.api.datatypes import (
-    BuiltinTool,
-    Message,
-    SamplingParams,
-    ToolPromptFormat,
-)
-
-from llama_toolchain.agentic_system.api import AgentConfig, AgenticSystemToolDefinition
+from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_toolchain.agentic_system.api import *  # noqa: F403
+from llama_toolchain.memory.api import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 from llama_toolchain.agentic_system.client import AgenticSystemClient
 
 from llama_toolchain.agentic_system.meta_reference.execute_with_custom_tools import (
     execute_with_custom_tools,
 )
-from llama_toolchain.safety.api.datatypes import BuiltinShield, ShieldDefinition
 
 
 # TODO: this should move back to the llama-agentic-system repo
@@ -69,18 +64,10 @@ async def get_agent_system_instance(
     api = AgenticSystemClient(base_url=f"http://{host}:{port}")
 
     tool_definitions = [
-        AgenticSystemToolDefinition(
-            tool_name=BuiltinTool.brave_search,
-        ),
-        AgenticSystemToolDefinition(
-            tool_name=BuiltinTool.wolfram_alpha,
-        ),
-        AgenticSystemToolDefinition(
-            tool_name=BuiltinTool.photogen,
-        ),
-        AgenticSystemToolDefinition(
-            tool_name=BuiltinTool.code_interpreter,
-        ),
+        BraveSearchToolDefinition(),
+        WolframAlphaToolDefinition(),
+        PhotogenToolDefinition(),
+        CodeInterpreterToolDefinition(),
     ] + [t.get_tool_definition() for t in custom_tools]
 
     if not disable_safety:

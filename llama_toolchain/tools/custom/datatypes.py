@@ -54,9 +54,9 @@ class CustomTool:
             }
         )
 
-    def get_tool_definition(self) -> AgenticSystemToolDefinition:
-        return AgenticSystemToolDefinition(
-            tool_name=self.get_name(),
+    def get_tool_definition(self) -> FunctionCallToolDefinition:
+        return FunctionCallToolDefinition(
+            function_name=self.get_name(),
             description=self.get_description(),
             parameters=self.get_params_definition(),
         )
