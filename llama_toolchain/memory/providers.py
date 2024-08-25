@@ -9,13 +9,14 @@ from typing import List
 from llama_toolchain.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
-def available_inference_providers() -> List[ProviderSpec]:
+def available_memory_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.memory,
             provider_id="meta-reference-faiss",
             pip_packages=[
-                "faiss",
+                "blobfile",
+                "faiss-cpu",
                 "sentence-transformers",
             ],
             module="llama_toolchain.memory.meta_reference.faiss",

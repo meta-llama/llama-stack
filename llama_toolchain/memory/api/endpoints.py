@@ -20,7 +20,7 @@ class MemoryBankDocument(BaseModel):
     document_id: str
     content: InterleavedTextMedia | URL
     mime_type: str
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
@@ -103,7 +103,7 @@ class Memory(Protocol):
     @webmethod(route="/memory_banks/list", method="GET")
     async def list_memory_banks(self) -> List[MemoryBank]: ...
 
-    @webmethod(route="/memory_banks/get")
+    @webmethod(route="/memory_banks/get", method="GET")
     async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/drop", method="DELETE")
@@ -136,14 +136,14 @@ class Memory(Protocol):
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse: ...
 
-    @webmethod(route="/memory_bank/documents/get")
+    @webmethod(route="/memory_bank/documents/get", method="GET")
     async def get_documents(
         self,
         bank_id: str,
         document_ids: List[str],
     ) -> List[MemoryBankDocument]: ...
 
-    @webmethod(route="/memory_bank/documents/delete")
+    @webmethod(route="/memory_bank/documents/delete", method="DELETE")
     async def delete_documents(
         self,
         bank_id: str,

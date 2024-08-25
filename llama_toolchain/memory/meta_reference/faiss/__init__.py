@@ -5,4 +5,4 @@
 # the root directory of this source tree.
 
 from .config import FaissImplConfig  # noqa
-from .memory import get_provider_impl  # noqa
+from .faiss import get_provider_impl  # noqa

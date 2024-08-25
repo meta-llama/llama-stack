@@ -11,6 +11,8 @@ from llama_toolchain.agentic_system.api.endpoints import AgenticSystem
 from llama_toolchain.agentic_system.providers import available_agentic_system_providers
 from llama_toolchain.inference.api.endpoints import Inference
 from llama_toolchain.inference.providers import available_inference_providers
+from llama_toolchain.memory.api.endpoints import Memory
+from llama_toolchain.memory.providers import available_memory_providers
 from llama_toolchain.safety.api.endpoints import Safety
 from llama_toolchain.safety.providers import available_safety_providers
 
@@ -47,6 +49,7 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         Api.inference: Inference,
         Api.safety: Safety,
         Api.agentic_system: AgenticSystem,
+        Api.memory: Memory,
     }
 
     for api, protocol in protocols.items():
@@ -60,9 +63,13 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
             webmethod = method.__webmethod__
             route = webmethod.route
 
-            # use `post` for all methods right now until we fix up the `webmethod` openapi
-            # annotation and write our own openapi generator
-            endpoints.append(ApiEndpoint(route=route, method="post", name=name))
+            if webmethod.method == "GET":
+                method = "get"
+            elif webmethod.method == "DELETE":
+                method = "delete"
+            else:
+                method = "post"
+            endpoints.append(ApiEndpoint(route=route, method=method, name=name))
 
         apis[api] = endpoints
 
@@ -82,4 +89,5 @@ def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
         Api.inference: inference_providers_by_id,
         Api.safety: safety_providers_by_id,
         Api.agentic_system: agentic_system_providers_by_id,
+        Api.memory: {a.provider_id: a for a in available_memory_providers()},
     }

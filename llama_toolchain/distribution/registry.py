@@ -53,6 +53,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
         ),
         DistributionSpec(
             spec_id="test-memory",
+            description="Just a test distribution spec for testing memory bank APIs",
             provider_specs={
                 Api.memory: providers[Api.memory]["meta-reference-faiss"],
             },
