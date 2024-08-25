@@ -52,10 +52,35 @@ def available_distribution_specs() -> List[DistributionSpec]:
             },
         ),
         DistributionSpec(
-            spec_id="test-memory",
-            description="Just a test distribution spec for testing memory bank APIs",
+            spec_id="test-agentic",
+            description="Test agentic with others as remote",
             provider_specs={
+                Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
+                Api.inference: remote_spec(Api.inference),
+                Api.memory: remote_spec(Api.memory),
+                Api.safety: remote_spec(Api.safety),
+            },
+        ),
+        DistributionSpec(
+            spec_id="test-inference",
+            description="Test inference provider",
+            provider_specs={
+                Api.inference: providers[Api.inference]["meta-reference"],
+            },
+        ),
+        DistributionSpec(
+            spec_id="test-memory",
+            description="Test memory provider",
+            provider_specs={
+                Api.inference: providers[Api.inference]["meta-reference"],
                 Api.memory: providers[Api.memory]["meta-reference-faiss"],
+            },
+        ),
+        DistributionSpec(
+            spec_id="test-safety",
+            description="Test safety provider",
+            provider_specs={
+                Api.safety: providers[Api.safety]["meta-reference"],
             },
         ),
     ]

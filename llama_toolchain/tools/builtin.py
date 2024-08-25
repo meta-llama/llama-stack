@@ -22,6 +22,7 @@ from .ipython_tool.code_execution import (
 )
 
 from llama_toolchain.inference.api import *  # noqa: F403
+from llama_toolchain.agentic_system.api import *  # noqa: F403
 
 from .base import BaseTool
 
@@ -55,9 +56,6 @@ class SingleMessageBuiltinTool(BaseTool):
             tool_name=tool_call.tool_name,
             content=response,
         )
-        if attachment := interpret_content_as_attachment(response):
-            message.content = attachment
-
         return [message]
 
     @abstractmethod
@@ -316,7 +314,4 @@ class CodeInterpreterTool(BaseTool):
             tool_name=tool_call.tool_name,
             content="\n".join(pieces),
         )
-        if attachment := interpret_content_as_attachment(res["stdout"]):
-            message.content = attachment
-
         return [message]

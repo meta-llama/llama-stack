@@ -160,7 +160,6 @@ class FaissMemoryImpl(Memory):
         config: MemoryBankConfig,
         url: Optional[URL] = None,
     ) -> MemoryBank:
-        print("Creating memory bank")
         assert url is None, "URL is not supported for this implementation"
         assert (
             config.type == MemoryBankType.vector.value

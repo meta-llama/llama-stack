@@ -12,9 +12,6 @@ from typing import Dict, List
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_toolchain.agentic_system.api import *  # noqa: F403
 
-# TODO: this is symptomatic of us needing to pull more tooling related utilities
-from llama_toolchain.tools.builtin import interpret_content_as_attachment
-
 
 class CustomTool:
     """
@@ -94,9 +91,6 @@ class SingleMessageCustomTool(CustomTool):
             tool_name=tool_call.tool_name,
             content=response_str,
         )
-        if attachment := interpret_content_as_attachment(response_str):
-            message.content = attachment
-
         return [message]
 
     @abstractmethod

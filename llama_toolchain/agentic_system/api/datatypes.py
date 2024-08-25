@@ -77,6 +77,7 @@ class FunctionCallToolDefinition(ToolDefinitionCommon):
     type: Literal[AgenticSystemTool.function_call.value] = (
         AgenticSystemTool.function_call.value
     )
+    function_name: str
     description: str
     parameters: Dict[str, ToolParamDefinition]
     remote_execution: Optional[RestAPIExecutionConfig] = None

@@ -214,7 +214,9 @@ def create_dynamic_typed_route(func: Any, method: str):
         # and some in the body
         endpoint.__signature__ = sig.replace(
             parameters=[
-                param.replace(annotation=Annotated[param.annotation, Body()])
+                param.replace(
+                    annotation=Annotated[param.annotation, Body(..., embed=True)]
+                )
                 for param in sig.parameters.values()
             ]
         )
