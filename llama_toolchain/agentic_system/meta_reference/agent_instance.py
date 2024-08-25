@@ -580,6 +580,7 @@ class ChatAgent(ShieldRunnerMixin):
                 name=f"memory_bank_{session.session_id}",
                 config=VectorMemoryBankConfig(
                     embedding_model="sentence-transformer/all-MiniLM-L6-v2",
+                    chunk_size_in_tokens=512,
                 ),
             )
 
@@ -619,7 +620,7 @@ class ChatAgent(ShieldRunnerMixin):
 
             documents = [
                 MemoryBankDocument(
-                    doc_id=str(uuid.uuid4()),
+                    document_id=str(uuid.uuid4()),
                     content=a.content,
                     mime_type=a.mime_type,
                     metadata={},
