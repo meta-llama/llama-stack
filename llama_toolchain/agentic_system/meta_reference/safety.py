@@ -9,12 +9,13 @@ from typing import List
 from llama_models.llama3.api.datatypes import Message, Role, UserMessage
 from termcolor import cprint
 
-from llama_toolchain.safety.api.datatypes import (
+from llama_toolchain.safety.api import (
     OnViolationAction,
+    RunShieldRequest,
+    Safety,
     ShieldDefinition,
     ShieldResponse,
 )
-from llama_toolchain.safety.api.endpoints import RunShieldRequest, Safety
 
 
 class SafetyException(Exception):  # noqa: N818

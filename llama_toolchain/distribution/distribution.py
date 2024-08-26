@@ -7,13 +7,13 @@
 import inspect
 from typing import Dict, List
 
-from llama_toolchain.agentic_system.api.endpoints import AgenticSystem
+from llama_toolchain.agentic_system.api import AgenticSystem
 from llama_toolchain.agentic_system.providers import available_agentic_system_providers
-from llama_toolchain.inference.api.endpoints import Inference
+from llama_toolchain.inference.api import Inference
 from llama_toolchain.inference.providers import available_inference_providers
-from llama_toolchain.memory.api.endpoints import Memory
+from llama_toolchain.memory.api import Memory
 from llama_toolchain.memory.providers import available_memory_providers
-from llama_toolchain.safety.api.endpoints import Safety
+from llama_toolchain.safety.api import Safety
 from llama_toolchain.safety.providers import available_safety_providers
 
 from .datatypes import (
