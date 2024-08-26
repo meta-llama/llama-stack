@@ -185,15 +185,3 @@ class Inference(Protocol):
         model: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse: ...
-
-    @webmethod(route="/inference/batch_completion")
-    async def batch_completion(
-        self,
-        request: BatchCompletionRequest,
-    ) -> BatchCompletionResponse: ...
-
-    @webmethod(route="/inference/batch_chat_completion")
-    async def batch_chat_completion(
-        self,
-        request: BatchChatCompletionRequest,
-    ) -> BatchChatCompletionResponse: ...
