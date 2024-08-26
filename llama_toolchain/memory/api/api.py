@@ -123,6 +123,7 @@ class Memory(Protocol):
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
+        ttl_seconds: Optional[int] = None,
     ) -> None: ...
 
     @webmethod(route="/memory_bank/update")

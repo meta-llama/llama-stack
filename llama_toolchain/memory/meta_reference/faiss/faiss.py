@@ -187,6 +187,7 @@ class FaissMemoryImpl(Memory):
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
+        ttl_seconds: Optional[int] = None,
     ) -> None:
         assert bank_id in self.states, f"Bank {bank_id} not found"
         state = self.states[bank_id]

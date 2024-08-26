@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List
 
-from llama_models.llama3.api.datatypes import Attachment, Message
+from llama_models.llama3.api.datatypes import interleaved_text_media_as_str, Message
 from llama_toolchain.safety.api.datatypes import *  # noqa: F403
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
@@ -30,18 +30,7 @@ class ShieldBase(ABC):
 
 
 def message_content_as_str(message: Message) -> str:
-    def _to_str(content: Union[str, Attachment]) -> str:
-        if isinstance(content, str):
-            return content
-        elif isinstance(content, Attachment):
-            return f"File: {str(content.url)}"
-        else:
-            raise
-
-    if isinstance(message.content, list) or isinstance(message.content, tuple):
-        return "\n".join([_to_str(c) for c in message.content])
-    else:
-        return _to_str(message.content)
+    return interleaved_text_media_as_str(message.content)
 
 
 # For shields that operate on simple strings
