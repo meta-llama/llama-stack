@@ -3,16 +3,20 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
 
 from typing import List, Optional, Protocol
+
+from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-
-from llama_models.schema_utils import webmethod
-from .datatypes import *  # noqa: F403
 
 
 @json_schema_type

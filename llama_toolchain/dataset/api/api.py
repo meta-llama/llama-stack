@@ -5,11 +5,11 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol
 
 from llama_models.llama3.api.datatypes import URL
 
-from llama_models.schema_utils import json_schema_type
+from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel
 
@@ -32,3 +32,31 @@ class TrainEvalDataset(BaseModel):
     columns: Dict[str, TrainEvalDatasetColumnType]
     content_url: URL
     metadata: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class CreateDatasetRequest(BaseModel):
+    """Request to create a dataset."""
+
+    uuid: str
+    dataset: TrainEvalDataset
+
+
+class Datasets(Protocol):
+    @webmethod(route="/datasets/create")
+    def create_dataset(
+        self,
+        request: CreateDatasetRequest,
+    ) -> None: ...
+
+    @webmethod(route="/datasets/get")
+    def get_dataset(
+        self,
+        dataset_uuid: str,
+    ) -> TrainEvalDataset: ...
+
+    @webmethod(route="/datasets/delete")
+    def delete_dataset(
+        self,
+        dataset_uuid: str,
+    ) -> None: ...

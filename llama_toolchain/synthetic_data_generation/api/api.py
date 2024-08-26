@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from enum import Enum
+
 from typing import Any, Dict, List, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
@@ -12,7 +14,17 @@ from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_toolchain.reward_scoring.api.datatypes import *  # noqa: F403
-from .datatypes import *  # noqa: F403
+
+
+class FilteringFunction(Enum):
+    """The type of filtering function."""
+
+    none = "none"
+    random = "random"
+    top_k = "top_k"
+    top_p = "top_p"
+    top_k_top_p = "top_k_top_p"
+    sigmoid = "sigmoid"
 
 
 @json_schema_type

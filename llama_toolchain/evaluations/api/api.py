@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from enum import Enum
 from typing import List, Protocol
 
 from llama_models.schema_utils import webmethod
@@ -11,9 +12,32 @@ from llama_models.schema_utils import webmethod
 from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from .datatypes import *  # noqa: F403
 from llama_toolchain.dataset.api.datatypes import *  # noqa: F403
 from llama_toolchain.common.training_types import *  # noqa: F403
+
+
+class TextGenerationMetric(Enum):
+    perplexity = "perplexity"
+    rouge = "rouge"
+    bleu = "bleu"
+
+
+class QuestionAnsweringMetric(Enum):
+    em = "em"
+    f1 = "f1"
+
+
+class SummarizationMetric(Enum):
+    rouge = "rouge"
+    bleu = "bleu"
+
+
+class EvaluationJob(BaseModel):
+    job_uuid: str
+
+
+class EvaluationJobLogStream(BaseModel):
+    job_uuid: str
 
 
 class EvaluateTaskRequestCommon(BaseModel):

@@ -5,13 +5,12 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Protocol, Union
 
-from llama_models.llama3.api.datatypes import ToolParamDefinition
-from llama_models.schema_utils import json_schema_type
-
+from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, validator
 
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_toolchain.common.deployment_types import RestAPIExecutionConfig
 
 
@@ -70,3 +69,22 @@ class ShieldResponse(BaseModel):
             except ValueError:
                 return v
         return v
+
+
+@json_schema_type
+class RunShieldRequest(BaseModel):
+    messages: List[Message]
+    shields: List[ShieldDefinition]
+
+
+@json_schema_type
+class RunShieldResponse(BaseModel):
+    responses: List[ShieldResponse]
+
+
+class Safety(Protocol):
+    @webmethod(route="/safety/run_shields")
+    async def run_shields(
+        self,
+        request: RunShieldRequest,
+    ) -> RunShieldResponse: ...
