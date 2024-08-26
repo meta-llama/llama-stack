@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from llama_models.schema_utils import json_schema_type
 
@@ -59,9 +59,6 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 class RemoteProviderConfig(BaseModel):
     base_url: str = Field(..., description="The base URL for the llama stack provider")
-    api_key: Optional[str] = Field(
-        ..., description="API key, if needed, for the provider"
-    )
 
     @validator("base_url")
     @classmethod
