@@ -63,7 +63,8 @@ class ModelTemplate(Subcommand):
                     rendered += colored(tok, "yellow", attrs=["bold"])
                 else:
                     rendered += tok
-            rendered += "\n"
+
+            rendered = rendered.replace("\n", "↵\n")
             print_table(
                 [
                     ("Name", colored(template.template_name, "white", attrs=["bold"])),
