@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from llama_models.llama3.api.datatypes import interleaved_text_media_as_str, Message
-from llama_toolchain.safety.api.datatypes import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 

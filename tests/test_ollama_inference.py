@@ -14,8 +14,10 @@ from llama_models.llama3.api.datatypes import (
     ToolResponseMessage,
     UserMessage,
 )
-from llama_toolchain.inference.api.datatypes import ChatCompletionResponseEventType
-from llama_toolchain.inference.api.endpoints import ChatCompletionRequest
+from llama_toolchain.inference.api import (
+    ChatCompletionRequest,
+    ChatCompletionResponseEventType,
+)
 from llama_toolchain.inference.ollama.config import OllamaImplConfig
 from llama_toolchain.inference.ollama.ollama import get_provider_impl
 
@@ -62,7 +64,7 @@ class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
         iterator = self.api.chat_completion(request)
         async for r in iterator:
             response = r
-
+        print(response.completion_message.content)
         self.assertTrue("Paris" in response.completion_message.content)
         self.assertEqual(
             response.completion_message.stop_reason, StopReason.end_of_turn

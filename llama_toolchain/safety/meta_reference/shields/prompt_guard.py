@@ -14,7 +14,7 @@ from termcolor import cprint
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from .base import message_content_as_str, OnViolationAction, ShieldResponse, TextShield
-from llama_toolchain.safety.api.datatypes import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 
 
 class PromptGuardShield(TextShield):
