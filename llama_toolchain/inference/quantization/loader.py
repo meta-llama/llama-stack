@@ -14,12 +14,12 @@ import torch
 
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
 from llama_models.llama3.api.model import Transformer, TransformerBlock
+from llama_toolchain.inference.api import QuantizationType
 
 from llama_toolchain.inference.api.config import (
     CheckpointQuantizationFormat,
     MetaReferenceImplConfig,
 )
-from llama_toolchain.inference.api.datatypes import QuantizationType
 
 from termcolor import cprint
 from torch import Tensor

@@ -13,7 +13,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_toolchain.reward_scoring.api.datatypes import *  # noqa: F403
+from llama_toolchain.reward_scoring.api import *  # noqa: F403
 
 
 class FilteringFunction(Enum):

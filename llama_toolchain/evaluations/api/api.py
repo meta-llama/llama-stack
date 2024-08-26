@@ -12,7 +12,7 @@ from llama_models.schema_utils import webmethod
 from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_toolchain.dataset.api.datatypes import *  # noqa: F403
+from llama_toolchain.dataset.api import *  # noqa: F403
 from llama_toolchain.common.training_types import *  # noqa: F403
 
 
