@@ -30,24 +30,13 @@ async def get_provider_impl(config: FaissImplConfig, _deps: Dict[Api, ProviderSp
     return impl
 
 
-# This should be a broader utility
-# This should support local file URLs and data URLs also
 async def content_from_doc(doc: MemoryBankDocument) -> str:
     if isinstance(doc.content, URL):
         async with httpx.AsyncClient() as client:
             r = await client.get(doc.content.uri)
             return r.text
 
-    def _process(c):
-        if isinstance(c, str):
-            return c
-        else:
-            return "<media>"
-
-    if isinstance(doc.content, list):
-        return " ".join([_process(c) for c in doc.content])
-    else:
-        return _process(doc.content)
+    return interleaved_text_media_as_str(doc.content)
 
 
 def make_overlapped_chunks(
