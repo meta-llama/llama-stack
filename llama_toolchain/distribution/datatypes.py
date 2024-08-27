@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from llama_models.schema_utils import json_schema_type
 
