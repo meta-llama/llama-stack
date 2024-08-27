@@ -115,7 +115,10 @@ class TogetherInference(Inference):
             )
             stop_reason = None
             if r.choices[0].finish_reason:
-                if r.choices[0].finish_reason == "stop":
+                if (
+                    r.choices[0].finish_reason == "stop"
+                    or r.choices[0].finish_reason == "eos"
+                ):
                     stop_reason = StopReason.end_of_turn
                 elif r.choices[0].finish_reason == "length":
                     stop_reason = StopReason.out_of_tokens
@@ -147,7 +150,11 @@ class TogetherInference(Inference):
                 **options,
             ):
                 if chunk.choices[0].finish_reason:
-                    if stop_reason is None and chunk.choices[0].finish_reason == "stop":
+                    if (
+                        stop_reason is None and chunk.choices[0].finish_reason == "stop"
+                    ) or (
+                        stop_reason is None and chunk.choices[0].finish_reason == "eos"
+                    ):
                         stop_reason = StopReason.end_of_turn
                     elif (
                         stop_reason is None
