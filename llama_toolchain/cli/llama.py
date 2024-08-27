@@ -6,6 +6,7 @@
 
 import argparse
 
+from .api import ApiParser
 from .distribution import DistributionParser
 from .download import Download
 from .model import ModelParser
@@ -30,6 +31,7 @@ class LlamaCLIParser:
         Download.create(subparsers)
         ModelParser.create(subparsers)
         DistributionParser.create(subparsers)
+        ApiParser.create(subparsers)
 
         # Import sub-commands from agentic_system if they exist
         try:

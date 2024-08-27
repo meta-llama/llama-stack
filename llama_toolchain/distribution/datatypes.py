@@ -43,6 +43,13 @@ class InlineProviderSpec(ProviderSpec):
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
+    docker_image: Optional[str] = Field(
+        default=None,
+        description="""
+The docker image to use for this implementation. If one is provided, pip_packages will be ignored.
+If a provider depends on other providers, the dependencies MUST NOT specify a docker image.
+""",
+    )
     module: str = Field(
         ...,
         description="""

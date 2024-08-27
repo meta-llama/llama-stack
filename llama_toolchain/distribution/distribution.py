@@ -42,6 +42,10 @@ def distribution_dependencies(distribution: DistributionSpec) -> List[str]:
     ] + SERVER_DEPENDENCIES
 
 
+def stack_apis() -> List[Api]:
+    return [Api.inference, Api.safety, Api.agentic_system, Api.memory]
+
+
 def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
     apis = {}
 
