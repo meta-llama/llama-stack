@@ -64,6 +64,18 @@ Fully-qualified name of the module to import. The module is expected to have:
     )
 
 
+@json_schema_type
+class AdapterSpec(BaseModel):
+    pip_packages: List[str] = Field(
+        default_factory=list,
+        description="The pip dependencies needed for this implementation",
+    )
+    config_class: str = Field(
+        ...,
+        description="Fully-qualified classname of the config for this provider",
+    )
+
+
 class RemoteProviderConfig(BaseModel):
     base_url: str = Field(..., description="The base URL for the llama stack provider")
 
@@ -82,6 +94,14 @@ class RemoteProviderSpec(ProviderSpec):
         description="""
 Fully-qualified name of the module to import. The module is expected to have:
  - `get_client_impl(base_url)`: returns a client which can be used to call the remote implementation
+""",
+    )
+    adapter: Optional[AdapterSpec] = Field(
+        default=None,
+        description="""
+If some code is needed to convert the remote responses into Llama Stack compatible
+API responses, specify the adapter here. If not specified, it indicates the remote
+as being "Llama Stack compatible"
 """,
     )
     config_class: str = "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
