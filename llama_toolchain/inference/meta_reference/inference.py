@@ -104,6 +104,7 @@ class MetaReferenceInferenceImpl(Inference):
                 top_p=request.sampling_params.top_p,
                 max_gen_len=request.sampling_params.max_tokens,
                 logprobs=request.logprobs,
+                tool_prompt_format=request.tool_prompt_format,
             ):
                 buffer += token_result.text
                 tokens.append(token_result.token)
