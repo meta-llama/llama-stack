@@ -49,7 +49,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.inference: providers[Api.inference]["meta-ollama"],
                 Api.safety: providers[Api.safety]["meta-reference"],
                 Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
-                Api.memory: remote_spec(Api.memory),
+                Api.memory: providers[Api.memory]["meta-reference-faiss"],
             },
         ),
         DistributionSpec(

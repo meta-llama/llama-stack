@@ -68,6 +68,7 @@ MemoryBankConfig = Annotated[
 class Chunk(BaseModel):
     content: InterleavedTextMedia
     token_count: int
+    document_id: str
 
 
 @json_schema_type

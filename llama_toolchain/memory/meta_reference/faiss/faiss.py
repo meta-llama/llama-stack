@@ -89,6 +89,7 @@ class BankState:
                 self.chunk_by_index[indexlen + i] = Chunk(
                     content=chunk[0],
                     token_count=chunk[1],
+                    document_id=doc.document_id,
                 )
                 print(f"Adding chunk #{indexlen + i} tokens={chunk[1]}")
                 self.id_by_index[indexlen + i] = doc.document_id
