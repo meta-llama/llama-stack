@@ -81,13 +81,12 @@ def configure_llama_provider(config_file: Path) -> None:
         provider_spec = providers[provider_id]
         cprint(f"Configuring API surface: {api}", "white", attrs=["bold"])
         config_type = instantiate_class_type(provider_spec.config_class)
-        print(f"Config type: {config_type}")
         provider_config = prompt_for_config(
             config_type,
         )
         print("")
 
-        provider_configs[api.value] = {
+        provider_configs[api] = {
             "provider_id": provider_id,
             **provider_config.dict(),
         }
@@ -97,4 +96,4 @@ def configure_llama_provider(config_file: Path) -> None:
         to_write = json.loads(json.dumps(config.dict(), cls=EnumEncoder))
         fp.write(yaml.dump(to_write, sort_keys=False))
 
-    print(f"YAML configuration has been written to {config_path}")
+    print(f"YAML configuration has been written to {config_file}")

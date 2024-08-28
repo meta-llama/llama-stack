@@ -71,7 +71,6 @@ def prompt_for_config(
     """
     config_data = {}
 
-    print(f"Configuring {config_type.__name__}:")
     for field_name, field in config_type.__fields__.items():
         field_type = field.annotation
 
@@ -86,7 +85,6 @@ def prompt_for_config(
                 if not isinstance(field.default, PydanticUndefinedType)
                 else None
             )
-        print(f"  {field_name}: {field_type} (default: {default_value})")
         is_required = field.is_required
 
         # Skip fields with Literal type

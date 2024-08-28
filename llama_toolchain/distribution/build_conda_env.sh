@@ -10,7 +10,13 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-echo "llama-toolchain-dir=$LLAMA_TOOLCHAIN_DIR"
+if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
+  echo "Using llama-toolchain-dir=$LLAMA_TOOLCHAIN_DIR"
+fi
+if [ -n "$LLAMA_MODELS_DIR" ]; then
+  echo "Using llama-models-dir=$LLAMA_MODELS_DIR"
+fi
+
 set -euo pipefail
 
 if [ "$#" -ne 3 ]; then
@@ -82,9 +88,9 @@ ensure_conda_env_python310() {
       fi
 
       echo "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR"
-      pip install -e "$LLAMA_TOOLCHAIN_DIR"
+      pip install --no-cache-dir -e "$LLAMA_TOOLCHAIN_DIR"
     else
-      pip install llama-toolchain
+      pip install --no-cache-dir llama-toolchain
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -95,7 +101,7 @@ ensure_conda_env_python310() {
 
       echo "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR"
       pip uninstall -y llama-models
-      pip install -e "$LLAMA_MODELS_DIR"
+      pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
     fi
 
     # Install pip dependencies

@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import argparse
+import json
 import os
 import random
 import string
@@ -137,6 +138,7 @@ class ApiBuild(Subcommand):
     def _run_api_build_command(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.distribution.distribution import api_providers
+        from llama_toolchain.common.serialize import EnumEncoder
 
         os.makedirs(BUILDS_BASE_DIR, exist_ok=True)
         all_providers = api_providers()
@@ -174,7 +176,7 @@ class ApiBuild(Subcommand):
         }
         with open(package_file, "w") as f:
             c = PackageConfig(
-                built_at=datetime.now(),
+                built_at=str(datetime.now()),
                 package_name=package_name,
                 docker_image=(
                     package_name if args.type == BuildType.container.value else None
@@ -184,7 +186,8 @@ class ApiBuild(Subcommand):
                 ),
                 providers=stub_config,
             )
-            f.write(yaml.dump(c.dict(), sort_keys=False))
+            to_write = json.loads(json.dumps(c.dict(), cls=EnumEncoder))
+            f.write(yaml.dump(to_write, sort_keys=False))
 
         if args.type == BuildType.container.value:
             script = pkg_resources.resource_filename(
@@ -209,10 +212,14 @@ class ApiBuild(Subcommand):
             ]
 
         return_code = run_with_pty(args)
-        assert return_code == 0, cprint(
-            f"Failed to build target {package_name}", color="red"
-        )
+        if return_code != 0:
+            cprint(
+                f"Failed to build target {package_name} with return code {return_code}",
+                color="red",
+            )
+            return
+
         cprint(
-            f"Target `{target_name}` built with configuration at {str(package_file)}",
+            f"Target `{package_name}` built with configuration at {str(package_file)}",
             color="green",
         )
