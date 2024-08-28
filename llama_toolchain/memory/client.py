@@ -6,7 +6,7 @@
 
 import asyncio
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
@@ -16,7 +16,7 @@ from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 from .api import *  # noqa: F403
 
 
-async def get_provider_impl(config: RemoteProviderConfig) -> Memory:
+async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Memory:
     return MemoryClient(config.url)
 
 

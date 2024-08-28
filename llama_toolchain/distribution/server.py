@@ -38,7 +38,7 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from .datatypes import Api, ProviderSpec, RemoteProviderSpec
+from .datatypes import Api, InlineProviderSpec, ProviderSpec, RemoteProviderSpec
 from .distribution import api_endpoints, api_providers
 from .dynamic import instantiate_provider
 
@@ -230,10 +230,9 @@ def topological_sort(providers: List[ProviderSpec]) -> List[ProviderSpec]:
     def dfs(a: ProviderSpec, visited: Set[Api], stack: List[Api]):
         visited.add(a.api)
 
-        if not isinstance(a, RemoteProviderSpec):
-            for api in a.api_dependencies:
-                if api not in visited:
-                    dfs(by_id[api], visited, stack)
+        for api in a.api_dependencies:
+            if api not in visited:
+                dfs(by_id[api], visited, stack)
 
         stack.append(a.api)
 
@@ -261,7 +260,10 @@ def resolve_impls(
                 f"Could not find provider_spec config for {api}. Please add it to the config"
             )
 
-        deps = {api: impls[api] for api in provider_spec.api_dependencies}
+        if isinstance(provider_spec, InlineProviderSpec):
+            deps = {api: impls[api] for api in provider_spec.api_dependencies}
+        else:
+            deps = {}
         provider_config = provider_configs[api.value]
         impl = instantiate_provider(provider_spec, provider_config, deps)
         impls[api] = impl
@@ -302,7 +304,7 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
             and provider_spec.adapter is None
         ):
             for endpoint in endpoints:
-                url = impl.base_url + endpoint.route
+                url = impl.__provider_config__.url
                 getattr(app, endpoint.method)(endpoint.route)(
                     create_dynamic_passthrough(url)
                 )

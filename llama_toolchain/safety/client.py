@@ -6,11 +6,12 @@
 
 import asyncio
 
+from typing import Any
+
 import fire
 import httpx
 
 from llama_models.llama3.api.datatypes import UserMessage
-
 from pydantic import BaseModel
 from termcolor import cprint
 
@@ -19,7 +20,7 @@ from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 from .api import *  # noqa: F403
 
 
-async def get_provider_impl(config: RemoteProviderConfig) -> Safety:
+async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Safety:
     return SafetyClient(config.url)
 
 

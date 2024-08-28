@@ -27,7 +27,7 @@ def available_inference_providers() -> List[ProviderSpec]:
             module="llama_toolchain.inference.meta_reference",
             config_class="llama_toolchain.inference.meta_reference.MetaReferenceImplConfig",
         ),
-        adapter_provider_spec(
+        remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_id="ollama",

@@ -8,7 +8,7 @@ import asyncio
 import importlib
 from typing import Any, Dict
 
-from .datatypes import InlineProviderSpec, ProviderSpec, RemoteProviderConfig
+from .datatypes import ProviderSpec, RemoteProviderConfig, RemoteProviderSpec
 
 
 def instantiate_class_type(fully_qualified_name):
@@ -26,16 +26,21 @@ def instantiate_provider(
     module = importlib.import_module(provider_spec.module)
 
     config_type = instantiate_class_type(provider_spec.config_class)
-    if isinstance(provider_spec, InlineProviderSpec):
-        if provider_spec.is_adapter:
+    if isinstance(provider_spec, RemoteProviderSpec):
+        if provider_spec.adapter:
             if not issubclass(config_type, RemoteProviderConfig):
                 raise ValueError(
                     f"Config class {provider_spec.config_class} does not inherit from RemoteProviderConfig"
                 )
-    config = config_type(**provider_config)
-
-    if isinstance(provider_spec, InlineProviderSpec):
-        args = [config, deps]
+            method = "get_adapter_impl"
+        else:
+            method = "get_client_impl"
     else:
-        args = [config]
-    return asyncio.run(module.get_provider_impl(*args))
+        method = "get_provider_impl"
+
+    config = config_type(**provider_config)
+    fn = getattr(module, method)
+    impl = asyncio.run(fn(config, deps))
+    impl.__provider_spec__ = provider_spec
+    impl.__provider_config__ = config
+    return impl

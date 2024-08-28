@@ -36,16 +36,14 @@ class ProviderSpec(BaseModel):
         ...,
         description="Fully-qualified classname of the config for this provider",
     )
+    api_dependencies: List[Api] = Field(
+        default_factory=list,
+        description="Higher-level API surfaces may depend on other providers to provide their functionality",
+    )
 
 
 @json_schema_type
 class AdapterSpec(BaseModel):
-    """
-    If some code is needed to convert the remote responses into Llama Stack compatible
-    API responses, specify the adapter here. If not specified, it indicates the remote
-    as being "Llama Stack compatible"
-    """
-
     adapter_id: str = Field(
         ...,
         description="Unique identifier for this adapter",
@@ -89,11 +87,6 @@ Fully-qualified name of the module to import. The module is expected to have:
  - `get_provider_impl(config, deps)`: returns the local implementation
 """,
     )
-    api_dependencies: List[Api] = Field(
-        default_factory=list,
-        description="Higher-level API surfaces may depend on other providers to provide their functionality",
-    )
-    is_adapter: bool = False
 
 
 class RemoteProviderConfig(BaseModel):
@@ -113,34 +106,41 @@ def remote_provider_id(adapter_id: str) -> str:
 
 @json_schema_type
 class RemoteProviderSpec(ProviderSpec):
-    provider_id: str = "remote"
-    config_class: str = "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
+    adapter: Optional[AdapterSpec] = Field(
+        default=None,
+        description="""
+If some code is needed to convert the remote responses into Llama Stack compatible
+API responses, specify the adapter here. If not specified, it indicates the remote
+as being "Llama Stack compatible"
+""",
+    )
 
     @property
     def module(self) -> str:
+        if self.adapter:
+            return self.adapter.module
         return f"llama_toolchain.{self.api.value}.client"
 
+    @property
+    def pip_packages(self) -> List[str]:
+        if self.adapter:
+            return self.adapter.pip_packages
+        return []
 
-def remote_provider_spec(api: Api) -> RemoteProviderSpec:
-    return RemoteProviderSpec(api=api)
 
-
-# TODO: use computed_field to avoid this wrapper
-# the @computed_field decorator
-def adapter_provider_spec(api: Api, adapter: AdapterSpec) -> InlineProviderSpec:
+# Can avoid this by using Pydantic computed_field
+def remote_provider_spec(
+    api: Api, adapter: Optional[AdapterSpec] = None
+) -> RemoteProviderSpec:
     config_class = (
         adapter.config_class
-        if adapter.config_class
+        if adapter and adapter.config_class
         else "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
     )
+    provider_id = remote_provider_id(adapter.adapter_id) if adapter else "remote"
 
-    return InlineProviderSpec(
-        api=api,
-        provider_id=remote_provider_id(adapter.adapter_id),
-        pip_packages=adapter.pip_packages,
-        module=adapter.module,
-        config_class=config_class,
-        is_adapter=True,
+    return RemoteProviderSpec(
+        api=api, provider_id=provider_id, config_class=config_class, adapter=adapter
     )
 
 

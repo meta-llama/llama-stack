@@ -5,12 +5,10 @@
 # the root directory of this source tree.
 
 import asyncio
-from typing import Dict
 
 from llama_models.sku_list import resolve_model
 
 from llama_toolchain.common.model_utils import model_local_dir
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.safety.api import *  # noqa
 
 from .config import SafetyConfig
@@ -23,14 +21,6 @@ from .shields import (
     ShieldBase,
     ThirdPartyShield,
 )
-
-
-async def get_provider_impl(config: SafetyConfig, _deps: Dict[Api, ProviderSpec]):
-    assert isinstance(config, SafetyConfig), f"Unexpected config type: {type(config)}"
-
-    impl = MetaReferenceSafetyImpl(config)
-    await impl.initialize()
-    return impl
 
 
 def resolve_and_get_path(model_name: str) -> str:

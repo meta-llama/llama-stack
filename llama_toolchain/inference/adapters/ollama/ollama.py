@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator
+from typing import AsyncGenerator
 
 import httpx
 
@@ -14,32 +14,16 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 from ollama import AsyncClient
 
-from llama_toolchain.distribution.datatypes import RemoteProviderConfig
-from llama_toolchain.inference.api import (
-    ChatCompletionRequest,
-    ChatCompletionResponse,
-    ChatCompletionResponseEvent,
-    ChatCompletionResponseEventType,
-    ChatCompletionResponseStreamChunk,
-    CompletionRequest,
-    Inference,
-    ToolCallDelta,
-    ToolCallParseStatus,
-)
+from llama_toolchain.inference.api import *  # noqa: F403
 from llama_toolchain.inference.prepare_messages import prepare_messages
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
 OLLAMA_SUPPORTED_SKUS = {
+    # "Meta-Llama3.1-8B-Instruct": "llama3.1",
     "Meta-Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
     "Meta-Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
 }
-
-
-async def get_provider_impl(config: RemoteProviderConfig, _deps: Any) -> Inference:
-    impl = OllamaInferenceAdapter(config.url)
-    await impl.initialize()
-    return impl
 
 
 class OllamaInferenceAdapter(Inference):

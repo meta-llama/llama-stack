@@ -6,7 +6,7 @@
 
 import asyncio
 import json
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 import fire
 import httpx
@@ -26,7 +26,7 @@ from .api import (
 from .event_logger import EventLogger
 
 
-async def get_provider_impl(config: RemoteProviderConfig) -> Inference:
+async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Inference:
     return InferenceClient(config.url)
 
 

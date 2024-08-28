@@ -15,19 +15,8 @@ import numpy as np
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.memory.api import *  # noqa: F403
 from .config import FaissImplConfig
-
-
-async def get_provider_impl(config: FaissImplConfig, _deps: Dict[Api, ProviderSpec]):
-    assert isinstance(
-        config, FaissImplConfig
-    ), f"Unexpected config type: {type(config)}"
-
-    impl = FaissMemoryImpl(config)
-    await impl.initialize()
-    return impl
 
 
 async def content_from_doc(doc: MemoryBankDocument) -> str:

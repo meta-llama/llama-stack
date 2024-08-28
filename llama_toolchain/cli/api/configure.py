@@ -48,7 +48,10 @@ class ApiConfigure(Subcommand):
         )
 
     def _run_api_configure_cmd(self, args: argparse.Namespace) -> None:
-        config_file = BUILDS_BASE_DIR / args.api / f"{args.name}.yaml"
+        name = args.name
+        if not name.endswith(".yaml"):
+            name += ".yaml"
+        config_file = BUILDS_BASE_DIR / args.api / name
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama api build` first"
@@ -79,10 +82,19 @@ def configure_llama_provider(config_file: Path) -> None:
             )
 
         provider_spec = providers[provider_id]
-        cprint(f"Configuring API surface: {api}", "white", attrs=["bold"])
+        cprint(
+            f"Configuring API surface: {api} ({provider_id})", "white", attrs=["bold"]
+        )
         config_type = instantiate_class_type(provider_spec.config_class)
+
+        try:
+            existing_provider_config = config_type(**stub_config)
+        except KeyError:
+            existing_provider_config = None
+
         provider_config = prompt_for_config(
             config_type,
+            existing_provider_config,
         )
         print("")
 

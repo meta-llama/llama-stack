@@ -10,7 +10,7 @@ import os
 from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import pkg_resources
 import yaml
@@ -37,26 +37,17 @@ def get_dependencies(
 ) -> Dependencies:
     from llama_toolchain.distribution.distribution import SERVER_DEPENDENCIES
 
-    def _deps(provider: ProviderSpec) -> Tuple[List[str], Optional[str]]:
-        if isinstance(provider, InlineProviderSpec):
-            return provider.pip_packages, provider.docker_image
-        else:
-            if provider.adapter:
-                return provider.adapter.pip_packages, None
-            return [], None
-
-    pip_packages, docker_image = _deps(provider)
+    pip_packages = provider.pip_packages
     for dep in dependencies.values():
-        dep_pip_packages, dep_docker_image = _deps(dep)
-        if docker_image and dep_docker_image:
+        if dep.docker_image:
             raise ValueError(
                 "You can only have the root provider specify a docker image"
             )
-
-        pip_packages.extend(dep_pip_packages)
+        pip_packages.extend(dep.pip_packages)
 
     return Dependencies(
-        docker_image=docker_image, pip_packages=pip_packages + SERVER_DEPENDENCIES
+        docker_image=provider.docker_image,
+        pip_packages=pip_packages + SERVER_DEPENDENCIES
     )
 
 
@@ -158,6 +149,7 @@ class ApiBuild(Subcommand):
         build_dir = BUILDS_BASE_DIR / args.api
         os.makedirs(build_dir, exist_ok=True)
 
+        # get these names straight. too confusing.
         provider_deps = parse_dependencies(args.dependencies or "", self.parser)
         dependencies = get_dependencies(providers[args.provider], provider_deps)
 
@@ -167,7 +159,7 @@ class ApiBuild(Subcommand):
             api.value: {
                 "provider_id": args.provider,
             },
-            **{k: {"provider_id": v} for k, v in provider_deps.items()},
+            **provider_deps,
         }
         with open(package_file, "w") as f:
             c = PackageConfig(

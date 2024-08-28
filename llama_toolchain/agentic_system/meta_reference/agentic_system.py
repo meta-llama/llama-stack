@@ -8,9 +8,8 @@
 import logging
 import os
 import uuid
-from typing import AsyncGenerator, Dict
+from typing import AsyncGenerator
 
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.inference.api import Inference
 from llama_toolchain.memory.api import Memory
 from llama_toolchain.safety.api import Safety
@@ -29,23 +28,6 @@ from .config import MetaReferenceImplConfig
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-
-async def get_provider_impl(
-    config: MetaReferenceImplConfig, deps: Dict[Api, ProviderSpec]
-):
-    assert isinstance(
-        config, MetaReferenceImplConfig
-    ), f"Unexpected config type: {type(config)}"
-
-    impl = MetaReferenceAgenticSystemImpl(
-        config,
-        deps[Api.inference],
-        deps[Api.memory],
-        deps[Api.safety],
-    )
-    await impl.initialize()
-    return impl
 
 
 AGENT_INSTANCES_BY_ID = {}

@@ -29,10 +29,9 @@ class ApiStart(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "--yaml-config",
+            "yaml_config",
             type=str,
             help="Yaml config containing the API build configuration",
-            required=True,
         )
         self.parser.add_argument(
             "--port",

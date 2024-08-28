@@ -22,6 +22,7 @@ from .datatypes import (
     DistributionSpec,
     InlineProviderSpec,
     ProviderSpec,
+    remote_provider_spec,
 )
 
 # These are the dependencies needed by the distribution server.
@@ -89,9 +90,12 @@ def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
         a.provider_id: a for a in available_agentic_system_providers()
     }
 
-    return {
+    ret = {
         Api.inference: inference_providers_by_id,
         Api.safety: safety_providers_by_id,
         Api.agentic_system: agentic_system_providers_by_id,
         Api.memory: {a.provider_id: a for a in available_memory_providers()},
     }
+    for k, v in ret.items():
+        v["remote"] = remote_provider_spec(k)
+    return ret

@@ -194,11 +194,6 @@ async def run_rag(host: str, port: int):
         MemoryToolDefinition(
             max_tokens_in_context=2048,
             memory_bank_configs=[],
-            # memory_bank_configs=[
-            #     AgenticSystemVectorMemoryBankConfig(
-            #         bank_id="970b8790-268e-4fd3-a9b1-d0e597e975ed",
-            #     )
-            # ],
         ),
     ]
 
@@ -210,8 +205,9 @@ async def run_rag(host: str, port: int):
     await _run_agent(api, tool_definitions, user_prompts, attachments)
 
 
-def main(host: str, port: int):
-    asyncio.run(run_rag(host, port))
+def main(host: str, port: int, rag: bool = False):
+    fn = run_rag if rag else run_main
+    asyncio.run(fn(host, port))
 
 
 if __name__ == "__main__":

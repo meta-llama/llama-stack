@@ -69,7 +69,7 @@ ensure_conda_env_python310() {
     conda create -n "${env_name}" python="${python_version}" -y
 
     ENVNAME="${env_name}"
-    setup_cleanup_handlers
+    # setup_cleanup_handlers
   fi
 
   eval "$(conda shell.bash hook)"
