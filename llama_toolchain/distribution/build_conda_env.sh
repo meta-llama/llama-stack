@@ -10,20 +10,29 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
+echo "llama-toolchain-dir=$LLAMA_TOOLCHAIN_DIR"
 set -euo pipefail
+
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <api_or_stack> <environment_name> <pip_dependencies>" >&2
+  echo "Example: $0 [api|stack] conda-env 'numpy pandas scipy'" >&2
+  exit 1
+fi
+
+api_or_stack="$1"
+env_name="$2"
+pip_dependencies="$3"
 
 # Define color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-error_handler() {
-  echo "Error occurred in script at line: ${1}" >&2
-  exit 1
-}
+# this is set if we actually create a new conda in which case we need to clean up
+ENVNAME=""
 
-# Set up the error trap
-trap 'error_handler ${LINENO}' ERR
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+source "$SCRIPT_DIR/common.sh"
 
 ensure_conda_env_python310() {
   local env_name="$1"
@@ -52,6 +61,9 @@ ensure_conda_env_python310() {
   else
     echo "Conda environment '${env_name}' does not exist. Creating with Python ${python_version}..."
     conda create -n "${env_name}" python="${python_version}" -y
+
+    ENVNAME="${env_name}"
+    setup_cleanup_handlers
   fi
 
   eval "$(conda shell.bash hook)"
@@ -94,19 +106,8 @@ ensure_conda_env_python310() {
   fi
 }
 
-if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <environment_name> <distribution_name> <pip_dependencies>" >&2
-  echo "Example: $0 my_env local-llama-8b 'numpy pandas scipy'" >&2
-  exit 1
-fi
-
-env_name="$1"
-distribution_name="$2"
-pip_dependencies="$3"
-
 ensure_conda_env_python310 "$env_name" "$pip_dependencies"
 
-echo -e "${GREEN}Successfully setup distribution environment. Configuring...${NC}"
+echo -e "${GREEN}Successfully setup conda environment. Configuring build...${NC}"
 
-which python3
-python3 -m llama_toolchain.cli.llama distribution configure --name "$distribution_name"
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama api configure "$api_or_stack" --name "$env_name"

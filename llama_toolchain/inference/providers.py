@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_toolchain.distribution.datatypes import *  # noqa: F403
 
 
 def available_inference_providers() -> List[ProviderSpec]:
@@ -27,13 +27,12 @@ def available_inference_providers() -> List[ProviderSpec]:
             module="llama_toolchain.inference.meta_reference",
             config_class="llama_toolchain.inference.meta_reference.MetaReferenceImplConfig",
         ),
-        InlineProviderSpec(
+        remote_provider_spec(
             api=Api.inference,
-            provider_id="meta-ollama",
-            pip_packages=[
-                "ollama",
-            ],
-            module="llama_toolchain.inference.ollama",
-            config_class="llama_toolchain.inference.ollama.OllamaImplConfig",
+            adapter=AdapterSpec(
+                adapter_id="ollama",
+                pip_packages=[],
+                module="llama_toolchain.inference.adapters.ollama",
+            ),
         ),
     ]

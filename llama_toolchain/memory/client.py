@@ -6,24 +6,23 @@
 
 import asyncio
 
-# import json
 from typing import Dict, List, Optional
 
 import fire
 import httpx
 
-# from termcolor import cprint
+from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 
 from .api import *  # noqa: F403
 
 
-async def get_client_impl(base_url: str):
-    return MemoryClient(base_url)
+async def get_adapter_impl(config: RemoteProviderConfig) -> Memory:
+    return MemoryClient(config.url)
 
 
 class MemoryClient(Memory):
     def __init__(self, base_url: str):
-        print(f"Initializing client for {base_url}")
+        print(f"Memory passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:

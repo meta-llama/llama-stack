@@ -13,6 +13,8 @@ import httpx
 from pydantic import BaseModel
 from termcolor import cprint
 
+from llama_toolchain.distribution.datatypes import RemoteProviderConfig
+
 from .api import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -24,8 +26,8 @@ from .api import (
 from .event_logger import EventLogger
 
 
-async def get_client_impl(base_url: str):
-    return InferenceClient(base_url)
+async def get_adapter_impl(config: RemoteProviderConfig) -> Inference:
+    return InferenceClient(config.url)
 
 
 def encodable_dict(d: BaseModel):
@@ -34,7 +36,7 @@ def encodable_dict(d: BaseModel):
 
 class InferenceClient(Inference):
     def __init__(self, base_url: str):
-        print(f"Initializing client for {base_url}")
+        print(f"Inference passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:

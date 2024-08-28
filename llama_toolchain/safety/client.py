@@ -10,20 +10,17 @@ import fire
 import httpx
 
 from llama_models.llama3.api.datatypes import UserMessage
+
 from pydantic import BaseModel
 from termcolor import cprint
 
-from .api import (
-    BuiltinShield,
-    RunShieldRequest,
-    RunShieldResponse,
-    Safety,
-    ShieldDefinition,
-)
+from llama_toolchain.distribution.datatypes import RemoteProviderConfig
+
+from .api import *  # noqa: F403
 
 
-async def get_client_impl(base_url: str):
-    return SafetyClient(base_url)
+async def get_adapter_impl(config: RemoteProviderConfig) -> Safety:
+    return SafetyClient(config.url)
 
 
 def encodable_dict(d: BaseModel):
@@ -32,7 +29,7 @@ def encodable_dict(d: BaseModel):
 
 class SafetyClient(Safety):
     def __init__(self, base_url: str):
-        print(f"Initializing client for {base_url}")
+        print(f"Safety passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:

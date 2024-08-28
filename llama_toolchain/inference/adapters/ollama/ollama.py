@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, Dict
+from typing import AsyncGenerator
 
 import httpx
 
@@ -14,7 +14,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 from ollama import AsyncClient
 
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
+from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 from llama_toolchain.inference.api import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -27,7 +27,6 @@ from llama_toolchain.inference.api import (
     ToolCallParseStatus,
 )
 from llama_toolchain.inference.prepare_messages import prepare_messages
-from .config import OllamaImplConfig
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
@@ -37,26 +36,21 @@ OLLAMA_SUPPORTED_SKUS = {
 }
 
 
-async def get_provider_impl(
-    config: OllamaImplConfig, _deps: Dict[Api, ProviderSpec]
-) -> Inference:
-    assert isinstance(
-        config, OllamaImplConfig
-    ), f"Unexpected config type: {type(config)}"
-    impl = OllamaInference(config)
+async def get_adapter_impl(config: RemoteProviderConfig) -> Inference:
+    impl = OllamaInferenceAdapter(config.url)
     await impl.initialize()
     return impl
 
 
-class OllamaInference(Inference):
-    def __init__(self, config: OllamaImplConfig) -> None:
-        self.config = config
+class OllamaInferenceAdapter(Inference):
+    def __init__(self, url: str) -> None:
+        self.url = url
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
 
     @property
     def client(self) -> AsyncClient:
-        return AsyncClient(host=self.config.url)
+        return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
         try:

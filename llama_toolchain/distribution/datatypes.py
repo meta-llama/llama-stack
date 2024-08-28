@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -66,36 +67,45 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 @json_schema_type
 class AdapterSpec(BaseModel):
+    adapter_id: str = Field(
+        ...,
+        description="Unique identifier for this adapter",
+    )
+    module: str = Field(
+        ...,
+        description="""
+Fully-qualified name of the module to import. The module is expected to have:
+
+ - `get_adapter_impl(config, deps)`: returns the adapter implementation
+""",
+    )
     pip_packages: List[str] = Field(
         default_factory=list,
         description="The pip dependencies needed for this implementation",
     )
-    config_class: str = Field(
-        ...,
+    config_class: Optional[str] = Field(
+        default=None,
         description="Fully-qualified classname of the config for this provider",
     )
 
 
 class RemoteProviderConfig(BaseModel):
-    base_url: str = Field(..., description="The base URL for the llama stack provider")
+    url: str = Field(..., description="The URL for the provider")
 
-    @validator("base_url")
+    @validator("url")
     @classmethod
-    def validate_base_url(cls, base_url: str) -> str:
-        if not base_url.startswith("http"):
-            raise ValueError(f"URL must start with http: {base_url}")
-        return base_url
+    def validate_url(cls, url: str) -> str:
+        if not url.startswith("http"):
+            raise ValueError(f"URL must start with http: {url}")
+        return url
+
+
+def remote_provider_id(adapter_id: str) -> str:
+    return f"remote::{adapter_id}"
 
 
 @json_schema_type
 class RemoteProviderSpec(ProviderSpec):
-    module: str = Field(
-        ...,
-        description="""
-Fully-qualified name of the module to import. The module is expected to have:
- - `get_client_impl(base_url)`: returns a client which can be used to call the remote implementation
-""",
-    )
     adapter: Optional[AdapterSpec] = Field(
         default=None,
         description="""
@@ -105,6 +115,32 @@ as being "Llama Stack compatible"
 """,
     )
     config_class: str = "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
+
+
+# need this wrapper since we don't have Pydantic v2 and that means we don't have
+# the @computed_field decorator
+def remote_provider_spec(
+    api: Api, adapter: Optional[AdapterSpec] = None
+) -> RemoteProviderSpec:
+    provider_id = (
+        remote_provider_id(adapter.adapter_id) if adapter is not None else "remote"
+    )
+    module = (
+        adapter.module if adapter is not None else f"llama_toolchain.{api.value}.client"
+    )
+    config_class = (
+        adapter.config_class
+        if adapter and adapter.config_class
+        else "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
+    )
+
+    return RemoteProviderSpec(
+        api=api,
+        provider_id=provider_id,
+        pip_packages=adapter.pip_packages if adapter is not None else [],
+        module=module,
+        config_class=config_class,
+    )
 
 
 @json_schema_type
@@ -119,13 +155,28 @@ class DistributionSpec(BaseModel):
 
 
 @json_schema_type
-class DistributionConfig(BaseModel):
-    """References to a installed / configured DistributionSpec"""
+class PackageConfig(BaseModel):
+    built_at: datetime
 
-    name: str
-    spec: str
-    conda_env: str
+    package_name: str = Field(
+        ...,
+        description="""
+Reference to the distribution this package refers to. For unregistered (adhoc) packages,
+this could be just a hash
+""",
+    )
+    docker_image: Optional[str] = Field(
+        default=None,
+        description="Reference to the docker image if this package refers to a container",
+    )
+    conda_env: Optional[str] = Field(
+        default=None,
+        description="Reference to the conda environment if this package refers to a conda environment",
+    )
     providers: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Provider configurations for each of the APIs provided by this distribution",
+        description="""
+Provider configurations for each of the APIs provided by this package. This includes configurations for
+the dependencies of these providers as well.
+""",
     )

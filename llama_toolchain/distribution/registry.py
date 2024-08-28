@@ -7,20 +7,8 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from .datatypes import Api, DistributionSpec, RemoteProviderSpec
+from .datatypes import *  # noqa: F403
 from .distribution import api_providers
-
-
-def client_module(api: Api) -> str:
-    return f"llama_toolchain.{api.value}.client"
-
-
-def remote_spec(api: Api) -> RemoteProviderSpec:
-    return RemoteProviderSpec(
-        api=api,
-        provider_id=f"{api.value}-remote",
-        module=client_module(api),
-    )
 
 
 @lru_cache()
@@ -40,13 +28,14 @@ def available_distribution_specs() -> List[DistributionSpec]:
         DistributionSpec(
             spec_id="remote",
             description="Point to remote services for all llama stack APIs",
-            provider_specs={x: remote_spec(x) for x in providers},
+            provider_specs={x: remote_provider_spec(x) for x in providers},
         ),
         DistributionSpec(
             spec_id="local-ollama",
             description="Like local, but use ollama for running LLM inference",
             provider_specs={
-                Api.inference: providers[Api.inference]["meta-ollama"],
+                # this is ODD; make this easier -- we just need a better function to retrieve registered providers
+                Api.inference: providers[Api.inference][remote_provider_id("ollama")],
                 Api.safety: providers[Api.safety]["meta-reference"],
                 Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
                 Api.memory: providers[Api.memory]["meta-reference-faiss"],
@@ -57,9 +46,9 @@ def available_distribution_specs() -> List[DistributionSpec]:
             description="Test agentic with others as remote",
             provider_specs={
                 Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
-                Api.inference: remote_spec(Api.inference),
-                Api.memory: remote_spec(Api.memory),
-                Api.safety: remote_spec(Api.safety),
+                Api.inference: remote_provider_spec(Api.inference),
+                Api.memory: remote_provider_spec(Api.memory),
+                Api.safety: remote_provider_spec(Api.safety),
             },
         ),
         DistributionSpec(

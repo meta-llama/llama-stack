@@ -264,7 +264,8 @@ def resolve_impls(dist: DistributionSpec, config: Dict[str, Any]) -> Dict[Api, A
         provider_config = provider_configs[api.value]
         if isinstance(provider_spec, RemoteProviderSpec):
             impls[api] = instantiate_client(
-                provider_spec, provider_config["base_url"].rstrip("/")
+                provider_spec,
+                provider_config,
             )
         else:
             deps = {api: impls[api] for api in provider_spec.api_dependencies}
