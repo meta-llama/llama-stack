@@ -35,4 +35,13 @@ def available_inference_providers() -> List[ProviderSpec]:
                 module="llama_toolchain.inference.adapters.ollama",
             ),
         ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_id="fireworks",
+            pip_packages=[
+                "fireworks-ai",
+            ],
+            module="llama_toolchain.inference.fireworks",
+            config_class="llama_toolchain.inference.fireworks.FireworksImplConfig",
+        ),
     ]
