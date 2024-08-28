@@ -47,7 +47,7 @@ def get_dependencies(
 
     return Dependencies(
         docker_image=provider.docker_image,
-        pip_packages=pip_packages + SERVER_DEPENDENCIES
+        pip_packages=pip_packages + SERVER_DEPENDENCIES,
     )
 
 
@@ -161,18 +161,29 @@ class ApiBuild(Subcommand):
             },
             **provider_deps,
         }
-        with open(package_file, "w") as f:
+
+        # properly handle the case where package exists but has
+        # inconsistent configuration for the providers. if possible,
+        # we don't want to overwrite the existing configuration.
+        if package_file.exists():
+            cprint(
+                f"Build `{package_name}` exists; will reconfigure",
+                color="yellow",
+            )
+            c = PackageConfig(**yaml.safe_load(package_file.read_text()))
+        else:
             c = PackageConfig(
                 built_at=datetime.now(),
                 package_name=package_name,
-                docker_image=(
-                    package_name if args.type == BuildType.container.value else None
-                ),
-                conda_env=(
-                    package_name if args.type == BuildType.conda_env.value else None
-                ),
                 providers=stub_config,
             )
+
+        c.docker_image = (
+            package_name if args.type == BuildType.container.value else None
+        )
+        c.conda_env = package_name if args.type == BuildType.conda_env.value else None
+
+        with open(package_file, "w") as f:
             to_write = json.loads(json.dumps(c.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
 

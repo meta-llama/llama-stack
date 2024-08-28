@@ -9,13 +9,13 @@ import json
 import shlex
 
 import yaml
+from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
-from termcolor import cprint
 
 
-class DistributionConfigure(Subcommand):
+class StackConfigure(Subcommand):
     """Llama cli for configuring llama toolchain configs"""
 
     def __init__(self, subparsers: argparse._SubParsersAction):
@@ -38,7 +38,7 @@ class DistributionConfigure(Subcommand):
         )
 
     def _run_distribution_configure_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.distribution.datatypes import DistributionConfig
+        from llama_toolchain.distribution.datatypes import StackConfig
         from llama_toolchain.distribution.registry import resolve_distribution_spec
 
         config_file = DISTRIBS_BASE_DIR / args.name / "config.yaml"
@@ -50,7 +50,7 @@ class DistributionConfigure(Subcommand):
 
         # we need to find the spec from the name
         with open(config_file, "r") as f:
-            config = DistributionConfig(**yaml.safe_load(f))
+            config = StackConfig(**yaml.safe_load(f))
 
         dist = resolve_distribution_spec(config.spec)
         if dist is None:
@@ -59,7 +59,7 @@ class DistributionConfigure(Subcommand):
         configure_llama_distribution(dist, config)
 
 
-def configure_llama_distribution(dist: "Distribution", config: "DistributionConfig"):
+def configure_llama_distribution(dist: "Stack", config: "StackConfig"):
     from llama_toolchain.common.exec import run_command
     from llama_toolchain.common.prompt_for_config import prompt_for_config
     from llama_toolchain.common.serialize import EnumEncoder

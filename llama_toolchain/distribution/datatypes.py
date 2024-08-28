@@ -116,6 +116,10 @@ as being "Llama Stack compatible"
     )
 
     @property
+    def docker_image(self) -> Optional[str]:
+        return None
+
+    @property
     def module(self) -> str:
         if self.adapter:
             return self.adapter.module

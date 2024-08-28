@@ -13,7 +13,7 @@ from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
 
 
-class DistributionStart(Subcommand):
+class StackStart(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(

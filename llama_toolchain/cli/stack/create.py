@@ -9,7 +9,7 @@ import argparse
 from llama_toolchain.cli.subcommand import Subcommand
 
 
-class DistributionCreate(Subcommand):
+class StackCreate(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
@@ -37,7 +37,7 @@ class DistributionCreate(Subcommand):
 
         dist = resolve_distribution_spec(args.name)
         if dist is not None:
-            self.parser.error(f"Distribution with name {args.name} already exists")
+            self.parser.error(f"Stack with name {args.name} already exists")
             return
 
         raise NotImplementedError()

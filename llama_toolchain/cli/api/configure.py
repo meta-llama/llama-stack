@@ -89,7 +89,7 @@ def configure_llama_provider(config_file: Path) -> None:
 
         try:
             existing_provider_config = config_type(**stub_config)
-        except KeyError:
+        except Exception:
             existing_provider_config = None
 
         provider_config = prompt_for_config(

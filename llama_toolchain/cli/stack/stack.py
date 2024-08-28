@@ -8,14 +8,14 @@ import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
 
-from .configure import DistributionConfigure
-from .create import DistributionCreate
-from .install import DistributionInstall
-from .list import DistributionList
-from .start import DistributionStart
+from .configure import StackConfigure
+from .create import StackCreate
+from .install import StackInstall
+from .list import StackList
+from .start import StackStart
 
 
-class DistributionParser(Subcommand):
+class StackParser(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
@@ -27,8 +27,8 @@ class DistributionParser(Subcommand):
         subparsers = self.parser.add_subparsers(title="distribution_subcommands")
 
         # Add sub-commands
-        DistributionList.create(subparsers)
-        DistributionInstall.create(subparsers)
-        DistributionCreate.create(subparsers)
-        DistributionConfigure.create(subparsers)
-        DistributionStart.create(subparsers)
+        StackList.create(subparsers)
+        StackInstall.create(subparsers)
+        StackCreate.create(subparsers)
+        StackConfigure.create(subparsers)
+        StackStart.create(subparsers)

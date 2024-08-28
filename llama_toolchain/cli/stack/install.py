@@ -10,13 +10,13 @@ import os
 import pkg_resources
 import yaml
 
+from termcolor import cprint
+
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
 
-from termcolor import cprint
 
-
-class DistributionInstall(Subcommand):
+class StackInstall(Subcommand):
     """Llama cli for configuring llama toolchain configs"""
 
     def __init__(self, subparsers: argparse._SubParsersAction):
@@ -36,7 +36,7 @@ class DistributionInstall(Subcommand):
         self.parser.add_argument(
             "--spec",
             type=str,
-            help="Distribution spec to install (try local-ollama)",
+            help="Stack spec to install (try local-ollama)",
             required=True,
             choices=[d.spec_id for d in available_distribution_specs()],
         )
@@ -54,7 +54,7 @@ class DistributionInstall(Subcommand):
 
     def _run_distribution_install_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
-        from llama_toolchain.distribution.datatypes import DistributionConfig
+        from llama_toolchain.distribution.datatypes import StackConfig
         from llama_toolchain.distribution.distribution import distribution_dependencies
         from llama_toolchain.distribution.registry import resolve_distribution_spec
 
@@ -80,7 +80,7 @@ class DistributionInstall(Subcommand):
 
         config_file = distrib_dir / "config.yaml"
         if config_file.exists():
-            c = DistributionConfig(**yaml.safe_load(config_file.read_text()))
+            c = StackConfig(**yaml.safe_load(config_file.read_text()))
             if c.spec != dist.spec_id:
                 self.parser.error(
                     f"already installed distribution with `spec={c.spec}` does not match provided spec `{args.spec}`"
@@ -93,7 +93,7 @@ class DistributionInstall(Subcommand):
                 return
         else:
             with open(config_file, "w") as f:
-                c = DistributionConfig(
+                c = StackConfig(
                     spec=dist.spec_id,
                     name=args.name,
                     conda_env=conda_env,
@@ -106,6 +106,6 @@ class DistributionInstall(Subcommand):
             f"Failed to install distribution {dist.spec_id}", color="red"
         )
         cprint(
-            f"Distribution `{args.name}` (with spec {dist.spec_id}) has been installed successfully!",
+            f"Stack `{args.name}` (with spec {dist.spec_id}) has been installed successfully!",
             color="green",
         )

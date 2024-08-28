@@ -75,7 +75,7 @@ class ApiStart(Subcommand):
                 config.conda_env,
             ]
 
-        run_args.extend(["--yaml_config", str(config_file), "--port", str(args.port)])
+        run_args.extend([str(config_file), str(args.port)])
         if args.disable_ipv6:
             run_args.append("--disable-ipv6")
 

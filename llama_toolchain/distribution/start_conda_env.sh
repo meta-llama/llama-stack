@@ -18,15 +18,24 @@ error_handler() {
 
 trap 'error_handler ${LINENO}' ERR
 
-if [ $# -lt 2 ]; then
-  echo "Usage: $0 <environment_name> <script_args...>"
+if [ $# -lt 3 ]; then
+  echo "Usage: $0 <env_name> <yaml_config> <port> <script_args...>"
   exit 1
 fi
 
 env_name="$1"
 shift
 
+yaml_config="$1"
+shift
+
+port="$1"
+shift
+
 eval "$(conda shell.bash hook)"
 conda deactivate && conda activate "$env_name"
 
-$CONDA_PREFIX/bin/python -m llama_toolchain.distribution.server "$@"
+$CONDA_PREFIX/bin/python \
+  -m llama_toolchain.distribution.server \
+  --yaml_config "$yaml_config" \
+  --port "$port" "$@"
