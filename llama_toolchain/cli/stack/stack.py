@@ -8,9 +8,8 @@ import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
 
+from .build import StackBuild
 from .configure import StackConfigure
-from .create import StackCreate
-from .install import StackInstall
 from .list import StackList
 from .start import StackStart
 
@@ -19,16 +18,15 @@ class StackParser(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
-            "distribution",
-            prog="llama distribution",
-            description="Operate on llama stack distributions",
+            "stack",
+            prog="llama stack",
+            description="Operations for the Llama Stack / Distributions",
         )
 
-        subparsers = self.parser.add_subparsers(title="distribution_subcommands")
+        subparsers = self.parser.add_subparsers(title="stack_subcommands")
 
         # Add sub-commands
-        StackList.create(subparsers)
-        StackInstall.create(subparsers)
-        StackCreate.create(subparsers)
+        StackBuild.create(subparsers)
         StackConfigure.create(subparsers)
+        StackList.create(subparsers)
         StackStart.create(subparsers)

@@ -14,9 +14,9 @@ class StackList(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
-            "list",
-            prog="llama distribution list",
-            description="Show available llama stack distributions",
+            "list-distributions",
+            prog="llama stack list-distributions",
+            description="Show available Llama Stack Distributions",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self._add_arguments()
@@ -31,17 +31,17 @@ class StackList(Subcommand):
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
-            "Spec ID",
-            "ProviderSpecs",
+            "Distribution ID",
+            "Providers",
             "Description",
         ]
 
         rows = []
         for spec in available_distribution_specs():
-            providers = {k.value: v.provider_id for k, v in spec.provider_specs.items()}
+            providers = {k.value: v for k, v in spec.providers.items()}
             rows.append(
                 [
-                    spec.spec_id,
+                    spec.distribution_id,
                     json.dumps(providers, indent=2),
                     spec.description,
                 ]

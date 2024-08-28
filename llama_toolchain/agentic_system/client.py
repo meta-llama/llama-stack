@@ -16,13 +16,14 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from .api import *  # noqa: F403
+from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 
+from .api import *  # noqa: F403
 from .event_logger import EventLogger
 
 
-async def get_client_impl(base_url: str):
-    return AgenticSystemClient(base_url)
+async def get_client_impl(config: RemoteProviderConfig, _deps):
+    return AgenticSystemClient(config.url)
 
 
 def encodable_dict(d: BaseModel):

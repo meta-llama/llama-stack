@@ -97,7 +97,7 @@ class RemoteProviderConfig(BaseModel):
     def validate_url(cls, url: str) -> str:
         if not url.startswith("http"):
             raise ValueError(f"URL must start with http: {url}")
-        return url
+        return url.rstrip("/")
 
 
 def remote_provider_id(adapter_id: str) -> str:
@@ -150,12 +150,13 @@ def remote_provider_spec(
 
 @json_schema_type
 class DistributionSpec(BaseModel):
-    spec_id: str
+    distribution_id: str
     description: str
 
-    provider_specs: Dict[Api, ProviderSpec] = Field(
+    docker_image: Optional[str] = None
+    providers: Dict[Api, str] = Field(
         default_factory=dict,
-        description="Provider specifications for each of the APIs provided by this distribution",
+        description="Provider IDs for each of the APIs provided by this distribution",
     )
 
 
@@ -170,6 +171,8 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
+    distribution_id: Optional[str] = None
+
     docker_image: Optional[str] = Field(
         default=None,
         description="Reference to the docker image if this package refers to a container",

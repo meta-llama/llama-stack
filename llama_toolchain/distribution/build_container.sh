@@ -110,4 +110,12 @@ set +x
 printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama api configure "$api_or_stack" --name "$image_name"
+if [ "$api_or_stack" = "stack" ]; then
+  subcommand="stack"
+  target=""
+else
+  subcommand="api"
+  target="$api_or_stack"
+fi
+
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$image_name"
