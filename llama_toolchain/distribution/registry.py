@@ -59,6 +59,15 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
             },
         ),
+        DistributionSpec(
+            spec_id="remote-together",
+            description="Use Together.ai for running LLM inference",
+            provider_specs={
+                Api.inference: providers[Api.inference]["together"],
+                Api.safety: providers[Api.safety]["meta-reference"],
+                Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
+            },
+        ),
     ]
 
 
