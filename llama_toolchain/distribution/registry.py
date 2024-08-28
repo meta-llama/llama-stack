@@ -39,21 +39,23 @@ def available_distribution_specs() -> List[DistributionSpec]:
             },
         ),
         DistributionSpec(
-            spec_id="remote-fireworks",
+            distribution_id="local-plus-fireworks-inference",
             description="Use Fireworks.ai for running LLM inference",
-            provider_specs={
-                Api.inference: providers[Api.inference]["fireworks"],
-                Api.safety: providers[Api.safety]["meta-reference"],
-                Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
+            providers={
+                Api.inference: remote_provider_id("fireworks"),
+                Api.safety: "meta-reference",
+                Api.agentic_system: "meta-reference",
+                Api.memory: "meta-reference-faiss",
             },
         ),
         DistributionSpec(
-            spec_id="remote-together",
+            distribution_id="local-plus-together-inference",
             description="Use Together.ai for running LLM inference",
-            provider_specs={
-                Api.inference: providers[Api.inference]["together"],
-                Api.safety: providers[Api.safety]["meta-reference"],
-                Api.agentic_system: providers[Api.agentic_system]["meta-reference"],
+            providers={
+                Api.inference: remote_provider_id("together"),
+                Api.safety: "meta-reference",
+                Api.agentic_system: "meta-reference",
+                Api.memory: "meta-reference-faiss",
             },
         ),
     ]

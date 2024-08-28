@@ -5,9 +5,7 @@
 # the root directory of this source tree.
 
 import uuid
-from typing import AsyncGenerator, Dict
-
-import httpx
+from typing import AsyncGenerator
 
 from llama_models.llama3.api.datatypes import (
     BuiltinTool,
@@ -18,48 +16,26 @@ from llama_models.llama3.api.datatypes import (
 )
 from llama_models.llama3.api.tool_utils import ToolUtils
 from llama_models.sku_list import resolve_model
-from fireworks.client import Fireworks
+from together import Together
 
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
-from llama_toolchain.inference.api import (
-    ChatCompletionRequest,
-    ChatCompletionResponse,
-    ChatCompletionResponseEvent,
-    ChatCompletionResponseEventType,
-    ChatCompletionResponseStreamChunk,
-    CompletionRequest,
-    Inference,
-    ToolCallDelta,
-    ToolCallParseStatus,
-)
+from llama_toolchain.inference.api import *  # noqa: F403
 
-from .config import FireworksImplConfig
+from .config import TogetherImplConfig
 
-FIREWORKS_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "fireworks/llama-v3p1-8b-instruct",
-    "Meta-Llama3.1-70B-Instruct": "fireworks/llama-v3p1-70b-instruct",
-    "Meta-Llama3.1-405B-Instruct": "fireworks/llama-v3p1-405b-instruct",
+TOGETHER_SUPPORTED_MODELS = {
+    "Meta-Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+    "Meta-Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+    "Meta-Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
 }
 
 
-async def get_provider_impl(
-    config: FireworksImplConfig, _deps: Dict[Api, ProviderSpec]
-) -> Inference:
-    assert isinstance(
-        config, FireworksImplConfig
-    ), f"Unexpected config type: {type(config)}"
-    impl = FireworksInference(config)
-    await impl.initialize()
-    return impl
-
-
-class FireworksInference(Inference):
-    def __init__(self, config: FireworksImplConfig) -> None:
+class TogetherInferenceAdapter(Inference):
+    def __init__(self, config: TogetherImplConfig) -> None:
         self.config = config
 
     @property
-    def client(self) -> Fireworks:
-        return Fireworks(api_key=self.config.api_key)
+    def client(self) -> Together:
+        return Together(api_key=self.config.api_key)
 
     async def initialize(self) -> None:
         return
@@ -70,30 +46,30 @@ class FireworksInference(Inference):
     async def completion(self, request: CompletionRequest) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def _messages_to_fireworks_messages(self, messages: list[Message]) -> list:
-        fireworks_messages = []
+    def _messages_to_together_messages(self, messages: list[Message]) -> list:
+        together_messages = []
         for message in messages:
             if message.role == "ipython":
                 role = "tool"
             else:
                 role = message.role
-            fireworks_messages.append({"role": role, "content": message.content})
+            together_messages.append({"role": role, "content": message.content})
 
-        return fireworks_messages
+        return together_messages
 
-    def resolve_fireworks_model(self, model_name: str) -> str:
+    def resolve_together_model(self, model_name: str) -> str:
         model = resolve_model(model_name)
         assert (
             model is not None
             and model.descriptor(shorten_default_variant=True)
-            in FIREWORKS_SUPPORTED_MODELS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(FIREWORKS_SUPPORTED_MODELS.keys())}"
+            in TOGETHER_SUPPORTED_MODELS
+        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(TOGETHER_SUPPORTED_MODELS.keys())}"
 
-        return FIREWORKS_SUPPORTED_MODELS.get(
+        return TOGETHER_SUPPORTED_MODELS.get(
             model.descriptor(shorten_default_variant=True)
         )
 
-    def get_fireworks_chat_options(self, request: ChatCompletionRequest) -> dict:
+    def get_together_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
         if request.sampling_params is not None:
             for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
@@ -103,20 +79,24 @@ class FireworksInference(Inference):
         return options
 
     async def chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
-        # accumulate sampling params and other options to pass to fireworks
-        options = self.get_fireworks_chat_options(request)
-        fireworks_model = self.resolve_fireworks_model(request.model)
+        # accumulate sampling params and other options to pass to together
+        options = self.get_together_chat_options(request)
+        together_model = self.resolve_together_model(request.model)
 
         if not request.stream:
-            r = await self.client.chat.completions.acreate(
-                model=fireworks_model,
-                messages=self._messages_to_fireworks_messages(request.messages),
+            # TODO: might need to add back an async here
+            r = self.client.chat.completions.create(
+                model=together_model,
+                messages=self._messages_to_together_messages(request.messages),
                 stream=False,
                 **options,
             )
             stop_reason = None
             if r.choices[0].finish_reason:
-                if r.choices[0].finish_reason == "stop":
+                if (
+                    r.choices[0].finish_reason == "stop"
+                    or r.choices[0].finish_reason == "eos"
+                ):
                     stop_reason = StopReason.end_of_turn
                 elif r.choices[0].finish_reason == "length":
                     stop_reason = StopReason.out_of_tokens
@@ -141,14 +121,18 @@ class FireworksInference(Inference):
             ipython = False
             stop_reason = None
 
-            async for chunk in self.client.chat.completions.acreate(
-                model=fireworks_model,
-                messages=self._messages_to_fireworks_messages(request.messages),
+            for chunk in self.client.chat.completions.create(
+                model=together_model,
+                messages=self._messages_to_together_messages(request.messages),
                 stream=True,
                 **options,
             ):
                 if chunk.choices[0].finish_reason:
-                    if stop_reason is None and chunk.choices[0].finish_reason == "stop":
+                    if (
+                        stop_reason is None and chunk.choices[0].finish_reason == "stop"
+                    ) or (
+                        stop_reason is None and chunk.choices[0].finish_reason == "eos"
+                    ):
                         stop_reason = StopReason.end_of_turn
                     elif (
                         stop_reason is None
