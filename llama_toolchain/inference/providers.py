@@ -44,4 +44,13 @@ def available_inference_providers() -> List[ProviderSpec]:
             module="llama_toolchain.inference.fireworks",
             config_class="llama_toolchain.inference.fireworks.FireworksImplConfig",
         ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_id="together",
+            pip_packages=[
+                "together",
+            ],
+            module="llama_toolchain.inference.together",
+            config_class="llama_toolchain.inference.together.TogetherImplConfig",
+        ),
     ]
