@@ -8,7 +8,7 @@ import asyncio
 import importlib
 from typing import Any, Dict
 
-from .datatypes import InlineProviderSpec, ProviderSpec, RemoteProviderSpec
+from .datatypes import InlineProviderSpec, ProviderSpec, RemoteProviderConfig
 
 
 def instantiate_class_type(fully_qualified_name):
@@ -19,38 +19,23 @@ def instantiate_class_type(fully_qualified_name):
 
 # returns a class implementing the protocol corresponding to the Api
 def instantiate_provider(
-    provider_spec: InlineProviderSpec,
+    provider_spec: ProviderSpec,
     provider_config: Dict[str, Any],
     deps: Dict[str, ProviderSpec],
 ):
     module = importlib.import_module(provider_spec.module)
 
     config_type = instantiate_class_type(provider_spec.config_class)
+    if isinstance(provider_spec, InlineProviderSpec):
+        if provider_spec.is_adapter:
+            if not issubclass(config_type, RemoteProviderConfig):
+                raise ValueError(
+                    f"Config class {provider_spec.config_class} does not inherit from RemoteProviderConfig"
+                )
     config = config_type(**provider_config)
-    return asyncio.run(module.get_provider_impl(config, deps))
 
-
-def instantiate_client(
-    provider_spec: RemoteProviderSpec, provider_config: Dict[str, Any]
-):
-    module = importlib.import_module(provider_spec.module)
-
-    adapter = provider_spec.adapter
-    if adapter is not None:
-        if "adapter" not in provider_config:
-            raise ValueError(
-                f"Adapter is specified but not present in provider config: {provider_config}"
-            )
-            adapter_config = provider_config["adapter"]
-
-        config_type = instantiate_class_type(adapter.config_class)
-        if not issubclass(config_type, RemoteProviderConfig):
-            raise ValueError(
-                f"Config class {adapter.config_class} does not inherit from RemoteProviderConfig"
-            )
-
-        config = config_type(**adapter_config)
+    if isinstance(provider_spec, InlineProviderSpec):
+        args = [config, deps]
     else:
-        config = RemoteProviderConfig(**provider_config)
-
-    return asyncio.run(module.get_adapter_impl(config))
+        args = [config]
+    return asyncio.run(module.get_provider_impl(*args))

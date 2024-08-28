@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 import httpx
 
@@ -36,7 +36,7 @@ OLLAMA_SUPPORTED_SKUS = {
 }
 
 
-async def get_adapter_impl(config: RemoteProviderConfig) -> Inference:
+async def get_provider_impl(config: RemoteProviderConfig, _deps: Any) -> Inference:
     impl = OllamaInferenceAdapter(config.url)
     await impl.initialize()
     return impl

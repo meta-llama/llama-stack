@@ -26,7 +26,7 @@ from .api import (
 from .event_logger import EventLogger
 
 
-async def get_adapter_impl(config: RemoteProviderConfig) -> Inference:
+async def get_provider_impl(config: RemoteProviderConfig) -> Inference:
     return InferenceClient(config.url)
 
 

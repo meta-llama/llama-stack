@@ -19,7 +19,7 @@ from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 from .api import *  # noqa: F403
 
 
-async def get_adapter_impl(config: RemoteProviderConfig) -> Safety:
+async def get_provider_impl(config: RemoteProviderConfig) -> Safety:
     return SafetyClient(config.url)
 
 

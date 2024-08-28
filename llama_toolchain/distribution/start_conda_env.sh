@@ -8,7 +8,6 @@
 
 set -euo pipefail
 
-# Define color codes
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
@@ -17,14 +16,12 @@ error_handler() {
   exit 1
 }
 
-# Set up the error trap
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 2 ]; then
-    echo "Usage: $0 <environment_name> <script_args...>"
-    exit 1
+  echo "Usage: $0 <environment_name> <script_args...>"
+  exit 1
 fi
-
 
 env_name="$1"
 shift
@@ -32,5 +29,4 @@ shift
 eval "$(conda shell.bash hook)"
 conda deactivate && conda activate "$env_name"
 
-python_interp=$(conda run -n "$env_name" which python)
-$python_interp -m llama_toolchain.distribution.server "$@"
+$CONDA_PREFIX/bin/python -m llama_toolchain.distribution.server "$@"

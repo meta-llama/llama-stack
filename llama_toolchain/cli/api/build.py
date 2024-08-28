@@ -7,9 +7,6 @@
 import argparse
 import json
 import os
-import random
-import string
-import uuid
 from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
@@ -25,10 +22,6 @@ from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
 from llama_toolchain.distribution.datatypes import *  # noqa: F403
 
 
-def random_string():
-    return "".join(random.choices(string.ascii_letters + string.digits, k=8))
-
-
 class BuildType(Enum):
     container = "container"
     conda_env = "conda_env"
@@ -42,6 +35,8 @@ class Dependencies(BaseModel):
 def get_dependencies(
     provider: ProviderSpec, dependencies: Dict[str, ProviderSpec]
 ) -> Dependencies:
+    from llama_toolchain.distribution.distribution import SERVER_DEPENDENCIES
+
     def _deps(provider: ProviderSpec) -> Tuple[List[str], Optional[str]]:
         if isinstance(provider, InlineProviderSpec):
             return provider.pip_packages, provider.docker_image
@@ -60,7 +55,9 @@ def get_dependencies(
 
         pip_packages.extend(dep_pip_packages)
 
-    return Dependencies(docker_image=docker_image, pip_packages=pip_packages)
+    return Dependencies(
+        docker_image=docker_image, pip_packages=pip_packages + SERVER_DEPENDENCIES
+    )
 
 
 def parse_dependencies(
@@ -88,7 +85,6 @@ def parse_dependencies(
 
 
 class ApiBuild(Subcommand):
-
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
@@ -125,8 +121,8 @@ class ApiBuild(Subcommand):
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Name of the build target (image, conda env). Defaults to a random UUID",
-            required=False,
+            help="Name of the build target (image, conda env)",
+            required=True,
         )
         self.parser.add_argument(
             "--type",
@@ -153,11 +149,10 @@ class ApiBuild(Subcommand):
             )
             return
 
-        name = args.name or random_string()
         if args.type == BuildType.container.value:
-            package_name = f"image-{args.provider}-{name}"
+            package_name = f"image-{args.provider}-{args.name}"
         else:
-            package_name = f"env-{args.provider}-{name}"
+            package_name = f"env-{args.provider}-{args.name}"
         package_name = package_name.replace("::", "-")
 
         build_dir = BUILDS_BASE_DIR / args.api
@@ -176,7 +171,7 @@ class ApiBuild(Subcommand):
         }
         with open(package_file, "w") as f:
             c = PackageConfig(
-                built_at=str(datetime.now()),
+                built_at=datetime.now(),
                 package_name=package_name,
                 docker_image=(
                     package_name if args.type == BuildType.container.value else None

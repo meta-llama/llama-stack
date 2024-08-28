@@ -10,6 +10,7 @@ from llama_toolchain.cli.subcommand import Subcommand
 
 from .build import ApiBuild
 from .configure import ApiConfigure
+from .start import ApiStart
 
 
 class ApiParser(Subcommand):
@@ -26,3 +27,4 @@ class ApiParser(Subcommand):
         # Add sub-commands
         ApiBuild.create(subparsers)
         ApiConfigure.create(subparsers)
+        ApiStart.create(subparsers)

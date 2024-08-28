@@ -16,7 +16,7 @@ from llama_toolchain.distribution.datatypes import RemoteProviderConfig
 from .api import *  # noqa: F403
 
 
-async def get_adapter_impl(config: RemoteProviderConfig) -> Memory:
+async def get_provider_impl(config: RemoteProviderConfig) -> Memory:
     return MemoryClient(config.url)
 
 

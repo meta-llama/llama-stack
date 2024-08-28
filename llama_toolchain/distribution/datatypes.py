@@ -39,6 +39,36 @@ class ProviderSpec(BaseModel):
 
 
 @json_schema_type
+class AdapterSpec(BaseModel):
+    """
+    If some code is needed to convert the remote responses into Llama Stack compatible
+    API responses, specify the adapter here. If not specified, it indicates the remote
+    as being "Llama Stack compatible"
+    """
+
+    adapter_id: str = Field(
+        ...,
+        description="Unique identifier for this adapter",
+    )
+    module: str = Field(
+        ...,
+        description="""
+Fully-qualified name of the module to import. The module is expected to have:
+
+ - `get_adapter_impl(config, deps)`: returns the adapter implementation
+""",
+    )
+    pip_packages: List[str] = Field(
+        default_factory=list,
+        description="The pip dependencies needed for this implementation",
+    )
+    config_class: Optional[str] = Field(
+        default=None,
+        description="Fully-qualified classname of the config for this provider",
+    )
+
+
+@json_schema_type
 class InlineProviderSpec(ProviderSpec):
     pip_packages: List[str] = Field(
         default_factory=list,
@@ -63,30 +93,7 @@ Fully-qualified name of the module to import. The module is expected to have:
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
-
-
-@json_schema_type
-class AdapterSpec(BaseModel):
-    adapter_id: str = Field(
-        ...,
-        description="Unique identifier for this adapter",
-    )
-    module: str = Field(
-        ...,
-        description="""
-Fully-qualified name of the module to import. The module is expected to have:
-
- - `get_adapter_impl(config, deps)`: returns the adapter implementation
-""",
-    )
-    pip_packages: List[str] = Field(
-        default_factory=list,
-        description="The pip dependencies needed for this implementation",
-    )
-    config_class: Optional[str] = Field(
-        default=None,
-        description="Fully-qualified classname of the config for this provider",
-    )
+    is_adapter: bool = False
 
 
 class RemoteProviderConfig(BaseModel):
@@ -106,40 +113,34 @@ def remote_provider_id(adapter_id: str) -> str:
 
 @json_schema_type
 class RemoteProviderSpec(ProviderSpec):
-    adapter: Optional[AdapterSpec] = Field(
-        default=None,
-        description="""
-If some code is needed to convert the remote responses into Llama Stack compatible
-API responses, specify the adapter here. If not specified, it indicates the remote
-as being "Llama Stack compatible"
-""",
-    )
+    provider_id: str = "remote"
     config_class: str = "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
 
+    @property
+    def module(self) -> str:
+        return f"llama_toolchain.{self.api.value}.client"
 
-# need this wrapper since we don't have Pydantic v2 and that means we don't have
+
+def remote_provider_spec(api: Api) -> RemoteProviderSpec:
+    return RemoteProviderSpec(api=api)
+
+
+# TODO: use computed_field to avoid this wrapper
 # the @computed_field decorator
-def remote_provider_spec(
-    api: Api, adapter: Optional[AdapterSpec] = None
-) -> RemoteProviderSpec:
-    provider_id = (
-        remote_provider_id(adapter.adapter_id) if adapter is not None else "remote"
-    )
-    module = (
-        adapter.module if adapter is not None else f"llama_toolchain.{api.value}.client"
-    )
+def adapter_provider_spec(api: Api, adapter: AdapterSpec) -> InlineProviderSpec:
     config_class = (
         adapter.config_class
-        if adapter and adapter.config_class
+        if adapter.config_class
         else "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
     )
 
-    return RemoteProviderSpec(
+    return InlineProviderSpec(
         api=api,
-        provider_id=provider_id,
-        pip_packages=adapter.pip_packages if adapter is not None else [],
-        module=module,
+        provider_id=remote_provider_id(adapter.adapter_id),
+        pip_packages=adapter.pip_packages,
+        module=adapter.module,
         config_class=config_class,
+        is_adapter=True,
     )
 
 
