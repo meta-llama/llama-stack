@@ -62,13 +62,13 @@ class ApiStart(Subcommand):
         if config.docker_image:
             script = pkg_resources.resource_filename(
                 "llama_toolchain",
-                "distribution/start_container.sh",
+                "core/start_container.sh",
             )
             run_args = [script, config.docker_image]
         else:
             script = pkg_resources.resource_filename(
                 "llama_toolchain",
-                "distribution/start_conda_env.sh",
+                "core/start_conda_env.sh",
             )
             run_args = [
                 script,

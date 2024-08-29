@@ -147,7 +147,7 @@ def build_package(
 
     if build_type == BuildType.container:
         script = pkg_resources.resource_filename(
-            "llama_toolchain", "distribution/build_container.sh"
+            "llama_toolchain", "core/build_container.sh"
         )
         args = [
             script,
@@ -158,7 +158,7 @@ def build_package(
         ]
     else:
         script = pkg_resources.resource_filename(
-            "llama_toolchain", "distribution/build_conda_env.sh"
+            "llama_toolchain", "core/build_conda_env.sh"
         )
         args = [
             script,
