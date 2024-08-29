@@ -139,7 +139,7 @@ def remote_provider_spec(
     config_class = (
         adapter.config_class
         if adapter and adapter.config_class
-        else "llama_toolchain.distribution.datatypes.RemoteProviderConfig"
+        else "llama_toolchain.core.datatypes.RemoteProviderConfig"
     )
     provider_id = remote_provider_id(adapter.adapter_id) if adapter else "remote"
 

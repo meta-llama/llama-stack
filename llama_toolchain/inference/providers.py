@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
 def available_inference_providers() -> List[ProviderSpec]:

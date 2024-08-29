@@ -27,7 +27,9 @@ class StackList(Subcommand):
 
     def _run_distribution_list_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.cli.table import print_table
-        from llama_toolchain.distribution.registry import available_distribution_specs
+        from llama_toolchain.core.distribution_registry import (
+            available_distribution_specs,
+        )
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [

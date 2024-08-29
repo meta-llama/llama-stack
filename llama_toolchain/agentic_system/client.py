@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_toolchain.distribution.datatypes import RemoteProviderConfig
+from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import *  # noqa: F403
 from .event_logger import EventLogger

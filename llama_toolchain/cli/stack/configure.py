@@ -13,7 +13,7 @@ from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
 class StackConfigure(Subcommand):
@@ -31,8 +31,10 @@ class StackConfigure(Subcommand):
         self.parser.set_defaults(func=self._run_stack_configure_cmd)
 
     def _add_arguments(self):
-        from llama_toolchain.distribution.package import BuildType
-        from llama_toolchain.distribution.registry import available_distribution_specs
+        from llama_toolchain.core.distribution_registry import (
+            available_distribution_specs,
+        )
+        from llama_toolchain.core.package import BuildType
 
         self.parser.add_argument(
             "--build-name",
@@ -62,7 +64,7 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.distribution.package import BuildType
+        from llama_toolchain.core.package import BuildType
 
         if args.build_name:
             name = args.build_name
@@ -84,8 +86,8 @@ class StackConfigure(Subcommand):
 
 def configure_llama_distribution(config_file: Path) -> None:
     from llama_toolchain.common.serialize import EnumEncoder
-    from llama_toolchain.distribution.configure import configure_api_providers
-    from llama_toolchain.distribution.registry import resolve_distribution_spec
+    from llama_toolchain.core.configure import configure_api_providers
+    from llama_toolchain.core.distribution_registry import resolve_distribution_spec
 
     with open(config_file, "r") as f:
         config = PackageConfig(**yaml.safe_load(f))

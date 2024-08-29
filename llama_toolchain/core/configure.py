@@ -6,12 +6,12 @@
 
 from typing import Any, Dict
 
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 from termcolor import cprint
 
 from llama_toolchain.common.prompt_for_config import prompt_for_config
-from llama_toolchain.distribution.distribution import api_providers
-from llama_toolchain.distribution.dynamic import instantiate_class_type
+from llama_toolchain.core.distribution import api_providers
+from llama_toolchain.core.dynamic import instantiate_class_type
 
 
 def configure_api_providers(existing_configs: Dict[str, Any]) -> None:

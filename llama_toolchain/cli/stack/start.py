@@ -12,7 +12,7 @@ import pkg_resources
 import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
 class StackStart(Subcommand):

@@ -17,11 +17,11 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 from llama_toolchain.common.exec import run_with_pty
 from llama_toolchain.common.serialize import EnumEncoder
-from llama_toolchain.distribution.distribution import api_providers
+from llama_toolchain.core.distribution import api_providers
 
 
 class BuildType(Enum):
@@ -40,7 +40,7 @@ class Dependencies(BaseModel):
 def get_dependencies(
     provider: ProviderSpec, dependencies: Dict[str, ProviderSpec]
 ) -> Dependencies:
-    from llama_toolchain.distribution.distribution import SERVER_DEPENDENCIES
+    from llama_toolchain.core.distribution import SERVER_DEPENDENCIES
 
     pip_packages = provider.pip_packages
     for dep in dependencies.values():

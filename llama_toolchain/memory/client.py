@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 import fire
 import httpx
 
-from llama_toolchain.distribution.datatypes import RemoteProviderConfig
+from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import *  # noqa: F403
 

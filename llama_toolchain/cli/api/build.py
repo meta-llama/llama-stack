@@ -8,13 +8,13 @@ import argparse
 from typing import Dict
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
 def parse_dependencies(
     dependencies: str, parser: argparse.ArgumentParser
 ) -> Dict[str, ProviderSpec]:
-    from llama_toolchain.distribution.distribution import api_providers
+    from llama_toolchain.core.distribution import api_providers
 
     all_providers = api_providers()
 
@@ -48,8 +48,8 @@ class ApiBuild(Subcommand):
         self.parser.set_defaults(func=self._run_api_build_command)
 
     def _add_arguments(self):
-        from llama_toolchain.distribution.distribution import stack_apis
-        from llama_toolchain.distribution.package import (
+        from llama_toolchain.core.distribution import stack_apis
+        from llama_toolchain.core.package import (
             BuildType,
         )
 
@@ -86,7 +86,7 @@ class ApiBuild(Subcommand):
         )
 
     def _run_api_build_command(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.distribution.package import (
+        from llama_toolchain.core.package import (
             ApiInput,
             BuildType,
             build_package,

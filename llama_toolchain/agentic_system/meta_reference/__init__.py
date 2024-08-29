@@ -6,7 +6,7 @@
 
 from typing import Dict
 
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
+from llama_toolchain.core.datatypes import Api, ProviderSpec
 
 from .config import MetaReferenceImplConfig
 

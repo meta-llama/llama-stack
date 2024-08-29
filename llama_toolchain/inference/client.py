@@ -13,7 +13,7 @@ import httpx
 from pydantic import BaseModel
 from termcolor import cprint
 
-from llama_toolchain.distribution.datatypes import RemoteProviderConfig
+from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import (
     ChatCompletionRequest,

@@ -7,7 +7,7 @@
 import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
 class StackBuild(Subcommand):
@@ -23,8 +23,8 @@ class StackBuild(Subcommand):
         self.parser.set_defaults(func=self._run_stack_build_command)
 
     def _add_arguments(self):
-        from llama_toolchain.distribution.registry import available_distribution_specs
-        from llama_toolchain.distribution.package import (
+        from llama_toolchain.core.distribution_registry import available_distribution_specs
+        from llama_toolchain.core.package import (
             BuildType,
         )
 
@@ -50,8 +50,8 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.distribution.registry import resolve_distribution_spec
-        from llama_toolchain.distribution.package import (
+        from llama_toolchain.core.distribution_registry import resolve_distribution_spec
+        from llama_toolchain.core.package import (
             ApiInput,
             BuildType,
             build_package,

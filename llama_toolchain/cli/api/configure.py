@@ -13,7 +13,7 @@ import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
-from llama_toolchain.distribution.datatypes import *  # noqa: F403
+from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
 class ApiConfigure(Subcommand):
@@ -31,8 +31,8 @@ class ApiConfigure(Subcommand):
         self.parser.set_defaults(func=self._run_api_configure_cmd)
 
     def _add_arguments(self):
-        from llama_toolchain.distribution.distribution import stack_apis
-        from llama_toolchain.distribution.package import BuildType
+        from llama_toolchain.core.distribution import stack_apis
+        from llama_toolchain.core.package import BuildType
 
         allowed_args = [a.name for a in stack_apis()]
         self.parser.add_argument(
@@ -67,7 +67,7 @@ class ApiConfigure(Subcommand):
         )
 
     def _run_api_configure_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.distribution.package import BuildType
+        from llama_toolchain.core.package import BuildType
 
         if args.build_name:
             name = args.build_name
@@ -89,7 +89,7 @@ class ApiConfigure(Subcommand):
 
 def configure_llama_provider(config_file: Path) -> None:
     from llama_toolchain.common.serialize import EnumEncoder
-    from llama_toolchain.distribution.configure import configure_api_providers
+    from llama_toolchain.core.configure import configure_api_providers
 
     with open(config_file, "r") as f:
         config = PackageConfig(**yaml.safe_load(f))
