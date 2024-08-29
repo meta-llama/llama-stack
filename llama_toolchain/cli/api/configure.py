@@ -32,6 +32,7 @@ class ApiConfigure(Subcommand):
 
     def _add_arguments(self):
         from llama_toolchain.distribution.distribution import stack_apis
+        from llama_toolchain.distribution.package import BuildType
 
         allowed_args = [a.name for a in stack_apis()]
         self.parser.add_argument(
@@ -42,15 +43,41 @@ class ApiConfigure(Subcommand):
         self.parser.add_argument(
             "--build-name",
             type=str,
-            help="Name of the provider build to fully configure",
-            required=True,
+            help="(Fully qualified) name of the API build to configure. Alternatively, specify the --provider and --name options.",
+            required=False,
+        )
+
+        self.parser.add_argument(
+            "--provider",
+            type=str,
+            help="The provider chosen for the API",
+            required=False,
+        )
+        self.parser.add_argument(
+            "--name",
+            type=str,
+            help="Name of the build target (image, conda env)",
+            required=False,
+        )
+        self.parser.add_argument(
+            "--type",
+            type=str,
+            default="conda_env",
+            choices=[v.value for v in BuildType],
         )
 
     def _run_api_configure_cmd(self, args: argparse.Namespace) -> None:
-        name = args.build_name
-        if not name.endswith(".yaml"):
-            name += ".yaml"
-        config_file = BUILDS_BASE_DIR / args.api / name
+        from llama_toolchain.distribution.package import BuildType
+
+        if args.build_name:
+            name = args.build_name
+            if name.endswith(".yaml"):
+                name = name.replace(".yaml", "")
+        else:
+            build_type = BuildType(args.type)
+            name = f"{build_type.descriptor()}-{args.provider}-{args.name}"
+
+        config_file = BUILDS_BASE_DIR / args.api / f"{name}.yaml"
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama api build` first"

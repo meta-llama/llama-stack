@@ -28,6 +28,9 @@ class BuildType(Enum):
     container = "container"
     conda_env = "conda_env"
 
+    def descriptor(self) -> str:
+        return "image" if self == self.container else "env"
+
 
 class Dependencies(BaseModel):
     pip_packages: List[str]
@@ -77,12 +80,11 @@ def build_package(
 
     provider = distribution_id if is_stack else api1.provider
     api_or_stack = "stack" if is_stack else api1.api.value
-    build_desc = "image" if build_type == BuildType.container else "env"
 
     build_dir = BUILDS_BASE_DIR / api_or_stack
     os.makedirs(build_dir, exist_ok=True)
 
-    package_name = f"{build_desc}-{provider}-{name}"
+    package_name = f"{build_type.descriptor()}-{provider}-{name}"
     package_name = package_name.replace("::", "-")
     package_file = build_dir / f"{package_name}.yaml"
 

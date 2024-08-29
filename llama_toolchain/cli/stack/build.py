@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import argparse
-from typing import Dict
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.distribution.datatypes import *  # noqa: F403
@@ -46,7 +45,7 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "--type",
             type=str,
-            default="container",
+            default="conda_env",
             choices=[v.value for v in BuildType],
         )
 

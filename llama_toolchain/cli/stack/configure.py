@@ -31,19 +31,48 @@ class StackConfigure(Subcommand):
         self.parser.set_defaults(func=self._run_stack_configure_cmd)
 
     def _add_arguments(self):
+        from llama_toolchain.distribution.package import BuildType
+        from llama_toolchain.distribution.registry import available_distribution_specs
+
         self.parser.add_argument(
             "--build-name",
             type=str,
-            help="Name of the stack build to configure",
-            required=True,
+            help="(Fully qualified) name of the stack build to configure. Alternatively, provider --distribution and --name",
+            required=False,
+        )
+        allowed_ids = [d.distribution_id for d in available_distribution_specs()]
+        self.parser.add_argument(
+            "--distribution",
+            type=str,
+            choices=allowed_ids,
+            help="Distribution (one of: {})".format(allowed_ids),
+            required=False,
+        )
+        self.parser.add_argument(
+            "--name",
+            type=str,
+            help="Name of the build",
+            required=False,
+        )
+        self.parser.add_argument(
+            "--type",
+            type=str,
+            default="conda_env",
+            choices=[v.value for v in BuildType],
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        name = args.build_name
-        if not name.endswith(".yaml"):
-            name += ".yaml"
+        from llama_toolchain.distribution.package import BuildType
 
-        config_file = BUILDS_BASE_DIR / "stack" / name
+        if args.build_name:
+            name = args.build_name
+            if name.endswith(".yaml"):
+                name = name.replace(".yaml", "")
+        else:
+            build_type = BuildType(args.type)
+            name = f"{build_type.descriptor()}-{args.distribution}-{args.name}"
+
+        config_file = BUILDS_BASE_DIR / "stack" / f"{name}.yaml"
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama stack build` first"

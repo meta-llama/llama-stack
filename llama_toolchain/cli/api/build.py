@@ -81,7 +81,7 @@ class ApiBuild(Subcommand):
         self.parser.add_argument(
             "--type",
             type=str,
-            default="container",
+            default="conda_env",
             choices=[v.value for v in BuildType],
         )
 
