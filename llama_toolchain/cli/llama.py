@@ -30,8 +30,8 @@ class LlamaCLIParser:
         # Add sub-commands
         Download.create(subparsers)
         ModelParser.create(subparsers)
-        ApiParser.create(subparsers)
         StackParser.create(subparsers)
+        ApiParser.create(subparsers)
 
         # Import sub-commands from agentic_system if they exist
         try:

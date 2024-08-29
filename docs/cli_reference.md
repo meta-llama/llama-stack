@@ -2,10 +2,11 @@
 
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-toolchain` package.
 
-### Subcommands 
-1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace. 
+### Subcommands
+1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace.
 2. `model`: Lists available models and their properties.
-3. `distribution`: A distribution is a set of REST APIs, this command allows you to manage (list, install, create, configure, start) distributions. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/main/docs/cli_reference.md#step-3-installing-and-configuring-distributions). 
+3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/main/docs/cli_reference.md#step-3-installing-and-configuring-distributions).
+4. `api`: Allows you to build and run individual API providers (pieces) from the Llama Stack.
 
 ### Sample Usage
 
@@ -13,7 +14,7 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 llama --help
 ```
 <pre style="font-family: monospace;">
-usage: llama [-h] {download,model,distribution} ...
+usage: llama [-h] {download,model,stack,api} ...
 
 Welcome to the Llama CLI
 
@@ -21,7 +22,7 @@ options:
   -h, --help            show this help message and exit
 
 subcommands:
-  {download,model,distribution}
+  {download,model,stack,api}
 </pre>
 
 ## Step 1. Get the models
@@ -101,9 +102,9 @@ The `llama model` command helps you explore the model’s interface.
 
 ### 2.1 Subcommands
 1. `download`: Download the model from different sources. (meta, huggingface)
-2. `list`: Lists all the models available for download with hardware requirements to deploy the models. 
+2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
 3. `template`: <TODO: What is a template?>
-4. `describe`: Describes all the properties of the model. 
+4. `describe`: Describes all the properties of the model.
 
 ### 2.2 Sample Usage
 
@@ -236,11 +237,13 @@ These commands can help understand the model interface and how prompts / message
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 
-## Step 3: Installing and Configuring Distributions
+## Step 3: Building, Configuring and Running Llama Stack servers
 
 An agentic app has several components including model inference, tool execution and system safety shields. Running all these components is made simpler (we hope!) with Llama Stack Distributions.
 
-A Distribution is simply a collection of REST API providers that are part of the Llama stack. As an example, by running a simple command `llama distribution start`, you can bring up a server serving the following endpoints, among others:
+The Llama Stack is a collection of REST APIs. An API is _implemented_ by Provider. An assembly of Providers together provides the implementation for the Stack -- this package is called a Distribution.
+
+As an example, by running a simple command `llama stack start <YAML>`, you can bring up a server serving the following endpoints, among others:
 ```
 POST /inference/chat_completion
 POST /inference/completion
@@ -253,103 +256,135 @@ POST /agentic_system/delete
 
 The agentic app can now simply point to this server to execute all its needed components.
 
-A distribution’s behavior can be configured by defining a specification or “spec”. This specification lays out the different API “Providers” that constitute this distribution.
+Lets build, configure and start a Llama Stack server specified via a "Distribution ID" to understand more !
 
-Lets install, configure and start a distribution to understand more !
-
-Let’s start with listing available distributions
+Let’s start with listing available distributions:
 ```
-llama distribution list
+llama stack list-distributions
 ```
 
 <pre style="font-family: monospace;">
-+--------------+---------------------------------------------+----------------------------------------------------------------------+
-| Spec ID      | ProviderSpecs                               | Description                                                          |
-+--------------+---------------------------------------------+----------------------------------------------------------------------+
-| local        | {                                           | Use code from `llama_toolchain` itself to serve all llama stack APIs |
-|              |   "inference": "meta-reference",            |                                                                      |
-|              |   "safety": "meta-reference",               |                                                                      |
-|              |   "agentic_system": "meta-reference"        |                                                                      |
-|              | }                                           |                                                                      |
-+--------------+---------------------------------------------+----------------------------------------------------------------------+
-| remote       | {                                           | Point to remote services for all llama stack APIs                    |
-|              |   "inference": "inference-remote",          |                                                                      |
-|              |   "safety": "safety-remote",                |                                                                      |
-|              |   "agentic_system": "agentic_system-remote" |                                                                      |
-|              | }                                           |                                                                      |
-+--------------+---------------------------------------------+----------------------------------------------------------------------+
-| local-ollama | {                                           | Like local, but use ollama for running LLM inference                 |
-|              |   "inference": "meta-ollama",               |                                                                      |
-|              |   "safety": "meta-reference",               |                                                                      |
-|              |   "agentic_system": "meta-reference"        |                                                                      |
-|              | }                                           |                                                                      |
-+--------------+---------------------------------------------+----------------------------------------------------------------------+
+i+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| Distribution ID                | Providers                             | Description                                                          |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local                          | {                                     | Use code from `llama_toolchain` itself to serve all llama stack APIs |
+|                                |   "inference": "meta-reference",      |                                                                      |
+|                                |   "memory": "meta-reference-faiss",   |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference"  |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| remote                         | {                                     | Point to remote services for all llama stack APIs                    |
+|                                |   "inference": "remote",              |                                                                      |
+|                                |   "safety": "remote",                 |                                                                      |
+|                                |   "agentic_system": "remote",         |                                                                      |
+|                                |   "memory": "remote"                  |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-ollama                   | {                                     | Like local, but use ollama for running LLM inference                 |
+|                                |   "inference": "remote::ollama",      |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference", |                                                                      |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-plus-fireworks-inference | {                                     | Use Fireworks.ai for running LLM inference                           |
+|                                |   "inference": "remote::fireworks",   |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference", |                                                                      |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-plus-together-inference  | {                                     | Use Together.ai for running LLM inference                            |
+|                                |   "inference": "remote::together",    |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference", |                                                                      |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
 </pre>
 
-As you can see above, each “spec” details the “providers” that make up that spec. For eg. The `local` spec uses the “meta-reference” provider for inference while the `local-ollama` spec relies on a different provider ( ollama ) for inference.
+As you can see above, each “distribution” details the “providers” it is composed of. For example, `local` uses the “meta-reference” provider for inference while local-ollama relies on a different provider (Ollama) for inference. Similarly, you can use Fireworks or Together.AI for running inference as well.
 
-Lets install the fully local implementation of the llama-stack – named `local` above.
+To install a distribution, we run a simple command providing 2 inputs:
+- **Distribution Id** of the distribution that we want to install ( as obtained from the list-distributions command )
+- A **Name** for the specific build and configuration of this distribution.
 
-To install a distro, we run a simple command providing 2 inputs –
-- **Spec Id** of the distribution that we want to install ( as obtained from the list command )
-- A **Name** by which this installation will be known locally.
-
-```
-llama distribution install --spec local --name local_llama_8b
-```
-
-This will create a new conda environment (name can be passed optionally) and install dependencies (via pip) as required by the distro.
-
-Once it runs successfully , you should see some outputs in the form
+Let's imagine you are working with a 8B-Instruct model. The following command will build a package (in the form of a Conda environment) _and_ configure it. As part of the configuration, you will be asked for some inputs (model_id, max_seq_len, etc.)
 
 ```
-llama distribution install --spec local --name local_llama_8b
+llama stack build local --build-name llama-8b
 ```
-<pre style="font-family: monospace;">
+
+Once it runs successfully , you should see some outputs in the form:
+
+```
+$ llama stack build local --build-name llama-8b
+....
+....
 Successfully installed cfgv-3.4.0 distlib-0.3.8 identify-2.6.0 libcst-1.4.0 llama_toolchain-0.0.2 moreorless-0.4.0 nodeenv-1.9.1 pre-commit-3.8.0 stdlibs-2024.5.15 toml-0.10.2 tomlkit-0.13.0 trailrunner-1.4.0 ufmt-2.7.0 usort-1.0.8 virtualenv-20.26.3
 
-Distribution `local_llama_8b` (with spec local) has been installed successfully!
-</pre>
+Successfully setup conda environment. Configuring build...
 
-Next step is to configure the distribution that you just installed. We provide a simple CLI tool to enable simple configuration.
-This command will walk you through the configuration process.
-It will ask for some details like model name, paths to models, etc.
+...
+...
 
-**NOTE**: You will have to download the models if not done already. Follow instructions here on how to download using the llama cli
-```
-llama distribution configure --name local_llama_8b
+YAML configuration has been written to ~/.llama/builds/stack/env-local-llama-8b.yaml
 ```
 
-Here is an example output of how the cli will guide you to fill the configuration:
-<pre style="font-family: monospace;">
-Configuring API surface: inference
+You can re-configure this distribution by running:
+```
+llama stack configure local --build-name llama-8b
+```
+
+Here is an example run of how the CLI will guide you to fill the configuration
+```
+$ llama stack configure local --build-name llama-8b
+
+Configuring API: inference (meta-reference)
 Enter value for model (required): Meta-Llama3.1-8B-Instruct
 Enter value for quantization (optional):
 Enter value for torch_seed (optional):
 Enter value for max_seq_len (required): 4096
 Enter value for max_batch_size (default: 1): 1
-Configuring API surface: safety
-Do you want to configure llama_guard_shield? (y/n): n
-Do you want to configure prompt_guard_shield? (y/n): n
-Configuring API surface: agentic_system
+Configuring API: safety (meta-reference)
+Do you want to configure llama_guard_shield? (y/n): y
+Entering sub-configuration for llama_guard_shield:
+Enter value for model (required): Llama-Guard-3-8B
+Enter value for excluded_categories (required): []
+Enter value for disable_input_check (default: False):
+Enter value for disable_output_check (default: False):
+Do you want to configure prompt_guard_shield? (y/n): y
+Entering sub-configuration for prompt_guard_shield:
+Enter value for model (required): Prompt-Guard-86M
+...
+...
+YAML configuration has been written to ~/.llama/builds/stack/env-local-llama-8b.yaml
+```
 
-YAML configuration has been written to ~/.llama/distributions/local0/config.yaml
-</pre>
-
-As you can see, we did basic configuration above and configured inference to run on model Meta-Llama3.1-8B-Instruct ( obtained from the llama model list command ).
-For this initial setup we did not set up safety.
+As you can see, we did basic configuration above and configured:
+- inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
+- Llama Guard safety shield with model `Llama-Guard-3-8B`
+- Prompt Guard safety shield with model `Prompt-Guard-86M`
 
 For how these configurations are stored as yaml, checkout the file printed at the end of the configuration.
 
-## Step 4: Starting a Distribution and Testing it
+Note that all configurations as well as models are stored in `~/.llama`
 
-Now let’s start the distribution using the cli.
-```
-llama distribution start --name local_llama_8b --port 5000
-```
-You should see the distribution start and print the APIs that it is supporting:
+## Step 4: Starting a Llama Stack Distribution and Testing it
 
-<pre style="font-family: monospace;">
+Now let’s start Llama Stack server.
+
+You need the YAML configuration file which was written out at the end by the `llama stack build` step.
+
+```
+llama stack start ~/.llama/builds/stack/env-local-llama-8b.yaml --port 5000
+```
+You should see the Stack server start and print the APIs that it is supporting,
+
+```
+$ llama stack start ~/.llama/builds/stack/env-local-llama-8b.yaml --port 5000
+
 > initializing model parallel with size 1
 > initializing ddp with size 1
 > initializing pipeline with size 1
@@ -376,15 +411,23 @@ INFO:     Started server process [453333]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
-</pre>
-
-Lets test with a client
-
 ```
-cd /path/to/llama-toolchain
-conda activate <env-for-distribution> # ( Eg. local_llama_8b in above example )
 
-python -m  llama_toolchain.inference.client localhost 5000
+
+> [!NOTE]
+> Configuration is in `~/.llama/builds/stack/env-local-llama-8b.yaml`. Feel free to increase `max_seq_len`.
+
+> [!IMPORTANT]
+> The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
+
+This server is running a Llama model locally.
+
+Lets test with a client.
+```
+cd /path/to/llama-stack
+conda activate <env>  # any environment containing the llama-toolchain pip package will work
+
+python -m llama_toolchain.inference.client localhost 5000
 ```
 
 This will run the chat completion client and query the distribution’s /inference/chat_completion API.
