@@ -5,7 +5,7 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 ### Subcommands
 1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace.
 2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/main/docs/cli_reference.md#step-3-installing-and-configuring-distributions).
+3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/api_updates_1/docs/cli_reference.md#step-3-building-configuring-and-running-llama-stack-servers).
 4. `api`: Allows you to build and run individual API providers (pieces) from the Llama Stack.
 
 ### Sample Usage
