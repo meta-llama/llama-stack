@@ -32,6 +32,7 @@ def encodable_dict(d: BaseModel):
 
 class AgenticSystemClient(AgenticSystem):
     def __init__(self, base_url: str):
+        print(f"Agentic System passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def create_agentic_system(
