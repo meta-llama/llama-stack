@@ -19,11 +19,12 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 3 ]; then
-  echo "Usage: $0 <docker_image> <yaml_config> <port> <other_args...>"
+  echo "Usage: $0 <build_name> <yaml_config> <port> <other_args...>"
   exit 1
 fi
 
-docker_image="$1"
+build_name="$1"
+docker_image="llamastack-$build_name"
 shift
 
 yaml_config="$1"

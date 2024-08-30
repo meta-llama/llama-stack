@@ -4,15 +4,15 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-
 if [ "$#" -ne 4 ]; then
-  echo "Usage: $0 [api|stack] <image_name> <docker_base> <pip_dependencies>
-  echo "Example: $0 agentic_system my-fastapi-app python:3.9-slim 'fastapi uvicorn'
+  echo "Usage: $0 <distribution_id> <build_name> <docker_base> <pip_dependencies>
+  echo "Example: $0 distribution_id my-fastapi-app python:3.9-slim 'fastapi uvicorn'
   exit 1
 fi
 
-api_or_stack=$1
-image_name=$2
+distribution_id=$1
+build_name="$2"
+image_name="llamastack-$build_name"
 docker_base=$3
 pip_dependencies=$4
 
@@ -32,13 +32,12 @@ add_to_docker() {
   local input
   output_file="$TEMP_DIR/Dockerfile"
   if [ -t 0 ]; then
-    printf '%s\n' "$1" >> "$output_file"
+    printf '%s\n' "$1" >>"$output_file"
   else
     # If stdin is not a terminal, read from it (heredoc)
-    cat >> "$output_file"
+    cat >>"$output_file"
   fi
 }
-
 
 add_to_docker <<EOF
 FROM $docker_base
@@ -67,7 +66,7 @@ else
 fi
 
 if [ -n "$LLAMA_MODELS_DIR" ]; then
- if [ ! -d "$LLAMA_MODELS_DIR" ]; then
+  if [ ! -d "$LLAMA_MODELS_DIR" ]; then
     echo "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
     exit 1
   fi
@@ -110,12 +109,12 @@ set +x
 printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
-if [ "$api_or_stack" = "stack" ]; then
-  subcommand="stack"
+if [ "$distribution_id" = "adhoc" ]; then
+  subcommand="api"
   target=""
 else
-  subcommand="api"
-  target="$api_or_stack"
+  subcommand="stack"
+  target="$distribution_id"
 fi
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$image_name"
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$build_name" --build-type container

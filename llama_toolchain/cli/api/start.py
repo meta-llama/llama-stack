@@ -13,6 +13,7 @@ import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.core.datatypes import *  # noqa: F403
+from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
 
 
 class ApiStart(Subcommand):
@@ -28,10 +29,18 @@ class ApiStart(Subcommand):
         self.parser.set_defaults(func=self._run_api_start_cmd)
 
     def _add_arguments(self):
+        from llama_toolchain.core.package import BuildType
+
         self.parser.add_argument(
-            "yaml_config",
+            "build_name",
             type=str,
-            help="Yaml config containing the API build configuration",
+            help="Name of the API build you want to start",
+        )
+        self.parser.add_argument(
+            "--build-type",
+            type=str,
+            default="conda_env",
+            choices=[v.value for v in BuildType],
         )
         self.parser.add_argument(
             "--port",
@@ -48,8 +57,16 @@ class ApiStart(Subcommand):
 
     def _run_api_start_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
+        from llama_toolchain.core.package import BuildType
 
-        config_file = Path(args.yaml_config)
+        if args.build_name.endswith(".yaml"):
+            path = args.build_name
+        else:
+            build_type = BuildType(args.build_type)
+            build_dir = BUILDS_BASE_DIR / "adhoc" / build_type.descriptor()
+            path = build_dir / f"{args.build_name}.yaml"
+
+        config_file = Path(path)
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama api build` first"

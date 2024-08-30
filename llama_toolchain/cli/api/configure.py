@@ -31,36 +31,16 @@ class ApiConfigure(Subcommand):
         self.parser.set_defaults(func=self._run_api_configure_cmd)
 
     def _add_arguments(self):
-        from llama_toolchain.core.distribution import stack_apis
         from llama_toolchain.core.package import BuildType
 
-        allowed_args = [a.name for a in stack_apis()]
-        self.parser.add_argument(
-            "api",
-            choices=allowed_args,
-            help="Stack API (one of: {})".format(", ".join(allowed_args)),
-        )
         self.parser.add_argument(
             "--build-name",
             type=str,
-            help="(Fully qualified) name of the API build to configure. Alternatively, specify the --provider and --name options.",
-            required=False,
-        )
-
-        self.parser.add_argument(
-            "--provider",
-            type=str,
-            help="The provider chosen for the API",
-            required=False,
+            help="Name of the build",
+            required=True,
         )
         self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the build target (image, conda env)",
-            required=False,
-        )
-        self.parser.add_argument(
-            "--type",
+            "--build-type",
             type=str,
             default="conda_env",
             choices=[v.value for v in BuildType],
@@ -69,15 +49,11 @@ class ApiConfigure(Subcommand):
     def _run_api_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import BuildType
 
-        if args.build_name:
-            name = args.build_name
-            if name.endswith(".yaml"):
-                name = name.replace(".yaml", "")
-        else:
-            build_type = BuildType(args.type)
-            name = f"{build_type.descriptor()}-{args.provider}-{args.name}"
-
-        config_file = BUILDS_BASE_DIR / args.api / f"{name}.yaml"
+        build_type = BuildType(args.build_type)
+        name = args.build_name
+        config_file = (
+            BUILDS_BASE_DIR / "adhoc" / build_type.descriptor() / f"{name}.yaml"
+        )
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama api build` first"

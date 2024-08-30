@@ -68,7 +68,6 @@ class StackBuild(Subcommand):
                 ApiInput(
                     api=api,
                     provider=provider_id,
-                    dependencies={},
                 )
             )
 

@@ -20,13 +20,14 @@ fi
 set -euo pipefail
 
 if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <api_or_stack> <environment_name> <pip_dependencies>" >&2
-  echo "Example: $0 [api|stack] conda-env 'numpy pandas scipy'" >&2
+  echo "Usage: $0 <distribution_id> <build_name> <pip_dependencies>" >&2
+  echo "Example: $0 <distribution_id> mybuild 'numpy pandas scipy'" >&2
   exit 1
 fi
 
-api_or_stack="$1"
-env_name="$2"
+distribution_id="$1"
+build_name="$2"
+env_name="llamastack-$build_name"
 pip_dependencies="$3"
 
 # Define color codes
@@ -53,19 +54,19 @@ ensure_conda_env_python310() {
 
   # Check if the environment exists
   if conda env list | grep -q "^${env_name} "; then
-    printf "Conda environment '${env_name}' exists. Checking Python version..."
+    printf "Conda environment '${env_name}' exists. Checking Python version...\n"
 
     # Check Python version in the environment
     current_version=$(conda run -n "${env_name}" python --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1,2)
 
     if [ "$current_version" = "$python_version" ]; then
-      printf "Environment '${env_name}' already has Python ${python_version}. No action needed."
+      printf "Environment '${env_name}' already has Python ${python_version}. No action needed.\n"
     else
-      printf "Updating environment '${env_name}' to Python ${python_version}..."
+      printf "Updating environment '${env_name}' to Python ${python_version}...\n"
       conda install -n "${env_name}" python="${python_version}" -y
     fi
   else
-    printf "Conda environment '${env_name}' does not exist. Creating with Python ${python_version}..."
+    printf "Conda environment '${env_name}' does not exist. Creating with Python ${python_version}...\n"
     conda create -n "${env_name}" python="${python_version}" -y
 
     ENVNAME="${env_name}"
@@ -83,11 +84,11 @@ ensure_conda_env_python310() {
     # Re-installing llama-toolchain in the new conda environment
     if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
       if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
-        printf "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}" >&2
+        printf "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}\n" >&2
         exit 1
       fi
 
-      printf "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR"
+      printf "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR\n"
       pip install --no-cache-dir -e "$LLAMA_TOOLCHAIN_DIR"
     else
       pip install --no-cache-dir llama-toolchain
@@ -95,18 +96,18 @@ ensure_conda_env_python310() {
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
       if [ ! -d "$LLAMA_MODELS_DIR" ]; then
-        printf "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}" >&2
+        printf "${RED}Warning: LLAMA_MODELS_DIR is set but directory does not exist: $LLAMA_MODELS_DIR${NC}\n" >&2
         exit 1
       fi
 
-      printf "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR"
+      printf "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR\n"
       pip uninstall -y llama-models
       pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
     fi
 
     # Install pip dependencies
     if [ -n "$pip_dependencies" ]; then
-      printf "Installing pip dependencies: $pip_dependencies"
+      printf "Installing pip dependencies: $pip_dependencies\n"
       pip install $pip_dependencies
     fi
   fi
@@ -114,14 +115,14 @@ ensure_conda_env_python310() {
 
 ensure_conda_env_python310 "$env_name" "$pip_dependencies"
 
-printf "${GREEN}Successfully setup conda environment. Configuring build...${NC}"
+printf "${GREEN}Successfully setup conda environment. Configuring build...${NC}\n"
 
-if [ "$api_or_stack" = "stack" ]; then
-  subcommand="stack"
+if [ "$distribution_id" = "adhoc" ]; then
+  subcommand="api"
   target=""
 else
-  subcommand="api"
-  target="$api_or_stack"
+  subcommand="stack"
+  target="$distribution_id"
 fi
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$env_name"
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$build_name" --build-type conda_env

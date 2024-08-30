@@ -8,7 +8,7 @@ import json
 import os
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import pkg_resources
 import yaml
@@ -17,11 +17,11 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
-from llama_toolchain.core.datatypes import *  # noqa: F403
-
 from llama_toolchain.common.exec import run_with_pty
 from llama_toolchain.common.serialize import EnumEncoder
-from llama_toolchain.core.distribution import api_providers
+
+from llama_toolchain.core.datatypes import *  # noqa: F403
+from llama_toolchain.core.distribution import api_providers, SERVER_DEPENDENCIES
 
 
 class BuildType(Enum):
@@ -29,7 +29,7 @@ class BuildType(Enum):
     conda_env = "conda_env"
 
     def descriptor(self) -> str:
-        return "image" if self == self.container else "env"
+        return "docker" if self == self.container else "conda"
 
 
 class Dependencies(BaseModel):
@@ -37,29 +37,9 @@ class Dependencies(BaseModel):
     docker_image: Optional[str] = None
 
 
-def get_dependencies(
-    provider: ProviderSpec, dependencies: Dict[str, ProviderSpec]
-) -> Dependencies:
-    from llama_toolchain.core.distribution import SERVER_DEPENDENCIES
-
-    pip_packages = provider.pip_packages
-    for dep in dependencies.values():
-        if dep.docker_image:
-            raise ValueError(
-                "You can only have the root provider specify a docker image"
-            )
-        pip_packages.extend(dep.pip_packages)
-
-    return Dependencies(
-        docker_image=provider.docker_image,
-        pip_packages=pip_packages + SERVER_DEPENDENCIES,
-    )
-
-
 class ApiInput(BaseModel):
     api: Api
     provider: str
-    dependencies: Dict[str, ProviderSpec]
 
 
 def build_package(
@@ -69,31 +49,22 @@ def build_package(
     distribution_id: Optional[str] = None,
     docker_image: Optional[str] = None,
 ):
-    is_stack = len(api_inputs) > 1
-    if is_stack:
-        if not distribution_id:
-            raise ValueError(
-                "You must specify a distribution name when building the Llama Stack"
-            )
+    if not distribution_id:
+        distribution_id = "adhoc"
 
-    api1 = api_inputs[0]
-
-    provider = distribution_id if is_stack else api1.provider
-    api_or_stack = "stack" if is_stack else api1.api.value
-
-    build_dir = BUILDS_BASE_DIR / api_or_stack
+    build_dir = BUILDS_BASE_DIR / distribution_id / build_type.descriptor()
     os.makedirs(build_dir, exist_ok=True)
 
-    package_name = f"{build_type.descriptor()}-{provider}-{name}"
-    package_name = package_name.replace("::", "-")
+    package_name = name.replace("::", "-")
     package_file = build_dir / f"{package_name}.yaml"
 
     all_providers = api_providers()
 
     package_deps = Dependencies(
         docker_image=docker_image or "python:3.10-slim",
-        pip_packages=[],
+        pip_packages=SERVER_DEPENDENCIES,
     )
+
     stub_config = {}
     for api_input in api_inputs:
         api = api_input.api
@@ -103,18 +74,12 @@ def build_package(
                 f"Provider `{api_input.provider}` is not available for API `{api}`"
             )
 
-        deps = get_dependencies(
-            providers_for_api[api_input.provider],
-            api_input.dependencies,
-        )
-        if deps.docker_image:
+        provider = providers_for_api[api_input.provider]
+        package_deps.pip_packages.extend(provider.pip_packages)
+        if provider.docker_image:
             raise ValueError("A stack's dependencies cannot have a docker image")
-        package_deps.pip_packages.extend(deps.pip_packages)
 
         stub_config[api.value] = {"provider_id": api_input.provider}
-        for dep_api, dep_spec in api_input.dependencies.items():
-            if dep_api not in stub_config:
-                stub_config[dep_api] = {"provider_id": dep_spec.provider_id}
 
     if package_file.exists():
         cprint(
@@ -154,7 +119,7 @@ def build_package(
         )
         args = [
             script,
-            api_or_stack,
+            distribution_id,
             package_name,
             package_deps.docker_image,
             " ".join(package_deps.pip_packages),
@@ -165,7 +130,7 @@ def build_package(
         )
         args = [
             script,
-            api_or_stack,
+            distribution_id,
             package_name,
             " ".join(package_deps.pip_packages),
         ]

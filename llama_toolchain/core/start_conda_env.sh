@@ -19,11 +19,12 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 3 ]; then
-  echo "Usage: $0 <env_name> <yaml_config> <port> <script_args...>"
+  echo "Usage: $0 <build_name> <yaml_config> <port> <script_args...>"
   exit 1
 fi
 
-env_name="$1"
+build_name="$1"
+env_name="llamastack-$build_name"
 shift
 
 yaml_config="$1"
