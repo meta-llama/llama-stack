@@ -112,6 +112,9 @@ def build_package(
         package_deps.pip_packages.extend(deps.pip_packages)
 
         stub_config[api.value] = {"provider_id": api_input.provider}
+        for dep_api, dep_spec in api_input.dependencies.items():
+            if dep_api not in stub_config:
+                stub_config[dep_api] = {"provider_id": dep_spec.provider_id}
 
     if package_file.exists():
         cprint(
