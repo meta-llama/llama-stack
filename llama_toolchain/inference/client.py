@@ -36,7 +36,6 @@ def encodable_dict(d: BaseModel):
 
 class InferenceClient(Inference):
     def __init__(self, base_url: str):
-        print(f"Inference passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:

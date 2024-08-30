@@ -304,7 +304,7 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
             and provider_spec.adapter is None
         ):
             for endpoint in endpoints:
-                url = impl.__provider_config__.url
+                url = impl.__provider_config__.url.rstrip("/") + endpoint.route
                 getattr(app, endpoint.method)(endpoint.route)(
                     create_dynamic_passthrough(url)
                 )

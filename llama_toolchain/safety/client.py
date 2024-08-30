@@ -31,7 +31,6 @@ def encodable_dict(d: BaseModel):
 
 class SafetyClient(Safety):
     def __init__(self, base_url: str):
-        print(f"Safety passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:

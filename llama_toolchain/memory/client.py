@@ -22,7 +22,6 @@ async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Memory:
 
 class MemoryClient(Memory):
     def __init__(self, base_url: str):
-        print(f"Memory passthrough to -> {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:

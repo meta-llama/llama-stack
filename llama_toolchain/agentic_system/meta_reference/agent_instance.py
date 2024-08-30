@@ -6,9 +6,17 @@
 
 import asyncio
 import copy
+import os
+import secrets
+import shutil
+import string
+import tempfile
 import uuid
 from datetime import datetime
 from typing import AsyncGenerator, List, Tuple
+from urllib.parse import urlparse
+
+import httpx
 
 from termcolor import cprint
 
@@ -24,6 +32,12 @@ from llama_toolchain.tools.builtin import (
 )
 
 from .safety import SafetyException, ShieldRunnerMixin
+
+
+def make_random_string(length: int = 8):
+    return "".join(
+        secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
+    )
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -44,6 +58,7 @@ class ChatAgent(ShieldRunnerMixin):
         self.max_infer_iters = max_infer_iters
         self.tools_dict = {t.get_name(): t for t in builtin_tools}
 
+        self.tempdir = tempfile.mkdtemp()
         self.sessions = {}
 
         ShieldRunnerMixin.__init__(
@@ -52,6 +67,9 @@ class ChatAgent(ShieldRunnerMixin):
             input_shields=agent_config.input_shields,
             output_shields=agent_config.output_shields,
         )
+
+    def __del__(self):
+        shutil.rmtree(self.tempdir)
 
     def turn_to_messages(self, turn: Turn) -> List[Message]:
         messages = []
@@ -343,7 +361,8 @@ class ChatAgent(ShieldRunnerMixin):
 
         elif attachments and AgenticSystemTool.code_interpreter.value in enabled_tools:
             urls = [a.content for a in attachments if isinstance(a.content, URL)]
-            input_messages.append(attachment_message(urls))
+            msg = await attachment_message(self.tempdir, urls)
+            input_messages.append(msg)
 
         output_attachments = []
 
@@ -707,13 +726,27 @@ class ChatAgent(ShieldRunnerMixin):
         return ret
 
 
-def attachment_message(urls: List[URL]) -> ToolResponseMessage:
+async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessage:
     content = []
 
     for url in urls:
         uri = url.uri
-        assert uri.startswith("file://")
-        filepath = uri[len("file://") :]
+        if uri.startswith("file://"):
+            filepath = uri[len("file://") :]
+        elif uri.startswith("http"):
+            path = urlparse(uri).path
+            basename = os.path.basename(path)
+            filepath = f"{tempdir}/{make_random_string() + basename}"
+            print(f"Downloading {url} -> {filepath}")
+
+            async with httpx.AsyncClient() as client:
+                r = await client.get(uri)
+                resp = r.text
+                with open(filepath, "w") as fp:
+                    fp.write(resp)
+        else:
+            raise ValueError(f"Unsupported URL {url}")
+
         content.append(f'# There is a file accessible to you at "{filepath}"\n')
 
     return ToolResponseMessage(
