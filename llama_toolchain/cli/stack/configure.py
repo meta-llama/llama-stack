@@ -36,28 +36,21 @@ class StackConfigure(Subcommand):
         )
         from llama_toolchain.core.package import BuildType
 
-        self.parser.add_argument(
-            "--build-name",
-            type=str,
-            help="(Fully qualified) name of the stack build to configure. Alternatively, provider --distribution and --name",
-            required=False,
-        )
         allowed_ids = [d.distribution_id for d in available_distribution_specs()]
         self.parser.add_argument(
-            "--distribution",
+            "distribution",
             type=str,
             choices=allowed_ids,
             help="Distribution (one of: {})".format(allowed_ids),
-            required=False,
         )
         self.parser.add_argument(
-            "--name",
+            "--build-name",
             type=str,
             help="Name of the build",
-            required=False,
+            required=True,
         )
         self.parser.add_argument(
-            "--type",
+            "--build-type",
             type=str,
             default="conda_env",
             choices=[v.value for v in BuildType],
@@ -66,15 +59,14 @@ class StackConfigure(Subcommand):
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import BuildType
 
-        if args.build_name:
-            name = args.build_name
-            if name.endswith(".yaml"):
-                name = name.replace(".yaml", "")
-        else:
-            build_type = BuildType(args.type)
-            name = f"{build_type.descriptor()}-{args.distribution}-{args.name}"
-
-        config_file = BUILDS_BASE_DIR / "stack" / f"{name}.yaml"
+        build_type = BuildType(args.build_type)
+        name = args.build_name
+        config_file = (
+            BUILDS_BASE_DIR
+            / args.distribution
+            / build_type.descriptor()
+            / f"{name}.yaml"
+        )
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama stack build` first"
