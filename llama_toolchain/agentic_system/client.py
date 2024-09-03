@@ -12,6 +12,7 @@ from typing import AsyncGenerator
 import fire
 
 import httpx
+from httpx import Timeout, Retry
 
 from llama_models.llama3.api.datatypes import (
     BuiltinTool,
@@ -47,7 +48,7 @@ class AgenticSystemClient(AgenticSystem):
     async def create_agentic_system(
         self, request: AgenticSystemCreateRequest
     ) -> AgenticSystemCreateResponse:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=Timeout(10.0), retries=Retry(3)) as client:
             response = await client.post(
                 f"{self.base_url}/agentic_system/create",
                 data=request.json(),
@@ -60,7 +61,7 @@ class AgenticSystemClient(AgenticSystem):
         self,
         request: AgenticSystemSessionCreateRequest,
     ) -> AgenticSystemSessionCreateResponse:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=Timeout(10.0), retries=Retry(3)) as client:
             response = await client.post(
                 f"{self.base_url}/agentic_system/session/create",
                 data=request.json(),
@@ -73,13 +74,12 @@ class AgenticSystemClient(AgenticSystem):
         self,
         request: AgenticSystemTurnCreateRequest,
     ) -> AsyncGenerator:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=Timeout(20.0), retries=Retry(3)) as client:
             async with client.stream(
                 "POST",
                 f"{self.base_url}/agentic_system/turn/create",
                 data=request.json(),
                 headers={"Content-Type": "application/json"},
-                timeout=20,
             ) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data:"):
@@ -182,3 +182,4 @@ def main(host: str, port: int):
 
 if __name__ == "__main__":
     fire.Fire(main)
+
