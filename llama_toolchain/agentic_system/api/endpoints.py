@@ -50,9 +50,7 @@ class AgenticSystemTurnCreateRequest(BaseModel):
     override_config: Optional[AgenticSystemInstanceConfig] = None
 
 
-@json_schema_type(
-    schema={"description": "Server side event (SSE) stream of these events"}
-)
+@json_schema_type
 class AgenticSystemTurnResponseStreamChunk(BaseModel):
     event: AgenticSystemTurnResponseEvent
 
