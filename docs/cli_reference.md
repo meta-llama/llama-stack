@@ -6,7 +6,6 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace.
 2. `model`: Lists available models and their properties.
 3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/api_updates_1/docs/cli_reference.md#step-3-building-configuring-and-running-llama-stack-servers).
-4. `api`: Allows you to build and run individual API providers (pieces) from the Llama Stack.
 
 ### Sample Usage
 
@@ -313,13 +312,13 @@ To install a distribution, we run a simple command providing 2 inputs:
 Let's imagine you are working with a 8B-Instruct model. The following command will build a package (in the form of a Conda environment) _and_ configure it. As part of the configuration, you will be asked for some inputs (model_id, max_seq_len, etc.)
 
 ```
-llama stack build local --build-name llama-8b
+llama stack build local --name llama-8b
 ```
 
 Once it runs successfully , you should see some outputs in the form:
 
 ```
-$ llama stack build local --build-name llama-8b
+$ llama stack build local --name llama-8b
 ....
 ....
 Successfully installed cfgv-3.4.0 distlib-0.3.8 identify-2.6.0 libcst-1.4.0 llama_toolchain-0.0.2 moreorless-0.4.0 nodeenv-1.9.1 pre-commit-3.8.0 stdlibs-2024.5.15 toml-0.10.2 tomlkit-0.13.0 trailrunner-1.4.0 ufmt-2.7.0 usort-1.0.8 virtualenv-20.26.3
@@ -334,12 +333,12 @@ YAML configuration has been written to ~/.llama/builds/stack/env-local-llama-8b.
 
 You can re-configure this distribution by running:
 ```
-llama stack configure local --build-name llama-8b
+llama stack configure local --name llama-8b
 ```
 
 Here is an example run of how the CLI will guide you to fill the configuration
 ```
-$ llama stack configure local --build-name llama-8b
+$ llama stack configure local --name llama-8b
 
 Configuring API: inference (meta-reference)
 Enter value for model (required): Meta-Llama3.1-8B-Instruct
@@ -359,7 +358,7 @@ Entering sub-configuration for prompt_guard_shield:
 Enter value for model (required): Prompt-Guard-86M
 ...
 ...
-YAML configuration has been written to ~/.llama/builds/stack/env-local-llama-8b.yaml
+YAML configuration has been written to ~/.llama/builds/conda/local/llama-8b.yaml
 ```
 
 As you can see, we did basic configuration above and configured:
@@ -378,12 +377,15 @@ Now let’s start Llama Stack server.
 You need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```
-llama stack start ~/.llama/builds/stack/env-local-llama-8b.yaml --port 5000
+llama stack start local --name llama-8b --port 5000
+
+# or you can give the full path of the YAML file
+llama stack start ~/.llama/builds/conda/local/llama-8b.yaml --port 5000
 ```
 You should see the Stack server start and print the APIs that it is supporting,
 
 ```
-$ llama stack start ~/.llama/builds/stack/env-local-llama-8b.yaml --port 5000
+$ llama stack start local --name llama-8b --port 5000
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
@@ -415,7 +417,7 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 
 
 > [!NOTE]
-> Configuration is in `~/.llama/builds/stack/env-local-llama-8b.yaml`. Feel free to increase `max_seq_len`.
+> Configuration is in `~/.llama/builds/conda/local/llama-8b.yaml`. Feel free to increase `max_seq_len`.
 
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.

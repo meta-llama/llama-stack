@@ -44,13 +44,13 @@ class StackConfigure(Subcommand):
             help="Distribution (one of: {})".format(allowed_ids),
         )
         self.parser.add_argument(
-            "--build-name",
+            "--name",
             type=str,
             help="Name of the build",
             required=True,
         )
         self.parser.add_argument(
-            "--build-type",
+            "--type",
             type=str,
             default="conda_env",
             choices=[v.value for v in BuildType],
@@ -59,8 +59,8 @@ class StackConfigure(Subcommand):
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import BuildType
 
-        build_type = BuildType(args.build_type)
-        name = args.build_name
+        build_type = BuildType(args.type)
+        name = args.name
         config_file = (
             BUILDS_BASE_DIR
             / args.distribution

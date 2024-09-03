@@ -37,12 +37,13 @@ class StackStart(Subcommand):
             help="Distribution whose build you want to start",
         )
         self.parser.add_argument(
-            "--build-name",
+            "--name",
             type=str,
             help="Name of the API build you want to start",
+            required=True,
         )
         self.parser.add_argument(
-            "--build-type",
+            "--type",
             type=str,
             default="conda_env",
             choices=[v.value for v in BuildType],
@@ -64,12 +65,12 @@ class StackStart(Subcommand):
         from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.core.package import BuildType
 
-        if args.build_name.endswith(".yaml"):
-            path = args.build_name
+        if args.name.endswith(".yaml"):
+            path = args.name
         else:
-            build_type = BuildType(args.build_type)
+            build_type = BuildType(args.type)
             build_dir = BUILDS_BASE_DIR / args.distribution / build_type.descriptor()
-            path = build_dir / f"{args.build_name}.yaml"
+            path = build_dir / f"{args.name}.yaml"
 
         config_file = Path(path)
 
