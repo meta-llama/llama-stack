@@ -328,7 +328,7 @@ Successfully setup conda environment. Configuring build...
 ...
 ...
 
-YAML configuration has been written to ~/.llama/builds/stack/env-local-llama-8b.yaml
+YAML configuration has been written to ~/.llama/builds/local/conda/llama-8b.yaml
 ```
 
 You can re-configure this distribution by running:
@@ -358,7 +358,7 @@ Entering sub-configuration for prompt_guard_shield:
 Enter value for model (required): Prompt-Guard-86M
 ...
 ...
-YAML configuration has been written to ~/.llama/builds/conda/local/llama-8b.yaml
+YAML configuration has been written to ~/.llama/builds/local/conda/llama-8b.yaml
 ```
 
 As you can see, we did basic configuration above and configured:
@@ -378,9 +378,6 @@ You need the YAML configuration file which was written out at the end by the `ll
 
 ```
 llama stack start local --name llama-8b --port 5000
-
-# or you can give the full path of the YAML file
-llama stack start ~/.llama/builds/conda/local/llama-8b.yaml --port 5000
 ```
 You should see the Stack server start and print the APIs that it is supporting,
 
@@ -417,7 +414,7 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 
 
 > [!NOTE]
-> Configuration is in `~/.llama/builds/conda/local/llama-8b.yaml`. Feel free to increase `max_seq_len`.
+> Configuration is in `~/.llama/builds/local/conda/llama-8b.yaml`. Feel free to increase `max_seq_len`.
 
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.

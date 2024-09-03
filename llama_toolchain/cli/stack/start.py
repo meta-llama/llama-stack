@@ -65,25 +65,23 @@ class StackStart(Subcommand):
         from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.core.package import BuildType
 
-        if args.name.endswith(".yaml"):
-            path = args.name
-        else:
-            build_type = BuildType(args.type)
-            build_dir = BUILDS_BASE_DIR / args.distribution / build_type.descriptor()
-            path = build_dir / f"{args.name}.yaml"
+        build_type = BuildType(args.type)
+        build_dir = BUILDS_BASE_DIR / args.distribution / build_type.descriptor()
+        path = build_dir / f"{args.name}.yaml"
 
         config_file = Path(path)
+
+        if not config_file.exists():
+            self.parser.error(
+                f"File {str(config_file)} does not exist. Did you run `llama stack build`?"
+            )
+            return
 
         with open(config_file, "r") as f:
             config = PackageConfig(**yaml.safe_load(f))
 
         if not config.distribution_id:
-            # this is technically not necessary. everything else continues to work,
-            # but maybe we want to be very clear for the users
-            self.parser.error(
-                "No distribution_id found. Did you want to start a provider?"
-            )
-            return
+            raise ValueError("Build config appears to be corrupt.")
 
         if config.docker_image:
             script = pkg_resources.resource_filename(
