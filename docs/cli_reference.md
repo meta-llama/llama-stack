@@ -242,7 +242,7 @@ An agentic app has several components including model inference, tool execution 
 
 The Llama Stack is a collection of REST APIs. An API is _implemented_ by Provider. An assembly of Providers together provides the implementation for the Stack -- this package is called a Distribution.
 
-As an example, by running a simple command `llama stack start <YAML>`, you can bring up a server serving the following endpoints, among others:
+As an example, by running a simple command `llama stack run`, you can bring up a server serving the following endpoints, among others:
 ```
 POST /inference/chat_completion
 POST /inference/completion
@@ -377,12 +377,12 @@ Now let’s start Llama Stack server.
 You need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```
-llama stack start local --name llama-8b --port 5000
+llama stack run local --name llama-8b --port 5000
 ```
 You should see the Stack server start and print the APIs that it is supporting,
 
 ```
-$ llama stack start local --name llama-8b --port 5000
+$ llama stack run local --name llama-8b --port 5000
 
 > initializing model parallel with size 1
 > initializing ddp with size 1

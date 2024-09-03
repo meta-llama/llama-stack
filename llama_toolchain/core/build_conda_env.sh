@@ -125,4 +125,4 @@ else
   target="$distribution_id"
 fi
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$build_name" --build-type conda_env
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --name "$build_name" --type conda_env

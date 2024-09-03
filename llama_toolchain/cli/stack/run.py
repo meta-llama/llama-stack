@@ -16,17 +16,17 @@ from llama_toolchain.core.datatypes import *  # noqa: F403
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
 
 
-class StackStart(Subcommand):
+class StackRun(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
         self.parser = subparsers.add_parser(
-            "start",
-            prog="llama stack start",
+            "run",
+            prog="llama stack run",
             description="""start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.""",
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self._add_arguments()
-        self.parser.set_defaults(func=self._run_stack_start_cmd)
+        self.parser.set_defaults(func=self._run_stack_run_cmd)
 
     def _add_arguments(self):
         from llama_toolchain.core.package import BuildType
@@ -39,7 +39,7 @@ class StackStart(Subcommand):
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Name of the API build you want to start",
+            help="Name of the build you want to start",
             required=True,
         )
         self.parser.add_argument(
@@ -61,7 +61,7 @@ class StackStart(Subcommand):
             default=False,
         )
 
-    def _run_stack_start_cmd(self, args: argparse.Namespace) -> None:
+    def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.core.package import BuildType
 

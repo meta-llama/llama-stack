@@ -117,4 +117,4 @@ else
   target="$distribution_id"
 fi
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --build-name "$build_name" --build-type container
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --name "$build_name" --type container
