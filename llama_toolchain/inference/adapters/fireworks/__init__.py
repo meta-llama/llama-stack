@@ -7,7 +7,7 @@
 from .config import FireworksImplConfig
 
 
-async def get_adapter_impl(config: FireworksImplConfig, _deps) -> Inference:
+async def get_adapter_impl(config: FireworksImplConfig, _deps):
     from .fireworks import FireworksInferenceAdapter
 
     assert isinstance(

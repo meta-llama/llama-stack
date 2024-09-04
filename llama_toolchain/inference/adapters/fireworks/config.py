@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 @json_schema_type
 class FireworksImplConfig(BaseModel):
     url: str = Field(
-        default="https://api.fireworks.api/inference",
+        default="https://api.fireworks.ai/inference",
         description="The URL for the Fireworks server",
     )
     api_key: str = Field(

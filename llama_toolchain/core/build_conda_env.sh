@@ -117,12 +117,4 @@ ensure_conda_env_python310 "$env_name" "$pip_dependencies"
 
 printf "${GREEN}Successfully setup conda environment. Configuring build...${NC}\n"
 
-if [ "$distribution_id" = "adhoc" ]; then
-  subcommand="api"
-  target=""
-else
-  subcommand="stack"
-  target="$distribution_id"
-fi
-
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama $subcommand configure $target --name "$build_name" --type conda_env
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $distribution_id --name "$build_name" --type conda_env

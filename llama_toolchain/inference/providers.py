@@ -42,8 +42,8 @@ def available_inference_providers() -> List[ProviderSpec]:
                 pip_packages=[
                     "fireworks-ai",
                 ],
-                module="llama_toolchain.inference.fireworks",
-                config_class="llama_toolchain.inference.fireworks.FireworksImplConfig",
+                module="llama_toolchain.inference.adapters.fireworks",
+                config_class="llama_toolchain.inference.adapters.fireworks.FireworksImplConfig",
             ),
         ),
         remote_provider_spec(
@@ -53,8 +53,8 @@ def available_inference_providers() -> List[ProviderSpec]:
                 pip_packages=[
                     "together",
                 ],
-                module="llama_toolchain.inference.together",
-                config_class="llama_toolchain.inference.together.TogetherImplConfig",
+                module="llama_toolchain.inference.adapters.together",
+                config_class="llama_toolchain.inference.adapters.together.TogetherImplConfig",
             ),
         ),
     ]

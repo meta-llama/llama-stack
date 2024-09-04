@@ -40,8 +40,7 @@ class StackConfigure(Subcommand):
         self.parser.add_argument(
             "distribution",
             type=str,
-            choices=allowed_ids,
-            help="Distribution (one of: {})".format(allowed_ids),
+            help='Distribution ("adhoc" or one of: {})'.format(allowed_ids),
         )
         self.parser.add_argument(
             "--name",
@@ -79,16 +78,9 @@ class StackConfigure(Subcommand):
 def configure_llama_distribution(config_file: Path) -> None:
     from llama_toolchain.common.serialize import EnumEncoder
     from llama_toolchain.core.configure import configure_api_providers
-    from llama_toolchain.core.distribution_registry import resolve_distribution_spec
 
     with open(config_file, "r") as f:
         config = PackageConfig(**yaml.safe_load(f))
-
-    dist = resolve_distribution_spec(config.distribution_id)
-    if dist is None:
-        raise ValueError(
-            f"Could not find any registered distribution `{config.distribution_id}`"
-        )
 
     if config.providers:
         cprint(

@@ -7,7 +7,7 @@
 from .config import TogetherImplConfig
 
 
-async def get_adapter_impl(config: TogetherImplConfig, _deps) -> Inference:
+async def get_adapter_impl(config: TogetherImplConfig, _deps):
     from .together import TogetherInferenceAdapter
 
     assert isinstance(
