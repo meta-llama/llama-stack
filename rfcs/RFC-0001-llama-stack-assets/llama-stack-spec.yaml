@@ -413,6 +413,22 @@ components:
       - photogen
       - code_interpreter
       type: string
+    CancelEvaluationJobRequest:
+      additionalProperties: false
+      properties:
+        job_uuid:
+          type: string
+      required:
+      - job_uuid
+      type: object
+    CancelTrainingJobRequest:
+      additionalProperties: false
+      properties:
+        job_uuid:
+          type: string
+      required:
+      - job_uuid
+      type: object
     ChatCompletionRequest:
       additionalProperties: false
       properties:
@@ -571,6 +587,14 @@ components:
       - delta
       title: streamed completion response.
       type: object
+    CreateAgenticSystemRequest:
+      additionalProperties: false
+      properties:
+        agent_config:
+          $ref: '#/components/schemas/AgentConfig'
+      required:
+      - agent_config
+      type: object
     CreateAgenticSystemSessionRequest:
       additionalProperties: false
       properties:
@@ -700,6 +724,14 @@ components:
       - epsilon
       - gamma
       type: object
+    DeleteAgenticSystemRequest:
+      additionalProperties: false
+      properties:
+        agent_id:
+          type: string
+      required:
+      - agent_id
+      type: object
     DeleteAgenticSystemSessionRequest:
       additionalProperties: false
       properties:
@@ -710,6 +742,14 @@ components:
       required:
       - agent_id
       - session_id
+      type: object
+    DeleteDatasetRequest:
+      additionalProperties: false
+      properties:
+        dataset_uuid:
+          type: string
+      required:
+      - dataset_uuid
       type: object
     DeleteDocumentsRequest:
       additionalProperties: false
@@ -768,6 +808,14 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
+      type: object
+    DropMemoryBankRequest:
+      additionalProperties: false
+      properties:
+        bank_id:
+          type: string
+      required:
+      - bank_id
       type: object
     EmbeddingsRequest:
       additionalProperties: false
@@ -987,6 +1035,24 @@ components:
       - description
       - parameters
       type: object
+    GetAgenticSystemSessionRequest:
+      additionalProperties: false
+      properties:
+        turn_ids:
+          items:
+            type: string
+          type: array
+      type: object
+    GetDocumentsRequest:
+      additionalProperties: false
+      properties:
+        document_ids:
+          items:
+            type: string
+          type: array
+      required:
+      - document_ids
+      type: object
     InferenceStep:
       additionalProperties: false
       properties:
@@ -1025,6 +1091,14 @@ components:
       required:
       - bank_id
       - documents
+      type: object
+    ListArtifactsRequest:
+      additionalProperties: false
+      properties:
+        experiment_id:
+          type: string
+      required:
+      - experiment_id
       type: object
     Log:
       additionalProperties: false
@@ -2385,7 +2459,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-04 09:26:21.634687"
+    \ draft and subject to change.\n                Generated at 2024-09-04 10:28:38.779789"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2398,7 +2472,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentConfig'
+              $ref: '#/components/schemas/CreateAgenticSystemRequest'
         required: true
       responses:
         '200':
@@ -2416,7 +2490,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/DeleteAgenticSystemRequest'
         required: true
       responses:
         '200':
@@ -2472,11 +2546,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - items:
-                  type: string
-                type: array
-              - type: 'null'
+              $ref: '#/components/schemas/GetAgenticSystemSessionRequest'
         required: true
       responses:
         '200':
@@ -2628,7 +2698,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/DeleteDatasetRequest'
         required: true
       responses:
         '200':
@@ -2676,7 +2746,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/CancelEvaluationJobRequest'
         required: true
       responses:
         '200':
@@ -2790,7 +2860,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/ListArtifactsRequest'
         required: true
       responses:
         '200':
@@ -3014,9 +3084,7 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                type: string
-              type: array
+              $ref: '#/components/schemas/GetDocumentsRequest'
         required: true
       responses:
         '200':
@@ -3098,7 +3166,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/DropMemoryBankRequest'
         required: true
       responses:
         '200':
@@ -3164,7 +3232,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/CancelTrainingJobRequest'
         required: true
       responses:
         '200':
@@ -3344,15 +3412,15 @@ servers:
 - url: http://any-hosted-llama-stack.com
 tags:
 - name: Observability
-- name: Evaluations
-- name: Memory
-- name: BatchInference
-- name: RewardScoring
-- name: SyntheticDataGeneration
-- name: PostTraining
-- name: AgenticSystem
-- name: Datasets
 - name: Inference
+- name: Datasets
+- name: Memory
+- name: AgenticSystem
+- name: Evaluations
+- name: SyntheticDataGeneration
+- name: RewardScoring
+- name: PostTraining
+- name: BatchInference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3404,6 +3472,12 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/CancelEvaluationJobRequest"
+    />
+  name: CancelEvaluationJobRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
+    />
+  name: CancelTrainingJobRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
@@ -3473,6 +3547,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/WolframAlphaToolDefinition"
     />
   name: WolframAlphaToolDefinition
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemRequest"
+    />
+  name: CreateAgenticSystemRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
     />
   name: AgenticSystemCreateResponse
@@ -3561,12 +3638,21 @@ tags:
   name: CreateRunRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Run" />
   name: Run
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemRequest"
+    />
+  name: DeleteAgenticSystemRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemSessionRequest"
     />
   name: DeleteAgenticSystemSessionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDatasetRequest"
+    />
+  name: DeleteDatasetRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDocumentsRequest"
     />
   name: DeleteDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DropMemoryBankRequest"
+    />
+  name: DropMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
@@ -3598,6 +3684,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
     />'
   name: EvaluateTextGenerationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/GetAgenticSystemSessionRequest"
+    />
+  name: GetAgenticSystemSessionRequest
 - description: 'A single session of an interaction with an Agentic System.
 
 
@@ -3610,6 +3699,9 @@ tags:
   name: Artifact
 - description: <SchemaDefinition schemaRef="#/components/schemas/ArtifactType" />
   name: ArtifactType
+- description: <SchemaDefinition schemaRef="#/components/schemas/GetDocumentsRequest"
+    />
+  name: GetDocumentsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
     />
   name: MemoryBankDocument
@@ -3658,6 +3750,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListArtifactsRequest"
+    />
+  name: ListArtifactsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequest"
     />
   name: LogMessagesRequest
@@ -3785,6 +3880,8 @@ x-tagGroups:
   - BraveSearchToolDefinition
   - BuiltinShield
   - BuiltinTool
+  - CancelEvaluationJobRequest
+  - CancelTrainingJobRequest
   - ChatCompletionRequest
   - ChatCompletionResponseEvent
   - ChatCompletionResponseEventType
@@ -3794,16 +3891,20 @@ x-tagGroups:
   - CompletionMessage
   - CompletionRequest
   - CompletionResponseStreamChunk
+  - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest
   - CreateDatasetRequest
   - CreateExperimentRequest
   - CreateMemoryBankRequest
   - CreateRunRequest
   - DPOAlignmentConfig
+  - DeleteAgenticSystemRequest
   - DeleteAgenticSystemSessionRequest
+  - DeleteDatasetRequest
   - DeleteDocumentsRequest
   - DialogGenerations
   - DoraFinetuningConfig
+  - DropMemoryBankRequest
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvaluateQuestionAnsweringRequest
@@ -3817,8 +3918,11 @@ x-tagGroups:
   - ExperimentStatus
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
+  - GetAgenticSystemSessionRequest
+  - GetDocumentsRequest
   - InferenceStep
   - InsertDocumentsRequest
+  - ListArtifactsRequest
   - Log
   - LogMessagesRequest
   - LogMetricsRequest

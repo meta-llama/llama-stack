@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-04 09:26:21.634687"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-04 10:28:38.779789"
     },
     "servers": [
         {
@@ -104,7 +104,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "string"
+                                "$ref": "#/components/schemas/CancelEvaluationJobRequest"
                             }
                         }
                     },
@@ -127,7 +127,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "string"
+                                "$ref": "#/components/schemas/CancelTrainingJobRequest"
                             }
                         }
                     },
@@ -217,7 +217,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/AgentConfig"
+                                "$ref": "#/components/schemas/CreateAgenticSystemRequest"
                             }
                         }
                     },
@@ -413,7 +413,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "string"
+                                "$ref": "#/components/schemas/DeleteAgenticSystemRequest"
                             }
                         }
                     },
@@ -459,7 +459,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "string"
+                                "$ref": "#/components/schemas/DeleteDatasetRequest"
                             }
                         }
                     },
@@ -512,7 +512,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "string"
+                                "$ref": "#/components/schemas/DropMemoryBankRequest"
                             }
                         }
                     },
@@ -679,17 +679,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "oneOf": [
-                                    {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    {
-                                        "type": "null"
-                                    }
-                                ]
+                                "$ref": "#/components/schemas/GetAgenticSystemSessionRequest"
                             }
                         }
                     },
@@ -868,10 +858,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "$ref": "#/components/schemas/GetDocumentsRequest"
                             }
                         }
                     },
@@ -1262,7 +1249,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "string"
+                                "$ref": "#/components/schemas/ListArtifactsRequest"
                             }
                         }
                     },
@@ -2104,6 +2091,30 @@
                     "completion_message_batch"
                 ]
             },
+            "CancelEvaluationJobRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ]
+            },
+            "CancelTrainingJobRequest": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ]
+            },
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -2770,6 +2781,18 @@
                 "additionalProperties": false,
                 "required": [
                     "type"
+                ]
+            },
+            "CreateAgenticSystemRequest": {
+                "type": "object",
+                "properties": {
+                    "agent_config": {
+                        "$ref": "#/components/schemas/AgentConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_config"
                 ]
             },
             "AgenticSystemCreateResponse": {
@@ -3864,6 +3887,18 @@
                     "metadata"
                 ]
             },
+            "DeleteAgenticSystemRequest": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_id"
+                ]
+            },
             "DeleteAgenticSystemSessionRequest": {
                 "type": "object",
                 "properties": {
@@ -3878,6 +3913,18 @@
                 "required": [
                     "agent_id",
                     "session_id"
+                ]
+            },
+            "DeleteDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_uuid"
                 ]
             },
             "DeleteDocumentsRequest": {
@@ -3897,6 +3944,18 @@
                 "required": [
                     "bank_id",
                     "document_ids"
+                ]
+            },
+            "DropMemoryBankRequest": {
+                "type": "object",
+                "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_id"
                 ]
             },
             "EmbeddingsRequest": {
@@ -4070,6 +4129,18 @@
                 ],
                 "title": "Request to evaluate text generation."
             },
+            "GetAgenticSystemSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "turn_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
             "Session": {
                 "type": "object",
                 "properties": {
@@ -4193,6 +4264,21 @@
                     "config",
                     "code",
                     "other"
+                ]
+            },
+            "GetDocumentsRequest": {
+                "type": "object",
+                "properties": {
+                    "document_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "document_ids"
                 ]
             },
             "MemoryBankDocument": {
@@ -4555,6 +4641,18 @@
                 "required": [
                     "bank_id",
                     "documents"
+                ]
+            },
+            "ListArtifactsRequest": {
+                "type": "object",
+                "properties": {
+                    "experiment_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "experiment_id"
                 ]
             },
             "LogMessagesRequest": {
@@ -5487,31 +5585,31 @@
             "name": "Observability"
         },
         {
-            "name": "Evaluations"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "AgenticSystem"
+            "name": "Inference"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "Inference"
+            "name": "Memory"
+        },
+        {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "BatchInference"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -5580,6 +5678,14 @@
         {
             "name": "BatchCompletionResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionResponse\" />"
+        },
+        {
+            "name": "CancelEvaluationJobRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CancelEvaluationJobRequest\" />"
+        },
+        {
+            "name": "CancelTrainingJobRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CancelTrainingJobRequest\" />"
         },
         {
             "name": "ChatCompletionRequest",
@@ -5668,6 +5774,10 @@
         {
             "name": "WolframAlphaToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/WolframAlphaToolDefinition\" />"
+        },
+        {
+            "name": "CreateAgenticSystemRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemRequest\" />"
         },
         {
             "name": "AgenticSystemCreateResponse",
@@ -5786,12 +5896,24 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Run\" />"
         },
         {
+            "name": "DeleteAgenticSystemRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgenticSystemRequest\" />"
+        },
+        {
             "name": "DeleteAgenticSystemSessionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgenticSystemSessionRequest\" />"
         },
         {
+            "name": "DeleteDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDatasetRequest\" />"
+        },
+        {
             "name": "DeleteDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDocumentsRequest\" />"
+        },
+        {
+            "name": "DropMemoryBankRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DropMemoryBankRequest\" />"
         },
         {
             "name": "EmbeddingsRequest",
@@ -5822,6 +5944,10 @@
             "description": "Request to evaluate text generation.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
         },
         {
+            "name": "GetAgenticSystemSessionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgenticSystemSessionRequest\" />"
+        },
+        {
             "name": "Session",
             "description": "A single session of an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Session\" />"
         },
@@ -5836,6 +5962,10 @@
         {
             "name": "ArtifactType",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ArtifactType\" />"
+        },
+        {
+            "name": "GetDocumentsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetDocumentsRequest\" />"
         },
         {
             "name": "MemoryBankDocument",
@@ -5888,6 +6018,10 @@
         {
             "name": "InsertDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+        },
+        {
+            "name": "ListArtifactsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListArtifactsRequest\" />"
         },
         {
             "name": "LogMessagesRequest",
@@ -6031,6 +6165,8 @@
                 "BraveSearchToolDefinition",
                 "BuiltinShield",
                 "BuiltinTool",
+                "CancelEvaluationJobRequest",
+                "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
                 "ChatCompletionResponseEvent",
                 "ChatCompletionResponseEventType",
@@ -6040,16 +6176,20 @@
                 "CompletionMessage",
                 "CompletionRequest",
                 "CompletionResponseStreamChunk",
+                "CreateAgenticSystemRequest",
                 "CreateAgenticSystemSessionRequest",
                 "CreateDatasetRequest",
                 "CreateExperimentRequest",
                 "CreateMemoryBankRequest",
                 "CreateRunRequest",
                 "DPOAlignmentConfig",
+                "DeleteAgenticSystemRequest",
                 "DeleteAgenticSystemSessionRequest",
+                "DeleteDatasetRequest",
                 "DeleteDocumentsRequest",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
+                "DropMemoryBankRequest",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvaluateQuestionAnsweringRequest",
@@ -6063,8 +6203,11 @@
                 "ExperimentStatus",
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
+                "GetAgenticSystemSessionRequest",
+                "GetDocumentsRequest",
                 "InferenceStep",
                 "InsertDocumentsRequest",
+                "ListArtifactsRequest",
                 "Log",
                 "LogMessagesRequest",
                 "LogMetricsRequest",

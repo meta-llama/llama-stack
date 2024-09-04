@@ -466,8 +466,11 @@ class Generator:
         # data passed in payload
         if op.request_params:
             builder = ContentBuilder(self.schema_builder)
-            if len(op.request_params) == 1:
-                request_name, request_type = op.request_params[0]
+            first = next(iter(op.request_params))
+            request_name, request_type = first
+            if len(op.request_params) == 1 and "Request" in first[1].__name__:
+                # TODO(ashwin): Undo the "Request" hack and this entire block eventually
+                request_name, request_type = first
             else:
                 from dataclasses import make_dataclass
 
