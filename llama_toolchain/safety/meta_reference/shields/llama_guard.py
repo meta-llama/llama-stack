@@ -14,7 +14,7 @@ from llama_models.llama3.api.datatypes import Message, Role
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
-from llama_toolchain.safety.api.datatypes import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 
 SAFE_RESPONSE = "safe"
 _INSTANCE = None

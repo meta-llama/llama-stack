@@ -9,6 +9,7 @@ from llama_toolchain.agentic_system.api import *  # noqa: F403
 from llama_toolchain.dataset.api import *  # noqa: F403
 from llama_toolchain.evaluations.api import *  # noqa: F403
 from llama_toolchain.inference.api import *  # noqa: F403
+from llama_toolchain.batch_inference.api import *  # noqa: F403
 from llama_toolchain.memory.api import *  # noqa: F403
 from llama_toolchain.observability.api import *  # noqa: F403
 from llama_toolchain.post_training.api import *  # noqa: F403
@@ -18,13 +19,14 @@ from llama_toolchain.synthetic_data_generation.api import *  # noqa: F403
 
 class LlamaStack(
     Inference,
+    BatchInference,
     AgenticSystem,
     RewardScoring,
     SyntheticDataGeneration,
     Datasets,
     Observability,
     PostTraining,
-    MemoryBanks,
+    Memory,
     Evaluations,
 ):
     pass

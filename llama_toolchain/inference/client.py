@@ -6,11 +6,14 @@
 
 import asyncio
 import json
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 import fire
 import httpx
+from pydantic import BaseModel
 from termcolor import cprint
+
+from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import (
     ChatCompletionRequest,
@@ -23,13 +26,16 @@ from .api import (
 from .event_logger import EventLogger
 
 
-async def get_client_impl(base_url: str):
-    return InferenceClient(base_url)
+async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Inference:
+    return InferenceClient(config.url)
+
+
+def encodable_dict(d: BaseModel):
+    return json.loads(d.json())
 
 
 class InferenceClient(Inference):
     def __init__(self, base_url: str):
-        print(f"Initializing client for {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:
@@ -46,7 +52,9 @@ class InferenceClient(Inference):
             async with client.stream(
                 "POST",
                 f"{self.base_url}/inference/chat_completion",
-                data=request.json(),
+                json={
+                    "request": encodable_dict(request),
+                },
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             ) as response:

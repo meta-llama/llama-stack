@@ -4,110 +4,110 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-
+import asyncio
 import copy
+import os
+import secrets
+import shutil
+import string
+import tempfile
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, List, Tuple
+from urllib.parse import urlparse
+
+import httpx
 
 from termcolor import cprint
 
-from llama_toolchain.agentic_system.api.datatypes import (
-    AgenticSystemInstanceConfig,
-    AgenticSystemTurnResponseEvent,
-    AgenticSystemTurnResponseEventType,
-    AgenticSystemTurnResponseStepCompletePayload,
-    AgenticSystemTurnResponseStepProgressPayload,
-    AgenticSystemTurnResponseStepStartPayload,
-    AgenticSystemTurnResponseTurnCompletePayload,
-    AgenticSystemTurnResponseTurnStartPayload,
-    InferenceStep,
-    Session,
-    ShieldCallStep,
-    StepType,
-    ToolExecutionStep,
-    ToolPromptFormat,
-    Turn,
-)
+from llama_toolchain.agentic_system.api import *  # noqa: F403
+from llama_toolchain.inference.api import *  # noqa: F403
+from llama_toolchain.memory.api import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 
-from llama_toolchain.inference.api import ChatCompletionRequest, Inference
-
-from llama_toolchain.inference.api.datatypes import (
-    Attachment,
-    BuiltinTool,
-    ChatCompletionResponseEventType,
-    CompletionMessage,
-    Message,
-    Role,
-    SamplingParams,
-    StopReason,
-    ToolCallDelta,
-    ToolCallParseStatus,
-    ToolDefinition,
-    ToolResponse,
-    ToolResponseMessage,
-    URL,
+from llama_toolchain.tools.base import BaseTool
+from llama_toolchain.tools.builtin import (
+    interpret_content_as_attachment,
+    SingleMessageBuiltinTool,
 )
-from llama_toolchain.safety.api import Safety
-from llama_toolchain.safety.api.datatypes import (
-    BuiltinShield,
-    ShieldDefinition,
-    ShieldResponse,
-)
-from llama_toolchain.agentic_system.api.endpoints import *  # noqa
 
 from .safety import SafetyException, ShieldRunnerMixin
-from .system_prompt import get_agentic_prefix_messages
-from .tools.base import BaseTool
-from .tools.builtin import SingleMessageBuiltinTool
 
 
-class AgentInstance(ShieldRunnerMixin):
+def make_random_string(length: int = 8):
+    return "".join(
+        secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
+    )
+
+
+class ChatAgent(ShieldRunnerMixin):
     def __init__(
         self,
-        system_id: int,
-        instance_config: AgenticSystemInstanceConfig,
-        model: str,
+        agent_config: AgentConfig,
         inference_api: Inference,
+        memory_api: Memory,
         safety_api: Safety,
         builtin_tools: List[SingleMessageBuiltinTool],
-        custom_tool_definitions: List[ToolDefinition],
-        input_shields: List[ShieldDefinition],
-        output_shields: List[ShieldDefinition],
         max_infer_iters: int = 10,
-        prefix_messages: Optional[List[Message]] = None,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
     ):
-        self.system_id = system_id
-        self.instance_config = instance_config
-
-        self.model = model
+        self.agent_config = agent_config
         self.inference_api = inference_api
+        self.memory_api = memory_api
         self.safety_api = safety_api
-
-        if prefix_messages is not None and len(prefix_messages) > 0:
-            self.prefix_messages = prefix_messages
-        else:
-            self.prefix_messages = get_agentic_prefix_messages(
-                builtin_tools,
-                custom_tool_definitions,
-                tool_prompt_format,
-            )
-
-        for m in self.prefix_messages:
-            print(m.content)
 
         self.max_infer_iters = max_infer_iters
         self.tools_dict = {t.get_name(): t for t in builtin_tools}
 
+        self.tempdir = tempfile.mkdtemp()
         self.sessions = {}
 
         ShieldRunnerMixin.__init__(
             self,
             safety_api,
-            input_shields=input_shields,
-            output_shields=output_shields,
+            input_shields=agent_config.input_shields,
+            output_shields=agent_config.output_shields,
         )
+
+    def __del__(self):
+        shutil.rmtree(self.tempdir)
+
+    def turn_to_messages(self, turn: Turn) -> List[Message]:
+        messages = []
+
+        # We do not want to keep adding RAG context to the input messages
+        # May be this should be a parameter of the agentic instance
+        # that can define its behavior in a custom way
+        for m in turn.input_messages:
+            msg = m.copy()
+            if isinstance(msg, UserMessage):
+                msg.context = None
+            messages.append(msg)
+
+        # messages.extend(turn.input_messages)
+        for step in turn.steps:
+            if step.step_type == StepType.inference.value:
+                messages.append(step.model_response)
+            elif step.step_type == StepType.tool_execution.value:
+                for response in step.tool_responses:
+                    messages.append(
+                        ToolResponseMessage(
+                            call_id=response.call_id,
+                            tool_name=response.tool_name,
+                            content=response.content,
+                        )
+                    )
+            elif step.step_type == StepType.shield_call.value:
+                response = step.response
+                if response.is_violation:
+                    # CompletionMessage itself in the ShieldResponse
+                    messages.append(
+                        CompletionMessage(
+                            content=response.violation_return_message,
+                            stop_reason=StopReason.end_of_turn,
+                        )
+                    )
+        # print_dialog(messages)
+        return messages
 
     def create_session(self, name: str) -> Session:
         session_id = str(uuid.uuid4())
@@ -131,32 +131,7 @@ class AgentInstance(ShieldRunnerMixin):
 
         messages = []
         for i, turn in enumerate(session.turns):
-            # print(f"turn {i}")
-            # print_dialog(turn.input_messages)
-            messages.extend(turn.input_messages)
-            for step in turn.steps:
-                if step.step_type == StepType.inference.value:
-                    messages.append(step.model_response)
-                elif step.step_type == StepType.tool_execution.value:
-                    for response in step.tool_responses:
-                        messages.append(
-                            ToolResponseMessage(
-                                call_id=response.call_id,
-                                tool_name=response.tool_name,
-                                content=response.content,
-                            )
-                        )
-                elif step.step_type == StepType.shield_call.value:
-                    response = step.response
-                    if response.is_violation:
-                        # TODO: Properly persist the
-                        # CompletionMessage itself in the ShieldResponse
-                        messages.append(
-                            CompletionMessage(
-                                content=response.violation_return_message,
-                                stop_reason=StopReason.end_of_turn,
-                            )
-                        )
+            messages.extend(self.turn_to_messages(turn))
 
         messages.extend(request.messages)
 
@@ -164,7 +139,6 @@ class AgentInstance(ShieldRunnerMixin):
         # print_dialog(messages)
 
         turn_id = str(uuid.uuid4())
-        params = self.instance_config.sampling_params
         start_time = datetime.now()
         yield AgenticSystemTurnResponseStreamChunk(
             event=AgenticSystemTurnResponseEvent(
@@ -177,12 +151,12 @@ class AgentInstance(ShieldRunnerMixin):
         steps = []
         output_message = None
         async for chunk in self.run(
+            session=session,
             turn_id=turn_id,
             input_messages=messages,
-            temperature=params.temperature,
-            top_p=params.top_p,
+            attachments=request.attachments or [],
+            sampling_params=self.agent_config.sampling_params,
             stream=request.stream,
-            max_gen_len=params.max_tokens,
         ):
             if isinstance(chunk, CompletionMessage):
                 cprint(
@@ -226,6 +200,53 @@ class AgentInstance(ShieldRunnerMixin):
             )
         )
         yield chunk
+
+    async def run(
+        self,
+        session: Session,
+        turn_id: str,
+        input_messages: List[Message],
+        attachments: List[Attachment],
+        sampling_params: SamplingParams,
+        stream: bool = False,
+    ) -> AsyncGenerator:
+        # Doing async generators makes downstream code much simpler and everything amenable to
+        # streaming. However, it also makes things complicated here because AsyncGenerators cannot
+        # return a "final value" for the `yield from` statement. we simulate that by yielding a
+        # final boolean (to see whether an exception happened) and then explicitly testing for it.
+
+        async for res in self.run_shields_wrapper(
+            turn_id, input_messages, self.input_shields, "user-input"
+        ):
+            if isinstance(res, bool):
+                return
+            else:
+                yield res
+
+        async for res in self._run(
+            session, turn_id, input_messages, attachments, sampling_params, stream
+        ):
+            if isinstance(res, bool):
+                return
+            elif isinstance(res, CompletionMessage):
+                final_response = res
+                break
+            else:
+                yield res
+
+        assert final_response is not None
+        # for output shields run on the full input and output combination
+        messages = input_messages + [final_response]
+
+        async for res in self.run_shields_wrapper(
+            turn_id, messages, self.output_shields, "assistant-output"
+        ):
+            if isinstance(res, bool):
+                return
+            else:
+                yield res
+
+        yield final_response
 
     async def run_shields_wrapper(
         self,
@@ -288,65 +309,62 @@ class AgentInstance(ShieldRunnerMixin):
             )
         )
 
-    async def run(
-        self,
-        turn_id: str,
-        input_messages: List[Message],
-        temperature: float,
-        top_p: float,
-        stream: bool = False,
-        max_gen_len: Optional[int] = None,
-    ) -> AsyncGenerator:
-        # Doing async generators makes downstream code much simpler and everything amenable to
-        # stremaing. However, it also makes things complicated here because AsyncGenerators cannot
-        # return a "final value" for the `yield from` statement. we simulate that by yielding a
-        # final boolean (to see whether an exception happened) and then explicitly testing for it.
-
-        async for res in self.run_shields_wrapper(
-            turn_id, input_messages, self.input_shields, "user-input"
-        ):
-            if isinstance(res, bool):
-                return
-            else:
-                yield res
-
-        async for res in self._run(
-            turn_id, input_messages, temperature, top_p, stream, max_gen_len
-        ):
-            if isinstance(res, bool):
-                return
-            elif isinstance(res, CompletionMessage):
-                final_response = res
-                break
-            else:
-                yield res
-
-        assert final_response is not None
-        # for output shields run on the full input and output combination
-        messages = input_messages + [final_response]
-
-        async for res in self.run_shields_wrapper(
-            turn_id, messages, self.output_shields, "assistant-output"
-        ):
-            if isinstance(res, bool):
-                return
-            else:
-                yield res
-
-        yield final_response
-
     async def _run(
         self,
+        session: Session,
         turn_id: str,
         input_messages: List[Message],
-        temperature: float,
-        top_p: float,
+        attachments: List[Attachment],
+        sampling_params: SamplingParams,
         stream: bool = False,
-        max_gen_len: Optional[int] = None,
     ) -> AsyncGenerator:
-        input_messages = preprocess_dialog(input_messages, self.prefix_messages)
+        enabled_tools = set(t.type for t in self.agent_config.tools)
+        need_rag_context = await self._should_retrieve_context(
+            input_messages, attachments
+        )
+        if need_rag_context:
+            step_id = str(uuid.uuid4())
+            yield AgenticSystemTurnResponseStreamChunk(
+                event=AgenticSystemTurnResponseEvent(
+                    payload=AgenticSystemTurnResponseStepStartPayload(
+                        step_type=StepType.memory_retrieval.value,
+                        step_id=step_id,
+                    )
+                )
+            )
 
-        attachments = []
+            # TODO: find older context from the session and either replace it
+            # or append with a sliding window. this is really a very simplistic implementation
+            rag_context, bank_ids = await self._retrieve_context(
+                session, input_messages, attachments
+            )
+
+            step_id = str(uuid.uuid4())
+            yield AgenticSystemTurnResponseStreamChunk(
+                event=AgenticSystemTurnResponseEvent(
+                    payload=AgenticSystemTurnResponseStepCompletePayload(
+                        step_type=StepType.memory_retrieval.value,
+                        step_id=step_id,
+                        step_details=MemoryRetrievalStep(
+                            turn_id=turn_id,
+                            step_id=step_id,
+                            memory_bank_ids=bank_ids,
+                            inserted_context=rag_context or "",
+                        ),
+                    )
+                )
+            )
+
+            if rag_context:
+                last_message = input_messages[-1]
+                last_message.context = "\n".join(rag_context)
+
+        elif attachments and AgenticSystemTool.code_interpreter.value in enabled_tools:
+            urls = [a.content for a in attachments if isinstance(a.content, URL)]
+            msg = await attachment_message(self.tempdir, urls)
+            input_messages.append(msg)
+
+        output_attachments = []
 
         n_iter = 0
         while True:
@@ -369,17 +387,13 @@ class AgentInstance(ShieldRunnerMixin):
                 )
             )
 
-            # where are the available tools?
             req = ChatCompletionRequest(
-                model=self.model,
+                model=self.agent_config.model,
                 messages=input_messages,
-                available_tools=self.instance_config.available_tools,
+                tools=self._get_tools(),
+                tool_prompt_format=self.agent_config.tool_prompt_format,
                 stream=True,
-                sampling_params=SamplingParams(
-                    temperature=temperature,
-                    top_p=top_p,
-                    max_tokens=max_gen_len,
-                ),
+                sampling_params=sampling_params,
             )
 
             tool_calls = []
@@ -464,7 +478,8 @@ class AgentInstance(ShieldRunnerMixin):
 
             if len(message.tool_calls) == 0:
                 if stop_reason == StopReason.end_of_turn:
-                    if len(attachments) > 0:
+                    # TODO: UPDATE RETURN TYPE TO SEND A TUPLE OF (MESSAGE, ATTACHMENTS)
+                    if len(output_attachments) > 0:
                         if isinstance(message.content, list):
                             message.content += attachments
                         else:
@@ -572,61 +587,173 @@ class AgentInstance(ShieldRunnerMixin):
                     yield False
                     return
 
-                if isinstance(result_message.content, Attachment):
+                if out_attachment := interpret_content_as_attachment(
+                    result_message.content
+                ):
                     # NOTE: when we push this message back to the model, the model may ignore the
                     # attached file path etc. since the model is trained to only provide a user message
                     # with the summary. We keep all generated attachments and then attach them to final message
-                    attachments.append(result_message.content)
-                elif isinstance(result_message.content, list) or isinstance(
-                    result_message.content, tuple
-                ):
-                    for c in result_message.content:
-                        if isinstance(c, Attachment):
-                            attachments.append(c)
+                    output_attachments.append(out_attachment)
 
                 input_messages = input_messages + [message, result_message]
 
             n_iter += 1
 
+    async def _ensure_memory_bank(self, session: Session) -> MemoryBank:
+        if session.memory_bank is None:
+            session.memory_bank = await self.memory_api.create_memory_bank(
+                name=f"memory_bank_{session.session_id}",
+                config=VectorMemoryBankConfig(
+                    embedding_model="sentence-transformer/all-MiniLM-L6-v2",
+                    chunk_size_in_tokens=512,
+                ),
+            )
 
-def attachment_message(url: URL) -> ToolResponseMessage:
-    uri = url.uri
-    assert uri.startswith("file://")
-    filepath = uri[len("file://") :]
+        return session.memory_bank
+
+    async def _should_retrieve_context(
+        self, messages: List[Message], attachments: List[Attachment]
+    ) -> bool:
+        enabled_tools = set(t.type for t in self.agent_config.tools)
+        if attachments:
+            if (
+                AgenticSystemTool.code_interpreter.value in enabled_tools
+                and self.agent_config.tool_choice == ToolChoice.required
+            ):
+                return False
+            else:
+                return True
+
+        return AgenticSystemTool.memory.value in enabled_tools
+
+    def _memory_tool_definition(self) -> Optional[MemoryToolDefinition]:
+        for t in self.agent_config.tools:
+            if t.type == AgenticSystemTool.memory.value:
+                return t
+
+        return None
+
+    async def _retrieve_context(
+        self, session: Session, messages: List[Message], attachments: List[Attachment]
+    ) -> Tuple[List[str], List[int]]:  # (rag_context, bank_ids)
+        bank_ids = []
+
+        memory = self._memory_tool_definition()
+        assert memory is not None, "Memory tool not configured"
+        bank_ids.extend(c.bank_id for c in memory.memory_bank_configs)
+
+        if attachments:
+            bank = await self._ensure_memory_bank(session)
+            bank_ids.append(bank.bank_id)
+
+            documents = [
+                MemoryBankDocument(
+                    document_id=str(uuid.uuid4()),
+                    content=a.content,
+                    mime_type=a.mime_type,
+                    metadata={},
+                )
+                for a in attachments
+            ]
+            await self.memory_api.insert_documents(bank.bank_id, documents)
+        elif session.memory_bank:
+            bank_ids.append(session.memory_bank.bank_id)
+
+        if not bank_ids:
+            # this can happen if the per-session memory bank is not yet populated
+            # (i.e., no prior turns uploaded an Attachment)
+            return None, []
+
+        query = " ".join(m.content for m in messages)
+        tasks = [
+            self.memory_api.query_documents(
+                bank_id=bank_id,
+                query=query,
+                params={
+                    "max_chunks": 5,
+                },
+            )
+            for bank_id in bank_ids
+        ]
+        results: List[QueryDocumentsResponse] = await asyncio.gather(*tasks)
+        chunks = [c for r in results for c in r.chunks]
+        scores = [s for r in results for s in r.scores]
+
+        # sort by score
+        chunks, scores = zip(
+            *sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True)
+        )
+        if not chunks:
+            return None, bank_ids
+
+        tokens = 0
+        picked = []
+        for c in chunks[: memory.max_chunks]:
+            tokens += c.token_count
+            if tokens > memory.max_tokens_in_context:
+                cprint(
+                    f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
+                    "red",
+                )
+                break
+            picked.append(f"id:{c.document_id}; content:{c.content}")
+
+        return [
+            "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
+            *picked,
+            "\n=== END-RETRIEVED-CONTEXT ===\n",
+        ], bank_ids
+
+    def _get_tools(self) -> List[ToolDefinition]:
+        ret = []
+        for t in self.agent_config.tools:
+            if isinstance(t, BraveSearchToolDefinition):
+                ret.append(ToolDefinition(tool_name=BuiltinTool.brave_search))
+            elif isinstance(t, WolframAlphaToolDefinition):
+                ret.append(ToolDefinition(tool_name=BuiltinTool.wolfram_alpha))
+            elif isinstance(t, PhotogenToolDefinition):
+                ret.append(ToolDefinition(tool_name=BuiltinTool.photogen))
+            elif isinstance(t, CodeInterpreterToolDefinition):
+                ret.append(ToolDefinition(tool_name=BuiltinTool.code_interpreter))
+            elif isinstance(t, FunctionCallToolDefinition):
+                ret.append(
+                    ToolDefinition(
+                        tool_name=t.function_name,
+                        description=t.description,
+                        parameters=t.parameters,
+                    )
+                )
+        return ret
+
+
+async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessage:
+    content = []
+
+    for url in urls:
+        uri = url.uri
+        if uri.startswith("file://"):
+            filepath = uri[len("file://") :]
+        elif uri.startswith("http"):
+            path = urlparse(uri).path
+            basename = os.path.basename(path)
+            filepath = f"{tempdir}/{make_random_string() + basename}"
+            print(f"Downloading {url} -> {filepath}")
+
+            async with httpx.AsyncClient() as client:
+                r = await client.get(uri)
+                resp = r.text
+                with open(filepath, "w") as fp:
+                    fp.write(resp)
+        else:
+            raise ValueError(f"Unsupported URL {url}")
+
+        content.append(f'# There is a file accessible to you at "{filepath}"\n')
 
     return ToolResponseMessage(
         call_id="",
         tool_name=BuiltinTool.code_interpreter,
-        content=f'# There is a file accessible to you at "{filepath}"',
+        content=content,
     )
-
-
-def preprocess_dialog(
-    messages: List[Message], prefix_messages: List[Message]
-) -> List[Message]:
-    """
-    Preprocesses the dialog by removing the system message and
-    adding the system message to the beginning of the dialog.
-    """
-    ret = prefix_messages.copy()
-
-    for m in messages:
-        if m.role == Role.system.value:
-            continue
-
-        # NOTE: the ideal behavior is to use `file_path = ...` but that
-        # means we need to have stateful execution o    f code which we currently
-        # do not have.
-        if isinstance(m.content, Attachment):
-            ret.append(attachment_message(m.content.url))
-        elif isinstance(m.content, list):
-            for c in m.content:
-                if isinstance(c, Attachment):
-                    ret.append(attachment_message(c.url))
-
-        ret.append(m)
-
-    return ret
 
 
 async def execute_tool_call_maybe(

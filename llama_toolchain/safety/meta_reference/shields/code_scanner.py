@@ -8,7 +8,7 @@ from codeshield.cs import CodeShield
 from termcolor import cprint
 
 from .base import ShieldResponse, TextShield
-from llama_toolchain.safety.api.datatypes import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 
 
 class CodeScannerShield(TextShield):

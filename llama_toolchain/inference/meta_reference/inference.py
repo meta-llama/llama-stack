@@ -6,12 +6,11 @@
 
 import asyncio
 
-from typing import AsyncIterator, Dict, Union
+from typing import AsyncIterator, Union
 
 from llama_models.llama3.api.datatypes import StopReason
 from llama_models.sku_list import resolve_model
 
-from llama_toolchain.distribution.datatypes import Api, ProviderSpec
 from llama_toolchain.inference.api import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -22,21 +21,9 @@ from llama_toolchain.inference.api import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-
+from llama_toolchain.inference.prepare_messages import prepare_messages
 from .config import MetaReferenceImplConfig
 from .model_parallel import LlamaModelParallelGenerator
-
-
-async def get_provider_impl(
-    config: MetaReferenceImplConfig, _deps: Dict[Api, ProviderSpec]
-):
-    assert isinstance(
-        config, MetaReferenceImplConfig
-    ), f"Unexpected config type: {type(config)}"
-
-    impl = MetaReferenceInferenceImpl(config)
-    await impl.initialize()
-    return impl
 
 
 # there's a single model parallel process running serving the model. for now,
@@ -67,6 +54,7 @@ class MetaReferenceInferenceImpl(Inference):
     ) -> AsyncIterator[
         Union[ChatCompletionResponseStreamChunk, ChatCompletionResponse]
     ]:
+        messages = prepare_messages(request)
         model = resolve_model(request.model)
         if model is None:
             raise RuntimeError(
@@ -98,11 +86,12 @@ class MetaReferenceInferenceImpl(Inference):
             ipython = False
 
             for token_result in self.generator.chat_completion(
-                messages=request.messages,
+                messages=messages,
                 temperature=request.sampling_params.temperature,
                 top_p=request.sampling_params.top_p,
                 max_gen_len=request.sampling_params.max_tokens,
                 logprobs=request.logprobs,
+                tool_prompt_format=request.tool_prompt_format,
             ):
                 buffer += token_result.text
                 tokens.append(token_result.token)

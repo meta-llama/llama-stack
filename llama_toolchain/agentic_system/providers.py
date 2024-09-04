@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_toolchain.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_toolchain.core.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
 def available_agentic_system_providers() -> List[ProviderSpec]:
@@ -16,15 +16,19 @@ def available_agentic_system_providers() -> List[ProviderSpec]:
             provider_id="meta-reference",
             pip_packages=[
                 "codeshield",
+                "matplotlib",
                 "pillow",
+                "pandas",
+                "scikit-learn",
                 "torch",
                 "transformers",
             ],
             module="llama_toolchain.agentic_system.meta_reference",
-            config_class="llama_toolchain.agentic_system.meta_reference.AgenticSystemConfig",
+            config_class="llama_toolchain.agentic_system.meta_reference.MetaReferenceImplConfig",
             api_dependencies=[
                 Api.inference,
                 Api.safety,
+                Api.memory,
             ],
         ),
     ]

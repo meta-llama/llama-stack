@@ -5,3 +5,4 @@ huggingface-hub
 llama-models
 pydantic
 requests
+termcolor

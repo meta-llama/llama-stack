@@ -6,7 +6,7 @@
 
 from typing import Optional
 
-from llama_models.llama3.api.datatypes import ToolResponseMessage
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tool_utils import ToolUtils
 
 from termcolor import cprint
@@ -44,7 +44,12 @@ EventType = AgenticSystemTurnResponseEventType
 
 
 class EventLogger:
-    async def log(self, event_generator, stream=True):
+    async def log(
+        self,
+        event_generator,
+        stream=True,
+        tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
+    ):
         previous_event_type = None
         previous_step_type = None
 
@@ -132,7 +137,9 @@ class EventLogger:
                     if event_type == EventType.step_complete.value:
                         response = event.payload.step_details.model_response
                         if response.tool_calls:
-                            content = ToolUtils.encode_tool_call(response.tool_calls[0])
+                            content = ToolUtils.encode_tool_call(
+                                response.tool_calls[0], tool_prompt_format
+                            )
                         else:
                             content = response.content
                         yield event, LogEvent(
@@ -161,6 +168,20 @@ class EventLogger:
                         content=f"Tool:{r.tool_name} Response:{r.content}",
                         color="green",
                     )
+
+            if (
+                step_type == StepType.memory_retrieval
+                and event_type == EventType.step_complete.value
+            ):
+                details = event.payload.step_details
+                content = interleaved_text_media_as_str(details.inserted_context)
+                content = content[:200] + "..." if len(content) > 200 else content
+
+                yield event, LogEvent(
+                    role=step_type,
+                    content=f"Retrieved context from banks: {details.memory_bank_ids}.\n====\n{content}\n>",
+                    color="cyan",
+                )
 
             preivous_event_type = event_type
             previous_step_type = step_type

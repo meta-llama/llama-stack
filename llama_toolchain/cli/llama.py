@@ -6,9 +6,9 @@
 
 import argparse
 
-from .distribution import DistributionParser
 from .download import Download
 from .model import ModelParser
+from .stack import StackParser
 
 
 class LlamaCLIParser:
@@ -29,7 +29,7 @@ class LlamaCLIParser:
         # Add sub-commands
         Download.create(subparsers)
         ModelParser.create(subparsers)
-        DistributionParser.create(subparsers)
+        StackParser.create(subparsers)
 
         # Import sub-commands from agentic_system if they exist
         try:

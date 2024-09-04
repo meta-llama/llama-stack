@@ -5,29 +5,32 @@
 # the root directory of this source tree.
 
 import asyncio
+import json
+
+from typing import Any
 
 import fire
 import httpx
 
 from llama_models.llama3.api.datatypes import UserMessage
+from pydantic import BaseModel
 from termcolor import cprint
 
-from .api import (
-    BuiltinShield,
-    RunShieldRequest,
-    RunShieldResponse,
-    Safety,
-    ShieldDefinition,
-)
+from llama_toolchain.core.datatypes import RemoteProviderConfig
+
+from .api import *  # noqa: F403
 
 
-async def get_client_impl(base_url: str):
-    return SafetyClient(base_url)
+async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Safety:
+    return SafetyClient(config.url)
+
+
+def encodable_dict(d: BaseModel):
+    return json.loads(d.json())
 
 
 class SafetyClient(Safety):
     def __init__(self, base_url: str):
-        print(f"Initializing client for {base_url}")
         self.base_url = base_url
 
     async def initialize(self) -> None:
@@ -40,7 +43,9 @@ class SafetyClient(Safety):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/safety/run_shields",
-                data=request.json(),
+                json={
+                    "request": encodable_dict(request),
+                },
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             )
