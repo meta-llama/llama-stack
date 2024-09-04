@@ -35,22 +35,26 @@ def available_inference_providers() -> List[ProviderSpec]:
                 module="llama_toolchain.inference.adapters.ollama",
             ),
         ),
-        InlineProviderSpec(
+        remote_provider_spec(
             api=Api.inference,
-            provider_id="fireworks",
-            pip_packages=[
-                "fireworks-ai",
-            ],
-            module="llama_toolchain.inference.fireworks",
-            config_class="llama_toolchain.inference.fireworks.FireworksImplConfig",
+            adapter=AdapterSpec(
+                adapter_id="fireworks",
+                pip_packages=[
+                    "fireworks-ai",
+                ],
+                module="llama_toolchain.inference.fireworks",
+                config_class="llama_toolchain.inference.fireworks.FireworksImplConfig",
+            ),
         ),
-        InlineProviderSpec(
+        remote_provider_spec(
             api=Api.inference,
-            provider_id="together",
-            pip_packages=[
-                "together",
-            ],
-            module="llama_toolchain.inference.together",
-            config_class="llama_toolchain.inference.together.TogetherImplConfig",
+            adapter=AdapterSpec(
+                adapter_id="together",
+                pip_packages=[
+                    "together",
+                ],
+                module="llama_toolchain.inference.together",
+                config_class="llama_toolchain.inference.together.TogetherImplConfig",
+            ),
         ),
     ]
