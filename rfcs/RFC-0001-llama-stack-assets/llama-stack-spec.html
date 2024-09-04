@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-03 21:42:33.579455"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-04 09:26:21.634687"
     },
     "servers": [
         {
@@ -90,7 +90,7 @@
             }
         },
         "/evaluate/job/cancel": {
-            "get": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -99,20 +99,21 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
                         }
-                    }
-                ]
+                    },
+                    "required": true
+                }
             }
         },
         "/post_training/job/cancel": {
-            "get": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -121,16 +122,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
                         }
-                    }
-                ]
+                    },
+                    "required": true
+                }
             }
         },
         "/inference/chat_completion": {
@@ -224,7 +226,7 @@
             }
         },
         "/agentic_system/session/create": {
-            "get": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -240,24 +242,17 @@
                 "tags": [
                     "AgenticSystem"
                 ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateAgenticSystemSessionRequest"
+                            }
                         }
                     },
-                    {
-                        "name": "session_name",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                    "required": true
+                }
             }
         },
         "/agentic_system/turn/create": {
@@ -360,16 +355,7 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -413,7 +399,7 @@
             }
         },
         "/agentic_system/delete": {
-            "delete": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -422,20 +408,21 @@
                 "tags": [
                     "AgenticSystem"
                 ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
                         }
-                    }
-                ]
+                    },
+                    "required": true
+                }
             }
         },
         "/agentic_system/session/delete": {
-            "delete": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -444,28 +431,21 @@
                 "tags": [
                     "AgenticSystem"
                 ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeleteAgenticSystemSessionRequest"
+                            }
                         }
                     },
-                    {
-                        "name": "session_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                    "required": true
+                }
             }
         },
         "/datasets/delete": {
-            "delete": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -474,16 +454,17 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [
-                    {
-                        "name": "dataset_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
                         }
-                    }
-                ]
+                    },
+                    "required": true
+                }
             }
         },
         "/memory_bank/documents/delete": {
@@ -496,24 +477,12 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "$ref": "#/components/schemas/DeleteDocumentsRequest"
                             }
                         }
                     },
@@ -522,7 +491,7 @@
             }
         },
         "/memory_banks/drop": {
-            "delete": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -538,16 +507,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
                         }
-                    }
-                ]
+                    },
+                    "required": true
+                }
             }
         },
         "/inference/embeddings": {
@@ -567,34 +537,12 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [
-                    {
-                        "name": "model",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ]
-                                }
+                                "$ref": "#/components/schemas/EmbeddingsRequest"
                             }
                         }
                     },
@@ -1279,32 +1227,12 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "ttl_seconds",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
+                                "$ref": "#/components/schemas/InsertDocumentsRequest"
                             }
                         }
                     },
@@ -1313,7 +1241,7 @@
             }
         },
         "/experiments/artifacts/get": {
-            "get": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1329,16 +1257,17 @@
                 "tags": [
                     "Observability"
                 ],
-                "parameters": [
-                    {
-                        "name": "experiment_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
                         }
-                    }
-                ]
+                    },
+                    "required": true
+                }
             }
         },
         "/experiments/list": {
@@ -1474,16 +1403,7 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1596,24 +1516,12 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
+                                "$ref": "#/components/schemas/UpdateDocumentsRequest"
                             }
                         }
                     },
@@ -2876,6 +2784,22 @@
                     "agent_id"
                 ]
             },
+            "CreateAgenticSystemSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    },
+                    "session_name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_id",
+                    "session_name"
+                ]
+            },
             "AgenticSystemSessionCreateResponse": {
                 "type": "object",
                 "properties": {
@@ -3681,6 +3605,9 @@
             "CreateMemoryBankRequest": {
                 "type": "object",
                 "properties": {
+                    "name": {
+                        "type": "string"
+                    },
                     "config": {
                         "oneOf": [
                             {
@@ -3754,6 +3681,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "name",
                     "config"
                 ]
             },
@@ -3934,6 +3862,70 @@
                     "status",
                     "started_at",
                     "metadata"
+                ]
+            },
+            "DeleteAgenticSystemSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "agent_id": {
+                        "type": "string"
+                    },
+                    "session_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "agent_id",
+                    "session_id"
+                ]
+            },
+            "DeleteDocumentsRequest": {
+                "type": "object",
+                "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    },
+                    "document_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_id",
+                    "document_ids"
+                ]
+            },
+            "EmbeddingsRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    },
+                    "contents": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "contents"
                 ]
             },
             "EmbeddingsResponse": {
@@ -4543,6 +4535,28 @@
                     "job_uuid"
                 ]
             },
+            "InsertDocumentsRequest": {
+                "type": "object",
+                "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    },
+                    "documents": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MemoryBankDocument"
+                        }
+                    },
+                    "ttl_seconds": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_id",
+                    "documents"
+                ]
+            },
             "LogMessagesRequest": {
                 "type": "object",
                 "properties": {
@@ -4771,6 +4785,9 @@
             "QueryDocumentsRequest": {
                 "type": "object",
                 "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    },
                     "query": {
                         "oneOf": [
                             {
@@ -4812,6 +4829,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "bank_id",
                     "query"
                 ]
             },
@@ -5303,6 +5321,25 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
+            "UpdateDocumentsRequest": {
+                "type": "object",
+                "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    },
+                    "documents": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MemoryBankDocument"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_id",
+                    "documents"
+                ]
+            },
             "UpdateExperimentRequest": {
                 "type": "object",
                 "properties": {
@@ -5447,34 +5484,34 @@
     ],
     "tags": [
         {
-            "name": "AgenticSystem"
+            "name": "Observability"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "Memory"
         },
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Observability"
-        },
-        {
             "name": "BatchInference"
-        },
-        {
-            "name": "Datasets"
         },
         {
             "name": "RewardScoring"
         },
         {
+            "name": "SyntheticDataGeneration"
+        },
+        {
             "name": "PostTraining"
         },
         {
-            "name": "Evaluations"
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -5637,6 +5674,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateResponse\" />"
         },
         {
+            "name": "CreateAgenticSystemSessionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemSessionRequest\" />"
+        },
+        {
             "name": "AgenticSystemSessionCreateResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemSessionCreateResponse\" />"
         },
@@ -5745,6 +5786,18 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Run\" />"
         },
         {
+            "name": "DeleteAgenticSystemSessionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgenticSystemSessionRequest\" />"
+        },
+        {
+            "name": "DeleteDocumentsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDocumentsRequest\" />"
+        },
+        {
+            "name": "EmbeddingsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsRequest\" />"
+        },
+        {
             "name": "EmbeddingsResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsResponse\" />"
         },
@@ -5833,6 +5886,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
         },
         {
+            "name": "InsertDocumentsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+        },
+        {
             "name": "LogMessagesRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMessagesRequest\" />"
         },
@@ -5917,6 +5974,10 @@
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         },
         {
+            "name": "UpdateDocumentsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateDocumentsRequest\" />"
+        },
+        {
             "name": "UpdateExperimentRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateExperimentRequest\" />"
         },
@@ -5979,13 +6040,17 @@
                 "CompletionMessage",
                 "CompletionRequest",
                 "CompletionResponseStreamChunk",
+                "CreateAgenticSystemSessionRequest",
                 "CreateDatasetRequest",
                 "CreateExperimentRequest",
                 "CreateMemoryBankRequest",
                 "CreateRunRequest",
                 "DPOAlignmentConfig",
+                "DeleteAgenticSystemSessionRequest",
+                "DeleteDocumentsRequest",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
+                "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvaluateQuestionAnsweringRequest",
                 "EvaluateSummarizationRequest",
@@ -5999,6 +6064,7 @@
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "InferenceStep",
+                "InsertDocumentsRequest",
                 "Log",
                 "LogMessagesRequest",
                 "LogMetricsRequest",
@@ -6056,6 +6122,7 @@
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UpdateDocumentsRequest",
                 "UpdateExperimentRequest",
                 "UpdateRunRequest",
                 "UploadArtifactRequest",

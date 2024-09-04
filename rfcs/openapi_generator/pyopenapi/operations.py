@@ -264,7 +264,7 @@ def get_endpoint_operations(
             else:
                 inner_type = param_type
 
-            if (
+            if prefix == "get" and (
                 inner_type is bool
                 or inner_type is int
                 or inner_type is float

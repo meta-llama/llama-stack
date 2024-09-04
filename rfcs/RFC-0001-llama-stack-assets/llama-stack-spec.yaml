@@ -571,6 +571,17 @@ components:
       - delta
       title: streamed completion response.
       type: object
+    CreateAgenticSystemSessionRequest:
+      additionalProperties: false
+      properties:
+        agent_id:
+          type: string
+        session_name:
+          type: string
+      required:
+      - agent_id
+      - session_name
+      type: object
     CreateDatasetRequest:
       additionalProperties: false
       properties:
@@ -646,9 +657,12 @@ components:
             required:
             - type
             type: object
+        name:
+          type: string
         url:
           $ref: '#/components/schemas/URL'
       required:
+      - name
       - config
       type: object
     CreateRunRequest:
@@ -685,6 +699,30 @@ components:
       - reward_clip
       - epsilon
       - gamma
+      type: object
+    DeleteAgenticSystemSessionRequest:
+      additionalProperties: false
+      properties:
+        agent_id:
+          type: string
+        session_id:
+          type: string
+      required:
+      - agent_id
+      - session_id
+      type: object
+    DeleteDocumentsRequest:
+      additionalProperties: false
+      properties:
+        bank_id:
+          type: string
+        document_ids:
+          items:
+            type: string
+          type: array
+      required:
+      - bank_id
+      - document_ids
       type: object
     DialogGenerations:
       additionalProperties: false
@@ -730,6 +768,23 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
+      type: object
+    EmbeddingsRequest:
+      additionalProperties: false
+      properties:
+        contents:
+          items:
+            oneOf:
+            - type: string
+            - items:
+                type: string
+              type: array
+          type: array
+        model:
+          type: string
+      required:
+      - model
+      - contents
       type: object
     EmbeddingsResponse:
       additionalProperties: false
@@ -955,6 +1010,21 @@ components:
       - step_id
       - step_type
       - model_response
+      type: object
+    InsertDocumentsRequest:
+      additionalProperties: false
+      properties:
+        bank_id:
+          type: string
+        documents:
+          items:
+            $ref: '#/components/schemas/MemoryBankDocument'
+          type: array
+        ttl_seconds:
+          type: integer
+      required:
+      - bank_id
+      - documents
       type: object
     Log:
       additionalProperties: false
@@ -1527,6 +1597,8 @@ components:
     QueryDocumentsRequest:
       additionalProperties: false
       properties:
+        bank_id:
+          type: string
         params:
           additionalProperties:
             oneOf:
@@ -1544,6 +1616,7 @@ components:
               type: string
             type: array
       required:
+      - bank_id
       - query
       type: object
     QueryDocumentsResponse:
@@ -2183,6 +2256,19 @@ components:
       format: uri
       pattern: ^(https?://|file://|data:)
       type: string
+    UpdateDocumentsRequest:
+      additionalProperties: false
+      properties:
+        bank_id:
+          type: string
+        documents:
+          items:
+            $ref: '#/components/schemas/MemoryBankDocument'
+          type: array
+      required:
+      - bank_id
+      - documents
+      type: object
     UpdateExperimentRequest:
       additionalProperties: false
       properties:
@@ -2299,7 +2385,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-03 21:42:33.579455"
+    \ draft and subject to change.\n                Generated at 2024-09-04 09:26:21.634687"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2324,31 +2410,28 @@ paths:
       tags:
       - AgenticSystem
   /agentic_system/delete:
-    delete:
-      parameters:
-      - in: query
-        name: agent_id
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
         required: true
-        schema:
-          type: string
       responses:
         '200':
           description: OK
       tags:
       - AgenticSystem
   /agentic_system/session/create:
-    get:
-      parameters:
-      - in: query
-        name: agent_id
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgenticSystemSessionRequest'
         required: true
-        schema:
-          type: string
-      - in: query
-        name: session_name
-        required: true
-        schema:
-          type: string
       responses:
         '200':
           content:
@@ -2359,18 +2442,14 @@ paths:
       tags:
       - AgenticSystem
   /agentic_system/session/delete:
-    delete:
-      parameters:
-      - in: query
-        name: agent_id
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAgenticSystemSessionRequest'
         required: true
-        schema:
-          type: string
-      - in: query
-        name: session_id
-        required: true
-        schema:
-          type: string
       responses:
         '200':
           description: OK
@@ -2543,13 +2622,14 @@ paths:
       tags:
       - Datasets
   /datasets/delete:
-    delete:
-      parameters:
-      - in: query
-        name: dataset_uuid
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
         required: true
-        schema:
-          type: string
       responses:
         '200':
           description: OK
@@ -2590,13 +2670,14 @@ paths:
       tags:
       - Evaluations
   /evaluate/job/cancel:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
         required: true
-        schema:
-          type: string
       responses:
         '200':
           description: OK
@@ -2703,13 +2784,14 @@ paths:
       tags:
       - Evaluations
   /experiments/artifacts/get:
-    get:
-      parameters:
-      - in: query
-        name: experiment_id
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
         required: true
-        schema:
-          type: string
       responses:
         '200':
           content:
@@ -2858,23 +2940,12 @@ paths:
       - Inference
   /inference/embeddings:
     post:
-      parameters:
-      - in: query
-        name: model
-        required: true
-        schema:
-          type: string
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              items:
-                oneOf:
-                - type: string
-                - items:
-                    type: string
-                  type: array
-              type: array
+              $ref: '#/components/schemas/EmbeddingsRequest'
         required: true
       responses:
         '200':
@@ -2919,19 +2990,12 @@ paths:
       - Observability
   /memory_bank/documents/delete:
     post:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              items:
-                type: string
-              type: array
+              $ref: '#/components/schemas/DeleteDocumentsRequest'
         required: true
       responses:
         '200':
@@ -2965,24 +3029,12 @@ paths:
       - Memory
   /memory_bank/insert:
     post:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: ttl_seconds
-        required: false
-        schema:
-          type: integer
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/MemoryBankDocument'
-              type: array
+              $ref: '#/components/schemas/InsertDocumentsRequest'
         required: true
       responses:
         '200':
@@ -2991,12 +3043,7 @@ paths:
       - Memory
   /memory_bank/query:
     post:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
+      parameters: []
       requestBody:
         content:
           application/json:
@@ -3014,19 +3061,12 @@ paths:
       - Memory
   /memory_bank/update:
     post:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/MemoryBankDocument'
-              type: array
+              $ref: '#/components/schemas/UpdateDocumentsRequest'
         required: true
       responses:
         '200':
@@ -3035,12 +3075,7 @@ paths:
       - Memory
   /memory_banks/create:
     post:
-      parameters:
-      - in: query
-        name: name
-        required: true
-        schema:
-          type: string
+      parameters: []
       requestBody:
         content:
           application/json:
@@ -3057,13 +3092,14 @@ paths:
       tags:
       - Memory
   /memory_banks/drop:
-    delete:
-      parameters:
-      - in: query
-        name: bank_id
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
         required: true
-        schema:
-          type: string
       responses:
         '200':
           content:
@@ -3122,13 +3158,14 @@ paths:
       tags:
       - PostTraining
   /post_training/job/cancel:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
         required: true
-        schema:
-          type: string
       responses:
         '200':
           description: OK
@@ -3306,16 +3343,16 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: AgenticSystem
-- name: Memory
-- name: SyntheticDataGeneration
-- name: Inference
 - name: Observability
-- name: BatchInference
-- name: Datasets
-- name: RewardScoring
-- name: PostTraining
 - name: Evaluations
+- name: Memory
+- name: BatchInference
+- name: RewardScoring
+- name: SyntheticDataGeneration
+- name: PostTraining
+- name: AgenticSystem
+- name: Datasets
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3439,6 +3476,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
     />
   name: AgenticSystemCreateResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemSessionRequest"
+    />
+  name: CreateAgenticSystemSessionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemSessionCreateResponse"
     />
   name: AgenticSystemSessionCreateResponse
@@ -3521,6 +3561,15 @@ tags:
   name: CreateRunRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Run" />
   name: Run
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemSessionRequest"
+    />
+  name: DeleteAgenticSystemSessionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDocumentsRequest"
+    />
+  name: DeleteDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
+    />
+  name: EmbeddingsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsResponse"
     />
   name: EmbeddingsResponse
@@ -3606,6 +3655,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJob"
     />
   name: PostTrainingJob
+- description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
+    />
+  name: InsertDocumentsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequest"
     />
   name: LogMessagesRequest
@@ -3684,6 +3736,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
     />'
   name: SyntheticDataGenerationResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateDocumentsRequest"
+    />
+  name: UpdateDocumentsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UpdateExperimentRequest"
     />
   name: UpdateExperimentRequest
@@ -3739,13 +3794,17 @@ x-tagGroups:
   - CompletionMessage
   - CompletionRequest
   - CompletionResponseStreamChunk
+  - CreateAgenticSystemSessionRequest
   - CreateDatasetRequest
   - CreateExperimentRequest
   - CreateMemoryBankRequest
   - CreateRunRequest
   - DPOAlignmentConfig
+  - DeleteAgenticSystemSessionRequest
+  - DeleteDocumentsRequest
   - DialogGenerations
   - DoraFinetuningConfig
+  - EmbeddingsRequest
   - EmbeddingsResponse
   - EvaluateQuestionAnsweringRequest
   - EvaluateSummarizationRequest
@@ -3759,6 +3818,7 @@ x-tagGroups:
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - InferenceStep
+  - InsertDocumentsRequest
   - Log
   - LogMessagesRequest
   - LogMetricsRequest
@@ -3816,6 +3876,7 @@ x-tagGroups:
   - TrainingConfig
   - Turn
   - URL
+  - UpdateDocumentsRequest
   - UpdateExperimentRequest
   - UpdateRunRequest
   - UploadArtifactRequest
