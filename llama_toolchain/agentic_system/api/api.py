@@ -351,9 +351,7 @@ class AgenticSystemTurnCreateRequest(AgentConfigOverridablePerTurn):
     stream: Optional[bool] = False
 
 
-@json_schema_type(
-    schema={"description": "Server side event (SSE) stream of these events"}
-)
+@json_schema_type
 class AgenticSystemTurnResponseStreamChunk(BaseModel):
     event: AgenticSystemTurnResponseEvent
 
