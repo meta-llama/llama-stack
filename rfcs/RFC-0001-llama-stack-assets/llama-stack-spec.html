@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-08-23 06:36:10.417114"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-03 21:36:00.770405"
     },
     "servers": [
         {
@@ -29,7 +29,7 @@
         }
     ],
     "paths": {
-        "/inference/batch_chat_completion": {
+        "/batch_inference/chat_completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -44,7 +44,7 @@
                     }
                 },
                 "tags": [
-                    "Inference"
+                    "BatchInference"
                 ],
                 "parameters": [],
                 "requestBody": {
@@ -59,7 +59,7 @@
                 }
             }
         },
-        "/inference/batch_completion": {
+        "/batch_inference/completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -74,7 +74,7 @@
                     }
                 },
                 "tags": [
-                    "Inference"
+                    "BatchInference"
                 ],
                 "parameters": [],
                 "requestBody": {
@@ -548,6 +548,58 @@
                         }
                     }
                 ]
+            }
+        },
+        "/inference/embeddings": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmbeddingsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inference"
+                ],
+                "parameters": [
+                    {
+                        "name": "model",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/evaluate/question_answering/": {
@@ -1053,7 +1105,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/MemoryBank"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/MemoryBank"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -1227,6 +1286,14 @@
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ttl_seconds",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -1973,8 +2040,8 @@
                     "json",
                     "function_tag"
                 ],
-                "title": "This Enum refers to the prompt format for calling zero shot tools",
-                "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are defined in `system_prompt.py`"
+                "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
+                "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
             },
             "ToolResponseMessage": {
                 "type": "object",
@@ -2026,6 +2093,19 @@
                         "const": "user"
                     },
                     "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "context": {
                         "oneOf": [
                             {
                                 "type": "string"
@@ -2393,95 +2473,6 @@
                     },
                     "instructions": {
                         "type": "string"
-                    },
-                    "memory_bank_configs": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "vector"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "keyvalue"
-                                        },
-                                        "keys": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type",
-                                        "keys"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "keyword"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "graph"
-                                        },
-                                        "entities": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type",
-                                        "entities"
-                                    ]
-                                }
-                            ]
-                        }
                     }
                 },
                 "additionalProperties": false,
@@ -2579,6 +2570,9 @@
                         "type": "string",
                         "const": "function_call"
                     },
+                    "function_name": {
+                        "type": "string"
+                    },
                     "description": {
                         "type": "string"
                     },
@@ -2595,88 +2589,9 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
+                    "function_name",
                     "description",
                     "parameters"
-                ]
-            },
-            "MemoryBank": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "config": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "vector"
-                                    },
-                                    "embedding_model": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "embedding_model"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "keyvalue"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "keyword"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "graph"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id",
-                    "name",
-                    "config"
                 ]
             },
             "MemoryToolDefinition": {
@@ -2698,17 +2613,108 @@
                         "type": "string",
                         "const": "memory"
                     },
-                    "memory_banks": {
+                    "memory_bank_configs": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MemoryBank"
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "vector"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyvalue"
+                                        },
+                                        "keys": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "keys"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyword"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "graph"
+                                        },
+                                        "entities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "entities"
+                                    ]
+                                }
+                            ]
                         }
+                    },
+                    "max_tokens_in_context": {
+                        "type": "integer"
+                    },
+                    "max_chunks": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "memory_banks"
+                    "memory_bank_configs",
+                    "max_tokens_in_context",
+                    "max_chunks"
                 ]
             },
             "OnViolationAction": {
@@ -2973,8 +2979,21 @@
             "Attachment": {
                 "type": "object",
                 "properties": {
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
                     },
                     "mime_type": {
                         "type": "string"
@@ -2982,7 +3001,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "url",
+                    "content",
                     "mime_type"
                 ]
             },
@@ -3177,12 +3196,19 @@
                                     },
                                     "embedding_model": {
                                         "type": "string"
+                                    },
+                                    "chunk_size_in_tokens": {
+                                        "type": "integer"
+                                    },
+                                    "overlap_size_in_tokens": {
+                                        "type": "integer"
                                     }
                                 },
                                 "additionalProperties": false,
                                 "required": [
                                     "type",
-                                    "embedding_model"
+                                    "embedding_model",
+                                    "chunk_size_in_tokens"
                                 ]
                             },
                             {
@@ -3232,6 +3258,93 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "config"
+                ]
+            },
+            "MemoryBank": {
+                "type": "object",
+                "properties": {
+                    "bank_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "config": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "vector"
+                                    },
+                                    "embedding_model": {
+                                        "type": "string"
+                                    },
+                                    "chunk_size_in_tokens": {
+                                        "type": "integer"
+                                    },
+                                    "overlap_size_in_tokens": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "embedding_model",
+                                    "chunk_size_in_tokens"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "keyvalue"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "keyword"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "graph"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
+                    },
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_id",
+                    "name",
                     "config"
                 ]
             },
@@ -3325,6 +3438,24 @@
                     "status",
                     "started_at",
                     "metadata"
+                ]
+            },
+            "EmbeddingsResponse": {
+                "type": "object",
+                "properties": {
+                    "embeddings": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "embeddings"
                 ]
             },
             "Checkpoint": {
@@ -3484,65 +3615,6 @@
                     "model_response"
                 ]
             },
-            "MemoryBankDocument": {
-                "type": "object",
-                "properties": {
-                    "document_id": {
-                        "type": "string"
-                    },
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "document_id",
-                    "content",
-                    "mime_type",
-                    "metadata"
-                ]
-            },
             "MemoryRetrievalStep": {
                 "type": "object",
                 "properties": {
@@ -3570,17 +3642,18 @@
                             "type": "string"
                         }
                     },
-                    "documents": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MemoryBankDocument"
-                        }
-                    },
-                    "scores": {
-                        "type": "array",
-                        "items": {
-                            "type": "number"
-                        }
+                    "inserted_context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -3589,8 +3662,7 @@
                     "step_id",
                     "step_type",
                     "memory_bank_ids",
-                    "documents",
-                    "scores"
+                    "inserted_context"
                 ]
             },
             "Session": {
@@ -3611,6 +3683,9 @@
                     "started_at": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "memory_bank": {
+                        "$ref": "#/components/schemas/MemoryBank"
                     }
                 },
                 "additionalProperties": false,
@@ -3926,6 +4001,65 @@
                     "config",
                     "code",
                     "other"
+                ]
+            },
+            "MemoryBankDocument": {
+                "type": "object",
+                "properties": {
+                    "document_id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "document_id",
+                    "content",
+                    "mime_type",
+                    "metadata"
                 ]
             },
             "EvaluationJobArtifactsResponse": {
@@ -4504,12 +4638,16 @@
                                 },
                                 "token_count": {
                                     "type": "integer"
+                                },
+                                "document_id": {
+                                    "type": "string"
                                 }
                             },
                             "additionalProperties": false,
                             "required": [
                                 "content",
-                                "token_count"
+                                "token_count",
+                                "document_id"
                             ]
                         }
                     },
@@ -5109,7 +5247,7 @@
     ],
     "tags": [
         {
-            "name": "Observability"
+            "name": "BatchInference"
         },
         {
             "name": "AgenticSystem"
@@ -5121,19 +5259,22 @@
             "name": "Memory"
         },
         {
-            "name": "Evaluations"
+            "name": "Observability"
         },
         {
-            "name": "Datasets"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "RewardScoring"
         },
         {
-            "name": "Inference"
+            "name": "Datasets"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Inference"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -5181,7 +5322,7 @@
         },
         {
             "name": "ToolPromptFormat",
-            "description": "This Enum refers to the prompt format for calling zero shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are defined in `system_prompt.py`\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
+            "description": "This Enum refers to the prompt format for calling custom / zero shot tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
         },
         {
             "name": "ToolResponseMessage",
@@ -5258,10 +5399,6 @@
         {
             "name": "FunctionCallToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
-        },
-        {
-            "name": "MemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
         },
         {
             "name": "MemoryToolDefinition",
@@ -5344,12 +5481,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateMemoryBankRequest\" />"
         },
         {
+            "name": "MemoryBank",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
+        },
+        {
             "name": "CreateRunRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateRunRequest\" />"
         },
         {
             "name": "Run",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Run\" />"
+        },
+        {
+            "name": "EmbeddingsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsResponse\" />"
         },
         {
             "name": "Checkpoint",
@@ -5374,10 +5519,6 @@
         {
             "name": "InferenceStep",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
-        },
-        {
-            "name": "MemoryBankDocument",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "MemoryRetrievalStep",
@@ -5418,6 +5559,10 @@
         {
             "name": "ArtifactType",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ArtifactType\" />"
+        },
+        {
+            "name": "MemoryBankDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "EvaluationJobArtifactsResponse",
@@ -5565,6 +5710,7 @@
             "name": "Operations",
             "tags": [
                 "AgenticSystem",
+                "BatchInference",
                 "Datasets",
                 "Evaluations",
                 "Inference",
@@ -5610,6 +5756,7 @@
                 "DPOAlignmentConfig",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
+                "EmbeddingsResponse",
                 "EvaluateQuestionAnsweringRequest",
                 "EvaluateSummarizationRequest",
                 "EvaluateTextGenerationRequest",

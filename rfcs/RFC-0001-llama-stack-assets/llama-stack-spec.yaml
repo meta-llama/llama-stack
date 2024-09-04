@@ -10,64 +10,6 @@ components:
           type: array
         instructions:
           type: string
-        memory_bank_configs:
-          items:
-            oneOf:
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                type:
-                  const: vector
-                  type: string
-              required:
-              - bank_id
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                keys:
-                  items:
-                    type: string
-                  type: array
-                type:
-                  const: keyvalue
-                  type: string
-              required:
-              - bank_id
-              - type
-              - keys
-              type: object
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                type:
-                  const: keyword
-                  type: string
-              required:
-              - bank_id
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                entities:
-                  items:
-                    type: string
-                  type: array
-                type:
-                  const: graph
-                  type: string
-              required:
-              - bank_id
-              - type
-              - entities
-              type: object
-          type: array
         model:
           type: string
         output_shields:
@@ -220,12 +162,17 @@ components:
     Attachment:
       additionalProperties: false
       properties:
+        content:
+          oneOf:
+          - type: string
+          - items:
+              type: string
+            type: array
+          - $ref: '#/components/schemas/URL'
         mime_type:
           type: string
-        url:
-          $ref: '#/components/schemas/URL'
       required:
-      - url
+      - content
       - mime_type
       type: object
     BatchChatCompletionRequest:
@@ -537,14 +484,19 @@ components:
           oneOf:
           - additionalProperties: false
             properties:
+              chunk_size_in_tokens:
+                type: integer
               embedding_model:
                 type: string
+              overlap_size_in_tokens:
+                type: integer
               type:
                 const: vector
                 type: string
             required:
             - type
             - embedding_model
+            - chunk_size_in_tokens
             type: object
           - additionalProperties: false
             properties:
@@ -654,6 +606,18 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
+      type: object
+    EmbeddingsResponse:
+      additionalProperties: false
+      properties:
+        embeddings:
+          items:
+            items:
+              type: number
+            type: array
+          type: array
+      required:
+      - embeddings
       type: object
     EvaluateQuestionAnsweringRequest:
       additionalProperties: false
@@ -819,6 +783,8 @@ components:
       properties:
         description:
           type: string
+        function_name:
+          type: string
         input_shields:
           items:
             $ref: '#/components/schemas/ShieldDefinition'
@@ -838,6 +804,7 @@ components:
           type: string
       required:
       - type
+      - function_name
       - description
       - parameters
       type: object
@@ -965,14 +932,19 @@ components:
           oneOf:
           - additionalProperties: false
             properties:
+              chunk_size_in_tokens:
+                type: integer
               embedding_model:
                 type: string
+              overlap_size_in_tokens:
+                type: integer
               type:
                 const: vector
                 type: string
             required:
             - type
             - embedding_model
+            - chunk_size_in_tokens
             type: object
           - additionalProperties: false
             properties:
@@ -1043,17 +1015,15 @@ components:
         completed_at:
           format: date-time
           type: string
-        documents:
-          items:
-            $ref: '#/components/schemas/MemoryBankDocument'
-          type: array
+        inserted_context:
+          oneOf:
+          - type: string
+          - items:
+              type: string
+            type: array
         memory_bank_ids:
           items:
             type: string
-          type: array
-        scores:
-          items:
-            type: number
           type: array
         started_at:
           format: date-time
@@ -1070,8 +1040,7 @@ components:
       - step_id
       - step_type
       - memory_bank_ids
-      - documents
-      - scores
+      - inserted_context
       type: object
     MemoryToolDefinition:
       additionalProperties: false
@@ -1080,9 +1049,67 @@ components:
           items:
             $ref: '#/components/schemas/ShieldDefinition'
           type: array
-        memory_banks:
+        max_chunks:
+          type: integer
+        max_tokens_in_context:
+          type: integer
+        memory_bank_configs:
           items:
-            $ref: '#/components/schemas/MemoryBank'
+            oneOf:
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                type:
+                  const: vector
+                  type: string
+              required:
+              - bank_id
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                keys:
+                  items:
+                    type: string
+                  type: array
+                type:
+                  const: keyvalue
+                  type: string
+              required:
+              - bank_id
+              - type
+              - keys
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                type:
+                  const: keyword
+                  type: string
+              required:
+              - bank_id
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                entities:
+                  items:
+                    type: string
+                  type: array
+                type:
+                  const: graph
+                  type: string
+              required:
+              - bank_id
+              - type
+              - entities
+              type: object
           type: array
         output_shields:
           items:
@@ -1093,7 +1120,9 @@ components:
           type: string
       required:
       - type
-      - memory_banks
+      - memory_bank_configs
+      - max_tokens_in_context
+      - max_chunks
       type: object
     Metric:
       additionalProperties: false
@@ -1406,11 +1435,14 @@ components:
                 - items:
                     type: string
                   type: array
+              document_id:
+                type: string
               token_count:
                 type: integer
             required:
             - content
             - token_count
+            - document_id
             type: object
           type: array
         scores:
@@ -1575,6 +1607,8 @@ components:
     Session:
       additionalProperties: false
       properties:
+        memory_bank:
+          $ref: '#/components/schemas/MemoryBank'
         session_id:
           type: string
         session_name:
@@ -1869,11 +1903,12 @@ components:
         : {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of\
         \ how you could define\n    your own user defined format for making tool calls.\n\
         \    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\
-        \nThe detailed prompts for each of these formats are defined in `system_prompt.py`"
+        \nThe detailed prompts for each of these formats are added to llama cli"
       enum:
       - json
       - function_tag
-      title: This Enum refers to the prompt format for calling zero shot tools
+      title: This Enum refers to the prompt format for calling custom / zero shot
+        tools
       type: string
     ToolResponse:
       additionalProperties: false
@@ -2104,6 +2139,12 @@ components:
           - items:
               type: string
             type: array
+        context:
+          oneOf:
+          - type: string
+          - items:
+              type: string
+            type: array
         role:
           const: user
           type: string
@@ -2134,7 +2175,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-08-23 06:36:10.417114"
+    \ draft and subject to change.\n                Generated at 2024-09-03 21:36:00.770405"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2327,6 +2368,42 @@ paths:
           description: OK
       tags:
       - Observability
+  /batch_inference/chat_completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchChatCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchChatCompletionResponse'
+          description: OK
+      tags:
+      - BatchInference
+  /batch_inference/completion:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCompletionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchCompletionResponse'
+          description: OK
+      tags:
+      - BatchInference
   /datasets/create:
     post:
       parameters: []
@@ -2619,42 +2696,6 @@ paths:
           description: OK
       tags:
       - Observability
-  /inference/batch_chat_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchChatCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BatchChatCompletionResponse'
-          description: OK
-      tags:
-      - Inference
-  /inference/batch_completion:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchCompletionRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BatchCompletionResponse'
-          description: OK
-      tags:
-      - Inference
   /inference/chat_completion:
     post:
       parameters: []
@@ -2689,6 +2730,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompletionResponseStreamChunk'
           description: streamed completion response.
+      tags:
+      - Inference
+  /inference/embeddings:
+    post:
+      parameters:
+      - in: query
+        name: model
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                oneOf:
+                - type: string
+                - items:
+                    type: string
+                  type: array
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingsResponse'
+          description: OK
       tags:
       - Inference
   /logging/get_logs:
@@ -2777,6 +2847,11 @@ paths:
         required: true
         schema:
           type: string
+      - in: query
+        name: ttl_seconds
+        required: false
+        schema:
+          type: integer
       requestBody:
         content:
           application/json:
@@ -2887,7 +2962,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MemoryBank'
+                oneOf:
+                - $ref: '#/components/schemas/MemoryBank'
+                - type: 'null'
           description: OK
       tags:
       - Memory
@@ -3105,15 +3182,16 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Observability
+- name: BatchInference
 - name: AgenticSystem
 - name: PostTraining
 - name: Memory
-- name: Evaluations
-- name: Datasets
-- name: RewardScoring
-- name: Inference
+- name: Observability
 - name: SyntheticDataGeneration
+- name: Evaluations
+- name: RewardScoring
+- name: Datasets
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3140,16 +3218,16 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolParamDefinition"
     />
   name: ToolParamDefinition
-- description: "This Enum refers to the prompt format for calling zero shot tools\n\
-    \n`json` --\n    Refers to the json format for calling tools.\n    The json format\
-    \ takes the form like\n    {\n        \"type\": \"function\",\n        \"function\"\
-    \ : {\n            \"name\": \"function_name\",\n            \"description\":\
-    \ \"function_description\",\n            \"parameters\": {...}\n        }\n  \
-    \  }\n\n`function_tag` --\n    This is an example of how you could define\n  \
-    \  your own user defined format for making tool calls.\n    The function_tag format\
-    \ looks like this,\n    <function=function_name>(parameters)</function>\n\nThe\
-    \ detailed prompts for each of these formats are defined in `system_prompt.py`\n\
-    \n<SchemaDefinition schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
+- description: "This Enum refers to the prompt format for calling custom / zero shot\
+    \ tools\n\n`json` --\n    Refers to the json format for calling tools.\n    The\
+    \ json format takes the form like\n    {\n        \"type\": \"function\",\n  \
+    \      \"function\" : {\n            \"name\": \"function_name\",\n          \
+    \  \"description\": \"function_description\",\n            \"parameters\": {...}\n\
+    \        }\n    }\n\n`function_tag` --\n    This is an example of how you could\
+    \ define\n    your own user defined format for making tool calls.\n    The function_tag\
+    \ format looks like this,\n    <function=function_name>(parameters)</function>\n\
+    \nThe detailed prompts for each of these formats are added to llama cli\n\n<SchemaDefinition\
+    \ schemaRef=\"#/components/schemas/ToolPromptFormat\" />"
   name: ToolPromptFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolResponseMessage"
     />
@@ -3212,8 +3290,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
     />
   name: FunctionCallToolDefinition
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
-  name: MemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
     />
   name: MemoryToolDefinition
@@ -3277,11 +3353,16 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateMemoryBankRequest"
     />
   name: CreateMemoryBankRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
+  name: MemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequest"
     />
   name: CreateRunRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Run" />
   name: Run
+- description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsResponse"
+    />
+  name: EmbeddingsResponse
 - description: 'Checkpoint created during training runs
 
 
@@ -3309,9 +3390,6 @@ tags:
   name: EvaluateTextGenerationRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
-    />
-  name: MemoryBankDocument
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
     />
   name: MemoryRetrievalStep
@@ -3341,6 +3419,9 @@ tags:
   name: Artifact
 - description: <SchemaDefinition schemaRef="#/components/schemas/ArtifactType" />
   name: ArtifactType
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
+    />
+  name: MemoryBankDocument
 - description: 'Artifacts of a evaluation job.
 
 
@@ -3474,6 +3555,7 @@ x-tagGroups:
 - name: Operations
   tags:
   - AgenticSystem
+  - BatchInference
   - Datasets
   - Evaluations
   - Inference
@@ -3516,6 +3598,7 @@ x-tagGroups:
   - DPOAlignmentConfig
   - DialogGenerations
   - DoraFinetuningConfig
+  - EmbeddingsResponse
   - EvaluateQuestionAnsweringRequest
   - EvaluateSummarizationRequest
   - EvaluateTextGenerationRequest
