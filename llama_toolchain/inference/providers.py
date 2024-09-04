@@ -38,6 +38,14 @@ def available_inference_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_id="tgi",
+                pip_packages=["huggingface-hub"],
+                module="llama_toolchain.inference.adapters.tgi",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_id="fireworks",
                 pip_packages=[
                     "fireworks-ai",
