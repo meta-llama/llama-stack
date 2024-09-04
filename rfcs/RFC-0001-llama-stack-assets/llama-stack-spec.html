@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-03 21:36:00.770405"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-03 21:42:33.579455"
     },
     "servers": [
         {
@@ -266,7 +266,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "text/event-stream": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AgenticSystemTurnResponseStreamChunk"
                                 }
@@ -3005,8 +3005,504 @@
                     "mime_type"
                 ]
             },
+            "AgenticSystemTurnResponseEvent": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AgenticSystemTurnResponseStepStartPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgenticSystemTurnResponseStepProgressPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgenticSystemTurnResponseStepCompletePayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgenticSystemTurnResponseTurnStartPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgenticSystemTurnResponseTurnCompletePayload"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "payload"
+                ],
+                "title": "Streamed agent execution response."
+            },
+            "AgenticSystemTurnResponseStepCompletePayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "step_complete"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ]
+                    },
+                    "step_details": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/InferenceStep"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolExecutionStep"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ShieldCallStep"
+                            },
+                            {
+                                "$ref": "#/components/schemas/MemoryRetrievalStep"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "step_type",
+                    "step_details"
+                ]
+            },
+            "AgenticSystemTurnResponseStepProgressPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "step_progress"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ]
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "model_response_text_delta": {
+                        "type": "string"
+                    },
+                    "tool_call_delta": {
+                        "$ref": "#/components/schemas/ToolCallDelta"
+                    },
+                    "tool_response_text_delta": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "step_type",
+                    "step_id"
+                ]
+            },
+            "AgenticSystemTurnResponseStepStartPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "step_start"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ]
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "step_type",
+                    "step_id"
+                ]
+            },
             "AgenticSystemTurnResponseStreamChunk": {
-                "description": "Server side event (SSE) stream of these events"
+                "type": "object",
+                "properties": {
+                    "event": {
+                        "$ref": "#/components/schemas/AgenticSystemTurnResponseEvent"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event"
+                ]
+            },
+            "AgenticSystemTurnResponseTurnCompletePayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "turn_complete"
+                    },
+                    "turn": {
+                        "$ref": "#/components/schemas/Turn"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "turn"
+                ]
+            },
+            "AgenticSystemTurnResponseTurnStartPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "turn_start"
+                    },
+                    "turn_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "turn_id"
+                ]
+            },
+            "InferenceStep": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "const": "inference"
+                    },
+                    "model_response": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "step_id",
+                    "step_type",
+                    "model_response"
+                ]
+            },
+            "MemoryRetrievalStep": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "const": "memory_retrieval"
+                    },
+                    "memory_bank_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "inserted_context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "step_id",
+                    "step_type",
+                    "memory_bank_ids",
+                    "inserted_context"
+                ]
+            },
+            "ShieldCallStep": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "const": "shield_call"
+                    },
+                    "response": {
+                        "$ref": "#/components/schemas/ShieldResponse"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "step_id",
+                    "step_type",
+                    "response"
+                ]
+            },
+            "ShieldResponse": {
+                "type": "object",
+                "properties": {
+                    "shield_type": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BuiltinShield"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "is_violation": {
+                        "type": "boolean"
+                    },
+                    "violation_type": {
+                        "type": "string"
+                    },
+                    "violation_return_message": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shield_type",
+                    "is_violation"
+                ]
+            },
+            "ToolExecutionStep": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "const": "tool_execution"
+                    },
+                    "tool_calls": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolCall"
+                        }
+                    },
+                    "tool_responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolResponse"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "step_id",
+                    "step_type",
+                    "tool_calls",
+                    "tool_responses"
+                ]
+            },
+            "ToolResponse": {
+                "type": "object",
+                "properties": {
+                    "call_id": {
+                        "type": "string"
+                    },
+                    "tool_name": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BuiltinTool"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "call_id",
+                    "tool_name",
+                    "content"
+                ]
+            },
+            "Turn": {
+                "type": "object",
+                "properties": {
+                    "turn_id": {
+                        "type": "string"
+                    },
+                    "session_id": {
+                        "type": "string"
+                    },
+                    "input_messages": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolResponseMessage"
+                                }
+                            ]
+                        }
+                    },
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/InferenceStep"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolExecutionStep"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ShieldCallStep"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/MemoryRetrievalStep"
+                                }
+                            ]
+                        }
+                    },
+                    "output_message": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    },
+                    "output_attachments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Attachment"
+                        }
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "turn_id",
+                    "session_id",
+                    "input_messages",
+                    "steps",
+                    "output_message",
+                    "output_attachments",
+                    "started_at"
+                ],
+                "title": "A single turn in an interaction with an Agentic System."
             },
             "CreateDatasetRequest": {
                 "type": "object",
@@ -3582,89 +4078,6 @@
                 ],
                 "title": "Request to evaluate text generation."
             },
-            "InferenceStep": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "step_id": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "step_type": {
-                        "type": "string",
-                        "const": "inference"
-                    },
-                    "model_response": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "step_id",
-                    "step_type",
-                    "model_response"
-                ]
-            },
-            "MemoryRetrievalStep": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "step_id": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "step_type": {
-                        "type": "string",
-                        "const": "memory_retrieval"
-                    },
-                    "memory_bank_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "inserted_context": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "step_id",
-                    "step_type",
-                    "memory_bank_ids",
-                    "inserted_context"
-                ]
-            },
             "Session": {
                 "type": "object",
                 "properties": {
@@ -3696,219 +4109,6 @@
                     "started_at"
                 ],
                 "title": "A single session of an interaction with an Agentic System."
-            },
-            "ShieldCallStep": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "step_id": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "step_type": {
-                        "type": "string",
-                        "const": "shield_call"
-                    },
-                    "response": {
-                        "$ref": "#/components/schemas/ShieldResponse"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "step_id",
-                    "step_type",
-                    "response"
-                ]
-            },
-            "ShieldResponse": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinShield"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "is_violation": {
-                        "type": "boolean"
-                    },
-                    "violation_type": {
-                        "type": "string"
-                    },
-                    "violation_return_message": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "shield_type",
-                    "is_violation"
-                ]
-            },
-            "ToolExecutionStep": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "step_id": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "step_type": {
-                        "type": "string",
-                        "const": "tool_execution"
-                    },
-                    "tool_calls": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolCall"
-                        }
-                    },
-                    "tool_responses": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolResponse"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "step_id",
-                    "step_type",
-                    "tool_calls",
-                    "tool_responses"
-                ]
-            },
-            "ToolResponse": {
-                "type": "object",
-                "properties": {
-                    "call_id": {
-                        "type": "string"
-                    },
-                    "tool_name": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinTool"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "call_id",
-                    "tool_name",
-                    "content"
-                ]
-            },
-            "Turn": {
-                "type": "object",
-                "properties": {
-                    "turn_id": {
-                        "type": "string"
-                    },
-                    "session_id": {
-                        "type": "string"
-                    },
-                    "input_messages": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "steps": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/InferenceStep"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolExecutionStep"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ShieldCallStep"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/MemoryRetrievalStep"
-                                }
-                            ]
-                        }
-                    },
-                    "output_message": {
-                        "$ref": "#/components/schemas/CompletionMessage"
-                    },
-                    "output_attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Attachment"
-                        }
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "turn_id",
-                    "session_id",
-                    "input_messages",
-                    "steps",
-                    "output_message",
-                    "output_attachments",
-                    "started_at"
-                ],
-                "title": "A single turn in an interaction with an Agentic System."
             },
             "AgenticSystemStepResponse": {
                 "type": "object",
@@ -5247,34 +5447,34 @@
     ],
     "tags": [
         {
-            "name": "BatchInference"
-        },
-        {
             "name": "AgenticSystem"
-        },
-        {
-            "name": "PostTraining"
         },
         {
             "name": "Memory"
         },
         {
-            "name": "Observability"
-        },
-        {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Evaluations"
+            "name": "Inference"
         },
         {
-            "name": "RewardScoring"
+            "name": "Observability"
+        },
+        {
+            "name": "BatchInference"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "Inference"
+            "name": "RewardScoring"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -5449,8 +5649,60 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
+            "name": "AgenticSystemTurnResponseEvent",
+            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseEvent\" />"
+        },
+        {
+            "name": "AgenticSystemTurnResponseStepCompletePayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStepCompletePayload\" />"
+        },
+        {
+            "name": "AgenticSystemTurnResponseStepProgressPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStepProgressPayload\" />"
+        },
+        {
+            "name": "AgenticSystemTurnResponseStepStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStepStartPayload\" />"
+        },
+        {
             "name": "AgenticSystemTurnResponseStreamChunk",
-            "description": "Server side event (SSE) stream of these events\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStreamChunk\" />"
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStreamChunk\" />"
+        },
+        {
+            "name": "AgenticSystemTurnResponseTurnCompletePayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseTurnCompletePayload\" />"
+        },
+        {
+            "name": "AgenticSystemTurnResponseTurnStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseTurnStartPayload\" />"
+        },
+        {
+            "name": "InferenceStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
+        },
+        {
+            "name": "MemoryRetrievalStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryRetrievalStep\" />"
+        },
+        {
+            "name": "ShieldCallStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
+        },
+        {
+            "name": "ShieldResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldResponse\" />"
+        },
+        {
+            "name": "ToolExecutionStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolExecutionStep\" />"
+        },
+        {
+            "name": "ToolResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponse\" />"
+        },
+        {
+            "name": "Turn",
+            "description": "A single turn in an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Turn\" />"
         },
         {
             "name": "CreateDatasetRequest",
@@ -5517,36 +5769,8 @@
             "description": "Request to evaluate text generation.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
         },
         {
-            "name": "InferenceStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InferenceStep\" />"
-        },
-        {
-            "name": "MemoryRetrievalStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryRetrievalStep\" />"
-        },
-        {
             "name": "Session",
             "description": "A single session of an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Session\" />"
-        },
-        {
-            "name": "ShieldCallStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
-        },
-        {
-            "name": "ShieldResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldResponse\" />"
-        },
-        {
-            "name": "ToolExecutionStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolExecutionStep\" />"
-        },
-        {
-            "name": "ToolResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponse\" />"
-        },
-        {
-            "name": "Turn",
-            "description": "A single turn in an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Turn\" />"
         },
         {
             "name": "AgenticSystemStepResponse",
@@ -5729,7 +5953,13 @@
                 "AgenticSystemSessionCreateResponse",
                 "AgenticSystemStepResponse",
                 "AgenticSystemTurnCreateRequest",
+                "AgenticSystemTurnResponseEvent",
+                "AgenticSystemTurnResponseStepCompletePayload",
+                "AgenticSystemTurnResponseStepProgressPayload",
+                "AgenticSystemTurnResponseStepStartPayload",
                 "AgenticSystemTurnResponseStreamChunk",
+                "AgenticSystemTurnResponseTurnCompletePayload",
+                "AgenticSystemTurnResponseTurnStartPayload",
                 "Artifact",
                 "ArtifactType",
                 "Attachment",
