@@ -59,9 +59,14 @@ class ModelTemplate(Subcommand):
         self.parser.add_argument(
             "--format",
             type=str,
-            help="ToolPromptFormat ( json or functino_tag). This flag is used to print the template in a specific formats.",
+            help="ToolPromptFormat (json or function_tag). This flag is used to print the template in a specific formats.",
             required=False,
             default="json",
+        )
+        self.parser.add_argument(
+            "--raw",
+            action="store_true",
+            help="If set to true, don't pretty-print into a table. Useful to copy-paste.",
         )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
@@ -82,15 +87,23 @@ class ModelTemplate(Subcommand):
                 else:
                     rendered += tok
 
-            rendered = rendered.replace("\n", "↵\n")
-            print_table(
-                [
-                    ("Name", colored(template.template_name, "white", attrs=["bold"])),
-                    ("Template", rendered),
-                    ("Notes", template.notes),
-                ],
-                separate_rows=True,
-            )
+            if not args.raw:
+                rendered = rendered.replace("\n", "↵\n")
+                print_table(
+                    [
+                        (
+                            "Name",
+                            colored(template.template_name, "white", attrs=["bold"]),
+                        ),
+                        ("Template", rendered),
+                        ("Notes", template.notes),
+                    ],
+                    separate_rows=True,
+                )
+            else:
+                print("Template: ", template.template_name)
+                print("=" * 40)
+                print(rendered)
         else:
             templates = list_jinja_templates()
             headers = ["Role", "Template Name"]
