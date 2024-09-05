@@ -5,8 +5,8 @@
 # the root directory of this source tree.
 
 import json
-import os
 import re
+import tempfile
 
 from abc import abstractmethod
 from typing import List, Optional
@@ -284,7 +284,7 @@ class WolframAlphaTool(SingleMessageBuiltinTool):
 class CodeInterpreterTool(BaseTool):
     def __init__(self) -> None:
         ctx = CodeExecutionContext(
-            matplotlib_dump_dir=f"/tmp/{os.environ['USER']}_matplotlib_dump",
+            matplotlib_dump_dir=tempfile.mkdtemp(),
         )
         self.code_executor = CodeExecutor(ctx)
 
