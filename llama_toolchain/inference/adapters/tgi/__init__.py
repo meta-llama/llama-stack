@@ -4,12 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_toolchain.core.datatypes import RemoteProviderConfig
+from .config import TGIImplConfig
 
 
-async def get_adapter_impl(config: RemoteProviderConfig, _deps):
-    from .tgi import TGIInferenceAdapter
+async def get_adapter_impl(config: TGIImplConfig, _deps):
+    from .tgi import TGIAdapter
 
-    impl = TGIInferenceAdapter(config.url)
+    assert isinstance(
+        config, TGIImplConfig
+    ), f"Unexpected config type: {type(config)}"
+    impl = TGIAdapter(config)
     await impl.initialize()
     return impl

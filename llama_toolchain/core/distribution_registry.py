@@ -58,6 +58,16 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.memory: "meta-reference-faiss",
             },
         ),
+        DistributionSpec(
+            distribution_id="local-plus-tgi-inference",
+            description="Use TGI for running LLM inference",
+            providers={
+                Api.inference: remote_provider_id("tgi"),
+                Api.safety: "meta-reference",
+                Api.agentic_system: "meta-reference",
+                Api.memory: "meta-reference-faiss",
+            },
+        ),
     ]
 
 
