@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 @json_schema_type
 class TGIImplConfig(BaseModel):
     url: str = Field(
-        default="https://api-inference.huggingface.co",
+        default="https://huggingface.co/inference-endpoints/dedicated",
         description="The URL for the TGI endpoint",
     )
     api_token: Optional[str] = Field(
