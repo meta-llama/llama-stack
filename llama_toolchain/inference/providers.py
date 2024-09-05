@@ -39,7 +39,7 @@ def available_inference_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_id="tgi",
-                pip_packages=["huggingface-hub"],
+                pip_packages=["text-generation"],
                 module="llama_toolchain.inference.adapters.tgi",
             ),
         ),
