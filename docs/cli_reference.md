@@ -5,7 +5,7 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 ### Subcommands
 1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace.
 2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](https://github.com/meta-llama/llama-stack/blob/api_updates_1/docs/cli_reference.md#step-3-building-configuring-and-running-llama-stack-servers).
+3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](/docs/cli_reference.md#step-3-building-configuring-and-running-llama-stack-servers).
 
 ### Sample Usage
 
@@ -13,7 +13,7 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 llama --help
 ```
 <pre style="font-family: monospace;">
-usage: llama [-h] {download,model,stack,api} ...
+usage: llama [-h] {download,model,stack} ...
 
 Welcome to the Llama CLI
 
@@ -21,7 +21,7 @@ options:
   -h, --help            show this help message and exit
 
 subcommands:
-  {download,model,stack,api}
+  {download,model,stack}
 </pre>
 
 ## Step 1. Get the models
@@ -236,28 +236,13 @@ These commands can help understand the model interface and how prompts / message
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 
-## Step 3: Building, Configuring and Running Llama Stack servers
+## Step 3: Listing, Building, and Configuring Llama Stack Distributions
 
-An agentic app has several components including model inference, tool execution and system safety shields. Running all these components is made simpler (we hope!) with Llama Stack Distributions.
 
-The Llama Stack is a collection of REST APIs. An API is _implemented_ by Provider. An assembly of Providers together provides the implementation for the Stack -- this package is called a Distribution.
-
-As an example, by running a simple command `llama stack run`, you can bring up a server serving the following endpoints, among others:
-```
-POST /inference/chat_completion
-POST /inference/completion
-POST /safety/run_shields
-POST /agentic_system/create
-POST /agentic_system/session/create
-POST /agentic_system/turn/create
-POST /agentic_system/delete
-```
-
-The agentic app can now simply point to this server to execute all its needed components.
-
-Lets build, configure and start a Llama Stack server specified via a "Distribution ID" to understand more !
+### Step 3.1: List available distributions
 
 Let’s start with listing available distributions:
+
 ```
 llama stack list-distributions
 ```
@@ -305,9 +290,7 @@ i+--------------------------------+---------------------------------------+-----
 
 As you can see above, each “distribution” details the “providers” it is composed of. For example, `local` uses the “meta-reference” provider for inference while local-ollama relies on a different provider (Ollama) for inference. Similarly, you can use Fireworks or Together.AI for running inference as well.
 
-To install a distribution, we run a simple command providing 2 inputs:
-- **Distribution Id** of the distribution that we want to install ( as obtained from the list-distributions command )
-- A **Name** for the specific build and configuration of this distribution.
+### Step 3.2: Build a distribution
 
 Let's imagine you are working with a 8B-Instruct model. The following command will build a package (in the form of a Conda environment) _and_ configure it. As part of the configuration, you will be asked for some inputs (model_id, max_seq_len, etc.) Since we are working with a 8B model, we will name our build `8b-instruct` to help us remember the config.
 
@@ -330,6 +313,7 @@ Successfully setup conda environment. Configuring build...
 
 YAML configuration has been written to ~/.llama/builds/local/conda/8b-instruct.yaml
 ```
+### Step 3.3: Configure a distribution
 
 You can re-configure this distribution by running:
 ```
@@ -372,7 +356,9 @@ Note that all configurations as well as models are stored in `~/.llama`
 
 ## Step 4: Starting a Llama Stack Distribution and Testing it
 
-Now let’s start Llama Stack server.
+### Step 4.1: Starting a distribution
+
+Now let’s start Llama Stack Distribution Server.
 
 You need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
@@ -420,6 +406,8 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
 
 This server is running a Llama model locally.
+
+### Step 4.2: Test the distribution
 
 Lets test with a client.
 ```
