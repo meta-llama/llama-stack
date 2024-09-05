@@ -48,6 +48,7 @@ RUN apt-get update && apt-get install -y \
        curl wget telnet \
        procps psmisc lsof \
        traceroute \
+       bubblewrap \
        && rm -rf /var/lib/apt/lists/*
 
 EOF
