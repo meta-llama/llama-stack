@@ -10,38 +10,37 @@ from jinja2 import Template
 from llama_models.llama3.api import *  # noqa: F403
 
 
-from termcolor import cprint
-
 from llama_toolchain.agentic_system.api import (
     DefaultMemoryQueryGeneratorConfig,
     LLMMemoryQueryGeneratorConfig,
     MemoryQueryGenerator,
     MemoryQueryGeneratorConfig,
 )
+from termcolor import cprint  # noqa: F401
 from llama_toolchain.inference.api import *  # noqa: F403
-from llama_toolchain.inference.client import InferenceClient
 
 
 async def generate_rag_query(
     generator_config: MemoryQueryGeneratorConfig,
     messages: List[Message],
+    **kwargs,
 ):
     if generator_config.type == MemoryQueryGenerator.default.value:
-        generator = DefaultRAGQueryGenerator(generator_config)
+        generator = DefaultRAGQueryGenerator(generator_config, **kwargs)
     elif generator_config.type == MemoryQueryGenerator.llm.value:
-        generator = LLMRAGQueryGenerator(generator_config)
+        generator = LLMRAGQueryGenerator(generator_config, **kwargs)
     else:
         raise NotImplementedError(
             f"Unsupported memory query generator {generator_config.type}"
         )
 
     query = await generator.gen(messages)
-    cprint(f"Generated query >>>: {query}", color="green")
+    # cprint(f"Generated query >>>: {query}", color="green")
     return query
 
 
 class DefaultRAGQueryGenerator:
-    def __init__(self, config: DefaultMemoryQueryGeneratorConfig):
+    def __init__(self, config: DefaultMemoryQueryGeneratorConfig, **kwargs):
         self.config = config
 
     async def gen(self, messages: List[Message]) -> InterleavedTextMedia:
@@ -52,11 +51,12 @@ class DefaultRAGQueryGenerator:
 
 
 class LLMRAGQueryGenerator:
-    def __init__(self, config: LLMMemoryQueryGeneratorConfig):
+    def __init__(self, config: LLMMemoryQueryGeneratorConfig, **kwargs):
         self.config = config
+        assert "inference_api" in kwargs, "LLMRAGQueryGenerator needs inference_api"
+        self.inference_api = kwargs["inference_api"]
 
     async def gen(self, messages: List[Message]) -> InterleavedTextMedia:
-        # params will have
         """
         Generates a query that will be used for
         retrieving relevant information from the memory bank.
@@ -69,15 +69,9 @@ class LLMRAGQueryGenerator:
         template = Template(self.config.template)
         content = template.render(m_dict)
 
-        cprint(f"Rendered Template >>>: {content}", color="yellow")
-        # TODO: How to manage these config params better ?
-        host = self.config.host
-        port = self.config.port
-        client = InferenceClient(f"http://{host}:{port}")
-
         model = self.config.model
         message = UserMessage(content=content)
-        response = client.chat_completion(
+        response = self.inference_api.chat_completion(
             ChatCompletionRequest(
                 model=model,
                 messages=[message],

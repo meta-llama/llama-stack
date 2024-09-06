@@ -133,8 +133,6 @@ class LLMMemoryQueryGeneratorConfig(BaseModel):
     type: Literal[MemoryQueryGenerator.llm.value] = MemoryQueryGenerator.llm.value
     model: str
     template: str
-    host: str = "localhost"
-    port: int = 5000
 
 
 class CustomMemoryQueryGeneratorConfig(BaseModel):
@@ -157,7 +155,7 @@ class MemoryToolDefinition(ToolDefinitionCommon):
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
     query_generator_config: MemoryQueryGeneratorConfig = Field(
-        default=DefaultMemoryQueryGeneratorConfig
+        default=DefaultMemoryQueryGeneratorConfig()
     )
     max_tokens_in_context: int = 4096
     max_chunks: int = 10
