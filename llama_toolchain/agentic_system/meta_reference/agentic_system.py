@@ -6,7 +6,7 @@
 
 
 import logging
-import os
+import tempfile
 import uuid
 from typing import AsyncGenerator
 
@@ -71,7 +71,7 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
                 tool = CodeInterpreterTool()
             elif isinstance(tool_defn, PhotogenToolDefinition):
                 tool = PhotogenTool(
-                    dump_dir="/tmp/photogen_dump_" + os.environ["USER"],
+                    dump_dir=tempfile.mkdtemp(),
                 )
             else:
                 continue
