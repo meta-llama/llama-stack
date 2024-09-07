@@ -20,12 +20,12 @@ fi
 set -euo pipefail
 
 if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <distribution_id> <build_name> <pip_dependencies>" >&2
-  echo "Example: $0 <distribution_id> mybuild 'numpy pandas scipy'" >&2
+  echo "Usage: $0 <distribution_type> <build_name> <pip_dependencies>" >&2
+  echo "Example: $0 <distribution_type> mybuild 'numpy pandas scipy'" >&2
   exit 1
 fi
 
-distribution_id="$1"
+distribution_type="$1"
 build_name="$2"
 env_name="llamastack-$build_name"
 pip_dependencies="$3"
@@ -117,4 +117,4 @@ ensure_conda_env_python310 "$env_name" "$pip_dependencies"
 
 printf "${GREEN}Successfully setup conda environment. Configuring build...${NC}\n"
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $distribution_id --name "$build_name" --type conda_env
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $distribution_type --name "$build_name" --type conda_env

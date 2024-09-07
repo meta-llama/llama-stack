@@ -13,7 +13,7 @@ def available_safety_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.safety,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
                 "accelerate",
                 "codeshield",

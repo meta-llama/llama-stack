@@ -52,7 +52,7 @@ class StackBuild(Subcommand):
             BuildType,
         )
 
-        allowed_ids = [d.distribution_id for d in available_distribution_specs()]
+        allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
             "distribution",
             type=str,
@@ -101,7 +101,7 @@ class StackBuild(Subcommand):
                 api_inputs.append(
                     ApiInput(
                         api=api,
-                        provider=provider_spec.provider_id,
+                        provider=provider_spec.provider_type,
                     )
                 )
             docker_image = None
@@ -115,11 +115,11 @@ class StackBuild(Subcommand):
                 self.parser.error(f"Could not find distribution {args.distribution}")
                 return
 
-            for api, provider_id in dist.providers.items():
+            for api, provider_type in dist.providers.items():
                 api_inputs.append(
                     ApiInput(
                         api=api,
-                        provider=provider_id,
+                        provider=provider_type,
                     )
                 )
             docker_image = dist.docker_image
@@ -128,6 +128,6 @@ class StackBuild(Subcommand):
             api_inputs,
             build_type=BuildType(args.type),
             name=args.name,
-            distribution_id=args.distribution,
+            distribution_type=args.distribution,
             docker_image=docker_image,
         )

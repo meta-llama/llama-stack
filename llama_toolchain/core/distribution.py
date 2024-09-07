@@ -83,18 +83,18 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
 
 def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
     inference_providers_by_id = {
-        a.provider_id: a for a in available_inference_providers()
+        a.provider_type: a for a in available_inference_providers()
     }
-    safety_providers_by_id = {a.provider_id: a for a in available_safety_providers()}
+    safety_providers_by_id = {a.provider_type: a for a in available_safety_providers()}
     agentic_system_providers_by_id = {
-        a.provider_id: a for a in available_agentic_system_providers()
+        a.provider_type: a for a in available_agentic_system_providers()
     }
 
     ret = {
         Api.inference: inference_providers_by_id,
         Api.safety: safety_providers_by_id,
         Api.agentic_system: agentic_system_providers_by_id,
-        Api.memory: {a.provider_id: a for a in available_memory_providers()},
+        Api.memory: {a.provider_type: a for a in available_memory_providers()},
     }
     for k, v in ret.items():
         v["remote"] = remote_provider_spec(k)
