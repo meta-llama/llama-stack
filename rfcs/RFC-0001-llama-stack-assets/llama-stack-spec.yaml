@@ -30,7 +30,123 @@ components:
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
             - $ref: '#/components/schemas/FunctionCallToolDefinition'
-            - $ref: '#/components/schemas/MemoryToolDefinition'
+            - additionalProperties: false
+              properties:
+                input_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldDefinition'
+                  type: array
+                max_chunks:
+                  type: integer
+                max_tokens_in_context:
+                  type: integer
+                memory_bank_configs:
+                  items:
+                    oneOf:
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        type:
+                          const: vector
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        keys:
+                          items:
+                            type: string
+                          type: array
+                        type:
+                          const: keyvalue
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      - keys
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        type:
+                          const: keyword
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        entities:
+                          items:
+                            type: string
+                          type: array
+                        type:
+                          const: graph
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      - entities
+                      type: object
+                  type: array
+                output_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldDefinition'
+                  type: array
+                query_generator_config:
+                  oneOf:
+                  - additionalProperties: false
+                    properties:
+                      sep:
+                        type: string
+                      type:
+                        const: default
+                        type: string
+                    required:
+                    - type
+                    - sep
+                    type: object
+                  - additionalProperties: false
+                    properties:
+                      model:
+                        type: string
+                      template:
+                        type: string
+                      type:
+                        const: llm
+                        type: string
+                    required:
+                    - type
+                    - model
+                    - template
+                    type: object
+                  - additionalProperties: false
+                    properties:
+                      type:
+                        const: custom
+                        type: string
+                    required:
+                    - type
+                    type: object
+                type:
+                  const: memory
+                  type: string
+              required:
+              - type
+              - memory_bank_configs
+              - query_generator_config
+              - max_tokens_in_context
+              - max_chunks
+              type: object
           type: array
       required:
       - model
@@ -107,7 +223,123 @@ components:
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
             - $ref: '#/components/schemas/FunctionCallToolDefinition'
-            - $ref: '#/components/schemas/MemoryToolDefinition'
+            - additionalProperties: false
+              properties:
+                input_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldDefinition'
+                  type: array
+                max_chunks:
+                  type: integer
+                max_tokens_in_context:
+                  type: integer
+                memory_bank_configs:
+                  items:
+                    oneOf:
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        type:
+                          const: vector
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        keys:
+                          items:
+                            type: string
+                          type: array
+                        type:
+                          const: keyvalue
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      - keys
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        type:
+                          const: keyword
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        entities:
+                          items:
+                            type: string
+                          type: array
+                        type:
+                          const: graph
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      - entities
+                      type: object
+                  type: array
+                output_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldDefinition'
+                  type: array
+                query_generator_config:
+                  oneOf:
+                  - additionalProperties: false
+                    properties:
+                      sep:
+                        type: string
+                      type:
+                        const: default
+                        type: string
+                    required:
+                    - type
+                    - sep
+                    type: object
+                  - additionalProperties: false
+                    properties:
+                      model:
+                        type: string
+                      template:
+                        type: string
+                      type:
+                        const: llm
+                        type: string
+                    required:
+                    - type
+                    - model
+                    - template
+                    type: object
+                  - additionalProperties: false
+                    properties:
+                      type:
+                        const: custom
+                        type: string
+                    required:
+                    - type
+                    type: object
+                type:
+                  const: memory
+                  type: string
+              required:
+              - type
+              - memory_bank_configs
+              - query_generator_config
+              - max_tokens_in_context
+              - max_chunks
+              type: object
           type: array
       required:
       - agent_id
@@ -1310,88 +1542,6 @@ components:
       - memory_bank_ids
       - inserted_context
       type: object
-    MemoryToolDefinition:
-      additionalProperties: false
-      properties:
-        input_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        max_chunks:
-          type: integer
-        max_tokens_in_context:
-          type: integer
-        memory_bank_configs:
-          items:
-            oneOf:
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                type:
-                  const: vector
-                  type: string
-              required:
-              - bank_id
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                keys:
-                  items:
-                    type: string
-                  type: array
-                type:
-                  const: keyvalue
-                  type: string
-              required:
-              - bank_id
-              - type
-              - keys
-              type: object
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                type:
-                  const: keyword
-                  type: string
-              required:
-              - bank_id
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                bank_id:
-                  type: string
-                entities:
-                  items:
-                    type: string
-                  type: array
-                type:
-                  const: graph
-                  type: string
-              required:
-              - bank_id
-              - type
-              - entities
-              type: object
-          type: array
-        output_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        type:
-          const: memory
-          type: string
-      required:
-      - type
-      - memory_bank_configs
-      - max_tokens_in_context
-      - max_chunks
-      type: object
     Metric:
       additionalProperties: false
       properties:
@@ -2459,7 +2609,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-04 10:28:38.779789"
+    \ draft and subject to change.\n                Generated at 2024-09-07 15:23:29.488676"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2640,7 +2790,7 @@ paths:
                 $ref: '#/components/schemas/Artifact'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /batch_inference/chat_completion:
     post:
       parameters: []
@@ -2870,7 +3020,7 @@ paths:
                 $ref: '#/components/schemas/Artifact'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /experiments/artifacts/upload:
     post:
       parameters: []
@@ -2888,7 +3038,7 @@ paths:
                 $ref: '#/components/schemas/Artifact'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /experiments/create:
     post:
       parameters: []
@@ -2906,7 +3056,7 @@ paths:
                 $ref: '#/components/schemas/Experiment'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /experiments/create_run:
     post:
       parameters: []
@@ -2924,7 +3074,7 @@ paths:
                 $ref: '#/components/schemas/Run'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /experiments/get:
     get:
       parameters:
@@ -2941,7 +3091,7 @@ paths:
                 $ref: '#/components/schemas/Experiment'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /experiments/list:
     get:
       parameters: []
@@ -2953,7 +3103,7 @@ paths:
                 $ref: '#/components/schemas/Experiment'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /experiments/update:
     post:
       parameters: []
@@ -2971,7 +3121,7 @@ paths:
                 $ref: '#/components/schemas/Experiment'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /inference/chat_completion:
     post:
       parameters: []
@@ -3043,7 +3193,7 @@ paths:
                 $ref: '#/components/schemas/Log'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /logging/log_messages:
     post:
       parameters: []
@@ -3057,7 +3207,7 @@ paths:
         '200':
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /memory_bank/documents/delete:
     post:
       parameters: []
@@ -3352,7 +3502,7 @@ paths:
         '200':
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /runs/metrics:
     get:
       parameters:
@@ -3369,7 +3519,7 @@ paths:
                 $ref: '#/components/schemas/Metric'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /runs/update:
     post:
       parameters: []
@@ -3387,7 +3537,7 @@ paths:
                 $ref: '#/components/schemas/Run'
           description: OK
       tags:
-      - Observability
+      - Telemetry
   /synthetic_data_generation/generate:
     post:
       parameters: []
@@ -3411,16 +3561,16 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Observability
+- name: Telemetry
+- name: Evaluations
+- name: AgenticSystem
 - name: Inference
+- name: BatchInference
+- name: PostTraining
 - name: Datasets
 - name: Memory
-- name: AgenticSystem
-- name: Evaluations
 - name: SyntheticDataGeneration
 - name: RewardScoring
-- name: PostTraining
-- name: BatchInference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3525,9 +3675,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
     />
   name: FunctionCallToolDefinition
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
-    />
-  name: MemoryToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/OnViolationAction"
     />
   name: OnViolationAction
@@ -3852,10 +3999,10 @@ x-tagGroups:
   - Evaluations
   - Inference
   - Memory
-  - Observability
   - PostTraining
   - RewardScoring
   - SyntheticDataGeneration
+  - Telemetry
 - name: Types
   tags:
   - AgentConfig
@@ -3931,7 +4078,6 @@ x-tagGroups:
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
-  - MemoryToolDefinition
   - Metric
   - OnViolationAction
   - OptimizerConfig
