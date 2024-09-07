@@ -14,7 +14,7 @@ EMBEDDING_DEPS = [
 ]
 
 
-def available_memory_providers() -> List[ProviderSpec]:
+def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.memory,

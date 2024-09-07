@@ -9,7 +9,7 @@ from typing import List
 from llama_toolchain.core.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
-def available_agentic_system_providers() -> List[ProviderSpec]:
+def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.agentic_system,
