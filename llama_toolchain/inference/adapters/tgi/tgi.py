@@ -7,6 +7,7 @@
 
 from typing import AsyncGenerator
 
+import requests
 from huggingface_hub import InferenceClient
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason
@@ -29,7 +30,7 @@ HF_SUPPORTED_MODELS = {
 }
 
 
-class TGIAdapter(Inference):
+class LocalTGIAdapter(Inference):
 
     def __init__(self, config: TGIImplConfig) -> None:
         self.config = config
@@ -38,10 +39,36 @@ class TGIAdapter(Inference):
 
     @property
     def client(self) -> InferenceClient:
-        return InferenceClient(base_url=self.config.url, token=self.config.api_token)
+        return InferenceClient(model=self.config.url, token=self.config.api_token)
+
+    def _get_endpoint_info(self):
+        return {**self.client.get_endpoint_info(), "inference_url": self.config.url}
 
     async def initialize(self) -> None:
-        pass
+        try:
+            info = self._get_endpoint_info()
+            if "model_id" not in info:
+                raise RuntimeError("Missing model_id in model info")
+            if "max_total_tokens" not in info:
+                raise RuntimeError("Missing max_total_tokens in model info")
+            self.max_tokens = info["max_total_tokens"]
+
+            model_id = info["model_id"]
+            model_name = next(
+                (name for name, id in HF_SUPPORTED_MODELS.items() if id == model_id),
+                None,
+            )
+            if model_name is None:
+                raise RuntimeError(
+                    f"TGI is serving model: {model_id}, use one of the supported models: {', '.join(HF_SUPPORTED_MODELS.values())}"
+                )
+            self.model_name = model_name
+            self.inference_url = info["inference_url"]
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            raise RuntimeError(f"Error initializing TGIAdapter: {e}")
 
     async def shutdown(self) -> None:
         pass
@@ -63,14 +90,19 @@ class TGIAdapter(Inference):
         model_input = self.formatter.encode_dialog_prompt(messages)
         prompt = self.tokenizer.decode(model_input.tokens)
 
-        model_info = self.client.get_endpoint_info(model=self.config.url)
+        input_tokens = len(model_input.tokens)
         max_new_tokens = min(
-            request.sampling_params.max_tokens or model_info["max_total_tokens"],
-            model_info["max_total_tokens"] - len(model_input.tokens) - 1,
+            request.sampling_params.max_tokens or (self.max_tokens - input_tokens),
+            self.max_tokens - input_tokens - 1,
         )
 
-        options = self.get_chat_options(request)
+        print(f"Calculated max_new_tokens: {max_new_tokens}")
 
+        assert (
+            request.model == self.model_name
+        ), f"Model mismatch, expected {self.model_name}, got {request.model}"
+
+        options = self.get_chat_options(request)
         if not request.stream:
             response = self.client.text_generation(
                 prompt=prompt,
@@ -198,3 +230,32 @@ class TGIAdapter(Inference):
                     stop_reason=stop_reason,
                 )
             )
+
+
+class InferenceEndpointAdapter(LocalTGIAdapter):
+    def __init__(self, config: TGIImplConfig) -> None:
+        super().__init__(config)
+        self.config.url = f"https://api.endpoints.huggingface.cloud/v2/endpoint/{config.hf_namespace}/{config.hf_endpoint_name}"
+
+    @property
+    def client(self) -> InferenceClient:
+        return InferenceClient(model=self.inference_url, token=self.config.api_token)
+
+    def _get_endpoint_info(self) -> Dict[str, Any]:
+        headers = {
+            "accept": "application/json",
+            "authorization": f"Bearer {self.config.api_token}",
+        }
+        response = requests.get(self.config.url, headers=headers)
+        response.raise_for_status()
+        endpoint_info = response.json()
+        return {
+            "inference_url": endpoint_info["status"]["url"],
+            "model_id": endpoint_info["model"]["repository"],
+            "max_total_tokens": int(
+                endpoint_info["model"]["image"]["custom"]["env"]["MAX_TOTAL_TOKENS"]
+            ),
+        }
+
+    async def initialize(self) -> None:
+        await super().initialize()

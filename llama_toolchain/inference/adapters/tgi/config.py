@@ -12,11 +12,25 @@ from pydantic import BaseModel, Field, field_validator
 
 @json_schema_type
 class TGIImplConfig(BaseModel):
-    url: str = Field(
-        default="https://huggingface.co/inference-endpoints/dedicated",
-        description="The URL for the TGI endpoint",
+    url: Optional[str] = Field(
+        default=None,
+        description="The URL for the local TGI endpoint (e.g., http://localhost:8080)",
     )
     api_token: Optional[str] = Field(
-        default="",
-        description="The HF token for Hugging Face Inference Endpoints",
+        default=None,
+        description="The HF token for Hugging Face Inference Endpoints (will default to locally saved token if not provided)",
     )
+    hf_namespace: Optional[str] = Field(
+        default=None,
+        description="The username/organization name for the Hugging Face Inference Endpoint",
+    )
+    hf_endpoint_name: Optional[str] = Field(
+        default=None,
+        description="The name of the Hugging Face Inference Endpoint",
+    )
+
+    def is_inference_endpoint(self) -> bool:
+        return self.hf_namespace is not None and self.hf_endpoint_name is not None
+
+    def is_local_tgi(self) -> bool:
+        return self.url is not None and self.url.startswith("http://localhost")
