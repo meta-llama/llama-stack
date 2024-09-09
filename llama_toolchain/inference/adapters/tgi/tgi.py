@@ -41,7 +41,7 @@ class LocalTGIAdapter(Inference):
     def client(self) -> InferenceClient:
         return InferenceClient(model=self.config.url, token=self.config.api_token)
 
-    def _get_endpoint_info(self):
+    def _get_endpoint_info(self) -> Dict[str, Any]:
         return {**self.client.get_endpoint_info(), "inference_url": self.config.url}
 
     async def initialize(self) -> None:

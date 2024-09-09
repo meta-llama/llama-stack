@@ -285,10 +285,10 @@ llama stack list-distributions
 |                                |   "agentic_system": "meta-reference", |                                                                                           |
 |                                |   "memory": "meta-reference-faiss"    |                                                                                           |
 |                                | }                                     |                                                                                           |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| local-plus-tgi-inference       | {                                     | Use TGI (local or with <a href="https://huggingface.co/inference-endpoints/dedicated">    |
-|                                |   "inference": "remote::tgi",         | Hugging Face Inference Endpoints</a>) for running LLM inference                           |
-|                                |   "safety": "meta-reference",         |                                                                                           |
+|--------------------------------|---------------------------------------|-------------------------------------------------------------------------------------------|
+| local-plus-tgi-inference       | {                                     | Use TGI (local or with [Hugging Face Inference Endpoints](https://huggingface.co/         |
+|                                |   "inference": "remote::tgi",         | inference-endpoints/dedicated)) for running LLM inference. When using HF Inference        |
+|                                |   "safety": "meta-reference",         | Endpoints, please provide hf_namespace (username or organization name) and endpoint name. |
 |                                |   "agentic_system": "meta-reference", |                                                                                           |
 |                                |   "memory": "meta-reference-faiss"    |                                                                                           |
 |                                | }                                     |                                                                                           |
