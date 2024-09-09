@@ -34,15 +34,17 @@ def main(host: str, port: int):
 
     # TODO(xiyan): This does not work with current server, need to wrap it in a request (similar to AgentConfig?)
     response = client.agentic_system.turns.create(
-        agent_id=agentic_system_create_response.agent_id,
-        session_id=agentic_system_create_session_response.session_id,
-        messages=[
-            UserMessage(content="What is the capital of France?", role="user"),
-        ],
-        stream=True,
+        request={
+            "agent_id": agentic_system_create_response.agent_id,
+            "session_id": agentic_system_create_session_response.session_id,
+            "messages": [
+                UserMessage(content="What is the capital of France?", role="user"),
+            ],
+            "stream": False,
+        }
     )
 
-    # print(response)
+    print(response)
 
 
 if __name__ == "__main__":
