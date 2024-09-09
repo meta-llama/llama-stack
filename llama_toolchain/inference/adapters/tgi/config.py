@@ -6,6 +6,7 @@
 
 from typing import Optional
 
+from huggingface_hub import HfApi
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
@@ -20,17 +21,16 @@ class TGIImplConfig(BaseModel):
         default=None,
         description="The HF token for Hugging Face Inference Endpoints (will default to locally saved token if not provided)",
     )
-    hf_namespace: Optional[str] = Field(
-        default=None,
-        description="The username/organization name for the Hugging Face Inference Endpoint",
-    )
     hf_endpoint_name: Optional[str] = Field(
         default=None,
-        description="The name of the Hugging Face Inference Endpoint",
+        description="The name of the Hugging Face Inference Endpoint : can be either in the format of '{namespace}/{endpoint_name}' (namespace can be the username or organization name) or just '{endpoint_name}' if logged into the same account as the namespace",
     )
 
     def is_inference_endpoint(self) -> bool:
-        return self.hf_namespace is not None and self.hf_endpoint_name is not None
+        return self.hf_endpoint_name is not None
+
+    def get_namespace(self) -> str:
+        return HfApi().whoami()["name"]
 
     def is_local_tgi(self) -> bool:
         return self.url is not None and self.url.startswith("http://localhost")
