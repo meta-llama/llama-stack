@@ -470,9 +470,16 @@ class Generator:
             request_name, request_type = first
 
             from dataclasses import make_dataclass
-            op_name = "".join(word.capitalize() for word in op.name.split("_"))
-            request_name = f"{op_name}Request"
-            request_type = make_dataclass(request_name, op.request_params)
+
+            if len(op.request_params) == 1 and "Request" in first[1].__name__:
+                # TODO(ashwin): Undo the "Request" hack and this entire block eventually
+                op_name = "".join(word.capitalize() for word in op.name.split("_"))
+                request_name = f"{op_name}RequestWrapper"
+                request_type = make_dataclass(request_name, op.request_params)
+            else:
+                op_name = "".join(word.capitalize() for word in op.name.split("_"))
+                request_name = f"{op_name}Request"
+                request_type = make_dataclass(request_name, op.request_params)
 
             requestBody = RequestBody(
                 content={

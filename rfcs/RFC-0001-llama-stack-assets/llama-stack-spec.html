@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-09 10:38:33.954536"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-09 11:14:56.584501"
     },
     "servers": [
         {
@@ -51,7 +51,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/BatchChatCompletionRequest"
+                                "$ref": "#/components/schemas/BatchChatCompletionRequestWrapper"
                             }
                         }
                     },
@@ -81,7 +81,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/BatchCompletionRequest"
+                                "$ref": "#/components/schemas/BatchCompletionRequestWrapper"
                             }
                         }
                     },
@@ -157,7 +157,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ChatCompletionRequest"
+                                "$ref": "#/components/schemas/ChatCompletionRequestWrapper"
                             }
                         }
                     },
@@ -187,7 +187,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CompletionRequest"
+                                "$ref": "#/components/schemas/CompletionRequestWrapper"
                             }
                         }
                     },
@@ -277,7 +277,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateAgenticSystemTurnRequest"
+                                "$ref": "#/components/schemas/CreateAgenticSystemTurnRequestWrapper"
                             }
                         }
                     },
@@ -300,7 +300,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateDatasetRequest"
+                                "$ref": "#/components/schemas/CreateDatasetRequestWrapper"
                             }
                         }
                     },
@@ -330,7 +330,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateExperimentRequest"
+                                "$ref": "#/components/schemas/CreateExperimentRequestWrapper"
                             }
                         }
                     },
@@ -390,7 +390,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateRunRequest"
+                                "$ref": "#/components/schemas/CreateRunRequestWrapper"
                             }
                         }
                     },
@@ -572,7 +572,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequest"
+                                "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequestWrapper"
                             }
                         }
                     },
@@ -602,7 +602,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/EvaluateSummarizationRequest"
+                                "$ref": "#/components/schemas/EvaluateSummarizationRequestWrapper"
                             }
                         }
                     },
@@ -632,7 +632,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/EvaluateTextGenerationRequest"
+                                "$ref": "#/components/schemas/EvaluateTextGenerationRequestWrapper"
                             }
                         }
                     },
@@ -1024,7 +1024,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/GetLogsRequest"
+                                "$ref": "#/components/schemas/GetLogsRequestWrapper"
                             }
                         }
                     },
@@ -1312,7 +1312,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/LogMessagesRequest"
+                                "$ref": "#/components/schemas/LogMessagesRequestWrapper"
                             }
                         }
                     },
@@ -1335,7 +1335,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/LogMetricsRequest"
+                                "$ref": "#/components/schemas/LogMetricsRequestWrapper"
                             }
                         }
                     },
@@ -1365,7 +1365,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PreferenceOptimizeRequest"
+                                "$ref": "#/components/schemas/PreferenceOptimizeRequestWrapper"
                             }
                         }
                     },
@@ -1425,7 +1425,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RewardScoreRequest"
+                                "$ref": "#/components/schemas/RewardScoreRequestWrapper"
                             }
                         }
                     },
@@ -1455,7 +1455,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SupervisedFineTuneRequest"
+                                "$ref": "#/components/schemas/SupervisedFineTuneRequestWrapper"
                             }
                         }
                     },
@@ -1485,7 +1485,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
+                                "$ref": "#/components/schemas/SyntheticDataGenerateRequestWrapper"
                             }
                         }
                     },
@@ -1538,7 +1538,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateExperimentRequest"
+                                "$ref": "#/components/schemas/UpdateExperimentRequestWrapper"
                             }
                         }
                     },
@@ -1568,7 +1568,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateRunRequest"
+                                "$ref": "#/components/schemas/UpdateRunRequestWrapper"
                             }
                         }
                     },
@@ -1598,7 +1598,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UploadArtifactRequest"
+                                "$ref": "#/components/schemas/UploadArtifactRequestWrapper"
                             }
                         }
                     },
@@ -2020,6 +2020,18 @@
                     "content"
                 ]
             },
+            "BatchChatCompletionRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/BatchChatCompletionRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "BatchChatCompletionResponse": {
                 "type": "object",
                 "properties": {
@@ -2074,6 +2086,18 @@
                 "required": [
                     "model",
                     "content_batch"
+                ]
+            },
+            "BatchCompletionRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/BatchCompletionRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
                 ]
             },
             "BatchCompletionResponse": {
@@ -2172,6 +2196,18 @@
                 "required": [
                     "model",
                     "messages"
+                ]
+            },
+            "ChatCompletionRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/ChatCompletionRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
                 ]
             },
             "ChatCompletionResponseEvent": {
@@ -2314,6 +2350,18 @@
                 "required": [
                     "model",
                     "content"
+                ]
+            },
+            "CompletionRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/CompletionRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
                 ]
             },
             "CompletionResponseStreamChunk": {
@@ -3181,7 +3229,7 @@
                     "mime_type"
                 ]
             },
-            "CreateAgenticSystemTurnRequest": {
+            "CreateAgenticSystemTurnRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -3764,6 +3812,18 @@
                     "json"
                 ]
             },
+            "CreateDatasetRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/CreateDatasetRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "CreateExperimentRequest": {
                 "type": "object",
                 "properties": {
@@ -3799,6 +3859,18 @@
                 "additionalProperties": false,
                 "required": [
                     "name"
+                ]
+            },
+            "CreateExperimentRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/CreateExperimentRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
                 ]
             },
             "Experiment": {
@@ -4073,6 +4145,18 @@
                     "experiment_id"
                 ]
             },
+            "CreateRunRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/CreateRunRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "Run": {
                 "type": "object",
                 "properties": {
@@ -4285,6 +4369,18 @@
                 ],
                 "title": "Request to evaluate question answering."
             },
+            "EvaluateQuestionAnsweringRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "EvaluationJob": {
                 "type": "object",
                 "properties": {
@@ -4333,6 +4429,18 @@
                 ],
                 "title": "Request to evaluate summarization."
             },
+            "EvaluateSummarizationRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/EvaluateSummarizationRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "EvaluateTextGenerationRequest": {
                 "type": "object",
                 "properties": {
@@ -4369,6 +4477,18 @@
                     "metrics"
                 ],
                 "title": "Request to evaluate text generation."
+            },
+            "EvaluateTextGenerationRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/EvaluateTextGenerationRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
             },
             "GetAgenticSystemSessionRequest": {
                 "type": "object",
@@ -4655,7 +4775,7 @@
                     "query"
                 ]
             },
-            "GetLogsRequest": {
+            "GetLogsRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -4926,6 +5046,18 @@
                     "logs"
                 ]
             },
+            "LogMessagesRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/LogMessagesRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "LogMetricsRequest": {
                 "type": "object",
                 "properties": {
@@ -4943,6 +5075,18 @@
                 "required": [
                     "run_id",
                     "metrics"
+                ]
+            },
+            "LogMetricsRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/LogMetricsRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
                 ]
             },
             "DPOAlignmentConfig": {
@@ -5133,7 +5277,7 @@
                     "fsdp_cpu_offload"
                 ]
             },
-            "PreferenceOptimizeRequest": {
+            "PreferenceOptimizeRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5313,7 +5457,7 @@
                 ],
                 "title": "Request to score a reward function. A list of prompts and a list of responses per prompt."
             },
-            "RewardScoreRequest": {
+            "RewardScoreRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5610,7 +5754,7 @@
                     "alpha"
                 ]
             },
-            "SupervisedFineTuneRequest": {
+            "SupervisedFineTuneRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5667,7 +5811,7 @@
                 ],
                 "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
             },
-            "SyntheticDataGenerateRequest": {
+            "SyntheticDataGenerateRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5779,6 +5923,18 @@
                     "experiment_id"
                 ]
             },
+            "UpdateExperimentRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/UpdateExperimentRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "UpdateRunRequest": {
                 "type": "object",
                 "properties": {
@@ -5821,6 +5977,18 @@
                 "additionalProperties": false,
                 "required": [
                     "run_id"
+                ]
+            },
+            "UpdateRunRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/UpdateRunRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
                 ]
             },
             "UploadArtifactRequest": {
@@ -5872,6 +6040,18 @@
                     "artifact_type",
                     "content"
                 ]
+            },
+            "UploadArtifactRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/UploadArtifactRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
             }
         },
         "responses": {}
@@ -5889,28 +6069,28 @@
             "name": "Telemetry"
         },
         {
-            "name": "Datasets"
-        },
-        {
             "name": "PostTraining"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Evaluations"
         },
         {
             "name": "BatchInference"
         },
         {
+            "name": "AgenticSystem"
+        },
+        {
             "name": "RewardScoring"
         },
         {
-            "name": "AgenticSystem"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Datasets"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -5969,12 +6149,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserMessage\" />"
         },
         {
+            "name": "BatchChatCompletionRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchChatCompletionRequestWrapper\" />"
+        },
+        {
             "name": "BatchChatCompletionResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchChatCompletionResponse\" />"
         },
         {
             "name": "BatchCompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionRequest\" />"
+        },
+        {
+            "name": "BatchCompletionRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionRequestWrapper\" />"
         },
         {
             "name": "BatchCompletionResponse",
@@ -5991,6 +6179,10 @@
         {
             "name": "ChatCompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
+        },
+        {
+            "name": "ChatCompletionRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequestWrapper\" />"
         },
         {
             "name": "ChatCompletionResponseEvent",
@@ -6019,6 +6211,10 @@
         {
             "name": "CompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequest\" />"
+        },
+        {
+            "name": "CompletionRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequestWrapper\" />"
         },
         {
             "name": "CompletionResponseStreamChunk",
@@ -6097,8 +6293,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
-            "name": "CreateAgenticSystemTurnRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemTurnRequest\" />"
+            "name": "CreateAgenticSystemTurnRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemTurnRequestWrapper\" />"
         },
         {
             "name": "AgenticSystemTurnResponseEvent",
@@ -6169,8 +6365,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDatasetColumnType\" />"
         },
         {
+            "name": "CreateDatasetRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetRequestWrapper\" />"
+        },
+        {
             "name": "CreateExperimentRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateExperimentRequest\" />"
+        },
+        {
+            "name": "CreateExperimentRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateExperimentRequestWrapper\" />"
         },
         {
             "name": "Experiment",
@@ -6191,6 +6395,10 @@
         {
             "name": "CreateRunRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateRunRequest\" />"
+        },
+        {
+            "name": "CreateRunRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateRunRequestWrapper\" />"
         },
         {
             "name": "Run",
@@ -6233,6 +6441,10 @@
             "description": "Request to evaluate question answering.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateQuestionAnsweringRequest\" />"
         },
         {
+            "name": "EvaluateQuestionAnsweringRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateQuestionAnsweringRequestWrapper\" />"
+        },
+        {
             "name": "EvaluationJob",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJob\" />"
         },
@@ -6241,8 +6453,16 @@
             "description": "Request to evaluate summarization.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSummarizationRequest\" />"
         },
         {
+            "name": "EvaluateSummarizationRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSummarizationRequestWrapper\" />"
+        },
+        {
             "name": "EvaluateTextGenerationRequest",
             "description": "Request to evaluate text generation.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
+        },
+        {
+            "name": "EvaluateTextGenerationRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequestWrapper\" />"
         },
         {
             "name": "GetAgenticSystemSessionRequest",
@@ -6289,8 +6509,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogSearchRequest\" />"
         },
         {
-            "name": "GetLogsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetLogsRequest\" />"
+            "name": "GetLogsRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetLogsRequestWrapper\" />"
         },
         {
             "name": "Log",
@@ -6333,8 +6553,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMessagesRequest\" />"
         },
         {
+            "name": "LogMessagesRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMessagesRequestWrapper\" />"
+        },
+        {
             "name": "LogMetricsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMetricsRequest\" />"
+        },
+        {
+            "name": "LogMetricsRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMetricsRequestWrapper\" />"
         },
         {
             "name": "DPOAlignmentConfig",
@@ -6357,8 +6585,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
         },
         {
-            "name": "PreferenceOptimizeRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PreferenceOptimizeRequest\" />"
+            "name": "PreferenceOptimizeRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PreferenceOptimizeRequestWrapper\" />"
         },
         {
             "name": "QueryDocumentsRequest",
@@ -6377,8 +6605,8 @@
             "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
         },
         {
-            "name": "RewardScoreRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoreRequest\" />"
+            "name": "RewardScoreRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoreRequestWrapper\" />"
         },
         {
             "name": "RewardScoringResponse",
@@ -6413,16 +6641,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
         },
         {
-            "name": "SupervisedFineTuneRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SupervisedFineTuneRequest\" />"
+            "name": "SupervisedFineTuneRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SupervisedFineTuneRequestWrapper\" />"
         },
         {
             "name": "SyntheticDataGenerationRequest",
             "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
         },
         {
-            "name": "SyntheticDataGenerateRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequest\" />"
+            "name": "SyntheticDataGenerateRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequestWrapper\" />"
         },
         {
             "name": "SyntheticDataGenerationResponse",
@@ -6437,12 +6665,24 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateExperimentRequest\" />"
         },
         {
+            "name": "UpdateExperimentRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateExperimentRequestWrapper\" />"
+        },
+        {
             "name": "UpdateRunRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateRunRequest\" />"
         },
         {
+            "name": "UpdateRunRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateRunRequestWrapper\" />"
+        },
+        {
             "name": "UploadArtifactRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UploadArtifactRequest\" />"
+        },
+        {
+            "name": "UploadArtifactRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UploadArtifactRequestWrapper\" />"
         }
     ],
     "x-tagGroups": [
@@ -6480,8 +6720,10 @@
                 "ArtifactType",
                 "Attachment",
                 "BatchChatCompletionRequest",
+                "BatchChatCompletionRequestWrapper",
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
+                "BatchCompletionRequestWrapper",
                 "BatchCompletionResponse",
                 "BraveSearchToolDefinition",
                 "BuiltinShield",
@@ -6489,6 +6731,7 @@
                 "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
+                "ChatCompletionRequestWrapper",
                 "ChatCompletionResponseEvent",
                 "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
@@ -6496,14 +6739,18 @@
                 "CodeInterpreterToolDefinition",
                 "CompletionMessage",
                 "CompletionRequest",
+                "CompletionRequestWrapper",
                 "CompletionResponseStreamChunk",
                 "CreateAgenticSystemRequest",
                 "CreateAgenticSystemSessionRequest",
-                "CreateAgenticSystemTurnRequest",
+                "CreateAgenticSystemTurnRequestWrapper",
                 "CreateDatasetRequest",
+                "CreateDatasetRequestWrapper",
                 "CreateExperimentRequest",
+                "CreateExperimentRequestWrapper",
                 "CreateMemoryBankRequest",
                 "CreateRunRequest",
+                "CreateRunRequestWrapper",
                 "DPOAlignmentConfig",
                 "DeleteAgenticSystemRequest",
                 "DeleteAgenticSystemSessionRequest",
@@ -6515,8 +6762,11 @@
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvaluateQuestionAnsweringRequest",
+                "EvaluateQuestionAnsweringRequestWrapper",
                 "EvaluateSummarizationRequest",
+                "EvaluateSummarizationRequestWrapper",
                 "EvaluateTextGenerationRequest",
+                "EvaluateTextGenerationRequestWrapper",
                 "EvaluationJob",
                 "EvaluationJobArtifactsResponse",
                 "EvaluationJobLogStream",
@@ -6527,13 +6777,15 @@
                 "FunctionCallToolDefinition",
                 "GetAgenticSystemSessionRequest",
                 "GetDocumentsRequest",
-                "GetLogsRequest",
+                "GetLogsRequestWrapper",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "ListArtifactsRequest",
                 "Log",
                 "LogMessagesRequest",
+                "LogMessagesRequestWrapper",
                 "LogMetricsRequest",
+                "LogMetricsRequestWrapper",
                 "LogSearchRequest",
                 "LoraFinetuningConfig",
                 "MemoryBank",
@@ -6550,14 +6802,14 @@
                 "PostTrainingJobStatusResponse",
                 "PostTrainingRLHFRequest",
                 "PostTrainingSFTRequest",
-                "PreferenceOptimizeRequest",
+                "PreferenceOptimizeRequestWrapper",
                 "QLoraFinetuningConfig",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "RLHFAlgorithm",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
-                "RewardScoreRequest",
+                "RewardScoreRequestWrapper",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
                 "Run",
@@ -6570,8 +6822,8 @@
                 "ShieldDefinition",
                 "ShieldResponse",
                 "StopReason",
-                "SupervisedFineTuneRequest",
-                "SyntheticDataGenerateRequest",
+                "SupervisedFineTuneRequestWrapper",
+                "SyntheticDataGenerateRequestWrapper",
                 "SyntheticDataGenerationRequest",
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
@@ -6593,8 +6845,11 @@
                 "URL",
                 "UpdateDocumentsRequest",
                 "UpdateExperimentRequest",
+                "UpdateExperimentRequestWrapper",
                 "UpdateRunRequest",
+                "UpdateRunRequestWrapper",
                 "UploadArtifactRequest",
+                "UploadArtifactRequestWrapper",
                 "UserMessage",
                 "WolframAlphaToolDefinition"
             ]
