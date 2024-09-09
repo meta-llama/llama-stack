@@ -18,6 +18,7 @@ from llama_toolchain.tools.builtin import (
     BraveSearchTool,
     CodeInterpreterTool,
     PhotogenTool,
+    RemoteSearchTool,
     WolframAlphaTool,
 )
 from llama_toolchain.tools.safety import with_safety
@@ -63,10 +64,13 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
                     raise ValueError("Wolfram API key not defined in config")
                 tool = WolframAlphaTool(key)
             elif isinstance(tool_defn, BraveSearchToolDefinition):
-                key = self.config.brave_search_api_key
-                if not key:
-                    raise ValueError("Brave API key not defined in config")
-                tool = BraveSearchTool(key)
+                if tool_defn.remote_execution is not None:
+                    tool = RemoteSearchTool(tool_defn.remote_execution)
+                else:
+                    key = self.config.brave_search_api_key
+                    if not key:
+                        raise ValueError("Brave API key not defined in config")
+                    tool = BraveSearchTool(key)
             elif isinstance(tool_defn, CodeInterpreterToolDefinition):
                 tool = CodeInterpreterTool()
             elif isinstance(tool_defn, PhotogenToolDefinition):

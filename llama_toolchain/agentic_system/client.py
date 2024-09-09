@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_toolchain.common.deployment_types import RestAPIExecutionConfig
 from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import *  # noqa: F403
@@ -134,8 +135,21 @@ async def run_main(host: str, port: int):
     api = AgenticSystemClient(f"http://{host}:{port}")
 
     tool_definitions = [
-        BraveSearchToolDefinition(),
-        WolframAlphaToolDefinition(),
+        BraveSearchToolDefinition(
+            remote_execution=RestAPIExecutionConfig(
+                url=URL(uri="https://api.bing.microsoft.com/v7.0/search"),
+                method=RestAPIMethod.GET,
+                headers={
+                    "Ocp-Apim-Subscription-Key": "2259b3f9e0cb4fc9b968bb3b02ab13e7"
+                },
+                params={
+                    "count": 3,
+                    "textDecorations": True,
+                    "textFormat": "HTML",
+                },
+            )
+        ),
+        # WolframAlphaToolDefinition(),
         CodeInterpreterToolDefinition(),
     ]
     tool_definitions += [

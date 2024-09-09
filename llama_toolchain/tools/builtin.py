@@ -14,6 +14,8 @@ from typing import List, Optional
 import requests
 from termcolor import cprint
 
+from llama_toolchain.common.deployment_types import RestAPIExecutionConfig
+
 from .ipython_tool.code_execution import (
     CodeExecutionContext,
     CodeExecutionRequest,
@@ -81,6 +83,47 @@ class PhotogenTool(SingleMessageBuiltinTool):
             }
         """
         raise NotImplementedError()
+
+
+class RemoteSearchTool(SingleMessageBuiltinTool):
+    def __init__(self, config: RestAPIExecutionConfig) -> None:
+        self.config = config
+
+    def get_name(self) -> str:
+        return BuiltinTool.brave_search.value
+
+    async def run_impl(self, query: str) -> str:
+        params = self.config.params.copy()
+        params["q"] = query
+        response = requests.get(
+            url=self.config.url,
+            params=params,
+            headers=self.config.headers,
+        )
+        response.raise_for_status()
+        clean = self._clean_response(response.json())
+        return json.dumps(clean)
+
+    def _clean_response(self, search_response):
+        clean_response = []
+        query = search_response["queryContext"]["originalQuery"]
+        if "webPages" in search_response:
+            pages = search_response["webPages"]["value"]
+            for p in pages:
+                selected_keys = {"name", "url", "snippet"}
+                clean_response.append(
+                    {k: v for k, v in p.items() if k in selected_keys}
+                )
+        if "news" in search_response:
+            clean_news = []
+            news = search_response["news"]["value"]
+            for n in news:
+                selected_keys = {"name", "url", "description"}
+                clean_news.append({k: v for k, v in n.items() if k in selected_keys})
+
+            clean_response.append(clean_news)
+
+        return {"query": query, "top_k": clean_response}
 
 
 class BraveSearchTool(SingleMessageBuiltinTool):

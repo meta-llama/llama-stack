@@ -86,6 +86,14 @@ class InferenceClient(Inference):
 
 async def run_main(host: str, port: int, stream: bool):
     client = InferenceClient(f"http://{host}:{port}")
+    # from llama_toolchain.inference.meta_reference import get_provider_impl
+    # from .meta_reference.config import MetaReferenceImplConfig
+
+    # config = MetaReferenceImplConfig(
+    #     model="Meta-Llama3.1-8B-Instruct",
+    #     max_seq_len=4096,
+    # )
+    # client = await get_provider_impl(config, {})
 
     message = UserMessage(content="hello world, troll me in two-paragraphs about 42")
     cprint(f"User>{message.content}", "green")
