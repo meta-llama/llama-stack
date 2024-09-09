@@ -30,7 +30,7 @@ HF_SUPPORTED_MODELS = {
 }
 
 
-class LocalTGIAdapter(Inference):
+class TGIAdapter(Inference):
 
     def __init__(self, config: TGIImplConfig) -> None:
         self.config = config
@@ -232,7 +232,7 @@ class LocalTGIAdapter(Inference):
             )
 
 
-class InferenceEndpointAdapter(LocalTGIAdapter):
+class InferenceEndpointAdapter(TGIAdapter):
     def __init__(self, config: TGIImplConfig) -> None:
         super().__init__(config)
         self.config.url = f"https://api.endpoints.huggingface.cloud/v2/endpoint/{config.hf_namespace}/{config.hf_endpoint_name}"
