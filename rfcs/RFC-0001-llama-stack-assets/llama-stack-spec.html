@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-09 11:14:56.584501"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-09 11:19:39.855375"
     },
     "servers": [
         {
@@ -277,7 +277,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateAgenticSystemTurnRequestWrapper"
+                                "$ref": "#/components/schemas/AgenticSystemTurnCreateRequestWrapper"
                             }
                         }
                     },
@@ -1024,7 +1024,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/GetLogsRequestWrapper"
+                                "$ref": "#/components/schemas/LogSearchRequestWrapper"
                             }
                         }
                     },
@@ -1365,7 +1365,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PreferenceOptimizeRequestWrapper"
+                                "$ref": "#/components/schemas/PostTrainingRLHFRequestWrapper"
                             }
                         }
                     },
@@ -1425,7 +1425,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RewardScoreRequestWrapper"
+                                "$ref": "#/components/schemas/RewardScoringRequestWrapper"
                             }
                         }
                     },
@@ -1455,7 +1455,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SupervisedFineTuneRequestWrapper"
+                                "$ref": "#/components/schemas/PostTrainingSFTRequestWrapper"
                             }
                         }
                     },
@@ -1485,7 +1485,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SyntheticDataGenerateRequestWrapper"
+                                "$ref": "#/components/schemas/SyntheticDataGenerationRequestWrapper"
                             }
                         }
                     },
@@ -3229,7 +3229,7 @@
                     "mime_type"
                 ]
             },
-            "CreateAgenticSystemTurnRequestWrapper": {
+            "AgenticSystemTurnCreateRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -4775,7 +4775,7 @@
                     "query"
                 ]
             },
-            "GetLogsRequestWrapper": {
+            "LogSearchRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5277,7 +5277,7 @@
                     "fsdp_cpu_offload"
                 ]
             },
-            "PreferenceOptimizeRequestWrapper": {
+            "PostTrainingRLHFRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5457,7 +5457,7 @@
                 ],
                 "title": "Request to score a reward function. A list of prompts and a list of responses per prompt."
             },
-            "RewardScoreRequestWrapper": {
+            "RewardScoringRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5754,7 +5754,7 @@
                     "alpha"
                 ]
             },
-            "SupervisedFineTuneRequestWrapper": {
+            "PostTrainingSFTRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -5811,7 +5811,7 @@
                 ],
                 "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
             },
-            "SyntheticDataGenerateRequestWrapper": {
+            "SyntheticDataGenerationRequestWrapper": {
                 "type": "object",
                 "properties": {
                     "request": {
@@ -6063,34 +6063,34 @@
     ],
     "tags": [
         {
-            "name": "Memory"
+            "name": "Inference"
         },
         {
-            "name": "Telemetry"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "SyntheticDataGeneration"
+            "name": "Datasets"
         },
         {
             "name": "Evaluations"
         },
         {
-            "name": "Inference"
+            "name": "Memory"
         },
         {
-            "name": "Datasets"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -6293,8 +6293,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
-            "name": "CreateAgenticSystemTurnRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemTurnRequestWrapper\" />"
+            "name": "AgenticSystemTurnCreateRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnCreateRequestWrapper\" />"
         },
         {
             "name": "AgenticSystemTurnResponseEvent",
@@ -6509,8 +6509,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogSearchRequest\" />"
         },
         {
-            "name": "GetLogsRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetLogsRequestWrapper\" />"
+            "name": "LogSearchRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogSearchRequestWrapper\" />"
         },
         {
             "name": "Log",
@@ -6585,8 +6585,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
         },
         {
-            "name": "PreferenceOptimizeRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PreferenceOptimizeRequestWrapper\" />"
+            "name": "PostTrainingRLHFRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingRLHFRequestWrapper\" />"
         },
         {
             "name": "QueryDocumentsRequest",
@@ -6605,8 +6605,8 @@
             "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
         },
         {
-            "name": "RewardScoreRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoreRequestWrapper\" />"
+            "name": "RewardScoringRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequestWrapper\" />"
         },
         {
             "name": "RewardScoringResponse",
@@ -6641,16 +6641,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
         },
         {
-            "name": "SupervisedFineTuneRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SupervisedFineTuneRequestWrapper\" />"
+            "name": "PostTrainingSFTRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingSFTRequestWrapper\" />"
         },
         {
             "name": "SyntheticDataGenerationRequest",
             "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
         },
         {
-            "name": "SyntheticDataGenerateRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequestWrapper\" />"
+            "name": "SyntheticDataGenerationRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequestWrapper\" />"
         },
         {
             "name": "SyntheticDataGenerationResponse",
@@ -6709,6 +6709,7 @@
                 "AgenticSystemSessionCreateResponse",
                 "AgenticSystemStepResponse",
                 "AgenticSystemTurnCreateRequest",
+                "AgenticSystemTurnCreateRequestWrapper",
                 "AgenticSystemTurnResponseEvent",
                 "AgenticSystemTurnResponseStepCompletePayload",
                 "AgenticSystemTurnResponseStepProgressPayload",
@@ -6743,7 +6744,6 @@
                 "CompletionResponseStreamChunk",
                 "CreateAgenticSystemRequest",
                 "CreateAgenticSystemSessionRequest",
-                "CreateAgenticSystemTurnRequestWrapper",
                 "CreateDatasetRequest",
                 "CreateDatasetRequestWrapper",
                 "CreateExperimentRequest",
@@ -6777,7 +6777,6 @@
                 "FunctionCallToolDefinition",
                 "GetAgenticSystemSessionRequest",
                 "GetDocumentsRequest",
-                "GetLogsRequestWrapper",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "ListArtifactsRequest",
@@ -6787,6 +6786,7 @@
                 "LogMetricsRequest",
                 "LogMetricsRequestWrapper",
                 "LogSearchRequest",
+                "LogSearchRequestWrapper",
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
@@ -6801,16 +6801,17 @@
                 "PostTrainingJobStatus",
                 "PostTrainingJobStatusResponse",
                 "PostTrainingRLHFRequest",
+                "PostTrainingRLHFRequestWrapper",
                 "PostTrainingSFTRequest",
-                "PreferenceOptimizeRequestWrapper",
+                "PostTrainingSFTRequestWrapper",
                 "QLoraFinetuningConfig",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "RLHFAlgorithm",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
-                "RewardScoreRequestWrapper",
                 "RewardScoringRequest",
+                "RewardScoringRequestWrapper",
                 "RewardScoringResponse",
                 "Run",
                 "SamplingParams",
@@ -6822,9 +6823,8 @@
                 "ShieldDefinition",
                 "ShieldResponse",
                 "StopReason",
-                "SupervisedFineTuneRequestWrapper",
-                "SyntheticDataGenerateRequestWrapper",
                 "SyntheticDataGenerationRequest",
+                "SyntheticDataGenerationRequestWrapper",
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
                 "TokenLogProbs",

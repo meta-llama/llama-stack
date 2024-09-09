@@ -346,6 +346,14 @@ components:
       - session_id
       - messages
       type: object
+    AgenticSystemTurnCreateRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
+      required:
+      - request
+      type: object
     AgenticSystemTurnResponseEvent:
       additionalProperties: false
       properties:
@@ -870,14 +878,6 @@ components:
       - agent_id
       - session_name
       type: object
-    CreateAgenticSystemTurnRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
-      required:
-      - request
-      type: object
     CreateDatasetRequest:
       additionalProperties: false
       properties:
@@ -1373,14 +1373,6 @@ components:
       required:
       - document_ids
       type: object
-    GetLogsRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/LogSearchRequest'
-      required:
-      - request
-      type: object
     InferenceStep:
       additionalProperties: false
       properties:
@@ -1512,6 +1504,14 @@ components:
           type: string
       required:
       - query
+      type: object
+    LogSearchRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/LogSearchRequest'
+      required:
+      - request
       type: object
     LoraFinetuningConfig:
       additionalProperties: false
@@ -1853,6 +1853,14 @@ components:
       - logger_config
       title: Request to finetune a model.
       type: object
+    PostTrainingRLHFRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/PostTrainingRLHFRequest'
+      required:
+      - request
+      type: object
     PostTrainingSFTRequest:
       additionalProperties: false
       properties:
@@ -1908,11 +1916,11 @@ components:
       - logger_config
       title: Request to finetune a model.
       type: object
-    PreferenceOptimizeRequestWrapper:
+    PostTrainingSFTRequestWrapper:
       additionalProperties: false
       properties:
         request:
-          $ref: '#/components/schemas/PostTrainingRLHFRequest'
+          $ref: '#/components/schemas/PostTrainingSFTRequest'
       required:
       - request
       type: object
@@ -2028,14 +2036,6 @@ components:
       - PUT
       - DELETE
       type: string
-    RewardScoreRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/RewardScoringRequest'
-      required:
-      - request
-      type: object
     RewardScoringRequest:
       additionalProperties: false
       properties:
@@ -2050,6 +2050,14 @@ components:
       - model
       title: Request to score a reward function. A list of prompts and a list of responses
         per prompt.
+      type: object
+    RewardScoringRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/RewardScoringRequest'
+      required:
+      - request
       type: object
     RewardScoringResponse:
       additionalProperties: false
@@ -2244,22 +2252,6 @@ components:
       - end_of_message
       - out_of_tokens
       type: string
-    SupervisedFineTuneRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/PostTrainingSFTRequest'
-      required:
-      - request
-      type: object
-    SyntheticDataGenerateRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/SyntheticDataGenerationRequest'
-      required:
-      - request
-      type: object
     SyntheticDataGenerationRequest:
       additionalProperties: false
       properties:
@@ -2288,6 +2280,14 @@ components:
       - filtering_function
       title: Request to generate synthetic data. A small batch of prompts and a filtering
         function
+      type: object
+    SyntheticDataGenerationRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/SyntheticDataGenerationRequest'
+      required:
+      - request
       type: object
     SyntheticDataGenerationResponse:
       additionalProperties: false
@@ -2777,7 +2777,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-09 11:14:56.584501"
+    \ draft and subject to change.\n                Generated at 2024-09-09 11:19:39.855375"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2909,7 +2909,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAgenticSystemTurnRequestWrapper'
+              $ref: '#/components/schemas/AgenticSystemTurnCreateRequestWrapper'
         required: true
       responses:
         '200':
@@ -3351,7 +3351,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetLogsRequestWrapper'
+              $ref: '#/components/schemas/LogSearchRequestWrapper'
         required: true
       responses:
         '200':
@@ -3610,7 +3610,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PreferenceOptimizeRequestWrapper'
+              $ref: '#/components/schemas/PostTrainingRLHFRequestWrapper'
         required: true
       responses:
         '200':
@@ -3628,7 +3628,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SupervisedFineTuneRequestWrapper'
+              $ref: '#/components/schemas/PostTrainingSFTRequestWrapper'
         required: true
       responses:
         '200':
@@ -3646,7 +3646,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RewardScoreRequestWrapper'
+              $ref: '#/components/schemas/RewardScoringRequestWrapper'
         required: true
       responses:
         '200':
@@ -3713,7 +3713,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SyntheticDataGenerateRequestWrapper'
+              $ref: '#/components/schemas/SyntheticDataGenerationRequestWrapper'
         required: true
       responses:
         '200':
@@ -3729,16 +3729,16 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Memory
-- name: Telemetry
-- name: PostTraining
-- name: BatchInference
-- name: AgenticSystem
-- name: RewardScoring
-- name: SyntheticDataGeneration
-- name: Evaluations
 - name: Inference
 - name: Datasets
+- name: Evaluations
+- name: Memory
+- name: SyntheticDataGeneration
+- name: PostTraining
+- name: RewardScoring
+- name: BatchInference
+- name: Telemetry
+- name: AgenticSystem
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3891,9 +3891,9 @@ tags:
   name: AgenticSystemTurnCreateRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemTurnRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnCreateRequestWrapper"
     />
-  name: CreateAgenticSystemTurnRequestWrapper
+  name: AgenticSystemTurnCreateRequestWrapper
 - description: 'Streamed agent execution response.
 
 
@@ -4068,9 +4068,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequest"
     />
   name: LogSearchRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/GetLogsRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequestWrapper"
     />
-  name: GetLogsRequestWrapper
+  name: LogSearchRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/Log" />
   name: Log
 - description: <SchemaDefinition schemaRef="#/components/schemas/Metric" />
@@ -4131,9 +4131,9 @@ tags:
   name: RLHFAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
   name: TrainingConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/PreferenceOptimizeRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingRLHFRequestWrapper"
     />
-  name: PreferenceOptimizeRequestWrapper
+  name: PostTrainingRLHFRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsRequest"
     />
   name: QueryDocumentsRequest
@@ -4149,9 +4149,9 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
   name: RewardScoringRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoreRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequestWrapper"
     />
-  name: RewardScoreRequestWrapper
+  name: RewardScoringRequestWrapper
 - description: 'Response from the reward scoring. Batch of (prompt, response, score)
     tuples that pass the threshold.
 
@@ -4180,9 +4180,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
   name: QLoraFinetuningConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/SupervisedFineTuneRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingSFTRequestWrapper"
     />
-  name: SupervisedFineTuneRequestWrapper
+  name: PostTrainingSFTRequestWrapper
 - description: 'Request to generate synthetic data. A small batch of prompts and a
     filtering function
 
@@ -4190,9 +4190,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
     />'
   name: SyntheticDataGenerationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerateRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequestWrapper"
     />
-  name: SyntheticDataGenerateRequestWrapper
+  name: SyntheticDataGenerationRequestWrapper
 - description: 'Response from the synthetic data generation. Batch of (prompt, response,
     score) tuples that pass the threshold.
 
@@ -4241,6 +4241,7 @@ x-tagGroups:
   - AgenticSystemSessionCreateResponse
   - AgenticSystemStepResponse
   - AgenticSystemTurnCreateRequest
+  - AgenticSystemTurnCreateRequestWrapper
   - AgenticSystemTurnResponseEvent
   - AgenticSystemTurnResponseStepCompletePayload
   - AgenticSystemTurnResponseStepProgressPayload
@@ -4275,7 +4276,6 @@ x-tagGroups:
   - CompletionResponseStreamChunk
   - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest
-  - CreateAgenticSystemTurnRequestWrapper
   - CreateDatasetRequest
   - CreateDatasetRequestWrapper
   - CreateExperimentRequest
@@ -4309,7 +4309,6 @@ x-tagGroups:
   - FunctionCallToolDefinition
   - GetAgenticSystemSessionRequest
   - GetDocumentsRequest
-  - GetLogsRequestWrapper
   - InferenceStep
   - InsertDocumentsRequest
   - ListArtifactsRequest
@@ -4319,6 +4318,7 @@ x-tagGroups:
   - LogMetricsRequest
   - LogMetricsRequestWrapper
   - LogSearchRequest
+  - LogSearchRequestWrapper
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
@@ -4333,16 +4333,17 @@ x-tagGroups:
   - PostTrainingJobStatus
   - PostTrainingJobStatusResponse
   - PostTrainingRLHFRequest
+  - PostTrainingRLHFRequestWrapper
   - PostTrainingSFTRequest
-  - PreferenceOptimizeRequestWrapper
+  - PostTrainingSFTRequestWrapper
   - QLoraFinetuningConfig
   - QueryDocumentsRequest
   - QueryDocumentsResponse
   - RLHFAlgorithm
   - RestAPIExecutionConfig
   - RestAPIMethod
-  - RewardScoreRequestWrapper
   - RewardScoringRequest
+  - RewardScoringRequestWrapper
   - RewardScoringResponse
   - Run
   - SamplingParams
@@ -4354,9 +4355,8 @@ x-tagGroups:
   - ShieldDefinition
   - ShieldResponse
   - StopReason
-  - SupervisedFineTuneRequestWrapper
-  - SyntheticDataGenerateRequestWrapper
   - SyntheticDataGenerationRequest
+  - SyntheticDataGenerationRequestWrapper
   - SyntheticDataGenerationResponse
   - SystemMessage
   - TokenLogProbs
