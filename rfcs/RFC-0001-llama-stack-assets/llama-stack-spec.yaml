@@ -838,6 +838,14 @@ components:
       - agent_id
       - session_name
       type: object
+    CreateAgenticSystemTurnRequest:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
+      required:
+      - request
+      type: object
     CreateDatasetRequest:
       additionalProperties: false
       properties:
@@ -1284,6 +1292,14 @@ components:
           type: array
       required:
       - document_ids
+      type: object
+    GetLogsRequest:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/LogSearchRequest'
+      required:
+      - request
       type: object
     InferenceStep:
       additionalProperties: false
@@ -1796,6 +1812,14 @@ components:
       - logger_config
       title: Request to finetune a model.
       type: object
+    PreferenceOptimizeRequest:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/PostTrainingRLHFRequest'
+      required:
+      - request
+      type: object
     QLoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -1908,6 +1932,14 @@ components:
       - PUT
       - DELETE
       type: string
+    RewardScoreRequest:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/RewardScoringRequest'
+      required:
+      - request
+      type: object
     RewardScoringRequest:
       additionalProperties: false
       properties:
@@ -2116,6 +2148,22 @@ components:
       - end_of_message
       - out_of_tokens
       type: string
+    SupervisedFineTuneRequest:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/PostTrainingSFTRequest'
+      required:
+      - request
+      type: object
+    SyntheticDataGenerateRequest:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/SyntheticDataGenerationRequest'
+      required:
+      - request
+      type: object
     SyntheticDataGenerationRequest:
       additionalProperties: false
       properties:
@@ -2609,7 +2657,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-07 15:23:29.488676"
+    \ draft and subject to change.\n                Generated at 2024-09-09 10:38:33.954536"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2741,7 +2789,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
+              $ref: '#/components/schemas/CreateAgenticSystemTurnRequest'
         required: true
       responses:
         '200':
@@ -3183,7 +3231,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogSearchRequest'
+              $ref: '#/components/schemas/GetLogsRequest'
         required: true
       responses:
         '200':
@@ -3442,7 +3490,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTrainingRLHFRequest'
+              $ref: '#/components/schemas/PreferenceOptimizeRequest'
         required: true
       responses:
         '200':
@@ -3460,7 +3508,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTrainingSFTRequest'
+              $ref: '#/components/schemas/SupervisedFineTuneRequest'
         required: true
       responses:
         '200':
@@ -3478,7 +3526,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RewardScoringRequest'
+              $ref: '#/components/schemas/RewardScoreRequest'
         required: true
       responses:
         '200':
@@ -3545,7 +3593,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SyntheticDataGenerationRequest'
+              $ref: '#/components/schemas/SyntheticDataGenerateRequest'
         required: true
       responses:
         '200':
@@ -3561,16 +3609,16 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Telemetry
-- name: Evaluations
-- name: AgenticSystem
-- name: Inference
-- name: BatchInference
-- name: PostTraining
-- name: Datasets
 - name: Memory
+- name: Telemetry
+- name: Datasets
+- name: PostTraining
 - name: SyntheticDataGeneration
+- name: Inference
+- name: Evaluations
+- name: BatchInference
 - name: RewardScoring
+- name: AgenticSystem
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3711,6 +3759,9 @@ tags:
   name: AgenticSystemTurnCreateRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemTurnRequest"
+    />
+  name: CreateAgenticSystemTurnRequest
 - description: 'Streamed agent execution response.
 
 
@@ -3867,6 +3918,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequest"
     />
   name: LogSearchRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/GetLogsRequest" />
+  name: GetLogsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Log" />
   name: Log
 - description: <SchemaDefinition schemaRef="#/components/schemas/Metric" />
@@ -3921,6 +3974,9 @@ tags:
   name: RLHFAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
   name: TrainingConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/PreferenceOptimizeRequest"
+    />
+  name: PreferenceOptimizeRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsRequest"
     />
   name: QueryDocumentsRequest
@@ -3936,6 +3992,9 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
   name: RewardScoringRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoreRequest"
+    />
+  name: RewardScoreRequest
 - description: 'Response from the reward scoring. Batch of (prompt, response, score)
     tuples that pass the threshold.
 
@@ -3964,6 +4023,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
   name: QLoraFinetuningConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/SupervisedFineTuneRequest"
+    />
+  name: SupervisedFineTuneRequest
 - description: 'Request to generate synthetic data. A small batch of prompts and a
     filtering function
 
@@ -3971,6 +4033,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
     />'
   name: SyntheticDataGenerationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerateRequest"
+    />
+  name: SyntheticDataGenerateRequest
 - description: 'Response from the synthetic data generation. Batch of (prompt, response,
     score) tuples that pass the threshold.
 
@@ -4040,6 +4105,7 @@ x-tagGroups:
   - CompletionResponseStreamChunk
   - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest
+  - CreateAgenticSystemTurnRequest
   - CreateDatasetRequest
   - CreateExperimentRequest
   - CreateMemoryBankRequest
@@ -4067,6 +4133,7 @@ x-tagGroups:
   - FunctionCallToolDefinition
   - GetAgenticSystemSessionRequest
   - GetDocumentsRequest
+  - GetLogsRequest
   - InferenceStep
   - InsertDocumentsRequest
   - ListArtifactsRequest
@@ -4089,12 +4156,14 @@ x-tagGroups:
   - PostTrainingJobStatusResponse
   - PostTrainingRLHFRequest
   - PostTrainingSFTRequest
+  - PreferenceOptimizeRequest
   - QLoraFinetuningConfig
   - QueryDocumentsRequest
   - QueryDocumentsResponse
   - RLHFAlgorithm
   - RestAPIExecutionConfig
   - RestAPIMethod
+  - RewardScoreRequest
   - RewardScoringRequest
   - RewardScoringResponse
   - Run
@@ -4107,6 +4176,8 @@ x-tagGroups:
   - ShieldDefinition
   - ShieldResponse
   - StopReason
+  - SupervisedFineTuneRequest
+  - SyntheticDataGenerateRequest
   - SyntheticDataGenerationRequest
   - SyntheticDataGenerationResponse
   - SystemMessage

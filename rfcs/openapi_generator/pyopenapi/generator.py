@@ -468,15 +468,11 @@ class Generator:
             builder = ContentBuilder(self.schema_builder)
             first = next(iter(op.request_params))
             request_name, request_type = first
-            if len(op.request_params) == 1 and "Request" in first[1].__name__:
-                # TODO(ashwin): Undo the "Request" hack and this entire block eventually
-                request_name, request_type = first
-            else:
-                from dataclasses import make_dataclass
 
-                op_name = "".join(word.capitalize() for word in op.name.split("_"))
-                request_name = f"{op_name}Request"
-                request_type = make_dataclass(request_name, op.request_params)
+            from dataclasses import make_dataclass
+            op_name = "".join(word.capitalize() for word in op.name.split("_"))
+            request_name = f"{op_name}Request"
+            request_type = make_dataclass(request_name, op.request_params)
 
             requestBody = RequestBody(
                 content={

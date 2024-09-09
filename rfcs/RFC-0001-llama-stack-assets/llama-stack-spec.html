@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-07 15:23:29.488676"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-09 10:38:33.954536"
     },
     "servers": [
         {
@@ -277,7 +277,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/AgenticSystemTurnCreateRequest"
+                                "$ref": "#/components/schemas/CreateAgenticSystemTurnRequest"
                             }
                         }
                     },
@@ -1024,7 +1024,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/LogSearchRequest"
+                                "$ref": "#/components/schemas/GetLogsRequest"
                             }
                         }
                     },
@@ -1365,7 +1365,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PostTrainingRLHFRequest"
+                                "$ref": "#/components/schemas/PreferenceOptimizeRequest"
                             }
                         }
                     },
@@ -1425,7 +1425,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RewardScoringRequest"
+                                "$ref": "#/components/schemas/RewardScoreRequest"
                             }
                         }
                     },
@@ -1455,7 +1455,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PostTrainingSFTRequest"
+                                "$ref": "#/components/schemas/SupervisedFineTuneRequest"
                             }
                         }
                     },
@@ -1485,7 +1485,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
+                                "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
                             }
                         }
                     },
@@ -3181,6 +3181,18 @@
                     "mime_type"
                 ]
             },
+            "CreateAgenticSystemTurnRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/AgenticSystemTurnCreateRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "AgenticSystemTurnResponseEvent": {
                 "type": "object",
                 "properties": {
@@ -4643,6 +4655,18 @@
                     "query"
                 ]
             },
+            "GetLogsRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/LogSearchRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "Log": {
                 "type": "object",
                 "properties": {
@@ -5109,6 +5133,18 @@
                     "fsdp_cpu_offload"
                 ]
             },
+            "PreferenceOptimizeRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/PostTrainingRLHFRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "QueryDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -5276,6 +5312,18 @@
                     "model"
                 ],
                 "title": "Request to score a reward function. A list of prompts and a list of responses per prompt."
+            },
+            "RewardScoreRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/RewardScoringRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
             },
             "RewardScoringResponse": {
                 "type": "object",
@@ -5562,6 +5610,18 @@
                     "alpha"
                 ]
             },
+            "SupervisedFineTuneRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/PostTrainingSFTRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
             "SyntheticDataGenerationRequest": {
                 "type": "object",
                 "properties": {
@@ -5606,6 +5666,18 @@
                     "filtering_function"
                 ],
                 "title": "Request to generate synthetic data. A small batch of prompts and a filtering function"
+            },
+            "SyntheticDataGenerateRequest": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/SyntheticDataGenerationRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
             },
             "SyntheticDataGenerationResponse": {
                 "type": "object",
@@ -5811,34 +5883,34 @@
     ],
     "tags": [
         {
+            "name": "Memory"
+        },
+        {
             "name": "Telemetry"
-        },
-        {
-            "name": "Evaluations"
-        },
-        {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "PostTraining"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "Memory"
+            "name": "PostTraining"
         },
         {
             "name": "SyntheticDataGeneration"
         },
         {
+            "name": "Inference"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
             "name": "RewardScoring"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -6023,6 +6095,10 @@
         {
             "name": "Attachment",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
+        },
+        {
+            "name": "CreateAgenticSystemTurnRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemTurnRequest\" />"
         },
         {
             "name": "AgenticSystemTurnResponseEvent",
@@ -6213,6 +6289,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogSearchRequest\" />"
         },
         {
+            "name": "GetLogsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetLogsRequest\" />"
+        },
+        {
             "name": "Log",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Log\" />"
         },
@@ -6277,6 +6357,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
         },
         {
+            "name": "PreferenceOptimizeRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PreferenceOptimizeRequest\" />"
+        },
+        {
             "name": "QueryDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsRequest\" />"
         },
@@ -6291,6 +6375,10 @@
         {
             "name": "RewardScoringRequest",
             "description": "Request to score a reward function. A list of prompts and a list of responses per prompt.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringRequest\" />"
+        },
+        {
+            "name": "RewardScoreRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoreRequest\" />"
         },
         {
             "name": "RewardScoringResponse",
@@ -6325,8 +6413,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
         },
         {
+            "name": "SupervisedFineTuneRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SupervisedFineTuneRequest\" />"
+        },
+        {
             "name": "SyntheticDataGenerationRequest",
             "description": "Request to generate synthetic data. A small batch of prompts and a filtering function\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationRequest\" />"
+        },
+        {
+            "name": "SyntheticDataGenerateRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequest\" />"
         },
         {
             "name": "SyntheticDataGenerationResponse",
@@ -6403,6 +6499,7 @@
                 "CompletionResponseStreamChunk",
                 "CreateAgenticSystemRequest",
                 "CreateAgenticSystemSessionRequest",
+                "CreateAgenticSystemTurnRequest",
                 "CreateDatasetRequest",
                 "CreateExperimentRequest",
                 "CreateMemoryBankRequest",
@@ -6430,6 +6527,7 @@
                 "FunctionCallToolDefinition",
                 "GetAgenticSystemSessionRequest",
                 "GetDocumentsRequest",
+                "GetLogsRequest",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "ListArtifactsRequest",
@@ -6452,12 +6550,14 @@
                 "PostTrainingJobStatusResponse",
                 "PostTrainingRLHFRequest",
                 "PostTrainingSFTRequest",
+                "PreferenceOptimizeRequest",
                 "QLoraFinetuningConfig",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "RLHFAlgorithm",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
+                "RewardScoreRequest",
                 "RewardScoringRequest",
                 "RewardScoringResponse",
                 "Run",
@@ -6470,6 +6570,8 @@
                 "ShieldDefinition",
                 "ShieldResponse",
                 "StopReason",
+                "SupervisedFineTuneRequest",
+                "SyntheticDataGenerateRequest",
                 "SyntheticDataGenerationRequest",
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
