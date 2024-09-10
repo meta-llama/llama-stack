@@ -110,4 +110,4 @@ set +x
 printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $distribution_type --name "$build_name" --type container
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure --distribution $distribution_type --name "$build_name" --package-type container
