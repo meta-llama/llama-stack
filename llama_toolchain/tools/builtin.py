@@ -83,14 +83,72 @@ class PhotogenTool(SingleMessageBuiltinTool):
         raise NotImplementedError()
 
 
-class BraveSearchTool(SingleMessageBuiltinTool):
-    def __init__(self, api_key: str) -> None:
+class SearchTool(SingleMessageBuiltinTool):
+    def __init__(self, engine: SearchEngineType, api_key: str, **kwargs) -> None:
         self.api_key = api_key
+        if engine == SearchEngineType.bing:
+            self.engine = BingSearch(api_key, **kwargs)
+        elif engine == SearchEngineType.brave:
+            self.engine = BraveSearch(api_key, **kwargs)
+        else:
+            raise ValueError(f"Unknown search engine: {engine}")
 
     def get_name(self) -> str:
         return BuiltinTool.brave_search.value
 
     async def run_impl(self, query: str) -> str:
+        return await self.engine.search(query)
+
+
+class BingSearch:
+    def __init__(self, api_key: str, top_k: int = 3, **kwargs) -> None:
+        self.api_key = api_key
+        self.top_k = top_k
+
+    async def search(self, query: str) -> str:
+        url = "https://api.bing.microsoft.com/v7.0/search"
+        headers = {
+            "Ocp-Apim-Subscription-Key": self.api_key,
+        }
+        params = {
+            "count": self.top_k,
+            "textDecorations": True,
+            "textFormat": "HTML",
+            "q": query,
+        }
+
+        response = requests.get(url=url, params=params, headers=headers)
+        response.raise_for_status()
+        clean = self._clean_response(response.json())
+        return json.dumps(clean)
+
+    def _clean_response(self, search_response):
+        clean_response = []
+        query = search_response["queryContext"]["originalQuery"]
+        if "webPages" in search_response:
+            pages = search_response["webPages"]["value"]
+            for p in pages:
+                selected_keys = {"name", "url", "snippet"}
+                clean_response.append(
+                    {k: v for k, v in p.items() if k in selected_keys}
+                )
+        if "news" in search_response:
+            clean_news = []
+            news = search_response["news"]["value"]
+            for n in news:
+                selected_keys = {"name", "url", "description"}
+                clean_news.append({k: v for k, v in n.items() if k in selected_keys})
+
+            clean_response.append(clean_news)
+
+        return {"query": query, "top_k": clean_response}
+
+
+class BraveSearch:
+    def __init__(self, api_key: str) -> None:
+        self.api_key = api_key
+
+    async def search(self, query: str) -> str:
         url = "https://api.search.brave.com/res/v1/web/search"
         headers = {
             "X-Subscription-Token": self.api_key,

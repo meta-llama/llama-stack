@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from llama_models.llama3.api.datatypes import URL
 
@@ -26,6 +26,6 @@ class RestAPIMethod(Enum):
 class RestAPIExecutionConfig(BaseModel):
     url: URL
     method: RestAPIMethod
-    params: Optional[Dict[str, str]] = None
-    headers: Optional[Dict[str, str]] = None
-    body: Optional[Dict[str, str]] = None
+    params: Optional[Dict[str, Any]] = None
+    headers: Optional[Dict[str, Any]] = None
+    body: Optional[Dict[str, Any]] = None

@@ -15,9 +15,9 @@ from llama_toolchain.memory.api import Memory
 from llama_toolchain.safety.api import Safety
 from llama_toolchain.agentic_system.api import *  # noqa: F403
 from llama_toolchain.tools.builtin import (
-    BraveSearchTool,
     CodeInterpreterTool,
     PhotogenTool,
+    SearchTool,
     WolframAlphaTool,
 )
 from llama_toolchain.tools.safety import with_safety
@@ -62,17 +62,19 @@ class MetaReferenceAgenticSystemImpl(AgenticSystem):
                 if not key:
                     raise ValueError("Wolfram API key not defined in config")
                 tool = WolframAlphaTool(key)
-            elif isinstance(tool_defn, BraveSearchToolDefinition):
-                key = self.config.brave_search_api_key
+            elif isinstance(tool_defn, SearchToolDefinition):
+                key = None
+                if tool_defn.engine == SearchEngineType.brave:
+                    key = self.config.brave_search_api_key
+                elif tool_defn.engine == SearchEngineType.bing:
+                    key = self.config.bing_search_api_key
                 if not key:
-                    raise ValueError("Brave API key not defined in config")
-                tool = BraveSearchTool(key)
+                    raise ValueError("API key not defined in config")
+                tool = SearchTool(tool_defn.engine, key)
             elif isinstance(tool_defn, CodeInterpreterToolDefinition):
                 tool = CodeInterpreterTool()
             elif isinstance(tool_defn, PhotogenToolDefinition):
-                tool = PhotogenTool(
-                    dump_dir=tempfile.mkdtemp(),
-                )
+                tool = PhotogenTool(dump_dir=tempfile.mkdtemp())
             else:
                 continue
 
