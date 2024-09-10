@@ -63,17 +63,18 @@ class StackConfigure(Subcommand):
         from llama_toolchain.core.package import BuildType
 
         if args.config_file:
-            build_config = BuildConfig(**yaml.safe_load(f))
-            build_type = BuildType(build_config.package_type)
+            with open(args.config_file, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
+                build_type = BuildType(build_config.package_type)
+                distribution = build_config.distribution
+                name = build_config.name
         else:
             build_type = BuildType(args.package_type)
             name = args.name
+            distribution = args.distribution
 
         config_file = (
-            BUILDS_BASE_DIR
-            / args.distribution
-            / build_type.descriptor()
-            / f"{name}.yaml"
+            BUILDS_BASE_DIR / distribution / build_type.descriptor() / f"{name}.yaml"
         )
         if not config_file.exists():
             self.parser.error(
