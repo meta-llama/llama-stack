@@ -9,10 +9,10 @@ import json
 from pathlib import Path
 
 import yaml
-from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
+from termcolor import cprint
 from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
@@ -38,7 +38,7 @@ class StackConfigure(Subcommand):
 
         allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
-            "distribution",
+            "--distribution",
             type=str,
             help='Distribution ("adhoc" or one of: {})'.format(allowed_ids),
         )
@@ -46,20 +46,29 @@ class StackConfigure(Subcommand):
             "--name",
             type=str,
             help="Name of the build",
-            required=True,
         )
         self.parser.add_argument(
-            "--type",
+            "--package-type",
             type=str,
             default="conda_env",
             choices=[v.value for v in BuildType],
+        )
+        self.parser.add_argument(
+            "--config-file",
+            type=str,
+            help="Path to a config file to use for the build",
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import BuildType
 
-        build_type = BuildType(args.type)
-        name = args.name
+        if args.config_file:
+            build_config = BuildConfig(**yaml.safe_load(f))
+            build_type = BuildType(build_config.package_type)
+        else:
+            build_type = BuildType(args.package_type)
+            name = args.name
+
         config_file = (
             BUILDS_BASE_DIR
             / args.distribution
