@@ -318,7 +318,7 @@ Build spec configuration saved at /home/xiyan/.llama/distributions/local/conda/8
 
 You can re-build package based on build config
 ```
-$ llama stack build --config-file ~/.llama/distributions/local/conda/8b-instruct-build.yaml
+$ llama stack build --config ~/.llama/distributions/local/conda/8b-instruct-build.yaml
 
 Successfully setup conda environment. Configuring build...
 
@@ -334,7 +334,7 @@ Build spec configuration saved at /home/xiyan/.llama/distributions/local/conda/8
 
 You can re-configure this distribution by running:
 ```
-llama stack configure --config-file ~/.llama/distributions/local/conda/8b-instruct-build.yaml
+llama stack configure --config ~/.llama/distributions/local/conda/8b-instruct-build.yaml
 ```
 
 or
@@ -386,12 +386,12 @@ Now let’s start Llama Stack Distribution Server.
 You need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```
-llama stack run --run-config ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
+llama stack run --config ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
 ```
 You should see the Stack server start and print the APIs that it is supporting,
 
 ```
-$ llama stack run --run-config ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
+$ llama stack run --config ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
 
 > initializing model parallel with size 1
 > initializing ddp with size 1

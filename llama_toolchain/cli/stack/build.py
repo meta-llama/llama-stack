@@ -85,7 +85,7 @@ class StackBuild(Subcommand):
             choices=[v.value for v in BuildType],
         )
         self.parser.add_argument(
-            "--config-file",
+            "--config",
             type=str,
             help="Path to a config file to use for the build",
         )
@@ -170,14 +170,12 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
-        if args.config_file:
-            with open(args.config_file, "r") as f:
+        if args.config:
+            with open(args.config, "r") as f:
                 try:
                     build_config = BuildConfig(**yaml.safe_load(f))
                 except Exception as e:
-                    self.parser.error(
-                        f"Could not parse config file {args.config_file}: {e}"
-                    )
+                    self.parser.error(f"Could not parse config file {args.config}: {e}")
                     return
                 self._run_stack_build_command_from_build_config(build_config)
             return

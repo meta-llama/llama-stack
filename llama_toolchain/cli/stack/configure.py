@@ -54,7 +54,7 @@ class StackConfigure(Subcommand):
             choices=[v.value for v in BuildType],
         )
         self.parser.add_argument(
-            "--config-file",
+            "--config",
             type=str,
             help="Path to a config file to use for the build",
         )
@@ -62,8 +62,8 @@ class StackConfigure(Subcommand):
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import BuildType
 
-        if args.config_file:
-            with open(args.config_file, "r") as f:
+        if args.config:
+            with open(args.config, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
                 build_type = BuildType(build_config.package_type)
                 distribution = build_config.distribution

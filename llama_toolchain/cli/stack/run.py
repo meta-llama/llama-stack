@@ -60,7 +60,7 @@ class StackRun(Subcommand):
             default=False,
         )
         self.parser.add_argument(
-            "--run-config",
+            "--config",
             type=str,
             help="Path to config file to use for the run",
         )
@@ -69,8 +69,8 @@ class StackRun(Subcommand):
         from llama_toolchain.common.exec import run_with_pty
         from llama_toolchain.core.package import BuildType
 
-        if args.run_config:
-            path = args.run_config
+        if args.config:
+            path = args.config
         else:
             build_type = BuildType(args.type)
             build_dir = BUILDS_BASE_DIR / args.distribution / build_type.descriptor()
