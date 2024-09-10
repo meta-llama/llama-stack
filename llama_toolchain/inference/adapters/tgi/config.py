@@ -7,6 +7,7 @@
 from typing import Optional
 
 from huggingface_hub import HfApi
+
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
@@ -31,6 +32,3 @@ class TGIImplConfig(BaseModel):
 
     def get_namespace(self) -> str:
         return HfApi().whoami()["name"]
-
-    def is_local_tgi(self) -> bool:
-        return self.url is not None and self.url.startswith("http://localhost")

@@ -11,7 +11,7 @@ from .tgi import InferenceEndpointAdapter, TGIAdapter
 async def get_adapter_impl(config: TGIImplConfig, _deps):
     assert isinstance(config, TGIImplConfig), f"Unexpected config type: {type(config)}"
 
-    if config.is_local_tgi():
+    if config.url is not None:
         impl = TGIAdapter(config)
     elif config.is_inference_endpoint():
         impl = InferenceEndpointAdapter(config)
