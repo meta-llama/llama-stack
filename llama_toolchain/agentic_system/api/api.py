@@ -53,6 +53,7 @@ class SearchToolDefinition(ToolDefinitionCommon):
     type: Literal[AgenticSystemTool.brave_search.value] = (
         AgenticSystemTool.brave_search.value
     )
+    api_key: str
     engine: SearchEngineType = SearchEngineType.brave
     remote_execution: Optional[RestAPIExecutionConfig] = None
 
@@ -62,6 +63,7 @@ class WolframAlphaToolDefinition(ToolDefinitionCommon):
     type: Literal[AgenticSystemTool.wolfram_alpha.value] = (
         AgenticSystemTool.wolfram_alpha.value
     )
+    api_key: str
     remote_execution: Optional[RestAPIExecutionConfig] = None
 
 
