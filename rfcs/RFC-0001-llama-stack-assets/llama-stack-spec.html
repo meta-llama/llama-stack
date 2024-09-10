@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-10 01:13:08.531639"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-10 16:42:15.870336"
     },
     "servers": [
         {
@@ -1433,6 +1433,36 @@
                 }
             }
         },
+        "/safety/run_shields": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RunShieldResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Safety"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunShieldRequestWrapper"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/post_training/supervised_fine_tune": {
             "post": {
                 "responses": {
@@ -2409,7 +2439,7 @@
                         "items": {
                             "oneOf": [
                                 {
-                                    "$ref": "#/components/schemas/BraveSearchToolDefinition"
+                                    "$ref": "#/components/schemas/SearchToolDefinition"
                                 },
                                 {
                                     "$ref": "#/components/schemas/WolframAlphaToolDefinition"
@@ -2624,34 +2654,6 @@
                     "instructions"
                 ]
             },
-            "BraveSearchToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "brave_search"
-                    },
-                    "remote_execution": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ]
-            },
             "BuiltinShield": {
                 "type": "string",
                 "enum": [
@@ -2785,19 +2787,76 @@
                     "params": {
                         "type": "object",
                         "additionalProperties": {
-                            "type": "string"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     },
                     "headers": {
                         "type": "object",
                         "additionalProperties": {
-                            "type": "string"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     },
                     "body": {
                         "type": "object",
                         "additionalProperties": {
-                            "type": "string"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     }
                 },
@@ -2814,6 +2873,42 @@
                     "POST",
                     "PUT",
                     "DELETE"
+                ]
+            },
+            "SearchToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "brave_search"
+                    },
+                    "engine": {
+                        "type": "string",
+                        "enum": [
+                            "bing",
+                            "brave"
+                        ]
+                    },
+                    "remote_execution": {
+                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "engine"
                 ]
             },
             "ShieldDefinition": {
@@ -2959,7 +3054,7 @@
                         "items": {
                             "oneOf": [
                                 {
-                                    "$ref": "#/components/schemas/BraveSearchToolDefinition"
+                                    "$ref": "#/components/schemas/SearchToolDefinition"
                                 },
                                 {
                                     "$ref": "#/components/schemas/WolframAlphaToolDefinition"
@@ -5549,6 +5644,68 @@
                     "score"
                 ]
             },
+            "RunShieldRequest": {
+                "type": "object",
+                "properties": {
+                    "messages": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/SystemMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ToolResponseMessage"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/CompletionMessage"
+                                }
+                            ]
+                        }
+                    },
+                    "shields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldDefinition"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "messages",
+                    "shields"
+                ]
+            },
+            "RunShieldRequestWrapper": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "$ref": "#/components/schemas/RunShieldRequest"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "request"
+                ]
+            },
+            "RunShieldResponse": {
+                "type": "object",
+                "properties": {
+                    "responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShieldResponse"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "responses"
+                ]
+            },
             "DoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
@@ -6063,34 +6220,37 @@
     ],
     "tags": [
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "AgenticSystem"
-        },
-        {
             "name": "BatchInference"
         },
         {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Evaluations"
+            "name": "Safety"
         },
         {
             "name": "Telemetry"
         },
         {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
             "name": "Inference"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -6225,10 +6385,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentConfig\" />"
         },
         {
-            "name": "BraveSearchToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BraveSearchToolDefinition\" />"
-        },
-        {
             "name": "BuiltinShield",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinShield\" />"
         },
@@ -6255,6 +6411,10 @@
         {
             "name": "RestAPIMethod",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIMethod\" />"
+        },
+        {
+            "name": "SearchToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SearchToolDefinition\" />"
         },
         {
             "name": "ShieldDefinition",
@@ -6621,6 +6781,18 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
         },
         {
+            "name": "RunShieldRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldRequest\" />"
+        },
+        {
+            "name": "RunShieldRequestWrapper",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldRequestWrapper\" />"
+        },
+        {
+            "name": "RunShieldResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldResponse\" />"
+        },
+        {
             "name": "DoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DoraFinetuningConfig\" />"
         },
@@ -6697,6 +6869,7 @@
                 "Memory",
                 "PostTraining",
                 "RewardScoring",
+                "Safety",
                 "SyntheticDataGeneration",
                 "Telemetry"
             ]
@@ -6726,7 +6899,6 @@
                 "BatchCompletionRequest",
                 "BatchCompletionRequestWrapper",
                 "BatchCompletionResponse",
-                "BraveSearchToolDefinition",
                 "BuiltinShield",
                 "BuiltinTool",
                 "CancelEvaluationJobRequest",
@@ -6814,10 +6986,14 @@
                 "RewardScoringRequestWrapper",
                 "RewardScoringResponse",
                 "Run",
+                "RunShieldRequest",
+                "RunShieldRequestWrapper",
+                "RunShieldResponse",
                 "SamplingParams",
                 "SamplingStrategy",
                 "ScoredDialogGenerations",
                 "ScoredMessage",
+                "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
                 "ShieldDefinition",

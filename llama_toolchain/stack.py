@@ -15,6 +15,7 @@ from llama_toolchain.telemetry.api import *  # noqa: F403
 from llama_toolchain.post_training.api import *  # noqa: F403
 from llama_toolchain.reward_scoring.api import *  # noqa: F403
 from llama_toolchain.synthetic_data_generation.api import *  # noqa: F403
+from llama_toolchain.safety.api import *  # noqa: F403
 
 
 class LlamaStack(
@@ -22,6 +23,7 @@ class LlamaStack(
     BatchInference,
     AgenticSystem,
     RewardScoring,
+    Safety,
     SyntheticDataGeneration,
     Datasets,
     Telemetry,
