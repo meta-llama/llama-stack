@@ -2777,7 +2777,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-09 11:19:39.855375"
+    \ draft and subject to change.\n                Generated at 2024-09-10 01:13:08.531639"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3302,7 +3302,7 @@ paths:
       responses:
         '200':
           content:
-            application/json:
+            text/event-stream:
               schema:
                 $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
           description: SSE-stream of these events.
@@ -3729,16 +3729,16 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inference
-- name: Datasets
-- name: Evaluations
-- name: Memory
 - name: SyntheticDataGeneration
-- name: PostTraining
 - name: RewardScoring
-- name: BatchInference
-- name: Telemetry
+- name: Datasets
+- name: Memory
 - name: AgenticSystem
+- name: BatchInference
+- name: PostTraining
+- name: Evaluations
+- name: Telemetry
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest

@@ -35,7 +35,10 @@ from llama_toolchain.stack import LlamaStack
 
 
 # TODO: this should be fixed in the generator itself so it reads appropriate annotations
-STREAMING_ENDPOINTS = ["/agentic_system/turn/create"]
+STREAMING_ENDPOINTS = [
+    "/agentic_system/turn/create",
+    "/inference/chat_completion",
+]
 
 
 def patch_sse_stream_responses(spec: Specification):

@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-09 11:19:39.855375"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-10 01:13:08.531639"
     },
     "servers": [
         {
@@ -141,7 +141,7 @@
                     "200": {
                         "description": "SSE-stream of these events.",
                         "content": {
-                            "application/json": {
+                            "text/event-stream": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ChatCompletionResponseStreamChunk"
                                 }
@@ -6063,34 +6063,34 @@
     ],
     "tags": [
         {
-            "name": "Inference"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Evaluations"
-        },
-        {
-            "name": "Memory"
-        },
-        {
             "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "PostTraining"
         },
         {
             "name": "RewardScoring"
         },
         {
+            "name": "Datasets"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "AgenticSystem"
+        },
+        {
             "name": "BatchInference"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "Telemetry"
         },
         {
-            "name": "AgenticSystem"
+            "name": "Inference"
         },
         {
             "name": "BatchChatCompletionRequest",
