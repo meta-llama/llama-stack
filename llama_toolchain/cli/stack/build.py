@@ -184,7 +184,7 @@ class StackBuild(Subcommand):
 
         build_config = BuildConfig(
             name=args.name,
-            distribution_type=args.distribution,
+            distribution=args.distribution,
             package_type=args.package_type,
             api_providers=args.api_providers,
         )
