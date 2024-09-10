@@ -8,6 +8,7 @@ import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.core.datatypes import *  # noqa: F403
+import yaml
 from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
 
 
@@ -55,14 +56,14 @@ class StackBuild(Subcommand):
 
         allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
-            "distribution",
+            "--distribution",
             type=str,
             help='Distribution to build (either "adhoc" OR one of: {})'.format(
                 allowed_ids
             ),
         )
         self.parser.add_argument(
-            "api_providers",
+            "--api-providers",
             nargs="?",
             help="Comma separated list of (api=provider) tuples",
         )
@@ -71,7 +72,6 @@ class StackBuild(Subcommand):
             "--name",
             type=str,
             help="Name of the build target (image, conda env)",
-            required=True,
         )
         self.parser.add_argument(
             "--package-type",
