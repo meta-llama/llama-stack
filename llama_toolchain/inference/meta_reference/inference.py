@@ -65,6 +65,7 @@ class MetaReferenceInferenceImpl(Inference):
     ) -> AsyncIterator[
         Union[ChatCompletionResponseStreamChunk, ChatCompletionResponse]
     ]:
+        # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = ChatCompletionRequest(
             model=model,
             messages=messages,

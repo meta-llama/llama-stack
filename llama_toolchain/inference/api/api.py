@@ -170,7 +170,11 @@ class Inference(Protocol):
     @webmethod(route="/inference/completion")
     async def completion(
         self,
-        request: CompletionRequest,
+        model: str
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
 
     @webmethod(route="/inference/chat_completion")
