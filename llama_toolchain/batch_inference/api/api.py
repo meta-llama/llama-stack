@@ -51,11 +51,21 @@ class BatchInference(Protocol):
     @webmethod(route="/batch_inference/completion")
     async def batch_completion(
         self,
-        request: BatchCompletionRequest,
+        model: str,
+        content_batch: List[InterleavedTextMedia],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        logprobs: Optional[LogProbConfig] = None,
     ) -> BatchCompletionResponse: ...
 
     @webmethod(route="/batch_inference/chat_completion")
     async def batch_chat_completion(
         self,
-        request: BatchChatCompletionRequest,
+        model: str,
+        messages_batch: List[List[Message]],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        # zero-shot tool definitions as input to the model
+        tools: Optional[List[ToolDefinition]] = list,
+        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> BatchChatCompletionResponse: ...

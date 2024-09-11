@@ -48,5 +48,7 @@ class SyntheticDataGeneration(Protocol):
     @webmethod(route="/synthetic_data_generation/generate")
     def synthetic_data_generate(
         self,
-        request: SyntheticDataGenerationRequest,
+        dialogs: List[Message],
+        filtering_function: FilteringFunction = FilteringFunction.none,
+        model: Optional[str] = None,
     ) -> Union[SyntheticDataGenerationResponse]: ...

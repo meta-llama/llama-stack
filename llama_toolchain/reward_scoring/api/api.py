@@ -50,5 +50,6 @@ class RewardScoring(Protocol):
     @webmethod(route="/reward_scoring/score")
     def reward_score(
         self,
-        request: RewardScoringRequest,
+        dialog_generations: List[DialogGenerations],
+        model: str,
     ) -> Union[RewardScoringResponse]: ...
