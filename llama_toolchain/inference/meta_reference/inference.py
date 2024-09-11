@@ -77,7 +77,8 @@ class MetaReferenceInferenceImpl(Inference):
             logprobs=logprobs,
         )
 
-        return self._chat_completion(request)
+        async for chunk in self.chat_completion_impl(request):
+            yield chunk
 
     async def chat_completion_impl(
         self, request: ChatCompletionRequest
