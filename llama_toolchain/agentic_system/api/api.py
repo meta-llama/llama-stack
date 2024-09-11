@@ -41,11 +41,19 @@ class ToolDefinitionCommon(BaseModel):
     output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
 
 
+class SearchEngineType(Enum):
+    bing = "bing"
+    brave = "brave"
+
+
 @json_schema_type
-class BraveSearchToolDefinition(ToolDefinitionCommon):
+class SearchToolDefinition(ToolDefinitionCommon):
+    # NOTE: brave_search is just a placeholder since model always uses
+    # brave_search as tool call name
     type: Literal[AgenticSystemTool.brave_search.value] = (
         AgenticSystemTool.brave_search.value
     )
+    engine: SearchEngineType = SearchEngineType.brave
     remote_execution: Optional[RestAPIExecutionConfig] = None
 
 
@@ -163,7 +171,7 @@ class MemoryToolDefinition(ToolDefinitionCommon):
 
 AgenticSystemToolDefinition = Annotated[
     Union[
-        BraveSearchToolDefinition,
+        SearchToolDefinition,
         WolframAlphaToolDefinition,
         PhotogenToolDefinition,
         CodeInterpreterToolDefinition,

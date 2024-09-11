@@ -25,7 +25,7 @@ components:
         tools:
           items:
             oneOf:
-            - $ref: '#/components/schemas/BraveSearchToolDefinition'
+            - $ref: '#/components/schemas/SearchToolDefinition'
             - $ref: '#/components/schemas/WolframAlphaToolDefinition'
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
@@ -218,7 +218,7 @@ components:
         tools:
           items:
             oneOf:
-            - $ref: '#/components/schemas/BraveSearchToolDefinition'
+            - $ref: '#/components/schemas/SearchToolDefinition'
             - $ref: '#/components/schemas/WolframAlphaToolDefinition'
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
@@ -345,6 +345,14 @@ components:
       - agent_id
       - session_id
       - messages
+      type: object
+    AgenticSystemTurnCreateRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
+      required:
+      - request
       type: object
     AgenticSystemTurnResponseEvent:
       additionalProperties: false
@@ -566,6 +574,14 @@ components:
       - model
       - messages_batch
       type: object
+    BatchChatCompletionRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/BatchChatCompletionRequest'
+      required:
+      - request
+      type: object
     BatchChatCompletionResponse:
       additionalProperties: false
       properties:
@@ -601,6 +617,14 @@ components:
       - model
       - content_batch
       type: object
+    BatchCompletionRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/BatchCompletionRequest'
+      required:
+      - request
+      type: object
     BatchCompletionResponse:
       additionalProperties: false
       properties:
@@ -610,25 +634,6 @@ components:
           type: array
       required:
       - completion_message_batch
-      type: object
-    BraveSearchToolDefinition:
-      additionalProperties: false
-      properties:
-        input_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        output_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        remote_execution:
-          $ref: '#/components/schemas/RestAPIExecutionConfig'
-        type:
-          const: brave_search
-          type: string
-      required:
-      - type
       type: object
     BuiltinShield:
       enum:
@@ -695,6 +700,14 @@ components:
       required:
       - model
       - messages
+      type: object
+    ChatCompletionRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/ChatCompletionRequest'
+      required:
+      - request
       type: object
     ChatCompletionResponseEvent:
       additionalProperties: false
@@ -804,6 +817,14 @@ components:
       - model
       - content
       type: object
+    CompletionRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/CompletionRequest'
+      required:
+      - request
+      type: object
     CompletionResponseStreamChunk:
       additionalProperties: false
       properties:
@@ -850,6 +871,14 @@ components:
       - dataset
       title: Request to create a dataset.
       type: object
+    CreateDatasetRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/CreateDatasetRequest'
+      required:
+      - request
+      type: object
     CreateExperimentRequest:
       additionalProperties: false
       properties:
@@ -867,6 +896,14 @@ components:
           type: string
       required:
       - name
+      type: object
+    CreateExperimentRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/CreateExperimentRequest'
+      required:
+      - request
       type: object
     CreateMemoryBankRequest:
       additionalProperties: false
@@ -938,6 +975,14 @@ components:
           type: object
       required:
       - experiment_id
+      type: object
+    CreateRunRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/CreateRunRequest'
+      required:
+      - request
       type: object
     DPOAlignmentConfig:
       additionalProperties: false
@@ -1104,6 +1149,14 @@ components:
       - metrics
       title: Request to evaluate question answering.
       type: object
+    EvaluateQuestionAnsweringRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/EvaluateQuestionAnsweringRequest'
+      required:
+      - request
+      type: object
     EvaluateSummarizationRequest:
       additionalProperties: false
       properties:
@@ -1129,6 +1182,14 @@ components:
       - sampling_params
       - metrics
       title: Request to evaluate summarization.
+      type: object
+    EvaluateSummarizationRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/EvaluateSummarizationRequest'
+      required:
+      - request
       type: object
     EvaluateTextGenerationRequest:
       additionalProperties: false
@@ -1156,6 +1217,14 @@ components:
       - sampling_params
       - metrics
       title: Request to evaluate text generation.
+      type: object
+    EvaluateTextGenerationRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/EvaluateTextGenerationRequest'
+      required:
+      - request
       type: object
     EvaluationJob:
       additionalProperties: false
@@ -1370,6 +1439,14 @@ components:
       required:
       - logs
       type: object
+    LogMessagesRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/LogMessagesRequest'
+      required:
+      - request
+      type: object
     LogMetricsRequest:
       additionalProperties: false
       properties:
@@ -1382,6 +1459,14 @@ components:
       required:
       - run_id
       - metrics
+      type: object
+    LogMetricsRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/LogMetricsRequest'
+      required:
+      - request
       type: object
     LogSearchRequest:
       additionalProperties: false
@@ -1400,6 +1485,14 @@ components:
           type: string
       required:
       - query
+      type: object
+    LogSearchRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/LogSearchRequest'
+      required:
+      - request
       type: object
     LoraFinetuningConfig:
       additionalProperties: false
@@ -1741,6 +1834,14 @@ components:
       - logger_config
       title: Request to finetune a model.
       type: object
+    PostTrainingRLHFRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/PostTrainingRLHFRequest'
+      required:
+      - request
+      type: object
     PostTrainingSFTRequest:
       additionalProperties: false
       properties:
@@ -1795,6 +1896,14 @@ components:
       - hyperparam_search_config
       - logger_config
       title: Request to finetune a model.
+      type: object
+    PostTrainingSFTRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/PostTrainingSFTRequest'
+      required:
+      - request
       type: object
     QLoraFinetuningConfig:
       additionalProperties: false
@@ -1883,17 +1992,35 @@ components:
       properties:
         body:
           additionalProperties:
-            type: string
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         headers:
           additionalProperties:
-            type: string
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         method:
           $ref: '#/components/schemas/RestAPIMethod'
         params:
           additionalProperties:
-            type: string
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         url:
           $ref: '#/components/schemas/URL'
@@ -1922,6 +2049,14 @@ components:
       - model
       title: Request to score a reward function. A list of prompts and a list of responses
         per prompt.
+      type: object
+    RewardScoringRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/RewardScoringRequest'
+      required:
+      - request
       type: object
     RewardScoringResponse:
       additionalProperties: false
@@ -1966,6 +2101,43 @@ components:
       - status
       - started_at
       - metadata
+      type: object
+    RunShieldRequest:
+      additionalProperties: false
+      properties:
+        messages:
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/UserMessage'
+            - $ref: '#/components/schemas/SystemMessage'
+            - $ref: '#/components/schemas/ToolResponseMessage'
+            - $ref: '#/components/schemas/CompletionMessage'
+          type: array
+        shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+      required:
+      - messages
+      - shields
+      type: object
+    RunShieldRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/RunShieldRequest'
+      required:
+      - request
+      type: object
+    RunShieldResponse:
+      additionalProperties: false
+      properties:
+        responses:
+          items:
+            $ref: '#/components/schemas/ShieldResponse'
+          type: array
+      required:
+      - responses
       type: object
     SamplingParams:
       additionalProperties: false
@@ -2024,6 +2196,31 @@ components:
       required:
       - message
       - score
+      type: object
+    SearchToolDefinition:
+      additionalProperties: false
+      properties:
+        engine:
+          enum:
+          - bing
+          - brave
+          type: string
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: brave_search
+          type: string
+      required:
+      - type
+      - engine
       type: object
     Session:
       additionalProperties: false
@@ -2144,6 +2341,14 @@ components:
       - filtering_function
       title: Request to generate synthetic data. A small batch of prompts and a filtering
         function
+      type: object
+    SyntheticDataGenerationRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/SyntheticDataGenerationRequest'
+      required:
+      - request
       type: object
     SyntheticDataGenerationResponse:
       additionalProperties: false
@@ -2513,6 +2718,14 @@ components:
       required:
       - experiment_id
       type: object
+    UpdateExperimentRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/UpdateExperimentRequest'
+      required:
+      - request
+      type: object
     UpdateRunRequest:
       additionalProperties: false
       properties:
@@ -2535,6 +2748,14 @@ components:
           type: string
       required:
       - run_id
+      type: object
+    UpdateRunRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/UpdateRunRequest'
+      required:
+      - request
       type: object
     UploadArtifactRequest:
       additionalProperties: false
@@ -2563,6 +2784,14 @@ components:
       - name
       - artifact_type
       - content
+      type: object
+    UploadArtifactRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/UploadArtifactRequest'
+      required:
+      - request
       type: object
     UserMessage:
       additionalProperties: false
@@ -2609,7 +2838,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-07 15:23:29.488676"
+    \ draft and subject to change.\n                Generated at 2024-09-10 16:42:15.870336"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2741,7 +2970,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
+              $ref: '#/components/schemas/AgenticSystemTurnCreateRequestWrapper'
         required: true
       responses:
         '200':
@@ -2798,7 +3027,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchChatCompletionRequest'
+              $ref: '#/components/schemas/BatchChatCompletionRequestWrapper'
         required: true
       responses:
         '200':
@@ -2816,7 +3045,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchCompletionRequest'
+              $ref: '#/components/schemas/BatchCompletionRequestWrapper'
         required: true
       responses:
         '200':
@@ -2834,7 +3063,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateDatasetRequest'
+              $ref: '#/components/schemas/CreateDatasetRequestWrapper'
         required: true
       responses:
         '200':
@@ -2956,7 +3185,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateQuestionAnsweringRequest'
+              $ref: '#/components/schemas/EvaluateQuestionAnsweringRequestWrapper'
         required: true
       responses:
         '200':
@@ -2974,7 +3203,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateSummarizationRequest'
+              $ref: '#/components/schemas/EvaluateSummarizationRequestWrapper'
         required: true
       responses:
         '200':
@@ -2992,7 +3221,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateTextGenerationRequest'
+              $ref: '#/components/schemas/EvaluateTextGenerationRequestWrapper'
         required: true
       responses:
         '200':
@@ -3028,7 +3257,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UploadArtifactRequest'
+              $ref: '#/components/schemas/UploadArtifactRequestWrapper'
         required: true
       responses:
         '200':
@@ -3046,7 +3275,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateExperimentRequest'
+              $ref: '#/components/schemas/CreateExperimentRequestWrapper'
         required: true
       responses:
         '200':
@@ -3064,7 +3293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRunRequest'
+              $ref: '#/components/schemas/CreateRunRequestWrapper'
         required: true
       responses:
         '200':
@@ -3111,7 +3340,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateExperimentRequest'
+              $ref: '#/components/schemas/UpdateExperimentRequestWrapper'
         required: true
       responses:
         '200':
@@ -3129,12 +3358,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChatCompletionRequest'
+              $ref: '#/components/schemas/ChatCompletionRequestWrapper'
         required: true
       responses:
         '200':
           content:
-            application/json:
+            text/event-stream:
               schema:
                 $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
           description: SSE-stream of these events.
@@ -3147,7 +3376,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompletionRequest'
+              $ref: '#/components/schemas/CompletionRequestWrapper'
         required: true
       responses:
         '200':
@@ -3183,7 +3412,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogSearchRequest'
+              $ref: '#/components/schemas/LogSearchRequestWrapper'
         required: true
       responses:
         '200':
@@ -3201,7 +3430,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogMessagesRequest'
+              $ref: '#/components/schemas/LogMessagesRequestWrapper'
         required: true
       responses:
         '200':
@@ -3442,7 +3671,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTrainingRLHFRequest'
+              $ref: '#/components/schemas/PostTrainingRLHFRequestWrapper'
         required: true
       responses:
         '200':
@@ -3460,7 +3689,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTrainingSFTRequest'
+              $ref: '#/components/schemas/PostTrainingSFTRequestWrapper'
         required: true
       responses:
         '200':
@@ -3478,7 +3707,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RewardScoringRequest'
+              $ref: '#/components/schemas/RewardScoringRequestWrapper'
         required: true
       responses:
         '200':
@@ -3496,7 +3725,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogMetricsRequest'
+              $ref: '#/components/schemas/LogMetricsRequestWrapper'
         required: true
       responses:
         '200':
@@ -3527,7 +3756,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateRunRequest'
+              $ref: '#/components/schemas/UpdateRunRequestWrapper'
         required: true
       responses:
         '200':
@@ -3538,6 +3767,24 @@ paths:
           description: OK
       tags:
       - Telemetry
+  /safety/run_shields:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunShieldRequestWrapper'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunShieldResponse'
+          description: OK
+      tags:
+      - Safety
   /synthetic_data_generation/generate:
     post:
       parameters: []
@@ -3545,7 +3792,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SyntheticDataGenerationRequest'
+              $ref: '#/components/schemas/SyntheticDataGenerationRequestWrapper'
         required: true
       responses:
         '200':
@@ -3561,16 +3808,17 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Telemetry
-- name: Evaluations
-- name: AgenticSystem
-- name: Inference
 - name: BatchInference
-- name: PostTraining
-- name: Datasets
+- name: Safety
+- name: Telemetry
+- name: RewardScoring
 - name: Memory
 - name: SyntheticDataGeneration
-- name: RewardScoring
+- name: Inference
+- name: Evaluations
+- name: PostTraining
+- name: Datasets
+- name: AgenticSystem
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3613,12 +3861,18 @@ tags:
   name: ToolResponseMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
+- description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequestWrapper"
+    />
+  name: BatchChatCompletionRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionResponse"
     />
   name: BatchChatCompletionResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequest"
     />
   name: BatchCompletionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequestWrapper"
+    />
+  name: BatchCompletionRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
@@ -3631,6 +3885,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequestWrapper"
+    />
+  name: ChatCompletionRequestWrapper
 - description: 'Chat completion response event.
 
 
@@ -3656,6 +3913,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
     />
   name: CompletionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequestWrapper"
+    />
+  name: CompletionRequestWrapper
 - description: 'streamed completion response.
 
 
@@ -3664,9 +3924,6 @@ tags:
   name: CompletionResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentConfig" />
   name: AgentConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/BraveSearchToolDefinition"
-    />
-  name: BraveSearchToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinShield" />
   name: BuiltinShield
 - description: <SchemaDefinition schemaRef="#/components/schemas/CodeInterpreterToolDefinition"
@@ -3686,6 +3943,9 @@ tags:
   name: RestAPIExecutionConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIMethod" />
   name: RestAPIMethod
+- description: <SchemaDefinition schemaRef="#/components/schemas/SearchToolDefinition"
+    />
+  name: SearchToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
     />
   name: ShieldDefinition
@@ -3711,6 +3971,9 @@ tags:
   name: AgenticSystemTurnCreateRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnCreateRequestWrapper"
+    />
+  name: AgenticSystemTurnCreateRequestWrapper
 - description: 'Streamed agent execution response.
 
 
@@ -3767,9 +4030,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDatasetColumnType"
     />
   name: TrainEvalDatasetColumnType
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequestWrapper"
+    />
+  name: CreateDatasetRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateExperimentRequest"
     />
   name: CreateExperimentRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateExperimentRequestWrapper"
+    />
+  name: CreateExperimentRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/Experiment" />
   name: Experiment
 - description: <SchemaDefinition schemaRef="#/components/schemas/ExperimentStatus"
@@ -3783,6 +4052,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequest"
     />
   name: CreateRunRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequestWrapper"
+    />
+  name: CreateRunRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/Run" />
   name: Run
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemRequest"
@@ -3817,6 +4089,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
     />'
   name: EvaluateQuestionAnsweringRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequestWrapper"
+    />
+  name: EvaluateQuestionAnsweringRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJob" />
   name: EvaluationJob
 - description: 'Request to evaluate summarization.
@@ -3825,12 +4100,18 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
     />'
   name: EvaluateSummarizationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequestWrapper"
+    />
+  name: EvaluateSummarizationRequestWrapper
 - description: 'Request to evaluate text generation.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
     />'
   name: EvaluateTextGenerationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequestWrapper"
+    />
+  name: EvaluateTextGenerationRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetAgenticSystemSessionRequest"
     />
   name: GetAgenticSystemSessionRequest
@@ -3867,6 +4148,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequest"
     />
   name: LogSearchRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequestWrapper"
+    />
+  name: LogSearchRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/Log" />
   name: Log
 - description: <SchemaDefinition schemaRef="#/components/schemas/Metric" />
@@ -3903,9 +4187,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequest"
     />
   name: LogMessagesRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequestWrapper"
+    />
+  name: LogMessagesRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogMetricsRequest"
     />
   name: LogMetricsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogMetricsRequestWrapper"
+    />
+  name: LogMetricsRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
@@ -3921,6 +4211,9 @@ tags:
   name: RLHFAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
   name: TrainingConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingRLHFRequestWrapper"
+    />
+  name: PostTrainingRLHFRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsRequest"
     />
   name: QueryDocumentsRequest
@@ -3936,6 +4229,9 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
   name: RewardScoringRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequestWrapper"
+    />
+  name: RewardScoringRequestWrapper
 - description: 'Response from the reward scoring. Batch of (prompt, response, score)
     tuples that pass the threshold.
 
@@ -3947,6 +4243,15 @@ tags:
   name: ScoredDialogGenerations
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
   name: ScoredMessage
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
+    />
+  name: RunShieldRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequestWrapper"
+    />
+  name: RunShieldRequestWrapper
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldResponse"
+    />
+  name: RunShieldResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
     />
   name: DoraFinetuningConfig
@@ -3964,6 +4269,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
   name: QLoraFinetuningConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingSFTRequestWrapper"
+    />
+  name: PostTrainingSFTRequestWrapper
 - description: 'Request to generate synthetic data. A small batch of prompts and a
     filtering function
 
@@ -3971,6 +4279,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
     />'
   name: SyntheticDataGenerationRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequestWrapper"
+    />
+  name: SyntheticDataGenerationRequestWrapper
 - description: 'Response from the synthetic data generation. Batch of (prompt, response,
     score) tuples that pass the threshold.
 
@@ -3984,12 +4295,21 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UpdateExperimentRequest"
     />
   name: UpdateExperimentRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateExperimentRequestWrapper"
+    />
+  name: UpdateExperimentRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/UpdateRunRequest"
     />
   name: UpdateRunRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateRunRequestWrapper"
+    />
+  name: UpdateRunRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/UploadArtifactRequest"
     />
   name: UploadArtifactRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/UploadArtifactRequestWrapper"
+    />
+  name: UploadArtifactRequestWrapper
 x-tagGroups:
 - name: Operations
   tags:
@@ -4001,6 +4321,7 @@ x-tagGroups:
   - Memory
   - PostTraining
   - RewardScoring
+  - Safety
   - SyntheticDataGeneration
   - Telemetry
 - name: Types
@@ -4010,6 +4331,7 @@ x-tagGroups:
   - AgenticSystemSessionCreateResponse
   - AgenticSystemStepResponse
   - AgenticSystemTurnCreateRequest
+  - AgenticSystemTurnCreateRequestWrapper
   - AgenticSystemTurnResponseEvent
   - AgenticSystemTurnResponseStepCompletePayload
   - AgenticSystemTurnResponseStepProgressPayload
@@ -4021,15 +4343,17 @@ x-tagGroups:
   - ArtifactType
   - Attachment
   - BatchChatCompletionRequest
+  - BatchChatCompletionRequestWrapper
   - BatchChatCompletionResponse
   - BatchCompletionRequest
+  - BatchCompletionRequestWrapper
   - BatchCompletionResponse
-  - BraveSearchToolDefinition
   - BuiltinShield
   - BuiltinTool
   - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
   - ChatCompletionRequest
+  - ChatCompletionRequestWrapper
   - ChatCompletionResponseEvent
   - ChatCompletionResponseEventType
   - ChatCompletionResponseStreamChunk
@@ -4037,13 +4361,17 @@ x-tagGroups:
   - CodeInterpreterToolDefinition
   - CompletionMessage
   - CompletionRequest
+  - CompletionRequestWrapper
   - CompletionResponseStreamChunk
   - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest
   - CreateDatasetRequest
+  - CreateDatasetRequestWrapper
   - CreateExperimentRequest
+  - CreateExperimentRequestWrapper
   - CreateMemoryBankRequest
   - CreateRunRequest
+  - CreateRunRequestWrapper
   - DPOAlignmentConfig
   - DeleteAgenticSystemRequest
   - DeleteAgenticSystemSessionRequest
@@ -4055,8 +4383,11 @@ x-tagGroups:
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvaluateQuestionAnsweringRequest
+  - EvaluateQuestionAnsweringRequestWrapper
   - EvaluateSummarizationRequest
+  - EvaluateSummarizationRequestWrapper
   - EvaluateTextGenerationRequest
+  - EvaluateTextGenerationRequestWrapper
   - EvaluationJob
   - EvaluationJobArtifactsResponse
   - EvaluationJobLogStream
@@ -4072,8 +4403,11 @@ x-tagGroups:
   - ListArtifactsRequest
   - Log
   - LogMessagesRequest
+  - LogMessagesRequestWrapper
   - LogMetricsRequest
+  - LogMetricsRequestWrapper
   - LogSearchRequest
+  - LogSearchRequestWrapper
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
@@ -4088,7 +4422,9 @@ x-tagGroups:
   - PostTrainingJobStatus
   - PostTrainingJobStatusResponse
   - PostTrainingRLHFRequest
+  - PostTrainingRLHFRequestWrapper
   - PostTrainingSFTRequest
+  - PostTrainingSFTRequestWrapper
   - QLoraFinetuningConfig
   - QueryDocumentsRequest
   - QueryDocumentsResponse
@@ -4096,18 +4432,24 @@ x-tagGroups:
   - RestAPIExecutionConfig
   - RestAPIMethod
   - RewardScoringRequest
+  - RewardScoringRequestWrapper
   - RewardScoringResponse
   - Run
+  - RunShieldRequest
+  - RunShieldRequestWrapper
+  - RunShieldResponse
   - SamplingParams
   - SamplingStrategy
   - ScoredDialogGenerations
   - ScoredMessage
+  - SearchToolDefinition
   - Session
   - ShieldCallStep
   - ShieldDefinition
   - ShieldResponse
   - StopReason
   - SyntheticDataGenerationRequest
+  - SyntheticDataGenerationRequestWrapper
   - SyntheticDataGenerationResponse
   - SystemMessage
   - TokenLogProbs
@@ -4128,7 +4470,10 @@ x-tagGroups:
   - URL
   - UpdateDocumentsRequest
   - UpdateExperimentRequest
+  - UpdateExperimentRequestWrapper
   - UpdateRunRequest
+  - UpdateRunRequestWrapper
   - UploadArtifactRequest
+  - UploadArtifactRequestWrapper
   - UserMessage
   - WolframAlphaToolDefinition

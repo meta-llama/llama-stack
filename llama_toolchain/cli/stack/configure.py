@@ -9,10 +9,10 @@ import json
 from pathlib import Path
 
 import yaml
-from termcolor import cprint
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
+from termcolor import cprint
 from llama_toolchain.core.datatypes import *  # noqa: F403
 
 
@@ -34,38 +34,19 @@ class StackConfigure(Subcommand):
         from llama_toolchain.core.distribution_registry import (
             available_distribution_specs,
         )
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
         allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
-            "distribution",
+            "config",
             type=str,
-            help='Distribution ("adhoc" or one of: {})'.format(allowed_ids),
-        )
-        self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the build",
-            required=True,
-        )
-        self.parser.add_argument(
-            "--type",
-            type=str,
-            default="conda_env",
-            choices=[v.value for v in BuildType],
+            help="Path to the package config file (e.g. ~/.llama/builds/<distribution>/<image_type>/<name>.yaml)",
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
-        build_type = BuildType(args.type)
-        name = args.name
-        config_file = (
-            BUILDS_BASE_DIR
-            / args.distribution
-            / build_type.descriptor()
-            / f"{name}.yaml"
-        )
+        config_file = Path(args.config)
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama stack build` first"

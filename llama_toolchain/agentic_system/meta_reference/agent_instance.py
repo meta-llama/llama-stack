@@ -710,7 +710,7 @@ class ChatAgent(ShieldRunnerMixin):
     def _get_tools(self) -> List[ToolDefinition]:
         ret = []
         for t in self.agent_config.tools:
-            if isinstance(t, BraveSearchToolDefinition):
+            if isinstance(t, SearchToolDefinition):
                 ret.append(ToolDefinition(tool_name=BuiltinTool.brave_search))
             elif isinstance(t, WolframAlphaToolDefinition):
                 ret.append(ToolDefinition(tool_name=BuiltinTool.wolfram_alpha))

@@ -11,4 +11,5 @@ from pydantic import BaseModel
 
 class MetaReferenceImplConfig(BaseModel):
     brave_search_api_key: Optional[str] = None
+    bing_search_api_key: Optional[str] = None
     wolfram_api_key: Optional[str] = None
