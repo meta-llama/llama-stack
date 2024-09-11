@@ -8,13 +8,8 @@ import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.core.datatypes import *  # noqa: F403
-import json
-import os
 
 import yaml
-from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
-from llama_toolchain.common.serialize import EnumEncoder
-from termcolor import cprint
 
 
 def parse_api_provider_tuples(
@@ -93,8 +88,14 @@ class StackBuild(Subcommand):
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
     ) -> None:
+        import json
+        import os
+
+        from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
+        from llama_toolchain.common.serialize import EnumEncoder
         from llama_toolchain.core.distribution_registry import resolve_distribution_spec
         from llama_toolchain.core.package import ApiInput, build_package, BuildType
+        from termcolor import cprint
 
         api_inputs = []
         if build_config.distribution == "adhoc":
