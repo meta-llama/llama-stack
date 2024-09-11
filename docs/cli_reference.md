@@ -323,6 +323,12 @@ Build spec configuration saved at /home/xiyan/.llama/distributions/local/conda/8
 
 You can re-build package based on build config
 ```
+$ cat ~/.llama/distributions/local/conda/8b-instruct-build.yaml
+name: 8b-instruct
+distribution: local
+api_providers: null
+image_type: conda
+
 $ llama stack build --config ~/.llama/distributions/local/conda/8b-instruct-build.yaml
 
 Successfully setup conda environment. Configuring build...
