@@ -52,13 +52,12 @@ class MetaReferenceSafetyImpl(Safety):
 
     async def run_shields(
         self,
-        request: RunShieldRequest,
+        messages: List[Message],
+        shields: List[ShieldDefinition],
     ) -> RunShieldResponse:
-        shields = [shield_config_to_shield(c, self.config) for c in request.shields]
+        shields = [shield_config_to_shield(c, self.config) for c in shields]
 
-        responses = await asyncio.gather(
-            *[shield.run(request.messages) for shield in shields]
-        )
+        responses = await asyncio.gather(*[shield.run(messages) for shield in shields])
 
         return RunShieldResponse(responses=responses)
 
