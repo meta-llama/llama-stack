@@ -43,7 +43,6 @@ class BackgroundLogger:
             print("Log queue is full, dropping event")
 
     def _process_logs(self):
-        logger = logging.getLogger()
         while True:
             try:
                 event = self.log_queue.get()
@@ -80,13 +79,15 @@ class TraceContext:
         )
 
         self.logger.log_event(
-            SpanStartEvent(
+            StructuredLogEvent(
                 trace_id=span.trace_id,
                 span_id=span.span_id,
                 timestamp=span.start_time,
                 attributes=span.attributes,
-                name=span.name,
-                parent_span_id=span.parent_span_id,
+                payload=SpanStartPayload(
+                    name=span.name,
+                    parent_span_id=span.parent_span_id,
+                ),
             )
         )
 
@@ -96,12 +97,14 @@ class TraceContext:
         span = self.spans.pop()
         if span is not None:
             self.logger.log_event(
-                SpanEndEvent(
+                StructuredLogEvent(
                     trace_id=span.trace_id,
                     span_id=span.span_id,
                     timestamp=span.start_time,
                     attributes=span.attributes,
-                    status=status,
+                    payload=SpanEndPayload(
+                        status=status,
+                    ),
                 )
             )
 
@@ -159,7 +162,7 @@ def severity(levelname: str) -> LogSeverity:
 
 
 # TODO: ideally, the actual emitting should be done inside a separate daemon
-# (thread or process) that is responsible for flushing the events to the backend.
+# process completely isolated from the server
 class TelemetryHandler(logging.Handler):
     def emit(self, record: logging.LogRecord):
         # horrendous hack to avoid logging from asyncio and getting into an infinite loop
@@ -180,7 +183,7 @@ class TelemetryHandler(logging.Handler):
             return
 
         BACKGROUND_LOGGER.log_event(
-            LoggingEvent(
+            UnstructuredLogEvent(
                 trace_id=span.trace_id,
                 span_id=span.span_id,
                 timestamp=datetime.now(),

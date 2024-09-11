@@ -41,14 +41,8 @@ class Trace(BaseModel):
 @json_schema_type
 class EventType(Enum):
     UNSTRUCTURED_LOG = "unstructured_log"
-
-    # all structured log events below
-    SPAN_START = "span_start"
-    SPAN_END = "span_end"
+    STRUCTURED_LOG = "structured_log"
     METRIC = "metric"
-
-    def is_structured(self) -> bool:
-        return self != EventType.UNSTRUCTURED_LOG
 
 
 @json_schema_type
@@ -69,23 +63,10 @@ class EventCommon(BaseModel):
 
 
 @json_schema_type
-class LoggingEvent(EventCommon):
+class UnstructuredLogEvent(EventCommon):
     type: Literal[EventType.UNSTRUCTURED_LOG.value] = EventType.UNSTRUCTURED_LOG.value
     message: str
     severity: LogSeverity
-
-
-@json_schema_type
-class SpanStartEvent(EventCommon):
-    type: Literal[EventType.SPAN_START.value] = EventType.SPAN_START.value
-    name: str
-    parent_span_id: Optional[str] = None
-
-
-@json_schema_type
-class SpanEndEvent(EventCommon):
-    type: Literal[EventType.SPAN_END.value] = EventType.SPAN_END.value
-    status: SpanStatus
 
 
 @json_schema_type
@@ -96,8 +77,48 @@ class MetricEvent(EventCommon):
     unit: str
 
 
+@json_schema_type
+class StructuredLogType(Enum):
+    SPAN_START = "span_start"
+    SPAN_END = "span_end"
+
+
+@json_schema_type
+class SpanStartPayload(BaseModel):
+    type: Literal[StructuredLogType.SPAN_START.value] = (
+        StructuredLogType.SPAN_START.value
+    )
+    name: str
+    parent_span_id: Optional[str] = None
+
+
+@json_schema_type
+class SpanEndPayload(BaseModel):
+    type: Literal[StructuredLogType.SPAN_END.value] = StructuredLogType.SPAN_END.value
+    status: SpanStatus
+
+
+StructuredLogPayload = Annotated[
+    Union[
+        SpanStartPayload,
+        SpanEndPayload,
+    ],
+    Field(discriminator="type"),
+]
+
+
+@json_schema_type
+class StructuredLogEvent(EventCommon):
+    type: Literal[EventType.STRUCTURED_LOG.value] = EventType.STRUCTURED_LOG.value
+    payload: StructuredLogPayload
+
+
 Event = Annotated[
-    Union[LoggingEvent, SpanStartEvent, SpanEndEvent],
+    Union[
+        UnstructuredLogEvent,
+        MetricEvent,
+        StructuredLogEvent,
+    ],
     Field(discriminator="type"),
 ]
 

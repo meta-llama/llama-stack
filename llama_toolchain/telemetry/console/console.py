@@ -20,18 +20,21 @@ class ConsoleTelemetryImpl(Telemetry):
     async def shutdown(self) -> None: ...
 
     async def log_event(self, event: Event):
-        if isinstance(event, SpanStartEvent):
-            self.spans[event.span_id] = event
+        if (
+            isinstance(event, StructuredLogEvent)
+            and event.payload.type == StructuredLogType.SPAN_START.value
+        ):
+            self.spans[event.span_id] = event.payload
 
         names = []
         span_id = event.span_id
         while True:
-            span_event = self.spans.get(span_id)
-            if not span_event:
+            span_payload = self.spans.get(span_id)
+            if not span_payload:
                 break
 
-            names = [span_event.name] + names
-            span_id = span_event.parent_span_id
+            names = [span_payload.name] + names
+            span_id = span_payload.parent_span_id
 
         span_name = ".".join(names) if names else None
 
@@ -71,7 +74,7 @@ def format_event(event: Event, span_name: str) -> Optional[str]:
     span = ""
     if span_name:
         span = f"{COLORS['magenta']}[{span_name}]{COLORS['reset']} "
-    if isinstance(event, LoggingEvent):
+    if isinstance(event, UnstructuredLogEvent):
         severity_color = SEVERITY_COLORS.get(event.severity, COLORS["reset"])
         return (
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
@@ -80,21 +83,7 @@ def format_event(event: Event, span_name: str) -> Optional[str]:
             f"{event.message}"
         )
 
-    elif isinstance(event, SpanStartEvent):
+    elif isinstance(event, StructuredLogEvent):
         return None
-
-    #     return (f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
-    #             f"{COLORS['blue']}[SPAN_START]{COLORS['reset']} "
-    #             f"{span}"
-    #             f"{COLORS['bold']}{event.name}{COLORS['reset']}")
-
-    elif isinstance(event, SpanEndEvent):
-        return None
-
-    #     status_color = COLORS['green'] if event.status == SpanStatus.OK else COLORS['red']
-    #     return (f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
-    #             f"{COLORS['blue']}[SPAN_END]{COLORS['reset']} "
-    #             f"{span}"
-    #             f"{status_color}{event.status.value}{COLORS['reset']}")
 
     return f"Unknown event type: {event}"
