@@ -701,14 +701,6 @@ components:
       - model
       - messages
       type: object
-    ChatCompletionRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/ChatCompletionRequest'
-      required:
-      - request
-      type: object
     ChatCompletionResponseEvent:
       additionalProperties: false
       properties:
@@ -816,14 +808,6 @@ components:
       required:
       - model
       - content
-      type: object
-    CompletionRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/CompletionRequest'
-      required:
-      - request
       type: object
     CompletionResponseStreamChunk:
       additionalProperties: false
@@ -2838,7 +2822,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-10 16:42:15.870336"
+    \ draft and subject to change.\n                Generated at 2024-09-11 12:34:17.939867"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3358,7 +3342,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChatCompletionRequestWrapper'
+              $ref: '#/components/schemas/ChatCompletionRequest'
         required: true
       responses:
         '200':
@@ -3376,7 +3360,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompletionRequestWrapper'
+              $ref: '#/components/schemas/CompletionRequest'
         required: true
       responses:
         '200':
@@ -3808,17 +3792,17 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: BatchInference
-- name: Safety
-- name: Telemetry
+- name: PostTraining
 - name: RewardScoring
+- name: Safety
 - name: Memory
 - name: SyntheticDataGeneration
-- name: Inference
-- name: Evaluations
-- name: PostTraining
-- name: Datasets
+- name: BatchInference
 - name: AgenticSystem
+- name: Telemetry
+- name: Evaluations
+- name: Inference
+- name: Datasets
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3885,9 +3869,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequestWrapper"
-    />
-  name: ChatCompletionRequestWrapper
 - description: 'Chat completion response event.
 
 
@@ -3913,9 +3894,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
     />
   name: CompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequestWrapper"
-    />
-  name: CompletionRequestWrapper
 - description: 'streamed completion response.
 
 
@@ -4353,7 +4331,6 @@ x-tagGroups:
   - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
   - ChatCompletionRequest
-  - ChatCompletionRequestWrapper
   - ChatCompletionResponseEvent
   - ChatCompletionResponseEventType
   - ChatCompletionResponseStreamChunk
@@ -4361,7 +4338,6 @@ x-tagGroups:
   - CodeInterpreterToolDefinition
   - CompletionMessage
   - CompletionRequest
-  - CompletionRequestWrapper
   - CompletionResponseStreamChunk
   - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest

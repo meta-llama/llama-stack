@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-10 16:42:15.870336"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-11 12:34:17.939867"
     },
     "servers": [
         {
@@ -157,7 +157,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ChatCompletionRequestWrapper"
+                                "$ref": "#/components/schemas/ChatCompletionRequest"
                             }
                         }
                     },
@@ -187,7 +187,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CompletionRequestWrapper"
+                                "$ref": "#/components/schemas/CompletionRequest"
                             }
                         }
                     },
@@ -2228,18 +2228,6 @@
                     "messages"
                 ]
             },
-            "ChatCompletionRequestWrapper": {
-                "type": "object",
-                "properties": {
-                    "request": {
-                        "$ref": "#/components/schemas/ChatCompletionRequest"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "request"
-                ]
-            },
             "ChatCompletionResponseEvent": {
                 "type": "object",
                 "properties": {
@@ -2380,18 +2368,6 @@
                 "required": [
                     "model",
                     "content"
-                ]
-            },
-            "CompletionRequestWrapper": {
-                "type": "object",
-                "properties": {
-                    "request": {
-                        "$ref": "#/components/schemas/CompletionRequest"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "request"
                 ]
             },
             "CompletionResponseStreamChunk": {
@@ -6220,16 +6196,13 @@
     ],
     "tags": [
         {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "Telemetry"
+            "name": "PostTraining"
         },
         {
             "name": "RewardScoring"
+        },
+        {
+            "name": "Safety"
         },
         {
             "name": "Memory"
@@ -6238,19 +6211,22 @@
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Inference"
+            "name": "BatchInference"
+        },
+        {
+            "name": "AgenticSystem"
+        },
+        {
+            "name": "Telemetry"
         },
         {
             "name": "Evaluations"
         },
         {
-            "name": "PostTraining"
+            "name": "Inference"
         },
         {
             "name": "Datasets"
-        },
-        {
-            "name": "AgenticSystem"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -6341,10 +6317,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
         },
         {
-            "name": "ChatCompletionRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequestWrapper\" />"
-        },
-        {
             "name": "ChatCompletionResponseEvent",
             "description": "Chat completion response event.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseEvent\" />"
         },
@@ -6371,10 +6343,6 @@
         {
             "name": "CompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequest\" />"
-        },
-        {
-            "name": "CompletionRequestWrapper",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequestWrapper\" />"
         },
         {
             "name": "CompletionResponseStreamChunk",
@@ -6904,7 +6872,6 @@
                 "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
-                "ChatCompletionRequestWrapper",
                 "ChatCompletionResponseEvent",
                 "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
@@ -6912,7 +6879,6 @@
                 "CodeInterpreterToolDefinition",
                 "CompletionMessage",
                 "CompletionRequest",
-                "CompletionRequestWrapper",
                 "CompletionResponseStreamChunk",
                 "CreateAgenticSystemRequest",
                 "CreateAgenticSystemSessionRequest",
