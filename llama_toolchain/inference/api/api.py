@@ -176,7 +176,15 @@ class Inference(Protocol):
     @webmethod(route="/inference/chat_completion")
     async def chat_completion(
         self,
-        request: ChatCompletionRequest,
+        model: str,
+        messages: List[Message],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        # zero-shot tool definitions as input to the model
+        tools: Optional[List[ToolDefinition]] = list,
+        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
 
     @webmethod(route="/inference/embeddings")

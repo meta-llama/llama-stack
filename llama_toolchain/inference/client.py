@@ -10,10 +10,10 @@ from typing import Any, AsyncGenerator
 
 import fire
 import httpx
-from pydantic import BaseModel
-from termcolor import cprint
 
 from llama_toolchain.core.datatypes import RemoteProviderConfig
+from pydantic import BaseModel
+from termcolor import cprint
 
 from .api import (
     ChatCompletionRequest,
@@ -52,9 +52,7 @@ class InferenceClient(Inference):
             async with client.stream(
                 "POST",
                 f"{self.base_url}/inference/chat_completion",
-                json={
-                    "request": encodable_dict(request),
-                },
+                json=encodable_dict(request),
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             ) as response:
