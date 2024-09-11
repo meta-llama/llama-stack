@@ -295,13 +295,18 @@ As you can see above, each “distribution” details the “providers” it is 
 Let's imagine you are working with a 8B-Instruct model. The following command will build a package (in the form of a Conda environment) _and_ configure it. As part of the configuration, you will be asked for some inputs (model_id, max_seq_len, etc.) Since we are working with a 8B model, we will name our build `8b-instruct` to help us remember the config.
 
 ```
-llama stack build --distribution local --name 8b-instruct
+llama stack build
 ```
 
-Once it runs successfully , you should see some outputs in the form:
+Once it runs, you will be prompted to enter build name and optional arguments, and should see some outputs in the form:
 
 ```
-$ llama stack build --distribution local --name 8b-instruct
+$ llama stack build
+Enter value for name (required): 8b-instruct
+Enter value for distribution (default: local) (required): local
+Enter value for api_providers (optional):
+Enter value for image_type (default: conda) (required):
+
 ....
 ....
 Successfully installed cfgv-3.4.0 distlib-0.3.8 identify-2.6.0 libcst-1.4.0 llama_toolchain-0.0.2 moreorless-0.4.0 nodeenv-1.9.1 pre-commit-3.8.0 stdlibs-2024.5.15 toml-0.10.2 tomlkit-0.13.0 trailrunner-1.4.0 ufmt-2.7.0 usort-1.0.8 virtualenv-20.26.3
@@ -326,26 +331,21 @@ Successfully setup conda environment. Configuring build...
 ...
 
 YAML configuration has been written to ~/.llama/builds/local/conda/8b-instruct.yaml
-Target `8b-test` built with configuration at /home/xiyan/.llama/builds/local/conda/8b-test.yaml
-Build spec configuration saved at /home/xiyan/.llama/distributions/local/conda/8b-test-build.yaml
+Target `8b-instruct` built with configuration at ~/.llama/builds/local/conda/8b-instruct.yaml
+Build spec configuration saved at ~/.llama/distributions/local/conda/8b-instruct-build.yaml
 ```
 
 ### Step 3.3: Configure a distribution
 
 You can re-configure this distribution by running:
 ```
-llama stack configure --config ~/.llama/distributions/local/conda/8b-instruct-build.yaml
-```
-
-or
-
-```
-llama stack configure --distribution local --name 8b-instruct
+llama stack configure ~/.llama/builds/local/conda/8b-instruct.yaml
 ```
 
 Here is an example run of how the CLI will guide you to fill the configuration
+
 ```
-$ llama stack configure local --name 8b-instruct
+$ llama stack configure ~/.llama/builds/local/conda/8b-instruct.yaml
 
 Configuring API: inference (meta-reference)
 Enter value for model (required): Meta-Llama3.1-8B-Instruct
@@ -386,12 +386,12 @@ Now let’s start Llama Stack Distribution Server.
 You need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```
-llama stack run --config ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
+llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
 ```
 You should see the Stack server start and print the APIs that it is supporting,
 
 ```
-$ llama stack run --config ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
+$ llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
