@@ -40,9 +40,15 @@ class Trace(BaseModel):
 
 @json_schema_type
 class EventType(Enum):
-    LOG = "log"
+    UNSTRUCTURED_LOG = "unstructured_log"
+
+    # all structured log events below
     SPAN_START = "span_start"
     SPAN_END = "span_end"
+    METRIC = "metric"
+
+    def is_structured(self) -> bool:
+        return self != EventType.UNSTRUCTURED_LOG
 
 
 @json_schema_type
@@ -64,7 +70,7 @@ class EventCommon(BaseModel):
 
 @json_schema_type
 class LoggingEvent(EventCommon):
-    type: Literal[EventType.LOG.value] = EventType.LOG.value
+    type: Literal[EventType.UNSTRUCTURED_LOG.value] = EventType.UNSTRUCTURED_LOG.value
     message: str
     severity: LogSeverity
 
@@ -80,6 +86,14 @@ class SpanStartEvent(EventCommon):
 class SpanEndEvent(EventCommon):
     type: Literal[EventType.SPAN_END.value] = EventType.SPAN_END.value
     status: SpanStatus
+
+
+@json_schema_type
+class MetricEvent(EventCommon):
+    type: Literal[EventType.METRIC.value] = EventType.METRIC.value
+    metric: str  # this would be an enum
+    value: Union[int, float]
+    unit: str
 
 
 Event = Annotated[
