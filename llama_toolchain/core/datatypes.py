@@ -188,3 +188,19 @@ Provider configurations for each of the APIs provided by this package. This incl
 the dependencies of these providers as well.
 """,
     )
+
+
+@json_schema_type
+class BuildConfig(BaseModel):
+    name: str
+    distribution: str = Field(
+        default="local", description="Type of distribution to build (adhoc | {})"
+    )
+    api_providers: Optional[str] = Field(
+        default_factory=list,
+        description="List of API provider names to build",
+    )
+    image_type: str = Field(
+        default="conda",
+        description="Type of package to build (conda | container)",
+    )
