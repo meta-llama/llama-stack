@@ -25,7 +25,7 @@ components:
         tools:
           items:
             oneOf:
-            - $ref: '#/components/schemas/BraveSearchToolDefinition'
+            - $ref: '#/components/schemas/SearchToolDefinition'
             - $ref: '#/components/schemas/WolframAlphaToolDefinition'
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
@@ -218,7 +218,7 @@ components:
         tools:
           items:
             oneOf:
-            - $ref: '#/components/schemas/BraveSearchToolDefinition'
+            - $ref: '#/components/schemas/SearchToolDefinition'
             - $ref: '#/components/schemas/WolframAlphaToolDefinition'
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
@@ -634,25 +634,6 @@ components:
           type: array
       required:
       - completion_message_batch
-      type: object
-    BraveSearchToolDefinition:
-      additionalProperties: false
-      properties:
-        input_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        output_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        remote_execution:
-          $ref: '#/components/schemas/RestAPIExecutionConfig'
-        type:
-          const: brave_search
-          type: string
-      required:
-      - type
       type: object
     BuiltinShield:
       enum:
@@ -2011,17 +1992,35 @@ components:
       properties:
         body:
           additionalProperties:
-            type: string
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         headers:
           additionalProperties:
-            type: string
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         method:
           $ref: '#/components/schemas/RestAPIMethod'
         params:
           additionalProperties:
-            type: string
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
         url:
           $ref: '#/components/schemas/URL'
@@ -2103,6 +2102,43 @@ components:
       - started_at
       - metadata
       type: object
+    RunShieldRequest:
+      additionalProperties: false
+      properties:
+        messages:
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/UserMessage'
+            - $ref: '#/components/schemas/SystemMessage'
+            - $ref: '#/components/schemas/ToolResponseMessage'
+            - $ref: '#/components/schemas/CompletionMessage'
+          type: array
+        shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+      required:
+      - messages
+      - shields
+      type: object
+    RunShieldRequestWrapper:
+      additionalProperties: false
+      properties:
+        request:
+          $ref: '#/components/schemas/RunShieldRequest'
+      required:
+      - request
+      type: object
+    RunShieldResponse:
+      additionalProperties: false
+      properties:
+        responses:
+          items:
+            $ref: '#/components/schemas/ShieldResponse'
+          type: array
+      required:
+      - responses
+      type: object
     SamplingParams:
       additionalProperties: false
       properties:
@@ -2160,6 +2196,31 @@ components:
       required:
       - message
       - score
+      type: object
+    SearchToolDefinition:
+      additionalProperties: false
+      properties:
+        engine:
+          enum:
+          - bing
+          - brave
+          type: string
+        input_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        output_shields:
+          items:
+            $ref: '#/components/schemas/ShieldDefinition'
+          type: array
+        remote_execution:
+          $ref: '#/components/schemas/RestAPIExecutionConfig'
+        type:
+          const: brave_search
+          type: string
+      required:
+      - type
+      - engine
       type: object
     Session:
       additionalProperties: false
@@ -2777,7 +2838,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-10 01:13:08.531639"
+    \ draft and subject to change.\n                Generated at 2024-09-10 16:42:15.870336"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3706,6 +3767,24 @@ paths:
           description: OK
       tags:
       - Telemetry
+  /safety/run_shields:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunShieldRequestWrapper'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunShieldResponse'
+          description: OK
+      tags:
+      - Safety
   /synthetic_data_generation/generate:
     post:
       parameters: []
@@ -3729,16 +3808,17 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: SyntheticDataGeneration
-- name: RewardScoring
-- name: Datasets
-- name: Memory
-- name: AgenticSystem
 - name: BatchInference
-- name: PostTraining
-- name: Evaluations
+- name: Safety
 - name: Telemetry
+- name: RewardScoring
+- name: Memory
+- name: SyntheticDataGeneration
 - name: Inference
+- name: Evaluations
+- name: PostTraining
+- name: Datasets
+- name: AgenticSystem
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -3844,9 +3924,6 @@ tags:
   name: CompletionResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentConfig" />
   name: AgentConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/BraveSearchToolDefinition"
-    />
-  name: BraveSearchToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinShield" />
   name: BuiltinShield
 - description: <SchemaDefinition schemaRef="#/components/schemas/CodeInterpreterToolDefinition"
@@ -3866,6 +3943,9 @@ tags:
   name: RestAPIExecutionConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIMethod" />
   name: RestAPIMethod
+- description: <SchemaDefinition schemaRef="#/components/schemas/SearchToolDefinition"
+    />
+  name: SearchToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
     />
   name: ShieldDefinition
@@ -4163,6 +4243,15 @@ tags:
   name: ScoredDialogGenerations
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
   name: ScoredMessage
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
+    />
+  name: RunShieldRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequestWrapper"
+    />
+  name: RunShieldRequestWrapper
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldResponse"
+    />
+  name: RunShieldResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
     />
   name: DoraFinetuningConfig
@@ -4232,6 +4321,7 @@ x-tagGroups:
   - Memory
   - PostTraining
   - RewardScoring
+  - Safety
   - SyntheticDataGeneration
   - Telemetry
 - name: Types
@@ -4258,7 +4348,6 @@ x-tagGroups:
   - BatchCompletionRequest
   - BatchCompletionRequestWrapper
   - BatchCompletionResponse
-  - BraveSearchToolDefinition
   - BuiltinShield
   - BuiltinTool
   - CancelEvaluationJobRequest
@@ -4346,10 +4435,14 @@ x-tagGroups:
   - RewardScoringRequestWrapper
   - RewardScoringResponse
   - Run
+  - RunShieldRequest
+  - RunShieldRequestWrapper
+  - RunShieldResponse
   - SamplingParams
   - SamplingStrategy
   - ScoredDialogGenerations
   - ScoredMessage
+  - SearchToolDefinition
   - Session
   - ShieldCallStep
   - ShieldDefinition
