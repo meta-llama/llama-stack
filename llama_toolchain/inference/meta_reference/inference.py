@@ -77,6 +77,13 @@ class MetaReferenceInferenceImpl(Inference):
             logprobs=logprobs,
         )
 
+        return self._chat_completion(request)
+
+    async def chat_completion_impl(
+        self, request: ChatCompletionRequest
+    ) -> AsyncIterator[
+        Union[ChatCompletionResponseStreamChunk, ChatCompletionResponse]
+    ]:
         messages = prepare_messages(request)
         model = resolve_model(request.model)
         if model is None:

@@ -400,7 +400,7 @@ class ChatAgent(ShieldRunnerMixin):
             tool_calls = []
             content = ""
             stop_reason = None
-            async for chunk in self.inference_api.chat_completion(req):
+            async for chunk in self.inference_api.chat_completion_impl(req):
                 event = chunk.event
                 if event.event_type == ChatCompletionResponseEventType.start:
                     continue

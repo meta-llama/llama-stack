@@ -416,7 +416,16 @@ class AgenticSystem(Protocol):
     @webmethod(route="/agentic_system/turn/create")
     async def create_agentic_system_turn(
         self,
-        request: AgenticSystemTurnCreateRequest,
+        agent_id: str,
+        session_id: str,
+        messages: List[
+            Union[
+                UserMessage,
+                ToolResponseMessage,
+            ]
+        ],
+        attachments: Optional[List[Attachment]] = None,
+        stream: Optional[bool] = False,
     ) -> AgenticSystemTurnResponseStreamChunk: ...
 
     @webmethod(route="/agentic_system/turn/get")
