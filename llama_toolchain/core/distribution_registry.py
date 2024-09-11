@@ -21,12 +21,16 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.memory: "meta-reference-faiss",
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
+                Api.telemetry: "console",
             },
         ),
         DistributionSpec(
             distribution_type="remote",
             description="Point to remote services for all llama stack APIs",
-            providers={x: "remote" for x in Api},
+            providers={
+                **{x: "remote" for x in Api},
+                Api.telemetry: "console",
+            },
         ),
         DistributionSpec(
             distribution_type="local-ollama",
@@ -36,6 +40,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
+                Api.telemetry: "console",
             },
         ),
         DistributionSpec(
@@ -46,6 +51,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
+                Api.telemetry: "console",
             },
         ),
         DistributionSpec(
@@ -56,6 +62,7 @@ def available_distribution_specs() -> List[DistributionSpec]:
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
+                Api.telemetry: "console",
             },
         ),
     ]

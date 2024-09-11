@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 import uuid
 
 from typing import Any, Dict, List, Optional
@@ -20,7 +21,10 @@ from llama_toolchain.memory.common.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
 )
+from llama_toolchain.telemetry import tracing
 from .config import FaissImplConfig
+
+logger = logging.getLogger(__name__)
 
 
 class FaissIndex(EmbeddingIndex):
@@ -32,11 +36,12 @@ class FaissIndex(EmbeddingIndex):
         self.id_by_index = {}
         self.chunk_by_index = {}
 
+    @tracing.span(name="add_chunks")
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
         indexlen = len(self.id_by_index)
         for i, chunk in enumerate(chunks):
             self.chunk_by_index[indexlen + i] = chunk
-            print(f"Adding chunk #{indexlen + i} tokens={chunk.token_count}")
+            logger.info(f"Adding chunk #{indexlen + i} tokens={chunk.token_count}")
             self.id_by_index[indexlen + i] = chunk.document_id
 
         self.index.add(np.array(embeddings).astype(np.float32))

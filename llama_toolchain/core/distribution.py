@@ -4,17 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import importlib
 import inspect
 from typing import Dict, List
 
 from llama_toolchain.agentic_system.api import AgenticSystem
-from llama_toolchain.agentic_system.providers import available_agentic_system_providers
 from llama_toolchain.inference.api import Inference
-from llama_toolchain.inference.providers import available_inference_providers
 from llama_toolchain.memory.api import Memory
-from llama_toolchain.memory.providers import available_memory_providers
 from llama_toolchain.safety.api import Safety
-from llama_toolchain.safety.providers import available_safety_providers
+from llama_toolchain.telemetry.api import Telemetry
 
 from .datatypes import (
     Api,
@@ -44,7 +42,7 @@ def distribution_dependencies(distribution: DistributionSpec) -> List[str]:
 
 
 def stack_apis() -> List[Api]:
-    return [Api.inference, Api.safety, Api.agentic_system, Api.memory]
+    return [v for v in Api]
 
 
 def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
@@ -55,6 +53,7 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         Api.safety: Safety,
         Api.agentic_system: AgenticSystem,
         Api.memory: Memory,
+        Api.telemetry: Telemetry,
     }
 
     for api, protocol in protocols.items():
@@ -82,20 +81,13 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
 
 
 def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
-    inference_providers_by_id = {
-        a.provider_type: a for a in available_inference_providers()
-    }
-    safety_providers_by_id = {a.provider_type: a for a in available_safety_providers()}
-    agentic_system_providers_by_id = {
-        a.provider_type: a for a in available_agentic_system_providers()
-    }
+    ret = {}
+    for api in stack_apis():
+        name = api.name.lower()
+        module = importlib.import_module(f"llama_toolchain.{name}.providers")
+        ret[api] = {
+            "remote": remote_provider_spec(api),
+            **{a.provider_type: a for a in module.available_providers()},
+        }
 
-    ret = {
-        Api.inference: inference_providers_by_id,
-        Api.safety: safety_providers_by_id,
-        Api.agentic_system: agentic_system_providers_by_id,
-        Api.memory: {a.provider_type: a for a in available_memory_providers()},
-    }
-    for k, v in ret.items():
-        v["remote"] = remote_provider_spec(k)
     return ret
