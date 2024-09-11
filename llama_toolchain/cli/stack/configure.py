@@ -38,42 +38,15 @@ class StackConfigure(Subcommand):
 
         allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
-            "--distribution",
+            "config",
             type=str,
-            help='Distribution ("adhoc" or one of: {})'.format(allowed_ids),
-        )
-        self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the build",
-        )
-        self.parser.add_argument(
-            "--image-type",
-            type=str,
-            default="conda",
-            choices=[v.value for v in ImageType],
-        )
-        self.parser.add_argument(
-            "--config",
-            type=str,
-            help="Path to a config file to use for the build",
+            help="Path to the package config file (e.g. ~/.llama/builds/<distribution>/<image_type>/<name>.yaml)",
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import ImageType
 
-        if args.config:
-            with open(args.config, "r") as f:
-                build_config = BuildConfig(**yaml.safe_load(f))
-                image_type = ImageType(build_config.image_type)
-                distribution = build_config.distribution
-                name = build_config.name
-        else:
-            image_type = ImageType(args.image_type)
-            name = args.name
-            distribution = args.distribution
-
-        config_file = BUILDS_BASE_DIR / distribution / image_type.value / f"{name}.yaml"
+        config_file = Path(args.config)
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama stack build` first"

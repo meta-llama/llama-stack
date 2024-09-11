@@ -119,6 +119,7 @@ def build_package(
             distribution_type,
             package_name,
             package_deps.docker_image,
+            str(package_file),
             " ".join(package_deps.pip_packages),
         ]
     else:
@@ -129,6 +130,7 @@ def build_package(
             script,
             distribution_type,
             package_name,
+            str(package_file),
             " ".join(package_deps.pip_packages),
         ]
 
