@@ -34,7 +34,7 @@ class StackConfigure(Subcommand):
         from llama_toolchain.core.distribution_registry import (
             available_distribution_specs,
         )
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
         allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
@@ -48,10 +48,10 @@ class StackConfigure(Subcommand):
             help="Name of the build",
         )
         self.parser.add_argument(
-            "--package-type",
+            "--image-type",
             type=str,
-            default="conda_env",
-            choices=[v.value for v in BuildType],
+            default="conda",
+            choices=[v.value for v in ImageType],
         )
         self.parser.add_argument(
             "--config",
@@ -60,22 +60,20 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
         if args.config:
             with open(args.config, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
-                build_type = BuildType(build_config.package_type)
+                image_type = ImageType(build_config.image_type)
                 distribution = build_config.distribution
                 name = build_config.name
         else:
-            build_type = BuildType(args.package_type)
+            image_type = ImageType(args.image_type)
             name = args.name
             distribution = args.distribution
 
-        config_file = (
-            BUILDS_BASE_DIR / distribution / build_type.descriptor() / f"{name}.yaml"
-        )
+        config_file = BUILDS_BASE_DIR / distribution / image_type.value / f"{name}.yaml"
         if not config_file.exists():
             self.parser.error(
                 f"Could not find {config_file}. Please run `llama stack build` first"

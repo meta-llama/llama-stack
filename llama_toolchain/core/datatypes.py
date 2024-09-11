@@ -200,7 +200,7 @@ class BuildConfig(BaseModel):
         default_factory=list,
         description="List of API provider names to build",
     )
-    package_type: str = Field(
-        default="conda_env",
-        description="Type of package to build (conda_env | container)",
+    image_type: str = Field(
+        default="conda",
+        description="Type of package to build (conda | container)",
     )

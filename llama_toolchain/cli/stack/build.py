@@ -8,7 +8,6 @@ import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.core.datatypes import *  # noqa: F403
-
 import yaml
 
 
@@ -52,33 +51,9 @@ class StackBuild(Subcommand):
         from llama_toolchain.core.distribution_registry import (
             available_distribution_specs,
         )
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
         allowed_ids = [d.distribution_type for d in available_distribution_specs()]
-        self.parser.add_argument(
-            "--distribution",
-            type=str,
-            help='Distribution to build (either "adhoc" OR one of: {})'.format(
-                allowed_ids
-            ),
-        )
-        self.parser.add_argument(
-            "--api-providers",
-            nargs="?",
-            help="Comma separated list of (api=provider) tuples",
-        )
-
-        self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the build target (image, conda env)",
-        )
-        self.parser.add_argument(
-            "--package-type",
-            type=str,
-            default="conda_env",
-            choices=[v.value for v in BuildType],
-        )
         self.parser.add_argument(
             "--config",
             type=str,
@@ -94,7 +69,7 @@ class StackBuild(Subcommand):
         from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
         from llama_toolchain.common.serialize import EnumEncoder
         from llama_toolchain.core.distribution_registry import resolve_distribution_spec
-        from llama_toolchain.core.package import ApiInput, build_package, BuildType
+        from llama_toolchain.core.package import ApiInput, build_package, ImageType
         from termcolor import cprint
 
         api_inputs = []
@@ -146,7 +121,7 @@ class StackBuild(Subcommand):
 
         build_package(
             api_inputs,
-            build_type=BuildType(build_config.package_type),
+            image_type=ImageType(build_config.image_type),
             name=build_config.name,
             distribution_type=build_config.distribution,
             docker_image=docker_image,
@@ -154,9 +129,7 @@ class StackBuild(Subcommand):
 
         # save build.yaml spec for building same distribution again
         build_dir = (
-            DISTRIBS_BASE_DIR
-            / build_config.distribution
-            / BuildType(build_config.package_type).descriptor()
+            DISTRIBS_BASE_DIR / build_config.distribution / build_config.image_type
         )
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
@@ -171,6 +144,9 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
+        from llama_toolchain.common.prompt_for_config import prompt_for_config
+        from llama_toolchain.core.dynamic import instantiate_class_type
+
         if args.config:
             with open(args.config, "r") as f:
                 try:
@@ -181,10 +157,5 @@ class StackBuild(Subcommand):
                 self._run_stack_build_command_from_build_config(build_config)
             return
 
-        build_config = BuildConfig(
-            name=args.name,
-            distribution=args.distribution,
-            package_type=args.package_type,
-            api_providers=args.api_providers,
-        )
+        build_config = prompt_for_config(BuildConfig, None)
         self._run_stack_build_command_from_build_config(build_config)

@@ -29,23 +29,12 @@ class StackRun(Subcommand):
         self.parser.set_defaults(func=self._run_stack_run_cmd)
 
     def _add_arguments(self):
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
         self.parser.add_argument(
-            "--distribution",
+            "config",
             type=str,
-            help="Distribution whose build you want to start",
-        )
-        self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the build you want to start",
-        )
-        self.parser.add_argument(
-            "--type",
-            type=str,
-            default="conda_env",
-            choices=[v.value for v in BuildType],
+            help="Path to config file to use for the run",
         )
         self.parser.add_argument(
             "--port",
@@ -59,23 +48,16 @@ class StackRun(Subcommand):
             help="Disable IPv6 support",
             default=False,
         )
-        self.parser.add_argument(
-            "--config",
-            type=str,
-            help="Path to config file to use for the run",
-        )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
-        from llama_toolchain.core.package import BuildType
+        from llama_toolchain.core.package import ImageType
 
-        if args.config:
-            path = args.config
-        else:
-            build_type = BuildType(args.type)
-            build_dir = BUILDS_BASE_DIR / args.distribution / build_type.descriptor()
-            path = build_dir / f"{args.name}.yaml"
+        if not args.config:
+            self.parser.error("Must specify a config file to run")
+            return
 
+        path = args.config
         config_file = Path(path)
 
         if not config_file.exists():

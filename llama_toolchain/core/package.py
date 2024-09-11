@@ -12,24 +12,21 @@ from typing import List, Optional
 
 import pkg_resources
 import yaml
-from pydantic import BaseModel
-
-from termcolor import cprint
 
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
 from llama_toolchain.common.exec import run_with_pty
 from llama_toolchain.common.serialize import EnumEncoder
+from pydantic import BaseModel
+
+from termcolor import cprint
 
 from llama_toolchain.core.datatypes import *  # noqa: F403
 from llama_toolchain.core.distribution import api_providers, SERVER_DEPENDENCIES
 
 
-class BuildType(Enum):
-    container = "container"
-    conda_env = "conda_env"
-
-    def descriptor(self) -> str:
-        return "docker" if self == self.container else "conda"
+class ImageType(Enum):
+    docker = "docker"
+    conda = "conda"
 
 
 class Dependencies(BaseModel):
@@ -44,7 +41,7 @@ class ApiInput(BaseModel):
 
 def build_package(
     api_inputs: List[ApiInput],
-    build_type: BuildType,
+    image_type: ImageType,
     name: str,
     distribution_type: Optional[str] = None,
     docker_image: Optional[str] = None,
@@ -52,7 +49,7 @@ def build_package(
     if not distribution_type:
         distribution_type = "adhoc"
 
-    build_dir = BUILDS_BASE_DIR / distribution_type / build_type.descriptor()
+    build_dir = BUILDS_BASE_DIR / distribution_type / image_type.value
     os.makedirs(build_dir, exist_ok=True)
 
     package_name = name.replace("::", "-")
@@ -106,14 +103,14 @@ def build_package(
         )
 
     c.distribution_type = distribution_type
-    c.docker_image = package_name if build_type == BuildType.container else None
-    c.conda_env = package_name if build_type == BuildType.conda_env else None
+    c.docker_image = package_name if image_type == ImageType.docker else None
+    c.conda_env = package_name if image_type == ImageType.conda else None
 
     with open(package_file, "w") as f:
         to_write = json.loads(json.dumps(c.dict(), cls=EnumEncoder))
         f.write(yaml.dump(to_write, sort_keys=False))
 
-    if build_type == BuildType.container:
+    if image_type == ImageType.docker:
         script = pkg_resources.resource_filename(
             "llama_toolchain", "core/build_container.sh"
         )
