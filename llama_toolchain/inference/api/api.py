@@ -170,7 +170,7 @@ class Inference(Protocol):
     @webmethod(route="/inference/completion")
     async def completion(
         self,
-        model: str
+        model: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         stream: Optional[bool] = False,
