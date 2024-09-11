@@ -57,7 +57,7 @@ class MetaReferenceInferenceImpl(Inference):
         model: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
-        tools: Optional[List[ToolDefinition]] = list,
+        tools: Optional[List[ToolDefinition]] = list(),
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
