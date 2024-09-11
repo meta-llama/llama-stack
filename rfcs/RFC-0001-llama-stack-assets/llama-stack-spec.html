@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-11 15:30:11.688505"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-11 16:05:23.016090"
     },
     "servers": [
         {
@@ -139,11 +139,18 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "SSE-stream of these events.",
+                        "description": "Chat completion response. **OR** SSE-stream of these events.",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ChatCompletionResponseStreamChunk"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ChatCompletionResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ChatCompletionResponseStreamChunk"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -169,11 +176,18 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "streamed completion response.",
+                        "description": "Completion response. **OR** streamed completion response.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CompletionResponseStreamChunk"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/CompletionResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/CompletionResponseStreamChunk"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -308,36 +322,6 @@
                 }
             }
         },
-        "/experiments/create": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Experiment"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CreateExperimentRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/memory_banks/create": {
             "post": {
                 "responses": {
@@ -361,36 +345,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/CreateMemoryBankRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/experiments/create_run": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CreateRunRequest"
                             }
                         }
                     },
@@ -769,35 +723,6 @@
                 ]
             }
         },
-        "/artifacts/get": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Artifact"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [
-                    {
-                        "name": "artifact_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
         "/datasets/get": {
             "get": {
                 "responses": {
@@ -973,74 +898,6 @@
                 "parameters": []
             }
         },
-        "/experiments/get": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Experiment"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [
-                    {
-                        "name": "experiment_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/logging/get_logs": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Log"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [
-                    {
-                        "name": "query",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GetLogsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/memory_banks/get": {
             "get": {
                 "responses": {
@@ -1077,15 +934,15 @@
                 ]
             }
         },
-        "/runs/metrics": {
+        "/telemetry/get_trace": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Metric"
+                                    "$ref": "#/components/schemas/Trace"
                                 }
                             }
                         }
@@ -1096,7 +953,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "run_id",
+                        "name": "trace_id",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1236,56 +1093,6 @@
                 }
             }
         },
-        "/experiments/artifacts/get": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Artifact"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ListArtifactsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/experiments/list": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Experiment"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": []
-            }
-        },
         "/memory_banks/list": {
             "get": {
                 "responses": {
@@ -1306,7 +1113,7 @@
                 "parameters": []
             }
         },
-        "/logging/log_messages": {
+        "/telemetry/log_event": {
             "post": {
                 "responses": {
                     "200": {
@@ -1321,30 +1128,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/LogMessagesRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/runs/log_metrics": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/LogMetricsRequest"
+                                "$ref": "#/components/schemas/LogEventRequest"
                             }
                         }
                     },
@@ -1548,96 +1332,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/UpdateDocumentsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/experiments/update": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Experiment"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateExperimentRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/runs/update": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateRunRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/experiments/artifacts/upload": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Artifact"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UploadArtifactRequest"
                             }
                         }
                     },
@@ -2213,6 +1907,25 @@
                     "messages"
                 ]
             },
+            "ChatCompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "completion_message": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    },
+                    "logprobs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenLogProbs"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "completion_message"
+                ],
+                "title": "Chat completion response."
+            },
             "ChatCompletionResponseEvent": {
                 "type": "object",
                 "properties": {
@@ -2354,6 +2067,25 @@
                     "model",
                     "content"
                 ]
+            },
+            "CompletionResponse": {
+                "type": "object",
+                "properties": {
+                    "completion_message": {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    },
+                    "logprobs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenLogProbs"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "completion_message"
+                ],
+                "title": "Completion response."
             },
             "CompletionResponseStreamChunk": {
                 "type": "object",
@@ -3630,108 +3362,6 @@
                     "dataset"
                 ]
             },
-            "CreateExperimentRequest": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ]
-            },
-            "Experiment": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/ExperimentStatus"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "id",
-                    "name",
-                    "status",
-                    "created_at",
-                    "updated_at",
-                    "metadata"
-                ]
-            },
-            "ExperimentStatus": {
-                "type": "string",
-                "enum": [
-                    "not_started",
-                    "running",
-                    "completed",
-                    "failed"
-                ]
-            },
             "CreateMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -3900,98 +3530,6 @@
                     "bank_id",
                     "name",
                     "config"
-                ]
-            },
-            "CreateRunRequest": {
-                "type": "object",
-                "properties": {
-                    "experiment_id": {
-                        "type": "string"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "experiment_id"
-                ]
-            },
-            "Run": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "experiment_id": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string"
-                    },
-                    "started_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "ended_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "id",
-                    "experiment_id",
-                    "status",
-                    "started_at",
-                    "metadata"
                 ]
             },
             "DeleteAgenticSystemRequest": {
@@ -4251,74 +3789,6 @@
                     "step"
                 ]
             },
-            "Artifact": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "$ref": "#/components/schemas/ArtifactType"
-                    },
-                    "size": {
-                        "type": "integer"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "id",
-                    "name",
-                    "type",
-                    "size",
-                    "created_at",
-                    "metadata"
-                ]
-            },
-            "ArtifactType": {
-                "type": "string",
-                "enum": [
-                    "model",
-                    "dataset",
-                    "checkpoint",
-                    "plot",
-                    "metric",
-                    "config",
-                    "code",
-                    "other"
-                ]
-            },
             "GetDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -4430,120 +3900,29 @@
                     "job_uuid"
                 ]
             },
-            "GetLogsRequest": {
+            "Trace": {
                 "type": "object",
                 "properties": {
-                    "filters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false
-            },
-            "Log": {
-                "type": "object",
-                "properties": {
-                    "message": {
+                    "trace_id": {
                         "type": "string"
                     },
-                    "level": {
+                    "root_span_id": {
                         "type": "string"
                     },
-                    "timestamp": {
+                    "start_time": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "additional_info": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "message",
-                    "level",
-                    "timestamp",
-                    "additional_info"
-                ]
-            },
-            "Metric": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "oneOf": [
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "boolean"
-                            }
-                        ]
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "run_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "value",
-                    "timestamp",
-                    "run_id"
+                    "trace_id",
+                    "root_span_id",
+                    "start_time"
                 ]
             },
             "Checkpoint": {
@@ -4693,53 +4072,272 @@
                     "documents"
                 ]
             },
-            "ListArtifactsRequest": {
-                "type": "object",
-                "properties": {
-                    "experiment_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "experiment_id"
+            "LogSeverity": {
+                "type": "string",
+                "enum": [
+                    "verbose",
+                    "debug",
+                    "info",
+                    "warn",
+                    "error",
+                    "critical"
                 ]
             },
-            "LogMessagesRequest": {
+            "MetricEvent": {
                 "type": "object",
                 "properties": {
-                    "logs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Log"
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     },
-                    "run_id": {
+                    "type": {
+                        "type": "string",
+                        "const": "metric"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    },
+                    "unit": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "logs"
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "metric",
+                    "value",
+                    "unit"
                 ]
             },
-            "LogMetricsRequest": {
+            "SpanEndPayload": {
                 "type": "object",
                 "properties": {
-                    "run_id": {
-                        "type": "string"
+                    "type": {
+                        "type": "string",
+                        "const": "span_end"
                     },
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Metric"
-                        }
+                    "status": {
+                        "$ref": "#/components/schemas/SpanStatus"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "run_id",
-                    "metrics"
+                    "type",
+                    "status"
+                ]
+            },
+            "SpanStartPayload": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "span_start"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "parent_span_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "name"
+                ]
+            },
+            "SpanStatus": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "error"
+                ]
+            },
+            "StructuredLogEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "structured_log"
+                    },
+                    "payload": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/SpanStartPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/SpanEndPayload"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "payload"
+                ]
+            },
+            "UnstructuredLogEvent": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "unstructured_log"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "severity": {
+                        "$ref": "#/components/schemas/LogSeverity"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "span_id",
+                    "timestamp",
+                    "type",
+                    "message",
+                    "severity"
+                ]
+            },
+            "LogEventRequest": {
+                "type": "object",
+                "properties": {
+                    "event": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/UnstructuredLogEvent"
+                            },
+                            {
+                                "$ref": "#/components/schemas/MetricEvent"
+                            },
+                            {
+                                "$ref": "#/components/schemas/StructuredLogEvent"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event"
                 ]
             },
             "DPOAlignmentConfig": {
@@ -5533,140 +5131,6 @@
                     "bank_id",
                     "documents"
                 ]
-            },
-            "UpdateExperimentRequest": {
-                "type": "object",
-                "properties": {
-                    "experiment_id": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/ExperimentStatus"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "experiment_id"
-                ]
-            },
-            "UpdateRunRequest": {
-                "type": "object",
-                "properties": {
-                    "run_id": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string"
-                    },
-                    "ended_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "run_id"
-                ]
-            },
-            "UploadArtifactRequest": {
-                "type": "object",
-                "properties": {
-                    "experiment_id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "artifact_type": {
-                        "type": "string"
-                    },
-                    "content": {
-                        "type": "string",
-                        "contentEncoding": "base64"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "experiment_id",
-                    "name",
-                    "artifact_type",
-                    "content"
-                ]
             }
         },
         "responses": {}
@@ -5678,37 +5142,37 @@
     ],
     "tags": [
         {
-            "name": "BatchInference"
-        },
-        {
-            "name": "AgenticSystem"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "Evaluations"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Evaluations"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Telemetry"
         },
         {
             "name": "PostTraining"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "AgenticSystem"
         },
         {
             "name": "BuiltinTool",
@@ -5791,6 +5255,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionRequest\" />"
         },
         {
+            "name": "ChatCompletionResponse",
+            "description": "Chat completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponse\" />"
+        },
+        {
             "name": "ChatCompletionResponseEvent",
             "description": "Chat completion response event.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ChatCompletionResponseEvent\" />"
         },
@@ -5817,6 +5285,10 @@
         {
             "name": "CompletionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionRequest\" />"
+        },
+        {
+            "name": "CompletionResponse",
+            "description": "Completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponse\" />"
         },
         {
             "name": "CompletionResponseStreamChunk",
@@ -5963,32 +5435,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetRequest\" />"
         },
         {
-            "name": "CreateExperimentRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateExperimentRequest\" />"
-        },
-        {
-            "name": "Experiment",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Experiment\" />"
-        },
-        {
-            "name": "ExperimentStatus",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ExperimentStatus\" />"
-        },
-        {
             "name": "CreateMemoryBankRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateMemoryBankRequest\" />"
         },
         {
             "name": "MemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
-        },
-        {
-            "name": "CreateRunRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateRunRequest\" />"
-        },
-        {
-            "name": "Run",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Run\" />"
         },
         {
             "name": "DeleteAgenticSystemRequest",
@@ -6047,14 +5499,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemStepResponse\" />"
         },
         {
-            "name": "Artifact",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Artifact\" />"
-        },
-        {
-            "name": "ArtifactType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ArtifactType\" />"
-        },
-        {
             "name": "GetDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetDocumentsRequest\" />"
         },
@@ -6075,16 +5519,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
-            "name": "GetLogsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetLogsRequest\" />"
-        },
-        {
-            "name": "Log",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Log\" />"
-        },
-        {
-            "name": "Metric",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Metric\" />"
+            "name": "Trace",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Trace\" />"
         },
         {
             "name": "Checkpoint",
@@ -6115,16 +5551,36 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
         },
         {
-            "name": "ListArtifactsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListArtifactsRequest\" />"
+            "name": "LogSeverity",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogSeverity\" />"
         },
         {
-            "name": "LogMessagesRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMessagesRequest\" />"
+            "name": "MetricEvent",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MetricEvent\" />"
         },
         {
-            "name": "LogMetricsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogMetricsRequest\" />"
+            "name": "SpanEndPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanEndPayload\" />"
+        },
+        {
+            "name": "SpanStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanStartPayload\" />"
+        },
+        {
+            "name": "SpanStatus",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanStatus\" />"
+        },
+        {
+            "name": "StructuredLogEvent",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/StructuredLogEvent\" />"
+        },
+        {
+            "name": "UnstructuredLogEvent",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
+        },
+        {
+            "name": "LogEventRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogEventRequest\" />"
         },
         {
             "name": "DPOAlignmentConfig",
@@ -6213,18 +5669,6 @@
         {
             "name": "UpdateDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateDocumentsRequest\" />"
-        },
-        {
-            "name": "UpdateExperimentRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateExperimentRequest\" />"
-        },
-        {
-            "name": "UpdateRunRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateRunRequest\" />"
-        },
-        {
-            "name": "UploadArtifactRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UploadArtifactRequest\" />"
         }
     ],
     "x-tagGroups": [
@@ -6258,8 +5702,6 @@
                 "AgenticSystemTurnResponseStreamChunk",
                 "AgenticSystemTurnResponseTurnCompletePayload",
                 "AgenticSystemTurnResponseTurnStartPayload",
-                "Artifact",
-                "ArtifactType",
                 "Attachment",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
@@ -6270,6 +5712,7 @@
                 "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
+                "ChatCompletionResponse",
                 "ChatCompletionResponseEvent",
                 "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
@@ -6277,14 +5720,13 @@
                 "CodeInterpreterToolDefinition",
                 "CompletionMessage",
                 "CompletionRequest",
+                "CompletionResponse",
                 "CompletionResponseStreamChunk",
                 "CreateAgenticSystemRequest",
                 "CreateAgenticSystemSessionRequest",
                 "CreateAgenticSystemTurnRequest",
                 "CreateDatasetRequest",
-                "CreateExperimentRequest",
                 "CreateMemoryBankRequest",
-                "CreateRunRequest",
                 "DPOAlignmentConfig",
                 "DeleteAgenticSystemRequest",
                 "DeleteAgenticSystemSessionRequest",
@@ -6302,24 +5744,19 @@
                 "EvaluationJobArtifactsResponse",
                 "EvaluationJobLogStream",
                 "EvaluationJobStatusResponse",
-                "Experiment",
-                "ExperimentStatus",
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgenticSystemSessionRequest",
                 "GetDocumentsRequest",
-                "GetLogsRequest",
                 "InferenceStep",
                 "InsertDocumentsRequest",
-                "ListArtifactsRequest",
-                "Log",
-                "LogMessagesRequest",
-                "LogMetricsRequest",
+                "LogEventRequest",
+                "LogSeverity",
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
-                "Metric",
+                "MetricEvent",
                 "OnViolationAction",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",
@@ -6337,7 +5774,6 @@
                 "RestAPIMethod",
                 "RewardScoreRequest",
                 "RewardScoringResponse",
-                "Run",
                 "RunShieldResponse",
                 "RunShieldsRequest",
                 "SamplingParams",
@@ -6349,7 +5785,11 @@
                 "ShieldCallStep",
                 "ShieldDefinition",
                 "ShieldResponse",
+                "SpanEndPayload",
+                "SpanStartPayload",
+                "SpanStatus",
                 "StopReason",
+                "StructuredLogEvent",
                 "SupervisedFineTuneRequest",
                 "SyntheticDataGenerateRequest",
                 "SyntheticDataGenerationResponse",
@@ -6365,15 +5805,14 @@
                 "ToolPromptFormat",
                 "ToolResponse",
                 "ToolResponseMessage",
+                "Trace",
                 "TrainEvalDataset",
                 "TrainEvalDatasetColumnType",
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UnstructuredLogEvent",
                 "UpdateDocumentsRequest",
-                "UpdateExperimentRequest",
-                "UpdateRunRequest",
-                "UploadArtifactRequest",
                 "UserMessage",
                 "WolframAlphaToolDefinition"
             ]

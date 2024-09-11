@@ -306,49 +306,6 @@ components:
       - event_type
       - turn_id
       type: object
-    Artifact:
-      additionalProperties: false
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        size:
-          type: integer
-        type:
-          $ref: '#/components/schemas/ArtifactType'
-      required:
-      - id
-      - name
-      - type
-      - size
-      - created_at
-      - metadata
-      type: object
-    ArtifactType:
-      enum:
-      - model
-      - dataset
-      - checkpoint
-      - plot
-      - metric
-      - config
-      - code
-      - other
-      type: string
     Attachment:
       additionalProperties: false
       properties:
@@ -511,6 +468,19 @@ components:
       - model
       - messages
       type: object
+    ChatCompletionResponse:
+      additionalProperties: false
+      properties:
+        completion_message:
+          $ref: '#/components/schemas/CompletionMessage'
+        logprobs:
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+          type: array
+      required:
+      - completion_message
+      title: Chat completion response.
+      type: object
     ChatCompletionResponseEvent:
       additionalProperties: false
       properties:
@@ -619,6 +589,19 @@ components:
       - model
       - content
       type: object
+    CompletionResponse:
+      additionalProperties: false
+      properties:
+        completion_message:
+          $ref: '#/components/schemas/CompletionMessage'
+        logprobs:
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+          type: array
+      required:
+      - completion_message
+      title: Completion response.
+      type: object
     CompletionResponseStreamChunk:
       additionalProperties: false
       properties:
@@ -688,24 +671,6 @@ components:
       - uuid
       - dataset
       type: object
-    CreateExperimentRequest:
-      additionalProperties: false
-      properties:
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-      required:
-      - name
-      type: object
     CreateMemoryBankRequest:
       additionalProperties: false
       properties:
@@ -758,24 +723,6 @@ components:
       required:
       - name
       - config
-      type: object
-    CreateRunRequest:
-      additionalProperties: false
-      properties:
-        experiment_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-      required:
-      - experiment_id
       type: object
     DPOAlignmentConfig:
       additionalProperties: false
@@ -989,46 +936,6 @@ components:
       required:
       - job_uuid
       type: object
-    Experiment:
-      additionalProperties: false
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        status:
-          $ref: '#/components/schemas/ExperimentStatus'
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - id
-      - name
-      - status
-      - created_at
-      - updated_at
-      - metadata
-      type: object
-    ExperimentStatus:
-      enum:
-      - not_started
-      - running
-      - completed
-      - failed
-      type: string
     FinetuningAlgorithm:
       enum:
       - full
@@ -1084,20 +991,6 @@ components:
       required:
       - document_ids
       type: object
-    GetLogsRequest:
-      additionalProperties: false
-      properties:
-        filters:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-      type: object
     InferenceStep:
       additionalProperties: false
       properties:
@@ -1137,65 +1030,26 @@ components:
       - bank_id
       - documents
       type: object
-    ListArtifactsRequest:
+    LogEventRequest:
       additionalProperties: false
       properties:
-        experiment_id:
-          type: string
+        event:
+          oneOf:
+          - $ref: '#/components/schemas/UnstructuredLogEvent'
+          - $ref: '#/components/schemas/MetricEvent'
+          - $ref: '#/components/schemas/StructuredLogEvent'
       required:
-      - experiment_id
+      - event
       type: object
-    Log:
-      additionalProperties: false
-      properties:
-        additional_info:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        level:
-          type: string
-        message:
-          type: string
-        timestamp:
-          format: date-time
-          type: string
-      required:
-      - message
-      - level
-      - timestamp
-      - additional_info
-      type: object
-    LogMessagesRequest:
-      additionalProperties: false
-      properties:
-        logs:
-          items:
-            $ref: '#/components/schemas/Log'
-          type: array
-        run_id:
-          type: string
-      required:
-      - logs
-      type: object
-    LogMetricsRequest:
-      additionalProperties: false
-      properties:
-        metrics:
-          items:
-            $ref: '#/components/schemas/Metric'
-          type: array
-        run_id:
-          type: string
-      required:
-      - run_id
-      - metrics
-      type: object
+    LogSeverity:
+      enum:
+      - verbose
+      - debug
+      - info
+      - warn
+      - error
+      - critical
+      type: string
     LoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -1337,27 +1191,45 @@ components:
       - memory_bank_ids
       - inserted_context
       type: object
-    Metric:
+    MetricEvent:
       additionalProperties: false
       properties:
-        name:
+        attributes:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        metric:
           type: string
-        run_id:
+        span_id:
           type: string
         timestamp:
           format: date-time
           type: string
+        trace_id:
+          type: string
+        type:
+          const: metric
+          type: string
+        unit:
+          type: string
         value:
           oneOf:
-          - type: number
           - type: integer
-          - type: string
-          - type: boolean
+          - type: number
       required:
-      - name
-      - value
+      - trace_id
+      - span_id
       - timestamp
-      - run_id
+      - type
+      - metric
+      - value
+      - unit
       type: object
     OnViolationAction:
       enum:
@@ -1690,38 +1562,6 @@ components:
       title: Response from the reward scoring. Batch of (prompt, response, score)
         tuples that pass the threshold.
       type: object
-    Run:
-      additionalProperties: false
-      properties:
-        ended_at:
-          format: date-time
-          type: string
-        experiment_id:
-          type: string
-        id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        started_at:
-          format: date-time
-          type: string
-        status:
-          type: string
-      required:
-      - id
-      - experiment_id
-      - status
-      - started_at
-      - metadata
-      type: object
     RunShieldResponse:
       additionalProperties: false
       properties:
@@ -1919,12 +1759,77 @@ components:
       - shield_type
       - is_violation
       type: object
+    SpanEndPayload:
+      additionalProperties: false
+      properties:
+        status:
+          $ref: '#/components/schemas/SpanStatus'
+        type:
+          const: span_end
+          type: string
+      required:
+      - type
+      - status
+      type: object
+    SpanStartPayload:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        parent_span_id:
+          type: string
+        type:
+          const: span_start
+          type: string
+      required:
+      - type
+      - name
+      type: object
+    SpanStatus:
+      enum:
+      - ok
+      - error
+      type: string
     StopReason:
       enum:
       - end_of_turn
       - end_of_message
       - out_of_tokens
       type: string
+    StructuredLogEvent:
+      additionalProperties: false
+      properties:
+        attributes:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        payload:
+          oneOf:
+          - $ref: '#/components/schemas/SpanStartPayload'
+          - $ref: '#/components/schemas/SpanEndPayload'
+        span_id:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        trace_id:
+          type: string
+        type:
+          const: structured_log
+          type: string
+      required:
+      - trace_id
+      - span_id
+      - timestamp
+      - type
+      - payload
+      type: object
     SupervisedFineTuneRequest:
       additionalProperties: false
       properties:
@@ -2236,6 +2141,24 @@ components:
       - tool_name
       - content
       type: object
+    Trace:
+      additionalProperties: false
+      properties:
+        end_time:
+          format: date-time
+          type: string
+        root_span_id:
+          type: string
+        start_time:
+          format: date-time
+          type: string
+        trace_id:
+          type: string
+      required:
+      - trace_id
+      - root_span_id
+      - start_time
+      type: object
     TrainEvalDataset:
       additionalProperties: false
       properties:
@@ -2341,6 +2264,41 @@ components:
       format: uri
       pattern: ^(https?://|file://|data:)
       type: string
+    UnstructuredLogEvent:
+      additionalProperties: false
+      properties:
+        attributes:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        message:
+          type: string
+        severity:
+          $ref: '#/components/schemas/LogSeverity'
+        span_id:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        trace_id:
+          type: string
+        type:
+          const: unstructured_log
+          type: string
+      required:
+      - trace_id
+      - span_id
+      - timestamp
+      - type
+      - message
+      - severity
+      type: object
     UpdateDocumentsRequest:
       additionalProperties: false
       properties:
@@ -2353,77 +2311,6 @@ components:
       required:
       - bank_id
       - documents
-      type: object
-    UpdateExperimentRequest:
-      additionalProperties: false
-      properties:
-        experiment_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        status:
-          $ref: '#/components/schemas/ExperimentStatus'
-      required:
-      - experiment_id
-      type: object
-    UpdateRunRequest:
-      additionalProperties: false
-      properties:
-        ended_at:
-          format: date-time
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        run_id:
-          type: string
-        status:
-          type: string
-      required:
-      - run_id
-      type: object
-    UploadArtifactRequest:
-      additionalProperties: false
-      properties:
-        artifact_type:
-          type: string
-        content:
-          contentEncoding: base64
-          type: string
-        experiment_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-      required:
-      - experiment_id
-      - name
-      - artifact_type
-      - content
       type: object
     UserMessage:
       additionalProperties: false
@@ -2470,7 +2357,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-11 15:30:11.688505"
+    \ draft and subject to change.\n                Generated at 2024-09-11 16:05:23.016090"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2635,23 +2522,6 @@ paths:
           description: OK
       tags:
       - AgenticSystem
-  /artifacts/get:
-    get:
-      parameters:
-      - in: query
-        name: artifact_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Artifact'
-          description: OK
-      tags:
-      - Telemetry
   /batch_inference/chat_completion:
     post:
       parameters: []
@@ -2864,125 +2734,6 @@ paths:
           description: OK
       tags:
       - Evaluations
-  /experiments/artifacts/get:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ListArtifactsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Artifact'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/artifacts/upload:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UploadArtifactRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Artifact'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/create:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateExperimentRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/create_run:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateRunRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Run'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/get:
-    get:
-      parameters:
-      - in: query
-        name: experiment_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/list:
-    get:
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/update:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateExperimentRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
   /inference/chat_completion:
     post:
       parameters: []
@@ -2997,8 +2748,10 @@ paths:
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
-          description: SSE-stream of these events.
+                oneOf:
+                - $ref: '#/components/schemas/ChatCompletionResponse'
+                - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
+          description: Chat completion response. **OR** SSE-stream of these events.
       tags:
       - Inference
   /inference/completion:
@@ -3015,8 +2768,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompletionResponseStreamChunk'
-          description: streamed completion response.
+                oneOf:
+                - $ref: '#/components/schemas/CompletionResponse'
+                - $ref: '#/components/schemas/CompletionResponseStreamChunk'
+          description: Completion response. **OR** streamed completion response.
       tags:
       - Inference
   /inference/embeddings:
@@ -3037,43 +2792,6 @@ paths:
           description: OK
       tags:
       - Inference
-  /logging/get_logs:
-    post:
-      parameters:
-      - in: query
-        name: query
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetLogsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Log'
-          description: OK
-      tags:
-      - Telemetry
-  /logging/log_messages:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogMessagesRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Telemetry
   /memory_bank/documents/delete:
     post:
       parameters: []
@@ -3355,55 +3073,6 @@ paths:
           description: OK
       tags:
       - RewardScoring
-  /runs/log_metrics:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogMetricsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Telemetry
-  /runs/metrics:
-    get:
-      parameters:
-      - in: query
-        name: run_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Metric'
-          description: OK
-      tags:
-      - Telemetry
-  /runs/update:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRunRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Run'
-          description: OK
-      tags:
-      - Telemetry
   /safety/run_shields:
     post:
       parameters: []
@@ -3440,22 +3109,53 @@ paths:
           description: OK
       tags:
       - SyntheticDataGeneration
+  /telemetry/get_trace:
+    get:
+      parameters:
+      - in: query
+        name: trace_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trace'
+          description: OK
+      tags:
+      - Telemetry
+  /telemetry/log_event:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogEventRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Telemetry
 security:
 - Default: []
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
+- name: SyntheticDataGeneration
+- name: Datasets
+- name: Evaluations
+- name: Safety
+- name: Inference
+- name: Telemetry
+- name: PostTraining
+- name: Memory
+- name: RewardScoring
 - name: BatchInference
 - name: AgenticSystem
-- name: Memory
-- name: Inference
-- name: RewardScoring
-- name: Telemetry
-- name: Safety
-- name: Evaluations
-- name: Datasets
-- name: SyntheticDataGeneration
-- name: PostTraining
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3516,6 +3216,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
+- description: 'Chat completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponse" />'
+  name: ChatCompletionResponse
 - description: 'Chat completion response event.
 
 
@@ -3541,6 +3246,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
     />
   name: CompletionRequest
+- description: 'Completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/CompletionResponse" />'
+  name: CompletionResponse
 - description: 'streamed completion response.
 
 
@@ -3650,24 +3360,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequest"
     />
   name: CreateDatasetRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateExperimentRequest"
-    />
-  name: CreateExperimentRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/Experiment" />
-  name: Experiment
-- description: <SchemaDefinition schemaRef="#/components/schemas/ExperimentStatus"
-    />
-  name: ExperimentStatus
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateMemoryBankRequest"
     />
   name: CreateMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
   name: MemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequest"
-    />
-  name: CreateRunRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/Run" />
-  name: Run
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemRequest"
     />
   name: DeleteAgenticSystemRequest
@@ -3711,10 +3408,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemStepResponse"
     />
   name: AgenticSystemStepResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/Artifact" />
-  name: Artifact
-- description: <SchemaDefinition schemaRef="#/components/schemas/ArtifactType" />
-  name: ArtifactType
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetDocumentsRequest"
     />
   name: GetDocumentsRequest
@@ -3733,12 +3426,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/GetLogsRequest" />
-  name: GetLogsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/Log" />
-  name: Log
-- description: <SchemaDefinition schemaRef="#/components/schemas/Metric" />
-  name: Metric
+- description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
+  name: Trace
 - description: 'Checkpoint created during training runs
 
 
@@ -3770,15 +3459,26 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/ListArtifactsRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogSeverity" />
+  name: LogSeverity
+- description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
+  name: MetricEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanEndPayload" />
+  name: SpanEndPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanStartPayload"
     />
-  name: ListArtifactsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequest"
+  name: SpanStartPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanStatus" />
+  name: SpanStatus
+- description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogEvent"
     />
-  name: LogMessagesRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogMetricsRequest"
+  name: StructuredLogEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
-  name: LogMetricsRequest
+  name: UnstructuredLogEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogEventRequest"
+    />
+  name: LogEventRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
@@ -3849,15 +3549,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UpdateDocumentsRequest"
     />
   name: UpdateDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateExperimentRequest"
-    />
-  name: UpdateExperimentRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateRunRequest"
-    />
-  name: UpdateRunRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UploadArtifactRequest"
-    />
-  name: UploadArtifactRequest
 x-tagGroups:
 - name: Operations
   tags:
@@ -3885,8 +3576,6 @@ x-tagGroups:
   - AgenticSystemTurnResponseStreamChunk
   - AgenticSystemTurnResponseTurnCompletePayload
   - AgenticSystemTurnResponseTurnStartPayload
-  - Artifact
-  - ArtifactType
   - Attachment
   - BatchChatCompletionRequest
   - BatchChatCompletionResponse
@@ -3897,6 +3586,7 @@ x-tagGroups:
   - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
   - ChatCompletionRequest
+  - ChatCompletionResponse
   - ChatCompletionResponseEvent
   - ChatCompletionResponseEventType
   - ChatCompletionResponseStreamChunk
@@ -3904,14 +3594,13 @@ x-tagGroups:
   - CodeInterpreterToolDefinition
   - CompletionMessage
   - CompletionRequest
+  - CompletionResponse
   - CompletionResponseStreamChunk
   - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest
   - CreateAgenticSystemTurnRequest
   - CreateDatasetRequest
-  - CreateExperimentRequest
   - CreateMemoryBankRequest
-  - CreateRunRequest
   - DPOAlignmentConfig
   - DeleteAgenticSystemRequest
   - DeleteAgenticSystemSessionRequest
@@ -3929,24 +3618,19 @@ x-tagGroups:
   - EvaluationJobArtifactsResponse
   - EvaluationJobLogStream
   - EvaluationJobStatusResponse
-  - Experiment
-  - ExperimentStatus
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgenticSystemSessionRequest
   - GetDocumentsRequest
-  - GetLogsRequest
   - InferenceStep
   - InsertDocumentsRequest
-  - ListArtifactsRequest
-  - Log
-  - LogMessagesRequest
-  - LogMetricsRequest
+  - LogEventRequest
+  - LogSeverity
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
-  - Metric
+  - MetricEvent
   - OnViolationAction
   - OptimizerConfig
   - PhotogenToolDefinition
@@ -3964,7 +3648,6 @@ x-tagGroups:
   - RestAPIMethod
   - RewardScoreRequest
   - RewardScoringResponse
-  - Run
   - RunShieldResponse
   - RunShieldsRequest
   - SamplingParams
@@ -3976,7 +3659,11 @@ x-tagGroups:
   - ShieldCallStep
   - ShieldDefinition
   - ShieldResponse
+  - SpanEndPayload
+  - SpanStartPayload
+  - SpanStatus
   - StopReason
+  - StructuredLogEvent
   - SupervisedFineTuneRequest
   - SyntheticDataGenerateRequest
   - SyntheticDataGenerationResponse
@@ -3992,14 +3679,13 @@ x-tagGroups:
   - ToolPromptFormat
   - ToolResponse
   - ToolResponseMessage
+  - Trace
   - TrainEvalDataset
   - TrainEvalDatasetColumnType
   - TrainingConfig
   - Turn
   - URL
+  - UnstructuredLogEvent
   - UpdateDocumentsRequest
-  - UpdateExperimentRequest
-  - UpdateRunRequest
-  - UploadArtifactRequest
   - UserMessage
   - WolframAlphaToolDefinition

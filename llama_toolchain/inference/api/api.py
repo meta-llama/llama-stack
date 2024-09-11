@@ -85,6 +85,8 @@ class CompletionRequest(BaseModel):
 
 @json_schema_type
 class CompletionResponse(BaseModel):
+    """Completion response."""
+
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
 
@@ -108,6 +110,8 @@ class BatchCompletionRequest(BaseModel):
 
 @json_schema_type
 class BatchCompletionResponse(BaseModel):
+    """Batch completion response."""
+
     completion_message_batch: List[CompletionMessage]
 
 
@@ -137,6 +141,8 @@ class ChatCompletionResponseStreamChunk(BaseModel):
 
 @json_schema_type
 class ChatCompletionResponse(BaseModel):
+    """Chat completion response."""
+
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
 
