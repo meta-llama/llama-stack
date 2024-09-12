@@ -10,6 +10,8 @@ from llama_toolchain.core.datatypes import *  # noqa: F403
 
 EMBEDDING_DEPS = [
     "blobfile",
+    "chardet",
+    "PdfReader",
     "sentence-transformers",
 ]
 

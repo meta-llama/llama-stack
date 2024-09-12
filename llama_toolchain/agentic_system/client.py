@@ -83,13 +83,12 @@ class AgenticSystemClient(AgenticSystem):
                     if line.startswith("data:"):
                         data = line[len("data: ") :]
                         try:
-                            if "error" in data:
+                            jdata = json.loads(data)
+                            if "error" in jdata:
                                 cprint(data, "red")
                                 continue
 
-                            yield AgenticSystemTurnResponseStreamChunk(
-                                **json.loads(data)
-                            )
+                            yield AgenticSystemTurnResponseStreamChunk(**jdata)
                         except Exception as e:
                             print(data)
                             print(f"Error with parsing or validation: {e}")

@@ -8,7 +8,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
 from typing import List, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
@@ -23,7 +22,7 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 class MemoryBankDocument(BaseModel):
     document_id: str
     content: InterleavedTextMedia | URL
-    mime_type: str
+    mime_type: str | None = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 

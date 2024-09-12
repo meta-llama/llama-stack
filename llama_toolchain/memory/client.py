@@ -5,15 +5,19 @@
 # the root directory of this source tree.
 
 import asyncio
+import json
+from pathlib import Path
 
 from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
+from termcolor import cprint
 
 from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import *  # noqa: F403
+from .common.file_utils import data_url_from_file
 
 
 async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Memory:
@@ -120,7 +124,7 @@ async def run_main(host: str, port: int, stream: bool):
             overlap_size_in_tokens=64,
         ),
     )
-    print(bank)
+    cprint(json.dumps(bank.dict(), indent=4), "green")
 
     retrieved_bank = await client.get_memory_bank(bank.bank_id)
     assert retrieved_bank is not None
@@ -143,6 +147,16 @@ async def run_main(host: str, port: int, stream: bool):
             mime_type="text/plain",
         )
         for i, url in enumerate(urls)
+    ]
+
+    this_dir = os.path.dirname(__file__)
+    files = [Path(this_dir).parent.parent / "CONTRIBUTING.md"]
+    documents += [
+        MemoryBankDocument(
+            document_id=f"num-{i}",
+            content=data_url_from_file(path),
+        )
+        for i, path in enumerate(files)
     ]
 
     # insert some documents

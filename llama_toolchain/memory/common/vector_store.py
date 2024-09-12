@@ -3,20 +3,24 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
+import base64
+import io
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+from urllib.parse import unquote
 
+import chardet
 import httpx
 import numpy as np
 from numpy.typing import NDArray
+from pypdf import PdfReader
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_toolchain.memory.api import *  # noqa: F403
-
 
 ALL_MINILM_L6_V2_DIMENSION = 384
 
@@ -36,11 +40,67 @@ def get_embedding_model() -> "SentenceTransformer":
     return EMBEDDING_MODEL
 
 
+def parse_data_url(data_url: str):
+    data_url_pattern = re.compile(
+        r"^"
+        r"data:"
+        r"(?P<mimetype>[\w/\-+.]+)"
+        r"(?P<charset>;charset=(?P<encoding>[\w-]+))?"
+        r"(?P<base64>;base64)?"
+        r",(?P<data>.*)"
+        r"$",
+        re.DOTALL,
+    )
+    match = data_url_pattern.match(data_url)
+    if not match:
+        raise ValueError("Invalid Data URL format")
+
+    parts = match.groupdict()
+    parts["is_base64"] = bool(parts["base64"])
+    return parts
+
+
+def content_from_data(data_url: str) -> str:
+    parts = parse_data_url(data_url)
+    data = parts["data"]
+
+    if parts["is_base64"]:
+        data = base64.b64decode(data)
+    else:
+        data = unquote(data)
+        encoding = parts["encoding"] or "utf-8"
+        data = data.encode(encoding)
+
+    encoding = parts["encoding"]
+    if not encoding:
+        detected = chardet.detect(data)
+        encoding = detected["encoding"]
+
+    mime_type = parts["mimetype"]
+    mime_category = mime_type.split("/")[0]
+    if mime_category == "text":
+        # For text-based files (including CSV, MD)
+        return data.decode(encoding)
+
+    elif mime_type == "application/pdf":
+        # For PDF and DOC/DOCX files, we can't reliably convert to string)
+        pdf_bytes = io.BytesIO(data)
+        pdf_reader = PdfReader(pdf_bytes)
+        return "\n".join([page.extract_text() for page in pdf_reader.pages])
+
+    else:
+        cprint("Could not extract content from data_url properly.", color="red")
+        return ""
+
+
 async def content_from_doc(doc: MemoryBankDocument) -> str:
     if isinstance(doc.content, URL):
-        async with httpx.AsyncClient() as client:
-            r = await client.get(doc.content.uri)
-            return r.text
+        if doc.content.uri.startswith("data:"):
+            return content_from_data(doc.content.uri)
+        else:
+            async with httpx.AsyncClient() as client:
+                r = await client.get(doc.content.uri)
+                return r.text
 
     return interleaved_text_media_as_str(doc.content)
 
