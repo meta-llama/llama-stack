@@ -39,8 +39,9 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_id="tgi",
-                pip_packages=["text-generation"],
+                pip_packages=["huggingface_hub"],
                 module="llama_toolchain.inference.adapters.tgi",
+                config_class="llama_toolchain.inference.adapters.tgi.TGIImplConfig",
             ),
         ),
         remote_provider_spec(

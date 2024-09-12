@@ -286,6 +286,13 @@ i+-------------------------------+---------------------------------------+------
 |                                |   "memory": "meta-reference-faiss"    |                                                                      |
 |                                | }                                     |                                                                      |
 +--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-plus-tgi-inference       | {                                     | Use TGI (local or with [Hugging Face Inference Endpoints](https://   |
+|                                |   "inference": "remote::tgi",         | huggingface.co/inference-endpoints/dedicated)) for running LLM       |
+|                                |   "safety": "meta-reference",         | inference. When using HF Inference Endpoints, you must provide the   |
+|                                |   "agentic_system": "meta-reference", | name of the endpoint.                                                |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
 </pre>
 
 As you can see above, each “distribution” details the “providers” it is composed of. For example, `local` uses the “meta-reference” provider for inference while local-ollama relies on a different provider (Ollama) for inference. Similarly, you can use Fireworks or Together.AI for running inference as well.
