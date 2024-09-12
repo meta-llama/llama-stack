@@ -132,7 +132,7 @@ async def run_main(host: str, port: int):
     api = AgenticSystemClient(f"http://{host}:{port}")
 
     tool_definitions = [
-        SearchToolDefinition(engine=SearchEngineType.brave),
+        SearchToolDefinition(engine=SearchEngineType.bing),
         WolframAlphaToolDefinition(),
         CodeInterpreterToolDefinition(),
     ]

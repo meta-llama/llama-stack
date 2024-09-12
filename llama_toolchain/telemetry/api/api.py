@@ -125,11 +125,7 @@ Event = Annotated[
 
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/log_event")
-<<<<<<< migrate_request_wrapper
     async def log_event(self, event: Event) -> None: ...
-=======
-    async def log_event(self, event: Event): ...
->>>>>>> main
 
     @webmethod(route="/telemetry/get_trace", method="GET")
     async def get_trace(self, trace_id: str) -> Trace: ...
