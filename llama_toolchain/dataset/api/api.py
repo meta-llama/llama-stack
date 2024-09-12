@@ -46,7 +46,8 @@ class Datasets(Protocol):
     @webmethod(route="/datasets/create")
     def create_dataset(
         self,
-        request: CreateDatasetRequest,
+        uuid: str,
+        dataset: TrainEvalDataset,
     ) -> None: ...
 
     @webmethod(route="/datasets/get")

@@ -73,9 +73,7 @@ class AgenticSystemClient(AgenticSystem):
             async with client.stream(
                 "POST",
                 f"{self.base_url}/agentic_system/turn/create",
-                json={
-                    "request": encodable_dict(request),
-                },
+                json=encodable_dict(request),
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             ) as response:

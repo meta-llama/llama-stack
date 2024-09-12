@@ -22,9 +22,12 @@ from llama_toolchain.inference.api import (
     ToolCallParseStatus,
 )
 from llama_toolchain.inference.prepare_messages import prepare_messages
+
 from .config import MetaReferenceImplConfig
 from .model_parallel import LlamaModelParallelGenerator
 
+from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_toolchain.inference.api import *  # noqa: F403
 
 # there's a single model parallel process running serving the model. for now,
 # we don't support multiple concurrent requests to this process.
@@ -50,10 +53,30 @@ class MetaReferenceInferenceImpl(Inference):
     # hm, when stream=False, we should not be doing SSE :/ which is what the
     # top-level server is going to do. make the typing more specific here
     async def chat_completion(
-        self, request: ChatCompletionRequest
+        self,
+        model: str,
+        messages: List[Message],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        tools: Optional[List[ToolDefinition]] = list(),
+        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncIterator[
         Union[ChatCompletionResponseStreamChunk, ChatCompletionResponse]
     ]:
+        # wrapper request to make it easier to pass around (internal only, not exposed to API)
+        request = ChatCompletionRequest(
+            model=model,
+            messages=messages,
+            sampling_params=sampling_params,
+            tools=tools,
+            tool_choice=tool_choice,
+            tool_prompt_format=tool_prompt_format,
+            stream=stream,
+            logprobs=logprobs,
+        )
+
         messages = prepare_messages(request)
         model = resolve_model(request.model)
         if model is None:

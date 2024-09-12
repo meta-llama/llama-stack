@@ -179,13 +179,33 @@ class PostTraining(Protocol):
     @webmethod(route="/post_training/supervised_fine_tune")
     def supervised_fine_tune(
         self,
-        request: PostTrainingSFTRequest,
+        job_uuid: str,
+        model: str,
+        dataset: TrainEvalDataset,
+        validation_dataset: TrainEvalDataset,
+        algorithm: FinetuningAlgorithm,
+        algorithm_config: Union[
+            LoraFinetuningConfig, QLoraFinetuningConfig, DoraFinetuningConfig
+        ],
+        optimizer_config: OptimizerConfig,
+        training_config: TrainingConfig,
+        hyperparam_search_config: Dict[str, Any],
+        logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post_training/preference_optimize")
     def preference_optimize(
         self,
-        request: PostTrainingRLHFRequest,
+        job_uuid: str,
+        finetuned_model: URL,
+        dataset: TrainEvalDataset,
+        validation_dataset: TrainEvalDataset,
+        algorithm: RLHFAlgorithm,
+        algorithm_config: Union[DPOAlignmentConfig],
+        optimizer_config: OptimizerConfig,
+        training_config: TrainingConfig,
+        hyperparam_search_config: Dict[str, Any],
+        logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post_training/jobs")

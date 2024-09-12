@@ -86,5 +86,6 @@ class Safety(Protocol):
     @webmethod(route="/safety/run_shields")
     async def run_shields(
         self,
-        request: RunShieldRequest,
+        messages: List[Message],
+        shields: List[ShieldDefinition],
     ) -> RunShieldResponse: ...

@@ -180,180 +180,6 @@ components:
       required:
       - step
       type: object
-    AgenticSystemTurnCreateRequest:
-      additionalProperties: false
-      properties:
-        agent_id:
-          type: string
-        attachments:
-          items:
-            $ref: '#/components/schemas/Attachment'
-          type: array
-        input_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        instructions:
-          type: string
-        messages:
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-          type: array
-        output_shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
-        session_id:
-          type: string
-        stream:
-          type: boolean
-        tool_choice:
-          $ref: '#/components/schemas/ToolChoice'
-        tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
-        tools:
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/SearchToolDefinition'
-            - $ref: '#/components/schemas/WolframAlphaToolDefinition'
-            - $ref: '#/components/schemas/PhotogenToolDefinition'
-            - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
-            - $ref: '#/components/schemas/FunctionCallToolDefinition'
-            - additionalProperties: false
-              properties:
-                input_shields:
-                  items:
-                    $ref: '#/components/schemas/ShieldDefinition'
-                  type: array
-                max_chunks:
-                  type: integer
-                max_tokens_in_context:
-                  type: integer
-                memory_bank_configs:
-                  items:
-                    oneOf:
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        type:
-                          const: vector
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      type: object
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        keys:
-                          items:
-                            type: string
-                          type: array
-                        type:
-                          const: keyvalue
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      - keys
-                      type: object
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        type:
-                          const: keyword
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      type: object
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        entities:
-                          items:
-                            type: string
-                          type: array
-                        type:
-                          const: graph
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      - entities
-                      type: object
-                  type: array
-                output_shields:
-                  items:
-                    $ref: '#/components/schemas/ShieldDefinition'
-                  type: array
-                query_generator_config:
-                  oneOf:
-                  - additionalProperties: false
-                    properties:
-                      sep:
-                        type: string
-                      type:
-                        const: default
-                        type: string
-                    required:
-                    - type
-                    - sep
-                    type: object
-                  - additionalProperties: false
-                    properties:
-                      model:
-                        type: string
-                      template:
-                        type: string
-                      type:
-                        const: llm
-                        type: string
-                    required:
-                    - type
-                    - model
-                    - template
-                    type: object
-                  - additionalProperties: false
-                    properties:
-                      type:
-                        const: custom
-                        type: string
-                    required:
-                    - type
-                    type: object
-                type:
-                  const: memory
-                  type: string
-              required:
-              - type
-              - memory_bank_configs
-              - query_generator_config
-              - max_tokens_in_context
-              - max_chunks
-              type: object
-          type: array
-      required:
-      - agent_id
-      - session_id
-      - messages
-      type: object
-    AgenticSystemTurnCreateRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/AgenticSystemTurnCreateRequest'
-      required:
-      - request
-      type: object
     AgenticSystemTurnResponseEvent:
       additionalProperties: false
       properties:
@@ -480,49 +306,6 @@ components:
       - event_type
       - turn_id
       type: object
-    Artifact:
-      additionalProperties: false
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        size:
-          type: integer
-        type:
-          $ref: '#/components/schemas/ArtifactType'
-      required:
-      - id
-      - name
-      - type
-      - size
-      - created_at
-      - metadata
-      type: object
-    ArtifactType:
-      enum:
-      - model
-      - dataset
-      - checkpoint
-      - plot
-      - metric
-      - config
-      - code
-      - other
-      type: string
     Attachment:
       additionalProperties: false
       properties:
@@ -574,14 +357,6 @@ components:
       - model
       - messages_batch
       type: object
-    BatchChatCompletionRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/BatchChatCompletionRequest'
-      required:
-      - request
-      type: object
     BatchChatCompletionResponse:
       additionalProperties: false
       properties:
@@ -616,14 +391,6 @@ components:
       required:
       - model
       - content_batch
-      type: object
-    BatchCompletionRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/BatchCompletionRequest'
-      required:
-      - request
       type: object
     BatchCompletionResponse:
       additionalProperties: false
@@ -701,13 +468,18 @@ components:
       - model
       - messages
       type: object
-    ChatCompletionRequestWrapper:
+    ChatCompletionResponse:
       additionalProperties: false
       properties:
-        request:
-          $ref: '#/components/schemas/ChatCompletionRequest'
+        completion_message:
+          $ref: '#/components/schemas/CompletionMessage'
+        logprobs:
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+          type: array
       required:
-      - request
+      - completion_message
+      title: Chat completion response.
       type: object
     ChatCompletionResponseEvent:
       additionalProperties: false
@@ -817,13 +589,18 @@ components:
       - model
       - content
       type: object
-    CompletionRequestWrapper:
+    CompletionResponse:
       additionalProperties: false
       properties:
-        request:
-          $ref: '#/components/schemas/CompletionRequest'
+        completion_message:
+          $ref: '#/components/schemas/CompletionMessage'
+        logprobs:
+          items:
+            $ref: '#/components/schemas/TokenLogProbs'
+          type: array
       required:
-      - request
+      - completion_message
+      title: Completion response.
       type: object
     CompletionResponseStreamChunk:
       additionalProperties: false
@@ -859,6 +636,30 @@ components:
       - agent_id
       - session_name
       type: object
+    CreateAgenticSystemTurnRequest:
+      additionalProperties: false
+      properties:
+        agent_id:
+          type: string
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+        messages:
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/UserMessage'
+            - $ref: '#/components/schemas/ToolResponseMessage'
+          type: array
+        session_id:
+          type: string
+        stream:
+          type: boolean
+      required:
+      - agent_id
+      - session_id
+      - messages
+      type: object
     CreateDatasetRequest:
       additionalProperties: false
       properties:
@@ -869,41 +670,6 @@ components:
       required:
       - uuid
       - dataset
-      title: Request to create a dataset.
-      type: object
-    CreateDatasetRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/CreateDatasetRequest'
-      required:
-      - request
-      type: object
-    CreateExperimentRequest:
-      additionalProperties: false
-      properties:
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-      required:
-      - name
-      type: object
-    CreateExperimentRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/CreateExperimentRequest'
-      required:
-      - request
       type: object
     CreateMemoryBankRequest:
       additionalProperties: false
@@ -957,32 +723,6 @@ components:
       required:
       - name
       - config
-      type: object
-    CreateRunRequest:
-      additionalProperties: false
-      properties:
-        experiment_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-      required:
-      - experiment_id
-      type: object
-    CreateRunRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/CreateRunRequest'
-      required:
-      - request
       type: object
     DPOAlignmentConfig:
       additionalProperties: false
@@ -1126,12 +866,6 @@ components:
     EvaluateQuestionAnsweringRequest:
       additionalProperties: false
       properties:
-        checkpoint:
-          $ref: '#/components/schemas/Checkpoint'
-        dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-        job_uuid:
-          type: string
         metrics:
           items:
             enum:
@@ -1139,33 +873,12 @@ components:
             - f1
             type: string
           type: array
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
       required:
-      - job_uuid
-      - dataset
-      - checkpoint
-      - sampling_params
       - metrics
-      title: Request to evaluate question answering.
-      type: object
-    EvaluateQuestionAnsweringRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/EvaluateQuestionAnsweringRequest'
-      required:
-      - request
       type: object
     EvaluateSummarizationRequest:
       additionalProperties: false
       properties:
-        checkpoint:
-          $ref: '#/components/schemas/Checkpoint'
-        dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-        job_uuid:
-          type: string
         metrics:
           items:
             enum:
@@ -1173,33 +886,12 @@ components:
             - bleu
             type: string
           type: array
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
       required:
-      - job_uuid
-      - dataset
-      - checkpoint
-      - sampling_params
       - metrics
-      title: Request to evaluate summarization.
-      type: object
-    EvaluateSummarizationRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/EvaluateSummarizationRequest'
-      required:
-      - request
       type: object
     EvaluateTextGenerationRequest:
       additionalProperties: false
       properties:
-        checkpoint:
-          $ref: '#/components/schemas/Checkpoint'
-        dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-        job_uuid:
-          type: string
         metrics:
           items:
             enum:
@@ -1208,23 +900,8 @@ components:
             - bleu
             type: string
           type: array
-        sampling_params:
-          $ref: '#/components/schemas/SamplingParams'
       required:
-      - job_uuid
-      - dataset
-      - checkpoint
-      - sampling_params
       - metrics
-      title: Request to evaluate text generation.
-      type: object
-    EvaluateTextGenerationRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/EvaluateTextGenerationRequest'
-      required:
-      - request
       type: object
     EvaluationJob:
       additionalProperties: false
@@ -1259,46 +936,6 @@ components:
       required:
       - job_uuid
       type: object
-    Experiment:
-      additionalProperties: false
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        status:
-          $ref: '#/components/schemas/ExperimentStatus'
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - id
-      - name
-      - status
-      - created_at
-      - updated_at
-      - metadata
-      type: object
-    ExperimentStatus:
-      enum:
-      - not_started
-      - running
-      - completed
-      - failed
-      type: string
     FinetuningAlgorithm:
       enum:
       - full
@@ -1393,107 +1030,26 @@ components:
       - bank_id
       - documents
       type: object
-    ListArtifactsRequest:
+    LogEventRequest:
       additionalProperties: false
       properties:
-        experiment_id:
-          type: string
+        event:
+          oneOf:
+          - $ref: '#/components/schemas/UnstructuredLogEvent'
+          - $ref: '#/components/schemas/MetricEvent'
+          - $ref: '#/components/schemas/StructuredLogEvent'
       required:
-      - experiment_id
+      - event
       type: object
-    Log:
-      additionalProperties: false
-      properties:
-        additional_info:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        level:
-          type: string
-        message:
-          type: string
-        timestamp:
-          format: date-time
-          type: string
-      required:
-      - message
-      - level
-      - timestamp
-      - additional_info
-      type: object
-    LogMessagesRequest:
-      additionalProperties: false
-      properties:
-        logs:
-          items:
-            $ref: '#/components/schemas/Log'
-          type: array
-        run_id:
-          type: string
-      required:
-      - logs
-      type: object
-    LogMessagesRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/LogMessagesRequest'
-      required:
-      - request
-      type: object
-    LogMetricsRequest:
-      additionalProperties: false
-      properties:
-        metrics:
-          items:
-            $ref: '#/components/schemas/Metric'
-          type: array
-        run_id:
-          type: string
-      required:
-      - run_id
-      - metrics
-      type: object
-    LogMetricsRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/LogMetricsRequest'
-      required:
-      - request
-      type: object
-    LogSearchRequest:
-      additionalProperties: false
-      properties:
-        filters:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        query:
-          type: string
-      required:
-      - query
-      type: object
-    LogSearchRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/LogSearchRequest'
-      required:
-      - request
-      type: object
+    LogSeverity:
+      enum:
+      - verbose
+      - debug
+      - info
+      - warn
+      - error
+      - critical
+      type: string
     LoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -1635,27 +1191,45 @@ components:
       - memory_bank_ids
       - inserted_context
       type: object
-    Metric:
+    MetricEvent:
       additionalProperties: false
       properties:
-        name:
+        attributes:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        metric:
           type: string
-        run_id:
+        span_id:
           type: string
         timestamp:
           format: date-time
           type: string
+        trace_id:
+          type: string
+        type:
+          const: metric
+          type: string
+        unit:
+          type: string
         value:
           oneOf:
-          - type: number
           - type: integer
-          - type: string
-          - type: boolean
+          - type: number
       required:
-      - name
-      - value
+      - trace_id
+      - span_id
       - timestamp
-      - run_id
+      - type
+      - metric
+      - value
+      - unit
       type: object
     OnViolationAction:
       enum:
@@ -1782,7 +1356,7 @@ components:
       - checkpoints
       title: Status of a finetuning job.
       type: object
-    PostTrainingRLHFRequest:
+    PreferenceOptimizeRequest:
       additionalProperties: false
       properties:
         algorithm:
@@ -1832,78 +1406,6 @@ components:
       - training_config
       - hyperparam_search_config
       - logger_config
-      title: Request to finetune a model.
-      type: object
-    PostTrainingRLHFRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/PostTrainingRLHFRequest'
-      required:
-      - request
-      type: object
-    PostTrainingSFTRequest:
-      additionalProperties: false
-      properties:
-        algorithm:
-          $ref: '#/components/schemas/FinetuningAlgorithm'
-        algorithm_config:
-          oneOf:
-          - $ref: '#/components/schemas/LoraFinetuningConfig'
-          - $ref: '#/components/schemas/QLoraFinetuningConfig'
-          - $ref: '#/components/schemas/DoraFinetuningConfig'
-        dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-        hyperparam_search_config:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        job_uuid:
-          type: string
-        logger_config:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        model:
-          type: string
-        optimizer_config:
-          $ref: '#/components/schemas/OptimizerConfig'
-        training_config:
-          $ref: '#/components/schemas/TrainingConfig'
-        validation_dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-      required:
-      - job_uuid
-      - model
-      - dataset
-      - validation_dataset
-      - algorithm
-      - algorithm_config
-      - optimizer_config
-      - training_config
-      - hyperparam_search_config
-      - logger_config
-      title: Request to finetune a model.
-      type: object
-    PostTrainingSFTRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/PostTrainingSFTRequest'
-      required:
-      - request
       type: object
     QLoraFinetuningConfig:
       additionalProperties: false
@@ -2035,7 +1537,7 @@ components:
       - PUT
       - DELETE
       type: string
-    RewardScoringRequest:
+    RewardScoreRequest:
       additionalProperties: false
       properties:
         dialog_generations:
@@ -2047,16 +1549,6 @@ components:
       required:
       - dialog_generations
       - model
-      title: Request to score a reward function. A list of prompts and a list of responses
-        per prompt.
-      type: object
-    RewardScoringRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/RewardScoringRequest'
-      required:
-      - request
       type: object
     RewardScoringResponse:
       additionalProperties: false
@@ -2070,39 +1562,17 @@ components:
       title: Response from the reward scoring. Batch of (prompt, response, score)
         tuples that pass the threshold.
       type: object
-    Run:
+    RunShieldResponse:
       additionalProperties: false
       properties:
-        ended_at:
-          format: date-time
-          type: string
-        experiment_id:
-          type: string
-        id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        started_at:
-          format: date-time
-          type: string
-        status:
-          type: string
+        responses:
+          items:
+            $ref: '#/components/schemas/ShieldResponse'
+          type: array
       required:
-      - id
-      - experiment_id
-      - status
-      - started_at
-      - metadata
+      - responses
       type: object
-    RunShieldRequest:
+    RunShieldsRequest:
       additionalProperties: false
       properties:
         messages:
@@ -2120,24 +1590,6 @@ components:
       required:
       - messages
       - shields
-      type: object
-    RunShieldRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/RunShieldRequest'
-      required:
-      - request
-      type: object
-    RunShieldResponse:
-      additionalProperties: false
-      properties:
-        responses:
-          items:
-            $ref: '#/components/schemas/ShieldResponse'
-          type: array
-      required:
-      - responses
       type: object
     SamplingParams:
       additionalProperties: false
@@ -2307,13 +1759,132 @@ components:
       - shield_type
       - is_violation
       type: object
+    SpanEndPayload:
+      additionalProperties: false
+      properties:
+        status:
+          $ref: '#/components/schemas/SpanStatus'
+        type:
+          const: span_end
+          type: string
+      required:
+      - type
+      - status
+      type: object
+    SpanStartPayload:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        parent_span_id:
+          type: string
+        type:
+          const: span_start
+          type: string
+      required:
+      - type
+      - name
+      type: object
+    SpanStatus:
+      enum:
+      - ok
+      - error
+      type: string
     StopReason:
       enum:
       - end_of_turn
       - end_of_message
       - out_of_tokens
       type: string
-    SyntheticDataGenerationRequest:
+    StructuredLogEvent:
+      additionalProperties: false
+      properties:
+        attributes:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        payload:
+          oneOf:
+          - $ref: '#/components/schemas/SpanStartPayload'
+          - $ref: '#/components/schemas/SpanEndPayload'
+        span_id:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        trace_id:
+          type: string
+        type:
+          const: structured_log
+          type: string
+      required:
+      - trace_id
+      - span_id
+      - timestamp
+      - type
+      - payload
+      type: object
+    SupervisedFineTuneRequest:
+      additionalProperties: false
+      properties:
+        algorithm:
+          $ref: '#/components/schemas/FinetuningAlgorithm'
+        algorithm_config:
+          oneOf:
+          - $ref: '#/components/schemas/LoraFinetuningConfig'
+          - $ref: '#/components/schemas/QLoraFinetuningConfig'
+          - $ref: '#/components/schemas/DoraFinetuningConfig'
+        dataset:
+          $ref: '#/components/schemas/TrainEvalDataset'
+        hyperparam_search_config:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        job_uuid:
+          type: string
+        logger_config:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        model:
+          type: string
+        optimizer_config:
+          $ref: '#/components/schemas/OptimizerConfig'
+        training_config:
+          $ref: '#/components/schemas/TrainingConfig'
+        validation_dataset:
+          $ref: '#/components/schemas/TrainEvalDataset'
+      required:
+      - job_uuid
+      - model
+      - dataset
+      - validation_dataset
+      - algorithm
+      - algorithm_config
+      - optimizer_config
+      - training_config
+      - hyperparam_search_config
+      - logger_config
+      type: object
+    SyntheticDataGenerateRequest:
       additionalProperties: false
       properties:
         dialogs:
@@ -2339,16 +1910,6 @@ components:
       required:
       - dialogs
       - filtering_function
-      title: Request to generate synthetic data. A small batch of prompts and a filtering
-        function
-      type: object
-    SyntheticDataGenerationRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/SyntheticDataGenerationRequest'
-      required:
-      - request
       type: object
     SyntheticDataGenerationResponse:
       additionalProperties: false
@@ -2580,6 +2141,24 @@ components:
       - tool_name
       - content
       type: object
+    Trace:
+      additionalProperties: false
+      properties:
+        end_time:
+          format: date-time
+          type: string
+        root_span_id:
+          type: string
+        start_time:
+          format: date-time
+          type: string
+        trace_id:
+          type: string
+      required:
+      - trace_id
+      - root_span_id
+      - start_time
+      type: object
     TrainEvalDataset:
       additionalProperties: false
       properties:
@@ -2685,6 +2264,41 @@ components:
       format: uri
       pattern: ^(https?://|file://|data:)
       type: string
+    UnstructuredLogEvent:
+      additionalProperties: false
+      properties:
+        attributes:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        message:
+          type: string
+        severity:
+          $ref: '#/components/schemas/LogSeverity'
+        span_id:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        trace_id:
+          type: string
+        type:
+          const: unstructured_log
+          type: string
+      required:
+      - trace_id
+      - span_id
+      - timestamp
+      - type
+      - message
+      - severity
+      type: object
     UpdateDocumentsRequest:
       additionalProperties: false
       properties:
@@ -2697,101 +2311,6 @@ components:
       required:
       - bank_id
       - documents
-      type: object
-    UpdateExperimentRequest:
-      additionalProperties: false
-      properties:
-        experiment_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        status:
-          $ref: '#/components/schemas/ExperimentStatus'
-      required:
-      - experiment_id
-      type: object
-    UpdateExperimentRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/UpdateExperimentRequest'
-      required:
-      - request
-      type: object
-    UpdateRunRequest:
-      additionalProperties: false
-      properties:
-        ended_at:
-          format: date-time
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        run_id:
-          type: string
-        status:
-          type: string
-      required:
-      - run_id
-      type: object
-    UpdateRunRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/UpdateRunRequest'
-      required:
-      - request
-      type: object
-    UploadArtifactRequest:
-      additionalProperties: false
-      properties:
-        artifact_type:
-          type: string
-        content:
-          contentEncoding: base64
-          type: string
-        experiment_id:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-      required:
-      - experiment_id
-      - name
-      - artifact_type
-      - content
-      type: object
-    UploadArtifactRequestWrapper:
-      additionalProperties: false
-      properties:
-        request:
-          $ref: '#/components/schemas/UploadArtifactRequest'
-      required:
-      - request
       type: object
     UserMessage:
       additionalProperties: false
@@ -2838,7 +2357,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-10 16:42:15.870336"
+    \ draft and subject to change.\n                Generated at 2024-09-11 16:05:23.016090"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2970,7 +2489,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgenticSystemTurnCreateRequestWrapper'
+              $ref: '#/components/schemas/CreateAgenticSystemTurnRequest'
         required: true
       responses:
         '200':
@@ -3003,23 +2522,6 @@ paths:
           description: OK
       tags:
       - AgenticSystem
-  /artifacts/get:
-    get:
-      parameters:
-      - in: query
-        name: artifact_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Artifact'
-          description: OK
-      tags:
-      - Telemetry
   /batch_inference/chat_completion:
     post:
       parameters: []
@@ -3027,7 +2529,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchChatCompletionRequestWrapper'
+              $ref: '#/components/schemas/BatchChatCompletionRequest'
         required: true
       responses:
         '200':
@@ -3045,7 +2547,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchCompletionRequestWrapper'
+              $ref: '#/components/schemas/BatchCompletionRequest'
         required: true
       responses:
         '200':
@@ -3063,7 +2565,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateDatasetRequestWrapper'
+              $ref: '#/components/schemas/CreateDatasetRequest'
         required: true
       responses:
         '200':
@@ -3185,7 +2687,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateQuestionAnsweringRequestWrapper'
+              $ref: '#/components/schemas/EvaluateQuestionAnsweringRequest'
         required: true
       responses:
         '200':
@@ -3203,7 +2705,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateSummarizationRequestWrapper'
+              $ref: '#/components/schemas/EvaluateSummarizationRequest'
         required: true
       responses:
         '200':
@@ -3221,7 +2723,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateTextGenerationRequestWrapper'
+              $ref: '#/components/schemas/EvaluateTextGenerationRequest'
         required: true
       responses:
         '200':
@@ -3232,125 +2734,6 @@ paths:
           description: OK
       tags:
       - Evaluations
-  /experiments/artifacts/get:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ListArtifactsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Artifact'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/artifacts/upload:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UploadArtifactRequestWrapper'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Artifact'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/create:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateExperimentRequestWrapper'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/create_run:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateRunRequestWrapper'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Run'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/get:
-    get:
-      parameters:
-      - in: query
-        name: experiment_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/list:
-    get:
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
-  /experiments/update:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateExperimentRequestWrapper'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Experiment'
-          description: OK
-      tags:
-      - Telemetry
   /inference/chat_completion:
     post:
       parameters: []
@@ -3358,15 +2741,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChatCompletionRequestWrapper'
+              $ref: '#/components/schemas/ChatCompletionRequest'
         required: true
       responses:
         '200':
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
-          description: SSE-stream of these events.
+                oneOf:
+                - $ref: '#/components/schemas/ChatCompletionResponse'
+                - $ref: '#/components/schemas/ChatCompletionResponseStreamChunk'
+          description: Chat completion response. **OR** SSE-stream of these events.
       tags:
       - Inference
   /inference/completion:
@@ -3376,15 +2761,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompletionRequestWrapper'
+              $ref: '#/components/schemas/CompletionRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompletionResponseStreamChunk'
-          description: streamed completion response.
+                oneOf:
+                - $ref: '#/components/schemas/CompletionResponse'
+                - $ref: '#/components/schemas/CompletionResponseStreamChunk'
+          description: Completion response. **OR** streamed completion response.
       tags:
       - Inference
   /inference/embeddings:
@@ -3405,38 +2792,6 @@ paths:
           description: OK
       tags:
       - Inference
-  /logging/get_logs:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogSearchRequestWrapper'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Log'
-          description: OK
-      tags:
-      - Telemetry
-  /logging/log_messages:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogMessagesRequestWrapper'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Telemetry
   /memory_bank/documents/delete:
     post:
       parameters: []
@@ -3671,7 +3026,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTrainingRLHFRequestWrapper'
+              $ref: '#/components/schemas/PreferenceOptimizeRequest'
         required: true
       responses:
         '200':
@@ -3689,7 +3044,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTrainingSFTRequestWrapper'
+              $ref: '#/components/schemas/SupervisedFineTuneRequest'
         required: true
       responses:
         '200':
@@ -3707,7 +3062,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RewardScoringRequestWrapper'
+              $ref: '#/components/schemas/RewardScoreRequest'
         required: true
       responses:
         '200':
@@ -3718,55 +3073,6 @@ paths:
           description: OK
       tags:
       - RewardScoring
-  /runs/log_metrics:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogMetricsRequestWrapper'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Telemetry
-  /runs/metrics:
-    get:
-      parameters:
-      - in: query
-        name: run_id
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Metric'
-          description: OK
-      tags:
-      - Telemetry
-  /runs/update:
-    post:
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRunRequestWrapper'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Run'
-          description: OK
-      tags:
-      - Telemetry
   /safety/run_shields:
     post:
       parameters: []
@@ -3774,7 +3080,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RunShieldRequestWrapper'
+              $ref: '#/components/schemas/RunShieldsRequest'
         required: true
       responses:
         '200':
@@ -3792,7 +3098,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SyntheticDataGenerationRequestWrapper'
+              $ref: '#/components/schemas/SyntheticDataGenerateRequest'
         required: true
       responses:
         '200':
@@ -3803,25 +3109,53 @@ paths:
           description: OK
       tags:
       - SyntheticDataGeneration
+  /telemetry/get_trace:
+    get:
+      parameters:
+      - in: query
+        name: trace_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trace'
+          description: OK
+      tags:
+      - Telemetry
+  /telemetry/log_event:
+    post:
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogEventRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Telemetry
 security:
 - Default: []
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: BatchInference
-- name: Safety
-- name: Telemetry
-- name: RewardScoring
-- name: Memory
 - name: SyntheticDataGeneration
-- name: Inference
-- name: Evaluations
-- name: PostTraining
 - name: Datasets
+- name: Evaluations
+- name: Safety
+- name: Inference
+- name: Telemetry
+- name: PostTraining
+- name: Memory
+- name: RewardScoring
+- name: BatchInference
 - name: AgenticSystem
-- description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
-    />
-  name: BatchChatCompletionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3861,18 +3195,15 @@ tags:
   name: ToolResponseMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
-  name: BatchChatCompletionRequestWrapper
+  name: BatchChatCompletionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionResponse"
     />
   name: BatchChatCompletionResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequest"
     />
   name: BatchCompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionRequestWrapper"
-    />
-  name: BatchCompletionRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
@@ -3885,9 +3216,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequest"
     />
   name: ChatCompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionRequestWrapper"
-    />
-  name: ChatCompletionRequestWrapper
+- description: 'Chat completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/ChatCompletionResponse" />'
+  name: ChatCompletionResponse
 - description: 'Chat completion response event.
 
 
@@ -3913,9 +3246,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequest"
     />
   name: CompletionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CompletionRequestWrapper"
-    />
-  name: CompletionRequestWrapper
+- description: 'Completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/CompletionResponse" />'
+  name: CompletionResponse
 - description: 'streamed completion response.
 
 
@@ -3966,14 +3301,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemSessionCreateResponse"
     />
   name: AgenticSystemSessionCreateResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnCreateRequest"
-    />
-  name: AgenticSystemTurnCreateRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnCreateRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemTurnRequest"
     />
-  name: AgenticSystemTurnCreateRequestWrapper
+  name: CreateAgenticSystemTurnRequest
 - description: 'Streamed agent execution response.
 
 
@@ -4017,11 +3349,6 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/Turn" />'
   name: Turn
-- description: 'Request to create a dataset.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequest" />'
-  name: CreateDatasetRequest
 - description: 'Dataset to be used for training or evaluating language models.
 
 
@@ -4030,33 +3357,14 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDatasetColumnType"
     />
   name: TrainEvalDatasetColumnType
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequest"
     />
-  name: CreateDatasetRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateExperimentRequest"
-    />
-  name: CreateExperimentRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateExperimentRequestWrapper"
-    />
-  name: CreateExperimentRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/Experiment" />
-  name: Experiment
-- description: <SchemaDefinition schemaRef="#/components/schemas/ExperimentStatus"
-    />
-  name: ExperimentStatus
+  name: CreateDatasetRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateMemoryBankRequest"
     />
   name: CreateMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
   name: MemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequest"
-    />
-  name: CreateRunRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateRunRequestWrapper"
-    />
-  name: CreateRunRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/Run" />
-  name: Run
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemRequest"
     />
   name: DeleteAgenticSystemRequest
@@ -4078,40 +3386,17 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsResponse"
     />
   name: EmbeddingsResponse
-- description: 'Checkpoint created during training runs
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/Checkpoint" />'
-  name: Checkpoint
-- description: 'Request to evaluate question answering.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
-    />'
-  name: EvaluateQuestionAnsweringRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
     />
-  name: EvaluateQuestionAnsweringRequestWrapper
+  name: EvaluateQuestionAnsweringRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJob" />
   name: EvaluationJob
-- description: 'Request to evaluate summarization.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
-    />'
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
+    />
   name: EvaluateSummarizationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
     />
-  name: EvaluateSummarizationRequestWrapper
-- description: 'Request to evaluate text generation.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
-    />'
   name: EvaluateTextGenerationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequestWrapper"
-    />
-  name: EvaluateTextGenerationRequestWrapper
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetAgenticSystemSessionRequest"
     />
   name: GetAgenticSystemSessionRequest
@@ -4123,10 +3408,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemStepResponse"
     />
   name: AgenticSystemStepResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/Artifact" />
-  name: Artifact
-- description: <SchemaDefinition schemaRef="#/components/schemas/ArtifactType" />
-  name: ArtifactType
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetDocumentsRequest"
     />
   name: GetDocumentsRequest
@@ -4145,16 +3426,13 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequest"
-    />
-  name: LogSearchRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogSearchRequestWrapper"
-    />
-  name: LogSearchRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/Log" />
-  name: Log
-- description: <SchemaDefinition schemaRef="#/components/schemas/Metric" />
-  name: Metric
+- description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
+  name: Trace
+- description: 'Checkpoint created during training runs
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/Checkpoint" />'
+  name: Checkpoint
 - description: 'Artifacts of a finetuning job.
 
 
@@ -4181,39 +3459,39 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/ListArtifactsRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogSeverity" />
+  name: LogSeverity
+- description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
+  name: MetricEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanEndPayload" />
+  name: SpanEndPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanStartPayload"
     />
-  name: ListArtifactsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequest"
+  name: SpanStartPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanStatus" />
+  name: SpanStatus
+- description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogEvent"
     />
-  name: LogMessagesRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogMessagesRequestWrapper"
+  name: StructuredLogEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
-  name: LogMessagesRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogMetricsRequest"
+  name: UnstructuredLogEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/LogEventRequest"
     />
-  name: LogMetricsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/LogMetricsRequestWrapper"
-    />
-  name: LogMetricsRequestWrapper
+  name: LogEventRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerConfig"
     />
   name: OptimizerConfig
-- description: 'Request to finetune a model.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingRLHFRequest" />'
-  name: PostTrainingRLHFRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RLHFAlgorithm" />
   name: RLHFAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
   name: TrainingConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingRLHFRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/PreferenceOptimizeRequest"
     />
-  name: PostTrainingRLHFRequestWrapper
+  name: PreferenceOptimizeRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsRequest"
     />
   name: QueryDocumentsRequest
@@ -4223,15 +3501,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DialogGenerations"
     />
   name: DialogGenerations
-- description: 'Request to score a reward function. A list of prompts and a list of
-    responses per prompt.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequest" />'
-  name: RewardScoringRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoringRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoreRequest"
     />
-  name: RewardScoringRequestWrapper
+  name: RewardScoreRequest
 - description: 'Response from the reward scoring. Batch of (prompt, response, score)
     tuples that pass the threshold.
 
@@ -4243,12 +3515,9 @@ tags:
   name: ScoredDialogGenerations
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
   name: ScoredMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldsRequest"
     />
-  name: RunShieldRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequestWrapper"
-    />
-  name: RunShieldRequestWrapper
+  name: RunShieldsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldResponse"
     />
   name: RunShieldResponse
@@ -4261,27 +3530,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LoraFinetuningConfig"
     />
   name: LoraFinetuningConfig
-- description: 'Request to finetune a model.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingSFTRequest" />'
-  name: PostTrainingSFTRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
     />
   name: QLoraFinetuningConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingSFTRequestWrapper"
+- description: <SchemaDefinition schemaRef="#/components/schemas/SupervisedFineTuneRequest"
     />
-  name: PostTrainingSFTRequestWrapper
-- description: 'Request to generate synthetic data. A small batch of prompts and a
-    filtering function
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequest"
-    />'
-  name: SyntheticDataGenerationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationRequestWrapper"
+  name: SupervisedFineTuneRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerateRequest"
     />
-  name: SyntheticDataGenerationRequestWrapper
+  name: SyntheticDataGenerateRequest
 - description: 'Response from the synthetic data generation. Batch of (prompt, response,
     score) tuples that pass the threshold.
 
@@ -4292,24 +3549,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UpdateDocumentsRequest"
     />
   name: UpdateDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateExperimentRequest"
-    />
-  name: UpdateExperimentRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateExperimentRequestWrapper"
-    />
-  name: UpdateExperimentRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateRunRequest"
-    />
-  name: UpdateRunRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateRunRequestWrapper"
-    />
-  name: UpdateRunRequestWrapper
-- description: <SchemaDefinition schemaRef="#/components/schemas/UploadArtifactRequest"
-    />
-  name: UploadArtifactRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UploadArtifactRequestWrapper"
-    />
-  name: UploadArtifactRequestWrapper
 x-tagGroups:
 - name: Operations
   tags:
@@ -4330,8 +3569,6 @@ x-tagGroups:
   - AgenticSystemCreateResponse
   - AgenticSystemSessionCreateResponse
   - AgenticSystemStepResponse
-  - AgenticSystemTurnCreateRequest
-  - AgenticSystemTurnCreateRequestWrapper
   - AgenticSystemTurnResponseEvent
   - AgenticSystemTurnResponseStepCompletePayload
   - AgenticSystemTurnResponseStepProgressPayload
@@ -4339,21 +3576,17 @@ x-tagGroups:
   - AgenticSystemTurnResponseStreamChunk
   - AgenticSystemTurnResponseTurnCompletePayload
   - AgenticSystemTurnResponseTurnStartPayload
-  - Artifact
-  - ArtifactType
   - Attachment
   - BatchChatCompletionRequest
-  - BatchChatCompletionRequestWrapper
   - BatchChatCompletionResponse
   - BatchCompletionRequest
-  - BatchCompletionRequestWrapper
   - BatchCompletionResponse
   - BuiltinShield
   - BuiltinTool
   - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
   - ChatCompletionRequest
-  - ChatCompletionRequestWrapper
+  - ChatCompletionResponse
   - ChatCompletionResponseEvent
   - ChatCompletionResponseEventType
   - ChatCompletionResponseStreamChunk
@@ -4361,17 +3594,13 @@ x-tagGroups:
   - CodeInterpreterToolDefinition
   - CompletionMessage
   - CompletionRequest
-  - CompletionRequestWrapper
+  - CompletionResponse
   - CompletionResponseStreamChunk
   - CreateAgenticSystemRequest
   - CreateAgenticSystemSessionRequest
+  - CreateAgenticSystemTurnRequest
   - CreateDatasetRequest
-  - CreateDatasetRequestWrapper
-  - CreateExperimentRequest
-  - CreateExperimentRequestWrapper
   - CreateMemoryBankRequest
-  - CreateRunRequest
-  - CreateRunRequestWrapper
   - DPOAlignmentConfig
   - DeleteAgenticSystemRequest
   - DeleteAgenticSystemSessionRequest
@@ -4383,36 +3612,25 @@ x-tagGroups:
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvaluateQuestionAnsweringRequest
-  - EvaluateQuestionAnsweringRequestWrapper
   - EvaluateSummarizationRequest
-  - EvaluateSummarizationRequestWrapper
   - EvaluateTextGenerationRequest
-  - EvaluateTextGenerationRequestWrapper
   - EvaluationJob
   - EvaluationJobArtifactsResponse
   - EvaluationJobLogStream
   - EvaluationJobStatusResponse
-  - Experiment
-  - ExperimentStatus
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgenticSystemSessionRequest
   - GetDocumentsRequest
   - InferenceStep
   - InsertDocumentsRequest
-  - ListArtifactsRequest
-  - Log
-  - LogMessagesRequest
-  - LogMessagesRequestWrapper
-  - LogMetricsRequest
-  - LogMetricsRequestWrapper
-  - LogSearchRequest
-  - LogSearchRequestWrapper
+  - LogEventRequest
+  - LogSeverity
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
-  - Metric
+  - MetricEvent
   - OnViolationAction
   - OptimizerConfig
   - PhotogenToolDefinition
@@ -4421,23 +3639,17 @@ x-tagGroups:
   - PostTrainingJobLogStream
   - PostTrainingJobStatus
   - PostTrainingJobStatusResponse
-  - PostTrainingRLHFRequest
-  - PostTrainingRLHFRequestWrapper
-  - PostTrainingSFTRequest
-  - PostTrainingSFTRequestWrapper
+  - PreferenceOptimizeRequest
   - QLoraFinetuningConfig
   - QueryDocumentsRequest
   - QueryDocumentsResponse
   - RLHFAlgorithm
   - RestAPIExecutionConfig
   - RestAPIMethod
-  - RewardScoringRequest
-  - RewardScoringRequestWrapper
+  - RewardScoreRequest
   - RewardScoringResponse
-  - Run
-  - RunShieldRequest
-  - RunShieldRequestWrapper
   - RunShieldResponse
+  - RunShieldsRequest
   - SamplingParams
   - SamplingStrategy
   - ScoredDialogGenerations
@@ -4447,9 +3659,13 @@ x-tagGroups:
   - ShieldCallStep
   - ShieldDefinition
   - ShieldResponse
+  - SpanEndPayload
+  - SpanStartPayload
+  - SpanStatus
   - StopReason
-  - SyntheticDataGenerationRequest
-  - SyntheticDataGenerationRequestWrapper
+  - StructuredLogEvent
+  - SupervisedFineTuneRequest
+  - SyntheticDataGenerateRequest
   - SyntheticDataGenerationResponse
   - SystemMessage
   - TokenLogProbs
@@ -4463,17 +3679,13 @@ x-tagGroups:
   - ToolPromptFormat
   - ToolResponse
   - ToolResponseMessage
+  - Trace
   - TrainEvalDataset
   - TrainEvalDatasetColumnType
   - TrainingConfig
   - Turn
   - URL
+  - UnstructuredLogEvent
   - UpdateDocumentsRequest
-  - UpdateExperimentRequest
-  - UpdateExperimentRequestWrapper
-  - UpdateRunRequest
-  - UpdateRunRequestWrapper
-  - UploadArtifactRequest
-  - UploadArtifactRequestWrapper
   - UserMessage
   - WolframAlphaToolDefinition

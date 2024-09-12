@@ -13,10 +13,10 @@ import fire
 import httpx
 
 from llama_models.llama3.api.datatypes import UserMessage
-from pydantic import BaseModel
-from termcolor import cprint
 
 from llama_toolchain.core.datatypes import RemoteProviderConfig
+from pydantic import BaseModel
+from termcolor import cprint
 
 from .api import *  # noqa: F403
 
@@ -43,9 +43,7 @@ class SafetyClient(Safety):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/safety/run_shields",
-                json={
-                    "request": encodable_dict(request),
-                },
+                json=encodable_dict(request),
                 headers={"Content-Type": "application/json"},
                 timeout=20,
             )

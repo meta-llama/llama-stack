@@ -61,7 +61,9 @@ class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
             ],
             stream=False,
         )
-        iterator = self.api.chat_completion(request)
+        iterator = self.api.chat_completion(
+            request.model, request.messages, stream=request.stream
+        )
         async for r in iterator:
             response = r
         print(response.completion_message.content)

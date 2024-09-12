@@ -85,6 +85,8 @@ class CompletionRequest(BaseModel):
 
 @json_schema_type
 class CompletionResponse(BaseModel):
+    """Completion response."""
+
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
 
@@ -108,6 +110,8 @@ class BatchCompletionRequest(BaseModel):
 
 @json_schema_type
 class BatchCompletionResponse(BaseModel):
+    """Batch completion response."""
+
     completion_message_batch: List[CompletionMessage]
 
 
@@ -137,6 +141,8 @@ class ChatCompletionResponseStreamChunk(BaseModel):
 
 @json_schema_type
 class ChatCompletionResponse(BaseModel):
+    """Chat completion response."""
+
     completion_message: CompletionMessage
     logprobs: Optional[List[TokenLogProbs]] = None
 
@@ -170,13 +176,25 @@ class Inference(Protocol):
     @webmethod(route="/inference/completion")
     async def completion(
         self,
-        request: CompletionRequest,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
 
     @webmethod(route="/inference/chat_completion")
     async def chat_completion(
         self,
-        request: ChatCompletionRequest,
+        model: str,
+        messages: List[Message],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        # zero-shot tool definitions as input to the model
+        tools: Optional[List[ToolDefinition]] = list,
+        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
 
     @webmethod(route="/inference/embeddings")

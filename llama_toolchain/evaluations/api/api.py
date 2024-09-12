@@ -86,19 +86,19 @@ class Evaluations(Protocol):
     @webmethod(route="/evaluate/text_generation/")
     def evaluate_text_generation(
         self,
-        request: EvaluateTextGenerationRequest,
+        metrics: List[TextGenerationMetric],
     ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/question_answering/")
     def evaluate_question_answering(
         self,
-        request: EvaluateQuestionAnsweringRequest,
+        metrics: List[QuestionAnsweringMetric],
     ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/summarization/")
     def evaluate_summarization(
         self,
-        request: EvaluateSummarizationRequest,
+        metrics: List[SummarizationMetric],
     ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/jobs")

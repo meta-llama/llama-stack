@@ -82,7 +82,28 @@ class TGIAdapter(Inference):
 
         return options
 
-    async def chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
+    async def chat_completion(
+        self,
+        model: str,
+        messages: List[Message],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        tools: Optional[List[ToolDefinition]] = list(),
+        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
+        request = ChatCompletionRequest(
+            model=model,
+            messages=messages,
+            sampling_params=sampling_params,
+            tools=tools,
+            tool_choice=tool_choice,
+            tool_prompt_format=tool_prompt_format,
+            stream=stream,
+            logprobs=logprobs,
+        )
+
         messages = prepare_messages(request)
         model_input = self.formatter.encode_dialog_prompt(messages)
         prompt = self.tokenizer.decode(model_input.tokens)

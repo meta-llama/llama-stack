@@ -388,19 +388,17 @@ class ChatAgent(ShieldRunnerMixin):
                 )
             )
 
-            req = ChatCompletionRequest(
-                model=self.agent_config.model,
-                messages=input_messages,
+            tool_calls = []
+            content = ""
+            stop_reason = None
+            async for chunk in self.inference_api.chat_completion(
+                self.agent_config.model,
+                input_messages,
                 tools=self._get_tools(),
                 tool_prompt_format=self.agent_config.tool_prompt_format,
                 stream=True,
                 sampling_params=sampling_params,
-            )
-
-            tool_calls = []
-            content = ""
-            stop_reason = None
-            async for chunk in self.inference_api.chat_completion(req):
+            ):
                 event = chunk.event
                 if event.event_type == ChatCompletionResponseEventType.start:
                     continue
