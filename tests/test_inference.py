@@ -249,7 +249,12 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
             stream=True,
             tools=[ToolDefinition(tool_name=BuiltinTool.brave_search)],
         )
-        iterator = self.api.chat_completion(request)
+        iterator = self.api.chat_completion(
+            request.model,
+            request.messages,
+            stream=request.stream,
+            tools=request.tools,
+        )
 
         events = []
         async for chunk in iterator:
