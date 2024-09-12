@@ -17,6 +17,7 @@ from termcolor import cprint
 from llama_toolchain.core.datatypes import RemoteProviderConfig
 
 from .api import *  # noqa: F403
+from .common.file_utils import data_url_from_file
 
 
 async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Memory:

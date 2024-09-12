@@ -3,11 +3,13 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import base64
 import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+from urllib.parse import unquote
 
 import chardet
 import httpx
@@ -38,28 +40,47 @@ def get_embedding_model() -> "SentenceTransformer":
     return EMBEDDING_MODEL
 
 
-def content_from_data(data_url: str) -> str:
-    match = re.match(r"data:([^;,]+)(?:;charset=([^;,]+))?(?:;base64)?,(.+)", data_url)
+def parse_data_url(data_url: str):
+    data_url_pattern = re.compile(
+        r"^"
+        r"data:"
+        r"(?P<mimetype>[\w/\-+.]+)"
+        r"(?P<charset>;charset=(?P<encoding>[\w-]+))?"
+        r"(?P<base64>;base64)?"
+        r",(?P<data>.*)"
+        r"$",
+        re.DOTALL,
+    )
+    match = data_url_pattern.match(data_url)
     if not match:
         raise ValueError("Invalid Data URL format")
 
-    mime_type, charset, data = match.groups()
+    parts = match.groupdict()
+    parts["is_base64"] = bool(parts["base64"])
+    return parts
 
-    if ";base64," in data_url:
+
+def content_from_data(data_url: str) -> str:
+    parts = parse_data_url(data_url)
+    data = parts["data"]
+
+    if parts["is_base64"]:
         data = base64.b64decode(data)
     else:
-        data = data.encode("utf-8")
+        data = unquote(data)
+        encoding = parts["encoding"] or "utf-8"
+        data = data.encode(encoding)
 
+    encoding = parts["encoding"]
+    if not encoding:
+        detected = chardet.detect(data)
+        encoding = detected["encoding"]
+
+    mime_type = parts["mimetype"]
     mime_category = mime_type.split("/")[0]
-
     if mime_category == "text":
         # For text-based files (including CSV, MD)
-        if charset:
-            return data.decode(charset)
-        else:
-            # Try to detect encoding if charset is not specified
-            detected = chardet.detect(data)
-            return data.decode(detected["encoding"])
+        return data.decode(encoding)
 
     elif mime_type == "application/pdf":
         # For PDF and DOC/DOCX files, we can't reliably convert to string)
