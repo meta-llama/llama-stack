@@ -59,10 +59,10 @@ def available_distribution_specs() -> List[DistributionSpec]:
             },
         ),
         DistributionSpec(
-            distribution_id="local-plus-tgi-inference",
+            distribution_type="local-plus-tgi-inference",
             description="Use TGI for running LLM inference",
             providers={
-                Api.inference: remote_provider_id("tgi"),
+                Api.inference: remote_provider_type("tgi"),
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
@@ -72,7 +72,9 @@ def available_distribution_specs() -> List[DistributionSpec]:
 
 
 @lru_cache()
-def resolve_distribution_spec(distribution_type: str) -> Optional[DistributionSpec]:
+def resolve_distribution_spec(
+    distribution_type: str,
+) -> Optional[DistributionSpec]:
     for spec in available_distribution_specs():
         if spec.distribution_type == distribution_type:
             return spec
