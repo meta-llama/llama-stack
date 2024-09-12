@@ -31,6 +31,7 @@ from llama_toolchain.tools.builtin import (
     SingleMessageBuiltinTool,
 )
 
+from .rag.context_retriever import generate_rag_query
 from .safety import SafetyException, ShieldRunnerMixin
 
 
@@ -664,7 +665,9 @@ class ChatAgent(ShieldRunnerMixin):
             # (i.e., no prior turns uploaded an Attachment)
             return None, []
 
-        query = " ".join(m.content for m in messages)
+        query = await generate_rag_query(
+            memory.query_generator_config, messages, inference_api=self.inference_api
+        )
         tasks = [
             self.memory_api.query_documents(
                 bank_id=bank_id,

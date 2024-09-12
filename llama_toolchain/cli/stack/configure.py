@@ -36,7 +36,7 @@ class StackConfigure(Subcommand):
         )
         from llama_toolchain.core.package import BuildType
 
-        allowed_ids = [d.distribution_id for d in available_distribution_specs()]
+        allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
             "distribution",
             type=str,
@@ -84,7 +84,7 @@ def configure_llama_distribution(config_file: Path) -> None:
 
     if config.providers:
         cprint(
-            f"Configuration already exists for {config.distribution_id}. Will overwrite...",
+            f"Configuration already exists for {config.distribution_type}. Will overwrite...",
             "yellow",
             attrs=["bold"],
         )

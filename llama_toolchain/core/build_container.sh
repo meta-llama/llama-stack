@@ -5,12 +5,12 @@ LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
 if [ "$#" -ne 4 ]; then
-  echo "Usage: $0 <distribution_id> <build_name> <docker_base> <pip_dependencies>
-  echo "Example: $0 distribution_id my-fastapi-app python:3.9-slim 'fastapi uvicorn'
+  echo "Usage: $0 <distribution_type> <build_name> <docker_base> <pip_dependencies>
+  echo "Example: $0 distribution_type my-fastapi-app python:3.9-slim 'fastapi uvicorn'
   exit 1
 fi
 
-distribution_id=$1
+distribution_type=$1
 build_name="$2"
 image_name="llamastack-$build_name"
 docker_base=$3
@@ -110,4 +110,4 @@ set +x
 printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $distribution_id --name "$build_name" --type container
+$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $distribution_type --name "$build_name" --type container

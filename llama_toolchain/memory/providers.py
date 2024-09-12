@@ -6,20 +6,38 @@
 
 from typing import List
 
-from llama_toolchain.core.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_toolchain.core.datatypes import *  # noqa: F403
+
+EMBEDDING_DEPS = [
+    "blobfile",
+    "sentence-transformers",
+]
 
 
 def available_memory_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.memory,
-            provider_id="meta-reference-faiss",
-            pip_packages=[
-                "blobfile",
-                "faiss-cpu",
-                "sentence-transformers",
-            ],
+            provider_type="meta-reference-faiss",
+            pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_toolchain.memory.meta_reference.faiss",
             config_class="llama_toolchain.memory.meta_reference.faiss.FaissImplConfig",
+        ),
+        remote_provider_spec(
+            api=Api.memory,
+            adapter=AdapterSpec(
+                adapter_id="chromadb",
+                pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
+                module="llama_toolchain.memory.adapters.chroma",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.memory,
+            adapter=AdapterSpec(
+                adapter_id="pgvector",
+                pip_packages=EMBEDDING_DEPS + ["psycopg2-binary"],
+                module="llama_toolchain.memory.adapters.pgvector",
+                config_class="llama_toolchain.memory.adapters.pgvector.PGVectorConfig",
+            ),
         ),
     ]

@@ -46,13 +46,13 @@ def build_package(
     api_inputs: List[ApiInput],
     build_type: BuildType,
     name: str,
-    distribution_id: Optional[str] = None,
+    distribution_type: Optional[str] = None,
     docker_image: Optional[str] = None,
 ):
-    if not distribution_id:
-        distribution_id = "adhoc"
+    if not distribution_type:
+        distribution_type = "adhoc"
 
-    build_dir = BUILDS_BASE_DIR / distribution_id / build_type.descriptor()
+    build_dir = BUILDS_BASE_DIR / distribution_type / build_type.descriptor()
     os.makedirs(build_dir, exist_ok=True)
 
     package_name = name.replace("::", "-")
@@ -79,7 +79,7 @@ def build_package(
         if provider.docker_image:
             raise ValueError("A stack's dependencies cannot have a docker image")
 
-        stub_config[api.value] = {"provider_id": api_input.provider}
+        stub_config[api.value] = {"provider_type": api_input.provider}
 
     if package_file.exists():
         cprint(
@@ -92,7 +92,7 @@ def build_package(
                 c.providers[api_str] = new_config
             else:
                 existing_config = c.providers[api_str]
-                if existing_config["provider_id"] != new_config["provider_id"]:
+                if existing_config["provider_type"] != new_config["provider_type"]:
                     cprint(
                         f"Provider `{api_str}` has changed from `{existing_config}` to `{new_config}`",
                         color="yellow",
@@ -105,7 +105,7 @@ def build_package(
             providers=stub_config,
         )
 
-    c.distribution_id = distribution_id
+    c.distribution_type = distribution_type
     c.docker_image = package_name if build_type == BuildType.container else None
     c.conda_env = package_name if build_type == BuildType.conda_env else None
 
@@ -119,7 +119,7 @@ def build_package(
         )
         args = [
             script,
-            distribution_id,
+            distribution_type,
             package_name,
             package_deps.docker_image,
             " ".join(package_deps.pip_packages),
@@ -130,7 +130,7 @@ def build_package(
         )
         args = [
             script,
-            distribution_id,
+            distribution_type,
             package_name,
             " ".join(package_deps.pip_packages),
         ]

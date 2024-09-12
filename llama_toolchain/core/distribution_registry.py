@@ -14,7 +14,7 @@ from .datatypes import *  # noqa: F403
 def available_distribution_specs() -> List[DistributionSpec]:
     return [
         DistributionSpec(
-            distribution_id="local",
+            distribution_type="local",
             description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
             providers={
                 Api.inference: "meta-reference",
@@ -24,35 +24,35 @@ def available_distribution_specs() -> List[DistributionSpec]:
             },
         ),
         DistributionSpec(
-            distribution_id="remote",
+            distribution_type="remote",
             description="Point to remote services for all llama stack APIs",
             providers={x: "remote" for x in Api},
         ),
         DistributionSpec(
-            distribution_id="local-ollama",
+            distribution_type="local-ollama",
             description="Like local, but use ollama for running LLM inference",
             providers={
-                Api.inference: remote_provider_id("ollama"),
+                Api.inference: remote_provider_type("ollama"),
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
             },
         ),
         DistributionSpec(
-            distribution_id="local-plus-fireworks-inference",
+            distribution_type="local-plus-fireworks-inference",
             description="Use Fireworks.ai for running LLM inference",
             providers={
-                Api.inference: remote_provider_id("fireworks"),
+                Api.inference: remote_provider_type("fireworks"),
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
             },
         ),
         DistributionSpec(
-            distribution_id="local-plus-together-inference",
+            distribution_type="local-plus-together-inference",
             description="Use Together.ai for running LLM inference",
             providers={
-                Api.inference: remote_provider_id("together"),
+                Api.inference: remote_provider_type("together"),
                 Api.safety: "meta-reference",
                 Api.agentic_system: "meta-reference",
                 Api.memory: "meta-reference-faiss",
@@ -72,8 +72,8 @@ def available_distribution_specs() -> List[DistributionSpec]:
 
 
 @lru_cache()
-def resolve_distribution_spec(distribution_id: str) -> Optional[DistributionSpec]:
+def resolve_distribution_spec(distribution_type: str) -> Optional[DistributionSpec]:
     for spec in available_distribution_specs():
-        if spec.distribution_id == distribution_id:
+        if spec.distribution_type == distribution_type:
             return spec
     return None

@@ -248,51 +248,51 @@ llama stack list-distributions
 ```
 
 <pre style="font-family: monospace;">
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| Distribution ID                | Providers                             | Description                                                                               |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| local                          | {                                     | Use code from `llama_toolchain` itself to serve all llama stack APIs                      |
-|                                |   "inference": "meta-reference",      |                                                                                           |
-|                                |   "memory": "meta-reference-faiss",   |                                                                                           |
-|                                |   "safety": "meta-reference",         |                                                                                           |
-|                                |   "agentic_system": "meta-reference"  |                                                                                           |
-|                                | }                                     |                                                                                           |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| remote                         | {                                     | Point to remote services for all llama stack APIs                                         |
-|                                |   "inference": "remote",              |                                                                                           |
-|                                |   "safety": "remote",                 |                                                                                           |
-|                                |   "agentic_system": "remote",         |                                                                                           |
-|                                |   "memory": "remote"                  |                                                                                           |
-|                                | }                                     |                                                                                           |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| local-ollama                   | {                                     | Like local, but use ollama for running LLM inference                                      |
-|                                |   "inference": "remote::ollama",      |                                                                                           |
-|                                |   "safety": "meta-reference",         |                                                                                           |
-|                                |   "agentic_system": "meta-reference", |                                                                                           |
-|                                |   "memory": "meta-reference-faiss"    |                                                                                           |
-|                                | }                                     |                                                                                           |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| local-plus-fireworks-inference | {                                     | Use Fireworks.ai for running LLM inference                                                |
-|                                |   "inference": "remote::fireworks",   |                                                                                           |
-|                                |   "safety": "meta-reference",         |                                                                                           |
-|                                |   "agentic_system": "meta-reference", |                                                                                           |
-|                                |   "memory": "meta-reference-faiss"    |                                                                                           |
-|                                | }                                     |                                                                                           |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
-| local-plus-together-inference  | {                                     | Use Together.ai for running LLM inference                                                 |
-|                                |   "inference": "remote::together",    |                                                                                           |
-|                                |   "safety": "meta-reference",         |                                                                                           |
-|                                |   "agentic_system": "meta-reference", |                                                                                           |
-|                                |   "memory": "meta-reference-faiss"    |                                                                                           |
-|                                | }                                     |                                                                                           |
-|--------------------------------|---------------------------------------|-------------------------------------------------------------------------------------------|
-| local-plus-tgi-inference       | {                                     | Use TGI (local or with [Hugging Face Inference Endpoints](https://huggingface.co/         |
-|                                |   "inference": "remote::tgi",         | inference-endpoints/dedicated)) for running LLM inference. When using HF Inference        |
-|                                |   "safety": "meta-reference",         | Endpoints, you must provide the name of the endpoint.                                     |
-|                                |   "agentic_system": "meta-reference", |                                                                                           |
-|                                |   "memory": "meta-reference-faiss"    |                                                                                           |
-|                                | }                                     |                                                                                           |
-+--------------------------------+---------------------------------------+-------------------------------------------------------------------------------------------+
+i+-------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| Distribution Type              | Providers                             | Description                                                          |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local                          | {                                     | Use code from `llama_toolchain` itself to serve all llama stack APIs |
+|                                |   "inference": "meta-reference",      |                                                                      |
+|                                |   "memory": "meta-reference-faiss",   |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference"  |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| remote                         | {                                     | Point to remote services for all llama stack APIs                    |
+|                                |   "inference": "remote",              |                                                                      |
+|                                |   "safety": "remote",                 |                                                                      |
+|                                |   "agentic_system": "remote",         |                                                                      |
+|                                |   "memory": "remote"                  |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-ollama                   | {                                     | Like local, but use ollama for running LLM inference                 |
+|                                |   "inference": "remote::ollama",      |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference", |                                                                      |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-plus-fireworks-inference | {                                     | Use Fireworks.ai for running LLM inference                           |
+|                                |   "inference": "remote::fireworks",   |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference", |                                                                      |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-plus-together-inference  | {                                     | Use Together.ai for running LLM inference                            |
+|                                |   "inference": "remote::together",    |                                                                      |
+|                                |   "safety": "meta-reference",         |                                                                      |
+|                                |   "agentic_system": "meta-reference", |                                                                      |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
+| local-plus-tgi-inference       | {                                     | Use TGI (local or with [Hugging Face Inference Endpoints](https://   |
+|                                |   "inference": "remote::tgi",         | huggingface.co/inference-endpoints/dedicated)) for running LLM       |
+|                                |   "safety": "meta-reference",         | inference. When using HF Inference Endpoints, you must provide the   |
+|                                |   "agentic_system": "meta-reference", | name of the endpoint.                                                |
+|                                |   "memory": "meta-reference-faiss"    |                                                                      |
+|                                | }                                     |                                                                      |
++--------------------------------+---------------------------------------+----------------------------------------------------------------------+
 </pre>
 
 As you can see above, each “distribution” details the “providers” it is composed of. For example, `local` uses the “meta-reference” provider for inference while local-ollama relies on a different provider (Ollama) for inference. Similarly, you can use Fireworks or Together.AI for running inference as well.

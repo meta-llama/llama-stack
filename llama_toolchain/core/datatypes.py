@@ -31,7 +31,7 @@ class ApiEndpoint(BaseModel):
 @json_schema_type
 class ProviderSpec(BaseModel):
     api: Api
-    provider_id: str
+    provider_type: str
     config_class: str = Field(
         ...,
         description="Fully-qualified classname of the config for this provider",
@@ -100,7 +100,7 @@ class RemoteProviderConfig(BaseModel):
         return url.rstrip("/")
 
 
-def remote_provider_id(adapter_id: str) -> str:
+def remote_provider_type(adapter_id: str) -> str:
     return f"remote::{adapter_id}"
 
 
@@ -141,22 +141,22 @@ def remote_provider_spec(
         if adapter and adapter.config_class
         else "llama_toolchain.core.datatypes.RemoteProviderConfig"
     )
-    provider_id = remote_provider_id(adapter.adapter_id) if adapter else "remote"
+    provider_type = remote_provider_type(adapter.adapter_id) if adapter else "remote"
 
     return RemoteProviderSpec(
-        api=api, provider_id=provider_id, config_class=config_class, adapter=adapter
+        api=api, provider_type=provider_type, config_class=config_class, adapter=adapter
     )
 
 
 @json_schema_type
 class DistributionSpec(BaseModel):
-    distribution_id: str
+    distribution_type: str
     description: str
 
     docker_image: Optional[str] = None
     providers: Dict[Api, str] = Field(
         default_factory=dict,
-        description="Provider IDs for each of the APIs provided by this distribution",
+        description="Provider Types for each of the APIs provided by this distribution",
     )
 
 
@@ -171,7 +171,7 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    distribution_id: Optional[str] = None
+    distribution_type: Optional[str] = None
 
     docker_image: Optional[str] = Field(
         default=None,

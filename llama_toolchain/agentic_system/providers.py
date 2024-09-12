@@ -13,7 +13,7 @@ def available_agentic_system_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.agentic_system,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
                 "codeshield",
                 "matplotlib",

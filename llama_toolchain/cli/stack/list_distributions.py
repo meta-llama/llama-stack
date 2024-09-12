@@ -33,7 +33,7 @@ class StackListDistributions(Subcommand):
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
-            "Distribution ID",
+            "Distribution Type",
             "Providers",
             "Description",
         ]
@@ -43,7 +43,7 @@ class StackListDistributions(Subcommand):
             providers = {k.value: v for k, v in spec.providers.items()}
             rows.append(
                 [
-                    spec.distribution_id,
+                    spec.distribution_type,
                     json.dumps(providers, indent=2),
                     spec.description,
                 ]

@@ -134,7 +134,7 @@ class LogSearchRequest(BaseModel):
     filters: Optional[Dict[str, Any]] = None
 
 
-class Observability(Protocol):
+class Telemetry(Protocol):
     @webmethod(route="/experiments/create")
     def create_experiment(self, request: CreateExperimentRequest) -> Experiment: ...
 

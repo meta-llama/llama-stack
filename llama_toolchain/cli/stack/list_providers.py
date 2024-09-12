@@ -41,7 +41,7 @@ class StackListProviders(Subcommand):
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
-            "Provider ID",
+            "Provider Type",
             "PIP Package Dependencies",
         ]
 
@@ -49,7 +49,7 @@ class StackListProviders(Subcommand):
         for spec in providers_for_api.values():
             rows.append(
                 [
-                    spec.provider_id,
+                    spec.provider_type,
                     ",".join(spec.pip_packages),
                 ]
             )

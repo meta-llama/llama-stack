@@ -13,7 +13,7 @@ def available_inference_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.inference,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
                 "accelerate",
                 "blobfile",
