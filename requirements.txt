@@ -2,7 +2,7 @@ blobfile
 fire
 httpx
 huggingface-hub
-llama-models>=0.0.13
+llama-models>=0.0.14
 pydantic
 requests
 termcolor
