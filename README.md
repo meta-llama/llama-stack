@@ -5,9 +5,9 @@
 
 This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
 
-The [Llama Stack](https://github.com/meta-llama/llama-toolchain/pull/8) defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to invoking AI agents in production. Beyond definition, we're developing open-source versions and partnering with cloud providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
+The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to invoking AI agents in production. Beyond definition, we're developing open-source versions and partnering with cloud providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
 
-The Stack APIs are rapidly improving, but still very much Work in Progress and we invite feedback as well as direct contributions.
+The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
 
 
 ## APIs
@@ -30,9 +30,9 @@ Each of the APIs themselves is a collection of REST endpoints.
 
 A Provider is what makes the API real -- they provide the actual implementation backing the API.
 
-As an example, for Inference, we could have the implementation be backed by primitives from `[ torch | vLLM | TensorRT ]` as possible options.
+As an example, for Inference, we could have the implementation be backed by open source libraries like `[ torch | vLLM | TensorRT ]` as possible options.
 
-A provider can also be just a pointer to a remote REST service -- for example, cloud providers like `[ aws | gcp ]` could possibly serve these APIs.
+A provider can also be just a pointer to a remote REST service -- for example, cloud providers or dedicated inference providers could serve these APIs.
 
 
 ## Llama Stack Distribution
