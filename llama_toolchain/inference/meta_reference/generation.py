@@ -79,7 +79,7 @@ class Llama:
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
 
-        model_parallel_size = model.hardware_requirements.gpu_count
+        model_parallel_size = config.model_parallel_size
         if not model_parallel_is_initialized():
             initialize_model_parallel(model_parallel_size)
 
