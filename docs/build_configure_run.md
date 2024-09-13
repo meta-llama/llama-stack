@@ -4,6 +4,82 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 
 This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
 
+### TL;DR
+Let's imagine you are working with a 8B-Instruct model. We will name our build `8b-instruct` to help us remember the config.
+
+**llama stack build**
+```
+llama stack build
+
+Enter value for name (required): 8b-instruct
+Enter value for distribution (default: local) (required):
+Enter value for api_providers (optional):
+Enter value for image_type (default: conda) (required):
+
+...
+Build spec configuration saved at ~/.llama/distributions/local/docker/8b-instruct-build.yaml
+```
+
+**llama stack configure**
+```
+$ llama stack configure ~/.llama/distributions/local/docker/8b-instruct-build.yaml
+Configuring API: inference (meta-reference)
+Enter value for model (default: Meta-Llama3.1-8B-Instruct) (required):
+Enter value for quantization (optional):
+Enter value for torch_seed (optional):
+Enter value for max_seq_len (required): 4096
+Enter value for max_batch_size (default: 1) (required):
+
+Configuring API: memory (meta-reference-faiss)
+
+Configuring API: safety (meta-reference)
+Do you want to configure llama_guard_shield? (y/n): n
+Do you want to configure prompt_guard_shield? (y/n): n
+
+Configuring API: agentic_system (meta-reference)
+Enter value for brave_search_api_key (optional):
+Enter value for bing_search_api_key (optional):
+Enter value for wolfram_api_key (optional):
+
+Configuring API: telemetry (console)
+
+YAML configuration has been written to ~/.llama/builds/local/docker/8b-instruct-build.yaml
+```
+
+**llama stack run**
+```
+llama stack run ~/.llama/builds/local/docker/8b-instruct-build.yaml
+...
+Serving POST /inference/chat_completion
+Serving POST /inference/completion
+Serving POST /inference/embeddings
+Serving POST /memory_banks/create
+Serving DELETE /memory_bank/documents/delete
+Serving DELETE /memory_banks/drop
+Serving GET /memory_bank/documents/get
+Serving GET /memory_banks/get
+Serving POST /memory_bank/insert
+Serving GET /memory_banks/list
+Serving POST /memory_bank/query
+Serving POST /memory_bank/update
+Serving POST /safety/run_shields
+Serving POST /agentic_system/create
+Serving POST /agentic_system/session/create
+Serving POST /agentic_system/turn/create
+Serving POST /agentic_system/delete
+Serving POST /agentic_system/session/delete
+Serving POST /agentic_system/session/get
+Serving POST /agentic_system/step/get
+Serving POST /agentic_system/turn/get
+Serving GET /telemetry/get_trace
+Serving POST /telemetry/log_event
+Listening on :::5000
+INFO:     Started server process [3403915]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
+```
+
 ### Step 0. Prerequisites
 You first need to have models downloaded locally.
 
