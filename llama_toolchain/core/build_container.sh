@@ -105,10 +105,10 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
 fi
 set -x
-podman build -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+podman build --network host -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
 
 printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $config_file
+# $CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $config_file
