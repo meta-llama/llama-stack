@@ -110,6 +110,11 @@ def build_package(
     #     to_write = json.loads(json.dumps(c.dict(), cls=EnumEncoder))
     #     f.write(yaml.dump(to_write, sort_keys=False))
 
+    # cprint(
+    #     f"Target `{package_name}` built with configuration at {str(package_file)}",
+    #     color="green",
+    # )
+
     if image_type == ImageType.docker:
         script = pkg_resources.resource_filename(
             "llama_toolchain", "core/build_container.sh"
@@ -141,8 +146,3 @@ def build_package(
             color="red",
         )
         return
-
-    cprint(
-        f"Target `{package_name}` built with configuration at {str(package_file)}",
-        color="green",
-    )
