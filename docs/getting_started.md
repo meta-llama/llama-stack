@@ -1,4 +1,4 @@
-# Get Started
+# Getting Started
 
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-toolchain` package.
 
@@ -81,13 +81,8 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
 ### Step 0. Prerequisites
-You first need to have models downloaded locally.
+You first need to have models downloaded locally. You can see this page for downloading models
 
-To download any model you need the **Model Descriptor**.
-This can be obtained by running the command
-```
-llama model list
-```
 
 You should see a table like this:
 
