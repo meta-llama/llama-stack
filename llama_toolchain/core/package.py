@@ -78,43 +78,6 @@ def build_package(
 
         stub_config[api.value] = {"provider_type": api_input.provider}
 
-    # if package_file.exists():
-    #     cprint(
-    #         f"Build `{package_name}` exists; will reconfigure",
-    #         color="yellow",
-    #     )
-    #     c = PackageConfig(**yaml.safe_load(package_file.read_text()))
-    #     for api_str, new_config in stub_config.items():
-    #         if api_str not in c.providers:
-    #             c.providers[api_str] = new_config
-    #         else:
-    #             existing_config = c.providers[api_str]
-    #             if existing_config["provider_type"] != new_config["provider_type"]:
-    #                 cprint(
-    #                     f"Provider `{api_str}` has changed from `{existing_config}` to `{new_config}`",
-    #                     color="yellow",
-    #                 )
-    #                 c.providers[api_str] = new_config
-    # else:
-    #     c = PackageConfig(
-    #         built_at=datetime.now(),
-    #         package_name=package_name,
-    #         providers=stub_config,
-    #     )
-
-    # c.distribution_type = distribution_type
-    # c.docker_image = package_name if image_type == ImageType.docker else None
-    # c.conda_env = package_name if image_type == ImageType.conda else None
-
-    # with open(package_file, "w") as f:
-    #     to_write = json.loads(json.dumps(c.dict(), cls=EnumEncoder))
-    #     f.write(yaml.dump(to_write, sort_keys=False))
-
-    # cprint(
-    #     f"Target `{package_name}` built with configuration at {str(package_file)}",
-    #     color="green",
-    # )
-
     if image_type == ImageType.docker:
         script = pkg_resources.resource_filename(
             "llama_toolchain", "core/build_container.sh"
