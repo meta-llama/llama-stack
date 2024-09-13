@@ -108,7 +108,4 @@ set -x
 podman build --network host -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
 
-printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
-
-# $CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $config_file

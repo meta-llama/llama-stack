@@ -115,7 +115,3 @@ ensure_conda_env_python310() {
 }
 
 ensure_conda_env_python310 "$env_name" "$pip_dependencies"
-
-printf "${GREEN}Successfully setup conda environment. Configuring build...${NC}\n"
-
-# $CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $config_file
