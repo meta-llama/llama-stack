@@ -4,18 +4,17 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-if [ "$#" -ne 5 ]; then
-  echo "Usage: $0 <distribution_type> <build_name> <docker_base> <pip_dependencies>
-  echo "Example: $0 distribution_type my-fastapi-app python:3.9-slim 'fastapi uvicorn'
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <build_name> <docker_base> <pip_dependencies>
+  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn'
   exit 1
 fi
 
-distribution_type=$1
-build_name="$2"
+# distribution_type=$1
+build_name="$1"
 image_name="llamastack-$build_name"
-docker_base=$3
-config_file=$4
-pip_dependencies=$5
+docker_base=$2
+pip_dependencies=$3
 
 # Define color codes
 RED='\033[0;31m'

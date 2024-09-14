@@ -41,7 +41,7 @@ class StackConfigure(Subcommand):
         self.parser.add_argument(
             "config",
             type=str,
-            help="Path to the build config file (e.g. ~/.llama/builds/<distribution>/<image_type>/<name>-build.yaml)",
+            help="Path to the build config file (e.g. ~/.llama/builds/<image_type>/<name>-build.yaml)",
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
