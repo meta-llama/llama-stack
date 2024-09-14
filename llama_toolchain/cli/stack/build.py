@@ -72,65 +72,20 @@ class StackBuild(Subcommand):
         from llama_toolchain.core.package import ApiInput, build_package, ImageType
         from termcolor import cprint
 
+        # expect build to take in a distribution spec file
         api_inputs = []
-        if build_config.distribution == "adhoc":
-            if not build_config.api_providers:
-                self.parser.error(
-                    "You must specify API providers with (api=provider,...) for building an adhoc distribution"
+        for api, provider_type in build_config.distribution_spec.providers.items():
+            api_inputs.append(
+                ApiInput(
+                    api=Api(api),
+                    provider=provider_type,
                 )
-                return
+            )
 
-            parsed = parse_api_provider_tuples(build_config.api_providers, self.parser)
-            for api, provider_spec in parsed.items():
-                for dep in provider_spec.api_dependencies:
-                    if dep not in parsed:
-                        self.parser.error(
-                            f"API {api} needs dependency {dep} provided also"
-                        )
-                        return
-
-                api_inputs.append(
-                    ApiInput(
-                        api=api,
-                        provider=provider_spec.provider_type,
-                    )
-                )
-            docker_image = None
-        else:
-            if build_config.api_providers:
-                self.parser.error(
-                    "You cannot specify API providers for pre-registered distributions"
-                )
-                return
-
-            dist = resolve_distribution_spec(build_config.distribution)
-            if dist is None:
-                self.parser.error(
-                    f"Could not find distribution {build_config.distribution}"
-                )
-                return
-
-            for api, provider_type in dist.providers.items():
-                api_inputs.append(
-                    ApiInput(
-                        api=api,
-                        provider=provider_type,
-                    )
-                )
-            docker_image = dist.docker_image
-
-        build_package(
-            api_inputs,
-            image_type=ImageType(build_config.image_type),
-            name=build_config.name,
-            distribution_type=build_config.distribution,
-            docker_image=docker_image,
-        )
+        build_package(build_config)
 
         # save build.yaml spec for building same distribution again
-        build_dir = (
-            DISTRIBS_BASE_DIR / build_config.distribution / build_config.image_type
-        )
+        build_dir = DISTRIBS_BASE_DIR / build_config.image_type
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
 

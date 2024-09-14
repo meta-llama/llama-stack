@@ -19,17 +19,15 @@ fi
 
 set -euo pipefail
 
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 2 ]; then
   echo "Usage: $0 <distribution_type> <build_name> <pip_dependencies>" >&2
   echo "Example: $0 <distribution_type> mybuild 'numpy pandas scipy'" >&2
   exit 1
 fi
 
-distribution_type="$1"
-build_name="$2"
+build_name="$1"
 env_name="llamastack-$build_name"
-config_file="$3"
-pip_dependencies="$4"
+pip_dependencies="$2"
 
 # Define color codes
 RED='\033[0;31m'

@@ -39,7 +39,58 @@ class ApiInput(BaseModel):
     provider: str
 
 
-def build_package(
+def build_package(build_config: BuildConfig):
+    package_deps = Dependencies(
+        docker_image=build_config.distribution_spec.docker_image or "python:3.10-slim",
+        pip_packages=SERVER_DEPENDENCIES,
+    )
+
+    # extend package dependencies based on providers spec
+    all_providers = api_providers()
+    for api_str, provider in build_config.distribution_spec.providers.items():
+        providers_for_api = all_providers[Api(api_str)]
+        if provider not in providers_for_api:
+            raise ValueError(
+                f"Provider `{provider}` is not available for API `{api_str}`"
+            )
+
+        provider_spec = providers_for_api[provider]
+        package_deps.pip_packages.extend(provider_spec.pip_packages)
+        if provider_spec.docker_image:
+            raise ValueError("A stack's dependencies cannot have a docker image")
+
+    if build_config.image_type == ImageType.docker.value:
+        script = pkg_resources.resource_filename(
+            "llama_toolchain", "core/build_container.sh"
+        )
+        args = [
+            script,
+            distribution_type,
+            package_name,
+            package_deps.docker_image,
+            str(package_file),
+            " ".join(package_deps.pip_packages),
+        ]
+    else:
+        script = pkg_resources.resource_filename(
+            "llama_toolchain", "core/build_conda_env.sh"
+        )
+        args = [
+            script,
+            build_config.name,
+            " ".join(package_deps.pip_packages),
+        ]
+
+    return_code = run_with_pty(args)
+    if return_code != 0:
+        cprint(
+            f"Failed to build target {build_config.name} with return code {return_code}",
+            color="red",
+        )
+        return
+
+
+def build_package_deprecated(
     api_inputs: List[ApiInput],
     image_type: ImageType,
     name: str,
