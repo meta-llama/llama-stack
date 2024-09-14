@@ -209,10 +209,86 @@ llama stack configure <path/to/name.build.yaml>
 ```
 
 ```
-$ llama stack configure
+$ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
+
+Configuring API: inference (meta-reference)
+Enter value for model (existing: Meta-Llama3.1-8B-Instruct) (required):
+Enter value for quantization (optional):
+Enter value for torch_seed (optional):
+Enter value for max_seq_len (existing: 4096) (required):
+Enter value for max_batch_size (existing: 1) (required):
+
+Configuring API: memory (meta-reference-faiss)
+
+Configuring API: safety (meta-reference)
+Do you want to configure llama_guard_shield? (y/n): y
+Entering sub-configuration for llama_guard_shield:
+Enter value for model (default: Llama-Guard-3-8B) (required):
+Enter value for excluded_categories (default: []) (required):
+Enter value for disable_input_check (default: False) (required):
+Enter value for disable_output_check (default: False) (required):
+Do you want to configure prompt_guard_shield? (y/n): y
+Entering sub-configuration for prompt_guard_shield:
+Enter value for model (default: Prompt-Guard-86M) (required):
+
+Configuring API: agentic_system (meta-reference)
+Enter value for brave_search_api_key (optional):
+Enter value for bing_search_api_key (optional):
+Enter value for wolfram_api_key (optional):
+
+Configuring API: telemetry (console)
+
+YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yaml
 ```
+
+After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may efit this file to change the settings.
 
 > TODO: For Docker, specify docker image instead of build config.
 
 
 ## Step 3. Run
+Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
+
+```
+llama stack run ~/.llama/builds/conda/8b-instruct-run.yaml
+```
+
+You should see the Llama Stack server start and print the APIs that it is supporting
+
+```
+$ llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml
+
+> initializing model parallel with size 1
+> initializing ddp with size 1
+> initializing pipeline with size 1
+Loaded in 19.28 seconds
+NCCL version 2.20.5+cuda12.4
+Finished model load YES READY
+Serving POST /inference/batch_chat_completion
+Serving POST /inference/batch_completion
+Serving POST /inference/chat_completion
+Serving POST /inference/completion
+Serving POST /safety/run_shields
+Serving POST /agentic_system/memory_bank/attach
+Serving POST /agentic_system/create
+Serving POST /agentic_system/session/create
+Serving POST /agentic_system/turn/create
+Serving POST /agentic_system/delete
+Serving POST /agentic_system/session/delete
+Serving POST /agentic_system/memory_bank/detach
+Serving POST /agentic_system/session/get
+Serving POST /agentic_system/step/get
+Serving POST /agentic_system/turn/get
+Listening on :::5000
+INFO:     Started server process [453333]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
+```
+
+> [!NOTE]
+> Configuration is in `~/.llama/builds/local/conda/8b-instruct.yaml`. Feel free to increase `max_seq_len`.
+
+> [!IMPORTANT]
+> The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
+This server is running a Llama model locally.
