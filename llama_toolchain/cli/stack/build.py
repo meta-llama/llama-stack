@@ -48,12 +48,6 @@ class StackBuild(Subcommand):
         self.parser.set_defaults(func=self._run_stack_build_command)
 
     def _add_arguments(self):
-        from llama_toolchain.core.distribution_registry import (
-            available_distribution_specs,
-        )
-        from llama_toolchain.core.package import ImageType
-
-        allowed_ids = [d.distribution_type for d in available_distribution_specs()]
         self.parser.add_argument(
             "--config",
             type=str,
