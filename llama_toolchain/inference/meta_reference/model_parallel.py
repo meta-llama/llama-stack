@@ -79,7 +79,7 @@ class LlamaModelParallelGenerator:
 
     def __enter__(self):
         self.group = ModelParallelProcessGroup(
-            self.model.hardware_requirements.gpu_count,
+            1,
             init_model_cb=partial(init_model_cb, self.config),
         )
         self.group.start()
