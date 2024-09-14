@@ -11,30 +11,6 @@ from llama_toolchain.core.datatypes import *  # noqa: F403
 import yaml
 
 
-def parse_api_provider_tuples(
-    tuples: str, parser: argparse.ArgumentParser
-) -> Dict[str, ProviderSpec]:
-    from llama_toolchain.core.distribution import api_providers
-
-    all_providers = api_providers()
-
-    deps = {}
-    for dep in tuples.split(","):
-        dep = dep.strip()
-        if not dep:
-            continue
-        api_str, provider = dep.split("=")
-        api = Api(api_str)
-
-        provider = provider.strip()
-        if provider not in all_providers[api]:
-            parser.error(f"Provider `{provider}` is not available for API `{api}`")
-            return
-        deps[api] = all_providers[api][provider]
-
-    return deps
-
-
 class StackBuild(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
         super().__init__()
