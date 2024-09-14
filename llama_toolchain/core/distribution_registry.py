@@ -57,13 +57,3 @@ def available_distribution_specs() -> List[DistributionSpec]:
             },
         ),
     ]
-
-
-@lru_cache()
-def resolve_distribution_spec(
-    distribution_type: str,
-) -> Optional[DistributionSpec]:
-    for spec in available_distribution_specs():
-        if spec.distribution_type == distribution_type:
-            return spec
-    return None

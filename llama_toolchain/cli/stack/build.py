@@ -68,7 +68,6 @@ class StackBuild(Subcommand):
 
         from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
         from llama_toolchain.common.serialize import EnumEncoder
-        from llama_toolchain.core.distribution_registry import resolve_distribution_spec
         from llama_toolchain.core.package import ApiInput, build_package, ImageType
         from termcolor import cprint
 
