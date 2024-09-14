@@ -30,6 +30,12 @@ class StackBuild(Subcommand):
             help="Path to a config file to use for the build",
         )
 
+        self.parser.add_argument(
+            "--name",
+            type=str,
+            help="Override the name of the llama stack build",
+        )
+
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
     ) -> None:
@@ -68,8 +74,9 @@ class StackBuild(Subcommand):
                 except Exception as e:
                     self.parser.error(f"Could not parse config file {args.config}: {e}")
                     return
+                build_config.name = args.name if args.name else build_config.name
                 self._run_stack_build_command_from_build_config(build_config)
             return
 
-        build_config = prompt_for_config(BuildConfig, None)
+        build_config = prompt_for_config(BuildConfig, build_config_default)
         self._run_stack_build_command_from_build_config(build_config)
