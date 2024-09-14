@@ -47,14 +47,15 @@ class StackConfigure(Subcommand):
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.core.package import ImageType
 
-        with open(args.config, "r") as f:
-            try:
-                build_config = BuildConfig(**yaml.safe_load(f))
-            except Exception as e:
-                self.parser.error(
-                    f"Could not find {config_file}. Please run `llama stack build` first"
-                )
-                return
+        build_config_file = Path(args.config)
+        if not build_config_file.exists():
+            self.parser.error(
+                f"Could not find {build_config_file}. Please run `llama stack build` first"
+            )
+            return
+
+        with open(build_config_file, "r") as f:
+            build_config = BuildConfig(**yaml.safe_load(f))
 
         self._configure_llama_distribution(build_config)
 
@@ -76,7 +77,7 @@ class StackConfigure(Subcommand):
 
         if package_file.exists():
             cprint(
-                f"Configuration already exists for {build_config.distribution}. Will overwrite...",
+                f"Configuration already exists for {build_config.name}. Will overwrite...",
                 "yellow",
                 attrs=["bold"],
             )
