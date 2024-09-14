@@ -1,7 +1,7 @@
 name: local-tgi-conda-example
 distribution_spec:
-  distribution_type: local
-  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  distribution_type: local-plus-tgi-inference
+  description: Use TGI for running LLM inference
   docker_image: null
   providers:
     inference: remote::tgi

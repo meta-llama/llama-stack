@@ -1,7 +1,7 @@
 name: local-ollama-conda-example
 distribution_spec:
-  distribution_type: local
-  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  distribution_type: local-plus-ollama-inference
+  description: Like local, but use ollama for running LLM inference
   docker_image: null
   providers:
     inference: remote::ollama

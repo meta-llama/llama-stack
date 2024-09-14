@@ -1,10 +1,10 @@
-name: local-fireworks-conda-example
+name: local-tgi-conda-example
 distribution_spec:
-  distribution_type: local-plus-fireworks-inference
-  description: Use Fireworks.ai for running LLM inference
+  distribution_type: local-plus-together-inference
+  description: Use Together.ai for running LLM inference
   docker_image: null
   providers:
-    inference: remote::fireworks
+    inference: remote::together
     memory: meta-reference-faiss
     safety: meta-reference
     agentic_system: meta-reference
