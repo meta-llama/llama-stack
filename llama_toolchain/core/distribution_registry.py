@@ -5,55 +5,19 @@
 # the root directory of this source tree.
 
 from functools import lru_cache
+from pathlib import Path
 from typing import List, Optional
-
 from .datatypes import *  # noqa: F403
+import yaml
 
 
-@lru_cache()
+# @lru_cache()
 def available_distribution_specs() -> List[DistributionSpec]:
-    return [
-        DistributionSpec(
-            distribution_type="local",
-            description="Use code from `llama_toolchain` itself to serve all llama stack APIs",
-            providers={
-                "inference": "meta-reference",
-                "memory": "meta-reference-faiss",
-                "safety": "meta-reference",
-                "agentic_system": "meta-reference",
-                "telemetry": "console",
-            },
-        ),
-        DistributionSpec(
-            distribution_type="local-ollama",
-            description="Like local, but use ollama for running LLM inference",
-            providers={
-                "inference": remote_provider_type("ollama"),
-                "safety": "meta-reference",
-                "agentic_system": "meta-reference",
-                "memory": "meta-reference-faiss",
-                "telemetry": "console",
-            },
-        ),
-        DistributionSpec(
-            distribution_type="local-plus-fireworks-inference",
-            description="Use Fireworks.ai for running LLM inference",
-            providers={
-                "inference": remote_provider_type("fireworks"),
-                "safety": "meta-reference",
-                "agentic_system": "meta-reference",
-                "memory": "meta-reference-faiss",
-                "telemetry": "console",
-            },
-        ),
-        DistributionSpec(
-            distribution_type="local-plus-tgi-inference",
-            description="Use TGI for running LLM inference",
-            providers={
-                "inference": remote_provider_type("tgi"),
-                "safety": "meta-reference",
-                "agentic_system": "meta-reference",
-                "memory": "meta-reference-faiss",
-            },
-        ),
-    ]
+    distribution_specs = []
+    for p in Path("llama_toolchain/configs/distributions/distribution_registry").rglob(
+        "*.yaml"
+    ):
+        with open(p, "r") as f:
+            distribution_specs.append(DistributionSpec(**yaml.safe_load(f)))
+
+    return distribution_specs

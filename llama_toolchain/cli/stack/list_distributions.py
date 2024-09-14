@@ -40,7 +40,7 @@ class StackListDistributions(Subcommand):
 
         rows = []
         for spec in available_distribution_specs():
-            providers = {k.value: v for k, v in spec.providers.items()}
+            providers = {k: v for k, v in spec.providers.items()}
             rows.append(
                 [
                     spec.distribution_type,

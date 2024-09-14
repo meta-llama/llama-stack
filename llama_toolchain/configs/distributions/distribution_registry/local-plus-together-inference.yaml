@@ -1,0 +1,9 @@
+distribution_type: local-plus-together-inference
+description: Use Together.ai for running LLM inference
+docker_image: null
+providers:
+  inference: remote::together
+  safety: meta-reference
+  agentic_system: meta-reference
+  memory: meta-reference-faiss
+  telemetry: console

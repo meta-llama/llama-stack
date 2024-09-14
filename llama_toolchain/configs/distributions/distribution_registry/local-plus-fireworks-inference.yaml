@@ -1,0 +1,9 @@
+distribution_type: local-plus-fireworks-inference
+description: Use Fireworks.ai for running LLM inference
+docker_image: null
+providers:
+  inference: remote::fireworks
+  safety: meta-reference
+  agentic_system: meta-reference
+  memory: meta-reference-faiss
+  telemetry: console
