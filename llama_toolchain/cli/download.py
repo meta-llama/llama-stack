@@ -48,8 +48,8 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--model-id",
-        choices=[x.descriptor() for x in models],
         required=False,
+        help="See `llama model list` or `llama model list --show-all` for the list of available models",
     )
     parser.add_argument(
         "--hf-token",

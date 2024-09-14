@@ -38,7 +38,6 @@ class ModelList(Subcommand):
             "Model Descriptor",
             "HuggingFace Repo",
             "Context Length",
-            "Hardware Requirements",
         ]
 
         rows = []
@@ -46,15 +45,12 @@ class ModelList(Subcommand):
             if not args.show_all and not model.is_featured:
                 continue
 
-            req = model.hardware_requirements
-
             descriptor = model.descriptor()
             rows.append(
                 [
                     descriptor,
                     model.huggingface_repo,
                     f"{model.max_seq_length // 1024}K",
-                    f"{req.gpu_count} GPU{'s' if req.gpu_count > 1 else ''}, each >= {req.memory_gb_per_gpu}GB VRAM",
                 ]
             )
         print_table(
