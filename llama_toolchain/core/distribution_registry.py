@@ -11,7 +11,7 @@ from .datatypes import *  # noqa: F403
 import yaml
 
 
-# @lru_cache()
+@lru_cache()
 def available_distribution_specs() -> List[DistributionSpec]:
     distribution_specs = []
     for p in Path("llama_toolchain/configs/distributions/distribution_registry").rglob(
