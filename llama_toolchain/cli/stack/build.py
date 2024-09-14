@@ -72,16 +72,6 @@ class StackBuild(Subcommand):
         from llama_toolchain.core.package import ApiInput, build_package, ImageType
         from termcolor import cprint
 
-        # expect build to take in a distribution spec file
-        api_inputs = []
-        for api, provider_type in build_config.distribution_spec.providers.items():
-            api_inputs.append(
-                ApiInput(
-                    api=Api(api),
-                    provider=provider_type,
-                )
-            )
-
         build_package(build_config)
 
         # save build.yaml spec for building same distribution again
