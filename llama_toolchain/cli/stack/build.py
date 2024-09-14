@@ -78,5 +78,5 @@ class StackBuild(Subcommand):
                 self._run_stack_build_command_from_build_config(build_config)
             return
 
-        build_config = prompt_for_config(BuildConfig, build_config_default)
+        build_config = prompt_for_config(BuildConfig, None)
         self._run_stack_build_command_from_build_config(build_config)
