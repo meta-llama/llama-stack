@@ -8,10 +8,13 @@ import argparse
 import json
 from pathlib import Path
 
-import yaml
+import pkg_resources
 
+import yaml
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
+
+from llama_toolchain.common.exec import run_with_pty
 from termcolor import cprint
 from llama_toolchain.core.datatypes import *  # noqa: F403
 import os
@@ -35,7 +38,7 @@ class StackConfigure(Subcommand):
         self.parser.add_argument(
             "config",
             type=str,
-            help="Path to the build config file (e.g. ~/.llama/builds/<image_type>/<name>-build.yaml)",
+            help="Path to the build config file (e.g. ~/.llama/builds/<image_type>/<name>-build.yaml). For docker, this could also be the name of the docker image. ",
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
@@ -43,10 +46,37 @@ class StackConfigure(Subcommand):
 
         build_config_file = Path(args.config)
         if not build_config_file.exists():
-            self.parser.error(
-                f"Could not find {build_config_file}. Please run `llama stack build` first"
+            cprint(
+                f"Could not find {build_config_file}. Trying docker image name instead...",
+                color="green",
             )
-            return
+
+            build_dir = (
+                Path(os.path.expanduser("./.llama/distributions"))
+                / ImageType.docker.value
+            )
+            build_config_file = build_dir / f"{args.config}-build.yaml"
+
+            os.makedirs(build_dir, exist_ok=True)
+
+            script = pkg_resources.resource_filename(
+                "llama_toolchain", "core/configure_container.sh"
+            )
+            script_args = [
+                script,
+                args.config,
+                str(build_config_file),
+            ]
+
+            return_code = run_with_pty(script_args)
+
+            # we have regenerated the build config file with script, now check if it exists
+            build_config_file = Path(str(build_config_file))
+            if return_code != 0 or not build_config_file.exists():
+                self.parser.error(
+                    f"Can not find {build_config_file}. Please run llama stack build first or check if docker image exists"
+                )
+                return
 
         with open(build_config_file, "r") as f:
             build_config = BuildConfig(**yaml.safe_load(f))
