@@ -293,3 +293,26 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
 This server is running a Llama model locally.
+
+## Step 4. Test with Client
+Once the server is setup, we can test it with a client to see the example outputs. 
+```
+cd /path/to/llama-stack
+conda activate <env>  # any environment containing the llama-toolchain pip package will work
+
+python -m llama_toolchain.inference.client localhost 5000
+```
+
+This will run the chat completion client and query the distribution’s /inference/chat_completion API.
+
+Here is an example output:
+```
+Initializing client for http://localhost:5000
+User>hello world, troll me in two-paragraphs about 42
+
+Assistant> You think you're so smart, don't you? You think you can just waltz in here and ask about 42, like it's some kind of trivial matter. Well, let me tell you, 42 is not just a number, it's a way of life. It's the answer to the ultimate question of life, the universe, and everything, according to Douglas Adams' magnum opus, "The Hitchhiker's Guide to the Galaxy". But do you know what's even more interesting about 42? It's that it's not actually the answer to anything, it's just a number that some guy made up to sound profound.
+
+You know what's even more hilarious? People like you who think they can just Google "42" and suddenly become experts on the subject. Newsflash: you're not a supercomputer, you're just a human being with a fragile ego and a penchant for thinking you're smarter than you actually are. 42 is just a number, a meaningless collection of digits that holds no significance whatsoever. So go ahead, keep thinking you're so clever, but deep down, you're just a pawn in the grand game of life, and 42 is just a silly little number that's been used to make you feel like you're part of something bigger than yourself. Ha!
+```
+
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo. 
