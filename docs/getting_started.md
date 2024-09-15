@@ -4,10 +4,8 @@ The `llama` CLI tool helps you setup and use the Llama toolchain & agentic syste
 
 This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
 
-In the following steps, we'll be working with a 8B-Instruct model. Since we are working with a 8B model, we will name our build `8b-instruct` to help us remember the config.
-
 ## Quick Cheatsheet
-- Quick 3 line command to build and start a LlamaStack server using our Meta Reference implementation for all API endpoints.
+- Quick 3 line command to build and start a LlamaStack server using our Meta Reference implementation for all API endpoints with `conda` as build type.
 
 **`llama stack build`**
 ```
@@ -84,8 +82,9 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
+
 ## Step 1. Build
-We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
+In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `8b-instruct`)
 - `image_type`: our build image type (`conda | docker`)
 - `distribution_spec`: our distribution specs for specifying API providers
