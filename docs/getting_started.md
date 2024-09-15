@@ -205,8 +205,11 @@ Build spec configuration saved at /home/xiyan/.llama/distributions/docker/docker
 ## Step 2. Configure
 After our distribution is built (either in form of docker or conda environment), we will run the following command to
 ```
-llama stack configure <path/to/name.build.yaml>
+llama stack configure [<path/to/name.build.yaml> | <docker-image-name>]
 ```
+- For `conda` environments: <path/to/name.build.yaml> would be the generated build spec saved from Step 1.
+- For `docker` images downloaded from Dockerhub, you could also use <docker-image-name> as the argument.
+   - Run `docker images` to check list of available images on your machine.
 
 ```
 $ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
@@ -242,8 +245,6 @@ YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yam
 ```
 
 After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may efit this file to change the settings.
-
-> TODO: For Docker, specify docker image instead of build config.
 
 
 ## Step 3. Run
