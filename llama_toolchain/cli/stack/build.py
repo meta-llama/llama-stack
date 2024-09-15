@@ -8,6 +8,8 @@ import argparse
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.core.datatypes import *  # noqa: F403
+from pathlib import Path
+
 import yaml
 
 
@@ -47,16 +49,24 @@ class StackBuild(Subcommand):
         from llama_toolchain.core.package import ApiInput, build_package, ImageType
         from termcolor import cprint
 
-        build_package(build_config)
-
         # save build.yaml spec for building same distribution again
-        build_dir = DISTRIBS_BASE_DIR / build_config.image_type
+        if build_config.image_type == ImageType.docker.value:
+            # TODO (xiyan): docker needs build file to be in the llama-stack repo dir
+            build_dir = (
+                Path(os.path.expanduser("./.llama/distributions"))
+                / build_config.image_type
+            )
+        else:
+            build_dir = DISTRIBS_BASE_DIR / build_config.image_type
+
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
 
         with open(build_file_path, "w") as f:
             to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
+
+        build_package(build_config, build_file_path)
 
         cprint(
             f"Build spec configuration saved at {str(build_file_path)}",

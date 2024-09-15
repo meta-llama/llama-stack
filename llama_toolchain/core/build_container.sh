@@ -4,17 +4,17 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 4 ]; then
   echo "Usage: $0 <build_name> <docker_base> <pip_dependencies>
   echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn'
   exit 1
 fi
 
-# distribution_type=$1
 build_name="$1"
 image_name="llamastack-$build_name"
 docker_base=$2
-pip_dependencies=$3
+build_file_path=$3
+pip_dependencies=$4
 
 # Define color codes
 RED='\033[0;31m'
@@ -25,6 +25,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
+BUILD_DIR=$(dirname $(dirname "$build_file_path"))
 
 TEMP_DIR=$(mktemp -d)
 
@@ -92,6 +93,8 @@ add_to_docker <<EOF
 
 EOF
 
+add_to_docker "ADD $build_file_path ./build.yaml"
+
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
@@ -108,3 +111,6 @@ podman build --network host -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR"
 set +x
 
 echo "You can run it with: podman run -p 8000:8000 $image_name"
+
+echo "Checking image builds..."
+podman run -it llamastack-local-docker-example cat build.yaml

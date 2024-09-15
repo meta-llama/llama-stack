@@ -21,6 +21,8 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_toolchain.core.datatypes import *  # noqa: F403
+from pathlib import Path
+
 from llama_toolchain.core.distribution import api_providers, SERVER_DEPENDENCIES
 
 
@@ -39,7 +41,7 @@ class ApiInput(BaseModel):
     provider: str
 
 
-def build_package(build_config: BuildConfig):
+def build_package(build_config: BuildConfig, build_file_path: Path):
     package_deps = Dependencies(
         docker_image=build_config.distribution_spec.docker_image or "python:3.10-slim",
         pip_packages=SERVER_DEPENDENCIES,
@@ -67,6 +69,7 @@ def build_package(build_config: BuildConfig):
             script,
             build_config.name,
             package_deps.docker_image,
+            str(build_file_path),
             " ".join(package_deps.pip_packages),
         ]
     else:
