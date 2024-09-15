@@ -52,9 +52,9 @@ class StackBuild(Subcommand):
         # save build.yaml spec for building same distribution again
         if build_config.image_type == ImageType.docker.value:
             # TODO (xiyan): docker needs build file to be in the llama-stack repo dir
+            llama_toolchain_path = Path(os.path.relpath(__file__)).parent.parent.parent
             build_dir = (
-                Path(os.path.expanduser("./.llama/distributions"))
-                / build_config.image_type
+                llama_toolchain_path / "configs/distributions" / build_config.image_type
             )
         else:
             build_dir = DISTRIBS_BASE_DIR / build_config.image_type
