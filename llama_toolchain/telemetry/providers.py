@@ -13,7 +13,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.telemetry,
-            provider_type="console",
+            provider_id="console",
             pip_packages=[],
             module="llama_toolchain.telemetry.console",
             config_class="llama_toolchain.telemetry.console.ConsoleConfig",

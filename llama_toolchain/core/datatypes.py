@@ -32,7 +32,7 @@ class ApiEndpoint(BaseModel):
 @json_schema_type
 class ProviderSpec(BaseModel):
     api: Api
-    provider_type: str
+    provider_id: str
     config_class: str = Field(
         ...,
         description="Fully-qualified classname of the config for this provider",
@@ -101,7 +101,7 @@ class RemoteProviderConfig(BaseModel):
         return url.rstrip("/")
 
 
-def remote_provider_type(adapter_id: str) -> str:
+def remote_provider_id(adapter_id: str) -> str:
     return f"remote::{adapter_id}"
 
 
@@ -142,10 +142,10 @@ def remote_provider_spec(
         if adapter and adapter.config_class
         else "llama_toolchain.core.datatypes.RemoteProviderConfig"
     )
-    provider_type = remote_provider_type(adapter.adapter_id) if adapter else "remote"
+    provider_id = remote_provider_id(adapter.adapter_id) if adapter else "remote"
 
     return RemoteProviderSpec(
-        api=api, provider_type=provider_type, config_class=config_class, adapter=adapter
+        api=api, provider_id=provider_id, config_class=config_class, adapter=adapter
     )
 
 

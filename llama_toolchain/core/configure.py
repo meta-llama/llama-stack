@@ -21,14 +21,14 @@ def configure_api_providers(existing_configs: Dict[str, Any]) -> None:
     for api_str, stub_config in existing_configs.items():
         api = Api(api_str)
         providers = all_providers[api]
-        provider_type = stub_config["provider_type"]
-        if provider_type not in providers:
+        provider_id = stub_config["provider_id"]
+        if provider_id not in providers:
             raise ValueError(
-                f"Unknown provider `{provider_type}` is not available for API `{api_str}`"
+                f"Unknown provider `{provider_id}` is not available for API `{api_str}`"
             )
 
-        provider_spec = providers[provider_type]
-        cprint(f"Configuring API: {api_str} ({provider_type})", "white", attrs=["bold"])
+        provider_spec = providers[provider_id]
+        cprint(f"Configuring API: {api_str} ({provider_id})", "white", attrs=["bold"])
         config_type = instantiate_class_type(provider_spec.config_class)
 
         try:
@@ -43,7 +43,7 @@ def configure_api_providers(existing_configs: Dict[str, Any]) -> None:
         print("")
 
         provider_configs[api_str] = {
-            "provider_type": provider_type,
+            "provider_id": provider_id,
             **provider_config.dict(),
         }
 

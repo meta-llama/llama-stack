@@ -11,15 +11,14 @@ from pathlib import Path
 import pkg_resources
 
 import yaml
+from termcolor import cprint
+
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
 
 from llama_toolchain.common.exec import run_with_pty
-from termcolor import cprint
 from llama_toolchain.core.datatypes import *  # noqa: F403
 import os
-
-from termcolor import cprint
 
 
 class StackConfigure(Subcommand):
@@ -109,7 +108,7 @@ class StackConfigure(Subcommand):
         api2providers = build_config.distribution_spec.providers
 
         stub_config = {
-            api_str: {"provider_type": provider}
+            api_str: {"provider_id": provider}
             for api_str, provider in api2providers.items()
         }
 

@@ -14,14 +14,7 @@ from llama_toolchain.memory.api import Memory
 from llama_toolchain.safety.api import Safety
 from llama_toolchain.telemetry.api import Telemetry
 
-from .datatypes import (
-    Api,
-    ApiEndpoint,
-    DistributionSpec,
-    InlineProviderSpec,
-    ProviderSpec,
-    remote_provider_spec,
-)
+from .datatypes import Api, ApiEndpoint, ProviderSpec, remote_provider_spec
 
 # These are the dependencies needed by the distribution server.
 # `llama-toolchain` is automatically installed by the installation script.
@@ -77,7 +70,7 @@ def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
         module = importlib.import_module(f"llama_toolchain.{name}.providers")
         ret[api] = {
             "remote": remote_provider_spec(api),
-            **{a.provider_type: a for a in module.available_providers()},
+            **{a.provider_id: a for a in module.available_providers()},
         }
 
     return ret

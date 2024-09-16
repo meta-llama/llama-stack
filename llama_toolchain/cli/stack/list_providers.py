@@ -49,7 +49,7 @@ class StackListProviders(Subcommand):
         for spec in providers_for_api.values():
             rows.append(
                 [
-                    spec.provider_type,
+                    spec.provider_id,
                     ",".join(spec.pip_packages),
                 ]
             )

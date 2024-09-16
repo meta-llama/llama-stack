@@ -309,13 +309,13 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
     for api_str, provider_config in config["providers"].items():
         api = Api(api_str)
         providers = all_providers[api]
-        provider_type = provider_config["provider_type"]
-        if provider_type not in providers:
+        provider_id = provider_config["provider_id"]
+        if provider_id not in providers:
             raise ValueError(
-                f"Unknown provider `{provider_type}` is not available for API `{api}`"
+                f"Unknown provider `{provider_id}` is not available for API `{api}`"
             )
 
-        provider_specs[api] = providers[provider_type]
+        provider_specs[api] = providers[provider_id]
 
     impls = resolve_impls(provider_specs, config)
     if Api.telemetry in impls:

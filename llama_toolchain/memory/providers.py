@@ -20,7 +20,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.memory,
-            provider_type="meta-reference-faiss",
+            provider_id="meta-reference-faiss",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_toolchain.memory.meta_reference.faiss",
             config_class="llama_toolchain.memory.meta_reference.faiss.FaissImplConfig",
