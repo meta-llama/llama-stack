@@ -1,7 +1,6 @@
 name: local-ollama-conda-example
 distribution_spec:
   description: Like local, but use ollama for running LLM inference
-  docker_image: null
   providers:
     inference: remote::ollama
     memory: meta-reference-faiss

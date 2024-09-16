@@ -29,13 +29,13 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "config",
             type=str,
-            help="Path to a config file to use for the build",
+            help="Path to a config file to use for the build. You may find example configs in llama_toolchain/configs/distributions",
         )
 
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Override the name of the llama stack build",
+            help="Name of the llama stack build to override from template config",
         )
 
     def _run_stack_build_command_from_build_config(
@@ -92,5 +92,3 @@ class StackBuild(Subcommand):
             if args.name:
                 build_config.name = args.name
             self._run_stack_build_command_from_build_config(build_config)
-
-        return

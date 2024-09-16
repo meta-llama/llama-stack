@@ -1,5 +1,4 @@
 description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
-docker_image: null
 providers:
   inference: remote::tgi
   safety: meta-reference

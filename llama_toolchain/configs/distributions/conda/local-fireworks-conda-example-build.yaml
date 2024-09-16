@@ -1,7 +1,6 @@
 name: local-fireworks-conda-example
 distribution_spec:
   description: Use Fireworks.ai for running LLM inference
-  docker_image: null
   providers:
     inference: remote::fireworks
     memory: meta-reference-faiss

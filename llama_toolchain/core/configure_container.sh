@@ -25,4 +25,7 @@ host_build_dir="$2"
 container_build_dir="/app/builds"
 
 set -x
-podman run -it -v $host_build_dir:$container_build_dir $docker_image llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir
+podman run -it \
+  -v $host_build_dir:$container_build_dir \
+  $docker_image \
+  llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir

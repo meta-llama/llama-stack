@@ -1,5 +1,4 @@
 description: Use Together.ai for running LLM inference
-docker_image: null
 providers:
   inference: remote::together
   safety: meta-reference
