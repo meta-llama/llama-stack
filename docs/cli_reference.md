@@ -444,7 +444,7 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 
 This server is running a Llama model locally.
 
-## Step 3.4 Test with Client
+### Step 3.4 Test with Client
 Once the server is setup, we can test it with a client to see the example outputs.
 ```
 cd /path/to/llama-stack
