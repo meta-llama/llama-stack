@@ -70,31 +70,53 @@ You should see a table like this:
 
 To download models, you can use the llama download command.
 
+#### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
+
 Here is an example download command to get the 8B/70B Instruct model. You will need META_URL which can be obtained from [here](https://llama.meta.com/docs/getting_the_models/meta/)
-```
-llama download --source meta --model-id Meta-Llama3.1-8B-Instruct --meta-url <META_URL>
-```
-```
-llama download --source meta --model-id Meta-Llama3.1-70B-Instruct --meta-url <META_URL>
+
+Download the required checkpoints using the following commands:
+```bash
+# download the 8B model, this can be run on a single GPU
+llama download --source meta --model-id Meta-Llama3.1-8B-Instruct --meta-url META_URL
+
+# you can also get the 70B model, this will require 8 GPUs however
+llama download --source meta --model-id Meta-Llama3.1-70B-Instruct --meta-url META_URL
+
+# llama-agents have safety enabled by default. For this, you will need
+# safety models -- Llama-Guard and Prompt-Guard
+llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
+llama download --source meta --model-id Llama-Guard-3-8B --meta-url META_URL
 ```
 
-You can download from HuggingFace using these commands
-Set your environment variable HF_TOKEN or pass in --hf-token to the command to validate your access.
-You can find your token at [here](https://huggingface.co/settings/tokens)
-```
+#### Downloading from [Huggingface](https://huggingface.co/meta-llama)
+
+Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
+
+```bash
 llama download --source huggingface --model-id  Meta-Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
-```
-```
-llama download --source huggingface --model-id Meta-Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
-```
 
-You can also download safety models from HF
-```
+llama download --source huggingface --model-id Meta-Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
+
 llama download --source huggingface --model-id Llama-Guard-3-8B --ignore-patterns *original*
-```
-```
 llama download --source huggingface --model-id Prompt-Guard-86M --ignore-patterns *original*
 ```
+
+**Important:** Set your environment variable `HF_TOKEN` or pass in `--hf-token` to the command to validate your access. You can find your token at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+
+> **Tip:** Default for `llama download` is to run with `--ignore-patterns *.safetensors` since we use the `.pth` files in the `original` folder. For Llama Guard and Prompt Guard, however, we need safetensors. Hence, please run with `--ignore-patterns original` so that safetensors are downloaded and `.pth` files are ignored.
+
+#### Downloading via Ollama
+
+If you're already using ollama, we also have a supported Llama Stack distribution `local-ollama` and you can continue to use ollama for managing model downloads.
+
+```
+ollama pull llama3.1:8b-instruct-fp16
+ollama pull llama3.1:70b-instruct-fp16
+```
+
+> [!NOTE]
+> Only the above two models are currently supported by Ollama.
+
 
 ## Step 2: Understand the models
 The `llama model` command helps you explore the model’s interface.
@@ -395,6 +417,16 @@ For how these configurations are stored as yaml, checkout the file printed at th
 
 Note that all configurations as well as models are stored in `~/.llama`
 
+
+#### Step 3.2.1 API Keys for Tools
+
+API key configuration for the Agentic System will be asked by the `llama stack build` script when you install a Llama Stack distribution.
+
+Tools that the model supports and which need API Keys --
+- Brave for web search (https://api.search.brave.com/register)
+- Wolfram for math operations (https://developer.wolframalpha.com/)
+
+> **Tip** If you do not have API keys, you can still run the app without model having access to the tools.
 
 ### Step 3.3. Run
 Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
