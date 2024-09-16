@@ -236,150 +236,155 @@ These commands can help understand the model interface and how prompts / message
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 
-## Step 3: Listing, Building, and Configuring Llama Stack Distributions
+## Step 3: Building, and Configuring Llama Stack Distributions
 
+- Please see our [Getting Started](getting_started.md) guide for details.
 
-### Step 3.1: List available distributions
+### Step 3.1. Build
+In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
+- `name`: the name for our distribution (e.g. `8b-instruct`)
+- `image_type`: our build image type (`conda | docker`)
+- `distribution_spec`: our distribution specs for specifying API providers
+  - `description`: a short description of the configurations for the distribution
+  - `providers`: specifies the underlying implementation for serving each API endpoint
+  - `image_type`: `conda` | `docker` to specify whether to build the distribution in the form of Docker image or Conda environment.
 
-Let’s start with listing available distributions:
-
+#### Build a local distribution with conda
+The following command and specifications allows you to get started with building.
 ```
-llama stack list-distributions
+llama stack build <path/to/config>
 ```
+- You will be required to pass in a file path to the build.config file (e.g. `./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_toolchain/configs/distributions/` folder.
 
-<pre style="font-family: monospace;">
-i+-------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| Distribution Type              | Providers                             | Description                                                          |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| local                          | {                                     | Use code from `llama_toolchain` itself to serve all llama stack APIs |
-|                                |   "inference": "meta-reference",      |                                                                      |
-|                                |   "memory": "meta-reference-faiss",   |                                                                      |
-|                                |   "safety": "meta-reference",         |                                                                      |
-|                                |   "agentic_system": "meta-reference"  |                                                                      |
-|                                | }                                     |                                                                      |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| remote                         | {                                     | Point to remote services for all llama stack APIs                    |
-|                                |   "inference": "remote",              |                                                                      |
-|                                |   "safety": "remote",                 |                                                                      |
-|                                |   "agentic_system": "remote",         |                                                                      |
-|                                |   "memory": "remote"                  |                                                                      |
-|                                | }                                     |                                                                      |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| local-ollama                   | {                                     | Like local, but use ollama for running LLM inference                 |
-|                                |   "inference": "remote::ollama",      |                                                                      |
-|                                |   "safety": "meta-reference",         |                                                                      |
-|                                |   "agentic_system": "meta-reference", |                                                                      |
-|                                |   "memory": "meta-reference-faiss"    |                                                                      |
-|                                | }                                     |                                                                      |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| local-plus-fireworks-inference | {                                     | Use Fireworks.ai for running LLM inference                           |
-|                                |   "inference": "remote::fireworks",   |                                                                      |
-|                                |   "safety": "meta-reference",         |                                                                      |
-|                                |   "agentic_system": "meta-reference", |                                                                      |
-|                                |   "memory": "meta-reference-faiss"    |                                                                      |
-|                                | }                                     |                                                                      |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| local-plus-together-inference  | {                                     | Use Together.ai for running LLM inference                            |
-|                                |   "inference": "remote::together",    |                                                                      |
-|                                |   "safety": "meta-reference",         |                                                                      |
-|                                |   "agentic_system": "meta-reference", |                                                                      |
-|                                |   "memory": "meta-reference-faiss"    |                                                                      |
-|                                | }                                     |                                                                      |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-| local-plus-tgi-inference       | {                                     | Use TGI (local or with [Hugging Face Inference Endpoints](https://   |
-|                                |   "inference": "remote::tgi",         | huggingface.co/inference-endpoints/dedicated)) for running LLM       |
-|                                |   "safety": "meta-reference",         | inference. When using HF Inference Endpoints, you must provide the   |
-|                                |   "agentic_system": "meta-reference", | name of the endpoint.                                                |
-|                                |   "memory": "meta-reference-faiss"    |                                                                      |
-|                                | }                                     |                                                                      |
-+--------------------------------+---------------------------------------+----------------------------------------------------------------------+
-</pre>
-
-As you can see above, each “distribution” details the “providers” it is composed of. For example, `local` uses the “meta-reference” provider for inference while local-ollama relies on a different provider (Ollama) for inference. Similarly, you can use Fireworks or Together.AI for running inference as well.
-
-### Step 3.2: Build a distribution
-
-Let's imagine you are working with a 8B-Instruct model. The following command will build a package (in the form of a Conda environment) _and_ configure it. As part of the configuration, you will be asked for some inputs (model_id, max_seq_len, etc.) Since we are working with a 8B model, we will name our build `8b-instruct` to help us remember the config.
-
+The file will be of the contents
 ```
-llama stack build
-```
+$ cat ./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml
 
-Once it runs, you will be prompted to enter build name and optional arguments, and should see some outputs in the form:
-
-```
-$ llama stack build
-Enter value for name (required): 8b-instruct
-Enter value for distribution (default: local) (required): local
-Enter value for api_providers (optional):
-Enter value for image_type (default: conda) (required):
-
-....
-....
-Successfully installed cfgv-3.4.0 distlib-0.3.8 identify-2.6.0 libcst-1.4.0 llama_toolchain-0.0.2 moreorless-0.4.0 nodeenv-1.9.1 pre-commit-3.8.0 stdlibs-2024.5.15 toml-0.10.2 tomlkit-0.13.0 trailrunner-1.4.0 ufmt-2.7.0 usort-1.0.8 virtualenv-20.26.3
-
-Successfully setup conda environment. Configuring build...
-
-...
-...
-
-YAML configuration has been written to ~/.llama/builds/local/conda/8b-instruct.yaml
-Target `8b-test` built with configuration at /home/xiyan/.llama/builds/local/conda/8b-test.yaml
-Build spec configuration saved at /home/xiyan/.llama/distributions/local/conda/8b-test-build.yaml
-```
-
-You can re-build package based on build config
-```
-$ cat ~/.llama/distributions/local/conda/8b-instruct-build.yaml
 name: 8b-instruct
-distribution: local
-api_providers: null
+distribution_spec:
+  distribution_type: local
+  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  docker_image: null
+  providers:
+    inference: meta-reference
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
 image_type: conda
+```
 
-$ llama stack build --config ~/.llama/distributions/local/conda/8b-instruct-build.yaml
-
-Successfully setup conda environment. Configuring build...
-
+You may run the `llama stack build` command to generate your distribution with `--name` to override the name for your distribution.
+```
+$ llama stack build ~/.llama/distributions/conda/8b-instruct-build.yaml --name 8b-instruct
 ...
 ...
-
-YAML configuration has been written to ~/.llama/builds/local/conda/8b-instruct.yaml
-Target `8b-instruct` built with configuration at ~/.llama/builds/local/conda/8b-instruct.yaml
-Build spec configuration saved at ~/.llama/distributions/local/conda/8b-instruct-build.yaml
+Build spec configuration saved at ~/.llama/distributions/conda/8b-instruct-build.yaml
 ```
 
-### Step 3.3: Configure a distribution
+After this step is complete, a file named `8b-instruct-build.yaml` will be generated and saved at `~/.llama/distributions/conda/8b-instruct-build.yaml`.
 
-You can re-configure this distribution by running:
-```
-llama stack configure ~/.llama/builds/local/conda/8b-instruct.yaml
-```
 
-Here is an example run of how the CLI will guide you to fill the configuration
+#### How to build distribution with different API providers using configs
+To specify a different API provider, we can change the `distribution_spec` in our `<name>-build.yaml` config. For example, the following build spec allows you to build a distribution using TGI as the inference API provider.
 
 ```
-$ llama stack configure ~/.llama/builds/local/conda/8b-instruct.yaml
+$ cat ./llama_toolchain/configs/distributions/conda/local-tgi-conda-example-build.yaml
+
+name: local-tgi-conda-example
+distribution_spec:
+  description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
+  docker_image: null
+  providers:
+    inference: remote::tgi
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: conda
+```
+
+The following command allows you to build a distribution with TGI as the inference API provider, with the name `tgi`.
+```
+llama stack build --config ./llama_toolchain/configs/distributions/conda/local-tgi-conda-example-build.yaml --name tgi
+```
+
+We provide some example build configs to help you get started with building with different API providers.
+
+#### How to build distribution with Docker image
+To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build --config <name>-build.yaml`.
+
+```
+$ cat ./llama_toolchain/configs/distributions/docker/local-docker-example-build.yaml
+
+name: local-docker-example
+distribution_spec:
+  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  docker_image: null
+  providers:
+    inference: meta-reference
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: docker
+```
+
+The following command allows you to build a Docker image with the name `docker-local`
+```
+llama stack build --config ./llama_toolchain/configs/distributions/docker/local-docker-example-build.yaml --name docker-local
+
+Dockerfile created successfully in /tmp/tmp.I0ifS2c46A/DockerfileFROM python:3.10-slim
+WORKDIR /app
+...
+...
+You can run it with: podman run -p 8000:8000 llamastack-docker-local
+Build spec configuration saved at /home/xiyan/.llama/distributions/docker/docker-local-build.yaml
+```
+
+### Step 3.2. Configure
+After our distribution is built (either in form of docker or conda environment), we will run the following command to
+```
+llama stack configure [<path/to/name.build.yaml> | <docker-image-name>]
+```
+- For `conda` environments: <path/to/name.build.yaml> would be the generated build spec saved from Step 1.
+- For `docker` images downloaded from Dockerhub, you could also use <docker-image-name> as the argument.
+   - Run `docker images` to check list of available images on your machine.
+
+```
+$ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
 
 Configuring API: inference (meta-reference)
-Enter value for model (required): Meta-Llama3.1-8B-Instruct
+Enter value for model (existing: Meta-Llama3.1-8B-Instruct) (required):
 Enter value for quantization (optional):
 Enter value for torch_seed (optional):
-Enter value for max_seq_len (required): 4096
-Enter value for max_batch_size (default: 1): 1
+Enter value for max_seq_len (existing: 4096) (required):
+Enter value for max_batch_size (existing: 1) (required):
+
+Configuring API: memory (meta-reference-faiss)
+
 Configuring API: safety (meta-reference)
 Do you want to configure llama_guard_shield? (y/n): y
 Entering sub-configuration for llama_guard_shield:
-Enter value for model (required): Llama-Guard-3-8B
-Enter value for excluded_categories (required): []
-Enter value for disable_input_check (default: False):
-Enter value for disable_output_check (default: False):
+Enter value for model (default: Llama-Guard-3-8B) (required):
+Enter value for excluded_categories (default: []) (required):
+Enter value for disable_input_check (default: False) (required):
+Enter value for disable_output_check (default: False) (required):
 Do you want to configure prompt_guard_shield? (y/n): y
 Entering sub-configuration for prompt_guard_shield:
-Enter value for model (required): Prompt-Guard-86M
-...
-...
-YAML configuration has been written to ~/.llama/builds/local/conda/8b-instruct.yaml
+Enter value for model (default: Prompt-Guard-86M) (required):
+
+Configuring API: agentic_system (meta-reference)
+Enter value for brave_search_api_key (optional):
+Enter value for bing_search_api_key (optional):
+Enter value for wolfram_api_key (optional):
+
+Configuring API: telemetry (console)
+
+YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yaml
 ```
+
+After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may edit this file to change the settings.
 
 As you can see, we did basic configuration above and configured:
 - inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
@@ -390,21 +395,18 @@ For how these configurations are stored as yaml, checkout the file printed at th
 
 Note that all configurations as well as models are stored in `~/.llama`
 
-## Step 4: Starting a Llama Stack Distribution and Testing it
 
-### Step 4.1: Starting a distribution
-
-Now let’s start Llama Stack Distribution Server.
-
-You need the YAML configuration file which was written out at the end by the `llama stack build` step.
+### Step 3.3. Run
+Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
 
 ```
-llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
+llama stack run ~/.llama/builds/conda/8b-instruct-run.yaml
 ```
-You should see the Stack server start and print the APIs that it is supporting,
+
+You should see the Llama Stack server start and print the APIs that it is supporting
 
 ```
-$ llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml --port 5000
+$ llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
@@ -434,7 +436,6 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
-
 > [!NOTE]
 > Configuration is in `~/.llama/builds/local/conda/8b-instruct.yaml`. Feel free to increase `max_seq_len`.
 
@@ -443,9 +444,8 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 
 This server is running a Llama model locally.
 
-### Step 4.2: Test the distribution
-
-Lets test with a client.
+### Step 3.4 Test with Client
+Once the server is setup, we can test it with a client to see the example outputs.
 ```
 cd /path/to/llama-stack
 conda activate <env>  # any environment containing the llama-toolchain pip package will work
@@ -456,17 +456,19 @@ python -m llama_toolchain.inference.client localhost 5000
 This will run the chat completion client and query the distribution’s /inference/chat_completion API.
 
 Here is an example output:
-<pre style="font-family: monospace;">
+```
 Initializing client for http://localhost:5000
 User>hello world, troll me in two-paragraphs about 42
 
 Assistant> You think you're so smart, don't you? You think you can just waltz in here and ask about 42, like it's some kind of trivial matter. Well, let me tell you, 42 is not just a number, it's a way of life. It's the answer to the ultimate question of life, the universe, and everything, according to Douglas Adams' magnum opus, "The Hitchhiker's Guide to the Galaxy". But do you know what's even more interesting about 42? It's that it's not actually the answer to anything, it's just a number that some guy made up to sound profound.
 
 You know what's even more hilarious? People like you who think they can just Google "42" and suddenly become experts on the subject. Newsflash: you're not a supercomputer, you're just a human being with a fragile ego and a penchant for thinking you're smarter than you actually are. 42 is just a number, a meaningless collection of digits that holds no significance whatsoever. So go ahead, keep thinking you're so clever, but deep down, you're just a pawn in the grand game of life, and 42 is just a silly little number that's been used to make you feel like you're part of something bigger than yourself. Ha!
-</pre>
+```
 
 Similarly you can test safety (if you configured llama-guard and/or prompt-guard shields) by:
 
 ```
 python -m llama_toolchain.safety.client localhost 5000
 ```
+
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.

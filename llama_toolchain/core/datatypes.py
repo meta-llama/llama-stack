@@ -151,11 +151,12 @@ def remote_provider_spec(
 
 @json_schema_type
 class DistributionSpec(BaseModel):
-    distribution_type: str
-    description: str
-
+    description: Optional[str] = Field(
+        default="",
+        description="Description of the distribution",
+    )
     docker_image: Optional[str] = None
-    providers: Dict[Api, str] = Field(
+    providers: Dict[str, str] = Field(
         default_factory=dict,
         description="Provider Types for each of the APIs provided by this distribution",
     )
@@ -172,8 +173,6 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    distribution_type: Optional[str] = None
-
     docker_image: Optional[str] = Field(
         default=None,
         description="Reference to the docker image if this package refers to a container",
@@ -194,12 +193,8 @@ the dependencies of these providers as well.
 @json_schema_type
 class BuildConfig(BaseModel):
     name: str
-    distribution: str = Field(
-        default="local", description="Type of distribution to build (adhoc | {})"
-    )
-    api_providers: Optional[str] = Field(
-        default_factory=list,
-        description="List of API provider names to build",
+    distribution_spec: DistributionSpec = Field(
+        description="The distribution spec to build including API providers. "
     )
     image_type: str = Field(
         default="conda",

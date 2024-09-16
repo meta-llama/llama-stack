@@ -4,18 +4,17 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-if [ "$#" -ne 5 ]; then
-  echo "Usage: $0 <distribution_type> <build_name> <docker_base> <pip_dependencies>
-  echo "Example: $0 distribution_type my-fastapi-app python:3.9-slim 'fastapi uvicorn'
+if [ "$#" -ne 4 ]; then
+  echo "Usage: $0 <build_name> <docker_base> <pip_dependencies>
+  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn'
   exit 1
 fi
 
-distribution_type=$1
-build_name="$2"
+build_name="$1"
 image_name="llamastack-$build_name"
-docker_base=$3
-config_file=$4
-pip_dependencies=$5
+docker_base=$2
+build_file_path=$3
+pip_dependencies=$4
 
 # Define color codes
 RED='\033[0;31m'
@@ -26,6 +25,8 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
+DOCKER_BINARY=${DOCKER_BINARY:-docker}
+DOCKER_OPTS=${DOCKER_OPTS:-}
 
 TEMP_DIR=$(mktemp -d)
 
@@ -93,6 +94,8 @@ add_to_docker <<EOF
 
 EOF
 
+add_to_docker "ADD $build_file_path ./llamastack-build.yaml"
+
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
@@ -105,10 +108,10 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
 fi
 set -x
-podman build -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
 
-printf "${GREEN}Succesfully setup Podman image. Configuring build...${NC}"
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
-$CONDA_PREFIX/bin/python3 -m llama_toolchain.cli.llama stack configure $config_file
+echo "Checking image builds..."
+podman run -it $image_name cat llamastack-build.yaml

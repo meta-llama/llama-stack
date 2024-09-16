@@ -1,0 +1,10 @@
+name: local-conda-example
+distribution_spec:
+  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  providers:
+    inference: meta-reference
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: conda

@@ -1,0 +1,10 @@
+name: local-tgi-conda-example
+distribution_spec:
+  description: Use Together.ai for running LLM inference
+  providers:
+    inference: remote::together
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: conda

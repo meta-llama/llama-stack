@@ -1,0 +1,7 @@
+description: Like local, but use ollama for running LLM inference
+providers:
+  inference: remote::ollama
+  safety: meta-reference
+  agentic_system: meta-reference
+  memory: meta-reference-faiss
+  telemetry: console

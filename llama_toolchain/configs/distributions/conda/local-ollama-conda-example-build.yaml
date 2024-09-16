@@ -1,0 +1,10 @@
+name: local-ollama-conda-example
+distribution_spec:
+  description: Like local, but use ollama for running LLM inference
+  providers:
+    inference: remote::ollama
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: conda

@@ -1,0 +1,10 @@
+name: local-fireworks-conda-example
+distribution_spec:
+  description: Use Fireworks.ai for running LLM inference
+  providers:
+    inference: remote::fireworks
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: conda

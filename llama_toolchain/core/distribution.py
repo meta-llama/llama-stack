@@ -31,16 +31,6 @@ SERVER_DEPENDENCIES = [
 ]
 
 
-def distribution_dependencies(distribution: DistributionSpec) -> List[str]:
-    # only consider InlineProviderSpecs when calculating dependencies
-    return [
-        dep
-        for provider_spec in distribution.provider_specs.values()
-        if isinstance(provider_spec, InlineProviderSpec)
-        for dep in provider_spec.pip_packages
-    ] + SERVER_DEPENDENCIES
-
-
 def stack_apis() -> List[Api]:
     return [v for v in Api]
 

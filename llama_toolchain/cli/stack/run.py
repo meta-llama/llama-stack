@@ -69,9 +69,6 @@ class StackRun(Subcommand):
         with open(config_file, "r") as f:
             config = PackageConfig(**yaml.safe_load(f))
 
-        if not config.distribution_type:
-            raise ValueError("Build config appears to be corrupt.")
-
         if config.docker_image:
             script = pkg_resources.resource_filename(
                 "llama_toolchain",

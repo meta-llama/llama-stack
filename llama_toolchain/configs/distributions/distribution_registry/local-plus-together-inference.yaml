@@ -1,0 +1,7 @@
+description: Use Together.ai for running LLM inference
+providers:
+  inference: remote::together
+  safety: meta-reference
+  agentic_system: meta-reference
+  memory: meta-reference-faiss
+  telemetry: console
