@@ -4,4 +4,3 @@ dist
 *.egg-info
 dev_requirements.txt
 build
-.llama
