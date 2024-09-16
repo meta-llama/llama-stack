@@ -102,8 +102,8 @@ class StackConfigure(Subcommand):
         if output_dir:
             builds_dir = Path(output_dir)
         os.makedirs(builds_dir, exist_ok=True)
-        package_name = build_config.name.replace("::", "-")
-        package_file = builds_dir / f"{package_name}-run.yaml"
+        image_name = build_config.name.replace("::", "-")
+        run_config_file = builds_dir / f"{image_name}-run.yaml"
 
         api2providers = build_config.distribution_spec.providers
 
@@ -112,31 +112,31 @@ class StackConfigure(Subcommand):
             for api_str, provider in api2providers.items()
         }
 
-        if package_file.exists():
+        if run_config_file.exists():
             cprint(
                 f"Configuration already exists for {build_config.name}. Will overwrite...",
                 "yellow",
                 attrs=["bold"],
             )
-            config = PackageConfig(**yaml.safe_load(package_file.read_text()))
+            config = StackRunConfig(**yaml.safe_load(run_config_file.read_text()))
         else:
-            config = PackageConfig(
+            config = StackRunConfig(
                 built_at=datetime.now(),
-                package_name=package_name,
+                image_name=image_name,
                 providers=stub_config,
             )
 
         config.providers = configure_api_providers(config.providers)
         config.docker_image = (
-            package_name if build_config.image_type == "docker" else None
+            image_name if build_config.image_type == "docker" else None
         )
-        config.conda_env = package_name if build_config.image_type == "conda" else None
+        config.conda_env = image_name if build_config.image_type == "conda" else None
 
-        with open(package_file, "w") as f:
+        with open(run_config_file, "w") as f:
             to_write = json.loads(json.dumps(config.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {package_file}",
+            f"> YAML configuration has been written to {run_config_file}",
             color="blue",
         )

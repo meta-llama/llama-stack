@@ -163,10 +163,10 @@ class DistributionSpec(BaseModel):
 
 
 @json_schema_type
-class PackageConfig(BaseModel):
+class StackRunConfig(BaseModel):
     built_at: datetime
 
-    package_name: str = Field(
+    image_name: str = Field(
         ...,
         description="""
 Reference to the distribution this package refers to. For unregistered (adhoc) packages,
