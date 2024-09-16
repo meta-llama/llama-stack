@@ -46,7 +46,7 @@ class StackBuild(Subcommand):
 
         from llama_toolchain.common.config_dirs import DISTRIBS_BASE_DIR
         from llama_toolchain.common.serialize import EnumEncoder
-        from llama_toolchain.core.package import ApiInput, build_package, ImageType
+        from llama_toolchain.core.package import ApiInput, build_image, ImageType
         from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
@@ -66,7 +66,7 @@ class StackBuild(Subcommand):
             to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
 
-        build_package(build_config, build_file_path)
+        build_image(build_config, build_file_path)
 
         cprint(
             f"Build spec configuration saved at {str(build_file_path)}",

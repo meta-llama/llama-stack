@@ -105,13 +105,6 @@ class StackConfigure(Subcommand):
         image_name = build_config.name.replace("::", "-")
         run_config_file = builds_dir / f"{image_name}-run.yaml"
 
-        api2providers = build_config.distribution_spec.providers
-
-        stub_config = {
-            api_str: {"provider_id": provider}
-            for api_str, provider in api2providers.items()
-        }
-
         if run_config_file.exists():
             cprint(
                 f"Configuration already exists for {build_config.name}. Will overwrite...",
@@ -123,10 +116,12 @@ class StackConfigure(Subcommand):
             config = StackRunConfig(
                 built_at=datetime.now(),
                 image_name=image_name,
-                providers=stub_config,
+                apis_to_serve=[],
+                provider_map={},
             )
 
-        config.providers = configure_api_providers(config.providers)
+        config = configure_api_providers(config, build_config.distribution_spec)
+
         config.docker_image = (
             image_name if build_config.image_type == "docker" else None
         )

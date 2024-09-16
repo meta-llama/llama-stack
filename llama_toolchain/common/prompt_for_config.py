@@ -27,6 +27,12 @@ def is_list_of_primitives(field_type):
     return False
 
 
+def is_basemodel_without_fields(typ):
+    return (
+        inspect.isclass(typ) and issubclass(typ, BaseModel) and len(typ.__fields__) == 0
+    )
+
+
 def can_recurse(typ):
     return (
         inspect.isclass(typ) and issubclass(typ, BaseModel) and len(typ.__fields__) > 0
@@ -151,6 +157,11 @@ def prompt_for_config(
         if get_origin(field_type) is Literal:
             continue
 
+        # Skip fields with no type annotations
+        if is_basemodel_without_fields(field_type):
+            config_data[field_name] = field_type()
+            continue
+
         if inspect.isclass(field_type) and issubclass(field_type, Enum):
             prompt = f"Choose {field_name} (options: {', '.join(e.name for e in field_type)}):"
             while True:
@@ -252,6 +263,20 @@ def prompt_for_config(
                                 continue
                             except ValueError as e:
                                 print(f"{str(e)}")
+                                continue
+
+                        elif get_origin(field_type) is dict:
+                            try:
+                                value = json.loads(user_input)
+                                if not isinstance(value, dict):
+                                    raise ValueError(
+                                        "Input must be a JSON-encoded dictionary"
+                                    )
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Invalid JSON. Please enter a valid JSON-encoded dict."
+                                )
                                 continue
 
                         # Convert the input to the correct type

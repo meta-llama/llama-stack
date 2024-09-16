@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from llama_models.schema_utils import json_schema_type
 
@@ -41,6 +41,33 @@ class ProviderSpec(BaseModel):
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
+
+
+@json_schema_type
+class RouterProviderSpec(ProviderSpec):
+    provider_id: str = "router"
+    config_class: str = ""
+
+    docker_image: Optional[str] = None
+
+    inner_specs: List[ProviderSpec]
+    module: str = Field(
+        ...,
+        description="""
+Fully-qualified name of the module to import. The module is expected to have:
+
+ - `get_router_impl(config, provider_specs, deps)`: returns the router implementation
+""",
+    )
+
+    @property
+    def pip_packages(self) -> List[str]:
+        raise AssertionError("Should not be called on RouterProviderSpec")
+
+
+class GenericProviderConfig(BaseModel):
+    provider_id: str
+    config: Dict[str, Any]
 
 
 @json_schema_type
@@ -156,10 +183,21 @@ class DistributionSpec(BaseModel):
         description="Description of the distribution",
     )
     docker_image: Optional[str] = None
-    providers: Dict[str, str] = Field(
+    providers: Dict[str, Union[str, List[str]]] = Field(
         default_factory=dict,
-        description="Provider Types for each of the APIs provided by this distribution",
+        description="""
+Provider Types for each of the APIs provided by this distribution. If you
+select multiple providers, you should provide an appropriate 'routing_map'
+in the runtime configuration to help route to the correct provider.""",
     )
+
+
+@json_schema_type
+class ProviderRoutingEntry(GenericProviderConfig):
+    routing_key: str
+
+
+ProviderMapEntry = Union[GenericProviderConfig, List[ProviderRoutingEntry]]
 
 
 @json_schema_type
@@ -181,12 +219,22 @@ this could be just a hash
         default=None,
         description="Reference to the conda environment if this package refers to a conda environment",
     )
-    providers: Dict[str, Any] = Field(
-        default_factory=dict,
+    apis_to_serve: List[str] = Field(
         description="""
-Provider configurations for each of the APIs provided by this package. This includes configurations for
-the dependencies of these providers as well.
-""",
+The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
+    )
+    provider_map: Dict[str, ProviderMapEntry] = Field(
+        description="""
+Provider configurations for each of the APIs provided by this package.
+
+Given an API, you can specify a single provider or a "routing table". Each entry in the routing
+table has a (routing_key, provider_config) tuple. How the key is interpreted is API-specific.
+
+As examples:
+- the "inference" API interprets the routing_key as a "model"
+- the "memory" API interprets the routing_key as the type of a "memory bank"
+
+The key may support wild-cards alsothe routing_key to route to the correct provider.""",
     )
 
 

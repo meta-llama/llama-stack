@@ -26,16 +26,16 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_toolchain.memory.meta_reference.faiss.FaissImplConfig",
         ),
         remote_provider_spec(
-            api=Api.memory,
-            adapter=AdapterSpec(
+            Api.memory,
+            AdapterSpec(
                 adapter_id="chromadb",
                 pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
                 module="llama_toolchain.memory.adapters.chroma",
             ),
         ),
         remote_provider_spec(
-            api=Api.memory,
-            adapter=AdapterSpec(
+            Api.memory,
+            AdapterSpec(
                 adapter_id="pgvector",
                 pip_packages=EMBEDDING_DEPS + ["psycopg2-binary"],
                 module="llama_toolchain.memory.adapters.pgvector",
