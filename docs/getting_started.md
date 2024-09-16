@@ -285,6 +285,9 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
 
+> [!TIP]
+> You might need to use the flag `--disable-ipv6` to  Disable IPv6 support
+
 This server is running a Llama model locally.
 
 ## Step 4. Test with Client
