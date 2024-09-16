@@ -1,7 +1,0 @@
-description: Use Fireworks.ai for running LLM inference
-providers:
-  inference: remote::fireworks
-  safety: meta-reference
-  agentic_system: meta-reference
-  memory: meta-reference-faiss
-  telemetry: console
