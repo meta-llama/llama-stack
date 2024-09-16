@@ -236,7 +236,7 @@ These commands can help understand the model interface and how prompts / message
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 
-## Step 3: Listing, Building, and Configuring Llama Stack Distributions
+## Step 3: Building, and Configuring Llama Stack Distributions
 
 - Please see our [Getting Started](getting_started.md) guide for details.
 
