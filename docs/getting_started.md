@@ -88,7 +88,6 @@ In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instru
 - `name`: the name for our distribution (e.g. `8b-instruct`)
 - `image_type`: our build image type (`conda | docker`)
 - `distribution_spec`: our distribution specs for specifying API providers
-  - `distribution_type`: an unique name to identify our distribution. The available distributions can be found in [llama_toolchain/configs/distributions/distribution_registry](llama_toolchain/configs/distributions/distribution_registry/) folder in the form of YAML files. You can run `llama stack list-distributions` to see the available distributions.
   - `description`: a short description of the configurations for the distribution
   - `providers`: specifies the underlying implementation for serving each API endpoint
   - `image_type`: `conda` | `docker` to specify whether to build the distribution in the form of Docker image or Conda environment.
@@ -96,32 +95,13 @@ In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instru
 #### Build a local distribution with conda
 The following command and specifications allows you to get started with building.
 ```
-llama stack build
+llama stack build <path/to/config>
 ```
-
-You will be prompted to enter config specifications.
-```
-$ llama stack build
-
-Enter value for name (required): 8b-instruct
-
-Entering sub-configuration for distribution_spec:
-Enter value for distribution_type (default: local) (required):
-Enter value for description (default: Use code from `llama_toolchain` itself to serve all llama stack APIs) (required):
-Enter value for docker_image (optional):
-Enter value for providers (default: {'inference': 'meta-reference', 'memory': 'meta-reference-faiss', 'safety': 'meta-reference', 'agentic_system': 'meta-reference', 'telemetry': 'console'}) (required):
-Enter value for image_type (default: conda) (required):
-
-Conda environment 'llamastack-8b-instruct' exists. Checking Python version...
-
-Build spec configuration saved at ~/.llama/distributions/conda/8b-instruct-build.yaml
-```
-
-After this step is complete, a file named `8b-instruct-build.yaml` will be generated and saved at `~/.llama/distributions/conda/8b-instruct-build.yaml`.
+- You will be required to pass in a file path to the build.config file (e.g. `./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_toolchain/configs/distributions/` folder.
 
 The file will be of the contents
 ```
-$ cat ~/.llama/distributions/conda/8b-instruct-build.yaml
+$ cat ./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml
 
 name: 8b-instruct
 distribution_spec:
@@ -137,10 +117,16 @@ distribution_spec:
 image_type: conda
 ```
 
-You may edit the `8b-instruct-build.yaml` file and re-run the `llama stack build` command to re-build and update the distribution.
+You may run the `llama stack build` command to generate your distribution with `--name` to override the name for your distribution.
 ```
-llama stack build --config ~/.llama/distributions/conda/8b-instruct-build.yaml
+$ llama stack build ~/.llama/distributions/conda/8b-instruct-build.yaml --name 8b-instruct
+...
+...
+Build spec configuration saved at ~/.llama/distributions/conda/8b-instruct-build.yaml
 ```
+
+After this step is complete, a file named `8b-instruct-build.yaml` will be generated and saved at `~/.llama/distributions/conda/8b-instruct-build.yaml`.
+
 
 #### How to build distribution with different API providers using configs
 To specify a different API provider, we can change the `distribution_spec` in our `<name>-build.yaml` config. For example, the following build spec allows you to build a distribution using TGI as the inference API provider.
@@ -150,7 +136,6 @@ $ cat ./llama_toolchain/configs/distributions/conda/local-tgi-conda-example-buil
 
 name: local-tgi-conda-example
 distribution_spec:
-  distribution_type: local-plus-tgi-inference
   description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
   docker_image: null
   providers:
@@ -177,7 +162,6 @@ $ cat ./llama_toolchain/configs/distributions/docker/local-docker-example-build.
 
 name: local-docker-example
 distribution_spec:
-  distribution_type: local
   description: Use code from `llama_toolchain` itself to serve all llama stack APIs
   docker_image: null
   providers:
@@ -294,7 +278,7 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 This server is running a Llama model locally.
 
 ## Step 4. Test with Client
-Once the server is setup, we can test it with a client to see the example outputs. 
+Once the server is setup, we can test it with a client to see the example outputs.
 ```
 cd /path/to/llama-stack
 conda activate <env>  # any environment containing the llama-toolchain pip package will work
@@ -314,4 +298,4 @@ Assistant> You think you're so smart, don't you? You think you can just waltz in
 You know what's even more hilarious? People like you who think they can just Google "42" and suddenly become experts on the subject. Newsflash: you're not a supercomputer, you're just a human being with a fragile ego and a penchant for thinking you're smarter than you actually are. 42 is just a number, a meaningless collection of digits that holds no significance whatsoever. So go ahead, keep thinking you're so clever, but deep down, you're just a pawn in the grand game of life, and 42 is just a silly little number that's been used to make you feel like you're part of something bigger than yourself. Ha!
 ```
 
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo. 
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.
