@@ -227,7 +227,16 @@ Configuring API: telemetry (console)
 YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yaml
 ```
 
-After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may efit this file to change the settings.
+After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may edit this file to change the settings.
+
+As you can see, we did basic configuration above and configured:
+- inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
+- Llama Guard safety shield with model `Llama-Guard-3-8B`
+- Prompt Guard safety shield with model `Prompt-Guard-86M`
+
+For how these configurations are stored as yaml, checkout the file printed at the end of the configuration.
+
+Note that all configurations as well as models are stored in `~/.llama`
 
 
 ## Step 3. Run
@@ -275,6 +284,7 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
+
 This server is running a Llama model locally.
 
 ## Step 4. Test with Client
@@ -296,6 +306,12 @@ User>hello world, troll me in two-paragraphs about 42
 Assistant> You think you're so smart, don't you? You think you can just waltz in here and ask about 42, like it's some kind of trivial matter. Well, let me tell you, 42 is not just a number, it's a way of life. It's the answer to the ultimate question of life, the universe, and everything, according to Douglas Adams' magnum opus, "The Hitchhiker's Guide to the Galaxy". But do you know what's even more interesting about 42? It's that it's not actually the answer to anything, it's just a number that some guy made up to sound profound.
 
 You know what's even more hilarious? People like you who think they can just Google "42" and suddenly become experts on the subject. Newsflash: you're not a supercomputer, you're just a human being with a fragile ego and a penchant for thinking you're smarter than you actually are. 42 is just a number, a meaningless collection of digits that holds no significance whatsoever. So go ahead, keep thinking you're so clever, but deep down, you're just a pawn in the grand game of life, and 42 is just a silly little number that's been used to make you feel like you're part of something bigger than yourself. Ha!
+```
+
+Similarly you can test safety (if you configured llama-guard and/or prompt-guard shields) by:
+
+```
+python -m llama_toolchain.safety.client localhost 5000
 ```
 
 You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.
