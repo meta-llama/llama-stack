@@ -25,7 +25,8 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
-BUILD_DIR=$(dirname $(dirname "$build_file_path"))
+DOCKER_BINARY=${DOCKER_BINARY:-docker}
+DOCKER_OPTS=${DOCKER_OPTS:-}
 
 TEMP_DIR=$(mktemp -d)
 
@@ -93,7 +94,7 @@ add_to_docker <<EOF
 
 EOF
 
-add_to_docker "ADD $build_file_path ./build.yaml"
+add_to_docker "ADD $build_file_path ./llamastack-build.yaml"
 
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
@@ -107,10 +108,10 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
 fi
 set -x
-podman build --network host -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
 
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
 echo "Checking image builds..."
-podman run -it llamastack-local-docker-example cat build.yaml
+podman run -it $image_name cat llamastack-build.yaml

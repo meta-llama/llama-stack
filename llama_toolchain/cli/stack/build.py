@@ -84,7 +84,8 @@ class StackBuild(Subcommand):
                 except Exception as e:
                     self.parser.error(f"Could not parse config file {args.config}: {e}")
                     return
-                build_config.name = args.name if args.name else build_config.name
+                if args.name:
+                    build_config.name = args.name
                 self._run_stack_build_command_from_build_config(build_config)
             return
 

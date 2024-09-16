@@ -21,6 +21,8 @@ if [ $# -lt 2 ]; then
 fi
 
 docker_image="$1"
-build_file_path="$2"
+host_build_dir="$2"
+container_build_dir="/app/builds"
 
-podman run -it $docker_image cat build.yaml >> ./$build_file_path
+set -x
+podman run -it -v $host_build_dir:$container_build_dir $docker_image llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir

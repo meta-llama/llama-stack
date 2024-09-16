@@ -155,8 +155,8 @@ class DistributionSpec(BaseModel):
         default="local",
         description="Name of the distribution type. This can used to identify the distribution",
     )
-    description: str = Field(
-        default="Use code from `llama_toolchain` itself to serve all llama stack APIs",
+    description: Optional[str] = Field(
+        default="",
         description="Description of the distribution",
     )
     docker_image: Optional[str] = None
