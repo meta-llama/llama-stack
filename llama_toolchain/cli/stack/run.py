@@ -13,7 +13,6 @@ import yaml
 
 from llama_toolchain.cli.subcommand import Subcommand
 from llama_toolchain.core.datatypes import *  # noqa: F403
-from llama_toolchain.common.config_dirs import BUILDS_BASE_DIR
 
 
 class StackRun(Subcommand):
@@ -29,8 +28,6 @@ class StackRun(Subcommand):
         self.parser.set_defaults(func=self._run_stack_run_cmd)
 
     def _add_arguments(self):
-        from llama_toolchain.core.package import ImageType
-
         self.parser.add_argument(
             "config",
             type=str,
@@ -51,7 +48,6 @@ class StackRun(Subcommand):
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         from llama_toolchain.common.exec import run_with_pty
-        from llama_toolchain.core.package import ImageType
 
         if not args.config:
             self.parser.error("Must specify a config file to run")
@@ -67,7 +63,7 @@ class StackRun(Subcommand):
             return
 
         with open(config_file, "r") as f:
-            config = PackageConfig(**yaml.safe_load(f))
+            config = StackRunConfig(**yaml.safe_load(f))
 
         if config.docker_image:
             script = pkg_resources.resource_filename(
