@@ -151,23 +151,13 @@ def remote_provider_spec(
 
 @json_schema_type
 class DistributionSpec(BaseModel):
-    distribution_type: str = Field(
-        default="local",
-        description="Name of the distribution type. This can used to identify the distribution",
-    )
     description: Optional[str] = Field(
         default="",
         description="Description of the distribution",
     )
     docker_image: Optional[str] = None
     providers: Dict[str, str] = Field(
-        default={
-            "inference": "meta-reference",
-            "memory": "meta-reference-faiss",
-            "safety": "meta-reference",
-            "agentic_system": "meta-reference",
-            "telemetry": "console",
-        },
+        default_factory=dict,
         description="Provider Types for each of the APIs provided by this distribution",
     )
 
@@ -183,8 +173,6 @@ Reference to the distribution this package refers to. For unregistered (adhoc) p
 this could be just a hash
 """,
     )
-    distribution_type: Optional[str] = None
-
     docker_image: Optional[str] = Field(
         default=None,
         description="Reference to the docker image if this package refers to a container",

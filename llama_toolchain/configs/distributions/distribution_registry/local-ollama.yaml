@@ -1,4 +1,3 @@
-distribution_type: local-ollama
 description: Like local, but use ollama for running LLM inference
 docker_image: null
 providers:

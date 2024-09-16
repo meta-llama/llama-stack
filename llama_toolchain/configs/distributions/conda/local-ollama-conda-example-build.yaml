@@ -1,6 +1,5 @@
 name: local-ollama-conda-example
 distribution_spec:
-  distribution_type: local-plus-ollama-inference
   description: Like local, but use ollama for running LLM inference
   docker_image: null
   providers:

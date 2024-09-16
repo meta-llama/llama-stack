@@ -27,7 +27,7 @@ class StackBuild(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "--config",
+            "config",
             type=str,
             help="Path to a config file to use for the build",
         )
@@ -77,17 +77,20 @@ class StackBuild(Subcommand):
         from llama_toolchain.common.prompt_for_config import prompt_for_config
         from llama_toolchain.core.dynamic import instantiate_class_type
 
-        if args.config:
-            with open(args.config, "r") as f:
-                try:
-                    build_config = BuildConfig(**yaml.safe_load(f))
-                except Exception as e:
-                    self.parser.error(f"Could not parse config file {args.config}: {e}")
-                    return
-                if args.name:
-                    build_config.name = args.name
-                self._run_stack_build_command_from_build_config(build_config)
+        if not args.config:
+            self.parser.error(
+                "No config file specified. Please use `llama stack build /path/to/*-build.yaml`. Example config files can be found in llama_toolchain/configs/distributions"
+            )
             return
 
-        build_config = prompt_for_config(BuildConfig, None)
-        self._run_stack_build_command_from_build_config(build_config)
+        with open(args.config, "r") as f:
+            try:
+                build_config = BuildConfig(**yaml.safe_load(f))
+            except Exception as e:
+                self.parser.error(f"Could not parse config file {args.config}: {e}")
+                return
+            if args.name:
+                build_config.name = args.name
+            self._run_stack_build_command_from_build_config(build_config)
+
+        return

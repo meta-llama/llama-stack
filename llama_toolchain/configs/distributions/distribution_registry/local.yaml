@@ -1,4 +1,3 @@
-distribution_type: local
 description: Use code from `llama_toolchain` itself to serve all llama stack APIs
 docker_image: null
 providers:

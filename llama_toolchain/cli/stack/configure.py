@@ -128,7 +128,6 @@ class StackConfigure(Subcommand):
             )
 
         config.providers = configure_api_providers(config.providers)
-        config.distribution_type = build_config.distribution_spec.distribution_type
         config.docker_image = (
             package_name if build_config.image_type == "docker" else None
         )

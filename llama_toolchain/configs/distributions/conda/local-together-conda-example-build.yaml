@@ -1,6 +1,5 @@
 name: local-tgi-conda-example
 distribution_spec:
-  distribution_type: local-plus-together-inference
   description: Use Together.ai for running LLM inference
   docker_image: null
   providers:
