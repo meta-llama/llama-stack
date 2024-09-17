@@ -482,7 +482,7 @@ Once the server is setup, we can test it with a client to see the example output
 cd /path/to/llama-stack
 conda activate <env>  # any environment containing the llama-toolchain pip package will work
 
-python -m llama_stack.inference.client localhost 5000
+python -m llama_stack.apis.inference.client localhost 5000
 ```
 
 This will run the chat completion client and query the distribution’s /inference/chat_completion API.

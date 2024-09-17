@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field, validator
 class Api(Enum):
     inference = "inference"
     safety = "safety"
-    agentic_system = "agentic_system"
+    agents = "agents"
     memory = "memory"
     telemetry = "telemetry"
 

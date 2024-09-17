@@ -21,8 +21,8 @@ from .ipython_tool.code_execution import (
     TOOLS_ATTACHMENT_KEY_REGEX,
 )
 
-from llama_stack.inference.api import *  # noqa: F403
-from llama_stack.agentic_system.api import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.agents import *  # noqa: F403
 
 from .base import BaseTool
 

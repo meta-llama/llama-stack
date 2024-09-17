@@ -39,7 +39,7 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from llama_stack.telemetry.tracing import (
+from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
     SpanStatus,

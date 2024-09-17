@@ -6,10 +6,10 @@
 
 from typing import List
 
-from llama_stack.agentic_system.meta_reference.safety import ShieldRunnerMixin
+from llama_stack.apis.inference import Message
+from llama_stack.apis.safety import Safety, ShieldDefinition
 
-from llama_stack.inference.api import Message
-from llama_stack.safety.api import Safety, ShieldDefinition
+from llama_stack.providers.impls.meta_reference.agents.safety import ShieldRunnerMixin
 
 from .builtin import BaseTool
 

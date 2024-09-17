@@ -5,23 +5,23 @@
 # the root directory of this source tree.
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.agentic_system.api import *  # noqa: F403
-from llama_stack.dataset.api import *  # noqa: F403
+from llama_stack.apis.agents import *  # noqa: F403
+from llama_stack.apis.dataset import *  # noqa: F403
 from llama_stack.evaluations.api import *  # noqa: F403
-from llama_stack.inference.api import *  # noqa: F403
-from llama_stack.batch_inference.api import *  # noqa: F403
-from llama_stack.memory.api import *  # noqa: F403
-from llama_stack.telemetry.api import *  # noqa: F403
-from llama_stack.post_training.api import *  # noqa: F403
-from llama_stack.reward_scoring.api import *  # noqa: F403
-from llama_stack.synthetic_data_generation.api import *  # noqa: F403
-from llama_stack.safety.api import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.batch_inference import *  # noqa: F403
+from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.telemetry import *  # noqa: F403
+from llama_stack.apis.post_training import *  # noqa: F403
+from llama_stack.apis.reward_scoring import *  # noqa: F403
+from llama_stack.apis.synthetic_data_generation import *  # noqa: F403
+from llama_stack.apis.safety import *  # noqa: F403
 
 
 class LlamaStack(
     Inference,
     BatchInference,
-    AgenticSystem,
+    Agents,
     RewardScoring,
     Safety,
     SyntheticDataGeneration,

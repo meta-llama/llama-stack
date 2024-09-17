@@ -5,6 +5,6 @@ distribution_spec:
     inference: meta-reference
     memory: meta-reference-faiss
     safety: meta-reference
-    agentic_system: meta-reference
+    agents: meta-reference
     telemetry: console
 image_type: conda

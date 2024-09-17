@@ -7,7 +7,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from llama_stack.inference.api import Message
+from llama_stack.apis.inference import Message
 
 
 class BaseTool(ABC):

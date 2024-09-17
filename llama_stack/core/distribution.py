@@ -8,11 +8,11 @@ import importlib
 import inspect
 from typing import Dict, List
 
-from llama_stack.agentic_system.api import AgenticSystem
-from llama_stack.inference.api import Inference
-from llama_stack.memory.api import Memory
-from llama_stack.safety.api import Safety
-from llama_stack.telemetry.api import Telemetry
+from llama_stack.apis.agents import Agents
+from llama_stack.apis.inference import Inference
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.safety import Safety
+from llama_stack.apis.telemetry import Telemetry
 
 from .datatypes import Api, ApiEndpoint, ProviderSpec, remote_provider_spec
 
@@ -34,7 +34,7 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
     protocols = {
         Api.inference: Inference,
         Api.safety: Safety,
-        Api.agentic_system: AgenticSystem,
+        Api.agents: Agents,
         Api.memory: Memory,
         Api.telemetry: Telemetry,
     }
@@ -67,7 +67,7 @@ def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
     ret = {}
     for api in stack_apis():
         name = api.name.lower()
-        module = importlib.import_module(f"llama_stack.{name}.providers")
+        module = importlib.import_module(f"llama_stack.providers.registry.{name}")
         ret[api] = {
             "remote": remote_provider_spec(api),
             **{a.provider_id: a for a in module.available_providers()},
