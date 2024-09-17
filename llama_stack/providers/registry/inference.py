@@ -17,7 +17,6 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[
                 "accelerate",
                 "blobfile",
-                "codeshield",
                 "fairscale",
                 "fbgemm-gpu==0.8.0",
                 "torch",

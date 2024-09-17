@@ -15,7 +15,6 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.agents,
             provider_id="meta-reference",
             pip_packages=[
-                "codeshield",
                 "matplotlib",
                 "pillow",
                 "pandas",
