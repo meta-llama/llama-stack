@@ -12,12 +12,12 @@ from pydantic import BaseModel
 
 from termcolor import cprint
 
-from llama_stack.common.exec import run_with_pty
+from llama_stack.distribution.utils.exec import run_with_pty
 
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
-from llama_stack.core.distribution import api_providers, SERVER_DEPENDENCIES
+from llama_stack.distribution.distribution import api_providers, SERVER_DEPENDENCIES
 
 
 class ImageType(Enum):
@@ -68,7 +68,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
 
     if build_config.image_type == ImageType.docker.value:
         script = pkg_resources.resource_filename(
-            "llama_stack", "core/build_container.sh"
+            "llama_stack", "distribution/build_container.sh"
         )
         args = [
             script,
@@ -79,7 +79,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         ]
     else:
         script = pkg_resources.resource_filename(
-            "llama_stack", "core/build_conda_env.sh"
+            "llama_stack", "distribution/build_conda_env.sh"
         )
         args = [
             script,

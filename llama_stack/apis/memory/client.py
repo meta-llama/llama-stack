@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 import fire
 import httpx
 
-from llama_stack.core.datatypes import RemoteProviderConfig
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 from termcolor import cprint
 
 from .memory import *  # noqa: F403

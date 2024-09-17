@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 def available_providers() -> List[ProviderSpec]:

@@ -7,7 +7,7 @@
 import argparse
 
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
 import yaml
@@ -44,9 +44,9 @@ class StackBuild(Subcommand):
         import json
         import os
 
-        from llama_stack.common.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.common.serialize import EnumEncoder
-        from llama_stack.core.package import ApiInput, build_image, ImageType
+        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+        from llama_stack.distribution.utils.serialize import EnumEncoder
+        from llama_stack.distribution.build import ApiInput, build_image, ImageType
         from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
@@ -74,8 +74,8 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
-        from llama_stack.common.prompt_for_config import prompt_for_config
-        from llama_stack.core.dynamic import instantiate_class_type
+        from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
+        from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
         if not args.config:
             self.parser.error(

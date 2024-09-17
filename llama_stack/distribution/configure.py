@@ -8,12 +8,13 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 from termcolor import cprint
 
-from llama_stack.common.prompt_for_config import prompt_for_config
-from llama_stack.core.distribution import api_providers, stack_apis
-from llama_stack.core.dynamic import instantiate_class_type
+from llama_stack.distribution.distribution import api_providers, stack_apis
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 
 
 # These are hacks so we can re-use the `prompt_for_config` utility

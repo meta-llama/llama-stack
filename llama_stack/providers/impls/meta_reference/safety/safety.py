@@ -8,7 +8,7 @@ import asyncio
 
 from llama_models.sku_list import resolve_model
 
-from llama_stack.common.model_utils import model_local_dir
+from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.apis.safety import *  # noqa
 
 from .config import SafetyConfig

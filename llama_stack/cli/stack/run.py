@@ -12,7 +12,7 @@ import pkg_resources
 import yaml
 
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 class StackRun(Subcommand):
@@ -47,7 +47,7 @@ class StackRun(Subcommand):
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
-        from llama_stack.common.exec import run_with_pty
+        from llama_stack.distribution.utils.exec import run_with_pty
 
         if not args.config:
             self.parser.error("Must specify a config file to run")
@@ -68,13 +68,13 @@ class StackRun(Subcommand):
         if config.docker_image:
             script = pkg_resources.resource_filename(
                 "llama_stack",
-                "core/start_container.sh",
+                "distribution/start_container.sh",
             )
             run_args = [script, config.docker_image]
         else:
             script = pkg_resources.resource_filename(
                 "llama_stack",
-                "core/start_conda_env.sh",
+                "distribution/start_conda_env.sh",
             )
             run_args = [
                 script,

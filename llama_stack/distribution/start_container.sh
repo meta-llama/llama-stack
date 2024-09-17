@@ -19,12 +19,12 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 3 ]; then
-  echo "Usage: $0 <build_name> <yaml_config> <port> <script_args...>"
+  echo "Usage: $0 <build_name> <yaml_config> <port> <other_args...>"
   exit 1
 fi
 
 build_name="$1"
-env_name="llamastack-$build_name"
+docker_image="llamastack-$build_name"
 shift
 
 yaml_config="$1"
@@ -33,10 +33,11 @@ shift
 port="$1"
 shift
 
-eval "$(conda shell.bash hook)"
-conda deactivate && conda activate "$env_name"
-
-$CONDA_PREFIX/bin/python \
-  -m llama_stack.core.server \
-  --yaml_config "$yaml_config" \
-  --port "$port" "$@"
+set -x
+podman run -it \
+  -p $port:$port \
+  -v "$yaml_config:/app/config.yaml" \
+  $docker_image \
+  python -m llama_stack.distribution.server \
+  --yaml_config /app/config.yaml \
+  --port $port "$@"

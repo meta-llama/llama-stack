@@ -14,7 +14,7 @@ import httpx
 
 from llama_models.llama3.api.datatypes import UserMessage
 
-from llama_stack.core.datatypes import RemoteProviderConfig
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 from pydantic import BaseModel
 from termcolor import cprint
 

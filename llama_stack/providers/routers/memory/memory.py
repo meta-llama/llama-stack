@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, List, Tuple
 
-from llama_stack.core.datatypes import Api
+from llama_stack.distribution.datatypes import Api
 from llama_stack.apis.memory import *  # noqa: F403
 
 

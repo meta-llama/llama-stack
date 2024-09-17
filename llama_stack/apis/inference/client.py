@@ -11,7 +11,7 @@ from typing import Any, AsyncGenerator
 import fire
 import httpx
 
-from llama_stack.core.datatypes import RemoteProviderConfig
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 from pydantic import BaseModel
 from termcolor import cprint
 

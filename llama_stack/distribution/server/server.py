@@ -45,7 +45,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 from .distribution import api_endpoints, api_providers
 from .dynamic import instantiate_provider

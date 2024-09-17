@@ -14,10 +14,10 @@ import yaml
 from termcolor import cprint
 
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.common.config_dirs import BUILDS_BASE_DIR
+from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
-from llama_stack.common.exec import run_with_pty
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.utils.exec import run_with_pty
+from llama_stack.distribution.datatypes import *  # noqa: F403
 import os
 
 
@@ -49,7 +49,7 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        from llama_stack.core.package import ImageType
+        from llama_stack.distribution.build import ImageType
 
         docker_image = None
         build_config_file = Path(args.config)
@@ -66,7 +66,7 @@ class StackConfigure(Subcommand):
             os.makedirs(builds_dir, exist_ok=True)
 
             script = pkg_resources.resource_filename(
-                "llama_stack", "core/configure_container.sh"
+                "llama_stack", "distribution/configure_container.sh"
             )
             script_args = [script, docker_image, str(builds_dir)]
 
@@ -95,8 +95,8 @@ class StackConfigure(Subcommand):
         build_config: BuildConfig,
         output_dir: Optional[str] = None,
     ):
-        from llama_stack.common.serialize import EnumEncoder
-        from llama_stack.core.configure import configure_api_providers
+        from llama_stack.distribution.configure import configure_api_providers
+        from llama_stack.distribution.utils.serialize import EnumEncoder
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
         if output_dir:

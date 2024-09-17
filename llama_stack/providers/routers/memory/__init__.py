@@ -6,7 +6,7 @@
 
 from typing import Any, List, Tuple
 
-from llama_stack.core.datatypes import Api
+from llama_stack.distribution.datatypes import Api
 
 
 async def get_router_impl(inner_impls: List[Tuple[str, Any]], deps: List[Api]):

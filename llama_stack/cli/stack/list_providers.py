@@ -22,7 +22,7 @@ class StackListProviders(Subcommand):
         self.parser.set_defaults(func=self._run_providers_list_cmd)
 
     def _add_arguments(self):
-        from llama_stack.core.distribution import stack_apis
+        from llama_stack.distribution.distribution import stack_apis
 
         api_values = [a.value for a in stack_apis()]
         self.parser.add_argument(
@@ -34,7 +34,7 @@ class StackListProviders(Subcommand):
 
     def _run_providers_list_cmd(self, args: argparse.Namespace) -> None:
         from llama_stack.cli.table import print_table
-        from llama_stack.core.distribution import Api, api_providers
+        from llama_stack.distribution.distribution import Api, api_providers
 
         all_providers = api_providers()
         providers_for_api = all_providers[Api(args.api)]

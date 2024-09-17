@@ -7,7 +7,7 @@
 import importlib
 from typing import Any, Dict
 
-from llama_stack.core.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 def instantiate_class_type(fully_qualified_name):

@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_stack.core.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_stack.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
 
 
 def available_providers() -> List[ProviderSpec]:

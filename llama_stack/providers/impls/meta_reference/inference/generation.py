@@ -30,7 +30,7 @@ from llama_models.llama3.reference_impl.model import Transformer
 from llama_models.sku_list import resolve_model
 from llama_stack.apis.inference import QuantizationType
 
-from llama_stack.common.model_utils import model_local_dir
+from llama_stack.distribution.utils.model_utils import model_local_dir
 from termcolor import cprint
 
 from .config import MetaReferenceImplConfig
