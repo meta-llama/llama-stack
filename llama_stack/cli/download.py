@@ -106,7 +106,7 @@ def _hf_download(
             local_dir=output_dir,
             ignore_patterns=ignore_patterns,
             token=hf_token,
-            library_name="llama-toolchain",
+            library_name="llama-stack",
         )
     except GatedRepoError:
         parser.error(

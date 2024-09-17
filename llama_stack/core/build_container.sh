@@ -55,7 +55,7 @@ RUN apt-get update && apt-get install -y \
 
 EOF
 
-toolchain_mount="/app/llama-toolchain-source"
+toolchain_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
 
 if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
@@ -65,7 +65,7 @@ if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
   fi
   add_to_docker "RUN pip install $toolchain_mount"
 else
-  add_to_docker "RUN pip install llama-toolchain"
+  add_to_docker "RUN pip install llama-stack"
 fi
 
 if [ -n "$LLAMA_MODELS_DIR" ]; then

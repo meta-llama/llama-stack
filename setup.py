@@ -28,7 +28,7 @@ setup(
     },
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/meta-llama/llama-toolchain",
+    url="https://github.com/meta-llama/llama-stack",
     packages=find_packages(),
     classifiers=[],
     python_requires=">=3.10",

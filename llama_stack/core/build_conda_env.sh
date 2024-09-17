@@ -11,7 +11,7 @@ LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
 if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
-  echo "Using llama-toolchain-dir=$LLAMA_TOOLCHAIN_DIR"
+  echo "Using llama-stack-dir=$LLAMA_TOOLCHAIN_DIR"
 fi
 if [ -n "$LLAMA_MODELS_DIR" ]; then
   echo "Using llama-models-dir=$LLAMA_MODELS_DIR"
@@ -78,9 +78,9 @@ ensure_conda_env_python310() {
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     pip install fastapi libcst
-    pip install --extra-index-url https://test.pypi.org/simple/ llama-models==$TEST_PYPI_VERSION llama-toolchain==$TEST_PYPI_VERSION $pip_dependencies
+    pip install --extra-index-url https://test.pypi.org/simple/ llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION $pip_dependencies
   else
-    # Re-installing llama-toolchain in the new conda environment
+    # Re-installing llama-stack in the new conda environment
     if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
       if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
         printf "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}\n" >&2
@@ -90,7 +90,7 @@ ensure_conda_env_python310() {
       printf "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR\n"
       pip install --no-cache-dir -e "$LLAMA_TOOLCHAIN_DIR"
     else
-      pip install --no-cache-dir llama-toolchain
+      pip install --no-cache-dir llama-stack
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then

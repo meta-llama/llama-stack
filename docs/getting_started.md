@@ -1,6 +1,6 @@
 # Getting Started
 
-The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-toolchain` package.
+The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
 This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
 
@@ -294,7 +294,7 @@ This server is running a Llama model locally.
 Once the server is setup, we can test it with a client to see the example outputs.
 ```
 cd /path/to/llama-stack
-conda activate <env>  # any environment containing the llama-toolchain pip package will work
+conda activate <env>  # any environment containing the llama-stack pip package will work
 
 python -m llama_stack.apis.inference.client localhost 5000
 ```

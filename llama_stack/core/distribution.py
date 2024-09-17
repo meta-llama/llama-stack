@@ -17,7 +17,7 @@ from llama_stack.apis.telemetry import Telemetry
 from .datatypes import Api, ApiEndpoint, ProviderSpec, remote_provider_spec
 
 # These are the dependencies needed by the distribution server.
-# `llama-toolchain` is automatically installed by the installation script.
+# `llama-stack` is automatically installed by the installation script.
 SERVER_DEPENDENCIES = [
     "fastapi",
     "uvicorn",
