@@ -2,3 +2,5 @@ include requirements.txt
 include llama_stack/data/*.yaml
 include llama_stack/core/*.sh
 include llama_stack/cli/scripts/*.sh
+include llama_stack/distribution/configs/conda/*.yaml
+include llama_stack/distribution/configs/docker/*.yaml
