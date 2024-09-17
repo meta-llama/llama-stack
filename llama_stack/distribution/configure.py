@@ -97,6 +97,8 @@ def configure_api_providers(
                 provider_config = config.provider_map.get(api_str)
                 if provider_config:
                     existing = config_type(**provider_config.config)
+                else:
+                    existing = None
             except Exception:
                 existing = None
             cfg = prompt_for_config(config_type, existing)
