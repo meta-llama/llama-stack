@@ -44,6 +44,7 @@ def configure_api_providers(
         apis_to_serve=apis,
     )
     req_apis = prompt_for_config(ReqApis, req_apis)
+    config.apis_to_serve = req_apis.apis_to_serve
     print("")
 
     apis = [v.value for v in stack_apis()]
