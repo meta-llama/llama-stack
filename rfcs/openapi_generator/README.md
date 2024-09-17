@@ -1,4 +1,4 @@
-The RFC Specification (OpenAPI format) is generated from the set of API endpoints located in `llama_toolchain/[<subdir>]/api/endpoints.py` using the `generate.py` utility.
+The RFC Specification (OpenAPI format) is generated from the set of API endpoints located in `llama_stack/[<subdir>]/api/endpoints.py` using the `generate.py` utility.
 
 Please install the following packages before running the script:
 

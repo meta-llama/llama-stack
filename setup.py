@@ -15,15 +15,15 @@ def read_requirements():
 
 
 setup(
-    name="llama_toolchain",
+    name="llama_stack",
     version="0.0.16",
     author="Meta Llama",
     author_email="llama-oss@meta.com",
     description="Llama toolchain",
     entry_points={
         "console_scripts": [
-            "llama = llama_toolchain.cli.llama:main",
-            "install-wheel-from-presigned = llama_toolchain.cli.scripts.run:install_wheel_from_presigned",
+            "llama = llama_stack.cli.llama:main",
+            "install-wheel-from-presigned = llama_stack.cli.scripts.run:install_wheel_from_presigned",
         ]
     },
     long_description=open("README.md").read(),

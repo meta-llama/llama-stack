@@ -9,7 +9,7 @@ This guides allows you to quickly get started with building and running a Llama 
 
 **`llama stack build`**
 ```
-llama stack build --config ./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml --name my-local-llama-stack
+llama stack build --config ./llama_stack/configs/distributions/conda/local-conda-example-build.yaml --name my-local-llama-stack
 ...
 ...
 Build spec configuration saved at ~/.llama/distributions/conda/my-local-llama-stack-build.yaml
@@ -97,16 +97,16 @@ The following command and specifications allows you to get started with building
 ```
 llama stack build <path/to/config>
 ```
-- You will be required to pass in a file path to the build.config file (e.g. `./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_toolchain/configs/distributions/` folder.
+- You will be required to pass in a file path to the build.config file (e.g. `./llama_stack/configs/distributions/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_stack/configs/distributions/` folder.
 
 The file will be of the contents
 ```
-$ cat ./llama_toolchain/configs/distributions/conda/local-conda-example-build.yaml
+$ cat ./llama_stack/configs/distributions/conda/local-conda-example-build.yaml
 
 name: 8b-instruct
 distribution_spec:
   distribution_type: local
-  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  description: Use code from `llama_stack` itself to serve all llama stack APIs
   docker_image: null
   providers:
     inference: meta-reference
@@ -132,7 +132,7 @@ After this step is complete, a file named `8b-instruct-build.yaml` will be gener
 To specify a different API provider, we can change the `distribution_spec` in our `<name>-build.yaml` config. For example, the following build spec allows you to build a distribution using TGI as the inference API provider.
 
 ```
-$ cat ./llama_toolchain/configs/distributions/conda/local-tgi-conda-example-build.yaml
+$ cat ./llama_stack/configs/distributions/conda/local-tgi-conda-example-build.yaml
 
 name: local-tgi-conda-example
 distribution_spec:
@@ -149,7 +149,7 @@ image_type: conda
 
 The following command allows you to build a distribution with TGI as the inference API provider, with the name `tgi`.
 ```
-llama stack build --config ./llama_toolchain/configs/distributions/conda/local-tgi-conda-example-build.yaml --name tgi
+llama stack build --config ./llama_stack/configs/distributions/conda/local-tgi-conda-example-build.yaml --name tgi
 ```
 
 We provide some example build configs to help you get started with building with different API providers.
@@ -158,11 +158,11 @@ We provide some example build configs to help you get started with building with
 To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build --config <name>-build.yaml`.
 
 ```
-$ cat ./llama_toolchain/configs/distributions/docker/local-docker-example-build.yaml
+$ cat ./llama_stack/configs/distributions/docker/local-docker-example-build.yaml
 
 name: local-docker-example
 distribution_spec:
-  description: Use code from `llama_toolchain` itself to serve all llama stack APIs
+  description: Use code from `llama_stack` itself to serve all llama stack APIs
   docker_image: null
   providers:
     inference: meta-reference
@@ -175,7 +175,7 @@ image_type: docker
 
 The following command allows you to build a Docker image with the name `docker-local`
 ```
-llama stack build --config ./llama_toolchain/configs/distributions/docker/local-docker-example-build.yaml --name docker-local
+llama stack build --config ./llama_stack/configs/distributions/docker/local-docker-example-build.yaml --name docker-local
 
 Dockerfile created successfully in /tmp/tmp.I0ifS2c46A/DockerfileFROM python:3.10-slim
 WORKDIR /app
@@ -296,7 +296,7 @@ Once the server is setup, we can test it with a client to see the example output
 cd /path/to/llama-stack
 conda activate <env>  # any environment containing the llama-toolchain pip package will work
 
-python -m llama_toolchain.inference.client localhost 5000
+python -m llama_stack.inference.client localhost 5000
 ```
 
 This will run the chat completion client and query the distribution’s /inference/chat_completion API.
@@ -314,7 +314,7 @@ You know what's even more hilarious? People like you who think they can just Goo
 Similarly you can test safety (if you configured llama-guard and/or prompt-guard shields) by:
 
 ```
-python -m llama_toolchain.safety.client localhost 5000
+python -m llama_stack.safety.client localhost 5000
 ```
 
 You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.

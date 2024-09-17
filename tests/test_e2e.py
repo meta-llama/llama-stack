@@ -11,12 +11,12 @@
 import os
 import unittest
 
-from llama_toolchain.agentic_system.event_logger import EventLogger, LogEvent
-from llama_toolchain.agentic_system.utils import get_agent_system_instance
+from llama_stack.agentic_system.event_logger import EventLogger, LogEvent
+from llama_stack.agentic_system.utils import get_agent_system_instance
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_toolchain.agentic_system.api.datatypes import StepType
-from llama_toolchain.tools.custom.datatypes import CustomTool
+from llama_stack.agentic_system.api.datatypes import StepType
+from llama_stack.tools.custom.datatypes import CustomTool
 
 from tests.example_custom_tool import GetBoilingPointTool
 

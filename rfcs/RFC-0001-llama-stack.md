@@ -1,19 +1,19 @@
 # The Llama Stack API
 
 **Authors:**
-* Meta: @raghotham, @ashwinb, @hjshah, @jspisak 
+* Meta: @raghotham, @ashwinb, @hjshah, @jspisak
 
 ## Summary
 As part of the Llama 3.1 release, Meta is releasing an RFC for ‘Llama Stack’, a comprehensive set of interfaces / API for ML developers building on top of Llama foundation models. We are looking for feedback on where the API can be improved, any corner cases we may have missed and your general thoughts on how useful this will be. Ultimately, our hope is to create a standard for working with Llama models in order to simplify the developer experience and foster innovation across the Llama ecosystem.
 
 ## Motivation
-Llama models were always intended to work as part of an overall system that can orchestrate several components, including calling external tools. Our vision is to go beyond the foundation models and give developers access to a broader system that gives them the flexibility to design and create custom offerings that align with their vision. This thinking started last year when we first introduced a system-level safety model. Meta has continued to release new components for orchestration at the system level and, most recently in Llama 3.1, we’ve introduced the Llama Guard 3 safety model that is multilingual, a prompt injection filter, Prompt Guard and refreshed v3 of our CyberSec Evals. We are also releasing a reference implementation of an agentic system to demonstrate how all the pieces fit together. 
+Llama models were always intended to work as part of an overall system that can orchestrate several components, including calling external tools. Our vision is to go beyond the foundation models and give developers access to a broader system that gives them the flexibility to design and create custom offerings that align with their vision. This thinking started last year when we first introduced a system-level safety model. Meta has continued to release new components for orchestration at the system level and, most recently in Llama 3.1, we’ve introduced the Llama Guard 3 safety model that is multilingual, a prompt injection filter, Prompt Guard and refreshed v3 of our CyberSec Evals. We are also releasing a reference implementation of an agentic system to demonstrate how all the pieces fit together.
 
-While building the reference implementation, we realized that having a clean and consistent way to interface between components could be valuable not only for us but for anyone leveraging Llama models and other components as part of their system. We’ve also heard from the community as they face a similar challenge as components exist with overlapping functionality and there are incompatible interfaces and yet don't cover the end-to-end model life cycle. 
+While building the reference implementation, we realized that having a clean and consistent way to interface between components could be valuable not only for us but for anyone leveraging Llama models and other components as part of their system. We’ve also heard from the community as they face a similar challenge as components exist with overlapping functionality and there are incompatible interfaces and yet don't cover the end-to-end model life cycle.
 
 With these motivations, we engaged folks in industry, startups, and the broader developer community to help better define the interfaces of these components. We’re releasing this Llama Stack RFC as a set of standardized and opinionated interfaces for how to surface canonical toolchain components (like inference, fine-tuning, evals, synthetic data generation) and agentic applications to ML developers. Our hope is to have these become well adopted across the ecosystem, which should help with easier interoperability. We would like for builders of multiple components to provide implementations to these standard APIs so that there can be vertically integrated “distributions” of the Llama Stack that can work out of the box easily.
 
-We welcome feedback and ways to improve the proposal. We’re excited to grow the ecosystem around Llama and lower barriers for both developers and platform providers. 
+We welcome feedback and ways to improve the proposal. We’re excited to grow the ecosystem around Llama and lower barriers for both developers and platform providers.
 
 ## Design decisions
 Meta releases weights of both the pretrained and instruction fine-tuned Llama models to support several use cases. These weights can be improved  -  fine tuned and aligned - with curated datasets to then be deployed for inference to support specific applications. The curated datasets can be produced manually by humans or synthetically by other models or by leveraging human feedback by collecting usage data of the application itself. This results in a continuous improvement cycle where the model gets better over time. This is the model life cycle.
@@ -42,8 +42,8 @@ Note that as of today, in the OSS world, such a “loop” is often coded explic
 
 **Let's consider an example:**
 1. The user asks the system "Who played the NBA finals last year?"
-1. The model "understands" that this question needs to be answered using web search. It answers this abstractly with a message of the form "Please call the search tool for me with the query: 'List finalist teams for NBA in the last year' ". Note that the model by itself does not call the tool (of course!) 
-1. The executor consults the set of tool implementations which have been configured by the developer to find an implementation for the "search tool". If it does not find it, it returns an error to the model. Otherwise, it executes this tool and returns the result of this tool back to the model. 
+1. The model "understands" that this question needs to be answered using web search. It answers this abstractly with a message of the form "Please call the search tool for me with the query: 'List finalist teams for NBA in the last year' ". Note that the model by itself does not call the tool (of course!)
+1. The executor consults the set of tool implementations which have been configured by the developer to find an implementation for the "search tool". If it does not find it, it returns an error to the model. Otherwise, it executes this tool and returns the result of this tool back to the model.
 1. The model reasons once again (using all the messages above) and decides to send a final response "In 2023, Denver Nuggets played against the Miami Heat in the NBA finals." to the executor
 1. The executor returns the response directly to the user (since there is no tool call to be executed.)
 
@@ -73,14 +73,14 @@ The API is defined in the [YAML](RFC-0001-llama-stack-assets/llama-stack-spec.ya
 
 ## Sample implementations
 
-To prove out the API, we implemented a handful of use cases to make things more concrete. The [llama-agentic-system](https://github.com/meta-llama/llama-agentic-system) repository contains [6 different examples](https://github.com/meta-llama/llama-agentic-system/tree/main/examples/scripts) ranging from very basic to a multi turn agent. 
+To prove out the API, we implemented a handful of use cases to make things more concrete. The [llama-agentic-system](https://github.com/meta-llama/llama-agentic-system) repository contains [6 different examples](https://github.com/meta-llama/llama-agentic-system/tree/main/examples/scripts) ranging from very basic to a multi turn agent.
 
-There is also a sample inference endpoint implementation in the [llama-toolchain](https://github.com/meta-llama/llama-toolchain/blob/main/llama_toolchain/inference/server.py) repository.
+There is also a sample inference endpoint implementation in the [llama-toolchain](https://github.com/meta-llama/llama-toolchain/blob/main/llama_stack/inference/server.py) repository.
 
 
 ## Limitations
 The reference implementation for Llama Stack APIs to date only includes sample implementations using the inference API. We are planning to flesh out the design of Llama Stack Distributions (distros) by combining capabilities from different providers into a single vertically integrated stack. We plan to implement other APIs and, of course, we’d love contributions!!
 
-Thank you in advance for your feedback, support and contributions to make this a better API. 
+Thank you in advance for your feedback, support and contributions to make this a better API.
 
 Cheers!
