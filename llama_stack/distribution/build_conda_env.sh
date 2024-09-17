@@ -7,11 +7,11 @@
 # the root directory of this source tree.
 
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
-LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
+LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
-  echo "Using llama-stack-dir=$LLAMA_TOOLCHAIN_DIR"
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  echo "Using llama-stack-dir=$LLAMA_STACK_DIR"
 fi
 if [ -n "$LLAMA_MODELS_DIR" ]; then
   echo "Using llama-models-dir=$LLAMA_MODELS_DIR"
@@ -81,14 +81,14 @@ ensure_conda_env_python310() {
     pip install --extra-index-url https://test.pypi.org/simple/ llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION $pip_dependencies
   else
     # Re-installing llama-stack in the new conda environment
-    if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
-      if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
-        printf "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}\n" >&2
+    if [ -n "$LLAMA_STACK_DIR" ]; then
+      if [ ! -d "$LLAMA_STACK_DIR" ]; then
+        printf "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: $LLAMA_STACK_DIR${NC}\n" >&2
         exit 1
       fi
 
-      printf "Installing from LLAMA_TOOLCHAIN_DIR: $LLAMA_TOOLCHAIN_DIR\n"
-      pip install --no-cache-dir -e "$LLAMA_TOOLCHAIN_DIR"
+      printf "Installing from LLAMA_STACK_DIR: $LLAMA_STACK_DIR\n"
+      pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
     else
       pip install --no-cache-dir llama-stack
     fi

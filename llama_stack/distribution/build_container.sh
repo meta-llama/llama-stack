@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
-LLAMA_TOOLCHAIN_DIR=${LLAMA_TOOLCHAIN_DIR:-}
+LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
 if [ "$#" -ne 4 ]; then
@@ -55,15 +55,15 @@ RUN apt-get update && apt-get install -y \
 
 EOF
 
-toolchain_mount="/app/llama-stack-source"
+stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
 
-if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
-  if [ ! -d "$LLAMA_TOOLCHAIN_DIR" ]; then
-    echo "${RED}Warning: LLAMA_TOOLCHAIN_DIR is set but directory does not exist: $LLAMA_TOOLCHAIN_DIR${NC}" >&2
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  if [ ! -d "$LLAMA_STACK_DIR" ]; then
+    echo "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: $LLAMA_STACK_DIR${NC}" >&2
     exit 1
   fi
-  add_to_docker "RUN pip install $toolchain_mount"
+  add_to_docker "RUN pip install $stack_mount"
 else
   add_to_docker "RUN pip install llama-stack"
 fi
@@ -90,7 +90,7 @@ add_to_docker <<EOF
 # This would be good in production but for debugging flexibility lets not add it right now
 # We need a more solid production ready entrypoint.sh anyway
 #
-# ENTRYPOINT ["python", "-m", "llama_stack.distribution.server"]
+# ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 
 EOF
 
@@ -101,8 +101,8 @@ cat $TEMP_DIR/Dockerfile
 printf "\n"
 
 mounts=""
-if [ -n "$LLAMA_TOOLCHAIN_DIR" ]; then
-  mounts="$mounts -v $(readlink -f $LLAMA_TOOLCHAIN_DIR):$toolchain_mount"
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):$stack_mount"
 fi
 if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"

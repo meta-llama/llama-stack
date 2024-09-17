@@ -107,7 +107,7 @@ class StackConfigure(Subcommand):
 
         if run_config_file.exists():
             cprint(
-                f"Configuration already exists for {build_config.name}. Will overwrite...",
+                f"Configuration already exists at `{str(run_config_file)}`. Will overwrite...",
                 "yellow",
                 attrs=["bold"],
             )

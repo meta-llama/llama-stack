@@ -81,11 +81,13 @@ def configure_api_providers(
                 )
             config.provider_map[api_str] = routing_entries
         else:
-            provider_spec = all_providers[api][spec.providers[api_str]]
+            p = spec.providers[api_str]
+            print(f"Configuring provider `{p}`...")
+            provider_spec = all_providers[api][p]
             config_type = instantiate_class_type(provider_spec.config_class)
             cfg = prompt_for_config(config_type, None)
             config.provider_map[api_str] = GenericProviderConfig(
-                provider_id=spec.providers[api_str],
+                provider_id=p,
                 config=cfg.dict(),
             )
 

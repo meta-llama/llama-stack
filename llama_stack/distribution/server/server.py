@@ -47,8 +47,8 @@ from llama_stack.providers.utils.telemetry.tracing import (
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
-from .distribution import api_endpoints, api_providers
-from .dynamic import instantiate_provider
+from llama_stack.distribution.distribution import api_endpoints, api_providers
+from llama_stack.distribution.utils.dynamic import instantiate_provider
 
 
 def is_async_iterator_type(typ):

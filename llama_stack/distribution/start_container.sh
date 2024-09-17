@@ -38,6 +38,6 @@ podman run -it \
   -p $port:$port \
   -v "$yaml_config:/app/config.yaml" \
   $docker_image \
-  python -m llama_stack.distribution.server \
+  python -m llama_stack.distribution.server.server \
   --yaml_config /app/config.yaml \
   --port $port "$@"

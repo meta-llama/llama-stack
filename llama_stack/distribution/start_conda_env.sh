@@ -37,6 +37,6 @@ eval "$(conda shell.bash hook)"
 conda deactivate && conda activate "$env_name"
 
 $CONDA_PREFIX/bin/python \
-  -m llama_stack.distribution.server \
+  -m llama_stack.distribution.server.server \
   --yaml_config "$yaml_config" \
   --port "$port" "$@"
