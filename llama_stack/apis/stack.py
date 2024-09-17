@@ -6,7 +6,6 @@
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.control_plane import *  # noqa: F403
 from llama_stack.apis.dataset import *  # noqa: F403
 from llama_stack.apis.evals import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
@@ -22,7 +21,6 @@ from llama_stack.apis.safety import *  # noqa: F403
 class LlamaStack(
     Inference,
     BatchInference,
-    ControlPlane,
     Agents,
     RewardScoring,
     Safety,

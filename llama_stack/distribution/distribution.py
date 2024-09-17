@@ -9,7 +9,6 @@ import inspect
 from typing import Dict, List
 
 from llama_stack.apis.agents import Agents
-from llama_stack.apis.control_plane import ControlPlane
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
@@ -38,7 +37,6 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         Api.agents: Agents,
         Api.memory: Memory,
         Api.telemetry: Telemetry,
-        Api.control_plane: ControlPlane,
     }
 
     for api, protocol in protocols.items():
