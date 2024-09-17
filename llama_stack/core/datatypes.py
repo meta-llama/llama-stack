@@ -20,6 +20,7 @@ class Api(Enum):
     agents = "agents"
     memory = "memory"
     telemetry = "telemetry"
+    control_plane = "control_plane"
 
 
 @json_schema_type
