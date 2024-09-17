@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.dataset import *  # noqa: F403
-from llama_stack.common.training_types import *  # noqa: F403
+from llama_stack.apis.common.training_types import *  # noqa: F403
 
 
 class OptimizerType(Enum):

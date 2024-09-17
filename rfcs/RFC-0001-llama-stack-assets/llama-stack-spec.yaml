@@ -152,7 +152,7 @@ components:
       - model
       - instructions
       type: object
-    AgenticSystemCreateResponse:
+    AgentCreateResponse:
       additionalProperties: false
       properties:
         agent_id:
@@ -160,7 +160,7 @@ components:
       required:
       - agent_id
       type: object
-    AgenticSystemSessionCreateResponse:
+    AgentSessionCreateResponse:
       additionalProperties: false
       properties:
         session_id:
@@ -168,7 +168,7 @@ components:
       required:
       - session_id
       type: object
-    AgenticSystemStepResponse:
+    AgentStepResponse:
       additionalProperties: false
       properties:
         step:
@@ -180,21 +180,21 @@ components:
       required:
       - step
       type: object
-    AgenticSystemTurnResponseEvent:
+    AgentTurnResponseEvent:
       additionalProperties: false
       properties:
         payload:
           oneOf:
-          - $ref: '#/components/schemas/AgenticSystemTurnResponseStepStartPayload'
-          - $ref: '#/components/schemas/AgenticSystemTurnResponseStepProgressPayload'
-          - $ref: '#/components/schemas/AgenticSystemTurnResponseStepCompletePayload'
-          - $ref: '#/components/schemas/AgenticSystemTurnResponseTurnStartPayload'
-          - $ref: '#/components/schemas/AgenticSystemTurnResponseTurnCompletePayload'
+          - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
+          - $ref: '#/components/schemas/AgentTurnResponseStepProgressPayload'
+          - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
+          - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
+          - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
       required:
       - payload
       title: Streamed agent execution response.
       type: object
-    AgenticSystemTurnResponseStepCompletePayload:
+    AgentTurnResponseStepCompletePayload:
       additionalProperties: false
       properties:
         event_type:
@@ -218,7 +218,7 @@ components:
       - step_type
       - step_details
       type: object
-    AgenticSystemTurnResponseStepProgressPayload:
+    AgentTurnResponseStepProgressPayload:
       additionalProperties: false
       properties:
         event_type:
@@ -244,7 +244,7 @@ components:
       - step_type
       - step_id
       type: object
-    AgenticSystemTurnResponseStepStartPayload:
+    AgentTurnResponseStepStartPayload:
       additionalProperties: false
       properties:
         event_type:
@@ -274,15 +274,15 @@ components:
       - step_type
       - step_id
       type: object
-    AgenticSystemTurnResponseStreamChunk:
+    AgentTurnResponseStreamChunk:
       additionalProperties: false
       properties:
         event:
-          $ref: '#/components/schemas/AgenticSystemTurnResponseEvent'
+          $ref: '#/components/schemas/AgentTurnResponseEvent'
       required:
       - event
       type: object
-    AgenticSystemTurnResponseTurnCompletePayload:
+    AgentTurnResponseTurnCompletePayload:
       additionalProperties: false
       properties:
         event_type:
@@ -294,7 +294,7 @@ components:
       - event_type
       - turn
       type: object
-    AgenticSystemTurnResponseTurnStartPayload:
+    AgentTurnResponseTurnStartPayload:
       additionalProperties: false
       properties:
         event_type:
@@ -617,7 +617,7 @@ components:
       - delta
       title: streamed completion response.
       type: object
-    CreateAgenticSystemRequest:
+    CreateAgentRequest:
       additionalProperties: false
       properties:
         agent_config:
@@ -625,7 +625,7 @@ components:
       required:
       - agent_config
       type: object
-    CreateAgenticSystemSessionRequest:
+    CreateAgentSessionRequest:
       additionalProperties: false
       properties:
         agent_id:
@@ -636,7 +636,7 @@ components:
       - agent_id
       - session_name
       type: object
-    CreateAgenticSystemTurnRequest:
+    CreateAgentTurnRequest:
       additionalProperties: false
       properties:
         agent_id:
@@ -741,7 +741,7 @@ components:
       - epsilon
       - gamma
       type: object
-    DeleteAgenticSystemRequest:
+    DeleteAgentsRequest:
       additionalProperties: false
       properties:
         agent_id:
@@ -749,7 +749,7 @@ components:
       required:
       - agent_id
       type: object
-    DeleteAgenticSystemSessionRequest:
+    DeleteAgentsSessionRequest:
       additionalProperties: false
       properties:
         agent_id:
@@ -973,7 +973,7 @@ components:
       - description
       - parameters
       type: object
-    GetAgenticSystemSessionRequest:
+    GetAgentsSessionRequest:
       additionalProperties: false
       properties:
         turn_ids:
@@ -1155,7 +1155,6 @@ components:
       required:
       - document_id
       - content
-      - mime_type
       - metadata
       type: object
     MemoryRetrievalStep:
@@ -2357,77 +2356,77 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-11 16:05:23.016090"
+    \ draft and subject to change.\n                Generated at 2024-09-16 21:21:00.554769"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
-  /agentic_system/create:
+  /agents/create:
     post:
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAgenticSystemRequest'
+              $ref: '#/components/schemas/CreateAgentRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgenticSystemCreateResponse'
+                $ref: '#/components/schemas/AgentCreateResponse'
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/delete:
+      - Agents
+  /agents/delete:
     post:
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeleteAgenticSystemRequest'
+              $ref: '#/components/schemas/DeleteAgentsRequest'
         required: true
       responses:
         '200':
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/session/create:
+      - Agents
+  /agents/session/create:
     post:
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAgenticSystemSessionRequest'
+              $ref: '#/components/schemas/CreateAgentSessionRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgenticSystemSessionCreateResponse'
+                $ref: '#/components/schemas/AgentSessionCreateResponse'
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/session/delete:
+      - Agents
+  /agents/session/delete:
     post:
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeleteAgenticSystemSessionRequest'
+              $ref: '#/components/schemas/DeleteAgentsSessionRequest'
         required: true
       responses:
         '200':
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/session/get:
+      - Agents
+  /agents/session/get:
     post:
       parameters:
       - in: query
@@ -2444,7 +2443,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetAgenticSystemSessionRequest'
+              $ref: '#/components/schemas/GetAgentsSessionRequest'
         required: true
       responses:
         '200':
@@ -2454,8 +2453,8 @@ paths:
                 $ref: '#/components/schemas/Session'
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/step/get:
+      - Agents
+  /agents/step/get:
     get:
       parameters:
       - in: query
@@ -2478,29 +2477,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgenticSystemStepResponse'
+                $ref: '#/components/schemas/AgentStepResponse'
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/turn/create:
+      - Agents
+  /agents/turn/create:
     post:
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAgenticSystemTurnRequest'
+              $ref: '#/components/schemas/CreateAgentTurnRequest'
         required: true
       responses:
         '200':
           content:
-            text/event-stream:
+            application/json:
               schema:
-                $ref: '#/components/schemas/AgenticSystemTurnResponseStreamChunk'
+                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
           description: OK
       tags:
-      - AgenticSystem
-  /agentic_system/turn/get:
+      - Agents
+  /agents/turn/get:
     get:
       parameters:
       - in: query
@@ -2521,7 +2520,7 @@ paths:
                 $ref: '#/components/schemas/Turn'
           description: OK
       tags:
-      - AgenticSystem
+      - Agents
   /batch_inference/chat_completion:
     post:
       parameters: []
@@ -3145,17 +3144,17 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: SyntheticDataGeneration
-- name: Datasets
-- name: Evaluations
 - name: Safety
-- name: Inference
-- name: Telemetry
-- name: PostTraining
 - name: Memory
-- name: RewardScoring
+- name: PostTraining
+- name: Evaluations
+- name: Agents
+- name: Datasets
+- name: Inference
 - name: BatchInference
-- name: AgenticSystem
+- name: Telemetry
+- name: SyntheticDataGeneration
+- name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3289,47 +3288,46 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/WolframAlphaToolDefinition"
     />
   name: WolframAlphaToolDefinition
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentRequest"
     />
-  name: CreateAgenticSystemRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemCreateResponse"
+  name: CreateAgentRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentCreateResponse"
     />
-  name: AgenticSystemCreateResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemSessionRequest"
+  name: AgentCreateResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentSessionRequest"
     />
-  name: CreateAgenticSystemSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemSessionCreateResponse"
+  name: CreateAgentSessionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentSessionCreateResponse"
     />
-  name: AgenticSystemSessionCreateResponse
+  name: AgentSessionCreateResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgenticSystemTurnRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentTurnRequest"
     />
-  name: CreateAgenticSystemTurnRequest
+  name: CreateAgentTurnRequest
 - description: 'Streamed agent execution response.
 
 
-    <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseEvent"
-    />'
-  name: AgenticSystemTurnResponseEvent
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseStepCompletePayload"
+    <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEvent" />'
+  name: AgentTurnResponseEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepCompletePayload"
     />
-  name: AgenticSystemTurnResponseStepCompletePayload
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseStepProgressPayload"
+  name: AgentTurnResponseStepCompletePayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepProgressPayload"
     />
-  name: AgenticSystemTurnResponseStepProgressPayload
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseStepStartPayload"
+  name: AgentTurnResponseStepProgressPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepStartPayload"
     />
-  name: AgenticSystemTurnResponseStepStartPayload
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseStreamChunk"
+  name: AgentTurnResponseStepStartPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStreamChunk"
     />
-  name: AgenticSystemTurnResponseStreamChunk
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseTurnCompletePayload"
+  name: AgentTurnResponseStreamChunk
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnCompletePayload"
     />
-  name: AgenticSystemTurnResponseTurnCompletePayload
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemTurnResponseTurnStartPayload"
+  name: AgentTurnResponseTurnCompletePayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnStartPayload"
     />
-  name: AgenticSystemTurnResponseTurnStartPayload
+  name: AgentTurnResponseTurnStartPayload
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
@@ -3365,12 +3363,12 @@ tags:
   name: CreateMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
   name: MemoryBank
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
     />
-  name: DeleteAgenticSystemRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgenticSystemSessionRequest"
+  name: DeleteAgentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
-  name: DeleteAgenticSystemSessionRequest
+  name: DeleteAgentsSessionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDatasetRequest"
     />
   name: DeleteDatasetRequest
@@ -3397,17 +3395,17 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
     />
   name: EvaluateTextGenerationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/GetAgenticSystemSessionRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/GetAgentsSessionRequest"
     />
-  name: GetAgenticSystemSessionRequest
+  name: GetAgentsSessionRequest
 - description: 'A single session of an interaction with an Agentic System.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/Session" />'
   name: Session
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgenticSystemStepResponse"
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
-  name: AgenticSystemStepResponse
+  name: AgentStepResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetDocumentsRequest"
     />
   name: GetDocumentsRequest
@@ -3552,7 +3550,7 @@ tags:
 x-tagGroups:
 - name: Operations
   tags:
-  - AgenticSystem
+  - Agents
   - BatchInference
   - Datasets
   - Evaluations
@@ -3566,16 +3564,16 @@ x-tagGroups:
 - name: Types
   tags:
   - AgentConfig
-  - AgenticSystemCreateResponse
-  - AgenticSystemSessionCreateResponse
-  - AgenticSystemStepResponse
-  - AgenticSystemTurnResponseEvent
-  - AgenticSystemTurnResponseStepCompletePayload
-  - AgenticSystemTurnResponseStepProgressPayload
-  - AgenticSystemTurnResponseStepStartPayload
-  - AgenticSystemTurnResponseStreamChunk
-  - AgenticSystemTurnResponseTurnCompletePayload
-  - AgenticSystemTurnResponseTurnStartPayload
+  - AgentCreateResponse
+  - AgentSessionCreateResponse
+  - AgentStepResponse
+  - AgentTurnResponseEvent
+  - AgentTurnResponseStepCompletePayload
+  - AgentTurnResponseStepProgressPayload
+  - AgentTurnResponseStepStartPayload
+  - AgentTurnResponseStreamChunk
+  - AgentTurnResponseTurnCompletePayload
+  - AgentTurnResponseTurnStartPayload
   - Attachment
   - BatchChatCompletionRequest
   - BatchChatCompletionResponse
@@ -3596,14 +3594,14 @@ x-tagGroups:
   - CompletionRequest
   - CompletionResponse
   - CompletionResponseStreamChunk
-  - CreateAgenticSystemRequest
-  - CreateAgenticSystemSessionRequest
-  - CreateAgenticSystemTurnRequest
+  - CreateAgentRequest
+  - CreateAgentSessionRequest
+  - CreateAgentTurnRequest
   - CreateDatasetRequest
   - CreateMemoryBankRequest
   - DPOAlignmentConfig
-  - DeleteAgenticSystemRequest
-  - DeleteAgenticSystemSessionRequest
+  - DeleteAgentsRequest
+  - DeleteAgentsSessionRequest
   - DeleteDatasetRequest
   - DeleteDocumentsRequest
   - DialogGenerations
@@ -3620,7 +3618,7 @@ x-tagGroups:
   - EvaluationJobStatusResponse
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
-  - GetAgenticSystemSessionRequest
+  - GetAgentsSessionRequest
   - GetDocumentsRequest
   - InferenceStep
   - InsertDocumentsRequest

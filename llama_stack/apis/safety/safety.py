@@ -11,7 +11,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, validator
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.common.deployment_types import RestAPIExecutionConfig
+from llama_stack.apis.common.deployment_types import RestAPIExecutionConfig
 
 
 @json_schema_type

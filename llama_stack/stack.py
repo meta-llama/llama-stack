@@ -7,7 +7,7 @@
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
 from llama_stack.apis.dataset import *  # noqa: F403
-from llama_stack.evaluations.api import *  # noqa: F403
+from llama_stack.apis.evals import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.batch_inference import *  # noqa: F403
 from llama_stack.apis.memory import *  # noqa: F403

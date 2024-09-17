@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-11 16:05:23.016090"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-16 21:21:00.554769"
     },
     "servers": [
         {
@@ -209,7 +209,7 @@
                 }
             }
         },
-        "/agentic_system/create": {
+        "/agents/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -217,21 +217,21 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AgenticSystemCreateResponse"
+                                    "$ref": "#/components/schemas/AgentCreateResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateAgenticSystemRequest"
+                                "$ref": "#/components/schemas/CreateAgentRequest"
                             }
                         }
                     },
@@ -239,7 +239,7 @@
                 }
             }
         },
-        "/agentic_system/session/create": {
+        "/agents/session/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -247,21 +247,21 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AgenticSystemSessionCreateResponse"
+                                    "$ref": "#/components/schemas/AgentSessionCreateResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateAgenticSystemSessionRequest"
+                                "$ref": "#/components/schemas/CreateAgentSessionRequest"
                             }
                         }
                     },
@@ -269,29 +269,29 @@
                 }
             }
         },
-        "/agentic_system/turn/create": {
+        "/agents/turn/create": {
             "post": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "text/event-stream": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AgenticSystemTurnResponseStreamChunk"
+                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CreateAgenticSystemTurnRequest"
+                                "$ref": "#/components/schemas/CreateAgentTurnRequest"
                             }
                         }
                     },
@@ -352,7 +352,7 @@
                 }
             }
         },
-        "/agentic_system/delete": {
+        "/agents/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -360,14 +360,14 @@
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/DeleteAgenticSystemRequest"
+                                "$ref": "#/components/schemas/DeleteAgentsRequest"
                             }
                         }
                     },
@@ -375,7 +375,7 @@
                 }
             }
         },
-        "/agentic_system/session/delete": {
+        "/agents/session/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -383,14 +383,14 @@
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/DeleteAgenticSystemSessionRequest"
+                                "$ref": "#/components/schemas/DeleteAgentsSessionRequest"
                             }
                         }
                     },
@@ -594,7 +594,7 @@
                 }
             }
         },
-        "/agentic_system/session/get": {
+        "/agents/session/get": {
             "post": {
                 "responses": {
                     "200": {
@@ -609,7 +609,7 @@
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [
                     {
@@ -633,7 +633,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/GetAgenticSystemSessionRequest"
+                                "$ref": "#/components/schemas/GetAgentsSessionRequest"
                             }
                         }
                     },
@@ -641,7 +641,7 @@
                 }
             }
         },
-        "/agentic_system/step/get": {
+        "/agents/step/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -649,14 +649,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AgenticSystemStepResponse"
+                                    "$ref": "#/components/schemas/AgentStepResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [
                     {
@@ -686,7 +686,7 @@
                 ]
             }
         },
-        "/agentic_system/turn/get": {
+        "/agents/turn/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -701,7 +701,7 @@
                     }
                 },
                 "tags": [
-                    "AgenticSystem"
+                    "Agents"
                 ],
                 "parameters": [
                     {
@@ -2672,7 +2672,7 @@
                     "type"
                 ]
             },
-            "CreateAgenticSystemRequest": {
+            "CreateAgentRequest": {
                 "type": "object",
                 "properties": {
                     "agent_config": {
@@ -2684,7 +2684,7 @@
                     "agent_config"
                 ]
             },
-            "AgenticSystemCreateResponse": {
+            "AgentCreateResponse": {
                 "type": "object",
                 "properties": {
                     "agent_id": {
@@ -2696,7 +2696,7 @@
                     "agent_id"
                 ]
             },
-            "CreateAgenticSystemSessionRequest": {
+            "CreateAgentSessionRequest": {
                 "type": "object",
                 "properties": {
                     "agent_id": {
@@ -2712,7 +2712,7 @@
                     "session_name"
                 ]
             },
-            "AgenticSystemSessionCreateResponse": {
+            "AgentSessionCreateResponse": {
                 "type": "object",
                 "properties": {
                     "session_id": {
@@ -2753,7 +2753,7 @@
                     "mime_type"
                 ]
             },
-            "CreateAgenticSystemTurnRequest": {
+            "CreateAgentTurnRequest": {
                 "type": "object",
                 "properties": {
                     "agent_id": {
@@ -2792,25 +2792,25 @@
                     "messages"
                 ]
             },
-            "AgenticSystemTurnResponseEvent": {
+            "AgentTurnResponseEvent": {
                 "type": "object",
                 "properties": {
                     "payload": {
                         "oneOf": [
                             {
-                                "$ref": "#/components/schemas/AgenticSystemTurnResponseStepStartPayload"
+                                "$ref": "#/components/schemas/AgentTurnResponseStepStartPayload"
                             },
                             {
-                                "$ref": "#/components/schemas/AgenticSystemTurnResponseStepProgressPayload"
+                                "$ref": "#/components/schemas/AgentTurnResponseStepProgressPayload"
                             },
                             {
-                                "$ref": "#/components/schemas/AgenticSystemTurnResponseStepCompletePayload"
+                                "$ref": "#/components/schemas/AgentTurnResponseStepCompletePayload"
                             },
                             {
-                                "$ref": "#/components/schemas/AgenticSystemTurnResponseTurnStartPayload"
+                                "$ref": "#/components/schemas/AgentTurnResponseTurnStartPayload"
                             },
                             {
-                                "$ref": "#/components/schemas/AgenticSystemTurnResponseTurnCompletePayload"
+                                "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
                             }
                         ]
                     }
@@ -2821,7 +2821,7 @@
                 ],
                 "title": "Streamed agent execution response."
             },
-            "AgenticSystemTurnResponseStepCompletePayload": {
+            "AgentTurnResponseStepCompletePayload": {
                 "type": "object",
                 "properties": {
                     "event_type": {
@@ -2861,7 +2861,7 @@
                     "step_details"
                 ]
             },
-            "AgenticSystemTurnResponseStepProgressPayload": {
+            "AgentTurnResponseStepProgressPayload": {
                 "type": "object",
                 "properties": {
                     "event_type": {
@@ -2897,7 +2897,7 @@
                     "step_id"
                 ]
             },
-            "AgenticSystemTurnResponseStepStartPayload": {
+            "AgentTurnResponseStepStartPayload": {
                 "type": "object",
                 "properties": {
                     "event_type": {
@@ -2949,11 +2949,11 @@
                     "step_id"
                 ]
             },
-            "AgenticSystemTurnResponseStreamChunk": {
+            "AgentTurnResponseStreamChunk": {
                 "type": "object",
                 "properties": {
                     "event": {
-                        "$ref": "#/components/schemas/AgenticSystemTurnResponseEvent"
+                        "$ref": "#/components/schemas/AgentTurnResponseEvent"
                     }
                 },
                 "additionalProperties": false,
@@ -2961,7 +2961,7 @@
                     "event"
                 ]
             },
-            "AgenticSystemTurnResponseTurnCompletePayload": {
+            "AgentTurnResponseTurnCompletePayload": {
                 "type": "object",
                 "properties": {
                     "event_type": {
@@ -2978,7 +2978,7 @@
                     "turn"
                 ]
             },
-            "AgenticSystemTurnResponseTurnStartPayload": {
+            "AgentTurnResponseTurnStartPayload": {
                 "type": "object",
                 "properties": {
                     "event_type": {
@@ -3532,7 +3532,7 @@
                     "config"
                 ]
             },
-            "DeleteAgenticSystemRequest": {
+            "DeleteAgentsRequest": {
                 "type": "object",
                 "properties": {
                     "agent_id": {
@@ -3544,7 +3544,7 @@
                     "agent_id"
                 ]
             },
-            "DeleteAgenticSystemSessionRequest": {
+            "DeleteAgentsSessionRequest": {
                 "type": "object",
                 "properties": {
                     "agent_id": {
@@ -3720,7 +3720,7 @@
                     "metrics"
                 ]
             },
-            "GetAgenticSystemSessionRequest": {
+            "GetAgentsSessionRequest": {
                 "type": "object",
                 "properties": {
                     "turn_ids": {
@@ -3764,7 +3764,7 @@
                 ],
                 "title": "A single session of an interaction with an Agentic System."
             },
-            "AgenticSystemStepResponse": {
+            "AgentStepResponse": {
                 "type": "object",
                 "properties": {
                     "step": {
@@ -3859,7 +3859,6 @@
                 "required": [
                     "document_id",
                     "content",
-                    "mime_type",
                     "metadata"
                 ]
             },
@@ -5142,37 +5141,37 @@
     ],
     "tags": [
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Evaluations"
-        },
-        {
             "name": "Safety"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "PostTraining"
         },
         {
             "name": "Memory"
         },
         {
-            "name": "RewardScoring"
+            "name": "PostTraining"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "BatchInference"
         },
         {
-            "name": "AgenticSystem"
+            "name": "Telemetry"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "RewardScoring"
         },
         {
             "name": "BuiltinTool",
@@ -5343,56 +5342,56 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/WolframAlphaToolDefinition\" />"
         },
         {
-            "name": "CreateAgenticSystemRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemRequest\" />"
+            "name": "CreateAgentRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentRequest\" />"
         },
         {
-            "name": "AgenticSystemCreateResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemCreateResponse\" />"
+            "name": "AgentCreateResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentCreateResponse\" />"
         },
         {
-            "name": "CreateAgenticSystemSessionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemSessionRequest\" />"
+            "name": "CreateAgentSessionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentSessionRequest\" />"
         },
         {
-            "name": "AgenticSystemSessionCreateResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemSessionCreateResponse\" />"
+            "name": "AgentSessionCreateResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentSessionCreateResponse\" />"
         },
         {
             "name": "Attachment",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
         },
         {
-            "name": "CreateAgenticSystemTurnRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgenticSystemTurnRequest\" />"
+            "name": "CreateAgentTurnRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentTurnRequest\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseEvent",
-            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseEvent\" />"
+            "name": "AgentTurnResponseEvent",
+            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseStepCompletePayload",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStepCompletePayload\" />"
+            "name": "AgentTurnResponseStepCompletePayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStepCompletePayload\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseStepProgressPayload",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStepProgressPayload\" />"
+            "name": "AgentTurnResponseStepProgressPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStepProgressPayload\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseStepStartPayload",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStepStartPayload\" />"
+            "name": "AgentTurnResponseStepStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStepStartPayload\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseStreamChunk",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseStreamChunk\" />"
+            "name": "AgentTurnResponseStreamChunk",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStreamChunk\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseTurnCompletePayload",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseTurnCompletePayload\" />"
+            "name": "AgentTurnResponseTurnCompletePayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseTurnCompletePayload\" />"
         },
         {
-            "name": "AgenticSystemTurnResponseTurnStartPayload",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemTurnResponseTurnStartPayload\" />"
+            "name": "AgentTurnResponseTurnStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseTurnStartPayload\" />"
         },
         {
             "name": "InferenceStep",
@@ -5443,12 +5442,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
         },
         {
-            "name": "DeleteAgenticSystemRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgenticSystemRequest\" />"
+            "name": "DeleteAgentsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsRequest\" />"
         },
         {
-            "name": "DeleteAgenticSystemSessionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgenticSystemSessionRequest\" />"
+            "name": "DeleteAgentsSessionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
         },
         {
             "name": "DeleteDatasetRequest",
@@ -5487,16 +5486,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
         },
         {
-            "name": "GetAgenticSystemSessionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgenticSystemSessionRequest\" />"
+            "name": "GetAgentsSessionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgentsSessionRequest\" />"
         },
         {
             "name": "Session",
             "description": "A single session of an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Session\" />"
         },
         {
-            "name": "AgenticSystemStepResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgenticSystemStepResponse\" />"
+            "name": "AgentStepResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentStepResponse\" />"
         },
         {
             "name": "GetDocumentsRequest",
@@ -5675,7 +5674,7 @@
         {
             "name": "Operations",
             "tags": [
-                "AgenticSystem",
+                "Agents",
                 "BatchInference",
                 "Datasets",
                 "Evaluations",
@@ -5692,16 +5691,16 @@
             "name": "Types",
             "tags": [
                 "AgentConfig",
-                "AgenticSystemCreateResponse",
-                "AgenticSystemSessionCreateResponse",
-                "AgenticSystemStepResponse",
-                "AgenticSystemTurnResponseEvent",
-                "AgenticSystemTurnResponseStepCompletePayload",
-                "AgenticSystemTurnResponseStepProgressPayload",
-                "AgenticSystemTurnResponseStepStartPayload",
-                "AgenticSystemTurnResponseStreamChunk",
-                "AgenticSystemTurnResponseTurnCompletePayload",
-                "AgenticSystemTurnResponseTurnStartPayload",
+                "AgentCreateResponse",
+                "AgentSessionCreateResponse",
+                "AgentStepResponse",
+                "AgentTurnResponseEvent",
+                "AgentTurnResponseStepCompletePayload",
+                "AgentTurnResponseStepProgressPayload",
+                "AgentTurnResponseStepStartPayload",
+                "AgentTurnResponseStreamChunk",
+                "AgentTurnResponseTurnCompletePayload",
+                "AgentTurnResponseTurnStartPayload",
                 "Attachment",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
@@ -5722,14 +5721,14 @@
                 "CompletionRequest",
                 "CompletionResponse",
                 "CompletionResponseStreamChunk",
-                "CreateAgenticSystemRequest",
-                "CreateAgenticSystemSessionRequest",
-                "CreateAgenticSystemTurnRequest",
+                "CreateAgentRequest",
+                "CreateAgentSessionRequest",
+                "CreateAgentTurnRequest",
                 "CreateDatasetRequest",
                 "CreateMemoryBankRequest",
                 "DPOAlignmentConfig",
-                "DeleteAgenticSystemRequest",
-                "DeleteAgenticSystemSessionRequest",
+                "DeleteAgentsRequest",
+                "DeleteAgentsSessionRequest",
                 "DeleteDatasetRequest",
                 "DeleteDocumentsRequest",
                 "DialogGenerations",
@@ -5746,7 +5745,7 @@
                 "EvaluationJobStatusResponse",
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
-                "GetAgenticSystemSessionRequest",
+                "GetAgentsSessionRequest",
                 "GetDocumentsRequest",
                 "InferenceStep",
                 "InsertDocumentsRequest",

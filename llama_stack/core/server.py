@@ -309,7 +309,7 @@ async def resolve_impls(
 
             specs[api] = RouterProviderSpec(
                 api=api,
-                module=f"llama_stack.{api.value.lower()}.router",
+                module=f"llama_stack.providers.routers.{api.value.lower()}",
                 api_dependencies=[],
                 inner_specs=inner_specs,
             )

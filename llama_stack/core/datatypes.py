@@ -151,7 +151,7 @@ as being "Llama Stack compatible"
     def module(self) -> str:
         if self.adapter:
             return self.adapter.module
-        return f"llama_stack.{self.api.value}.client"
+        return f"llama_stack.apis.{self.api.value}.client"
 
     @property
     def pip_packages(self) -> List[str]:
