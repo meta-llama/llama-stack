@@ -134,8 +134,8 @@ async def run_main(host: str, port: int):
 
     tool_definitions = [
         SearchToolDefinition(
-            engine=SearchEngineType.bing,
-            api_key=os.getenv("BING_SEARCH_API_KEY"),
+            engine=SearchEngineType.brave,
+            api_key=os.getenv("BRAVE_SEARCH_API_KEY"),
         ),
         WolframAlphaToolDefinition(api_key=os.getenv("WOLFRAM_ALPHA_API_KEY")),
         CodeInterpreterToolDefinition(),
