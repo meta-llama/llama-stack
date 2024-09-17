@@ -14,16 +14,16 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.tools.builtin import (
+
+from .agent_instance import ChatAgent
+from .config import MetaReferenceImplConfig
+from .tools.builtin import (
     CodeInterpreterTool,
     PhotogenTool,
     SearchTool,
     WolframAlphaTool,
 )
-from llama_stack.tools.safety import with_safety
-
-from .agent_instance import ChatAgent
-from .config import MetaReferenceImplConfig
+from .tools.safety import with_safety
 
 
 logger = logging.getLogger()

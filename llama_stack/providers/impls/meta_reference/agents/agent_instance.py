@@ -25,14 +25,10 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 
-from llama_stack.tools.base import BaseTool
-from llama_stack.tools.builtin import (
-    interpret_content_as_attachment,
-    SingleMessageBuiltinTool,
-)
-
 from .rag.context_retriever import generate_rag_query
 from .safety import SafetyException, ShieldRunnerMixin
+from .tools.base import BaseTool
+from .tools.builtin import interpret_content_as_attachment, SingleMessageBuiltinTool
 
 
 def make_random_string(length: int = 8):
