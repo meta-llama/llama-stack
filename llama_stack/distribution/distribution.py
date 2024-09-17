@@ -20,6 +20,7 @@ from .datatypes import Api, ApiEndpoint, ProviderSpec, remote_provider_spec
 # `llama-stack` is automatically installed by the installation script.
 SERVER_DEPENDENCIES = [
     "fastapi",
+    "fire",
     "uvicorn",
 ]
 
