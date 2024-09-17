@@ -51,6 +51,7 @@ class SearchToolDefinition(ToolDefinitionCommon):
     # NOTE: brave_search is just a placeholder since model always uses
     # brave_search as tool call name
     type: Literal[AgentTool.brave_search.value] = AgentTool.brave_search.value
+    api_key: str
     engine: SearchEngineType = SearchEngineType.brave
     remote_execution: Optional[RestAPIExecutionConfig] = None
 
@@ -58,6 +59,7 @@ class SearchToolDefinition(ToolDefinitionCommon):
 @json_schema_type
 class WolframAlphaToolDefinition(ToolDefinitionCommon):
     type: Literal[AgentTool.wolfram_alpha.value] = AgentTool.wolfram_alpha.value
+    api_key: str
     remote_execution: Optional[RestAPIExecutionConfig] = None
 
 

@@ -3,6 +3,7 @@ fire
 httpx
 huggingface-hub
 llama-models>=0.0.16
+python-dotenv
 pydantic
 requests
 termcolor

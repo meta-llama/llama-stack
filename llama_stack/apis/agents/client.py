@@ -6,11 +6,12 @@
 
 import asyncio
 import json
+import os
 from typing import AsyncGenerator
 
 import fire
-
 import httpx
+from dotenv import load_dotenv
 
 from pydantic import BaseModel
 from termcolor import cprint
@@ -20,6 +21,9 @@ from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from .agents import *  # noqa: F403
 from .event_logger import EventLogger
+
+
+load_dotenv()
 
 
 async def get_client_impl(config: RemoteProviderConfig, _deps):
@@ -129,8 +133,11 @@ async def run_main(host: str, port: int):
     api = AgentsClient(f"http://{host}:{port}")
 
     tool_definitions = [
-        SearchToolDefinition(engine=SearchEngineType.bing),
-        WolframAlphaToolDefinition(),
+        SearchToolDefinition(
+            engine=SearchEngineType.bing,
+            api_key=os.getenv("BING_SEARCH_API_KEY"),
+        ),
+        WolframAlphaToolDefinition(api_key=os.getenv("WOLFRAM_ALPHA_API_KEY")),
         CodeInterpreterToolDefinition(),
     ]
     tool_definitions += [

@@ -58,21 +58,9 @@ class MetaReferenceAgentsImpl(Agents):
         builtin_tools = []
         for tool_defn in agent_config.tools:
             if isinstance(tool_defn, WolframAlphaToolDefinition):
-                key = self.config.wolfram_api_key
-                if not key:
-                    raise ValueError("Wolfram API key not defined in config")
-                tool = WolframAlphaTool(key)
+                tool = WolframAlphaTool(tool_defn.api_key)
             elif isinstance(tool_defn, SearchToolDefinition):
-                key = None
-                if tool_defn.engine == SearchEngineType.brave:
-                    key = self.config.brave_search_api_key
-                elif tool_defn.engine == SearchEngineType.bing:
-                    key = self.config.bing_search_api_key
-                if not key:
-                    raise ValueError(
-                        "Search (Brave or Bing) API key not defined in config"
-                    )
-                tool = SearchTool(tool_defn.engine, key)
+                tool = SearchTool(tool_defn.engine, tool_defn.api_key)
             elif isinstance(tool_defn, CodeInterpreterToolDefinition):
                 tool = CodeInterpreterTool()
             elif isinstance(tool_defn, PhotogenToolDefinition):
