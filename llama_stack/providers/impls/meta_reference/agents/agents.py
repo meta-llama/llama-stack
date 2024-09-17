@@ -69,7 +69,9 @@ class MetaReferenceAgentsImpl(Agents):
                 elif tool_defn.engine == SearchEngineType.bing:
                     key = self.config.bing_search_api_key
                 if not key:
-                    raise ValueError("API key not defined in config")
+                    raise ValueError(
+                        "Search (Brave or Bing) API key not defined in config"
+                    )
                 tool = SearchTool(tool_defn.engine, key)
             elif isinstance(tool_defn, CodeInterpreterToolDefinition):
                 tool = CodeInterpreterTool()
