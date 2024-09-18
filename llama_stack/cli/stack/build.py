@@ -11,6 +11,10 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
 import yaml
+from llama_stack.distribution.datatypes import Api
+from prompt_toolkit import prompt
+from prompt_toolkit.validation import Validator
+from termcolor import cprint
 
 
 class StackBuild(Subcommand):
@@ -48,7 +52,6 @@ class StackBuild(Subcommand):
 
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.serialize import EnumEncoder
-        from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
         if build_config.image_type == ImageType.docker.value:
@@ -79,7 +82,47 @@ class StackBuild(Subcommand):
         from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 
         if not args.config:
-            build_config = prompt_for_config(BuildConfig, None)
+            # build_config = prompt_for_config(BuildConfig, None)
+            name = prompt(
+                "> Please enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): "
+            )
+            image_type = prompt(
+                "> Please enter the image type you want your distribution to be built with (docker or conda): ",
+                validator=Validator.from_callable(
+                    lambda x: x in ["docker", "conda"],
+                    error_message="Invalid image type, please enter (conda|docker)",
+                ),
+                default="conda",
+            )
+
+            cprint(
+                f"Now, let's configure your Llama Stack distribution specs with API providers",
+                color="green",
+            )
+
+            providers = dict()
+            for api in Api:
+                api_provider = prompt(
+                    "> Please enter the API provider for the {} API: (default=meta-reference): ".format(
+                        api.value
+                    ),
+                    default="meta-reference",
+                )
+                providers[api.value] = api_provider
+
+            description = prompt(
+                "> (Optional) Please enter a short description for your Llama Stack distribution: ",
+                default="",
+            )
+
+            distribution_spec = DistributionSpec(
+                providers=providers,
+                description=description,
+            )
+
+            build_config = BuildConfig(
+                name=name, image_type=image_type, distribution_spec=distribution_spec
+            )
             self._run_stack_build_command_from_build_config(build_config)
             return
 
