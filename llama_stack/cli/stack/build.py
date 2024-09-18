@@ -16,8 +16,16 @@ import yaml
 
 @lru_cache()
 def available_templates_specs() -> List[BuildConfig]:
+    import os
+
+    TEMPLATES_PATH = (
+        Path(os.path.relpath(__file__)).parent.parent.parent
+        / "distribution"
+        / "templates"
+    )
+
     template_specs = []
-    for p in Path("llama_stack/distribution/templates/").rglob("*.yaml"):
+    for p in TEMPLATES_PATH.rglob("*.yaml"):
         with open(p, "r") as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs.append(build_config)
@@ -157,7 +165,15 @@ class StackBuild(Subcommand):
             self._run_template_list_cmd(args)
             return
 
-        if not args.config:
+        if args.template:
+            if not args.name:
+                self.parser.error(
+                    "You must specify a name for the build using --name when using a template"
+                )
+                return
+            # build_path =
+
+        if not args.config and not args.template:
             name = prompt(
                 "> Enter a name for your Llama Stack, this name will be used as paths to store configuration files, build conda environments and docker images (e.g. my-local-stack): "
             )
