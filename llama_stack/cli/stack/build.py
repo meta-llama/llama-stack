@@ -27,7 +27,7 @@ class StackBuild(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "config",
+            "--config",
             type=str,
             help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/example_configs",
         )
@@ -44,9 +44,10 @@ class StackBuild(Subcommand):
         import json
         import os
 
+        from llama_stack.distribution.build import ApiInput, build_image, ImageType
+
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.serialize import EnumEncoder
-        from llama_stack.distribution.build import ApiInput, build_image, ImageType
         from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
@@ -74,13 +75,15 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
-        from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
+        from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 
         if not args.config:
-            self.parser.error(
-                "No config file specified. Please use `llama stack build /path/to/*-build.yaml`. Example config files can be found in llama_stack/distribution/example_configs"
-            )
+            # self.parser.error(
+            #     "No config file specified. Please use `llama stack build /path/to/*-build.yaml`. Example config files can be found in llama_stack/distribution/example_configs"
+            # )
+            build_config = prompt_for_config(BuildConfig, None)
+            self._run_stack_build_command_from_build_config(build_config)
             return
 
         with open(args.config, "r") as f:

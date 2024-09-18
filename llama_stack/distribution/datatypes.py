@@ -184,7 +184,13 @@ class DistributionSpec(BaseModel):
     )
     docker_image: Optional[str] = None
     providers: Dict[str, Union[str, List[str]]] = Field(
-        default_factory=dict,
+        default={
+            "inference": "meta-reference",
+            "memory": "meta-reference",
+            "safety": "meta-reference",
+            "agents": "meta-reference",
+            "telemetry": "meta-reference",
+        },
         description="""
 Provider Types for each of the APIs provided by this distribution. If you
 select multiple providers, you should provide an appropriate 'routing_map'
