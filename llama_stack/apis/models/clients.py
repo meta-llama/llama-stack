@@ -13,10 +13,10 @@ from typing import Any, Dict, List, Optional
 import fire
 import httpx
 
-from llama_toolchain.core.datatypes import RemoteProviderConfig
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 from termcolor import cprint
 
-from .api import *  # noqa: F403
+from .models import *  # noqa: F403
 
 
 class ModelsClient(Models):
