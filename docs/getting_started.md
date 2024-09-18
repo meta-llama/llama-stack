@@ -115,6 +115,8 @@ In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instru
 
 At the end of build command, we will generate `<name>-build.yaml` file storing the build configurations.
 
+After this step is complete, a file named `<name>-build.yaml` will be generated and saved at the output file path specified at the end of the command.
+
 #### Building from scratch
 - For a new user, we could start off with running `llama stack build` which will allow you to a interactively enter wizard where you will be prompted to enter build configurations.
 ```
@@ -156,7 +158,11 @@ llama stack build --template local-tgi --name my-tgi-stack
 ```
 
 ```
-
+$ llama stack build --template local-tgi --name my-tgi-stack
+...
+...
+Build spec configuration saved at /home/xiyan/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml
+You may now run `llama stack configure my-tgi-stack` or `llama stack configure /home/xiyan/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml`
 ```
 
 #### Building from config file
@@ -183,10 +189,15 @@ image_type: conda
 llama stack build --config llama_stack/distribution/templates/local-ollama-build.yaml
 ```
 
-After this step is complete, a file named `8b-instruct-build.yaml` will be generated and saved at `~/.llama/distributions/conda/8b-instruct-build.yaml`.
-
 #### How to build distribution with Docker image
-To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build <name>-build.yaml`.
+
+To build a docker image, you may start off from a template and use the `--image-type docker` flag to specify `docker` as the build image type.
+
+```
+llama stack build --template local --image-type docker --name docker-0
+```
+
+Alternatively, you may use a config file and set `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build <name>-build.yaml`. The `<name>-build.yaml` will be of contents like:
 
 ```
 name: local-docker-example
@@ -202,9 +213,9 @@ distribution_spec:
 image_type: docker
 ```
 
-The following command allows you to build a Docker image with the name `docker-local`
+The following command allows you to build a Docker image with the name `<name>`
 ```
-llama stack build ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml --name docker-local
+llama stack build --config <name>-build.yaml
 
 Dockerfile created successfully in /tmp/tmp.I0ifS2c46A/DockerfileFROM python:3.10-slim
 WORKDIR /app
@@ -213,6 +224,7 @@ WORKDIR /app
 You can run it with: podman run -p 8000:8000 llamastack-docker-local
 Build spec configuration saved at /home/xiyan/.llama/distributions/docker/docker-local-build.yaml
 ```
+
 
 ## Step 2. Configure
 After our distribution is built (either in form of docker or conda environment), we will run the following command to
