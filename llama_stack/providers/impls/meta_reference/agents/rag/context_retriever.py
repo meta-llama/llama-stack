@@ -63,11 +63,9 @@ async def llm_rag_query_generator(
     model = config.model
     message = UserMessage(content=content)
     response = inference_api.chat_completion(
-        ChatCompletionRequest(
-            model=model,
-            messages=[message],
-            stream=False,
-        )
+        model=model,
+        messages=[message],
+        stream=False,
     )
 
     async for chunk in response:
