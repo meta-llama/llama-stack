@@ -8,9 +8,26 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
+import os
+from functools import lru_cache
 from pathlib import Path
 
-import yaml
+TEMPLATES_PATH = (
+    Path(os.path.relpath(__file__)).parent.parent.parent / "distribution" / "templates"
+)
+
+
+@lru_cache()
+def available_templates_specs() -> List[BuildConfig]:
+    import yaml
+
+    template_specs = []
+    for p in TEMPLATES_PATH.rglob("*.yaml"):
+        with open(p, "r") as f:
+            build_config = BuildConfig(**yaml.safe_load(f))
+            template_specs.append(build_config)
+
+    return template_specs
 
 
 class StackBuild(Subcommand):
@@ -27,17 +44,38 @@ class StackBuild(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "config",
+            "--config",
             type=str,
             default=None,
-            nargs="*",
             help="Path to a config file to use for the build. You can find example configs in llama_stack/distribution/example_configs. If this argument is not provided, you will be prompted to enter information interactively",
+        )
+
+        self.parser.add_argument(
+            "--template",
+            type=str,
+            default=None,
+            help="Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates",
+        )
+
+        self.parser.add_argument(
+            "--list-templates",
+            type=bool,
+            default=False,
+            action=argparse.BooleanOptionalAction,
+            help="Show the available templates for building a Llama Stack distribution",
         )
 
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Name of the llama stack build to override from template config",
+            help="Name of the Llama Stack build to override from template config. This name will be used as paths to store configuration files, build conda environments/docker images. If not specified, will use the name from the template config. ",
+        )
+
+        self.parser.add_argument(
+            "--image-type",
+            type=str,
+            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use conda by default",
+            default="conda",
         )
 
     def _run_stack_build_command_from_build_config(
@@ -45,6 +83,8 @@ class StackBuild(Subcommand):
     ) -> None:
         import json
         import os
+
+        import yaml
 
         from llama_stack.distribution.build import ApiInput, build_image, ImageType
 
@@ -78,22 +118,80 @@ class StackBuild(Subcommand):
             f"Build spec configuration saved at {str(build_file_path)}",
             color="blue",
         )
+
+        configure_name = (
+            build_config.name
+            if build_config.image_type == "conda"
+            else (f"llamastack-{build_config.name}")
+        )
         cprint(
-            f"You may now run `llama stack configure {build_config.name}` or `llama stack configure {str(build_file_path)}`",
+            f"You may now run `llama stack configure {configure_name}` or `llama stack configure {str(build_file_path)}`",
             color="green",
         )
 
+    def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
+        import json
+
+        import yaml
+
+        from llama_stack.cli.table import print_table
+
+        # eventually, this should query a registry at llama.meta.com/llamastack/distributions
+        headers = [
+            "Template Name",
+            "Providers",
+            "Description",
+        ]
+
+        rows = []
+        for spec in available_templates_specs():
+            rows.append(
+                [
+                    spec.name,
+                    json.dumps(spec.distribution_spec.providers, indent=2),
+                    spec.distribution_spec.description,
+                ]
+            )
+        print_table(
+            rows,
+            headers,
+            separate_rows=True,
+        )
+
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
+        import yaml
         from llama_stack.distribution.distribution import Api, api_providers
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
         from prompt_toolkit import prompt
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
 
-        if not args.config:
-            name = prompt(
-                "> Enter a unique name for identifying your Llama Stack build (e.g. my-local-stack): "
-            )
+        if args.list_templates:
+            self._run_template_list_cmd(args)
+            return
+
+        if args.template:
+            if not args.name:
+                self.parser.error(
+                    "You must specify a name for the build using --name when using a template"
+                )
+                return
+            build_path = TEMPLATES_PATH / f"{args.template}-build.yaml"
+            if not build_path.exists():
+                self.parser.error(
+                    f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
+                )
+                return
+            with open(build_path, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
+                build_config.name = args.name
+                build_config.image_type = args.image_type
+                self._run_stack_build_command_from_build_config(build_config)
+
+            return
+
+        if not args.config and not args.template:
+            name = prompt("> Enter a name for your Llama Stack (e.g. my-local-stack): ")
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
                 validator=Validator.from_callable(
@@ -154,6 +252,4 @@ class StackBuild(Subcommand):
             except Exception as e:
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
-            if args.name:
-                build_config.name = args.name
             self._run_stack_build_command_from_build_config(build_config)

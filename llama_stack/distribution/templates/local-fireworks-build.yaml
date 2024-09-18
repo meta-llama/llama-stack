@@ -1,4 +1,4 @@
-name: local-fireworks-conda-example
+name: local-fireworks
 distribution_spec:
   description: Use Fireworks.ai for running LLM inference
   providers:

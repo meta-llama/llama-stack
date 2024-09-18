@@ -5,17 +5,10 @@
 # the root directory of this source tree.
 
 import argparse
-import json
-from pathlib import Path
-
-import yaml
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
-
-from llama_stack.distribution.utils.exec import run_with_pty
 from llama_stack.distribution.datatypes import *  # noqa: F403
-import os
 
 
 class StackConfigure(Subcommand):
@@ -46,9 +39,17 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
+        import json
+        import os
+        from pathlib import Path
+
         import pkg_resources
 
+        import yaml
+
         from llama_stack.distribution.build import ImageType
+
+        from llama_stack.distribution.utils.exec import run_with_pty
         from termcolor import cprint
 
         docker_image = None
@@ -98,7 +99,14 @@ class StackConfigure(Subcommand):
         build_config: BuildConfig,
         output_dir: Optional[str] = None,
     ):
+        import json
+        import os
+        from pathlib import Path
+
+        import yaml
         from llama_stack.distribution.configure import configure_api_providers
+
+        from llama_stack.distribution.utils.exec import run_with_pty
         from llama_stack.distribution.utils.serialize import EnumEncoder
         from termcolor import cprint
 
