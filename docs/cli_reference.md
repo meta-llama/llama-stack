@@ -276,11 +276,11 @@ The following command and specifications allows you to get started with building
 ```
 llama stack build <path/to/config>
 ```
-- You will be required to pass in a file path to the build.config file (e.g. `./llama_stack/distribution/configs/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_stack/distribution/configs/` folder.
+- You will be required to pass in a file path to the build.config file (e.g. `./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_stack/distribution/example_configs/` folder.
 
 The file will be of the contents
 ```
-$ cat ./llama_stack/distribution/configs/conda/local-conda-example-build.yaml
+$ cat ./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml
 
 name: 8b-instruct
 distribution_spec:
@@ -311,7 +311,7 @@ After this step is complete, a file named `8b-instruct-build.yaml` will be gener
 To specify a different API provider, we can change the `distribution_spec` in our `<name>-build.yaml` config. For example, the following build spec allows you to build a distribution using TGI as the inference API provider.
 
 ```
-$ cat ./llama_stack/distribution/configs/conda/local-tgi-conda-example-build.yaml
+$ cat ./llama_stack/distribution/example_configs/conda/local-tgi-conda-example-build.yaml
 
 name: local-tgi-conda-example
 distribution_spec:
@@ -328,7 +328,7 @@ image_type: conda
 
 The following command allows you to build a distribution with TGI as the inference API provider, with the name `tgi`.
 ```
-llama stack build --config ./llama_stack/distribution/configs/conda/local-tgi-conda-example-build.yaml --name tgi
+llama stack build --config ./llama_stack/distribution/example_configs/conda/local-tgi-conda-example-build.yaml --name tgi
 ```
 
 We provide some example build configs to help you get started with building with different API providers.
@@ -337,7 +337,7 @@ We provide some example build configs to help you get started with building with
 To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build --config <name>-build.yaml`.
 
 ```
-$ cat ./llama_stack/distribution/configs/docker/local-docker-example-build.yaml
+$ cat ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml
 
 name: local-docker-example
 distribution_spec:
@@ -354,7 +354,7 @@ image_type: docker
 
 The following command allows you to build a Docker image with the name `docker-local`
 ```
-llama stack build --config ./llama_stack/distribution/configs/docker/local-docker-example-build.yaml --name docker-local
+llama stack build --config ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml --name docker-local
 
 Dockerfile created successfully in /tmp/tmp.I0ifS2c46A/DockerfileFROM python:3.10-slim
 WORKDIR /app

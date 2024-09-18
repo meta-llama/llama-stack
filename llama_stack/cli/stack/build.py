@@ -29,7 +29,7 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "config",
             type=str,
-            help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/configs",
+            help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/example_configs",
         )
 
         self.parser.add_argument(
@@ -79,7 +79,7 @@ class StackBuild(Subcommand):
 
         if not args.config:
             self.parser.error(
-                "No config file specified. Please use `llama stack build /path/to/*-build.yaml`. Example config files can be found in llama_stack/distribution/configs"
+                "No config file specified. Please use `llama stack build /path/to/*-build.yaml`. Example config files can be found in llama_stack/distribution/example_configs"
             )
             return
 
