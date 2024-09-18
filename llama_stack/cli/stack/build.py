@@ -50,6 +50,7 @@ class StackBuild(Subcommand):
 
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.serialize import EnumEncoder
+        from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
         if build_config.image_type == ImageType.docker.value:
