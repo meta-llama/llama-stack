@@ -7,6 +7,7 @@
 # the root directory of this source tree.
 
 PYTHONPATH=${PYTHONPATH:-}
+THIS_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 set -euo pipefail
 
@@ -28,4 +29,6 @@ if [ ${#missing_packages[@]} -ne 0 ]; then
     exit 1
 fi
 
-PYTHONPATH=$PYTHONPATH:../.. python -m docs.openapi_generator.generate $*
+stack_dir=$(dirname $(dirname $THIS_DIR))
+models_dir=$(dirname $stack_dir)/llama-models
+PYTHONPATH=$PYTHONPATH:$stack_dir:$models_dir python -m docs.openapi_generator.generate $(dirname $THIS_DIR)
