@@ -58,7 +58,7 @@ class StackBuild(Subcommand):
                 llama_stack_path / "configs/distributions" / build_config.image_type
             )
         else:
-            build_dir = DISTRIBS_BASE_DIR / build_config.image_type
+            build_dir = Path(os.getenv("CONDA_PREFIX")).parent
 
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
@@ -79,9 +79,6 @@ class StackBuild(Subcommand):
         from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 
         if not args.config:
-            # self.parser.error(
-            #     "No config file specified. Please use `llama stack build /path/to/*-build.yaml`. Example config files can be found in llama_stack/distribution/example_configs"
-            # )
             build_config = prompt_for_config(BuildConfig, None)
             self._run_stack_build_command_from_build_config(build_config)
             return
