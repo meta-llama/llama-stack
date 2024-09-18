@@ -8,8 +8,6 @@ import argparse
 import json
 from pathlib import Path
 
-import pkg_resources
-
 import yaml
 from termcolor import cprint
 
@@ -49,6 +47,8 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
+        import pkg_resources
+
         from llama_stack.distribution.build import ImageType
 
         docker_image = None

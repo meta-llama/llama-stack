@@ -8,7 +8,6 @@ import argparse
 
 from pathlib import Path
 
-import pkg_resources
 import yaml
 
 from llama_stack.cli.subcommand import Subcommand
@@ -47,6 +46,8 @@ class StackRun(Subcommand):
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
+        import pkg_resources
+
         from llama_stack.distribution.utils.exec import run_with_pty
 
         if not args.config:
