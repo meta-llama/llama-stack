@@ -81,8 +81,9 @@ class StackConfigure(Subcommand):
                 )
 
             build_name = docker_image.removeprefix("llamastack-")
+            saved_file = str(builds_dir / f"{build_name}-run.yaml")
             cprint(
-                f"YAML configuration has been written to {builds_dir / f'{build_name}-run.yaml'}",
+                f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
                 color="green",
             )
             return
@@ -134,6 +135,6 @@ class StackConfigure(Subcommand):
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {run_config_file}",
+            f"> YAML configuration has been written to {run_config_file}. You can now run `llama stack run {run_config_file}`",
             color="blue",
         )
