@@ -9,7 +9,7 @@ This guides allows you to quickly get started with building and running a Llama 
 
 **`llama stack build`**
 ```
-llama stack build --config ./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml --name my-local-llama-stack
+llama stack build ./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml --name my-local-llama-stack
 ...
 ...
 Build spec configuration saved at ~/.llama/distributions/conda/my-local-llama-stack-build.yaml
@@ -149,13 +149,13 @@ image_type: conda
 
 The following command allows you to build a distribution with TGI as the inference API provider, with the name `tgi`.
 ```
-llama stack build --config ./llama_stack/distribution/example_configs/conda/local-tgi-conda-example-build.yaml --name tgi
+llama stack build ./llama_stack/distribution/example_configs/conda/local-tgi-conda-example-build.yaml --name tgi
 ```
 
 We provide some example build configs to help you get started with building with different API providers.
 
 #### How to build distribution with Docker image
-To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build --config <name>-build.yaml`.
+To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build <name>-build.yaml`.
 
 ```
 $ cat ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml
@@ -175,7 +175,7 @@ image_type: docker
 
 The following command allows you to build a Docker image with the name `docker-local`
 ```
-llama stack build --config ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml --name docker-local
+llama stack build ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml --name docker-local
 
 Dockerfile created successfully in /tmp/tmp.I0ifS2c46A/DockerfileFROM python:3.10-slim
 WORKDIR /app
