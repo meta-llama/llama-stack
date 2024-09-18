@@ -63,7 +63,10 @@ class StackBuild(Subcommand):
                 llama_stack_path / "configs/distributions" / build_config.image_type
             )
         else:
-            build_dir = Path(os.getenv("CONDA_PREFIX")).parent
+            build_dir = (
+                Path(os.getenv("CONDA_PREFIX")).parent
+                / f"llamastack-{build_config.name}"
+            )
 
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"

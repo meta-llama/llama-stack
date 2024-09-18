@@ -52,7 +52,7 @@ class StackConfigure(Subcommand):
         from llama_stack.distribution.build import ImageType
 
         docker_image = None
-        conda_dir = Path(os.getenv("CONDA_PREFIX")).parent
+        conda_dir = Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
         build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
         if not build_config_file.exists():
