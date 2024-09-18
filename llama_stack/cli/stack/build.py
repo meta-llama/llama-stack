@@ -34,6 +34,7 @@ class StackBuild(Subcommand):
             "config",
             type=str,
             default=None,
+            nargs="*",
             help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/example_configs. If not defined, you will be prompted for entering wizard",
         )
 

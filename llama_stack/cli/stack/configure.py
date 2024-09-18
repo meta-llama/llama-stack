@@ -135,6 +135,11 @@ class StackConfigure(Subcommand):
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {run_config_file}. You can now run `llama stack run {run_config_file}`",
+            f"> YAML configuration has been written to {run_config_file}.",
             color="blue",
+        )
+
+        cprint(
+            f"You can now run `llama stack run {image_name} --port PORT` or `llama stack run {run_config_file} --port PORT`",
+            color="green",
         )
