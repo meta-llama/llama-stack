@@ -8,21 +8,18 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
+import os
 from functools import lru_cache
 from pathlib import Path
 
-import yaml
+TEMPLATES_PATH = (
+    Path(os.path.relpath(__file__)).parent.parent.parent / "distribution" / "templates"
+)
 
 
 @lru_cache()
 def available_templates_specs() -> List[BuildConfig]:
-    import os
-
-    TEMPLATES_PATH = (
-        Path(os.path.relpath(__file__)).parent.parent.parent
-        / "distribution"
-        / "templates"
-    )
+    import yaml
 
     template_specs = []
     for p in TEMPLATES_PATH.rglob("*.yaml"):
@@ -88,6 +85,8 @@ class StackBuild(Subcommand):
         import json
         import os
 
+        import yaml
+
         from llama_stack.distribution.build import ApiInput, build_image, ImageType
 
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
@@ -128,6 +127,8 @@ class StackBuild(Subcommand):
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
 
+        import yaml
+
         from llama_stack.cli.table import print_table
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
@@ -155,6 +156,7 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
+        import yaml
         from llama_stack.distribution.distribution import Api, api_providers
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
         from prompt_toolkit import prompt
@@ -171,12 +173,21 @@ class StackBuild(Subcommand):
                     "You must specify a name for the build using --name when using a template"
                 )
                 return
-            # build_path =
+            build_path = TEMPLATES_PATH / f"{args.template}-build.yaml"
+            if not build_path.exists():
+                self.parser.error(
+                    f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
+                )
+                return
+            with open(build_path, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
+                build_config.name = args.name
+                self._run_stack_build_command_from_build_config(build_config)
+
+            return
 
         if not args.config and not args.template:
-            name = prompt(
-                "> Enter a name for your Llama Stack, this name will be used as paths to store configuration files, build conda environments and docker images (e.g. my-local-stack): "
-            )
+            name = prompt("> Enter a name for your Llama Stack (e.g. my-local-stack): ")
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
                 validator=Validator.from_callable(
@@ -237,6 +248,4 @@ class StackBuild(Subcommand):
             except Exception as e:
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
-            if args.name:
-                build_config.name = args.name
             self._run_stack_build_command_from_build_config(build_config)
