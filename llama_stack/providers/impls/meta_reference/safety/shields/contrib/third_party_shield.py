@@ -8,7 +8,7 @@ from typing import List
 
 from llama_models.llama3.api.datatypes import Message
 
-from llama_stack.safety.meta_reference.shields.base import (
+from llama_stack.providers.impls.meta_reference.safety.shields.base import (
     OnViolationAction,
     ShieldBase,
     ShieldResponse,
