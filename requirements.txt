@@ -3,6 +3,7 @@ fire
 httpx
 huggingface-hub
 llama-models>=0.0.18
+prompt-toolkit
 python-dotenv
 pydantic
 requests
