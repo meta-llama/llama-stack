@@ -149,7 +149,7 @@ The following command will allow you to see the available templates and their co
 llama stack build --list-templates
 ```
 
-![alt text](list-templates.png)
+![alt text](resources/list-templates.png)
 
 You may then pick a template to build your distribution with providers fitted to your liking.
 
