@@ -47,6 +47,8 @@ class StackRun(Subcommand):
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import pkg_resources
+        from llama_stack.distribution.build import ImageType
+        from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
         from llama_stack.distribution.utils.exec import run_with_pty
 
@@ -54,12 +56,22 @@ class StackRun(Subcommand):
             self.parser.error("Must specify a config file to run")
             return
 
-        path = args.config
-        config_file = Path(path)
+        config_file = Path(args.config)
+        if not config_file.exists() and not args.config.endswith(".yaml"):
+            # check if it's a build config saved to conda dir
+            config_file = Path(
+                BUILDS_BASE_DIR / ImageType.conda.value / f"{args.config}-run.yaml"
+            )
+
+        if not config_file.exists() and not args.config.endswith(".yaml"):
+            # check if it's a build config saved to docker dir
+            config_file = Path(
+                BUILDS_BASE_DIR / ImageType.docker.value / f"{args.config}-run.yaml"
+            )
 
         if not config_file.exists():
             self.parser.error(
-                f"File {str(config_file)} does not exist. Did you run `llama stack build`?"
+                f"File {str(config_file)} does not exist. Please run `llama stack build` and `llama stack configure <name>` to generate a run.yaml file"
             )
             return
 

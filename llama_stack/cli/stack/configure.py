@@ -9,7 +9,6 @@ import json
 from pathlib import Path
 
 import yaml
-from termcolor import cprint
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
@@ -50,9 +49,12 @@ class StackConfigure(Subcommand):
         import pkg_resources
 
         from llama_stack.distribution.build import ImageType
+        from termcolor import cprint
 
         docker_image = None
-        build_config_file = Path(args.config)
+        conda_dir = Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
+        build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
+
         if not build_config_file.exists():
             cprint(
                 f"Could not find {build_config_file}. Trying docker image name instead...",
@@ -79,8 +81,9 @@ class StackConfigure(Subcommand):
                 )
 
             build_name = docker_image.removeprefix("llamastack-")
+            saved_file = str(builds_dir / f"{build_name}-run.yaml")
             cprint(
-                f"YAML configuration has been written to {builds_dir / f'{build_name}-run.yaml'}",
+                f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
                 color="green",
             )
             return
@@ -97,6 +100,7 @@ class StackConfigure(Subcommand):
     ):
         from llama_stack.distribution.configure import configure_api_providers
         from llama_stack.distribution.utils.serialize import EnumEncoder
+        from termcolor import cprint
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
         if output_dir:
@@ -132,6 +136,11 @@ class StackConfigure(Subcommand):
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {run_config_file}",
+            f"> YAML configuration has been written to {run_config_file}.",
             color="blue",
+        )
+
+        cprint(
+            f"You can now run `llama stack run {image_name} --port PORT` or `llama stack run {run_config_file} --port PORT`",
+            color="green",
         )
