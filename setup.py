@@ -16,10 +16,10 @@ def read_requirements():
 
 setup(
     name="llama_stack",
-    version="0.0.16",
+    version="0.0.17",
     author="Meta Llama",
     author_email="llama-oss@meta.com",
-    description="Llama toolchain",
+    description="Llama Stack",
     entry_points={
         "console_scripts": [
             "llama = llama_stack.cli.llama:main",
