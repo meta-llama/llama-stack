@@ -30,7 +30,127 @@ components:
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
             - $ref: '#/components/schemas/FunctionCallToolDefinition'
+<<<<<<< HEAD
             - $ref: '#/components/schemas/MemoryToolDefinition'
+=======
+            - additionalProperties: false
+              properties:
+                input_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldDefinition'
+                  type: array
+                max_chunks:
+                  type: integer
+                max_tokens_in_context:
+                  type: integer
+                memory_bank_configs:
+                  items:
+                    oneOf:
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        type:
+                          const: vector
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        keys:
+                          items:
+                            type: string
+                          type: array
+                        type:
+                          const: keyvalue
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      - keys
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        type:
+                          const: keyword
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      type: object
+                    - additionalProperties: false
+                      properties:
+                        bank_id:
+                          type: string
+                        entities:
+                          items:
+                            type: string
+                          type: array
+                        type:
+                          const: graph
+                          type: string
+                      required:
+                      - bank_id
+                      - type
+                      - entities
+                      type: object
+                  type: array
+                output_shields:
+                  items:
+                    $ref: '#/components/schemas/ShieldDefinition'
+                  type: array
+                query_generator_config:
+                  oneOf:
+                  - additionalProperties: false
+                    properties:
+                      sep:
+                        type: string
+                      type:
+                        const: default
+                        type: string
+                    required:
+                    - type
+                    - sep
+                    type: object
+                  - additionalProperties: false
+                    properties:
+                      model:
+                        type: string
+                      template:
+                        type: string
+                      type:
+                        const: llm
+                        type: string
+                    required:
+                    - type
+                    - model
+                    - template
+                    type: object
+                  - additionalProperties: false
+                    properties:
+                      type:
+                        const: custom
+                        type: string
+                    required:
+                    - type
+                    type: object
+                type:
+                  const: memory
+                  type: string
+              required:
+              - type
+              - memory_bank_configs
+              - query_generator_config
+              - max_tokens_in_context
+              - max_chunks
+              type: object
+>>>>>>> 446914e (Add a special header per-client call to parser provider data)
           type: array
       required:
       - model
@@ -1074,6 +1194,7 @@ components:
       - memory_bank_ids
       - inserted_context
       type: object
+<<<<<<< HEAD
     MemoryToolDefinition:
       additionalProperties: false
       properties:
@@ -1192,6 +1313,8 @@ components:
       - max_tokens_in_context
       - max_chunks
       type: object
+=======
+>>>>>>> 446914e (Add a special header per-client call to parser provider data)
     MetricEvent:
       additionalProperties: false
       properties:
@@ -3469,6 +3592,7 @@ servers:
 tags:
 - name: BatchInference
 - name: PostTraining
+<<<<<<< HEAD
 - name: Inference
 - name: Safety
 - name: RewardScoring
@@ -3478,6 +3602,17 @@ tags:
 - name: Memory
 - name: Agents
 - name: Datasets
+=======
+- name: Memory
+- name: Evaluations
+- name: Datasets
+- name: SyntheticDataGeneration
+- name: RewardScoring
+- name: Agents
+- name: Safety
+- name: Inference
+- name: Telemetry
+>>>>>>> 446914e (Add a special header per-client call to parser provider data)
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3589,9 +3724,12 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
     />
   name: FunctionCallToolDefinition
+<<<<<<< HEAD
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
     />
   name: MemoryToolDefinition
+=======
+>>>>>>> 446914e (Add a special header per-client call to parser provider data)
 - description: <SchemaDefinition schemaRef="#/components/schemas/OnViolationAction"
     />
   name: OnViolationAction
@@ -3954,7 +4092,10 @@ x-tagGroups:
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
+<<<<<<< HEAD
   - MemoryToolDefinition
+=======
+>>>>>>> 446914e (Add a special header per-client call to parser provider data)
   - MetricEvent
   - OnViolationAction
   - OptimizerConfig
