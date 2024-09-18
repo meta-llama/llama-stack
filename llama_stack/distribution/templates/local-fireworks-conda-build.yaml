@@ -1,8 +1,8 @@
-name: local-conda-template
+name: local-fireworks-conda
 distribution_spec:
-  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  description: Use Fireworks.ai for running LLM inference
   providers:
-    inference: meta-reference
+    inference: remote::fireworks
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

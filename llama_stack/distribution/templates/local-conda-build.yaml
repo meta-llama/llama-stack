@@ -1,4 +1,4 @@
-name: local-docker-template
+name: local-conda
 distribution_spec:
   description: Use code from `llama_stack` itself to serve all llama stack APIs
   providers:
@@ -7,4 +7,4 @@ distribution_spec:
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference
-image_type: docker
+image_type: conda

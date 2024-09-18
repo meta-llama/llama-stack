@@ -1,4 +1,4 @@
-name: local-tgi-conda-template
+name: local-tgi-conda
 distribution_spec:
   description: Use Together.ai for running LLM inference
   providers:

@@ -133,7 +133,7 @@ class StackBuild(Subcommand):
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
         headers = [
-            "Distribution Type",
+            "Template Name",
             "Providers",
             "Image Type",
             "Description",
