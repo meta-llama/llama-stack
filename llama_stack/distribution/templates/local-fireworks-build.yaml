@@ -1,8 +1,8 @@
-name: local-tgi-conda
+name: local-fireworks
 distribution_spec:
-  description: Use Together.ai for running LLM inference
+  description: Use Fireworks.ai for running LLM inference
   providers:
-    inference: remote::together
+    inference: remote::fireworks
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

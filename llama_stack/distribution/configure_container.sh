@@ -28,4 +28,4 @@ set -x
 podman run -it \
   -v $host_build_dir:$container_build_dir \
   $docker_image \
-  llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir
+  llama stack configure --config ./llamastack-build.yaml --output-dir $container_build_dir

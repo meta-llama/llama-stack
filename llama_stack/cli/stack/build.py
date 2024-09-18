@@ -71,13 +71,12 @@ class StackBuild(Subcommand):
             help="Name of the Llama Stack build to override from template config. This name will be used as paths to store configuration files, build conda environments/docker images. If not specified, will use the name from the template config. ",
         )
 
-        # 1. llama stack build
-
-        # 2. llama stack build --list-templates
-
-        # 2. llama stack build --template <template_name> --name <name>
-
-        # 3. llama stack build --config <config_path>
+        self.parser.add_argument(
+            "--image-type",
+            type=str,
+            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use conda by default",
+            default="conda",
+        )
 
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
@@ -135,7 +134,6 @@ class StackBuild(Subcommand):
         headers = [
             "Template Name",
             "Providers",
-            "Image Type",
             "Description",
         ]
 
@@ -145,7 +143,6 @@ class StackBuild(Subcommand):
                 [
                     spec.name,
                     json.dumps(spec.distribution_spec.providers, indent=2),
-                    spec.image_type,
                     spec.distribution_spec.description,
                 ]
             )
@@ -182,6 +179,7 @@ class StackBuild(Subcommand):
             with open(build_path, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
                 build_config.name = args.name
+                build_config.image_type = args.image_type
                 self._run_stack_build_command_from_build_config(build_config)
 
             return

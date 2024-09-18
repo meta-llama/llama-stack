@@ -1,8 +1,8 @@
-name: local-ollama-conda
+name: local-together
 distribution_spec:
-  description: Like local, but use ollama for running LLM inference
+  description: Use Together.ai for running LLM inference
   providers:
-    inference: remote::ollama
+    inference: remote::together
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

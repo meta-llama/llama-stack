@@ -1,4 +1,4 @@
-name: local-conda
+name: local
 distribution_spec:
   description: Use code from `llama_stack` itself to serve all llama stack APIs
   providers:
