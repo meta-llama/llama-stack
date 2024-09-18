@@ -39,6 +39,8 @@ class MetaReferenceModelsImpl(Models):
         self.safety_api = safety_api
 
         self.models_list = []
+        model = get_model_id_from_api(self.inference_api)
+
         # TODO, make the inference route provider and use router provider to do the lookup dynamically
         if isinstance(
             self.inference_api,
