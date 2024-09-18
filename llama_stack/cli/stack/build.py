@@ -98,7 +98,7 @@ class StackBuild(Subcommand):
             )
 
             cprint(
-                f"Now, let's configure your Llama Stack distribution specs with API providers",
+                f"\n Now, let's configure your Llama Stack distribution specs with API providers",
                 color="green",
             )
 
@@ -113,7 +113,7 @@ class StackBuild(Subcommand):
                 providers[api.value] = api_provider
 
             description = prompt(
-                "> (Optional) Please enter a short description for your Llama Stack distribution: ",
+                "\n > (Optional) Please enter a short description for your Llama Stack distribution: ",
                 default="",
             )
 
