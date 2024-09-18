@@ -8,9 +8,21 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from functools import lru_cache
 from pathlib import Path
 
 import yaml
+
+
+@lru_cache()
+def available_templates_specs() -> List[BuildConfig]:
+    template_specs = []
+    for p in Path("llama_stack/distribution/templates/").rglob("*.yaml"):
+        with open(p, "r") as f:
+            build_config = BuildConfig(**yaml.safe_load(f))
+            template_specs.append(build_config)
+
+    return template_specs
 
 
 class StackBuild(Subcommand):
@@ -27,18 +39,40 @@ class StackBuild(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "config",
+            "--config",
             type=str,
             default=None,
-            nargs="*",
             help="Path to a config file to use for the build. You can find example configs in llama_stack/distribution/example_configs. If this argument is not provided, you will be prompted to enter information interactively",
+        )
+
+        self.parser.add_argument(
+            "--template",
+            type=str,
+            default=None,
+            help="Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates",
+        )
+
+        self.parser.add_argument(
+            "--list-templates",
+            type=bool,
+            default=False,
+            action=argparse.BooleanOptionalAction,
+            help="Show the available templates for building a Llama Stack distribution",
         )
 
         self.parser.add_argument(
             "--name",
             type=str,
-            help="Name of the llama stack build to override from template config",
+            help="Name of the Llama Stack build to override from template config. This name will be used as paths to store configuration files, build conda environments/docker images. If not specified, will use the name from the template config. ",
         )
+
+        # 1. llama stack build
+
+        # 2. llama stack build --list-templates
+
+        # 2. llama stack build --template <template_name> --name <name>
+
+        # 3. llama stack build --config <config_path>
 
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
@@ -83,6 +117,35 @@ class StackBuild(Subcommand):
             color="green",
         )
 
+    def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
+        import json
+
+        from llama_stack.cli.table import print_table
+
+        # eventually, this should query a registry at llama.meta.com/llamastack/distributions
+        headers = [
+            "Distribution Type",
+            "Providers",
+            "Image Type",
+            "Description",
+        ]
+
+        rows = []
+        for spec in available_templates_specs():
+            rows.append(
+                [
+                    spec.name,
+                    json.dumps(spec.distribution_spec.providers, indent=2),
+                    spec.image_type,
+                    spec.distribution_spec.description,
+                ]
+            )
+        print_table(
+            rows,
+            headers,
+            separate_rows=True,
+        )
+
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         from llama_stack.distribution.distribution import Api, api_providers
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -90,9 +153,13 @@ class StackBuild(Subcommand):
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
 
+        if args.list_templates:
+            self._run_template_list_cmd(args)
+            return
+
         if not args.config:
             name = prompt(
-                "> Enter a unique name for identifying your Llama Stack build (e.g. my-local-stack): "
+                "> Enter a name for your Llama Stack, this name will be used as paths to store configuration files, build conda environments and docker images (e.g. my-local-stack): "
             )
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",

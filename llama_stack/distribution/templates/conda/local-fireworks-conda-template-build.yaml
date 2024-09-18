@@ -1,8 +1,8 @@
-name: local-ollama-conda-example
+name: local-fireworks-conda-template
 distribution_spec:
-  description: Like local, but use ollama for running LLM inference
+  description: Use Fireworks.ai for running LLM inference
   providers:
-    inference: remote::ollama
+    inference: remote::fireworks
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

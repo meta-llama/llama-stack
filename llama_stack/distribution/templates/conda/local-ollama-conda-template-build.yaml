@@ -1,8 +1,8 @@
-name: local-conda-example
+name: local-ollama-conda-template
 distribution_spec:
-  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  description: Like local, but use ollama for running LLM inference
   providers:
-    inference: meta-reference
+    inference: remote::ollama
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

@@ -1,4 +1,4 @@
-name: local-tgi-conda-example
+name: local-tgi-conda-template
 distribution_spec:
   description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
   providers:
