@@ -11,7 +11,6 @@ import torch
 
 from llama_models.llama3.api.datatypes import Message
 from termcolor import cprint
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from .base import message_content_as_str, OnViolationAction, ShieldResponse, TextShield
 from llama_stack.apis.safety import *  # noqa: F403
@@ -61,6 +60,8 @@ class PromptGuardShield(TextShield):
             raise ValueError("Temperature must be greater than 0")
         self.device = "cuda"
         if PromptGuardShield._model_cache is None:
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
             # load model and tokenizer
             tokenizer = AutoTokenizer.from_pretrained(model_dir)
             model = AutoModelForSequenceClassification.from_pretrained(

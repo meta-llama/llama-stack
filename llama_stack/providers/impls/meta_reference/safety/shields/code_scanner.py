@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from codeshield.cs import CodeShield
 from termcolor import cprint
 
 from .base import ShieldResponse, TextShield
@@ -16,6 +15,8 @@ class CodeScannerShield(TextShield):
         return BuiltinShield.code_scanner_guard
 
     async def run_impl(self, text: str) -> ShieldResponse:
+        from codeshield.cs import CodeShield
+
         cprint(f"Running CodeScannerShield on {text[50:]}", color="magenta")
         result = await CodeShield.scan_code(text)
         if result.is_insecure:
