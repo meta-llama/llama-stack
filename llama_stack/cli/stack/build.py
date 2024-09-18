@@ -31,9 +31,10 @@ class StackBuild(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "--config",
+            "config",
             type=str,
-            help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/example_configs",
+            default=None,
+            help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/example_configs. If not defined, you will be prompted for entering wizard",
         )
 
         self.parser.add_argument(
