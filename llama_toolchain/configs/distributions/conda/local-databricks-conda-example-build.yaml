@@ -1,0 +1,10 @@
+name: local-databricks-conda-example
+distribution_spec:
+  description: Use Databricks for running LLM inference
+  providers:
+    inference: remote::databricks
+    memory: meta-reference-faiss
+    safety: meta-reference
+    agentic_system: meta-reference
+    telemetry: console
+image_type: conda

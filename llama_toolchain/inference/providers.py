@@ -66,4 +66,15 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_toolchain.inference.adapters.together.TogetherImplConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_id="databricks",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_toolchain.inference.adapters.databricks",
+                config_class="llama_toolchain.inference.adapters.together.DatabricksImplConfig",
+            ),
+        ),
     ]
