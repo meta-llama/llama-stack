@@ -17,12 +17,6 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 
 
-# These are hacks so we can re-use the `prompt_for_config` utility
-# This needs a bunch of work to be made very user friendly.
-class ReqApis(BaseModel):
-    apis_to_serve: List[str]
-
-
 def make_routing_entry_type(config_class: Any):
     class BaseModelWithConfig(BaseModel):
         routing_key: str
@@ -40,12 +34,7 @@ def configure_api_providers(
     print("Enter comma-separated list of APIs to serve:")
 
     apis = config.apis_to_serve or list(spec.providers.keys())
-    apis = [a for a in apis if a != "telemetry"]
-    req_apis = ReqApis(
-        apis_to_serve=apis,
-    )
-    req_apis = prompt_for_config(ReqApis, req_apis)
-    config.apis_to_serve = req_apis.apis_to_serve
+    config.apis_to_serve = [a for a in apis if a != "telemetry"]
     print("")
 
     apis = [v.value for v in stack_apis()]

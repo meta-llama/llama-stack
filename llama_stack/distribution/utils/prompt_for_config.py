@@ -258,7 +258,7 @@ def prompt_for_config(
 
                             except json.JSONDecodeError:
                                 print(
-                                    "Invalid JSON. Please enter a valid JSON-encoded list."
+                                    'Invalid JSON. Please enter a valid JSON-encoded list e.g., ["foo","bar"]'
                                 )
                                 continue
                             except ValueError as e:
