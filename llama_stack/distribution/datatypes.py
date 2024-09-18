@@ -92,6 +92,9 @@ Fully-qualified name of the module to import. The module is expected to have:
         default=None,
         description="Fully-qualified classname of the config for this provider",
     )
+    provider_data_validator: Optional[str] = Field(
+        default=None,
+    )
 
 
 @json_schema_type
@@ -114,6 +117,9 @@ Fully-qualified name of the module to import. The module is expected to have:
 
  - `get_provider_impl(config, deps)`: returns the local implementation
 """,
+    )
+    provider_data_validator: Optional[str] = Field(
+        default=None,
     )
 
 
@@ -158,6 +164,12 @@ as being "Llama Stack compatible"
         if self.adapter:
             return self.adapter.pip_packages
         return []
+
+    @property
+    def provider_data_validator(self) -> Optional[str]:
+        if self.adapter:
+            return self.adapter.provider_data_validator
+        return None
 
 
 # Can avoid this by using Pydantic computed_field

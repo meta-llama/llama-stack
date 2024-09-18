@@ -462,6 +462,15 @@ class Generator:
 
         # parameters passed anywhere
         parameters = path_parameters + query_parameters
+        parameters += [
+            Parameter(
+                name="X-LlamaStack-ProviderData",
+                in_=ParameterLocation.Header,
+                description="JSON-encoded provider data which will be made available to the adapter servicing the API",
+                required=False,
+                schema=self.schema_builder.classdef_to_ref(str),
+            )
+        ]
 
         # data passed in payload
         if op.request_params:

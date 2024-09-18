@@ -2362,7 +2362,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-18 19:27:39.955190"
+    \ draft and subject to change.\n                Generated at 2024-09-20 13:32:23.841908"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2370,7 +2370,14 @@ openapi: 3.1.0
 paths:
   /agents/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2388,7 +2395,14 @@ paths:
       - Agents
   /agents/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2402,7 +2416,14 @@ paths:
       - Agents
   /agents/session/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2420,7 +2441,14 @@ paths:
       - Agents
   /agents/session/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2443,6 +2471,13 @@ paths:
       - in: query
         name: session_id
         required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
         schema:
           type: string
       requestBody:
@@ -2478,6 +2513,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2489,7 +2531,14 @@ paths:
       - Agents
   /agents/turn/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2518,6 +2567,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2529,7 +2585,14 @@ paths:
       - Agents
   /batch_inference/chat_completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2547,7 +2610,14 @@ paths:
       - BatchInference
   /batch_inference/completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2565,7 +2635,14 @@ paths:
       - BatchInference
   /datasets/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2579,7 +2656,14 @@ paths:
       - Datasets
   /datasets/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2599,6 +2683,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2616,6 +2707,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2627,7 +2725,14 @@ paths:
       - Evaluations
   /evaluate/job/cancel:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2647,6 +2752,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2664,6 +2776,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2675,7 +2794,14 @@ paths:
       - Evaluations
   /evaluate/jobs:
     get:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2687,7 +2813,14 @@ paths:
       - Evaluations
   /evaluate/question_answering/:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2705,7 +2838,14 @@ paths:
       - Evaluations
   /evaluate/summarization/:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2723,7 +2863,14 @@ paths:
       - Evaluations
   /evaluate/text_generation/:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2741,7 +2888,14 @@ paths:
       - Evaluations
   /inference/chat_completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2761,7 +2915,14 @@ paths:
       - Inference
   /inference/completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2781,7 +2942,14 @@ paths:
       - Inference
   /inference/embeddings:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2799,7 +2967,14 @@ paths:
       - Inference
   /memory_bank/documents/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2819,6 +2994,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2836,7 +3018,14 @@ paths:
       - Memory
   /memory_bank/insert:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2850,7 +3039,14 @@ paths:
       - Memory
   /memory_bank/query:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2868,7 +3064,14 @@ paths:
       - Memory
   /memory_bank/update:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2882,7 +3085,14 @@ paths:
       - Memory
   /memory_banks/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2900,7 +3110,14 @@ paths:
       - Memory
   /memory_banks/drop:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2924,6 +3141,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2937,7 +3161,14 @@ paths:
       - Memory
   /memory_banks/list:
     get:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2955,6 +3186,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2966,7 +3204,14 @@ paths:
       - PostTraining
   /post_training/job/cancel:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2986,6 +3231,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3003,6 +3255,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3014,7 +3273,14 @@ paths:
       - PostTraining
   /post_training/jobs:
     get:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3026,7 +3292,14 @@ paths:
       - PostTraining
   /post_training/preference_optimize:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3044,7 +3317,14 @@ paths:
       - PostTraining
   /post_training/supervised_fine_tune:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3062,7 +3342,14 @@ paths:
       - PostTraining
   /reward_scoring/score:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3080,7 +3367,14 @@ paths:
       - RewardScoring
   /safety/run_shields:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3098,7 +3392,14 @@ paths:
       - Safety
   /synthetic_data_generation/generate:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3122,6 +3423,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3133,7 +3441,14 @@ paths:
       - Telemetry
   /telemetry/log_event:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3152,15 +3467,15 @@ servers:
 tags:
 - name: BatchInference
 - name: PostTraining
-- name: Inference
-- name: Safety
-- name: RewardScoring
-- name: Telemetry
-- name: Evaluations
-- name: SyntheticDataGeneration
 - name: Memory
-- name: Agents
+- name: Evaluations
 - name: Datasets
+- name: SyntheticDataGeneration
+- name: RewardScoring
+- name: Agents
+- name: Safety
+- name: Inference
+- name: Telemetry
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
