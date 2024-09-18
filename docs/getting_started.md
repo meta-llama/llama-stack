@@ -8,43 +8,61 @@ This guides allows you to quickly get started with building and running a Llama 
 - Quick 3 line command to build and start a LlamaStack server using our Meta Reference implementation for all API endpoints with `conda` as build type.
 
 **`llama stack build`**
+- You'll be prompted to enter build information interactively.
 ```
-llama stack build ./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml --name my-local-llama-stack
-...
-...
-Build spec configuration saved at ~/.llama/distributions/conda/my-local-llama-stack-build.yaml
+llama stack build
+
+> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): my-local-llama-stack
+> Enter the image type you want your distribution to be built with (docker or conda): conda
+
+ Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.
+> Enter the API provider for the inference API: (default=meta-reference): meta-reference
+> Enter the API provider for the safety API: (default=meta-reference): meta-reference
+> Enter the API provider for the agents API: (default=meta-reference): meta-reference
+> Enter the API provider for the memory API: (default=meta-reference): meta-reference
+> Enter the API provider for the telemetry API: (default=meta-reference): meta-reference
+
+ > (Optional) Enter a short description for your Llama Stack distribution:
+
+Build spec configuration saved at ~/.conda/envs/llamastack-my-local-llama-stack/my-local-llama-stack-build.yaml
 ```
 
 **`llama stack configure`**
 ```
-llama stack configure ~/.llama/distributions/conda/my-local-llama-stack-build.yaml
+llama stack configure my-local-llama-stack
 
-Configuring API: inference (meta-reference)
+Configuring APIs to serve...
+Enter comma-separated list of APIs to serve:
+
+Configuring API `inference`...
+
+Configuring provider `meta-reference`...
 Enter value for model (default: Meta-Llama3.1-8B-Instruct) (required):
-Enter value for quantization (optional):
+Do you want to configure quantization? (y/n): n
 Enter value for torch_seed (optional):
 Enter value for max_seq_len (required): 4096
 Enter value for max_batch_size (default: 1) (required):
+Configuring API `safety`...
 
-Configuring API: memory (meta-reference-faiss)
-
-Configuring API: safety (meta-reference)
+Configuring provider `meta-reference`...
 Do you want to configure llama_guard_shield? (y/n): n
 Do you want to configure prompt_guard_shield? (y/n): n
+Configuring API `agents`...
 
-Configuring API: agentic_system (meta-reference)
-Enter value for brave_search_api_key (optional):
-Enter value for bing_search_api_key (optional):
-Enter value for wolfram_api_key (optional):
+Configuring provider `meta-reference`...
+Configuring API `memory`...
 
-Configuring API: telemetry (console)
+Configuring provider `meta-reference`...
+Configuring API `telemetry`...
 
-YAML configuration has been written to ~/.llama/builds/conda/my-local-llama-stack-run.yaml
+Configuring provider `meta-reference`...
+> YAML configuration has been written to /home/xiyan/.llama/builds/conda/my-local-llama-stack-run.yaml.
+You can now run `llama stack run my-local-llama-stack --port PORT` or `llama stack run /home/xiyan/.llama/builds/conda/my-local-llama-stack-run.yaml --port PORT
 ```
 
 **`llama stack run`**
 ```
-llama stack run ~/.llama/builds/conda/my-local-llama-stack-run.yaml
+llama stack run my-local-llama-stack
 
 ...
 > initializing model parallel with size 1

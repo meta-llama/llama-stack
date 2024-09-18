@@ -14,7 +14,6 @@ from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
 from llama_stack.distribution.utils.exec import run_with_pty
-from termcolor import cprint
 from llama_stack.distribution.datatypes import *  # noqa: F403
 import os
 
@@ -50,6 +49,7 @@ class StackConfigure(Subcommand):
         import pkg_resources
 
         from llama_stack.distribution.build import ImageType
+        from termcolor import cprint
 
         docker_image = None
         conda_dir = Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"

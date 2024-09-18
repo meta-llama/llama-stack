@@ -11,8 +11,6 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
 import yaml
-from prompt_toolkit.validation import Validator
-from termcolor import cprint
 
 
 class StackBuild(Subcommand):
@@ -84,16 +82,18 @@ class StackBuild(Subcommand):
         from llama_stack.distribution.distribution import Api, api_providers
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
         from prompt_toolkit import prompt
+        from prompt_toolkit.validation import Validator
+        from termcolor import cprint
 
         if not args.config:
             name = prompt(
-                "> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): "
+                "> Enter a unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): "
             )
             image_type = prompt(
-                "> Enter the image type you want your distribution to be built with (docker or conda): ",
+                "> Enter the image type you want your distribution to be built as (docker or conda): ",
                 validator=Validator.from_callable(
                     lambda x: x in ["docker", "conda"],
-                    error_message="Invalid image type, please enter (conda|docker)",
+                    error_message="Invalid image type, please enter conda or docker",
                 ),
                 default="conda",
             )
