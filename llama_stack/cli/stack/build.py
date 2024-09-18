@@ -11,7 +11,6 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
 import yaml
-from llama_stack.distribution.datatypes import Api
 from prompt_toolkit import prompt
 from prompt_toolkit.validation import Validator
 from termcolor import cprint
@@ -35,7 +34,7 @@ class StackBuild(Subcommand):
             type=str,
             default=None,
             nargs="*",
-            help="Path to a config file to use for the build. You may find example configs in llama_stack/distribution/example_configs. If not defined, you will be prompted for entering wizard",
+            help="Path to a config file to use for the build. You can find example configs in llama_stack/distribution/example_configs. If this argument is not provided, you will be prompted to enter information interactively",
         )
 
         self.parser.add_argument(
@@ -87,7 +86,6 @@ class StackBuild(Subcommand):
         from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 
         if not args.config:
-            # build_config = prompt_for_config(BuildConfig, None)
             name = prompt(
                 "> Please enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): "
             )
@@ -101,7 +99,7 @@ class StackBuild(Subcommand):
             )
 
             cprint(
-                f"\n Now, let's configure your Llama Stack distribution specs with API providers",
+                f"\n Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.",
                 color="green",
             )
 
