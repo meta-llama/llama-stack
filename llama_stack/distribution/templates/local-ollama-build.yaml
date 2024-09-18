@@ -1,8 +1,8 @@
-name: local-tgi-conda-example
+name: local-ollama
 distribution_spec:
-  description: Use Together.ai for running LLM inference
+  description: Like local, but use ollama for running LLM inference
   providers:
-    inference: remote::together
+    inference: remote::ollama
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

@@ -6,10 +6,6 @@
 
 import argparse
 
-from pathlib import Path
-
-import yaml
-
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
@@ -46,7 +42,10 @@ class StackRun(Subcommand):
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
+        from pathlib import Path
+
         import pkg_resources
+        import yaml
         from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
