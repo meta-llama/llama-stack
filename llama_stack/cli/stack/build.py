@@ -87,10 +87,10 @@ class StackBuild(Subcommand):
 
         if not args.config:
             name = prompt(
-                "> Please enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): "
+                "> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): "
             )
             image_type = prompt(
-                "> Please enter the image type you want your distribution to be built with (docker or conda): ",
+                "> Enter the image type you want your distribution to be built with (docker or conda): ",
                 validator=Validator.from_callable(
                     lambda x: x in ["docker", "conda"],
                     error_message="Invalid image type, please enter (conda|docker)",
@@ -109,7 +109,7 @@ class StackBuild(Subcommand):
                 providers_for_api = all_providers[api]
 
                 api_provider = prompt(
-                    "> Please enter the API provider for the {} API: (default=meta-reference): ".format(
+                    "> Enter the API provider for the {} API: (default=meta-reference): ".format(
                         api.value
                     ),
                     validator=Validator.from_callable(
@@ -128,7 +128,7 @@ class StackBuild(Subcommand):
                 providers[api.value] = api_provider
 
             description = prompt(
-                "\n > (Optional) Please enter a short description for your Llama Stack distribution: ",
+                "\n > (Optional) Enter a short description for your Llama Stack distribution: ",
                 default="",
             )
 
