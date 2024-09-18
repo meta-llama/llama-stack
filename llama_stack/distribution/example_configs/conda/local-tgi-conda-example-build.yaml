@@ -1,0 +1,10 @@
+name: local-tgi-conda-example
+distribution_spec:
+  description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
+  providers:
+    inference: remote::tgi
+    memory: meta-reference
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference
+image_type: conda

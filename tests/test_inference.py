@@ -1,3 +1,9 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 # Run this test using the following command:
 # python -m unittest tests/test_inference.py
 
@@ -19,12 +25,12 @@ from llama_models.llama3.api.datatypes import (
     UserMessage,
 )
 
-from llama_toolchain.inference.api import (
+from llama_stack.inference.api import (
     ChatCompletionRequest,
     ChatCompletionResponseEventType,
 )
-from llama_toolchain.inference.meta_reference.config import MetaReferenceImplConfig
-from llama_toolchain.inference.meta_reference.inference import get_provider_impl
+from llama_stack.inference.meta_reference.config import MetaReferenceImplConfig
+from llama_stack.inference.meta_reference.inference import get_provider_impl
 
 
 MODEL = "Meta-Llama3.1-8B-Instruct"

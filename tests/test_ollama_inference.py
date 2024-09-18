@@ -1,3 +1,9 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 import textwrap
 import unittest
 from datetime import datetime
@@ -14,12 +20,12 @@ from llama_models.llama3.api.datatypes import (
     ToolResponseMessage,
     UserMessage,
 )
-from llama_toolchain.inference.api import (
+from llama_stack.inference.api import (
     ChatCompletionRequest,
     ChatCompletionResponseEventType,
 )
-from llama_toolchain.inference.ollama.config import OllamaImplConfig
-from llama_toolchain.inference.ollama.ollama import get_provider_impl
+from llama_stack.inference.ollama.config import OllamaImplConfig
+from llama_stack.inference.ollama.ollama import get_provider_impl
 
 
 class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):

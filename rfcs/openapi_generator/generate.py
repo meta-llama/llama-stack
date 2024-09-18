@@ -31,7 +31,7 @@ from .pyopenapi.utility import Specification
 
 schema_utils.json_schema_type = json_schema_type
 
-from llama_toolchain.stack import LlamaStack
+from llama_stack.apis.stack import LlamaStack
 
 
 # TODO: this should be fixed in the generator itself so it reads appropriate annotations

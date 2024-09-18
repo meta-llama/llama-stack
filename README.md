@@ -1,6 +1,6 @@
 # llama-stack
 
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-toolchain)](https://pypi.org/project/llama-toolchain/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
 
 This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
@@ -42,7 +42,7 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 
 ## Installation
 
-You can install this repository as a [package](https://pypi.org/project/llama-toolchain/) with `pip install llama-toolchain`
+You can install this repository as a [package](https://pypi.org/project/llama-stack/) with `pip install llama-stack`
 
 If you want to install from source:
 

@@ -1,8 +1,14 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 import unittest
 
 from llama_models.llama3.api import *  # noqa: F403
-from llama_toolchain.inference.api import *  # noqa: F403
-from llama_toolchain.inference.prepare_messages import prepare_messages
+from llama_stack.inference.api import *  # noqa: F403
+from llama_stack.inference.prepare_messages import prepare_messages
 
 MODEL = "Meta-Llama3.1-8B-Instruct"
 

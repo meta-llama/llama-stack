@@ -1,4 +1,5 @@
 include requirements.txt
-include llama_toolchain/data/*.yaml
-include llama_toolchain/core/*.sh
-include llama_toolchain/cli/scripts/*.sh
+include llama_stack/distribution/*.sh
+include llama_stack/cli/scripts/*.sh
+include llama_stack/distribution/example_configs/conda/*.yaml
+include llama_stack/distribution/example_configs/docker/*.yaml
