@@ -118,8 +118,14 @@ class StackBuild(Subcommand):
             f"Build spec configuration saved at {str(build_file_path)}",
             color="blue",
         )
+
+        configure_name = (
+            build_config.name
+            if build_config.image_type == "conda"
+            else (f"llamastack-{build_config.name}")
+        )
         cprint(
-            f"You may now run `llama stack configure {build_config.name}` or `llama stack configure {str(build_file_path)}`",
+            f"You may now run `llama stack configure {configure_name}` or `llama stack configure {str(build_file_path)}`",
             color="green",
         )
 
