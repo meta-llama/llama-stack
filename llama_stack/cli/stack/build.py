@@ -11,7 +11,6 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
 import yaml
-from prompt_toolkit import prompt
 from prompt_toolkit.validation import Validator
 from termcolor import cprint
 
@@ -84,7 +83,7 @@ class StackBuild(Subcommand):
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         from llama_stack.distribution.distribution import Api, api_providers
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
-        from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
+        from prompt_toolkit import prompt
 
         if not args.config:
             name = prompt(
