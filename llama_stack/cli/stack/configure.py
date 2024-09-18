@@ -100,6 +100,7 @@ class StackConfigure(Subcommand):
     ):
         from llama_stack.distribution.configure import configure_api_providers
         from llama_stack.distribution.utils.serialize import EnumEncoder
+        from termcolor import cprint
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
         if output_dir:

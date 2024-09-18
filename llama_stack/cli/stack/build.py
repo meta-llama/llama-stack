@@ -76,6 +76,10 @@ class StackBuild(Subcommand):
 
         cprint(
             f"Build spec configuration saved at {str(build_file_path)}",
+            color="blue",
+        )
+        cprint(
+            f"You may now run `llama stack configure {build_config.name}` or `llama stack configure {str(build_file_path)}`",
             color="green",
         )
 
