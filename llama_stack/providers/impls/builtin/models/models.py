@@ -17,8 +17,13 @@ from llama_models.sku_list import resolve_model
 
 from .config import BuiltinImplConfig
 
-DUMMY_MODELS_SPEC = ModelSpec(
-    llama_model_metadata=resolve_model("Meta-Llama3.1-8B"),
+DUMMY_MODELS_SPEC_1 = ModelSpec(
+    llama_model_metadata=resolve_model("Llama-Guard-3-8B"),
+    providers_spec={"safety": {"provider_type": "meta-reference"}},
+)
+
+DUMMY_MODELS_SPEC_2 = ModelSpec(
+    llama_model_metadata=resolve_model("Meta-Llama3.1-8B-Instruct"),
     providers_spec={"inference": {"provider_type": "meta-reference"}},
 )
 
@@ -29,16 +34,21 @@ class BuiltinModelsImpl(Models):
         config: BuiltinImplConfig,
     ) -> None:
         self.config = config
-        self.models_list = [DUMMY_MODELS_SPEC]
+        self.models = {
+            x.llama_model_metadata.core_model_id.value: x
+            for x in [DUMMY_MODELS_SPEC_1, DUMMY_MODELS_SPEC_2]
+        }
 
     async def initialize(self) -> None:
         pass
 
     async def list_models(self) -> ModelsListResponse:
-        return ModelsListResponse(models_list=self.models_list)
+        return ModelsListResponse(models_list=list(self.models.values()))
 
     async def get_model(self, core_model_id: str) -> ModelsGetResponse:
-        return ModelsGetResponse(core_model_spec=DUMMY_MODELS_SPEC)
+        if core_model_id in self.models:
+            return ModelsGetResponse(core_model_spec=self.models[core_model_id])
+        raise ValueError(f"Cannot find {core_model_id} in model registry")
 
     async def register_model(
         self, model_id: str, api: str, provider_spec: Dict[str, str]
