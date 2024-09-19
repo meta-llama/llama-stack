@@ -191,7 +191,13 @@ class StackBuild(Subcommand):
             return
 
         if not args.config and not args.template:
-            name = prompt("> Enter a name for your Llama Stack (e.g. my-local-stack): ")
+            if not args.name:
+                name = prompt(
+                    "> Enter a name for your Llama Stack (e.g. my-local-stack): "
+                )
+            else:
+                name = args.name
+
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
                 validator=Validator.from_callable(
