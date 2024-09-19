@@ -13,9 +13,9 @@ from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
-from termcolor import cprint
 
 from llama_stack.distribution.datatypes import RemoteProviderConfig
+from termcolor import cprint
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.providers.utils.memory.file_utils import data_url_from_file
@@ -151,7 +151,7 @@ async def run_main(host: str, port: int, stream: bool):
     ]
 
     this_dir = os.path.dirname(__file__)
-    files = [Path(this_dir).parent.parent / "CONTRIBUTING.md"]
+    files = [Path(this_dir).parent.parent.parent / "CONTRIBUTING.md"]
     documents += [
         MemoryBankDocument(
             document_id=f"num-{i}",
