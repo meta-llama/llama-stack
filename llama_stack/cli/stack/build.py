@@ -212,7 +212,7 @@ class StackBuild(Subcommand):
                 providers_for_api = all_providers[api]
 
                 api_provider = prompt(
-                    "> Enter the API provider for the {} API: (default=meta-reference): ".format(
+                    "> Enter provider for the {} API: (default=meta-reference): ".format(
                         api.value
                     ),
                     validator=Validator.from_callable(
