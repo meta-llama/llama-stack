@@ -6,6 +6,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+DOCKER_BINARY=${DOCKER_BINARY:-docker}
+DOCKER_OPTS=${DOCKER_OPTS:-}
+
 set -euo pipefail
 
 error_handler() {
@@ -25,7 +28,7 @@ host_build_dir="$2"
 container_build_dir="/app/builds"
 
 set -x
-podman run -it \
+$DOCKER_BINARY run $DOCKER_OPTS -it \
   -v $host_build_dir:$container_build_dir \
   $docker_image \
   llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir
