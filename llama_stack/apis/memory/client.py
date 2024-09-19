@@ -13,12 +13,12 @@ from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
-
-from llama_stack.distribution.datatypes import RemoteProviderConfig
 from termcolor import cprint
 
-from .memory import *  # noqa: F403
-from .common.file_utils import data_url_from_file
+from llama_stack.distribution.datatypes import RemoteProviderConfig
+
+from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.providers.utils.memory.file_utils import data_url_from_file
 
 
 async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Memory:

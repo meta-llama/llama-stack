@@ -53,46 +53,61 @@ class StackConfigure(Subcommand):
         from termcolor import cprint
 
         docker_image = None
+        build_config_file = Path(args.config)
+
+        if build_config_file.exists():
+            with open(build_config_file, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
+                self._configure_llama_distribution(build_config, args.output_dir)
+            return
+
+        # if we get here, we need to try to find the conda build config file
+        cprint(
+            f"Could not find {build_config_file}. Trying conda build name instead...",
+            color="green",
+        )
         conda_dir = Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
         build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
-        if not build_config_file.exists():
-            cprint(
-                f"Could not find {build_config_file}. Trying docker image name instead...",
-                color="green",
-            )
-            docker_image = args.config
+        if build_config_file.exists():
+            with open(build_config_file, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
 
-            builds_dir = BUILDS_BASE_DIR / ImageType.docker.value
-            if args.output_dir:
-                builds_dir = Path(output_dir)
-            os.makedirs(builds_dir, exist_ok=True)
+            self._configure_llama_distribution(build_config, args.output_dir)
+            return
 
-            script = pkg_resources.resource_filename(
-                "llama_stack", "distribution/configure_container.sh"
-            )
-            script_args = [script, docker_image, str(builds_dir)]
+        # if we get here, we need to try to find the docker image
+        cprint(
+            f"Could not find {build_config_file}. Trying docker image name instead...",
+            color="green",
+        )
+        docker_image = args.config
+        builds_dir = BUILDS_BASE_DIR / ImageType.docker.value
+        if args.output_dir:
+            builds_dir = Path(output_dir)
+        os.makedirs(builds_dir, exist_ok=True)
 
-            return_code = run_with_pty(script_args)
+        script = pkg_resources.resource_filename(
+            "llama_stack", "distribution/configure_container.sh"
+        )
+        script_args = [script, docker_image, str(builds_dir)]
 
-            # we have regenerated the build config file with script, now check if it exists
-            if return_code != 0:
-                self.parser.error(
-                    f"Can not find {build_config_file}. Please run llama stack build first or check if docker image exists"
-                )
+        return_code = run_with_pty(script_args)
 
-            build_name = docker_image.removeprefix("llamastack-")
-            saved_file = str(builds_dir / f"{build_name}-run.yaml")
-            cprint(
-                f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
-                color="green",
+        # we have regenerated the build config file with script, now check if it exists
+        if return_code != 0:
+            self.parser.error(
+                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build first`. "
             )
             return
 
-        with open(build_config_file, "r") as f:
-            build_config = BuildConfig(**yaml.safe_load(f))
-
-        self._configure_llama_distribution(build_config, args.output_dir)
+        build_name = docker_image.removeprefix("llamastack-")
+        saved_file = str(builds_dir / f"{build_name}-run.yaml")
+        cprint(
+            f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
+            color="green",
+        )
+        return
 
     def _configure_llama_distribution(
         self,
