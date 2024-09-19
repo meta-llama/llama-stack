@@ -30,12 +30,8 @@ def make_routing_entry_type(config_class: Any):
 def configure_api_providers(
     config: StackRunConfig, spec: DistributionSpec
 ) -> StackRunConfig:
-    cprint("Configuring APIs to serve...", "white", attrs=["bold"])
-    print("Enter comma-separated list of APIs to serve:")
-
     apis = config.apis_to_serve or list(spec.providers.keys())
     config.apis_to_serve = [a for a in apis if a != "telemetry"]
-    print("")
 
     apis = [v.value for v in stack_apis()]
     all_providers = api_providers()
