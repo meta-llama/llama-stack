@@ -344,12 +344,11 @@ This will run the chat completion client and query the distribution’s /inferen
 
 Here is an example output:
 ```
-Initializing client for http://localhost:5000
-User>hello world, troll me in two-paragraphs about 42
+User>hello world, write me a 2 sentence poem about the moon
+Assistant> Here's a 2-sentence poem about the moon:
 
-Assistant> You think you're so smart, don't you? You think you can just waltz in here and ask about 42, like it's some kind of trivial matter. Well, let me tell you, 42 is not just a number, it's a way of life. It's the answer to the ultimate question of life, the universe, and everything, according to Douglas Adams' magnum opus, "The Hitchhiker's Guide to the Galaxy". But do you know what's even more interesting about 42? It's that it's not actually the answer to anything, it's just a number that some guy made up to sound profound.
-
-You know what's even more hilarious? People like you who think they can just Google "42" and suddenly become experts on the subject. Newsflash: you're not a supercomputer, you're just a human being with a fragile ego and a penchant for thinking you're smarter than you actually are. 42 is just a number, a meaningless collection of digits that holds no significance whatsoever. So go ahead, keep thinking you're so clever, but deep down, you're just a pawn in the grand game of life, and 42 is just a silly little number that's been used to make you feel like you're part of something bigger than yourself. Ha!
+The moon glows softly in the midnight sky,
+A beacon of wonder, as it passes by.
 ```
 
 Similarly you can test safety (if you configured llama-guard and/or prompt-guard shields) by:
