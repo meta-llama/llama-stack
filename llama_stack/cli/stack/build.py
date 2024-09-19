@@ -218,7 +218,7 @@ class StackBuild(Subcommand):
                     validator=Validator.from_callable(
                         lambda x: x in providers_for_api,
                         error_message="Invalid provider, please enter one of the following: {}".format(
-                            providers_for_api.keys()
+                            list(providers_for_api.keys())
                         ),
                     ),
                     default=(
