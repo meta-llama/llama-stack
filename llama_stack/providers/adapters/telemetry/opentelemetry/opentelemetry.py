@@ -23,6 +23,21 @@ from llama_stack.apis.telemetry import *  # noqa: F403
 from .config import OpenTelemetryConfig
 
 
+def string_to_trace_id(s: str) -> int:
+    # Convert the string to bytes and then to an integer
+    return int.from_bytes(s.encode(), byteorder="big", signed=False)
+
+
+def string_to_span_id(s: str) -> int:
+    # Use only the first 8 bytes (64 bits) for span ID
+    return int.from_bytes(s.encode()[:8], byteorder="big", signed=False)
+
+
+def is_tracing_enabled(tracer):
+    with tracer.start_as_current_span("check_tracing") as span:
+        return span.is_recording()
+
+
 class OpenTelemetryAdapter(Telemetry):
     def __init__(self, config: OpenTelemetryConfig):
         self.config = config
@@ -92,23 +107,24 @@ class OpenTelemetryAdapter(Telemetry):
             context = trace.set_span_in_context(
                 trace.NonRecordingSpan(
                     trace.SpanContext(
-                        trace_id=int(event.trace_id, 16),
-                        span_id=int(event.span_id, 16),
+                        trace_id=string_to_trace_id(event.trace_id),
+                        span_id=string_to_span_id(event.span_id),
                         is_remote=True,
                     )
                 )
             )
             span = self.tracer.start_span(
                 name=event.payload.name,
-                context=context,
                 kind=trace.SpanKind.INTERNAL,
+                context=context,
                 attributes=event.attributes,
             )
+
             if event.payload.parent_span_id:
                 span.set_parent(
                     trace.SpanContext(
-                        trace_id=int(event.trace_id, 16),
-                        span_id=int(event.payload.parent_span_id, 16),
+                        trace_id=string_to_trace_id(event.trace_id),
+                        span_id=string_to_span_id(event.payload.parent_span_id),
                         is_remote=True,
                     )
                 )

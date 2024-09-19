@@ -6,18 +6,19 @@
 
 import asyncio
 import json
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, List, Optional
 
 import fire
 import httpx
 from pydantic import BaseModel
+
+from llama_models.llama3.api import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
 from termcolor import cprint
 
 from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from .event_logger import EventLogger
-
-from llama_stack.apis.inference import *  # noqa: F403
 
 
 async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Inference:

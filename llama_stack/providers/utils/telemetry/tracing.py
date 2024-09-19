@@ -223,13 +223,11 @@ class SpanContextManager:
     def __call__(self, func: Callable):
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
-            print("sync wrapper")
             with self:
                 return func(*args, **kwargs)
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
-            print("async wrapper")
             async with self:
                 return await func(*args, **kwargs)
 
