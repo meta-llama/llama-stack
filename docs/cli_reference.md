@@ -262,7 +262,7 @@ These commands can help understand the model interface and how prompts / message
 
 - Please see our [Getting Started](getting_started.md) guide for details.
 
-### Step 3.1. Build
+### Step 3.1 Build
 In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `8b-instruct`)
 - `image_type`: our build image type (`conda | docker`)
@@ -271,74 +271,94 @@ In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instru
   - `providers`: specifies the underlying implementation for serving each API endpoint
   - `image_type`: `conda` | `docker` to specify whether to build the distribution in the form of Docker image or Conda environment.
 
-#### Build a local distribution with conda
-The following command and specifications allows you to get started with building.
-```
-llama stack build <path/to/config>
-```
-- You will be required to pass in a file path to the build.config file (e.g. `./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml`). We provide some example build config files for configuring different types of distributions in the `./llama_stack/distribution/example_configs/` folder.
 
-The file will be of the contents
-```
-$ cat ./llama_stack/distribution/example_configs/conda/local-conda-example-build.yaml
+At the end of build command, we will generate `<name>-build.yaml` file storing the build configurations.
 
-name: 8b-instruct
+After this step is complete, a file named `<name>-build.yaml` will be generated and saved at the output file path specified at the end of the command.
+
+#### Building from scratch
+- For a new user, we could start off with running `llama stack build` which will allow you to a interactively enter wizard where you will be prompted to enter build configurations.
+```
+llama stack build
+```
+
+Running the command above will allow you to fill in the configuration to build your Llama Stack distribution, you will see the following outputs.
+
+```
+> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): my-local-llama-stack
+> Enter the image type you want your distribution to be built with (docker or conda): conda
+
+ Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.
+> Enter the API provider for the inference API: (default=meta-reference): meta-reference
+> Enter the API provider for the safety API: (default=meta-reference): meta-reference
+> Enter the API provider for the agents API: (default=meta-reference): meta-reference
+> Enter the API provider for the memory API: (default=meta-reference): meta-reference
+> Enter the API provider for the telemetry API: (default=meta-reference): meta-reference
+
+ > (Optional) Enter a short description for your Llama Stack distribution:
+
+Build spec configuration saved at ~/.conda/envs/llamastack-my-local-llama-stack/my-local-llama-stack-build.yaml
+```
+
+#### Building from templates
+- To build from alternative API providers, we provide distribution templates for users to get started building a distribution backed by different providers.
+
+The following command will allow you to see the available templates and their corresponding providers.
+```
+llama stack build --list-templates
+```
+
+![alt text](resources/list-templates.png)
+
+You may then pick a template to build your distribution with providers fitted to your liking.
+
+```
+llama stack build --template local-tgi --name my-tgi-stack
+```
+
+```
+$ llama stack build --template local-tgi --name my-tgi-stack
+...
+...
+Build spec configuration saved at ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml
+You may now run `llama stack configure my-tgi-stack` or `llama stack configure ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml`
+```
+
+#### Building from config file
+- In addition to templates, you may customize the build to your liking through editing config files and build from config files with the following command.
+
+- The config file will be of contents like the ones in `llama_stack/distributions/templates/`.
+
+```
+$ cat llama_stack/distribution/templates/local-ollama-build.yaml
+
+name: local-ollama
 distribution_spec:
-  distribution_type: local
-  description: Use code from `llama_stack` itself to serve all llama stack APIs
-  docker_image: null
+  description: Like local, but use ollama for running LLM inference
   providers:
-    inference: meta-reference
-    memory: meta-reference-faiss
+    inference: remote::ollama
+    memory: meta-reference
     safety: meta-reference
-    agentic_system: meta-reference
-    telemetry: console
+    agents: meta-reference
+    telemetry: meta-reference
 image_type: conda
 ```
 
-You may run the `llama stack build` command to generate your distribution with `--name` to override the name for your distribution.
 ```
-$ llama stack build ~/.llama/distributions/conda/8b-instruct-build.yaml --name 8b-instruct
-...
-...
-Build spec configuration saved at ~/.llama/distributions/conda/8b-instruct-build.yaml
+llama stack build --config llama_stack/distribution/templates/local-ollama-build.yaml
 ```
-
-After this step is complete, a file named `8b-instruct-build.yaml` will be generated and saved at `~/.llama/distributions/conda/8b-instruct-build.yaml`.
-
-
-#### How to build distribution with different API providers using configs
-To specify a different API provider, we can change the `distribution_spec` in our `<name>-build.yaml` config. For example, the following build spec allows you to build a distribution using TGI as the inference API provider.
-
-```
-$ cat ./llama_stack/distribution/example_configs/conda/local-tgi-conda-example-build.yaml
-
-name: local-tgi-conda-example
-distribution_spec:
-  description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
-  docker_image: null
-  providers:
-    inference: remote::tgi
-    memory: meta-reference-faiss
-    safety: meta-reference
-    agentic_system: meta-reference
-    telemetry: console
-image_type: conda
-```
-
-The following command allows you to build a distribution with TGI as the inference API provider, with the name `tgi`.
-```
-llama stack build --config ./llama_stack/distribution/example_configs/conda/local-tgi-conda-example-build.yaml --name tgi
-```
-
-We provide some example build configs to help you get started with building with different API providers.
 
 #### How to build distribution with Docker image
-To build a docker image, simply change the `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build --config <name>-build.yaml`.
+
+To build a docker image, you may start off from a template and use the `--image-type docker` flag to specify `docker` as the build image type.
 
 ```
-$ cat ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml
+llama stack build --template local --image-type docker --name docker-0
+```
 
+Alternatively, you may use a config file and set `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build <name>-build.yaml`. The `<name>-build.yaml` will be of contents like:
+
+```
 name: local-docker-example
 distribution_spec:
   description: Use code from `llama_stack` itself to serve all llama stack APIs
@@ -352,22 +372,23 @@ distribution_spec:
 image_type: docker
 ```
 
-The following command allows you to build a Docker image with the name `docker-local`
+The following command allows you to build a Docker image with the name `<name>`
 ```
-llama stack build --config ./llama_stack/distribution/example_configs/docker/local-docker-example-build.yaml --name docker-local
+llama stack build --config <name>-build.yaml
 
 Dockerfile created successfully in /tmp/tmp.I0ifS2c46A/DockerfileFROM python:3.10-slim
 WORKDIR /app
 ...
 ...
 You can run it with: podman run -p 8000:8000 llamastack-docker-local
-Build spec configuration saved at /home/xiyan/.llama/distributions/docker/docker-local-build.yaml
+Build spec configuration saved at ~/.llama/distributions/docker/docker-local-build.yaml
 ```
 
-### Step 3.2. Configure
+
+### Step 3.2 Configure
 After our distribution is built (either in form of docker or conda environment), we will run the following command to
 ```
-llama stack configure [<path/to/name.build.yaml> | <docker-image-name>]
+llama stack configure [ <name> | <docker-image-name> | <path/to/name.build.yaml>]
 ```
 - For `conda` environments: <path/to/name.build.yaml> would be the generated build spec saved from Step 1.
 - For `docker` images downloaded from Dockerhub, you could also use <docker-image-name> as the argument.
@@ -418,17 +439,7 @@ For how these configurations are stored as yaml, checkout the file printed at th
 Note that all configurations as well as models are stored in `~/.llama`
 
 
-#### Step 3.2.1 API Keys for Tools
-
-API key configuration for the Agentic System will be asked by the `llama stack build` script when you install a Llama Stack distribution.
-
-Tools that the model supports and which need API Keys --
-- Brave for web search (https://api.search.brave.com/register)
-- Wolfram for math operations (https://developer.wolframalpha.com/)
-
-> **Tip** If you do not have API keys, you can still run the app without model having access to the tools.
-
-### Step 3.3. Run
+### Step 3.3 Run
 Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
 
 ```
@@ -469,10 +480,13 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
 > [!NOTE]
-> Configuration is in `~/.llama/builds/local/conda/8b-instruct.yaml`. Feel free to increase `max_seq_len`.
+> Configuration is in `~/.llama/builds/local/conda/8b-instruct-run.yaml`. Feel free to increase `max_seq_len`.
 
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
+
+> [!TIP]
+> You might need to use the flag `--disable-ipv6` to  Disable IPv6 support
 
 This server is running a Llama model locally.
 
