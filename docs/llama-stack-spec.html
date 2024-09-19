@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-17 12:55:45.538053"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-18 19:27:39.955190"
     },
     "servers": [
         {
@@ -2587,6 +2587,9 @@
                         "type": "string",
                         "const": "brave_search"
                     },
+                    "api_key": {
+                        "type": "string"
+                    },
                     "engine": {
                         "type": "string",
                         "enum": [
@@ -2601,6 +2604,7 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
+                    "api_key",
                     "engine"
                 ]
             },
@@ -2663,13 +2667,17 @@
                         "type": "string",
                         "const": "wolfram_alpha"
                     },
+                    "api_key": {
+                        "type": "string"
+                    },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type"
+                    "type",
+                    "api_key"
                 ]
             },
             "CreateAgentRequest": {
@@ -5141,25 +5149,7 @@
     ],
     "tags": [
         {
-            "name": "Agents"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Evaluations"
+            "name": "BatchInference"
         },
         {
             "name": "PostTraining"
@@ -5168,10 +5158,28 @@
             "name": "Inference"
         },
         {
-            "name": "BatchInference"
+            "name": "Safety"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Memory"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "Datasets"
         },
         {
             "name": "BuiltinTool",

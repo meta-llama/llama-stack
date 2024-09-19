@@ -1651,6 +1651,8 @@ components:
     SearchToolDefinition:
       additionalProperties: false
       properties:
+        api_key:
+          type: string
         engine:
           enum:
           - bing
@@ -1671,6 +1673,7 @@ components:
           type: string
       required:
       - type
+      - api_key
       - engine
       type: object
     Session:
@@ -2336,6 +2339,8 @@ components:
     WolframAlphaToolDefinition:
       additionalProperties: false
       properties:
+        api_key:
+          type: string
         input_shields:
           items:
             $ref: '#/components/schemas/ShieldDefinition'
@@ -2351,12 +2356,13 @@ components:
           type: string
       required:
       - type
+      - api_key
       type: object
 info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-17 12:55:45.538053"
+    \ draft and subject to change.\n                Generated at 2024-09-18 19:27:39.955190"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3144,17 +3150,17 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Agents
-- name: Safety
-- name: SyntheticDataGeneration
-- name: Telemetry
-- name: Datasets
-- name: RewardScoring
-- name: Evaluations
+- name: BatchInference
 - name: PostTraining
 - name: Inference
-- name: BatchInference
+- name: Safety
+- name: RewardScoring
+- name: Telemetry
+- name: Evaluations
+- name: SyntheticDataGeneration
 - name: Memory
+- name: Agents
+- name: Datasets
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"

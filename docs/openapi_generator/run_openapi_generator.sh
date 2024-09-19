@@ -28,4 +28,4 @@ if [ ${#missing_packages[@]} -ne 0 ]; then
     exit 1
 fi
 
-PYTHONPATH=$PYTHONPATH:../.. python -m rfcs.openapi_generator.generate $*
+PYTHONPATH=$PYTHONPATH:../.. python -m docs.openapi_generator.generate $*
