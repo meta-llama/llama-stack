@@ -98,7 +98,13 @@ class OllamaInferenceAdapter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        cprint("!! calling remote ollama !!", "red")
+        cprint("!! calling remote ollama {}, url={}!!".format(model, self.url), "red")
+        yield ChatCompletionResponseStreamChunk(
+            event=ChatCompletionResponseEvent(
+                event_type=ChatCompletionResponseEventType.start,
+                delta="",
+            )
+        )
         # request = ChatCompletionRequest(
         #     model=model,
         #     messages=messages,

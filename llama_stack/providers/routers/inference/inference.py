@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Tuple
 
 from llama_stack.distribution.datatypes import Api
 from llama_stack.apis.inference import *  # noqa: F403
@@ -46,3 +46,14 @@ class InferenceRouterImpl(Inference):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         print("router chat_completion")
+        async for chunk in self.providers[model].chat_completion(
+            model=model,
+            messages=messages,
+            sampling_params=sampling_params,
+            tools=tools,
+            tool_choice=tool_choice,
+            tool_prompt_format=tool_prompt_format,
+            stream=stream,
+            logprobs=logprobs,
+        ):
+            yield chunk
