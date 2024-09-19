@@ -114,4 +114,4 @@ set +x
 echo "You can run it with: podman run -p 8000:8000 $image_name"
 
 echo "Checking image builds..."
-podman run -it $image_name cat llamastack-build.yaml
+$DOCKER_BINARY run $DOCKER_OPTS -it $image_name cat llamastack-build.yaml

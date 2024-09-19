@@ -6,6 +6,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+DOCKER_BINARY=${DOCKER_BINARY:-docker}
+DOCKER_OPTS=${DOCKER_OPTS:-}
+
 set -euo pipefail
 
 RED='\033[0;31m'
@@ -34,7 +37,7 @@ port="$1"
 shift
 
 set -x
-podman run -it \
+$DOCKER_BINARY run $DOCKER_OPTS -it \
   -p $port:$port \
   -v "$yaml_config:/app/config.yaml" \
   $docker_image \

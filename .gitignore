@@ -4,3 +4,4 @@ dist
 *.egg-info
 dev_requirements.txt
 build
+.DS_Store
