@@ -11,6 +11,6 @@ THIS_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 set -euo pipefail
 set -x
 
-stack_dir=$(dirname $THIS_DIR)
-models_dir=$(dirname $(dirname $stack_dir))/llama-models
+stack_dir=$(dirname $(dirname $THIS_DIR))
+models_dir=$(dirname $stack_dir)/llama-models
 PYTHONPATH=$models_dir:$stack_dir pytest -p no:warnings --asyncio-mode auto --tb=short

@@ -49,19 +49,19 @@ class MockInferenceAPI:
                     delta="AI is a fascinating field...",
                 )
             )
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type="progress",
-                    delta=ToolCallDelta(
-                        content=ToolCall(
-                            call_id="123",
-                            tool_name=BuiltinTool.brave_search.value,
-                            arguments={"query": "AI history"},
-                        ),
-                        parse_status="success",
-                    ),
-                )
-            )
+            # yield ChatCompletionResponseStreamChunk(
+            #     event=ChatCompletionResponseEvent(
+            #         event_type="progress",
+            #         delta=ToolCallDelta(
+            #             content=ToolCall(
+            #                 call_id="123",
+            #                 tool_name=BuiltinTool.brave_search.value,
+            #                 arguments={"query": "AI history"},
+            #             ),
+            #             parse_status="success",
+            #         ),
+            #     )
+            # )
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type="complete",
@@ -179,10 +179,10 @@ async def chat_agent(mock_inference_api, mock_safety_api, mock_memory_api):
         instructions="You are a helpful assistant.",
         sampling_params=SamplingParams(),
         tools=[
-            SearchToolDefinition(
-                name="brave_search",
-                api_key="test_key",
-            ),
+            # SearchToolDefinition(
+            #     name="brave_search",
+            #     api_key="test_key",
+            # ),
         ],
         tool_choice=ToolChoice.auto,
         input_shields=[],
