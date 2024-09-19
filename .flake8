@@ -14,6 +14,8 @@ ignore =
     # shebang has extra meaning in fbcode lints, so I think it's not worth trying
     # to line this up with executable bit
     EXE001,
+    # random naming hints don't need
+    N802,
     # these ignores are from flake8-bugbear; please fix!
     B007,B008,B950
 optional-ascii-coding = True

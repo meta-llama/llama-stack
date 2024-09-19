@@ -43,12 +43,10 @@ class ShieldRunnerMixin:
         if len(messages) > 0 and messages[0].role != Role.user.value:
             messages[0] = UserMessage(content=messages[0].content)
 
-        res = await self.safety_api.run_shields(
+        results = await self.safety_api.run_shields(
             messages=messages,
             shields=shields,
         )
-
-        results = res.responses
         for shield, r in zip(shields, results):
             if r.is_violation:
                 if shield.on_violation_action == OnViolationAction.RAISE:

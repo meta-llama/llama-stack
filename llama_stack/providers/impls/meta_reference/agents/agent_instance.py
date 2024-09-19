@@ -619,6 +619,7 @@ class ChatAgent(ShieldRunnerMixin):
             else:
                 return True
 
+        print(f"{enabled_tools=}")
         return AgentTool.memory.value in enabled_tools
 
     def _memory_tool_definition(self) -> Optional[MemoryToolDefinition]:
