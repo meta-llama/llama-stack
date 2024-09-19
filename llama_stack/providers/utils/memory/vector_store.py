@@ -102,6 +102,15 @@ async def content_from_doc(doc: MemoryBankDocument) -> str:
                 r = await client.get(doc.content.uri)
                 return r.text
 
+    pattern = re.compile("^(https?://|file://|data:)")
+    if pattern.match(doc.content):
+        if doc.content.startswith("data:"):
+            return content_from_data(doc.content)
+        else:
+            async with httpx.AsyncClient() as client:
+                r = await client.get(doc.content)
+                return r.text
+
     return interleaved_text_media_as_str(doc.content)
 
 
