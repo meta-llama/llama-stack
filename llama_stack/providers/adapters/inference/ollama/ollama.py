@@ -17,6 +17,7 @@ from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from termcolor import cprint
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
@@ -38,12 +39,13 @@ class OllamaInferenceAdapter(Inference):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
-        try:
-            await self.client.ps()
-        except httpx.ConnectError as e:
-            raise RuntimeError(
-                "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
-            ) from e
+        pass
+        # try:
+        #     await self.client.ps()
+        # except httpx.ConnectError as e:
+        #     raise RuntimeError(
+        #         "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
+        #     ) from e
 
     async def shutdown(self) -> None:
         pass
@@ -96,166 +98,167 @@ class OllamaInferenceAdapter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        request = ChatCompletionRequest(
-            model=model,
-            messages=messages,
-            sampling_params=sampling_params,
-            tools=tools or [],
-            tool_choice=tool_choice,
-            tool_prompt_format=tool_prompt_format,
-            stream=stream,
-            logprobs=logprobs,
-        )
+        cprint("!! calling remote ollama !!", "red")
+        # request = ChatCompletionRequest(
+        #     model=model,
+        #     messages=messages,
+        #     sampling_params=sampling_params,
+        #     tools=tools or [],
+        #     tool_choice=tool_choice,
+        #     tool_prompt_format=tool_prompt_format,
+        #     stream=stream,
+        #     logprobs=logprobs,
+        # )
 
-        messages = prepare_messages(request)
-        # accumulate sampling params and other options to pass to ollama
-        options = self.get_ollama_chat_options(request)
-        ollama_model = self.resolve_ollama_model(request.model)
+        # messages = prepare_messages(request)
+        # # accumulate sampling params and other options to pass to ollama
+        # options = self.get_ollama_chat_options(request)
+        # ollama_model = self.resolve_ollama_model(request.model)
 
-        res = await self.client.ps()
-        need_model_pull = True
-        for r in res["models"]:
-            if ollama_model == r["model"]:
-                need_model_pull = False
-                break
+        # res = await self.client.ps()
+        # need_model_pull = True
+        # for r in res["models"]:
+        #     if ollama_model == r["model"]:
+        #         need_model_pull = False
+        #         break
 
-        if need_model_pull:
-            print(f"Pulling model: {ollama_model}")
-            status = await self.client.pull(ollama_model)
-            assert (
-                status["status"] == "success"
-            ), f"Failed to pull model {self.model} in ollama"
+        # if need_model_pull:
+        #     print(f"Pulling model: {ollama_model}")
+        #     status = await self.client.pull(ollama_model)
+        #     assert (
+        #         status["status"] == "success"
+        #     ), f"Failed to pull model {self.model} in ollama"
 
-        if not request.stream:
-            r = await self.client.chat(
-                model=ollama_model,
-                messages=self._messages_to_ollama_messages(messages),
-                stream=False,
-                options=options,
-            )
-            stop_reason = None
-            if r["done"]:
-                if r["done_reason"] == "stop":
-                    stop_reason = StopReason.end_of_turn
-                elif r["done_reason"] == "length":
-                    stop_reason = StopReason.out_of_tokens
+        # if not request.stream:
+        #     r = await self.client.chat(
+        #         model=ollama_model,
+        #         messages=self._messages_to_ollama_messages(messages),
+        #         stream=False,
+        #         options=options,
+        #     )
+        #     stop_reason = None
+        #     if r["done"]:
+        #         if r["done_reason"] == "stop":
+        #             stop_reason = StopReason.end_of_turn
+        #         elif r["done_reason"] == "length":
+        #             stop_reason = StopReason.out_of_tokens
 
-            completion_message = self.formatter.decode_assistant_message_from_content(
-                r["message"]["content"], stop_reason
-            )
-            yield ChatCompletionResponse(
-                completion_message=completion_message,
-                logprobs=None,
-            )
-        else:
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.start,
-                    delta="",
-                )
-            )
-            stream = await self.client.chat(
-                model=ollama_model,
-                messages=self._messages_to_ollama_messages(messages),
-                stream=True,
-                options=options,
-            )
+        #     completion_message = self.formatter.decode_assistant_message_from_content(
+        #         r["message"]["content"], stop_reason
+        #     )
+        #     yield ChatCompletionResponse(
+        #         completion_message=completion_message,
+        #         logprobs=None,
+        #     )
+        # else:
+        #     yield ChatCompletionResponseStreamChunk(
+        #         event=ChatCompletionResponseEvent(
+        #             event_type=ChatCompletionResponseEventType.start,
+        #             delta="",
+        #         )
+        #     )
+        #     stream = await self.client.chat(
+        #         model=ollama_model,
+        #         messages=self._messages_to_ollama_messages(messages),
+        #         stream=True,
+        #         options=options,
+        #     )
 
-            buffer = ""
-            ipython = False
-            stop_reason = None
+        #     buffer = ""
+        #     ipython = False
+        #     stop_reason = None
 
-            async for chunk in stream:
-                if chunk["done"]:
-                    if stop_reason is None and chunk["done_reason"] == "stop":
-                        stop_reason = StopReason.end_of_turn
-                    elif stop_reason is None and chunk["done_reason"] == "length":
-                        stop_reason = StopReason.out_of_tokens
-                    break
+        #     async for chunk in stream:
+        #         if chunk["done"]:
+        #             if stop_reason is None and chunk["done_reason"] == "stop":
+        #                 stop_reason = StopReason.end_of_turn
+        #             elif stop_reason is None and chunk["done_reason"] == "length":
+        #                 stop_reason = StopReason.out_of_tokens
+        #             break
 
-                text = chunk["message"]["content"]
+        #         text = chunk["message"]["content"]
 
-                # check if its a tool call ( aka starts with <|python_tag|> )
-                if not ipython and text.startswith("<|python_tag|>"):
-                    ipython = True
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=ToolCallDelta(
-                                content="",
-                                parse_status=ToolCallParseStatus.started,
-                            ),
-                        )
-                    )
-                    buffer += text
-                    continue
+        #         # check if its a tool call ( aka starts with <|python_tag|> )
+        #         if not ipython and text.startswith("<|python_tag|>"):
+        #             ipython = True
+        #             yield ChatCompletionResponseStreamChunk(
+        #                 event=ChatCompletionResponseEvent(
+        #                     event_type=ChatCompletionResponseEventType.progress,
+        #                     delta=ToolCallDelta(
+        #                         content="",
+        #                         parse_status=ToolCallParseStatus.started,
+        #                     ),
+        #                 )
+        #             )
+        #             buffer += text
+        #             continue
 
-                if ipython:
-                    if text == "<|eot_id|>":
-                        stop_reason = StopReason.end_of_turn
-                        text = ""
-                        continue
-                    elif text == "<|eom_id|>":
-                        stop_reason = StopReason.end_of_message
-                        text = ""
-                        continue
+        #         if ipython:
+        #             if text == "<|eot_id|>":
+        #                 stop_reason = StopReason.end_of_turn
+        #                 text = ""
+        #                 continue
+        #             elif text == "<|eom_id|>":
+        #                 stop_reason = StopReason.end_of_message
+        #                 text = ""
+        #                 continue
 
-                    buffer += text
-                    delta = ToolCallDelta(
-                        content=text,
-                        parse_status=ToolCallParseStatus.in_progress,
-                    )
+        #             buffer += text
+        #             delta = ToolCallDelta(
+        #                 content=text,
+        #                 parse_status=ToolCallParseStatus.in_progress,
+        #             )
 
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=delta,
-                            stop_reason=stop_reason,
-                        )
-                    )
-                else:
-                    buffer += text
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=text,
-                            stop_reason=stop_reason,
-                        )
-                    )
+        #             yield ChatCompletionResponseStreamChunk(
+        #                 event=ChatCompletionResponseEvent(
+        #                     event_type=ChatCompletionResponseEventType.progress,
+        #                     delta=delta,
+        #                     stop_reason=stop_reason,
+        #                 )
+        #             )
+        #         else:
+        #             buffer += text
+        #             yield ChatCompletionResponseStreamChunk(
+        #                 event=ChatCompletionResponseEvent(
+        #                     event_type=ChatCompletionResponseEventType.progress,
+        #                     delta=text,
+        #                     stop_reason=stop_reason,
+        #                 )
+        #             )
 
-            # parse tool calls and report errors
-            message = self.formatter.decode_assistant_message_from_content(
-                buffer, stop_reason
-            )
-            parsed_tool_calls = len(message.tool_calls) > 0
-            if ipython and not parsed_tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content="",
-                            parse_status=ToolCallParseStatus.failure,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
+        #     # parse tool calls and report errors
+        #     message = self.formatter.decode_assistant_message_from_content(
+        #         buffer, stop_reason
+        #     )
+        #     parsed_tool_calls = len(message.tool_calls) > 0
+        #     if ipython and not parsed_tool_calls:
+        #         yield ChatCompletionResponseStreamChunk(
+        #             event=ChatCompletionResponseEvent(
+        #                 event_type=ChatCompletionResponseEventType.progress,
+        #                 delta=ToolCallDelta(
+        #                     content="",
+        #                     parse_status=ToolCallParseStatus.failure,
+        #                 ),
+        #                 stop_reason=stop_reason,
+        #             )
+        #         )
 
-            for tool_call in message.tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content=tool_call,
-                            parse_status=ToolCallParseStatus.success,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
+        #     for tool_call in message.tool_calls:
+        #         yield ChatCompletionResponseStreamChunk(
+        #             event=ChatCompletionResponseEvent(
+        #                 event_type=ChatCompletionResponseEventType.progress,
+        #                 delta=ToolCallDelta(
+        #                     content=tool_call,
+        #                     parse_status=ToolCallParseStatus.success,
+        #                 ),
+        #                 stop_reason=stop_reason,
+        #             )
+        #         )
 
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
-                    delta="",
-                    stop_reason=stop_reason,
-                )
-            )
+        #     yield ChatCompletionResponseStreamChunk(
+        #         event=ChatCompletionResponseEvent(
+        #             event_type=ChatCompletionResponseEventType.complete,
+        #             delta="",
+        #             stop_reason=stop_reason,
+        #         )
+        #     )
