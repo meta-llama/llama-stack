@@ -11,9 +11,9 @@ from llama_models.datatypes import ModelFamily
 from llama_models.schema_utils import json_schema_type
 from llama_models.sku_list import all_registered_models, resolve_model
 
-from llama_stack.apis.inference import QuantizationConfig
-
 from pydantic import BaseModel, Field, field_validator
+
+from llama_stack.apis.inference import QuantizationConfig
 
 
 @json_schema_type
@@ -24,7 +24,7 @@ class MetaReferenceImplConfig(BaseModel):
     )
     quantization: Optional[QuantizationConfig] = None
     torch_seed: Optional[int] = None
-    max_seq_len: int
+    max_seq_len: int = 4096
     max_batch_size: int = 1
 
     @field_validator("model")
