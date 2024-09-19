@@ -35,9 +35,6 @@ from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -45,6 +42,9 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 from llama_stack.distribution.distribution import api_endpoints, api_providers
@@ -333,7 +333,9 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
     app = FastAPI()
 
+    print(config)
     impls, specs = asyncio.run(resolve_impls(config.provider_map))
+    print(impls)
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
