@@ -105,6 +105,13 @@ class OllamaInferenceAdapter(Inference):
                 delta="",
             )
         )
+
+        yield ChatCompletionResponseStreamChunk(
+            event=ChatCompletionResponseEvent(
+                event_type=ChatCompletionResponseEventType.progress,
+                delta="model={}, url={}".format(model, self.url),
+            )
+        )
         # request = ChatCompletionRequest(
         #     model=model,
         #     messages=messages,

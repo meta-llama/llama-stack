@@ -98,6 +98,17 @@ async def run_main(host: str, port: int, stream: bool):
     async for log in EventLogger().log(iterator):
         log.print()
 
+    print("Testing a different model provider")
+    iterator = client.chat_completion(
+        ChatCompletionRequest(
+            model="ollama-1",
+            messages=[message],
+            stream=stream,
+        )
+    )
+    async for log in EventLogger().log(iterator):
+        log.print()
+
 
 def main(host: str, port: int, stream: bool = True):
     asyncio.run(run_main(host, port, stream))
