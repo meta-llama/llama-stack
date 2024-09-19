@@ -57,8 +57,8 @@ Configuring provider `meta-reference`...
 Configuring API `telemetry`...
 
 Configuring provider `meta-reference`...
-> YAML configuration has been written to /home/xiyan/.llama/builds/conda/my-local-llama-stack-run.yaml.
-You can now run `llama stack run my-local-llama-stack --port PORT` or `llama stack run /home/xiyan/.llama/builds/conda/my-local-llama-stack-run.yaml --port PORT
+> YAML configuration has been written to ~/.llama/builds/conda/my-local-llama-stack-run.yaml.
+You can now run `llama stack run my-local-llama-stack --port PORT` or `llama stack run ~/.llama/builds/conda/my-local-llama-stack-run.yaml --port PORT
 ```
 
 **`llama stack run`**
@@ -161,8 +161,8 @@ llama stack build --template local-tgi --name my-tgi-stack
 $ llama stack build --template local-tgi --name my-tgi-stack
 ...
 ...
-Build spec configuration saved at /home/xiyan/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml
-You may now run `llama stack configure my-tgi-stack` or `llama stack configure /home/xiyan/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml`
+Build spec configuration saved at ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml
+You may now run `llama stack configure my-tgi-stack` or `llama stack configure ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml`
 ```
 
 #### Building from config file
@@ -222,7 +222,7 @@ WORKDIR /app
 ...
 ...
 You can run it with: podman run -p 8000:8000 llamastack-docker-local
-Build spec configuration saved at /home/xiyan/.llama/distributions/docker/docker-local-build.yaml
+Build spec configuration saved at ~/.llama/distributions/docker/docker-local-build.yaml
 ```
 
 
