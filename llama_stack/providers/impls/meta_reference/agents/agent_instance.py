@@ -248,7 +248,7 @@ class ChatAgent(ShieldRunnerMixin):
         self,
         turn_id: str,
         messages: List[Message],
-        shields: List[ShieldDefinition],
+        shields: List[str],
         touchpoint: str,
     ) -> AsyncGenerator:
         if len(shields) == 0:
@@ -608,7 +608,6 @@ class ChatAgent(ShieldRunnerMixin):
             else:
                 return True
 
-        print(f"{enabled_tools=}")
         return AgentTool.memory.value in enabled_tools
 
     def _memory_tool_definition(self) -> Optional[MemoryToolDefinition]:
