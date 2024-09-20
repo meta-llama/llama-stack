@@ -33,6 +33,7 @@ async def instantiate_provider(
 
         assert isinstance(provider_config, GenericProviderConfig)
         config_type = instantiate_class_type(provider_spec.config_class)
+        print("!!!", provider_config)
         config = config_type(**provider_config.config)
         args = [config, deps]
     elif isinstance(provider_spec, RouterProviderSpec):
