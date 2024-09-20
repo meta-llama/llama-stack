@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import importlib
 import inspect
 import json
 import signal
@@ -456,7 +457,52 @@ def run_main_DEPRECATED(
 
 
 def run_main(config: StackRunConfig, port: int = 5000, disable_ipv6: bool = False):
-    raise ValueError("Not implemented")
+    app = FastAPI()
+
+    all_endpoints = api_endpoints()
+
+    apis_to_serve = config.apis_to_serve
+
+    # get unified router
+    module = importlib.import_module("llama_stack.distribution.routers")
+    get_router_fn = getattr(module, "get_router_impl")
+    router_impl = asyncio.run(get_router_fn())
+
+    cprint(router_impl, "blue")
+
+    for api_str in apis_to_serve:
+        api = Api(api_str)
+        endpoints = all_endpoints[api]
+
+        print(api, endpoints)
+        for endpoint in endpoints:
+            print(endpoint.route)
+            impl_method = getattr(router_impl, "process_request")
+            attr = getattr(app, endpoint.method)(endpoint.route, response_model=None)(
+                create_dynamic_typed_route(impl_method, endpoint.method)
+            )
+            print(endpoint, attr)
+
+        # check if it is a simple endpoint
+
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            cprint(
+                f"Serving {next(iter(route.methods))} {route.path}",
+                "white",
+                attrs=["bold"],
+            )
+
+    app.exception_handler(RequestValidationError)(global_exception_handler)
+    app.exception_handler(Exception)(global_exception_handler)
+    signal.signal(signal.SIGINT, handle_sigint)
+
+    import uvicorn
+
+    # FYI this does not do hot-reloads
+    listen_host = "::" if not disable_ipv6 else "0.0.0.0"
+    print(f"Listening on {listen_host}:{port}")
+    uvicorn.run(app, host=listen_host, port=port)
 
 
 def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
@@ -466,8 +512,10 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
     cprint(f"StackRunConfig: {config}", "blue")
 
     if not config.provider_routing_table:
+        cprint("- running old implementation", "red")
         run_main_DEPRECATED(config, port, disable_ipv6)
     else:
+        cprint("- running new implementation with routers", "red")
         run_main(config, port, disable_ipv6)
 
 
