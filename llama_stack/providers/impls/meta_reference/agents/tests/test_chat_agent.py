@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from typing import AsyncIterator, List, Optional, Union
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -80,9 +79,9 @@ class MockInferenceAPI:
 
 class MockSafetyAPI:
     async def run_shields(
-        self, messages: List[Message], shields: List[MagicMock]
-    ) -> List[ShieldResponse]:
-        return [ShieldResponse(shield_type="mock_shield", is_violation=False)]
+        self, shield_type: str, messages: List[Message]
+    ) -> RunShieldResponse:
+        return RunShieldResponse(violation=None)
 
 
 class MockMemoryAPI:

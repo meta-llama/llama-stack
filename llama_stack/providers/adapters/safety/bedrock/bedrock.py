@@ -25,7 +25,7 @@ class BedrockSafetyAdapter(Safety):
 
     async def run_shield(
         self,
-        shield: ShieldType,
+        shield: str,
         messages: List[Message],
     ) -> RunShieldResponse:
         # clients will set api_keys by doing something like:

@@ -14,7 +14,7 @@ from llama_models.llama3.api.datatypes import Message, Role
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
-from llama_stack.apis.safety import *  # noqa: F403
+
 
 SAFE_RESPONSE = "safe"
 _INSTANCE = None
@@ -152,9 +152,6 @@ class LlamaGuardShield(ShieldBase):
             model_dir, torch_dtype=torch_dtype, device_map=self.device
         )
 
-    def get_shield_type(self) -> ShieldType:
-        return BuiltinShield.llama_guard
-
     def check_unsafe_response(self, response: str) -> Optional[str]:
         match = re.match(r"^unsafe\n(.*)$", response)
         if match:
@@ -192,18 +189,13 @@ class LlamaGuardShield(ShieldBase):
 
     def get_shield_response(self, response: str) -> ShieldResponse:
         if response == SAFE_RESPONSE:
-            return ShieldResponse(
-                shield_type=BuiltinShield.llama_guard, is_violation=False
-            )
+            return ShieldResponse(is_violation=False)
         unsafe_code = self.check_unsafe_response(response)
         if unsafe_code:
             unsafe_code_list = unsafe_code.split(",")
             if set(unsafe_code_list).issubset(set(self.excluded_categories)):
-                return ShieldResponse(
-                    shield_type=BuiltinShield.llama_guard, is_violation=False
-                )
+                return ShieldResponse(is_violation=False)
             return ShieldResponse(
-                shield_type=BuiltinShield.llama_guard,
                 is_violation=True,
                 violation_type=unsafe_code,
                 violation_return_message=CANNED_RESPONSE_TEXT,
@@ -213,12 +205,9 @@ class LlamaGuardShield(ShieldBase):
 
     async def run(self, messages: List[Message]) -> ShieldResponse:
         if self.disable_input_check and messages[-1].role == Role.user.value:
-            return ShieldResponse(
-                shield_type=BuiltinShield.llama_guard, is_violation=False
-            )
+            return ShieldResponse(is_violation=False)
         elif self.disable_output_check and messages[-1].role == Role.assistant.value:
             return ShieldResponse(
-                shield_type=BuiltinShield.llama_guard,
                 is_violation=False,
             )
         else:
