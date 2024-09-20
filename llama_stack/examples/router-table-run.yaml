@@ -3,27 +3,27 @@ image_name: local
 docker_image: null
 conda_env: local
 apis_to_serve:
-# - inference
-- memory
-- telemetry
+- inference
+# - memory
+# - telemetry
 provider_map:
   telemetry:
     provider_id: meta-reference
     config: {}
 provider_routing_table:
-  # inference:
-  #   - routing_key: Meta-Llama3.1-8B-Instruct
-  #     provider_id: meta-reference
-  #     config:
-  #       model: Meta-Llama3.1-8B-Instruct
-  #       quantization: null
-  #       torch_seed: null
-  #       max_seq_len: 4096
-  #       max_batch_size: 1
-  #   - routing_key: Meta-Llama3.1-8B
-  #     provider_id: remote::ollama
-  #     config:
-  #       url: http:ollama-url-1.com
+  inference:
+    - routing_key: Meta-Llama3.1-8B-Instruct
+      provider_id: meta-reference
+      config:
+        model: Meta-Llama3.1-8B-Instruct
+        quantization: null
+        torch_seed: null
+        max_seq_len: 4096
+        max_batch_size: 1
+    - routing_key: Meta-Llama3.1-8B
+      provider_id: remote::ollama
+      config:
+        url: http:ollama-url-1.com
   memory:
     - routing_key: keyvalue
       provider_id: remote::pgvector
