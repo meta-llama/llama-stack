@@ -38,19 +38,24 @@ async def instantiate_provider(
     elif isinstance(provider_spec, RouterProviderSpec):
         method = "get_router_impl"
 
-        assert isinstance(provider_config, list)
-        inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
-        inner_impls = []
-        for routing_entry in provider_config:
-            impl = await instantiate_provider(
-                inner_specs[routing_entry.provider_id],
-                deps,
-                routing_entry,
-            )
-            inner_impls.append((routing_entry.routing_key, impl))
+        if isinstance(provider_config, list):
+            inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
+            inner_impls = []
+            for routing_entry in provider_config:
+                impl = await instantiate_provider(
+                    inner_specs[routing_entry.provider_id],
+                    deps,
+                    routing_entry,
+                )
+                inner_impls.append((routing_entry.routing_key, impl))
 
-        config = None
-        args = [inner_impls, deps]
+            config = None
+            args = [inner_impls, deps]
+        elif isinstance(provider_config, str) and provider_config == "models-router":
+            config = None
+            args = [[], deps]
+        else:
+            raise ValueError(f"provider_config {provider_config} is not valid")
     else:
         method = "get_provider_impl"
 

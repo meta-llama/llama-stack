@@ -198,7 +198,7 @@ class ProviderRoutingEntry(GenericProviderConfig):
     routing_key: str
 
 
-ProviderMapEntry = Union[GenericProviderConfig, List[ProviderRoutingEntry]]
+ProviderMapEntry = Union[GenericProviderConfig, List[ProviderRoutingEntry], str]
 
 
 @json_schema_type

@@ -297,6 +297,13 @@ async def resolve_impls(
                     f"Unknown provider `{provider_id}` is not available for API `{api}`"
                 )
             specs[api] = providers[item.provider_id]
+        elif isinstance(item, str) and item == "models-router":
+            specs[api] = RouterProviderSpec(
+                api=api,
+                module=f"llama_stack.providers.routers.{api.value.lower()}",
+                api_dependencies=[Api.models],
+                inner_specs=[],
+            )
         else:
             assert isinstance(item, list)
             inner_specs = []
@@ -313,6 +320,10 @@ async def resolve_impls(
                 api_dependencies=[],
                 inner_specs=inner_specs,
             )
+
+    for k, v in specs.items():
+        cprint(k, "blue")
+        cprint(v, "blue")
 
     sorted_specs = topological_sort(specs.values())
 
@@ -333,9 +344,7 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
     app = FastAPI()
 
-    print(config)
     impls, specs = asyncio.run(resolve_impls(config.provider_map))
-    print(impls)
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
