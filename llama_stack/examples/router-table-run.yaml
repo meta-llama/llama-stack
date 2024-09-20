@@ -9,7 +9,7 @@ provider_map:
   # use builtin-router as dummy field
   memory: builtin-router
   inference: builtin-router
-routing_table:
+provider_routing_table:
   inference:
     - routing_key: Meta-Llama3.1-8B-Instruct
       provider_id: meta-reference
@@ -91,4 +91,3 @@ routing_table:
 #         api: safety
 #         config:
 #           model: Prompt-Guard-86M
-
