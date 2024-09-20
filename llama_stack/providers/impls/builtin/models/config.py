@@ -21,4 +21,7 @@ class ModelConfigProviderEntry(GenericProviderConfig):
 
 @json_schema_type
 class BuiltinImplConfig(BaseModel):
-    models_config: List[ModelConfigProviderEntry]
+    models_config: List[ModelConfigProviderEntry] = Field(
+        default_factory=list,
+        description="list of model config entries for each model",
+    )
