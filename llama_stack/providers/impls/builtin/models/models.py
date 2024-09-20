@@ -14,6 +14,7 @@ from llama_stack.apis.models import *  # noqa: F403
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.datatypes import CoreModelId, Model
 from llama_models.sku_list import resolve_model
+from termcolor import cprint
 
 from .config import BuiltinImplConfig
 
@@ -34,21 +35,25 @@ class BuiltinModelsImpl(Models):
         config: BuiltinImplConfig,
     ) -> None:
         self.config = config
+
         self.models = {
             x.llama_model_metadata.core_model_id.value: x
             for x in [DUMMY_MODELS_SPEC_1, DUMMY_MODELS_SPEC_2]
         }
 
+        cprint(self.config, "red")
+
     async def initialize(self) -> None:
         pass
 
     async def list_models(self) -> ModelsListResponse:
+        print(self.config, "hihihi")
         return ModelsListResponse(models_list=list(self.models.values()))
 
     async def get_model(self, core_model_id: str) -> ModelsGetResponse:
         if core_model_id in self.models:
             return ModelsGetResponse(core_model_spec=self.models[core_model_id])
-        raise ValueError(f"Cannot find {core_model_id} in model registry")
+        raise RuntimeError(f"Cannot find {core_model_id} in model registry")
 
     async def register_model(
         self, model_id: str, api: str, provider_spec: Dict[str, str]

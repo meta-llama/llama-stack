@@ -18,6 +18,8 @@ async def get_provider_impl(config: BuiltinImplConfig, deps: Dict[Api, ProviderS
         config, BuiltinImplConfig
     ), f"Unexpected config type: {type(config)}"
 
+    print(config)
+
     impl = BuiltinModelsImpl(config)
     await impl.initialize()
     return impl
