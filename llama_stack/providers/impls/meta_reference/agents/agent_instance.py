@@ -94,12 +94,11 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
             elif step.step_type == StepType.shield_call.value:
-                response = step.response
-                if response.is_violation:
+                if step.violation:
                     # CompletionMessage itself in the ShieldResponse
                     messages.append(
                         CompletionMessage(
-                            content=response.violation_return_message,
+                            content=violation.user_message,
                             stop_reason=StopReason.end_of_turn,
                         )
                     )
@@ -276,7 +275,7 @@ class ChatAgent(ShieldRunnerMixin):
                         step_details=ShieldCallStep(
                             step_id=step_id,
                             turn_id=turn_id,
-                            response=e.response,
+                            violation=e.violation,
                         ),
                     )
                 )
@@ -295,12 +294,7 @@ class ChatAgent(ShieldRunnerMixin):
                     step_details=ShieldCallStep(
                         step_id=step_id,
                         turn_id=turn_id,
-                        response=ShieldResponse(
-                            # TODO: fix this, give each shield a shield type method and
-                            # fire one event for each shield run
-                            shield_type=BuiltinShield.llama_guard,
-                            is_violation=False,
-                        ),
+                        violation=None,
                     ),
                 )
             )
@@ -550,12 +544,7 @@ class ChatAgent(ShieldRunnerMixin):
                                 step_details=ShieldCallStep(
                                     step_id=str(uuid.uuid4()),
                                     turn_id=turn_id,
-                                    response=ShieldResponse(
-                                        # TODO: fix this, give each shield a shield type method and
-                                        # fire one event for each shield run
-                                        shield_type=BuiltinShield.llama_guard,
-                                        is_violation=False,
-                                    ),
+                                    violation=None,
                                 ),
                             )
                         )
@@ -569,7 +558,7 @@ class ChatAgent(ShieldRunnerMixin):
                                 step_details=ShieldCallStep(
                                     step_id=str(uuid.uuid4()),
                                     turn_id=turn_id,
-                                    response=e.response,
+                                    violation=e.violation,
                                 ),
                             )
                         )

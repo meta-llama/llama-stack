@@ -13,7 +13,6 @@ from llama_models.llama3.api.datatypes import Message
 from termcolor import cprint
 
 from .base import message_content_as_str, OnViolationAction, ShieldResponse, TextShield
-from llama_stack.apis.safety import *  # noqa: F403
 
 
 class PromptGuardShield(TextShield):
@@ -74,13 +73,6 @@ class PromptGuardShield(TextShield):
         self.threshold = threshold
         self.mode = mode
 
-    def get_shield_type(self) -> ShieldType:
-        return (
-            BuiltinShield.jailbreak_shield
-            if self.mode == self.Mode.JAILBREAK
-            else BuiltinShield.injection_shield
-        )
-
     def convert_messages_to_text(self, messages: List[Message]) -> str:
         return message_content_as_str(messages[-1])
 
@@ -103,21 +95,18 @@ class PromptGuardShield(TextShield):
             score_embedded + score_malicious > self.threshold
         ):
             return ShieldResponse(
-                shield_type=self.get_shield_type(),
                 is_violation=True,
                 violation_type=f"prompt_injection:embedded={score_embedded},malicious={score_malicious}",
                 violation_return_message="Sorry, I cannot do this.",
             )
         elif self.mode == self.Mode.JAILBREAK and score_malicious > self.threshold:
             return ShieldResponse(
-                shield_type=self.get_shield_type(),
                 is_violation=True,
                 violation_type=f"prompt_injection:malicious={score_malicious}",
                 violation_return_message="Sorry, I cannot do this.",
             )
 
         return ShieldResponse(
-            shield_type=self.get_shield_type(),
             is_violation=False,
         )
 

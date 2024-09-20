@@ -36,10 +36,6 @@ class ShieldBase(ABC):
         self.on_violation_action = on_violation_action
 
     @abstractmethod
-    def get_shield_type(self) -> ShieldType:
-        raise NotImplementedError()
-
-    @abstractmethod
     async def run(self, messages: List[Message]) -> ShieldResponse:
         raise NotImplementedError()
 
@@ -63,11 +59,6 @@ class TextShield(ShieldBase):
 
 
 class DummyShield(TextShield):
-    def get_shield_type(self) -> ShieldType:
-        return "dummy"
-
     async def run_impl(self, text: str) -> ShieldResponse:
         # Dummy return LOW to test e2e
-        return ShieldResponse(
-            shield_type=BuiltinShield.third_party_shield, is_violation=False
-        )
+        return ShieldResponse(is_violation=False)

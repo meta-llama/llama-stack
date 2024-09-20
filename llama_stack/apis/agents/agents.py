@@ -208,7 +208,7 @@ class ToolExecutionStep(StepCommon):
 @json_schema_type
 class ShieldCallStep(StepCommon):
     step_type: Literal[StepType.shield_call.value] = StepType.shield_call.value
-    response: ShieldResponse
+    violation: Optional[SafetyViolation]
 
 
 @json_schema_type
