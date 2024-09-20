@@ -55,7 +55,9 @@ class InferenceRouterImpl(Inference):
             core_model_id = model_spec.llama_model_metadata.core_model_id
             self.model2providers[core_model_id.value] = impl
 
-        cprint(self.model2providers, "blue")
+        cprint(f"Initialized inference router: ", "blue")
+        for m, p in self.model2providers.items():
+            cprint(f"- {m} serving using {p}", "blue")
 
     async def shutdown(self) -> None:
         for p in self.model2providers.values():

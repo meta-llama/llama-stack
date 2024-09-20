@@ -16,6 +16,10 @@ def instantiate_class_type(fully_qualified_name):
     return getattr(module, class_name)
 
 
+def is_models_router_provider(item: Any):
+    return isinstance(item, str) and item == "models-router"
+
+
 # returns a class implementing the protocol corresponding to the Api
 async def instantiate_provider(
     provider_spec: ProviderSpec,
@@ -51,7 +55,7 @@ async def instantiate_provider(
 
             config = None
             args = [inner_impls, deps]
-        elif isinstance(provider_config, str) and provider_config == "models-router":
+        elif is_models_router_provider(provider_config):
             config = None
             assert len(deps) == 1 and Api.models in deps
             args = [deps[Api.models]]
