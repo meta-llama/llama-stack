@@ -4,11 +4,19 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from enum import Enum
 from typing import List, Optional
 
 from llama_models.sku_list import CoreModelId, safety_models
 
 from pydantic import BaseModel, validator
+
+
+class MetaReferenceShieldType(Enum):
+    llama_guard = "llama_guard"
+    code_scanner_guard = "code_scanner_guard"
+    injection_shield = "injection_shield"
+    jailbreak_shield = "jailbreak_shield"
 
 
 class LlamaGuardShieldConfig(BaseModel):

@@ -37,8 +37,8 @@ class AgentTool(Enum):
 
 
 class ToolDefinitionCommon(BaseModel):
-    input_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
-    output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
+    input_shields: Optional[List[str]] = Field(default_factory=list)
+    output_shields: Optional[List[str]] = Field(default_factory=list)
 
 
 class SearchEngineType(Enum):
@@ -266,8 +266,8 @@ class Session(BaseModel):
 class AgentConfigCommon(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
-    input_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
-    output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
+    input_shields: Optional[List[str]] = Field(default_factory=list)
+    output_shields: Optional[List[str]] = Field(default_factory=list)
 
     tools: Optional[List[AgentToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)

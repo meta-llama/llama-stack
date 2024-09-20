@@ -13,10 +13,10 @@ import fire
 import httpx
 
 from llama_models.llama3.api.datatypes import UserMessage
-
-from llama_stack.distribution.datatypes import RemoteProviderConfig
 from pydantic import BaseModel
 from termcolor import cprint
+
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from .safety import *  # noqa: F403
 
@@ -69,11 +69,7 @@ async def run_main(host: str, port: int):
         response = await client.run_shields(
             RunShieldRequest(
                 messages=[message],
-                shields=[
-                    ShieldDefinition(
-                        shield_type=BuiltinShield.llama_guard,
-                    )
-                ],
+                shields=["llama_guard"],
             )
         )
         print(response)
