@@ -89,10 +89,11 @@ async def run_main(host: str, port: int, stream: bool):
     message = UserMessage(
         content="hello world, write me a 2 sentence poem about the moon"
     )
+
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
         ChatCompletionRequest(
-            model="Meta-Llama3.1-8B-Instruct",
+            model="Meta-Llama3.1-8B",
             messages=[message],
             stream=stream,
         )
@@ -103,7 +104,7 @@ async def run_main(host: str, port: int, stream: bool):
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
         ChatCompletionRequest(
-            model="Meta-Llama3.1-8B",
+            model="Meta-Llama3.1-8B-Instruct",
             messages=[message],
             stream=stream,
         )
