@@ -223,7 +223,7 @@ async def test_chat_agent_create_and_execute_turn(chat_agent):
 @pytest.mark.asyncio
 async def test_run_shields_wrapper(chat_agent):
     messages = [UserMessage(content="Test message")]
-    shields = [ShieldDefinition(shield_type="test_shield")]
+    shields = ["test_shield"]
 
     responses = [
         chunk

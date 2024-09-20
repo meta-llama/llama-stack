@@ -37,11 +37,8 @@ class RunShieldResponse(BaseModel):
     violation: Optional[SafetyViolation] = None
 
 
-ShieldType = str
-
-
 class Safety(Protocol):
     @webmethod(route="/safety/run_shield")
     async def run_shield(
-        self, shield: ShieldType, messages: List[Message], params: Dict[str, Any] = None
+        self, shield: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse: ...
