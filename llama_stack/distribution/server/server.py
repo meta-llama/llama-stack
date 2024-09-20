@@ -365,20 +365,8 @@ async def resolve_impls(
                 )
             specs[api] = providers[item.provider_id]
         else:
-            assert isinstance(item, list)
-            inner_specs = []
-            for rt_entry in item:
-                if rt_entry.provider_id not in providers:
-                    raise ValueError(
-                        f"Unknown provider `{rt_entry.provider_id}` is not available for API `{api}`"
-                    )
-                inner_specs.append(providers[rt_entry.provider_id])
-
-            specs[api] = RouterProviderSpec(
-                api=api,
-                module=f"llama_stack.providers.routers.{api.value.lower()}",
-                api_dependencies=[],
-                inner_specs=inner_specs,
+            raise ValueError(
+                f"Please define routing table in provider_routing_table of run config"
             )
 
     sorted_specs = topological_sort(specs.values())
@@ -405,7 +393,7 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
     if config.provider_routing_table is not None:
         impls, specs = asyncio.run(resolve_impls_with_routing(config))
     else:
-        # keeping this for backwards compatibility,could
+        # keeping this for backwards compatibility
         impls, specs = asyncio.run(resolve_impls(config.provider_map))
 
     if Api.telemetry in impls:
