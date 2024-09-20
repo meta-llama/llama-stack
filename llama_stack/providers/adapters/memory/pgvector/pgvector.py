@@ -128,36 +128,35 @@ class PGVectorMemoryAdapter(Memory):
         self.cache = {}
 
     async def initialize(self) -> None:
-        print("Init PGVector!")
-        # try:
-        #     self.conn = psycopg2.connect(
-        #         host=self.config.host,
-        #         port=self.config.port,
-        #         database=self.config.db,
-        #         user=self.config.user,
-        #         password=self.config.password,
-        #     )
-        #     self.cursor = self.conn.cursor()
+        try:
+            self.conn = psycopg2.connect(
+                host=self.config.host,
+                port=self.config.port,
+                database=self.config.db,
+                user=self.config.user,
+                password=self.config.password,
+            )
+            self.cursor = self.conn.cursor()
 
-        #     version = check_extension_version(self.cursor)
-        #     if version:
-        #         print(f"Vector extension version: {version}")
-        #     else:
-        #         raise RuntimeError("Vector extension is not installed.")
+            version = check_extension_version(self.cursor)
+            if version:
+                print(f"Vector extension version: {version}")
+            else:
+                raise RuntimeError("Vector extension is not installed.")
 
-        #     self.cursor.execute(
-        #         """
-        #         CREATE TABLE IF NOT EXISTS metadata_store (
-        #             key TEXT PRIMARY KEY,
-        #             data JSONB
-        #         )
-        #     """
-        #     )
-        # except Exception as e:
-        #     import traceback
+            self.cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS metadata_store (
+                    key TEXT PRIMARY KEY,
+                    data JSONB
+                )
+            """
+            )
+        except Exception as e:
+            import traceback
 
-        #     traceback.print_exc()
-        #     raise RuntimeError("Could not connect to PGVector database server") from e
+            traceback.print_exc()
+            raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:
         pass
