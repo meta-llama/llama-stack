@@ -8,3 +8,5 @@ python-dotenv
 pydantic
 requests
 termcolor
+pytest
+pytest-asyncio
