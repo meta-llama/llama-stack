@@ -58,9 +58,8 @@ class InferenceRouterImpl(Inference):
         cprint(self.model2providers, "blue")
 
     async def shutdown(self) -> None:
-        pass
-        # for p in self.providers.values():
-        #     await p.shutdown()
+        for p in self.model2providers.values():
+            await p.shutdown()
 
     async def chat_completion(
         self,
@@ -74,17 +73,11 @@ class InferenceRouterImpl(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        print("router chat_completion")
         if model not in self.model2providers:
             raise ValueError(
                 f"Cannot find model {model} in running distribution. Please use register model first"
             )
-        # yield ChatCompletionResponseStreamChunk(
-        #     event=ChatCompletionResponseEvent(
-        #         event_type=ChatCompletionResponseEventType.progress,
-        #         delta="router chat completion",
-        #     )
-        # )
+
         async for chunk in self.model2providers[model].chat_completion(
             model=model,
             messages=messages,
