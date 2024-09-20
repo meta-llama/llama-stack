@@ -15,7 +15,6 @@ from .base import (  # noqa: F401
     TextShield,
 )
 from .code_scanner import CodeScannerShield  # noqa: F401
-from .contrib.third_party_shield import ThirdPartyShield  # noqa: F401
 from .llama_guard import LlamaGuardShield  # noqa: F401
 from .prompt_guard import (  # noqa: F401
     InjectionShield,

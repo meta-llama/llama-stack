@@ -78,7 +78,7 @@ class MockInferenceAPI:
 
 
 class MockSafetyAPI:
-    async def run_shields(
+    async def run_shield(
         self, shield_type: str, messages: List[Message]
     ) -> RunShieldResponse:
         return RunShieldResponse(violation=None)
@@ -220,13 +220,13 @@ async def test_chat_agent_create_and_execute_turn(chat_agent):
 
 
 @pytest.mark.asyncio
-async def test_run_shields_wrapper(chat_agent):
+async def test_run_multiple_shields_wrapper(chat_agent):
     messages = [UserMessage(content="Test message")]
     shields = ["test_shield"]
 
     responses = [
         chunk
-        async for chunk in chat_agent.run_shields_wrapper(
+        async for chunk in chat_agent.run_multiple_shields_wrapper(
             turn_id="test_turn_id",
             messages=messages,
             shields=shields,

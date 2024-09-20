@@ -211,7 +211,7 @@ class ChatAgent(ShieldRunnerMixin):
         # return a "final value" for the `yield from` statement. we simulate that by yielding a
         # final boolean (to see whether an exception happened) and then explicitly testing for it.
 
-        async for res in self.run_shields_wrapper(
+        async for res in self.run_multiple_shields_wrapper(
             turn_id, input_messages, self.input_shields, "user-input"
         ):
             if isinstance(res, bool):
@@ -234,7 +234,7 @@ class ChatAgent(ShieldRunnerMixin):
         # for output shields run on the full input and output combination
         messages = input_messages + [final_response]
 
-        async for res in self.run_shields_wrapper(
+        async for res in self.run_multiple_shields_wrapper(
             turn_id, messages, self.output_shields, "assistant-output"
         ):
             if isinstance(res, bool):
@@ -244,7 +244,7 @@ class ChatAgent(ShieldRunnerMixin):
 
         yield final_response
 
-    async def run_shields_wrapper(
+    async def run_multiple_shields_wrapper(
         self,
         turn_id: str,
         messages: List[Message],
@@ -265,7 +265,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
             )
-            await self.run_shields(messages, shields)
+            await self.run_multiple_shields(messages, shields)
 
         except SafetyException as e:
             yield AgentTurnResponseStreamChunk(

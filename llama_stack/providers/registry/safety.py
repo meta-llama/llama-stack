@@ -6,12 +6,7 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import (
-    Api,
-    InlineProviderSpec,
-    ProviderSpec,
-    remote_provider_spec,
-)
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 def available_providers() -> List[ProviderSpec]:
@@ -27,16 +22,5 @@ def available_providers() -> List[ProviderSpec]:
             ],
             module="llama_stack.providers.impls.meta_reference.safety",
             config_class="llama_stack.providers.impls.meta_reference.safety.SafetyConfig",
-        ),
-        remote_provider_spec(
-            api=Api.safety,
-            adapter=AdapterSpec(
-                adapter_id="bedrock",
-                pip_packages=[
-                    "aws-sdk",
-                ],
-                module="llama_stack.providers.adapters.safety.bedrock",
-                header_extractor="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyRequestProviderData",
-            ),
         ),
     ]
