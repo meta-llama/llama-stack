@@ -39,18 +39,16 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
-        import json
         import os
         from pathlib import Path
 
         import pkg_resources
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
-
         from llama_stack.distribution.utils.exec import run_with_pty
-        from termcolor import cprint
 
         docker_image = None
 
@@ -67,15 +65,18 @@ class StackConfigure(Subcommand):
             f"Could not find {build_config_file}. Trying conda build name instead...",
             color="green",
         )
-        conda_dir = Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
-        build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
+        if os.getenv("CONDA_PREFIX"):
+            conda_dir = (
+                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
+            )
+            build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
-        if build_config_file.exists():
-            with open(build_config_file, "r") as f:
-                build_config = BuildConfig(**yaml.safe_load(f))
+            if build_config_file.exists():
+                with open(build_config_file, "r") as f:
+                    build_config = BuildConfig(**yaml.safe_load(f))
 
-            self._configure_llama_distribution(build_config, args.output_dir)
-            return
+                self._configure_llama_distribution(build_config, args.output_dir)
+                return
 
         # if we get here, we need to try to find the docker image
         cprint(
@@ -120,11 +121,10 @@ class StackConfigure(Subcommand):
         from pathlib import Path
 
         import yaml
-        from llama_stack.distribution.configure import configure_api_providers
-
-        from llama_stack.distribution.utils.exec import run_with_pty
-        from llama_stack.distribution.utils.serialize import EnumEncoder
         from termcolor import cprint
+
+        from llama_stack.distribution.configure import configure_api_providers
+        from llama_stack.distribution.utils.serialize import EnumEncoder
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
         if output_dir:
