@@ -100,6 +100,17 @@ async def run_main(host: str, port: int, stream: bool):
     async for log in EventLogger().log(iterator):
         log.print()
 
+    cprint(f"User>{message.content}", "green")
+    iterator = client.chat_completion(
+        ChatCompletionRequest(
+            model="Meta-Llama3.1-8B",
+            messages=[message],
+            stream=stream,
+        )
+    )
+    async for log in EventLogger().log(iterator):
+        log.print()
+
 
 def main(host: str, port: int, stream: bool = True):
     asyncio.run(run_main(host, port, stream))
