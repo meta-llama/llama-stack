@@ -6,7 +6,7 @@ components:
       properties:
         input_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         instructions:
           type: string
@@ -14,7 +14,7 @@ components:
           type: string
         output_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
@@ -34,7 +34,7 @@ components:
               properties:
                 input_shields:
                   items:
-                    $ref: '#/components/schemas/ShieldDefinition'
+                    type: string
                   type: array
                 max_chunks:
                   type: integer
@@ -100,7 +100,7 @@ components:
                   type: array
                 output_shields:
                   items:
-                    $ref: '#/components/schemas/ShieldDefinition'
+                    type: string
                   type: array
                 query_generator_config:
                   oneOf:
@@ -402,14 +402,6 @@ components:
       required:
       - completion_message_batch
       type: object
-    BuiltinShield:
-      enum:
-      - llama_guard
-      - code_scanner_guard
-      - third_party_shield
-      - injection_shield
-      - jailbreak_shield
-      type: string
     BuiltinTool:
       enum:
       - brave_search
@@ -525,11 +517,11 @@ components:
           type: boolean
         input_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         output_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         remote_execution:
           $ref: '#/components/schemas/RestAPIExecutionConfig'
@@ -952,11 +944,11 @@ components:
           type: string
         input_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         output_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         parameters:
           additionalProperties:
@@ -1230,12 +1222,6 @@ components:
       - value
       - unit
       type: object
-    OnViolationAction:
-      enum:
-      - 0
-      - 1
-      - 2
-      type: integer
     OptimizerConfig:
       additionalProperties: false
       properties:
@@ -1262,11 +1248,11 @@ components:
       properties:
         input_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         output_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         remote_execution:
           $ref: '#/components/schemas/RestAPIExecutionConfig'
@@ -1561,17 +1547,7 @@ components:
       title: Response from the reward scoring. Batch of (prompt, response, score)
         tuples that pass the threshold.
       type: object
-    RunShieldResponse:
-      additionalProperties: false
-      properties:
-        responses:
-          items:
-            $ref: '#/components/schemas/ShieldResponse'
-          type: array
-      required:
-      - responses
-      type: object
-    RunShieldsRequest:
+    RunShieldRequest:
       additionalProperties: false
       properties:
         messages:
@@ -1582,13 +1558,49 @@ components:
             - $ref: '#/components/schemas/ToolResponseMessage'
             - $ref: '#/components/schemas/CompletionMessage'
           type: array
-        shields:
-          items:
-            $ref: '#/components/schemas/ShieldDefinition'
-          type: array
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        shield:
+          type: string
       required:
+      - shield
       - messages
-      - shields
+      - params
+      type: object
+    RunShieldResponse:
+      additionalProperties: false
+      properties:
+        violation:
+          $ref: '#/components/schemas/SafetyViolation'
+      type: object
+    SafetyViolation:
+      additionalProperties: false
+      properties:
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        user_message:
+          type: string
+        violation_level:
+          $ref: '#/components/schemas/ViolationLevel'
+      required:
+      - violation_level
+      - metadata
       type: object
     SamplingParams:
       additionalProperties: false
@@ -1651,6 +1663,8 @@ components:
     SearchToolDefinition:
       additionalProperties: false
       properties:
+        api_key:
+          type: string
         engine:
           enum:
           - bing
@@ -1658,11 +1672,11 @@ components:
           type: string
         input_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         output_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         remote_execution:
           $ref: '#/components/schemas/RestAPIExecutionConfig'
@@ -1671,6 +1685,7 @@ components:
           type: string
       required:
       - type
+      - api_key
       - engine
       type: object
     Session:
@@ -1702,8 +1717,6 @@ components:
         completed_at:
           format: date-time
           type: string
-        response:
-          $ref: '#/components/schemas/ShieldResponse'
         started_at:
           format: date-time
           type: string
@@ -1714,49 +1727,12 @@ components:
           type: string
         turn_id:
           type: string
+        violation:
+          $ref: '#/components/schemas/SafetyViolation'
       required:
       - turn_id
       - step_id
       - step_type
-      - response
-      type: object
-    ShieldDefinition:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        execution_config:
-          $ref: '#/components/schemas/RestAPIExecutionConfig'
-        on_violation_action:
-          $ref: '#/components/schemas/OnViolationAction'
-        parameters:
-          additionalProperties:
-            $ref: '#/components/schemas/ToolParamDefinition'
-          type: object
-        shield_type:
-          oneOf:
-          - $ref: '#/components/schemas/BuiltinShield'
-          - type: string
-      required:
-      - shield_type
-      - on_violation_action
-      type: object
-    ShieldResponse:
-      additionalProperties: false
-      properties:
-        is_violation:
-          type: boolean
-        shield_type:
-          oneOf:
-          - $ref: '#/components/schemas/BuiltinShield'
-          - type: string
-        violation_return_message:
-          type: string
-        violation_type:
-          type: string
-      required:
-      - shield_type
-      - is_violation
       type: object
     SpanEndPayload:
       additionalProperties: false
@@ -2333,16 +2309,24 @@ components:
       - role
       - content
       type: object
+    ViolationLevel:
+      enum:
+      - info
+      - warn
+      - error
+      type: string
     WolframAlphaToolDefinition:
       additionalProperties: false
       properties:
+        api_key:
+          type: string
         input_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         output_shields:
           items:
-            $ref: '#/components/schemas/ShieldDefinition'
+            type: string
           type: array
         remote_execution:
           $ref: '#/components/schemas/RestAPIExecutionConfig'
@@ -2351,12 +2335,13 @@ components:
           type: string
       required:
       - type
+      - api_key
       type: object
 info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-17 12:55:45.538053"
+    \ draft and subject to change.\n                Generated at 2024-09-20 14:53:17.090953"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2364,7 +2349,14 @@ openapi: 3.1.0
 paths:
   /agents/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2382,7 +2374,14 @@ paths:
       - Agents
   /agents/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2396,7 +2395,14 @@ paths:
       - Agents
   /agents/session/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2414,7 +2420,14 @@ paths:
       - Agents
   /agents/session/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2437,6 +2450,13 @@ paths:
       - in: query
         name: session_id
         required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
         schema:
           type: string
       requestBody:
@@ -2472,6 +2492,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2483,7 +2510,14 @@ paths:
       - Agents
   /agents/turn/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2512,6 +2546,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2523,7 +2564,14 @@ paths:
       - Agents
   /batch_inference/chat_completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2541,7 +2589,14 @@ paths:
       - BatchInference
   /batch_inference/completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2559,7 +2614,14 @@ paths:
       - BatchInference
   /datasets/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2573,7 +2635,14 @@ paths:
       - Datasets
   /datasets/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2593,6 +2662,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2610,6 +2686,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2621,7 +2704,14 @@ paths:
       - Evaluations
   /evaluate/job/cancel:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2641,6 +2731,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2658,6 +2755,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2669,7 +2773,14 @@ paths:
       - Evaluations
   /evaluate/jobs:
     get:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2681,7 +2792,14 @@ paths:
       - Evaluations
   /evaluate/question_answering/:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2699,7 +2817,14 @@ paths:
       - Evaluations
   /evaluate/summarization/:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2717,7 +2842,14 @@ paths:
       - Evaluations
   /evaluate/text_generation/:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2735,7 +2867,14 @@ paths:
       - Evaluations
   /inference/chat_completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2755,7 +2894,14 @@ paths:
       - Inference
   /inference/completion:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2775,7 +2921,14 @@ paths:
       - Inference
   /inference/embeddings:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2793,7 +2946,14 @@ paths:
       - Inference
   /memory_bank/documents/delete:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2813,6 +2973,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2830,7 +2997,14 @@ paths:
       - Memory
   /memory_bank/insert:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2844,7 +3018,14 @@ paths:
       - Memory
   /memory_bank/query:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2862,7 +3043,14 @@ paths:
       - Memory
   /memory_bank/update:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2876,7 +3064,14 @@ paths:
       - Memory
   /memory_banks/create:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2894,7 +3089,14 @@ paths:
       - Memory
   /memory_banks/drop:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2918,6 +3120,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2931,7 +3140,14 @@ paths:
       - Memory
   /memory_banks/list:
     get:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2949,6 +3165,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2960,7 +3183,14 @@ paths:
       - PostTraining
   /post_training/job/cancel:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -2980,6 +3210,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2997,6 +3234,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3008,7 +3252,14 @@ paths:
       - PostTraining
   /post_training/jobs:
     get:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3020,7 +3271,14 @@ paths:
       - PostTraining
   /post_training/preference_optimize:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3038,7 +3296,14 @@ paths:
       - PostTraining
   /post_training/supervised_fine_tune:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3056,7 +3321,14 @@ paths:
       - PostTraining
   /reward_scoring/score:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3072,14 +3344,21 @@ paths:
           description: OK
       tags:
       - RewardScoring
-  /safety/run_shields:
+  /safety/run_shield:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RunShieldsRequest'
+              $ref: '#/components/schemas/RunShieldRequest'
         required: true
       responses:
         '200':
@@ -3092,7 +3371,14 @@ paths:
       - Safety
   /synthetic_data_generation/generate:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3116,6 +3402,13 @@ paths:
         required: true
         schema:
           type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -3127,7 +3420,14 @@ paths:
       - Telemetry
   /telemetry/log_event:
     post:
-      parameters: []
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -3145,16 +3445,16 @@ servers:
 - url: http://any-hosted-llama-stack.com
 tags:
 - name: Agents
-- name: Safety
-- name: SyntheticDataGeneration
-- name: Telemetry
-- name: Datasets
 - name: RewardScoring
 - name: Evaluations
+- name: Safety
+- name: Telemetry
 - name: PostTraining
+- name: Datasets
 - name: Inference
-- name: BatchInference
+- name: SyntheticDataGeneration
 - name: Memory
+- name: BatchInference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3258,17 +3558,12 @@ tags:
   name: CompletionResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentConfig" />
   name: AgentConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinShield" />
-  name: BuiltinShield
 - description: <SchemaDefinition schemaRef="#/components/schemas/CodeInterpreterToolDefinition"
     />
   name: CodeInterpreterToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
     />
   name: FunctionCallToolDefinition
-- description: <SchemaDefinition schemaRef="#/components/schemas/OnViolationAction"
-    />
-  name: OnViolationAction
 - description: <SchemaDefinition schemaRef="#/components/schemas/PhotogenToolDefinition"
     />
   name: PhotogenToolDefinition
@@ -3280,9 +3575,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/SearchToolDefinition"
     />
   name: SearchToolDefinition
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefinition"
-    />
-  name: ShieldDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
 - description: <SchemaDefinition schemaRef="#/components/schemas/WolframAlphaToolDefinition"
@@ -3333,10 +3625,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
     />
   name: MemoryRetrievalStep
+- description: <SchemaDefinition schemaRef="#/components/schemas/SafetyViolation"
+    />
+  name: SafetyViolation
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldCallStep" />
   name: ShieldCallStep
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldResponse" />
-  name: ShieldResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolExecutionStep"
     />
   name: ToolExecutionStep
@@ -3347,6 +3640,8 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/Turn" />'
   name: Turn
+- description: <SchemaDefinition schemaRef="#/components/schemas/ViolationLevel" />
+  name: ViolationLevel
 - description: 'Dataset to be used for training or evaluating language models.
 
 
@@ -3513,9 +3808,9 @@ tags:
   name: ScoredDialogGenerations
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
   name: ScoredMessage
-- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldsRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
     />
-  name: RunShieldsRequest
+  name: RunShieldRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldResponse"
     />
   name: RunShieldResponse
@@ -3579,7 +3874,6 @@ x-tagGroups:
   - BatchChatCompletionResponse
   - BatchCompletionRequest
   - BatchCompletionResponse
-  - BuiltinShield
   - BuiltinTool
   - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
@@ -3629,7 +3923,6 @@ x-tagGroups:
   - MemoryBankDocument
   - MemoryRetrievalStep
   - MetricEvent
-  - OnViolationAction
   - OptimizerConfig
   - PhotogenToolDefinition
   - PostTrainingJob
@@ -3646,8 +3939,9 @@ x-tagGroups:
   - RestAPIMethod
   - RewardScoreRequest
   - RewardScoringResponse
+  - RunShieldRequest
   - RunShieldResponse
-  - RunShieldsRequest
+  - SafetyViolation
   - SamplingParams
   - SamplingStrategy
   - ScoredDialogGenerations
@@ -3655,8 +3949,6 @@ x-tagGroups:
   - SearchToolDefinition
   - Session
   - ShieldCallStep
-  - ShieldDefinition
-  - ShieldResponse
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus
@@ -3686,4 +3978,5 @@ x-tagGroups:
   - UnstructuredLogEvent
   - UpdateDocumentsRequest
   - UserMessage
+  - ViolationLevel
   - WolframAlphaToolDefinition

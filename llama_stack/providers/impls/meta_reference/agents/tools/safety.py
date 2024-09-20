@@ -34,11 +34,11 @@ class SafeTool(BaseTool, ShieldRunnerMixin):
 
     async def run(self, messages: List[Message]) -> List[Message]:
         if self.input_shields:
-            await self.run_shields(messages, self.input_shields)
+            await self.run_multiple_shields(messages, self.input_shields)
         # run the underlying tool
         res = await self._tool.run(messages)
         if self.output_shields:
-            await self.run_shields(messages, self.output_shields)
+            await self.run_multiple_shields(messages, self.output_shields)
 
         return res
 

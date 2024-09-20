@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-17 12:55:45.538053"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-20 14:53:17.090953"
     },
     "servers": [
         {
@@ -46,7 +46,17 @@
                 "tags": [
                     "BatchInference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -76,7 +86,17 @@
                 "tags": [
                     "BatchInference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -99,7 +119,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -122,7 +152,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -159,7 +199,17 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -196,7 +246,17 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -226,7 +286,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -256,7 +326,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -286,7 +366,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -309,7 +399,17 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -339,7 +439,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -362,7 +472,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -385,7 +505,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -408,7 +538,17 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -431,7 +571,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -461,7 +611,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -491,7 +651,17 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -521,7 +691,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -551,7 +731,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -581,7 +771,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -624,6 +824,15 @@
                         "name": "session_id",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -682,6 +891,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -719,6 +937,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -748,6 +975,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -774,6 +1010,15 @@
                         "name": "bank_id",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -816,6 +1061,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -842,6 +1096,15 @@
                         "name": "job_uuid",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -874,6 +1137,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -895,7 +1167,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/memory_banks/get": {
@@ -930,6 +1212,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -956,6 +1247,15 @@
                         "name": "trace_id",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -988,6 +1288,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -1014,6 +1323,15 @@
                         "name": "job_uuid",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1046,6 +1364,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -1067,7 +1394,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/memory_bank/insert": {
@@ -1080,7 +1417,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1110,7 +1457,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/telemetry/log_event": {
@@ -1123,7 +1480,17 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1153,7 +1520,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1183,7 +1560,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1213,7 +1600,17 @@
                 "tags": [
                     "RewardScoring"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1226,7 +1623,7 @@
                 }
             }
         },
-        "/safety/run_shields": {
+        "/safety/run_shield": {
             "post": {
                 "responses": {
                     "200": {
@@ -1243,12 +1640,22 @@
                 "tags": [
                     "Safety"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RunShieldsRequest"
+                                "$ref": "#/components/schemas/RunShieldRequest"
                             }
                         }
                     },
@@ -1273,7 +1680,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1303,7 +1720,17 @@
                 "tags": [
                     "SyntheticDataGeneration"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1326,7 +1753,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2118,13 +2555,13 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "tools": {
@@ -2152,13 +2589,13 @@
                                         "input_shields": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/ShieldDefinition"
+                                                "type": "string"
                                             }
                                         },
                                         "output_shields": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/ShieldDefinition"
+                                                "type": "string"
                                             }
                                         },
                                         "type": {
@@ -2347,29 +2784,19 @@
                     "instructions"
                 ]
             },
-            "BuiltinShield": {
-                "type": "string",
-                "enum": [
-                    "llama_guard",
-                    "code_scanner_guard",
-                    "third_party_shield",
-                    "injection_shield",
-                    "jailbreak_shield"
-                ]
-            },
             "CodeInterpreterToolDefinition": {
                 "type": "object",
                 "properties": {
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
@@ -2395,13 +2822,13 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
@@ -2432,27 +2859,19 @@
                     "parameters"
                 ]
             },
-            "OnViolationAction": {
-                "type": "integer",
-                "enum": [
-                    0,
-                    1,
-                    2
-                ]
-            },
             "PhotogenToolDefinition": {
                 "type": "object",
                 "properties": {
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
@@ -2574,18 +2993,21 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
                         "const": "brave_search"
+                    },
+                    "api_key": {
+                        "type": "string"
                     },
                     "engine": {
                         "type": "string",
@@ -2601,42 +3023,8 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
+                    "api_key",
                     "engine"
-                ]
-            },
-            "ShieldDefinition": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinShield"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    },
-                    "on_violation_action": {
-                        "$ref": "#/components/schemas/OnViolationAction"
-                    },
-                    "execution_config": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "shield_type",
-                    "on_violation_action"
                 ]
             },
             "URL": {
@@ -2650,18 +3038,21 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
                         "const": "wolfram_alpha"
+                    },
+                    "api_key": {
+                        "type": "string"
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -2669,7 +3060,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type"
+                    "type",
+                    "api_key"
                 ]
             },
             "CreateAgentRequest": {
@@ -3078,6 +3470,47 @@
                     "inserted_context"
                 ]
             },
+            "SafetyViolation": {
+                "type": "object",
+                "properties": {
+                    "violation_level": {
+                        "$ref": "#/components/schemas/ViolationLevel"
+                    },
+                    "user_message": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "violation_level",
+                    "metadata"
+                ]
+            },
             "ShieldCallStep": {
                 "type": "object",
                 "properties": {
@@ -3099,45 +3532,15 @@
                         "type": "string",
                         "const": "shield_call"
                     },
-                    "response": {
-                        "$ref": "#/components/schemas/ShieldResponse"
+                    "violation": {
+                        "$ref": "#/components/schemas/SafetyViolation"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "turn_id",
                     "step_id",
-                    "step_type",
-                    "response"
-                ]
-            },
-            "ShieldResponse": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinShield"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "is_violation": {
-                        "type": "boolean"
-                    },
-                    "violation_type": {
-                        "type": "string"
-                    },
-                    "violation_return_message": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "shield_type",
-                    "is_violation"
+                    "step_type"
                 ]
             },
             "ToolExecutionStep": {
@@ -3290,6 +3693,14 @@
                     "started_at"
                 ],
                 "title": "A single turn in an interaction with an Agentic System."
+            },
+            "ViolationLevel": {
+                "type": "string",
+                "enum": [
+                    "info",
+                    "warn",
+                    "error"
+                ]
             },
             "TrainEvalDataset": {
                 "type": "object",
@@ -4773,9 +5184,12 @@
                     "score"
                 ]
             },
-            "RunShieldsRequest": {
+            "RunShieldRequest": {
                 "type": "object",
                 "properties": {
+                    "shield": {
+                        "type": "string"
+                    },
                     "messages": {
                         "type": "array",
                         "items": {
@@ -4795,33 +5209,47 @@
                             ]
                         }
                     },
-                    "shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "shield",
                     "messages",
-                    "shields"
+                    "params"
                 ]
             },
             "RunShieldResponse": {
                 "type": "object",
                 "properties": {
-                    "responses": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldResponse"
-                        }
+                    "violation": {
+                        "$ref": "#/components/schemas/SafetyViolation"
                     }
                 },
-                "additionalProperties": false,
-                "required": [
-                    "responses"
-                ]
+                "additionalProperties": false
             },
             "DoraFinetuningConfig": {
                 "type": "object",
@@ -5144,34 +5572,34 @@
             "name": "Agents"
         },
         {
-            "name": "Safety"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
             "name": "RewardScoring"
         },
         {
             "name": "Evaluations"
         },
         {
+            "name": "Safety"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
             "name": "PostTraining"
+        },
+        {
+            "name": "Datasets"
         },
         {
             "name": "Inference"
         },
         {
-            "name": "BatchInference"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Memory"
+        },
+        {
+            "name": "BatchInference"
         },
         {
             "name": "BuiltinTool",
@@ -5298,20 +5726,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentConfig\" />"
         },
         {
-            "name": "BuiltinShield",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinShield\" />"
-        },
-        {
             "name": "CodeInterpreterToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CodeInterpreterToolDefinition\" />"
         },
         {
             "name": "FunctionCallToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
-        },
-        {
-            "name": "OnViolationAction",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OnViolationAction\" />"
         },
         {
             "name": "PhotogenToolDefinition",
@@ -5328,10 +5748,6 @@
         {
             "name": "SearchToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SearchToolDefinition\" />"
-        },
-        {
-            "name": "ShieldDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefinition\" />"
         },
         {
             "name": "URL",
@@ -5402,12 +5818,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryRetrievalStep\" />"
         },
         {
-            "name": "ShieldCallStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
+            "name": "SafetyViolation",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SafetyViolation\" />"
         },
         {
-            "name": "ShieldResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldResponse\" />"
+            "name": "ShieldCallStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
         },
         {
             "name": "ToolExecutionStep",
@@ -5420,6 +5836,10 @@
         {
             "name": "Turn",
             "description": "A single turn in an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Turn\" />"
+        },
+        {
+            "name": "ViolationLevel",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
         },
         {
             "name": "TrainEvalDataset",
@@ -5630,8 +6050,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
         },
         {
-            "name": "RunShieldsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldsRequest\" />"
+            "name": "RunShieldRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldRequest\" />"
         },
         {
             "name": "RunShieldResponse",
@@ -5706,7 +6126,6 @@
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
-                "BuiltinShield",
                 "BuiltinTool",
                 "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
@@ -5756,7 +6175,6 @@
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "MetricEvent",
-                "OnViolationAction",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
@@ -5773,8 +6191,9 @@
                 "RestAPIMethod",
                 "RewardScoreRequest",
                 "RewardScoringResponse",
+                "RunShieldRequest",
                 "RunShieldResponse",
-                "RunShieldsRequest",
+                "SafetyViolation",
                 "SamplingParams",
                 "SamplingStrategy",
                 "ScoredDialogGenerations",
@@ -5782,8 +6201,6 @@
                 "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
-                "ShieldDefinition",
-                "ShieldResponse",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
@@ -5813,6 +6230,7 @@
                 "UnstructuredLogEvent",
                 "UpdateDocumentsRequest",
                 "UserMessage",
+                "ViolationLevel",
                 "WolframAlphaToolDefinition"
             ]
         }
