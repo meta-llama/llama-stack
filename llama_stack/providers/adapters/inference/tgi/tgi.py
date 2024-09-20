@@ -18,12 +18,6 @@ from llama_stack.providers.utils.inference.prepare_messages import prepare_messa
 
 from .config import TGIImplConfig
 
-HF_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "Meta-Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct",
-    "Meta-Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct",
-}
-
 
 class TGIAdapter(Inference):
     def __init__(self, config: TGIImplConfig) -> None:
