@@ -25,7 +25,6 @@ class BuiltinModelsImpl(Models):
         config: BuiltinImplConfig,
     ) -> None:
         self.config = config
-        cprint(self.config, "red")
         self.models = {
             entry.core_model_id: ModelSpec(
                 llama_model_metadata=resolve_model(entry.core_model_id),

@@ -53,7 +53,8 @@ async def instantiate_provider(
             args = [inner_impls, deps]
         elif isinstance(provider_config, str) and provider_config == "models-router":
             config = None
-            args = [[], deps]
+            assert len(deps) == 1 and Api.models in deps
+            args = [deps[Api.models]]
         else:
             raise ValueError(f"provider_config {provider_config} is not valid")
     else:

@@ -321,11 +321,9 @@ async def resolve_impls(
                 inner_specs=inner_specs,
             )
 
-    for k, v in specs.items():
-        cprint(k, "blue")
-        cprint(v, "blue")
-
     sorted_specs = topological_sort(specs.values())
+
+    cprint(f"sorted_specs={sorted_specs}", "red")
 
     impls = {}
     for spec in sorted_specs:
