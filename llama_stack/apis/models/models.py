@@ -1,11 +1,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_models.llama3.api.datatypes import Model
 
 from llama_models.schema_utils import json_schema_type, webmethod
+from llama_stack.distribution.datatypes import GenericProviderConfig
 from pydantic import BaseModel, Field
 
 
@@ -14,17 +15,14 @@ class ModelSpec(BaseModel):
     llama_model_metadata: Model = Field(
         description="All metadatas associated with llama model (defined in llama_models.models.sku_list). "
     )
-    providers_spec: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Map of API to the concrete provider specs. E.g. {}".format(
-            {
-                "inference": {
-                    "provider_type": "remote::8080",
-                    "url": "localhost::5555",
-                    "api_token": "hf_xxx",
-                },
-            }
-        ),
+    provider_id: str = Field(
+        description="API provider that is serving this model (e.g. meta-reference, local)",
+    )
+    api: str = Field(
+        description="API that this model is serving (e.g. inference / safety)",
+    )
+    provider_config: Dict[str, Any] = Field(
+        description="API provider config used for serving this model to the API provider `provider_id`"
     )
 
 
