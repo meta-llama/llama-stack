@@ -126,13 +126,13 @@ class ChatAgent(ShieldRunnerMixin):
         session = self.sessions[request.session_id]
 
         messages = []
+        if len(session.turns) == 0 and self.agent_config.instructions != "":
+            messages.append(SystemMessage(content=self.agent_config.instructions))
+
         for i, turn in enumerate(session.turns):
             messages.extend(self.turn_to_messages(turn))
 
         messages.extend(request.messages)
-
-        # print("processed dialog ======== ")
-        # print_dialog(messages)
 
         turn_id = str(uuid.uuid4())
         start_time = datetime.now()
