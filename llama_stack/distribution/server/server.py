@@ -389,7 +389,12 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
     cprint(f"StackRunConfig: {config}", "blue")
     app = FastAPI()
 
-    impls, specs = asyncio.run(resolve_impls_with_routing(config))
+    # check if routing table exists
+    if config.provider_routing_table is not None:
+        impls, specs = asyncio.run(resolve_impls_with_routing(config))
+    else:
+        # keeping this for backwards compatibility
+        impls, specs = asyncio.run(resolve_impls(config.provider_map))
 
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
