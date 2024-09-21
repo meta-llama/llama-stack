@@ -20,14 +20,14 @@ provider_routing_table:
         torch_seed: null
         max_seq_len: 4096
         max_batch_size: 1
-    - routing_key: Meta-Llama3.1-8B
-      provider_id: meta-reference
-      config:
-        model: Meta-Llama3.1-8B
-        quantization: null
-        torch_seed: null
-        max_seq_len: 4096
-        max_batch_size: 1
+    # - routing_key: Meta-Llama3.1-8B
+    #   provider_id: meta-reference
+    #   config:
+    #     model: Meta-Llama3.1-8B
+    #     quantization: null
+    #     torch_seed: null
+    #     max_seq_len: 4096
+    #     max_batch_size: 1
   # memory:
   #   - routing_key: keyvalue
   #     provider_id: remote::pgvector
