@@ -68,8 +68,7 @@ class FaissMemoryImpl(Memory):
         self.config = config
         self.cache = {}
 
-    async def initialize(self) -> None:
-        print("INIT meta-reference")
+    async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
 
