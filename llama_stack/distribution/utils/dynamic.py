@@ -16,6 +16,19 @@ def instantiate_class_type(fully_qualified_name):
     return getattr(module, class_name)
 
 
+async def instantiate_router(
+    provider_spec: RouterProviderSpec,
+    api: str,
+    provider_routing_table: Dict[str, Any],
+):
+    module = importlib.import_module(provider_spec.module)
+
+    fn = getattr(module, "get_router_impl")
+    impl = await fn(api, provider_routing_table)
+    impl.__provider_spec__ = provider_spec
+    return impl
+
+
 # returns a class implementing the protocol corresponding to the Api
 async def instantiate_provider(
     provider_spec: ProviderSpec,
@@ -35,22 +48,6 @@ async def instantiate_provider(
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider_config.config)
         args = [config, deps]
-    elif isinstance(provider_spec, RouterProviderSpec):
-        method = "get_router_impl"
-
-        assert isinstance(provider_config, list)
-        inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
-        inner_impls = []
-        for routing_entry in provider_config:
-            impl = await instantiate_provider(
-                inner_specs[routing_entry.provider_id],
-                deps,
-                routing_entry,
-            )
-            inner_impls.append((routing_entry.routing_key, impl))
-
-        config = None
-        args = [inner_impls, deps]
     else:
         method = "get_provider_impl"
 

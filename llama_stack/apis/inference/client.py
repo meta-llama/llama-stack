@@ -10,10 +10,10 @@ from typing import Any, AsyncGenerator
 
 import fire
 import httpx
-from pydantic import BaseModel
-from termcolor import cprint
 
 from llama_stack.distribution.datatypes import RemoteProviderConfig
+from pydantic import BaseModel
+from termcolor import cprint
 
 from .event_logger import EventLogger
 
@@ -104,11 +104,9 @@ async def run_main(host: str, port: int, stream: bool):
     )
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
-        ChatCompletionRequest(
-            model="Meta-Llama3.1-8B-Instruct",
-            messages=[message],
-            stream=stream,
-        )
+        model="Meta-Llama3.1-8B-Instruct",
+        messages=[message],
+        stream=stream,
     )
     async for log in EventLogger().log(iterator):
         log.print()

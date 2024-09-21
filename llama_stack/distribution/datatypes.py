@@ -43,6 +43,16 @@ class ProviderSpec(BaseModel):
     )
 
 
+class GenericProviderConfig(BaseModel):
+    provider_id: str
+    config: Dict[str, Any]
+
+
+@json_schema_type
+class ProviderRoutingEntry(GenericProviderConfig):
+    routing_key: str
+
+
 @json_schema_type
 class RouterProviderSpec(ProviderSpec):
     provider_id: str = "router"
@@ -50,24 +60,25 @@ class RouterProviderSpec(ProviderSpec):
 
     docker_image: Optional[str] = None
 
-    inner_specs: List[ProviderSpec]
+    routing_table: List[ProviderRoutingEntry] = Field(
+        default_factory=list,
+        description="Routing table entries corresponding to the API",
+    )
     module: str = Field(
         ...,
         description="""
-Fully-qualified name of the module to import. The module is expected to have:
+        Fully-qualified name of the module to import. The module is expected to have:
 
- - `get_router_impl(config, provider_specs, deps)`: returns the router implementation
-""",
+        - `get_router_impl(config, provider_specs, deps)`: returns the router implementation
+        """,
+    )
+    provider_data_validator: Optional[str] = Field(
+        default=None,
     )
 
     @property
     def pip_packages(self) -> List[str]:
         raise AssertionError("Should not be called on RouterProviderSpec")
-
-
-class GenericProviderConfig(BaseModel):
-    provider_id: str
-    config: Dict[str, Any]
 
 
 @json_schema_type
@@ -204,12 +215,7 @@ in the runtime configuration to help route to the correct provider.""",
     )
 
 
-@json_schema_type
-class ProviderRoutingEntry(GenericProviderConfig):
-    routing_key: str
-
-
-ProviderMapEntry = Union[GenericProviderConfig, List[ProviderRoutingEntry]]
+ProviderMapEntry = GenericProviderConfig
 
 
 @json_schema_type
@@ -247,6 +253,21 @@ As examples:
 - the "memory" API interprets the routing_key as the type of a "memory bank"
 
 The key may support wild-cards alsothe routing_key to route to the correct provider.""",
+    )
+    provider_routing_table: Dict[str, List[ProviderRoutingEntry]] = Field(
+        description="""
+        API: List[ProviderRoutingEntry] map. Each ProviderRoutingEntry is a (routing_key, provider_config) tuple.
+
+        E.g. The following is a ProviderRoutingEntry for inference API: 
+        - routing_key: Meta-Llama3.1-8B-Instruct
+          provider_id: meta-reference
+          config:
+              model: Meta-Llama3.1-8B-Instruct
+              quantization: null
+              torch_seed: null
+              max_seq_len: 4096
+              max_batch_size: 1
+        """
     )
 
 
