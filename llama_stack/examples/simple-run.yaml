@@ -36,4 +36,3 @@ provider_map:
   telemetry:
     provider_id: meta-reference
     config: {}
-provider_routing_table: {}
