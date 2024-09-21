@@ -6,10 +6,12 @@
 
 from typing import Any, Dict, List, Tuple
 
-from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.datatypes import Api, ProviderRoutingEntry
 
 
-async def get_router_impl(api: str, provider_routing_table: Dict[str, Any]):
+async def get_router_impl(
+    api: str, provider_routing_table: Dict[str, List[ProviderRoutingEntry]]
+):
     from .routers import InferenceRouter, MemoryRouter
     from .routing_table import RoutingTable
 
@@ -18,10 +20,9 @@ async def get_router_impl(api: str, provider_routing_table: Dict[str, Any]):
         "inference": InferenceRouter,
     }
 
+    # initialize routing table with concrete provider impls
     routing_table = RoutingTable(provider_routing_table)
-    routing_table.print()
 
     impl = api2routers[api](routing_table)
-    # impl = Router(api, provider_routing_table)
     await impl.initialize()
     return impl
