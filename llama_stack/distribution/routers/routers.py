@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Tuple
 
 from llama_stack.distribution.datatypes import Api
 
@@ -24,13 +24,22 @@ class MemoryRouter(Memory):
         self,
         routing_table: RoutingTable,
     ) -> None:
+        self.api = Api.memory.value
         self.routing_table = routing_table
+        self.bank_id_to_type = {}
 
     async def initialize(self) -> None:
-        pass
+        await self.routing_table.initialize(self.api)
 
     async def shutdown(self) -> None:
-        pass
+        await self.routing_table.shutdown(self.api)
+
+    def get_provider_from_bank_id(self, bank_id: str) -> Any:
+        bank_type = self.bank_id_to_type.get(bank_id)
+        if not bank_type:
+            raise ValueError(f"Could not find bank type for {bank_id}")
+
+        return self.routing_table.get_provider_impl(self.api, bank_type)
 
     async def create_memory_bank(
         self,
@@ -39,9 +48,16 @@ class MemoryRouter(Memory):
         url: Optional[URL] = None,
     ) -> MemoryBank:
         print("MemoryRouter: create_memory_bank")
+        bank_type = config.type
+        bank = await self.routing_table.get_provider_impl(
+            self.api, bank_type
+        ).create_memory_bank(name, config, url)
+        self.bank_id_to_type[bank.bank_id] = bank_type
+        return bank
 
     async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
         print("MemoryRouter: get_memory_bank")
+        return await self.get_provider_from_bank_id(bank_id).get_memory_bank(bank_id)
 
     async def insert_documents(
         self,
@@ -50,6 +66,9 @@ class MemoryRouter(Memory):
         ttl_seconds: Optional[int] = None,
     ) -> None:
         print("MemoryRouter: insert_documents")
+        return await self.get_provider_from_bank_id(bank_id).insert_documents(
+            bank_id, documents, ttl_seconds
+        )
 
     async def query_documents(
         self,
@@ -57,7 +76,9 @@ class MemoryRouter(Memory):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        print("query_documents")
+        return await self.get_provider_from_bank_id(bank_id).query_documents(
+            bank_id, query, params
+        )
 
 
 class InferenceRouter(Inference):
@@ -81,14 +102,13 @@ class InferenceRouter(Inference):
         model: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
-        # zero-shot tool definitions as input to the model
-        tools: Optional[List[ToolDefinition]] = list,
+        tools: Optional[List[ToolDefinition]] = [],
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        # TODO: we need to fix streaming response to align provider implementations with Protocol
+        # TODO: we need to fix streaming response to align provider implementations with Protocol.
         async for chunk in self.routing_table.get_provider_impl(
             self.api, model
         ).chat_completion(
