@@ -9,14 +9,12 @@ from typing import Any, List, Optional
 
 from redis.asyncio import Redis
 
-from llama_stack.apis.control_plane import *  # noqa: F403
+from ..api import *  # noqa: F403
+from ..config import RedisKVStoreImplConfig
 
 
-from .config import RedisImplConfig
-
-
-class RedisControlPlaneAdapter(ControlPlane):
-    def __init__(self, config: RedisImplConfig):
+class RedisKVStoreImpl(KVStore):
+    def __init__(self, config: RedisKVStoreImplConfig):
         self.config = config
 
     async def initialize(self) -> None:
@@ -35,20 +33,20 @@ class RedisControlPlaneAdapter(ControlPlane):
         if expiration:
             await self.redis.expireat(key, expiration)
 
-    async def get(self, key: str) -> Optional[ControlPlaneValue]:
+    async def get(self, key: str) -> Optional[KVStoreValue]:
         key = self._namespaced_key(key)
         value = await self.redis.get(key)
         if value is None:
             return None
         ttl = await self.redis.ttl(key)
         expiration = datetime.now() + timedelta(seconds=ttl) if ttl > 0 else None
-        return ControlPlaneValue(key=key, value=value, expiration=expiration)
+        return KVStoreValue(key=key, value=value, expiration=expiration)
 
     async def delete(self, key: str) -> None:
         key = self._namespaced_key(key)
         await self.redis.delete(key)
 
-    async def range(self, start_key: str, end_key: str) -> List[ControlPlaneValue]:
+    async def range(self, start_key: str, end_key: str) -> List[KVStoreValue]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
 

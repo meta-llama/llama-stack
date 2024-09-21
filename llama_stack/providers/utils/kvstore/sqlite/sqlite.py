@@ -10,14 +10,12 @@ from typing import Any, List, Optional
 
 import aiosqlite
 
-from llama_stack.apis.control_plane import *  # noqa: F403
+from ..api import *  # noqa: F403
+from ..config import SqliteKVStoreConfig
 
 
-from .config import SqliteControlPlaneConfig
-
-
-class SqliteControlPlane(ControlPlane):
-    def __init__(self, config: SqliteControlPlaneConfig):
+class SqliteKVStoreImpl(KVStore):
+    def __init__(self, config: SqliteKVStoreConfig):
         self.db_path = config.db_path
         self.table_name = config.table_name
 
@@ -44,7 +42,7 @@ class SqliteControlPlane(ControlPlane):
             )
             await db.commit()
 
-    async def get(self, key: str) -> Optional[ControlPlaneValue]:
+    async def get(self, key: str) -> Optional[KVStoreValue]:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute(
                 f"SELECT value, expiration FROM {self.table_name} WHERE key = ?", (key,)
@@ -53,7 +51,7 @@ class SqliteControlPlane(ControlPlane):
                 if row is None:
                     return None
                 value, expiration = row
-                return ControlPlaneValue(
+                return KVStoreValue(
                     key=key, value=json.loads(value), expiration=expiration
                 )
 
@@ -62,7 +60,7 @@ class SqliteControlPlane(ControlPlane):
             await db.execute(f"DELETE FROM {self.table_name} WHERE key = ?", (key,))
             await db.commit()
 
-    async def range(self, start_key: str, end_key: str) -> List[ControlPlaneValue]:
+    async def range(self, start_key: str, end_key: str) -> List[KVStoreValue]:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute(
                 f"SELECT key, value, expiration FROM {self.table_name} WHERE key >= ? AND key <= ?",
@@ -72,7 +70,7 @@ class SqliteControlPlane(ControlPlane):
                 async for row in cursor:
                     key, value, expiration = row
                     result.append(
-                        ControlPlaneValue(
+                        KVStoreValue(
                             key=key, value=json.loads(value), expiration=expiration
                         )
                     )

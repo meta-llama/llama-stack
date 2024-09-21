@@ -281,6 +281,7 @@ class AgentConfigCommon(BaseModel):
 class AgentConfig(AgentConfigCommon):
     model: str
     instructions: str
+    enable_session_persistence: bool
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):

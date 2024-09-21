@@ -16,7 +16,7 @@ from llama_stack.apis.safety import Safety
 from llama_stack.apis.agents import *  # noqa: F403
 
 from .agent_instance import ChatAgent
-from .config import MetaReferenceImplConfig
+from .config import MetaReferenceAgentsImplConfig
 from .tools.builtin import (
     CodeInterpreterTool,
     PhotogenTool,
@@ -33,10 +33,25 @@ logger.setLevel(logging.INFO)
 AGENT_INSTANCES_BY_ID = {}
 
 
+class KVStore(Protocol):
+    def get(self, key: str) -> str:
+        ...
+
+    def set(self, key: str, value: str) -> None:
+        ...
+
+def kvstore_impl(config: KVStoreConfig) -> KVStore:
+    if config.type == KVStoreType.redis:
+        from .kvstore_impls.redis import RedisKVStoreImpl
+        return RedisKVStoreImpl(config)
+
+    return None
+
+
 class MetaReferenceAgentsImpl(Agents):
     def __init__(
         self,
-        config: MetaReferenceImplConfig,
+        config: MetaReferenceAgentsImplConfig,
         inference_api: Inference,
         memory_api: Memory,
         safety_api: Safety,
@@ -45,6 +60,7 @@ class MetaReferenceAgentsImpl(Agents):
         self.inference_api = inference_api
         self.memory_api = memory_api
         self.safety_api = safety_api
+        self.kvstore = kvstore_impl(config.kvstore)
 
     async def initialize(self) -> None:
         pass
