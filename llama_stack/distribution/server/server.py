@@ -35,6 +35,9 @@ from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -42,9 +45,6 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 from llama_stack.distribution.distribution import api_endpoints, api_providers
@@ -287,21 +287,14 @@ def snake_to_camel(snake_str):
     return "".join(word.capitalize() for word in snake_str.split("_"))
 
 
-async def resolve_impls_with_routing(
-    stack_run_config: StackRunConfig,
-) -> Dict[Api, Any]:
-    raise NotImplementedError("This is not implemented yet")
-
-
 async def resolve_impls(
-    stack_run_config: StackRunConfig,
+    provider_map: Dict[str, ProviderMapEntry],
 ) -> Dict[Api, Any]:
     """
     Does two things:
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
-    provider_map = stack_run_config.provider_map
     all_providers = api_providers()
 
     specs = {}
@@ -351,7 +344,7 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
     app = FastAPI()
 
-    impls, specs = asyncio.run(resolve_impls(config))
+    impls, specs = asyncio.run(resolve_impls(config.provider_map))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
