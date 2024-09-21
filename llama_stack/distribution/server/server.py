@@ -15,6 +15,7 @@ from collections.abc import (
     AsyncIterator as AsyncIteratorABC,
 )
 from contextlib import asynccontextmanager
+from http import HTTPStatus
 from ssl import SSLError
 from typing import (
     Any,
@@ -88,7 +89,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-def translate_exception(exc: Exception) -> HTTPException:
+def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidationError]:
     if isinstance(exc, ValidationError):
         exc = RequestValidationError(exc.raw_errors)
 
@@ -407,11 +408,21 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     return impls, specs
 
 
+
 def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
     with open(yaml_config, "r") as fp:
         config = StackRunConfig(**yaml.safe_load(fp))
 
     app = FastAPI()
+
+    # Health check is added to enable deploying the docker container image on Kubernetes which require
+    # a health check that can return 200 for readiness and liveness check
+    class HealthCheck(BaseModel):
+        status: str = "OK"
+
+    @app.get("/healthcheck", status_code=HTTPStatus.OK, response_model=HealthCheck)
+    async def healthcheck():
+        return HealthCheck(status="OK")
 
     impls, specs = asyncio.run(resolve_impls_with_routing(config))
     if Api.telemetry in impls:
