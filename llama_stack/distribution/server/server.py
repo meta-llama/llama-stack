@@ -290,18 +290,18 @@ def snake_to_camel(snake_str):
 async def resolve_impls_with_routing(
     stack_run_config: StackRunConfig,
 ) -> Dict[Api, Any]:
-
     raise NotImplementedError("This is not implemented yet")
 
 
 async def resolve_impls(
-    provider_map: Dict[str, ProviderMapEntry],
+    stack_run_config: StackRunConfig,
 ) -> Dict[Api, Any]:
     """
     Does two things:
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
+    provider_map = stack_run_config.provider_map
     all_providers = api_providers()
 
     specs = {}
@@ -349,15 +349,9 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
     with open(yaml_config, "r") as fp:
         config = StackRunConfig(**yaml.safe_load(fp))
 
-    cprint(f"StackRunConfig: {config}", "blue")
     app = FastAPI()
 
-    # check if routing table exists
-    if config.provider_routing_table is not None:
-        impls, specs = asyncio.run(resolve_impls_with_routing(config))
-    else:
-        impls, specs = asyncio.run(resolve_impls(config.provider_map))
-
+    impls, specs = asyncio.run(resolve_impls(config))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
