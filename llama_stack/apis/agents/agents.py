@@ -151,6 +151,7 @@ MemoryQueryGeneratorConfig = Annotated[
 ]
 
 
+@json_schema_type
 class MemoryToolDefinition(ToolDefinitionCommon):
     type: Literal[AgentTool.memory.value] = AgentTool.memory.value
     memory_bank_configs: List[MemoryBankConfig] = Field(default_factory=list)
