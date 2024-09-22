@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type
 
@@ -138,10 +138,6 @@ Fully-qualified name of the module to import. The module is expected to have:
     )
     provider_data_validator: Optional[str] = Field(
         default=None,
-    )
-    supported_model_ids: List[str] = Field(
-        default_factory=list,
-        description="The list of model ids that this adapter supports",
     )
 
 

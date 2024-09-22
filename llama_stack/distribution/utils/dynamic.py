@@ -38,6 +38,7 @@ async def instantiate_provider(
     elif isinstance(provider_spec, AutoRoutedProviderSpec):
         method = "get_auto_router_impl"
 
+        config = None
         args = [provider_spec.api, deps[provider_spec.routing_table_api], deps]
     elif isinstance(provider_spec, RoutingTableProviderSpec):
         method = "get_routing_table_impl"

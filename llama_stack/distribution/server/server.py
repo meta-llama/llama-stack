@@ -47,7 +47,11 @@ from llama_stack.providers.utils.telemetry.tracing import (
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
-from llama_stack.distribution.distribution import api_endpoints, api_providers
+from llama_stack.distribution.distribution import (
+    api_endpoints,
+    api_providers,
+    builtin_automatically_routed_apis,
+)
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.utils.dynamic import instantiate_provider
 
@@ -310,8 +314,12 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         specs[api] = providers[config.provider_id]
         configs[api] = config
 
+    apis_to_serve = run_config.apis_to_serve or set(
+        list(specs.keys()) + list(run_config.routing_tables.keys())
+    )
+    print("apis_to_serve", apis_to_serve)
     for info in builtin_automatically_routed_apis():
-        source_api = info.api_with_routing_table
+        source_api = info.routing_table_api
 
         assert (
             source_api not in specs
@@ -319,6 +327,9 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         assert (
             info.router_api not in specs
         ), f"Auto-routed API {info.router_api} specified in wrong place?"
+
+        if info.router_api.value not in apis_to_serve:
+            continue
 
         if source_api.value not in run_config.routing_tables:
             raise ValueError(f"Routing table for `{source_api.value}` is not provided?")
@@ -352,7 +363,10 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         configs[info.router_api] = {}
 
     sorted_specs = topological_sort(specs.values())
-
+    print(f"Resolved {len(sorted_specs)} providers in topological order")
+    for spec in sorted_specs:
+        print(f"  {spec.api}: {spec.provider_id}")
+    print("")
     impls = {}
     for spec in sorted_specs:
         api = spec.api
@@ -376,9 +390,17 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
     all_endpoints = api_endpoints()
 
-    apis_to_serve = config.apis_to_serve or list(config.provider_map.keys())
+    if config.apis_to_serve:
+        apis_to_serve = set(config.apis_to_serve)
+        for inf in builtin_automatically_routed_apis():
+            if inf.router_api.value in apis_to_serve:
+                apis_to_serve.add(inf.routing_table_api)
+    else:
+        apis_to_serve = set(impls.keys())
+
     for api_str in apis_to_serve:
         api = Api(api_str)
+
         endpoints = all_endpoints[api]
         impl = impls[api]
 
@@ -405,7 +427,11 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
                     create_dynamic_typed_route(
                         impl_method,
                         endpoint.method,
-                        provider_spec.provider_data_validator,
+                        (
+                            provider_spec.provider_data_validator
+                            if not isinstance(provider_spec, RoutingTableProviderSpec)
+                            else None
+                        ),
                     )
                 )
 

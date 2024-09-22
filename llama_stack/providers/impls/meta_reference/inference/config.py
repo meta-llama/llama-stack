@@ -6,17 +6,14 @@
 
 from typing import Optional
 
-from llama_models.datatypes import ModelFamily
-
-from llama_models.schema_utils import json_schema_type
+from llama_models.datatypes import *  # noqa: F403
 from llama_models.sku_list import all_registered_models, resolve_model
+
+from llama_stack.apis.inference import *  # noqa: F401, F403
 
 from pydantic import BaseModel, Field, field_validator
 
-from llama_stack.apis.inference import QuantizationConfig
 
-
-@json_schema_type
 class MetaReferenceImplConfig(BaseModel):
     model: str = Field(
         default="Meta-Llama3.1-8B-Instruct",
@@ -34,6 +31,7 @@ class MetaReferenceImplConfig(BaseModel):
             m.descriptor()
             for m in all_registered_models()
             if m.model_family == ModelFamily.llama3_1
+            or m.core_model_id == CoreModelId.llama_guard_3_8b
         ]
         if model not in permitted_models:
             model_list = "\n\t".join(permitted_models)

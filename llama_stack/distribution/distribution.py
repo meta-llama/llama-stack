@@ -35,22 +35,22 @@ def stack_apis() -> List[Api]:
 
 
 class AutoRoutedApiInfo(BaseModel):
-    api_with_routing_table: Api
+    routing_table_api: Api
     router_api: Api
 
 
 def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
     return [
         AutoRoutedApiInfo(
-            api_with_routing_table=Api.models,
+            routing_table_api=Api.models,
             router_api=Api.inference,
         ),
         AutoRoutedApiInfo(
-            api_with_routing_table=Api.shields,
+            routing_table_api=Api.shields,
             router_api=Api.safety,
         ),
         AutoRoutedApiInfo(
-            api_with_routing_table=Api.memory_banks,
+            routing_table_api=Api.memory_banks,
             router_api=Api.memory,
         ),
     ]
@@ -97,7 +97,7 @@ def api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
 def api_providers() -> Dict[Api, Dict[str, ProviderSpec]]:
     ret = {}
     routing_table_apis = set(
-        x.api_with_routing_table for x in builtin_automatically_routed_apis()
+        x.routing_table_api for x in builtin_automatically_routed_apis()
     )
     for api in stack_apis():
         if api in routing_table_apis:

@@ -6,7 +6,7 @@
 
 from typing import List, Optional, Protocol
 
-from llama_memory_banks.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.memory import MemoryBankType
