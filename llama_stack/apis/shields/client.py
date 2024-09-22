@@ -12,10 +12,10 @@ import fire
 import httpx
 from termcolor import cprint
 
-from .models import *  # noqa: F403
+from .shields import *  # noqa: F403
 
 
-class ModelsClient(Models):
+class ShieldsClient(Shields):
     def __init__(self, base_url: str):
         self.base_url = base_url
 
@@ -25,42 +25,38 @@ class ModelsClient(Models):
     async def shutdown(self) -> None:
         pass
 
-    async def list_models(self) -> List[ModelServingSpec]:
+    async def list_shields(self) -> List[ShieldSpec]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{self.base_url}/models/list",
+                f"{self.base_url}/shields/list",
                 headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
-            return [ModelServingSpec(**x) for x in response.json()]
+            return [ShieldSpec(**x) for x in response.json()]
 
-    async def get_model(self, core_model_id: str) -> Optional[ModelServingSpec]:
+    async def get_shield(self, shield_type: str) -> Optional[ShieldSpec]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{self.base_url}/models/get",
+                f"{self.base_url}/shields/get",
                 json={
-                    "core_model_id": core_model_id,
+                    "shield_type": shield_type,
                 },
                 headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
+
             j = response.json()
             if j is None:
                 return None
-            return ModelServingSpec(**j)
+
+            return ShieldSpec(**j)
 
 
 async def run_main(host: str, port: int, stream: bool):
-    client = ModelsClient(f"http://{host}:{port}")
+    client = ShieldsClient(f"http://{host}:{port}")
 
-    response = await client.list_models()
-    cprint(f"list_models response={response}", "green")
-
-    response = await client.get_model("Meta-Llama3.1-8B-Instruct")
-    cprint(f"get_model response={response}", "blue")
-
-    response = await client.get_model("Llama-Guard-3-8B")
-    cprint(f"get_model response={response}", "red")
+    response = await client.list_shields()
+    cprint(f"list_shields response={response}", "green")
 
 
 def main(host: str, port: int, stream: bool = True):

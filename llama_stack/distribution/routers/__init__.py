@@ -6,23 +6,46 @@
 
 from typing import Any, Dict, List, Tuple
 
-from llama_stack.distribution.datatypes import Api, ProviderRoutingEntry
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
-async def get_router_impl(
-    api: str, provider_routing_table: Dict[str, List[ProviderRoutingEntry]]
-):
-    from .routers import InferenceRouter, MemoryRouter
-    from .routing_table import RoutingTable
+async def get_routing_table_impl(
+    api: Api,
+    inner_impls: List[Tuple[str, Any]],
+    routing_table_config: RoutingTableConfig,
+    _deps,
+) -> Dict[str, List[ProviderRoutingEntry]]:
+    from .routing_tables import (
+        MemoryBanksRoutingTable,
+        ModelsRoutingTable,
+        ShieldsRoutingTable,
+    )
 
-    api2routers = {
+    api_to_tables = {
+        "memory": MemoryBanksRoutingTable,
+        "inference": ModelsRoutingTable,
+        "safety": ShieldsRoutingTable,
+    }
+    if api.value not in api_to_tables:
+        raise ValueError(f"API {api.value} not found in router map")
+
+    impl = api_to_tables[api.value](inner_impls, routing_table_config)
+    await impl.initialize()
+    return impl
+
+
+async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> Any:
+    from .routers import InferenceRouter, MemoryRouter, SafetyRouter
+
+    # TODO: make this completely dynamic
+    api_to_routers = {
         "memory": MemoryRouter,
         "inference": InferenceRouter,
+        "safety": SafetyRouter,
     }
+    if api.value not in api_to_routers:
+        raise ValueError(f"API {api.value} not found in router map")
 
-    # initialize routing table with concrete provider impls
-    routing_table = RoutingTable(provider_routing_table)
-
-    impl = api2routers[api](routing_table)
+    impl = api_to_routers[api.value](routing_table)
     await impl.initialize()
     return impl

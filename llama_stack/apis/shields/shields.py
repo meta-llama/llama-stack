@@ -6,8 +6,6 @@
 
 from typing import List, Optional, Protocol
 
-from llama_models.llama3.api.datatypes import Model
-
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
@@ -15,18 +13,16 @@ from llama_stack.distribution.datatypes import GenericProviderConfig
 
 
 @json_schema_type
-class ModelServingSpec(BaseModel):
-    llama_model: Model = Field(
-        description="All metadatas associated with llama model (defined in llama_models.models.sku_list).",
-    )
+class ShieldSpec(BaseModel):
+    shield_type: str
     provider_config: GenericProviderConfig = Field(
         description="Provider config for the model, including provider_id, and corresponding config. ",
     )
 
 
-class Models(Protocol):
-    @webmethod(route="/models/list", method="GET")
-    async def list_models(self) -> List[ModelServingSpec]: ...
+class Shields(Protocol):
+    @webmethod(route="/shields/list", method="GET")
+    async def list_shields(self) -> List[ShieldSpec]: ...
 
-    @webmethod(route="/models/get", method="GET")
-    async def get_model(self, core_model_id: str) -> Optional[ModelsGetResponse]: ...
+    @webmethod(route="/shields/get", method="GET")
+    async def get_shield(self, shield_type: str) -> Optional[ShieldSpec]: ...

@@ -3,9 +3,5 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel
 
-
-@json_schema_type
-class BuiltinImplConfig(BaseModel): ...
+from .memory_banks import *  # noqa: F401 F403
