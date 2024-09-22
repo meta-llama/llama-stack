@@ -38,7 +38,7 @@ from .tools.builtin import (
     SearchTool,
     WolframAlphaTool,
 )
-from .tools.safety import with_safety
+from .tools.safety import SafeTool
 
 
 def make_random_string(length: int = 8):
@@ -87,7 +87,7 @@ class ChatAgent(ShieldRunnerMixin):
                 continue
 
             builtin_tools.append(
-                with_safety(
+                SafeTool(
                     tool,
                     safety_api,
                     tool_defn.input_shields,

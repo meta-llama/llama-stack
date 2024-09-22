@@ -41,17 +41,3 @@ class SafeTool(BaseTool, ShieldRunnerMixin):
             await self.run_multiple_shields(messages, self.output_shields)
 
         return res
-
-
-def with_safety(
-    tool: BaseTool,
-    safety_api: Safety,
-    input_shields: List[str] = None,
-    output_shields: List[str] = None,
-) -> SafeTool:
-    return SafeTool(
-        tool,
-        safety_api,
-        input_shields=input_shields,
-        output_shields=output_shields,
-    )
