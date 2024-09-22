@@ -13,10 +13,9 @@ import fire
 import httpx
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 from pydantic import BaseModel
 from termcolor import cprint
-
-from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from llama_stack.apis.safety import *  # noqa: F403
 
@@ -62,6 +61,24 @@ class SafetyClient(Safety):
             content = response.json()
             return RunShieldResponse(**content)
 
+    async def list_shields(self) -> ListShieldsResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/safety/list_shields",
+                json={},
+                headers={"Content-Type": "application/json"},
+                timeout=20,
+            )
+
+            if response.status_code != 200:
+                content = await response.aread()
+                error = f"Error: HTTP {response.status_code} {content.decode()}"
+                cprint(error, "red")
+                raise Exception(error)
+
+            content = response.json()
+            return ListShieldsResponse(**content)
+
 
 async def run_main(host: str, port: int):
     client = SafetyClient(f"http://{host}:{port}")
@@ -81,6 +98,9 @@ async def run_main(host: str, port: int):
             shield_type="injection_shield",
             messages=[message],
         )
+        print(response)
+
+        response = await client.list_shields()
         print(response)
 
 
