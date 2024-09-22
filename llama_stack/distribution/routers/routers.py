@@ -47,7 +47,6 @@ class MemoryRouter(Memory):
         config: MemoryBankConfig,
         url: Optional[URL] = None,
     ) -> MemoryBank:
-        print("MemoryRouter: create_memory_bank")
         bank_type = config.type
         bank = await self.routing_table.get_provider_impl(
             self.api, bank_type
@@ -56,7 +55,6 @@ class MemoryRouter(Memory):
         return bank
 
     async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        print("MemoryRouter: get_memory_bank")
         return await self.get_provider_from_bank_id(bank_id).get_memory_bank(bank_id)
 
     async def insert_documents(
@@ -65,7 +63,6 @@ class MemoryRouter(Memory):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        print("MemoryRouter: insert_documents")
         return await self.get_provider_from_bank_id(bank_id).insert_documents(
             bank_id, documents, ttl_seconds
         )
