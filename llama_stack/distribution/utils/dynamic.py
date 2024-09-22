@@ -29,6 +29,18 @@ async def instantiate_router(
     return impl
 
 
+async def instantiate_builtin_provider(
+    provider_spec: BuiltinProviderSpec,
+    run_config: StackRunConfig,
+):
+    print("!!! instantiate_builtin_provider")
+    module = importlib.import_module(provider_spec.module)
+    fn = getattr(module, "get_builtin_impl")
+    impl = await fn(run_config)
+    impl.__provider_spec__ = provider_spec
+    return impl
+
+
 # returns a class implementing the protocol corresponding to the Api
 async def instantiate_provider(
     provider_spec: ProviderSpec,

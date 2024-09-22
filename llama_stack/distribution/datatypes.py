@@ -20,6 +20,7 @@ class Api(Enum):
     agents = "agents"
     memory = "memory"
     telemetry = "telemetry"
+    models = "models"
 
 
 @json_schema_type
@@ -79,6 +80,29 @@ class RouterProviderSpec(ProviderSpec):
     @property
     def pip_packages(self) -> List[str]:
         raise AssertionError("Should not be called on RouterProviderSpec")
+
+
+@json_schema_type
+class BuiltinProviderSpec(ProviderSpec):
+    provider_id: str = "builtin"
+    config_class: str = ""
+    docker_image: Optional[str] = None
+    api_dependencies: List[Api] = []
+    provider_data_validator: Optional[str] = Field(
+        default=None,
+    )
+    module: str = Field(
+        ...,
+        description="""
+        Fully-qualified name of the module to import. The module is expected to have:
+
+        - `get_router_impl(config, provider_specs, deps)`: returns the router implementation
+        """,
+    )
+    pip_packages: List[str] = Field(
+        default_factory=list,
+        description="The pip dependencies needed for this implementation",
+    )
 
 
 @json_schema_type

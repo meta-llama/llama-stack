@@ -29,17 +29,12 @@ class ModelServingSpec(BaseModel):
 
 @json_schema_type
 class ModelsListResponse(BaseModel):
-    models_list: List[ModelSpec]
+    models_list: List[ModelServingSpec]
 
 
 @json_schema_type
 class ModelsGetResponse(BaseModel):
-    core_model_spec: Optional[ModelSpec] = None
-
-
-@json_schema_type
-class ModelsRegisterResponse(BaseModel):
-    core_model_spec: Optional[ModelSpec] = None
+    core_model_spec: Optional[ModelServingSpec] = None
 
 
 class Models(Protocol):
