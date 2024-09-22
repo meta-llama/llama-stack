@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.providers.utils.kvstore import kvstore_dependencies
 
 
@@ -29,5 +29,14 @@ def available_providers() -> List[ProviderSpec]:
                 Api.safety,
                 Api.memory,
             ],
+        ),
+        remote_provider_spec(
+            api=Api.agents,
+            adapter=AdapterSpec(
+                adapter_id="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.agents.sample",
+                config_class="llama_stack.providers.adapters.agents.sample.SampleConfig",
+            ),
         ),
     ]

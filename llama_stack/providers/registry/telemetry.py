@@ -18,4 +18,13 @@ def available_providers() -> List[ProviderSpec]:
             module="llama_stack.providers.impls.meta_reference.telemetry",
             config_class="llama_stack.providers.impls.meta_reference.telemetry.ConsoleConfig",
         ),
+        remote_provider_spec(
+            api=Api.telemetry,
+            adapter=AdapterSpec(
+                adapter_id="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.telemetry.sample",
+                config_class="llama_stack.providers.adapters.telemetry.sample.SampleConfig",
+            ),
+        ),
     ]
