@@ -8,6 +8,8 @@ from typing import Any, Dict
 
 from llama_stack.distribution.datatypes import Api, ProviderSpec, StackRunConfig
 
+from .config import BuiltinImplConfig  # noqa
+
 
 async def get_builtin_impl(config: StackRunConfig):
     from .models import BuiltinModelsImpl

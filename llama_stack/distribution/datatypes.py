@@ -283,6 +283,7 @@ As examples:
 The key may support wild-cards alsothe routing_key to route to the correct provider.""",
     )
     provider_routing_table: Dict[str, List[ProviderRoutingEntry]] = Field(
+        default_factory=dict,
         description="""
         API: List[ProviderRoutingEntry] map. Each ProviderRoutingEntry is a (routing_key, provider_config) tuple.
 
@@ -295,7 +296,7 @@ The key may support wild-cards alsothe routing_key to route to the correct provi
               torch_seed: null
               max_seq_len: 4096
               max_batch_size: 1
-        """
+        """,
     )
 
 
