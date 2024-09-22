@@ -4,9 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import List, Optional
 
 import aiosqlite
 
@@ -33,12 +32,12 @@ class SqliteKVStoreImpl(KVStore):
             await db.commit()
 
     async def set(
-        self, key: str, value: Any, expiration: Optional[datetime] = None
+        self, key: str, value: str, expiration: Optional[datetime] = None
     ) -> None:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
                 f"INSERT OR REPLACE INTO {self.table_name} (key, value, expiration) VALUES (?, ?, ?)",
-                (key, json.dumps(value), expiration),
+                (key, value, expiration),
             )
             await db.commit()
 
@@ -51,9 +50,7 @@ class SqliteKVStoreImpl(KVStore):
                 if row is None:
                     return None
                 value, expiration = row
-                return KVStoreValue(
-                    key=key, value=json.loads(value), expiration=expiration
-                )
+                return KVStoreValue(key=key, value=value, expiration=expiration)
 
     async def delete(self, key: str) -> None:
         async with aiosqlite.connect(self.db_path) as db:
@@ -70,8 +67,6 @@ class SqliteKVStoreImpl(KVStore):
                 async for row in cursor:
                     key, value, expiration = row
                     result.append(
-                        KVStoreValue(
-                            key=key, value=json.loads(value), expiration=expiration
-                        )
+                        KVStoreValue(key=key, value=value, expiration=expiration)
                     )
                 return result

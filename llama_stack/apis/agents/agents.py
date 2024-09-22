@@ -276,6 +276,8 @@ class AgentConfigCommon(BaseModel):
         default=ToolPromptFormat.json
     )
 
+    max_infer_iters: int = 10
+
 
 @json_schema_type
 class AgentConfig(AgentConfigCommon):

@@ -83,10 +83,12 @@ def prompt_for_discriminated_union(
     if isinstance(typ, FieldInfo):
         inner_type = typ.annotation
         discriminator = typ.discriminator
+        default_value = typ.default
     else:
         args = get_args(typ)
         inner_type = args[0]
         discriminator = args[1].discriminator
+        default_value = args[1].default
 
     union_types = get_args(inner_type)
     # Find the discriminator field in each union type
@@ -99,9 +101,14 @@ def prompt_for_discriminated_union(
                 type_map[value] = t
 
     while True:
-        discriminator_value = input(
-            f"Enter `{discriminator}` for {field_name} (options: {', '.join(type_map.keys())}): "
-        )
+        prompt = f"Enter `{discriminator}` for {field_name} (options: {', '.join(type_map.keys())})"
+        if default_value is not None:
+            prompt += f" (default: {default_value})"
+
+        discriminator_value = input(f"{prompt}: ")
+        if discriminator_value == "" and default_value is not None:
+            discriminator_value = default_value
+
         if discriminator_value in type_map:
             chosen_type = type_map[discriminator_value]
             print(f"\nConfiguring {chosen_type.__name__}:")

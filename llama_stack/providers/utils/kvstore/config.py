@@ -14,7 +14,7 @@ from typing_extensions import Annotated
 class KVStoreType(Enum):
     redis = "redis"
     sqlite = "sqlite"
-    pgvector = "pgvector"
+    postgres = "postgres"
 
 
 class CommonConfig(BaseModel):
@@ -37,8 +37,8 @@ class SqliteKVStoreImplConfig(CommonConfig):
     )
 
 
-class PGVectorKVStoreImplConfig(CommonConfig):
-    type: Literal[KVStoreType.pgvector.value] = KVStoreType.pgvector.value
+class PostgresKVStoreImplConfig(CommonConfig):
+    type: Literal[KVStoreType.postgres.value] = KVStoreType.postgres.value
     host: str = "localhost"
     port: int = 5432
     db: str = "llamastack"
@@ -47,6 +47,6 @@ class PGVectorKVStoreImplConfig(CommonConfig):
 
 
 KVStoreConfig = Annotated[
-    Union[RedisKVStoreImplConfig, SqliteKVStoreImplConfig, PGVectorKVStoreImplConfig],
-    Field(discriminator="type"),
+    Union[RedisKVStoreImplConfig, SqliteKVStoreImplConfig, PostgresKVStoreImplConfig],
+    Field(discriminator="type", default=KVStoreType.sqlite.value),
 ]

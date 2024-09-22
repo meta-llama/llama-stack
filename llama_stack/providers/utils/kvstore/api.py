@@ -5,20 +5,20 @@
 # the root directory of this source tree.
 
 from datetime import datetime
-from typing import Any, List, Optional, Protocol
+from typing import List, Optional, Protocol
 
 from pydantic import BaseModel
 
 
 class KVStoreValue(BaseModel):
     key: str
-    value: Any
+    value: str
     expiration: Optional[datetime] = None
 
 
 class KVStore(Protocol):
     async def set(
-        self, key: str, value: Any, expiration: Optional[datetime] = None
+        self, key: str, value: str, expiration: Optional[datetime] = None
     ) -> None: ...
 
     async def get(self, key: str) -> Optional[KVStoreValue]: ...

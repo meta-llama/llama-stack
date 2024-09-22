@@ -8,4 +8,4 @@ from llama_stack.providers.utils.kvstore import KVStoreConfig
 
 
 class MetaReferenceAgentsImplConfig(BaseModel):
-    kv_store: KVStoreConfig
+    persistence_store: KVStoreConfig
