@@ -80,7 +80,6 @@ class PGVectorIndex(EmbeddingIndex):
 
         values = []
         for i, chunk in enumerate(chunks):
-            print(f"Adding chunk #{i} tokens={chunk.token_count}")
             values.append(
                 (
                     f"{chunk.document_id}:chunk-{i}",

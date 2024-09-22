@@ -7,22 +7,15 @@
 from datetime import datetime
 from typing import List, Optional, Protocol
 
-from pydantic import BaseModel
-
-
-class KVStoreValue(BaseModel):
-    key: str
-    value: str
-    expiration: Optional[datetime] = None
-
 
 class KVStore(Protocol):
+    # TODO: make the value type bytes instead of str
     async def set(
         self, key: str, value: str, expiration: Optional[datetime] = None
     ) -> None: ...
 
-    async def get(self, key: str) -> Optional[KVStoreValue]: ...
+    async def get(self, key: str) -> Optional[str]: ...
 
     async def delete(self, key: str) -> None: ...
 
-    async def range(self, start_key: str, end_key: str) -> List[KVStoreValue]: ...
+    async def range(self, start_key: str, end_key: str) -> List[str]: ...

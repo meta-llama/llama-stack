@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 
 @json_schema_type
@@ -168,14 +168,12 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 
 class RemoteProviderConfig(BaseModel):
-    url: str = Field(..., description="The URL for the provider")
+    host: str = "localhost"
+    port: int
 
-    @validator("url")
-    @classmethod
-    def validate_url(cls, url: str) -> str:
-        if not url.startswith("http"):
-            raise ValueError(f"URL must start with http: {url}")
-        return url.rstrip("/")
+    @property
+    def url(self) -> str:
+        return f"http://{self.host}:{self.port}"
 
 
 def remote_provider_id(adapter_id: str) -> str:

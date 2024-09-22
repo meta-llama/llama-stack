@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-
+import json
 import logging
 import uuid
 from typing import AsyncGenerator
@@ -14,7 +14,7 @@ from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.agents import *  # noqa: F403
 
-from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 
 from .agent_instance import ChatAgent
 from .config import MetaReferenceAgentsImplConfig
@@ -35,6 +35,7 @@ class MetaReferenceAgentsImpl(Agents):
         self.inference_api = inference_api
         self.memory_api = memory_api
         self.safety_api = safety_api
+        self.in_memory_store = InmemoryKVStoreImpl()
 
     async def initialize(self) -> None:
         self.persistence_store = await kvstore_impl(self.config.persistence_store)
@@ -47,7 +48,7 @@ class MetaReferenceAgentsImpl(Agents):
 
         await self.persistence_store.set(
             key=f"agent:{agent_id}",
-            value=json.dumps(agent_config.dict()),
+            value=agent_config.json(),
         )
         return AgentCreateResponse(
             agent_id=agent_id,
@@ -80,7 +81,11 @@ class MetaReferenceAgentsImpl(Agents):
             inference_api=self.inference_api,
             safety_api=self.safety_api,
             memory_api=self.memory_api,
-            persistence_store=self.persistence_store,
+            persistence_store=(
+                self.persistence_store
+                if agent_config.enable_session_persistence
+                else self.in_memory_store
+            ),
         )
 
     async def create_agent_session(

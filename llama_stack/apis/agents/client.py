@@ -102,6 +102,7 @@ async def _run_agent(api, tool_definitions, user_prompts, attachments=None):
         tools=tool_definitions,
         tool_choice=ToolChoice.auto,
         tool_prompt_format=ToolPromptFormat.function_tag,
+        enable_session_persistence=False,
     )
 
     create_response = await api.create_agent(agent_config)

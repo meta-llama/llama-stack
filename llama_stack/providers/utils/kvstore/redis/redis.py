@@ -4,17 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional
 
 from redis.asyncio import Redis
 
 from ..api import *  # noqa: F403
-from ..config import RedisKVStoreImplConfig
+from ..config import RedisKVStoreConfig
 
 
 class RedisKVStoreImpl(KVStore):
-    def __init__(self, config: RedisKVStoreImplConfig):
+    def __init__(self, config: RedisKVStoreConfig):
         self.config = config
 
     async def initialize(self) -> None:
@@ -33,20 +33,19 @@ class RedisKVStoreImpl(KVStore):
         if expiration:
             await self.redis.expireat(key, expiration)
 
-    async def get(self, key: str) -> Optional[KVStoreValue]:
+    async def get(self, key: str) -> Optional[str]:
         key = self._namespaced_key(key)
         value = await self.redis.get(key)
         if value is None:
             return None
         ttl = await self.redis.ttl(key)
-        expiration = datetime.now() + timedelta(seconds=ttl) if ttl > 0 else None
-        return KVStoreValue(key=key, value=value, expiration=expiration)
+        return value
 
     async def delete(self, key: str) -> None:
         key = self._namespaced_key(key)
         await self.redis.delete(key)
 
-    async def range(self, start_key: str, end_key: str) -> List[KVStoreValue]:
+    async def range(self, start_key: str, end_key: str) -> List[str]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
 

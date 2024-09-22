@@ -6,6 +6,7 @@
 
 import asyncio
 import copy
+import json
 import os
 import secrets
 import shutil
@@ -25,7 +26,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 
-from llama_stack.providers.utils.api import KVStore
+from llama_stack.providers.utils.kvstore import KVStore
 
 from .rag.context_retriever import generate_rag_query
 from .safety import SafetyException, ShieldRunnerMixin
@@ -44,6 +45,13 @@ def make_random_string(length: int = 8):
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
     )
+
+
+class AgentSessionInfo(BaseModel):
+    session_id: str
+    session_name: str
+    memory_bank_id: Optional[str] = None
+    started_at: datetime
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -136,21 +144,41 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def create_session(self, name: str) -> str:
         session_id = str(uuid.uuid4())
-        session = dict(
+        session_info = AgentSessionInfo(
             session_id=session_id,
             session_name=name,
-            started_at=str(datetime.now()),
+            started_at=datetime.now(),
         )
         await self.persistence_store.set(
             key=f"session:{self.agent_id}:{session_id}",
-            value=json.dumps(session),
+            value=session_info.json(),
         )
         return session_id
+
+    async def _get_session_info(self, session_id: str) -> Optional[AgentSessionInfo]:
+        value = await self.persistence_store.get(
+            key=f"session:{self.agent_id}:{session_id}",
+        )
+        if not value:
+            return None
+
+        return AgentSessionInfo(**json.loads(value))
+
+    async def _add_memory_bank_to_session(self, session_id: str, bank_id: str):
+        session_info = await self._get_session_info(session_id)
+        if session_info is None:
+            raise ValueError(f"Session {session_id} not found")
+
+        session_info.memory_bank_id = bank_id
+        await self.persistence_store.set(
+            key=f"session:{self.agent_id}:{session_id}",
+            value=session_info.json(),
+        )
 
     async def _add_turn_to_session(self, session_id: str, turn: Turn):
         await self.persistence_store.set(
             key=f"session:{self.agent_id}:{session_id}:{turn.turn_id}",
-            value=json.dumps(turn.dict()),
+            value=turn.json(),
         )
 
     async def _get_session_turns(self, session_id: str) -> List[Turn]:
@@ -168,15 +196,6 @@ class ChatAgent(ShieldRunnerMixin):
                 continue
 
         return turns
-
-    async def _get_session_info(self, session_id: str) -> Optional[Dict[str, str]]:
-        value = await self.persistence_store.get(
-            key=f"session:{self.agent_id}:{session_id}",
-        )
-        if not value:
-            return None
-
-        return json.loads(value)
 
     async def create_and_execute_turn(
         self, request: AgentTurnCreateRequest
@@ -209,7 +228,7 @@ class ChatAgent(ShieldRunnerMixin):
         steps = []
         output_message = None
         async for chunk in self.run(
-            session=session,
+            session_id=request.session_id,
             turn_id=turn_id,
             input_messages=messages,
             attachments=request.attachments or [],
@@ -261,7 +280,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def run(
         self,
-        session: Session,
+        session_id: str,
         turn_id: str,
         input_messages: List[Message],
         attachments: List[Attachment],
@@ -282,7 +301,7 @@ class ChatAgent(ShieldRunnerMixin):
                 yield res
 
         async for res in self._run(
-            session, turn_id, input_messages, attachments, sampling_params, stream
+            session_id, turn_id, input_messages, attachments, sampling_params, stream
         ):
             if isinstance(res, bool):
                 return
@@ -364,7 +383,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _run(
         self,
-        session: Session,
+        session_id: str,
         turn_id: str,
         input_messages: List[Message],
         attachments: List[Attachment],
@@ -389,7 +408,7 @@ class ChatAgent(ShieldRunnerMixin):
             # TODO: find older context from the session and either replace it
             # or append with a sliding window. this is really a very simplistic implementation
             rag_context, bank_ids = await self._retrieve_context(
-                session, input_messages, attachments
+                session_id, input_messages, attachments
             )
 
             step_id = str(uuid.uuid4())
@@ -645,17 +664,25 @@ class ChatAgent(ShieldRunnerMixin):
 
             n_iter += 1
 
-    async def _ensure_memory_bank(self, session: Session) -> MemoryBank:
-        if session.memory_bank is None:
-            session.memory_bank = await self.memory_api.create_memory_bank(
-                name=f"memory_bank_{session.session_id}",
+    async def _ensure_memory_bank(self, session_id: str) -> str:
+        session_info = await self._get_session_info(session_id)
+        if session_info is None:
+            raise ValueError(f"Session {session_id} not found")
+
+        if session_info.memory_bank_id is None:
+            memory_bank = await self.memory_api.create_memory_bank(
+                name=f"memory_bank_{session_id}",
                 config=VectorMemoryBankConfig(
                     embedding_model="sentence-transformer/all-MiniLM-L6-v2",
                     chunk_size_in_tokens=512,
                 ),
             )
+            bank_id = memory_bank.bank_id
+            await self._add_memory_bank_to_session(session_id, bank_id)
+        else:
+            bank_id = session_info.memory_bank_id
 
-        return session.memory_bank
+        return bank_id
 
     async def _should_retrieve_context(
         self, messages: List[Message], attachments: List[Attachment]
@@ -680,7 +707,7 @@ class ChatAgent(ShieldRunnerMixin):
         return None
 
     async def _retrieve_context(
-        self, session: Session, messages: List[Message], attachments: List[Attachment]
+        self, session_id: str, messages: List[Message], attachments: List[Attachment]
     ) -> Tuple[List[str], List[int]]:  # (rag_context, bank_ids)
         bank_ids = []
 
@@ -689,8 +716,8 @@ class ChatAgent(ShieldRunnerMixin):
         bank_ids.extend(c.bank_id for c in memory.memory_bank_configs)
 
         if attachments:
-            bank = await self._ensure_memory_bank(session)
-            bank_ids.append(bank.bank_id)
+            bank_id = await self._ensure_memory_bank(session_id)
+            bank_ids.append(bank_id)
 
             documents = [
                 MemoryBankDocument(
@@ -701,9 +728,11 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 for a in attachments
             ]
-            await self.memory_api.insert_documents(bank.bank_id, documents)
-        elif session.memory_bank:
-            bank_ids.append(session.memory_bank.bank_id)
+            await self.memory_api.insert_documents(bank_id, documents)
+        else:
+            session_info = await self._get_session_info(session_id)
+            if session_info.memory_bank_id:
+                bank_ids.append(session_info.memory_bank_id)
 
         if not bank_ids:
             # this can happen if the per-session memory bank is not yet populated

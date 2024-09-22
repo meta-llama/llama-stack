@@ -184,6 +184,7 @@ async def chat_agent(mock_inference_api, mock_safety_api, mock_memory_api):
             # ),
         ],
         tool_choice=ToolChoice.auto,
+        enable_session_persistence=False,
         input_shields=[],
         output_shields=[],
     )

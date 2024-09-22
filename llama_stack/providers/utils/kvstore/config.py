@@ -7,8 +7,10 @@
 from enum import Enum
 from typing import Literal, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import Annotated
+
+from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 
 class KVStoreType(Enum):
@@ -24,20 +26,21 @@ class CommonConfig(BaseModel):
     )
 
 
-class RedisKVStoreImplConfig(CommonConfig):
+class RedisKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.redis.value] = KVStoreType.redis.value
     host: str = "localhost"
     port: int = 6379
 
 
-class SqliteKVStoreImplConfig(CommonConfig):
+class SqliteKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.sqlite.value] = KVStoreType.sqlite.value
     db_path: str = Field(
+        default=(RUNTIME_BASE_DIR / "kvstore.db").as_posix(),
         description="File path for the sqlite database",
     )
 
 
-class PostgresKVStoreImplConfig(CommonConfig):
+class PostgresKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.postgres.value] = KVStoreType.postgres.value
     host: str = "localhost"
     port: int = 5432
@@ -47,6 +50,6 @@ class PostgresKVStoreImplConfig(CommonConfig):
 
 
 KVStoreConfig = Annotated[
-    Union[RedisKVStoreImplConfig, SqliteKVStoreImplConfig, PostgresKVStoreImplConfig],
+    Union[RedisKVStoreConfig, SqliteKVStoreConfig, PostgresKVStoreConfig],
     Field(discriminator="type", default=KVStoreType.sqlite.value),
 ]

@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import os
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -16,9 +18,10 @@ from ..config import SqliteKVStoreConfig
 class SqliteKVStoreImpl(KVStore):
     def __init__(self, config: SqliteKVStoreConfig):
         self.db_path = config.db_path
-        self.table_name = config.table_name
+        self.table_name = "kvstore"
 
     async def initialize(self):
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
                 f"""
@@ -41,7 +44,7 @@ class SqliteKVStoreImpl(KVStore):
             )
             await db.commit()
 
-    async def get(self, key: str) -> Optional[KVStoreValue]:
+    async def get(self, key: str) -> Optional[str]:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute(
                 f"SELECT value, expiration FROM {self.table_name} WHERE key = ?", (key,)
@@ -50,14 +53,14 @@ class SqliteKVStoreImpl(KVStore):
                 if row is None:
                     return None
                 value, expiration = row
-                return KVStoreValue(key=key, value=value, expiration=expiration)
+                return value
 
     async def delete(self, key: str) -> None:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(f"DELETE FROM {self.table_name} WHERE key = ?", (key,))
             await db.commit()
 
-    async def range(self, start_key: str, end_key: str) -> List[KVStoreValue]:
+    async def range(self, start_key: str, end_key: str) -> List[str]:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute(
                 f"SELECT key, value, expiration FROM {self.table_name} WHERE key >= ? AND key <= ?",
@@ -65,8 +68,6 @@ class SqliteKVStoreImpl(KVStore):
             ) as cursor:
                 result = []
                 async for row in cursor:
-                    key, value, expiration = row
-                    result.append(
-                        KVStoreValue(key=key, value=value, expiration=expiration)
-                    )
+                    _, value, _ = row
+                    result.append(value)
                 return result
