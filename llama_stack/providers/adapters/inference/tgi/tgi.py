@@ -54,7 +54,14 @@ class TGIAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def get_chat_options(self, request: ChatCompletionRequest) -> dict:

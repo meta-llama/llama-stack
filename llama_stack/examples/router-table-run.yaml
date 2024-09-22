@@ -4,25 +4,25 @@ docker_image: null
 conda_env: local
 apis_to_serve:
 - inference
-- memory
+# - memory
 - telemetry
-- agents
-- safety
+# - agents
+# - safety
 - models
 provider_map:
   telemetry:
     provider_id: meta-reference
     config: {}
-  safety:
-    provider_id: meta-reference
-    config:
-      llama_guard_shield:
-        model: Llama-Guard-3-8B
-        excluded_categories: []
-        disable_input_check: false
-        disable_output_check: false
-      prompt_guard_shield:
-        model: Prompt-Guard-86M
+  # safety:
+  #   provider_id: meta-reference
+  #   config:
+  #     llama_guard_shield:
+  #       model: Llama-Guard-3-8B
+  #       excluded_categories: []
+  #       disable_input_check: false
+  #       disable_output_check: false
+  #     prompt_guard_shield:
+  #       model: Prompt-Guard-86M
   # inference:
   #   provider_id: meta-reference
   #   config:
@@ -31,32 +31,29 @@ provider_map:
   #     torch_seed: null
   #     max_seq_len: 4096
   #     max_batch_size: 1
-  inference:
-    provider_id: remote::ollama
-    config:
-
-  agents:
-    provider_id: meta-reference
-    config: {}
-provider_routing_table:
   # inference:
-  #   - routing_key: Meta-Llama3.1-8B-Instruct
-  #     provider_id: meta-reference
-  #     config:
-  #       model: Meta-Llama3.1-8B-Instruct
-  #       quantization: null
-  #       torch_seed: null
-  #       max_seq_len: 4096
-  #       max_batch_size: 1
-  #   - routing_key: Meta-Llama3.1-8B-Instruct
-  #     provider_id: meta-reference
-  #     config:
-  #       model: Meta-Llama3.1-8B
-  #       quantization: null
-  #       torch_seed: null
-  #       max_seq_len: 4096
-  #       max_batch_size: 1
-  memory:
+  #   provider_id: remote::ollama
+  #   config:
+  #     url: https:ollama-1.com
+  # agents:
+  #   provider_id: meta-reference
+  #   config: {}
+provider_routing_table:
+  inference:
+    - routing_key: Meta-Llama3.1-8B-Instruct
+      provider_id: meta-reference
+      config:
+        model: Meta-Llama3.1-8B-Instruct
+        quantization: null
+        torch_seed: null
+        max_seq_len: 4096
+        max_batch_size: 1
+    - routing_key: Meta-Llama3.1-8B
+      provider_id: remote::ollama
+      config:
+        url: https:://ollama.com
+
+  # memory:
     # - routing_key: keyvalue
     #   provider_id: remote::pgvector
     #   config:
@@ -65,6 +62,6 @@ provider_routing_table:
     #     db: vectordb
     #     user: vectoruser
     #     password: xxxx
-    - routing_key: vector
-      provider_id: meta-reference
-      config: {}
+    # - routing_key: vector
+    #   provider_id: meta-reference
+    #   config: {}

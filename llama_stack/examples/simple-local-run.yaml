@@ -7,6 +7,7 @@ apis_to_serve:
 - safety
 - agents
 - memory
+- models
 provider_map:
   inference:
     provider_id: meta-reference
@@ -16,6 +17,10 @@ provider_map:
       torch_seed: null
       max_seq_len: 4096
       max_batch_size: 1
+  # inference:
+  #   provider_id: remote::ollama
+  #   config:
+  #     url: https://xxx
   safety:
     provider_id: meta-reference
     config:

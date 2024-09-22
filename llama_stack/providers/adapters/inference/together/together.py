@@ -42,7 +42,14 @@ class TogetherInferenceAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def _messages_to_together_messages(self, messages: list[Message]) -> list:

@@ -130,6 +130,10 @@ Fully-qualified name of the module to import. The module is expected to have:
     provider_data_validator: Optional[str] = Field(
         default=None,
     )
+    supported_model_ids: List[str] = Field(
+        default_factory=list,
+        description="The list of model ids that this adapter supports",
+    )
 
 
 @json_schema_type

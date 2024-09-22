@@ -32,6 +32,10 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_id="ollama",
                 pip_packages=["ollama"],
                 module="llama_stack.providers.adapters.inference.ollama",
+                supported_model_ids=[
+                    "Meta-Llama3.1-8B-Instruct",
+                    "Meta-Llama3.1-70B-Instruct",
+                ],
             ),
         ),
         remote_provider_spec(
@@ -52,6 +56,11 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.adapters.inference.fireworks",
                 config_class="llama_stack.providers.adapters.inference.fireworks.FireworksImplConfig",
+                supported_model_ids=[
+                    "Meta-Llama3.1-8B-Instruct",
+                    "Meta-Llama3.1-70B-Instruct",
+                    "Meta-Llama3.1-405B-Instruct",
+                ],
             ),
         ),
         remote_provider_spec(
@@ -64,6 +73,11 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.adapters.inference.together",
                 config_class="llama_stack.providers.adapters.inference.together.TogetherImplConfig",
                 header_extractor_class="llama_stack.providers.adapters.inference.together.TogetherHeaderExtractor",
+                supported_model_ids=[
+                    "Meta-Llama3.1-8B-Instruct",
+                    "Meta-Llama3.1-70B-Instruct",
+                    "Meta-Llama3.1-405B-Instruct",
+                ],
             ),
         ),
     ]
