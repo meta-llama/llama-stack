@@ -6,27 +6,27 @@
 
 from typing import List, Optional, Protocol
 
-from llama_models.llama3.api.datatypes import Model
-
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
+
+from llama_stack.apis.memory import MemoryBankType
 
 from llama_stack.distribution.datatypes import GenericProviderConfig
 
 
 @json_schema_type
-class ModelServingSpec(BaseModel):
-    llama_model: Model = Field(
-        description="All metadatas associated with llama model (defined in llama_models.models.sku_list).",
-    )
+class MemoryBankSpec(BaseModel):
+    bank_type: MemoryBankType
     provider_config: GenericProviderConfig = Field(
         description="Provider config for the model, including provider_id, and corresponding config. ",
     )
 
 
-class Models(Protocol):
-    @webmethod(route="/models/list", method="GET")
-    async def list_models(self) -> List[ModelServingSpec]: ...
+class MemoryBanks(Protocol):
+    @webmethod(route="/memory_banks/list", method="GET")
+    async def list_memory_banks(self) -> List[MemoryBankSpec]: ...
 
-    @webmethod(route="/models/get", method="GET")
-    async def get_model(self, core_model_id: str) -> Optional[ModelServingSpec]: ...
+    @webmethod(route="/memory_banks/get", method="GET")
+    async def get_memory_bank(
+        self, bank_type: MemoryBankType
+    ) -> Optional[MemoryBankSpec]: ...

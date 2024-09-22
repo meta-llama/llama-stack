@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type
 
@@ -19,8 +19,12 @@ class Api(Enum):
     safety = "safety"
     agents = "agents"
     memory = "memory"
+
     telemetry = "telemetry"
+
     models = "models"
+    shields = "shields"
+    memory_banks = "memory_banks"
 
 
 @json_schema_type
@@ -44,27 +48,36 @@ class ProviderSpec(BaseModel):
     )
 
 
+class RoutingTable(Protocol):
+    def get_routing_keys(self) -> List[str]: ...
+
+    def get_provider_impl(self, routing_key: str) -> Any: ...
+
+
 class GenericProviderConfig(BaseModel):
     provider_id: str
     config: Dict[str, Any]
 
 
-@json_schema_type
-class ProviderRoutingEntry(GenericProviderConfig):
+class RoutableProviderConfig(GenericProviderConfig):
     routing_key: str
 
 
+class RoutingTableConfig(BaseModel):
+    entries: List[RoutableProviderConfig] = Field(...)
+    keys: Optional[List[str]] = Field(
+        default=None,
+    )
+
+
+# Example: /inference, /safety
 @json_schema_type
-class RouterProviderSpec(ProviderSpec):
+class AutoRoutedProviderSpec(ProviderSpec):
     provider_id: str = "router"
     config_class: str = ""
 
     docker_image: Optional[str] = None
-
-    routing_table: List[ProviderRoutingEntry] = Field(
-        default_factory=list,
-        description="Routing table entries corresponding to the API",
-    )
+    routing_table_api: Api
     module: str = Field(
         ...,
         description="""
@@ -79,18 +92,17 @@ class RouterProviderSpec(ProviderSpec):
 
     @property
     def pip_packages(self) -> List[str]:
-        raise AssertionError("Should not be called on RouterProviderSpec")
+        raise AssertionError("Should not be called on AutoRoutedProviderSpec")
 
 
+# Example: /models, /shields
 @json_schema_type
-class BuiltinProviderSpec(ProviderSpec):
-    provider_id: str = "builtin"
+class RoutingTableProviderSpec(ProviderSpec):
+    provider_id: str = "routing_table"
     config_class: str = ""
     docker_image: Optional[str] = None
-    api_dependencies: List[Api] = []
-    provider_data_validator: Optional[str] = Field(
-        default=None,
-    )
+
+    inner_specs: List[ProviderSpec]
     module: str = Field(
         ...,
         description="""
@@ -99,10 +111,7 @@ class BuiltinProviderSpec(ProviderSpec):
         - `get_router_impl(config, provider_specs, deps)`: returns the router implementation
         """,
     )
-    pip_packages: List[str] = Field(
-        default_factory=list,
-        description="The pip dependencies needed for this implementation",
-    )
+    pip_packages: List[str] = Field(default_factory=list)
 
 
 @json_schema_type
@@ -129,10 +138,6 @@ Fully-qualified name of the module to import. The module is expected to have:
     )
     provider_data_validator: Optional[str] = Field(
         default=None,
-    )
-    supported_model_ids: List[str] = Field(
-        default_factory=list,
-        description="The list of model ids that this adapter supports",
     )
 
 
@@ -243,9 +248,6 @@ in the runtime configuration to help route to the correct provider.""",
     )
 
 
-ProviderMapEntry = GenericProviderConfig
-
-
 @json_schema_type
 class StackRunConfig(BaseModel):
     built_at: datetime
@@ -269,25 +271,17 @@ this could be just a hash
         description="""
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
-    provider_map: Dict[str, ProviderMapEntry] = Field(
+
+    api_providers: Dict[str, GenericProviderConfig] = Field(
         description="""
 Provider configurations for each of the APIs provided by this package.
-
-Given an API, you can specify a single provider or a "routing table". Each entry in the routing
-table has a (routing_key, provider_config) tuple. How the key is interpreted is API-specific.
-
-As examples:
-- the "inference" API interprets the routing_key as a "model"
-- the "memory" API interprets the routing_key as the type of a "memory bank"
-
-The key may support wild-cards alsothe routing_key to route to the correct provider.""",
+""",
     )
-    provider_routing_table: Dict[str, List[ProviderRoutingEntry]] = Field(
+    routing_tables: Dict[str, RoutingTableConfig] = Field(
         default_factory=dict,
         description="""
-        API: List[ProviderRoutingEntry] map. Each ProviderRoutingEntry is a (routing_key, provider_config) tuple.
 
-        E.g. The following is a ProviderRoutingEntry for inference API: 
+        E.g. The following is a ProviderRoutingEntry for models:
         - routing_key: Meta-Llama3.1-8B-Instruct
           provider_id: meta-reference
           config:
