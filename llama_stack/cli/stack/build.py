@@ -160,7 +160,11 @@ class StackBuild(Subcommand):
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import yaml
-        from llama_stack.distribution.distribution import Api, api_providers
+        from llama_stack.distribution.distribution import (
+            Api,
+            api_providers,
+            builtin_automatically_routed_apis,
+        )
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
         from prompt_toolkit import prompt
         from prompt_toolkit.validation import Validator
@@ -213,8 +217,15 @@ class StackBuild(Subcommand):
             )
 
             providers = dict()
+            all_providers = api_providers()
+            routing_table_apis = set(
+                x.routing_table_api for x in builtin_automatically_routed_apis()
+            )
+
             for api in Api:
-                all_providers = api_providers()
+                if api in routing_table_apis:
+                    continue
+
                 providers_for_api = all_providers[api]
 
                 api_provider = prompt(
