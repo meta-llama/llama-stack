@@ -9,12 +9,11 @@ from typing import Any
 from pydantic import BaseModel
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
-from termcolor import cprint
-
 from llama_stack.distribution.distribution import api_providers, stack_apis
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
+from termcolor import cprint
 
 
 def make_routing_entry_type(config_class: Any):
@@ -68,7 +67,7 @@ def configure_api_providers(
                         config=rt_entry.config.dict(),
                     )
                 )
-            config.provider_map[api_str] = routing_entries
+            config.api_providers[api_str] = routing_entries
         else:
             p = (
                 provider_or_providers[0]
@@ -79,7 +78,7 @@ def configure_api_providers(
             provider_spec = all_providers[api][p]
             config_type = instantiate_class_type(provider_spec.config_class)
             try:
-                provider_config = config.provider_map.get(api_str)
+                provider_config = config.api_providers.get(api_str)
                 if provider_config:
                     existing = config_type(**provider_config.config)
                 else:
@@ -87,7 +86,7 @@ def configure_api_providers(
             except Exception:
                 existing = None
             cfg = prompt_for_config(config_type, existing)
-            config.provider_map[api_str] = GenericProviderConfig(
+            config.api_providers[api_str] = GenericProviderConfig(
                 provider_id=p,
                 config=cfg.dict(),
             )
