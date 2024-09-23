@@ -38,7 +38,7 @@ class ShieldsClient(Shields):
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/shields/get",
-                json={
+                params={
                     "shield_type": shield_type,
                 },
                 headers={"Content-Type": "application/json"},

@@ -38,7 +38,7 @@ class ModelsClient(Models):
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/models/get",
-                json={
+                params={
                     "core_model_id": core_model_id,
                 },
                 headers={"Content-Type": "application/json"},

@@ -40,8 +40,8 @@ class MemoryBanksClient(MemoryBanks):
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/memory_banks/get",
-                json={
-                    "bank_type": bank_type,
+                params={
+                    "bank_type": bank_type.value,
                 },
                 headers={"Content-Type": "application/json"},
             )
