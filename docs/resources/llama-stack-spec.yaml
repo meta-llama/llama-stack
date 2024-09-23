@@ -1230,6 +1230,37 @@ components:
       - value
       - unit
       type: object
+    Model:
+      description: The model family and SKU of the model along with other parameters
+        corresponding to the model.
+    ModelServingSpec:
+      additionalProperties: false
+      properties:
+        llama_model:
+          $ref: '#/components/schemas/Model'
+        provider_config:
+          additionalProperties: false
+          properties:
+            config:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            provider_id:
+              type: string
+          required:
+          - provider_id
+          - config
+          type: object
+      required:
+      - llama_model
+      - provider_config
+      type: object
     OptimizerConfig:
       additionalProperties: false
       properties:
@@ -1741,6 +1772,34 @@ components:
       - turn_id
       - step_id
       - step_type
+      type: object
+    ShieldSpec:
+      additionalProperties: false
+      properties:
+        provider_config:
+          additionalProperties: false
+          properties:
+            config:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            provider_id:
+              type: string
+          required:
+          - provider_id
+          - config
+          type: object
+        shield_type:
+          type: string
+      required:
+      - shield_type
+      - provider_config
       type: object
     SpanEndPayload:
       additionalProperties: false
@@ -2349,7 +2408,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-23 01:08:55.758597"
+    \ draft and subject to change.\n                Generated at 2024-09-23 09:14:46.697401"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3078,7 +3137,7 @@ paths:
                 - type: 'null'
           description: OK
       tags:
-      - Memory
+      - MemoryBanks
   /memory/insert:
     post:
       parameters:
@@ -3118,7 +3177,7 @@ paths:
                 $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
-      - Memory
+      - MemoryBanks
   /memory/query:
     post:
       parameters:
@@ -3165,6 +3224,51 @@ paths:
           description: OK
       tags:
       - Memory
+  /models/get:
+    get:
+      parameters:
+      - in: query
+        name: core_model_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/ModelServingSpec'
+                - type: 'null'
+          description: OK
+      tags:
+      - Models
+  /models/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ModelServingSpec'
+          description: OK
+      tags:
+      - Models
   /post_training/job/artifacts:
     get:
       parameters:
@@ -3377,6 +3481,51 @@ paths:
           description: OK
       tags:
       - Safety
+  /shields/get:
+    get:
+      parameters:
+      - in: query
+        name: shield_type
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/ShieldSpec'
+                - type: 'null'
+          description: OK
+      tags:
+      - Shields
+  /shields/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ShieldSpec'
+          description: OK
+      tags:
+      - Shields
   /synthetic_data_generation/generate:
     post:
       parameters:
@@ -3452,17 +3601,20 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: PostTraining
-- name: Safety
-- name: SyntheticDataGeneration
-- name: Datasets
-- name: Telemetry
 - name: Evaluations
-- name: RewardScoring
-- name: Agents
+- name: MemoryBanks
 - name: Memory
-- name: BatchInference
+- name: Datasets
 - name: Inference
+- name: BatchInference
+- name: PostTraining
+- name: SyntheticDataGeneration
+- name: Models
+- name: RewardScoring
+- name: Telemetry
+- name: Agents
+- name: Safety
+- name: Shields
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3730,6 +3882,17 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
+- description: 'The model family and SKU of the model along with other parameters
+    corresponding to the model.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/Model" />'
+  name: Model
+- description: <SchemaDefinition schemaRef="#/components/schemas/ModelServingSpec"
+    />
+  name: ModelServingSpec
+- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldSpec" />
+  name: ShieldSpec
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: 'Checkpoint created during training runs
@@ -3862,9 +4025,12 @@ x-tagGroups:
   - Evaluations
   - Inference
   - Memory
+  - MemoryBanks
+  - Models
   - PostTraining
   - RewardScoring
   - Safety
+  - Shields
   - SyntheticDataGeneration
   - Telemetry
 - name: Types
@@ -3935,6 +4101,8 @@ x-tagGroups:
   - MemoryRetrievalStep
   - MemoryToolDefinition
   - MetricEvent
+  - Model
+  - ModelServingSpec
   - OptimizerConfig
   - PhotogenToolDefinition
   - PostTrainingJob
@@ -3961,6 +4129,7 @@ x-tagGroups:
   - SearchToolDefinition
   - Session
   - ShieldCallStep
+  - ShieldSpec
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus

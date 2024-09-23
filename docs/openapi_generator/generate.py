@@ -43,6 +43,9 @@ from llama_stack.apis.post_training import *  # noqa: F403
 from llama_stack.apis.reward_scoring import *  # noqa: F403
 from llama_stack.apis.synthetic_data_generation import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.shields import *  # noqa: F403
 
 
 class LlamaStack(
@@ -57,6 +60,9 @@ class LlamaStack(
     PostTraining,
     Memory,
     Evaluations,
+    Models,
+    MemoryBanks,
+    Shields,
 ):
     pass
 

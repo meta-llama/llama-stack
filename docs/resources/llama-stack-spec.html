@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 01:08:55.758597"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 09:14:46.697401"
     },
     "servers": [
         {
@@ -1202,11 +1202,101 @@
                     }
                 },
                 "tags": [
-                    "Memory"
+                    "MemoryBanks"
                 ],
                 "parameters": [
                     {
                         "name": "bank_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/models/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ModelServingSpec"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "core_model_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/shields/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ShieldSpec"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Shields"
+                ],
+                "parameters": [
+                    {
+                        "name": "shield_type",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1455,7 +1545,67 @@
                     }
                 },
                 "tags": [
-                    "Memory"
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/models/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModelServingSpec"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/shields/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ShieldSpec"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Shields"
                 ],
                 "parameters": [
                     {
@@ -4321,6 +4471,111 @@
                     "job_uuid"
                 ]
             },
+            "Model": {
+                "description": "The model family and SKU of the model along with other parameters corresponding to the model."
+            },
+            "ModelServingSpec": {
+                "type": "object",
+                "properties": {
+                    "llama_model": {
+                        "$ref": "#/components/schemas/Model"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_id": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_id",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "llama_model",
+                    "provider_config"
+                ]
+            },
+            "ShieldSpec": {
+                "type": "object",
+                "properties": {
+                    "shield_type": {
+                        "type": "string"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_id": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_id",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shield_type",
+                    "provider_config"
+                ]
+            },
             "Trace": {
                 "type": "object",
                 "properties": {
@@ -5580,37 +5835,46 @@
     ],
     "tags": [
         {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
             "name": "Evaluations"
         },
         {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Agents"
+            "name": "MemoryBanks"
         },
         {
             "name": "Memory"
         },
         {
-            "name": "BatchInference"
+            "name": "Datasets"
         },
         {
             "name": "Inference"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Shields"
         },
         {
             "name": "BuiltinTool",
@@ -5953,6 +6217,18 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
+            "name": "Model",
+            "description": "The model family and SKU of the model along with other parameters corresponding to the model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
+        },
+        {
+            "name": "ModelServingSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelServingSpec\" />"
+        },
+        {
+            "name": "ShieldSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldSpec\" />"
+        },
+        {
             "name": "Trace",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Trace\" />"
         },
@@ -6115,9 +6391,12 @@
                 "Evaluations",
                 "Inference",
                 "Memory",
+                "MemoryBanks",
+                "Models",
                 "PostTraining",
                 "RewardScoring",
                 "Safety",
+                "Shields",
                 "SyntheticDataGeneration",
                 "Telemetry"
             ]
@@ -6191,6 +6470,8 @@
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",
+                "Model",
+                "ModelServingSpec",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
@@ -6217,6 +6498,7 @@
                 "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
+                "ShieldSpec",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
