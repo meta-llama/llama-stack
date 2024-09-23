@@ -96,7 +96,7 @@ class MemoryBank(BaseModel):
 
 
 class Memory(Protocol):
-    @webmethod(route="/memory_banks/create")
+    @webmethod(route="/memory/create")
     async def create_memory_bank(
         self,
         name: str,
@@ -104,13 +104,13 @@ class Memory(Protocol):
         url: Optional[URL] = None,
     ) -> MemoryBank: ...
 
-    @webmethod(route="/memory_banks/list", method="GET")
+    @webmethod(route="/memory/list", method="GET")
     async def list_memory_banks(self) -> List[MemoryBank]: ...
 
-    @webmethod(route="/memory_banks/get", method="GET")
+    @webmethod(route="/memory/get", method="GET")
     async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]: ...
 
-    @webmethod(route="/memory_banks/drop", method="DELETE")
+    @webmethod(route="/memory/drop", method="DELETE")
     async def drop_memory_bank(
         self,
         bank_id: str,
@@ -118,7 +118,7 @@ class Memory(Protocol):
 
     # this will just block now until documents are inserted, but it should
     # probably return a Job instance which can be polled for completion
-    @webmethod(route="/memory_bank/insert")
+    @webmethod(route="/memory/insert")
     async def insert_documents(
         self,
         bank_id: str,
@@ -126,14 +126,14 @@ class Memory(Protocol):
         ttl_seconds: Optional[int] = None,
     ) -> None: ...
 
-    @webmethod(route="/memory_bank/update")
+    @webmethod(route="/memory/update")
     async def update_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
     ) -> None: ...
 
-    @webmethod(route="/memory_bank/query")
+    @webmethod(route="/memory/query")
     async def query_documents(
         self,
         bank_id: str,
@@ -141,14 +141,14 @@ class Memory(Protocol):
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse: ...
 
-    @webmethod(route="/memory_bank/documents/get", method="GET")
+    @webmethod(route="/memory/documents/get", method="GET")
     async def get_documents(
         self,
         bank_id: str,
         document_ids: List[str],
     ) -> List[MemoryBankDocument]: ...
 
-    @webmethod(route="/memory_bank/documents/delete", method="DELETE")
+    @webmethod(route="/memory/documents/delete", method="DELETE")
     async def delete_documents(
         self,
         bank_id: str,
