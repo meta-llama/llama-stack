@@ -321,7 +321,6 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     apis_to_serve = run_config.apis_to_serve or set(
         list(specs.keys()) + list(run_config.routing_table.keys())
     )
-    print("apis_to_serve", apis_to_serve)
     for info in builtin_automatically_routed_apis():
         source_api = info.routing_table_api
 

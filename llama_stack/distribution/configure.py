@@ -158,6 +158,9 @@ def configure_api_providers(
                 )
 
             config.routing_table[api_str] = routing_entries
+            config.api_providers[api_str] = PlaceholderProviderConfig(
+                providers=p if isinstance(p, list) else [p]
+            )
         else:
             config.api_providers[api_str] = GenericProviderConfig(
                 provider_id=p,
