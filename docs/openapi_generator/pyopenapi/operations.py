@@ -12,13 +12,14 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
-from strong_typing.inspection import (
+from termcolor import colored
+
+from ..strong_typing.inspection import (
     get_signature,
     is_type_enum,
     is_type_optional,
     unwrap_optional_type,
 )
-from termcolor import colored
 
 
 def split_prefix(

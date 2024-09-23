@@ -18,16 +18,16 @@ import yaml
 
 from llama_models import schema_utils
 
+from .pyopenapi.options import Options
+from .pyopenapi.specification import Info, Server
+from .pyopenapi.utility import Specification
+
 # We do some monkey-patching to ensure our definitions only use the minimal
 # (json_schema_type, webmethod) definitions from the llama_models package. For
 # generation though, we need the full definitions and implementations from the
 #  (json-strong-typing) package.
 
-from strong_typing.schema import json_schema_type
-
-from .pyopenapi.options import Options
-from .pyopenapi.specification import Info, Server
-from .pyopenapi.utility import Specification
+from .strong_typing.schema import json_schema_type
 
 schema_utils.json_schema_type = json_schema_type
 

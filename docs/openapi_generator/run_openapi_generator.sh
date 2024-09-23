@@ -19,8 +19,6 @@ check_package() {
     fi
 }
 
-check_package json-strong-typing
-
 if [ ${#missing_packages[@]} -ne 0 ]; then
     echo "Error: The following package(s) are not installed:"
     printf " - %s\n" "${missing_packages[@]}"

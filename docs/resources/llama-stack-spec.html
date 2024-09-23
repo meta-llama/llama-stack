@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 10:51:15.364842"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 10:56:42.866760"
     },
     "servers": [
         {
@@ -2019,7 +2019,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "assistant"
+                        "const": "assistant",
+                        "default": "assistant"
                     },
                     "content": {
                         "oneOf": [
@@ -2056,22 +2057,28 @@
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "$ref": "#/components/schemas/SamplingStrategy"
+                        "$ref": "#/components/schemas/SamplingStrategy",
+                        "default": "greedy"
                     },
                     "temperature": {
-                        "type": "number"
+                        "type": "number",
+                        "default": 0.0
                     },
                     "top_p": {
-                        "type": "number"
+                        "type": "number",
+                        "default": 0.95
                     },
                     "top_k": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 0
                     },
                     "max_tokens": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 0
                     },
                     "repetition_penalty": {
-                        "type": "number"
+                        "type": "number",
+                        "default": 1.0
                     }
                 },
                 "additionalProperties": false,
@@ -2100,7 +2107,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "system"
+                        "const": "system",
+                        "default": "system"
                     },
                     "content": {
                         "oneOf": [
@@ -2257,7 +2265,8 @@
                         "type": "string"
                     },
                     "required": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default": true
                     }
                 },
                 "additionalProperties": false,
@@ -2279,7 +2288,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "ipython"
+                        "const": "ipython",
+                        "default": "ipython"
                     },
                     "call_id": {
                         "type": "string"
@@ -2321,7 +2331,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "user"
+                        "const": "user",
+                        "default": "user"
                     },
                     "content": {
                         "oneOf": [
@@ -2403,7 +2414,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -2459,7 +2471,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -2557,7 +2570,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -2718,7 +2732,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -2815,13 +2830,16 @@
                         }
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice"
+                        "$ref": "#/components/schemas/ToolChoice",
+                        "default": "auto"
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "default": "json"
                     },
                     "max_infer_iters": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 10
                     },
                     "model": {
                         "type": "string"
@@ -2858,10 +2876,12 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "code_interpreter"
+                        "const": "code_interpreter",
+                        "default": "code_interpreter"
                     },
                     "enable_inline_code_execution": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default": true
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -2890,7 +2910,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "function_call"
+                        "const": "function_call",
+                        "default": "function_call"
                     },
                     "function_name": {
                         "type": "string"
@@ -2933,7 +2954,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "memory"
+                        "const": "memory",
+                        "default": "memory"
                     },
                     "memory_bank_configs": {
                         "type": "array",
@@ -2947,7 +2969,8 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "const": "vector"
+                                            "const": "vector",
+                                            "default": "vector"
                                         }
                                     },
                                     "additionalProperties": false,
@@ -2964,7 +2987,8 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "const": "keyvalue"
+                                            "const": "keyvalue",
+                                            "default": "keyvalue"
                                         },
                                         "keys": {
                                             "type": "array",
@@ -2988,7 +3012,8 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "const": "keyword"
+                                            "const": "keyword",
+                                            "default": "keyword"
                                         }
                                     },
                                     "additionalProperties": false,
@@ -3005,7 +3030,8 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "const": "graph"
+                                            "const": "graph",
+                                            "default": "graph"
                                         },
                                         "entities": {
                                             "type": "array",
@@ -3031,10 +3057,12 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "default"
+                                        "const": "default",
+                                        "default": "default"
                                     },
                                     "sep": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "default": " "
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3048,7 +3076,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "llm"
+                                        "const": "llm",
+                                        "default": "llm"
                                     },
                                     "model": {
                                         "type": "string"
@@ -3069,7 +3098,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "custom"
+                                        "const": "custom",
+                                        "default": "custom"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3080,10 +3110,12 @@
                         ]
                     },
                     "max_tokens_in_context": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 4096
                     },
                     "max_chunks": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 10
                     }
                 },
                 "additionalProperties": false,
@@ -3112,7 +3144,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "photogen"
+                        "const": "photogen",
+                        "default": "photogen"
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -3240,7 +3273,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "brave_search"
+                        "const": "brave_search",
+                        "default": "brave_search"
                     },
                     "api_key": {
                         "type": "string"
@@ -3250,7 +3284,8 @@
                         "enum": [
                             "bing",
                             "brave"
-                        ]
+                        ],
+                        "default": "brave"
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -3285,7 +3320,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "wolfram_alpha"
+                        "const": "wolfram_alpha",
+                        "default": "wolfram_alpha"
                     },
                     "api_key": {
                         "type": "string"
@@ -3454,7 +3490,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "step_complete"
+                        "const": "step_complete",
+                        "default": "step_complete"
                     },
                     "step_type": {
                         "type": "string",
@@ -3494,7 +3531,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "step_progress"
+                        "const": "step_progress",
+                        "default": "step_progress"
                     },
                     "step_type": {
                         "type": "string",
@@ -3530,7 +3568,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "step_start"
+                        "const": "step_start",
+                        "default": "step_start"
                     },
                     "step_type": {
                         "type": "string",
@@ -3594,7 +3633,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "turn_complete"
+                        "const": "turn_complete",
+                        "default": "turn_complete"
                     },
                     "turn": {
                         "$ref": "#/components/schemas/Turn"
@@ -3611,7 +3651,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "turn_start"
+                        "const": "turn_start",
+                        "default": "turn_start"
                     },
                     "turn_id": {
                         "type": "string"
@@ -3642,7 +3683,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "inference"
+                        "const": "inference",
+                        "default": "inference"
                     },
                     "model_response": {
                         "$ref": "#/components/schemas/CompletionMessage"
@@ -3675,7 +3717,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "memory_retrieval"
+                        "const": "memory_retrieval",
+                        "default": "memory_retrieval"
                     },
                     "memory_bank_ids": {
                         "type": "array",
@@ -3766,7 +3809,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "shield_call"
+                        "const": "shield_call",
+                        "default": "shield_call"
                     },
                     "violation": {
                         "$ref": "#/components/schemas/SafetyViolation"
@@ -3798,7 +3842,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "tool_execution"
+                        "const": "tool_execution",
+                        "default": "tool_execution"
                     },
                     "tool_calls": {
                         "type": "array",
@@ -4022,7 +4067,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "vector"
+                                        "const": "vector",
+                                        "default": "vector"
                                     },
                                     "embedding_model": {
                                         "type": "string"
@@ -4046,7 +4092,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyvalue"
+                                        "const": "keyvalue",
+                                        "default": "keyvalue"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -4059,7 +4106,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyword"
+                                        "const": "keyword",
+                                        "default": "keyword"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -4072,7 +4120,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "graph"
+                                        "const": "graph",
+                                        "default": "graph"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -4108,7 +4157,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "vector"
+                                        "const": "vector",
+                                        "default": "vector"
                                     },
                                     "embedding_model": {
                                         "type": "string"
@@ -4132,7 +4182,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyvalue"
+                                        "const": "keyvalue",
+                                        "default": "keyvalue"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -4145,7 +4196,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyword"
+                                        "const": "keyword",
+                                        "default": "keyword"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -4158,7 +4210,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "graph"
+                                        "const": "graph",
+                                        "default": "graph"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -4934,7 +4987,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "metric"
+                        "const": "metric",
+                        "default": "metric"
                     },
                     "metric": {
                         "type": "string"
@@ -4969,7 +5023,8 @@
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "span_end"
+                        "const": "span_end",
+                        "default": "span_end"
                     },
                     "status": {
                         "$ref": "#/components/schemas/SpanStatus"
@@ -4986,7 +5041,8 @@
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "span_start"
+                        "const": "span_start",
+                        "default": "span_start"
                     },
                     "name": {
                         "type": "string"
@@ -5048,7 +5104,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "structured_log"
+                        "const": "structured_log",
+                        "default": "structured_log"
                     },
                     "payload": {
                         "oneOf": [
@@ -5110,7 +5167,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "unstructured_log"
+                        "const": "unstructured_log",
+                        "default": "unstructured_log"
                     },
                     "message": {
                         "type": "string"
@@ -5970,31 +6028,34 @@
     ],
     "tags": [
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "PostTraining"
+            "name": "Inference"
         },
         {
             "name": "Shields"
         },
         {
-            "name": "Inference"
+            "name": "Models"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "RewardScoring"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "Memory"
         },
         {
             "name": "Telemetry"
@@ -6003,13 +6064,10 @@
             "name": "Agents"
         },
         {
-            "name": "MemoryBanks"
+            "name": "BatchInference"
         },
         {
-            "name": "Safety"
-        },
-        {
-            "name": "Evaluations"
+            "name": "Datasets"
         },
         {
             "name": "BuiltinTool",
