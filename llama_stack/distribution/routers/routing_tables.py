@@ -33,15 +33,13 @@ class CommonRoutingTableImpl(RoutingTable):
         for p in self.providers.values():
             await p.shutdown()
 
-    async def get_provider_impl(self, routing_key: str) -> Optional[Any]:
+    def get_provider_impl(self, routing_key: str) -> Optional[Any]:
         return self.providers.get(routing_key)
 
-    async def get_routing_keys(self) -> List[str]:
+    def get_routing_keys(self) -> List[str]:
         return self.routing_keys
 
-    async def get_provider_config(
-        self, routing_key: str
-    ) -> Optional[GenericProviderConfig]:
+    def get_provider_config(self, routing_key: str) -> Optional[GenericProviderConfig]:
         for entry in self.routing_table_config.entries:
             if entry.routing_key == routing_key:
                 return entry
