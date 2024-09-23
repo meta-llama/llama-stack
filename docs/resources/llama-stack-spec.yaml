@@ -1642,10 +1642,10 @@ components:
             - type: array
             - type: object
           type: object
-        shield:
+        shield_type:
           type: string
       required:
-      - shield
+      - shield_type
       - messages
       - params
       type: object
@@ -2443,7 +2443,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-23 10:24:44.422779"
+    \ draft and subject to change.\n                Generated at 2024-09-23 10:51:15.364842"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3681,20 +3681,20 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inference
-- name: Agents
-- name: PostTraining
 - name: SyntheticDataGeneration
 - name: Models
+- name: Memory
+- name: Datasets
 - name: BatchInference
+- name: PostTraining
+- name: Shields
+- name: Inference
+- name: RewardScoring
+- name: Telemetry
+- name: Agents
+- name: MemoryBanks
 - name: Safety
 - name: Evaluations
-- name: Shields
-- name: Telemetry
-- name: RewardScoring
-- name: MemoryBanks
-- name: Datasets
-- name: Memory
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
