@@ -12,7 +12,7 @@ import threading
 import uuid
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 
 from llama_stack.apis.telemetry import *  # noqa: F403
@@ -196,33 +196,42 @@ class TelemetryHandler(logging.Handler):
         pass
 
 
-def span(name: str, attributes: Dict[str, Any] = None):
-    def decorator(func):
+class SpanContextManager:
+    def __init__(self, name: str, attributes: Dict[str, Any] = None):
+        self.name = name
+        self.attributes = attributes
+
+    def __enter__(self):
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            context.push_span(self.name, self.attributes)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            context.pop_span()
+
+    async def __aenter__(self):
+        return self.__enter__()
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        self.__exit__(exc_type, exc_value, traceback)
+
+    def __call__(self, func: Callable):
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
-            try:
-                global CURRENT_TRACE_CONTEXT
-
-                context = CURRENT_TRACE_CONTEXT
-                if context:
-                    context.push_span(name, attributes)
-                result = func(*args, **kwargs)
-            finally:
-                context.pop_span()
-            return result
+            print("sync wrapper")
+            with self:
+                return func(*args, **kwargs)
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
-            try:
-                global CURRENT_TRACE_CONTEXT
-
-                context = CURRENT_TRACE_CONTEXT
-                if context:
-                    context.push_span(name, attributes)
-                result = await func(*args, **kwargs)
-            finally:
-                context.pop_span()
-            return result
+            print("async wrapper")
+            async with self:
+                return await func(*args, **kwargs)
 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -233,4 +242,6 @@ def span(name: str, attributes: Dict[str, Any] = None):
 
         return wrapper
 
-    return decorator
+
+def span(name: str, attributes: Dict[str, Any] = None):
+    return SpanContextManager(name, attributes)
