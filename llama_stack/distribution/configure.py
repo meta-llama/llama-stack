@@ -81,15 +81,17 @@ def configure_api_providers(
         except Exception:
             existing = None
         cfg = prompt_for_config(config_type, existing)
-        config.api_providers[api_str] = GenericProviderConfig(
-            provider_id=p,
-            config=cfg.dict(),
-        )
 
         if api_str in router_api2builtin_api:
-            # a routing api, we need to assign it a routing_key and put it in the routing_table
+            # a routing api, we need to infer and assign it a routing_key and put it in the routing_table
             routing_key = prompt(
                 "> Enter routing key for the {} provider: ".format(api_str),
+            )
+            config.routing_table[]
+        else:
+            config.api_providers[api_str] = GenericProviderConfig(
+                provider_id=p,
+                config=cfg.dict(),
             )
 
         print("")

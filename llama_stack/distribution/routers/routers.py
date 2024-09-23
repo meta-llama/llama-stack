@@ -46,9 +46,9 @@ class MemoryRouter(Memory):
         url: Optional[URL] = None,
     ) -> MemoryBank:
         bank_type = config.type
-        provider = await self.routing_table.get_provider_impl(
-            bank_type
-        ).create_memory_bank(name, config, url)
+        bank = await self.routing_table.get_provider_impl(bank_type).create_memory_bank(
+            name, config, url
+        )
         self.bank_id_to_type[bank.bank_id] = bank_type
         return bank
 
