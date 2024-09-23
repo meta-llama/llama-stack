@@ -392,7 +392,7 @@ class ChatAgent(ShieldRunnerMixin):
                 input_messages,
                 tools=self._get_tools(),
                 tool_prompt_format=self.agent_config.tool_prompt_format,
-                stream=True,
+                stream=stream,
                 sampling_params=sampling_params,
             ):
                 event = chunk.event
