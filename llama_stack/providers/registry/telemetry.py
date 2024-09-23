@@ -27,4 +27,18 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.telemetry.sample.SampleConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.telemetry,
+            adapter=AdapterSpec(
+                adapter_id="opentelemetry-jaeger",
+                pip_packages=[
+                    "opentelemetry-api",
+                    "opentelemetry-sdk",
+                    "opentelemetry-exporter-jaeger",
+                    "opentelemetry-semantic-conventions",
+                ],
+                module="llama_stack.providers.adapters.telemetry.opentelemetry",
+                config_class="llama_stack.providers.adapters.telemetry.opentelemetry.OpenTelemetryConfig",
+            ),
+        ),
     ]
