@@ -45,10 +45,10 @@ class StackConfigure(Subcommand):
         import pkg_resources
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.utils.exec import run_with_pty
-        from termcolor import cprint
 
         docker_image = None
 
@@ -121,10 +121,10 @@ class StackConfigure(Subcommand):
         from pathlib import Path
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.configure import configure_api_providers
         from llama_stack.distribution.utils.serialize import EnumEncoder
-        from termcolor import cprint
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
         if output_dir:
@@ -165,6 +165,6 @@ class StackConfigure(Subcommand):
         )
 
         cprint(
-            f"You can now run `llama stack run {image_name} --port PORT` or `llama stack run {run_config_file} --port PORT`",
+            f"You can now run `llama stack run {image_name} --port PORT`",
             color="green",
         )
