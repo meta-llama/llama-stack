@@ -48,7 +48,6 @@ async def instantiate_provider(
         routing_table = provider_config
 
         inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
-        cprint(f"inner_specs: {inner_specs}", "cyan")
         inner_impls = []
         for routing_entry in routing_table:
             impl = await instantiate_provider(
