@@ -10,6 +10,12 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 
+class TGIRequestProviderData(BaseModel):
+    # if there _is_ provider data, it must specify the API KEY
+    # if you want it to be optional, use Optional[str]
+    tgi_api_key: str
+
+
 @json_schema_type
 class TGIImplConfig(BaseModel):
     url: Optional[str] = Field(

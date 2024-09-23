@@ -68,7 +68,10 @@ class InferenceClient(Inference):
                 "POST",
                 f"{self.base_url}/inference/chat_completion",
                 json=encodable_dict(request),
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "X-LlamaStack-ProviderData": json.dumps({"tgi_api_key": "1234"}),
+                },
                 timeout=20,
             ) as response:
                 if response.status_code != 200:

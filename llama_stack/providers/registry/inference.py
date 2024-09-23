@@ -50,6 +50,7 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=["huggingface_hub"],
                 module="llama_stack.providers.adapters.inference.tgi",
                 config_class="llama_stack.providers.adapters.inference.tgi.TGIImplConfig",
+                provider_data_validator="llama_stack.providers.adapters.inference.tgi.TGIRequestProviderData",
             ),
         ),
         remote_provider_spec(
