@@ -112,7 +112,9 @@ class StackBuild(Subcommand):
             to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
 
-        build_image(build_config, build_file_path)
+        return_code = build_image(build_config, build_file_path)
+        if return_code != 0:
+            return
 
         cprint(
             f"Build spec configuration saved at {str(build_file_path)}",
