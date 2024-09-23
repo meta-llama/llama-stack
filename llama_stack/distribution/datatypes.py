@@ -59,15 +59,14 @@ class GenericProviderConfig(BaseModel):
     config: Dict[str, Any]
 
 
+class PlaceholderProviderConfig(BaseModel):
+    """Placeholder provider config for API whose provider are defined in routing_table"""
+
+    providers: List[str]
+
+
 class RoutableProviderConfig(GenericProviderConfig):
     routing_key: str
-
-
-class RoutingTableConfig(BaseModel):
-    entries: List[RoutableProviderConfig] = Field(...)
-    keys: Optional[List[str]] = Field(
-        default=None,
-    )
 
 
 # Example: /inference, /safety
@@ -270,12 +269,14 @@ this could be just a hash
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
 
-    api_providers: Dict[str, GenericProviderConfig] = Field(
+    api_providers: Dict[
+        str, Union[GenericProviderConfig, PlaceholderProviderConfig]
+    ] = Field(
         description="""
 Provider configurations for each of the APIs provided by this package.
 """,
     )
-    routing_tables: Dict[str, RoutingTableConfig] = Field(
+    routing_table: Dict[str, List[RoutableProviderConfig]] = Field(
         default_factory=dict,
         description="""
 

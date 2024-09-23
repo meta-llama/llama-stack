@@ -46,9 +46,9 @@ class MemoryRouter(Memory):
         url: Optional[URL] = None,
     ) -> MemoryBank:
         bank_type = config.type
-        provider = await self.routing_table.get_provider_impl(
-            bank_type
-        ).create_memory_bank(name, config, url)
+        bank = await self.routing_table.get_provider_impl(bank_type).create_memory_bank(
+            name, config, url
+        )
         self.bank_id_to_type[bank.bank_id] = bank_type
         return bank
 
@@ -162,6 +162,7 @@ class SafetyRouter(Safety):
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
+        print(f"Running shield {shield_type}")
         return await self.routing_table.get_provider_impl(shield_type).run_shield(
             shield_type=shield_type,
             messages=messages,

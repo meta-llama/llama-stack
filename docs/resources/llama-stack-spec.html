@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-20 14:53:17.090953"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 01:08:55.758597"
     },
     "servers": [
         {
@@ -422,7 +422,7 @@
                 }
             }
         },
-        "/memory_banks/create": {
+        "/memory/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -561,7 +561,7 @@
                 }
             }
         },
-        "/memory_bank/documents/delete": {
+        "/memory/documents/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -594,7 +594,7 @@
                 }
             }
         },
-        "/memory_banks/drop": {
+        "/memory/drop": {
             "post": {
                 "responses": {
                     "200": {
@@ -988,7 +988,7 @@
                 ]
             }
         },
-        "/memory_bank/documents/get": {
+        "/memory/documents/get": {
             "post": {
                 "responses": {
                     "200": {
@@ -1180,7 +1180,7 @@
                 ]
             }
         },
-        "/memory_banks/get": {
+        "/memory/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1407,7 +1407,7 @@
                 ]
             }
         },
-        "/memory_bank/insert": {
+        "/memory/insert": {
             "post": {
                 "responses": {
                     "200": {
@@ -1440,7 +1440,7 @@
                 }
             }
         },
-        "/memory_banks/list": {
+        "/memory/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -1543,7 +1543,7 @@
                 }
             }
         },
-        "/memory_bank/query": {
+        "/memory/query": {
             "post": {
                 "responses": {
                     "200": {
@@ -1743,7 +1743,7 @@
                 }
             }
         },
-        "/memory_bank/update": {
+        "/memory/update": {
             "post": {
                 "responses": {
                     "200": {
@@ -2584,183 +2584,7 @@
                                     "$ref": "#/components/schemas/FunctionCallToolDefinition"
                                 },
                                 {
-                                    "type": "object",
-                                    "properties": {
-                                        "input_shields": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "output_shields": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "memory"
-                                        },
-                                        "memory_bank_configs": {
-                                            "type": "array",
-                                            "items": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "vector"
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "keyvalue"
-                                                            },
-                                                            "keys": {
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                }
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type",
-                                                            "keys"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "keyword"
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "graph"
-                                                            },
-                                                            "entities": {
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                }
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type",
-                                                            "entities"
-                                                        ]
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        "query_generator_config": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "const": "default"
-                                                        },
-                                                        "sep": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "type",
-                                                        "sep"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "const": "llm"
-                                                        },
-                                                        "model": {
-                                                            "type": "string"
-                                                        },
-                                                        "template": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "type",
-                                                        "model",
-                                                        "template"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "const": "custom"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "type"
-                                                    ]
-                                                }
-                                            ]
-                                        },
-                                        "max_tokens_in_context": {
-                                            "type": "integer"
-                                        },
-                                        "max_chunks": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type",
-                                        "memory_bank_configs",
-                                        "query_generator_config",
-                                        "max_tokens_in_context",
-                                        "max_chunks"
-                                    ]
+                                    "$ref": "#/components/schemas/MemoryToolDefinition"
                                 }
                             ]
                         }
@@ -2771,17 +2595,25 @@
                     "tool_prompt_format": {
                         "$ref": "#/components/schemas/ToolPromptFormat"
                     },
+                    "max_infer_iters": {
+                        "type": "integer"
+                    },
                     "model": {
                         "type": "string"
                     },
                     "instructions": {
                         "type": "string"
+                    },
+                    "enable_session_persistence": {
+                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "max_infer_iters",
                     "model",
-                    "instructions"
+                    "instructions",
+                    "enable_session_persistence"
                 ]
             },
             "CodeInterpreterToolDefinition": {
@@ -2857,6 +2689,185 @@
                     "function_name",
                     "description",
                     "parameters"
+                ]
+            },
+            "MemoryToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "memory"
+                    },
+                    "memory_bank_configs": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "vector"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyvalue"
+                                        },
+                                        "keys": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "keys"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyword"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "graph"
+                                        },
+                                        "entities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "entities"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "query_generator_config": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "default"
+                                    },
+                                    "sep": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "sep"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "llm"
+                                    },
+                                    "model": {
+                                        "type": "string"
+                                    },
+                                    "template": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "model",
+                                    "template"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "custom"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
+                    },
+                    "max_tokens_in_context": {
+                        "type": "integer"
+                    },
+                    "max_chunks": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "memory_bank_configs",
+                    "query_generator_config",
+                    "max_tokens_in_context",
+                    "max_chunks"
                 ]
             },
             "PhotogenToolDefinition": {
@@ -5569,37 +5580,37 @@
     ],
     "tags": [
         {
-            "name": "Agents"
-        },
-        {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "Evaluations"
+            "name": "PostTraining"
         },
         {
             "name": "Safety"
         },
         {
-            "name": "Telemetry"
-        },
-        {
-            "name": "PostTraining"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "Inference"
+            "name": "Telemetry"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Evaluations"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Agents"
         },
         {
             "name": "Memory"
         },
         {
             "name": "BatchInference"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "BuiltinTool",
@@ -5732,6 +5743,10 @@
         {
             "name": "FunctionCallToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
+        },
+        {
+            "name": "MemoryToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryToolDefinition\" />"
         },
         {
             "name": "PhotogenToolDefinition",
@@ -6174,6 +6189,7 @@
                 "MemoryBank",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
+                "MemoryToolDefinition",
                 "MetricEvent",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",

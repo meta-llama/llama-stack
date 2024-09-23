@@ -38,7 +38,7 @@ class MemoryClient(Memory):
     async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
         async with httpx.AsyncClient() as client:
             r = await client.get(
-                f"{self.base_url}/memory_banks/get",
+                f"{self.base_url}/memory/get",
                 params={
                     "bank_id": bank_id,
                 },
@@ -59,7 +59,7 @@ class MemoryClient(Memory):
     ) -> MemoryBank:
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"{self.base_url}/memory_banks/create",
+                f"{self.base_url}/memory/create",
                 json={
                     "name": name,
                     "config": config.dict(),
@@ -81,7 +81,7 @@ class MemoryClient(Memory):
     ) -> None:
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"{self.base_url}/memory_bank/insert",
+                f"{self.base_url}/memory/insert",
                 json={
                     "bank_id": bank_id,
                     "documents": [d.dict() for d in documents],
@@ -99,7 +99,7 @@ class MemoryClient(Memory):
     ) -> QueryDocumentsResponse:
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"{self.base_url}/memory_bank/query",
+                f"{self.base_url}/memory/query",
                 json={
                     "bank_id": bank_id,
                     "query": query,

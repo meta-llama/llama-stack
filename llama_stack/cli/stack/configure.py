@@ -145,7 +145,7 @@ class StackConfigure(Subcommand):
                 built_at=datetime.now(),
                 image_name=image_name,
                 apis_to_serve=[],
-                provider_map={},
+                api_providers={},
             )
 
         config = configure_api_providers(config, build_config.distribution_spec)

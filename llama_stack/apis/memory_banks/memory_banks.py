@@ -7,11 +7,11 @@
 from typing import List, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel, Field
 
 from llama_stack.apis.memory import MemoryBankType
 
 from llama_stack.distribution.datatypes import GenericProviderConfig
+from pydantic import BaseModel, Field
 
 
 @json_schema_type
