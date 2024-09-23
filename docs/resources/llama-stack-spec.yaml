@@ -4,12 +4,16 @@ components:
     AgentConfig:
       additionalProperties: false
       properties:
+        enable_session_persistence:
+          type: boolean
         input_shields:
           items:
             type: string
           type: array
         instructions:
           type: string
+        max_infer_iters:
+          type: integer
         model:
           type: string
         output_shields:
@@ -30,127 +34,13 @@ components:
             - $ref: '#/components/schemas/PhotogenToolDefinition'
             - $ref: '#/components/schemas/CodeInterpreterToolDefinition'
             - $ref: '#/components/schemas/FunctionCallToolDefinition'
-            - additionalProperties: false
-              properties:
-                input_shields:
-                  items:
-                    type: string
-                  type: array
-                max_chunks:
-                  type: integer
-                max_tokens_in_context:
-                  type: integer
-                memory_bank_configs:
-                  items:
-                    oneOf:
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        type:
-                          const: vector
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      type: object
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        keys:
-                          items:
-                            type: string
-                          type: array
-                        type:
-                          const: keyvalue
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      - keys
-                      type: object
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        type:
-                          const: keyword
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      type: object
-                    - additionalProperties: false
-                      properties:
-                        bank_id:
-                          type: string
-                        entities:
-                          items:
-                            type: string
-                          type: array
-                        type:
-                          const: graph
-                          type: string
-                      required:
-                      - bank_id
-                      - type
-                      - entities
-                      type: object
-                  type: array
-                output_shields:
-                  items:
-                    type: string
-                  type: array
-                query_generator_config:
-                  oneOf:
-                  - additionalProperties: false
-                    properties:
-                      sep:
-                        type: string
-                      type:
-                        const: default
-                        type: string
-                    required:
-                    - type
-                    - sep
-                    type: object
-                  - additionalProperties: false
-                    properties:
-                      model:
-                        type: string
-                      template:
-                        type: string
-                      type:
-                        const: llm
-                        type: string
-                    required:
-                    - type
-                    - model
-                    - template
-                    type: object
-                  - additionalProperties: false
-                    properties:
-                      type:
-                        const: custom
-                        type: string
-                    required:
-                    - type
-                    type: object
-                type:
-                  const: memory
-                  type: string
-              required:
-              - type
-              - memory_bank_configs
-              - query_generator_config
-              - max_tokens_in_context
-              - max_chunks
-              type: object
+            - $ref: '#/components/schemas/MemoryToolDefinition'
           type: array
       required:
+      - max_infer_iters
       - model
       - instructions
+      - enable_session_persistence
       type: object
     AgentCreateResponse:
       additionalProperties: false
@@ -1181,6 +1071,124 @@ components:
       - step_type
       - memory_bank_ids
       - inserted_context
+      type: object
+    MemoryToolDefinition:
+      additionalProperties: false
+      properties:
+        input_shields:
+          items:
+            type: string
+          type: array
+        max_chunks:
+          type: integer
+        max_tokens_in_context:
+          type: integer
+        memory_bank_configs:
+          items:
+            oneOf:
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                type:
+                  const: vector
+                  type: string
+              required:
+              - bank_id
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                keys:
+                  items:
+                    type: string
+                  type: array
+                type:
+                  const: keyvalue
+                  type: string
+              required:
+              - bank_id
+              - type
+              - keys
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                type:
+                  const: keyword
+                  type: string
+              required:
+              - bank_id
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                bank_id:
+                  type: string
+                entities:
+                  items:
+                    type: string
+                  type: array
+                type:
+                  const: graph
+                  type: string
+              required:
+              - bank_id
+              - type
+              - entities
+              type: object
+          type: array
+        output_shields:
+          items:
+            type: string
+          type: array
+        query_generator_config:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              sep:
+                type: string
+              type:
+                const: default
+                type: string
+            required:
+            - type
+            - sep
+            type: object
+          - additionalProperties: false
+            properties:
+              model:
+                type: string
+              template:
+                type: string
+              type:
+                const: llm
+                type: string
+            required:
+            - type
+            - model
+            - template
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: custom
+                type: string
+            required:
+            - type
+            type: object
+        type:
+          const: memory
+          type: string
+      required:
+      - type
+      - memory_bank_configs
+      - query_generator_config
+      - max_tokens_in_context
+      - max_chunks
       type: object
     MetricEvent:
       additionalProperties: false
@@ -2341,7 +2349,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-20 14:53:17.090953"
+    \ draft and subject to change.\n                Generated at 2024-09-23 01:08:55.758597"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2944,7 +2952,32 @@ paths:
           description: OK
       tags:
       - Inference
-  /memory_bank/documents/delete:
+  /memory/create:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemoryBankRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryBank'
+          description: OK
+      tags:
+      - Memory
+  /memory/documents/delete:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2965,7 +2998,7 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory_bank/documents/get:
+  /memory/documents/get:
     post:
       parameters:
       - in: query
@@ -2995,99 +3028,7 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory_bank/insert:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InsertDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Memory
-  /memory_bank/query:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryDocumentsResponse'
-          description: OK
-      tags:
-      - Memory
-  /memory_bank/update:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Memory
-  /memory_banks/create:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateMemoryBankRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemoryBank'
-          description: OK
-      tags:
-      - Memory
-  /memory_banks/drop:
+  /memory/drop:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3112,7 +3053,7 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory_banks/get:
+  /memory/get:
     get:
       parameters:
       - in: query
@@ -3138,7 +3079,28 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory_banks/list:
+  /memory/insert:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Memory
+  /memory/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3154,6 +3116,52 @@ paths:
             application/jsonl:
               schema:
                 $ref: '#/components/schemas/MemoryBank'
+          description: OK
+      tags:
+      - Memory
+  /memory/query:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryDocumentsResponse'
+          description: OK
+      tags:
+      - Memory
+  /memory/update:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentsRequest'
+        required: true
+      responses:
+        '200':
           description: OK
       tags:
       - Memory
@@ -3444,17 +3452,17 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Agents
-- name: RewardScoring
-- name: Evaluations
-- name: Safety
-- name: Telemetry
 - name: PostTraining
-- name: Datasets
-- name: Inference
+- name: Safety
 - name: SyntheticDataGeneration
+- name: Datasets
+- name: Telemetry
+- name: Evaluations
+- name: RewardScoring
+- name: Agents
 - name: Memory
 - name: BatchInference
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3564,6 +3572,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
     />
   name: FunctionCallToolDefinition
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
+    />
+  name: MemoryToolDefinition
 - description: <SchemaDefinition schemaRef="#/components/schemas/PhotogenToolDefinition"
     />
   name: PhotogenToolDefinition
@@ -3922,6 +3933,7 @@ x-tagGroups:
   - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
+  - MemoryToolDefinition
   - MetricEvent
   - OptimizerConfig
   - PhotogenToolDefinition
