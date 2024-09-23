@@ -25,7 +25,7 @@ class MemoryBanksClient(MemoryBanks):
     async def shutdown(self) -> None:
         pass
 
-    async def list_memory_banks(self) -> List[MemoryBankSpec]:
+    async def list_available_memory_banks(self) -> List[MemoryBankSpec]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/memory_banks/list",
@@ -34,7 +34,7 @@ class MemoryBanksClient(MemoryBanks):
             response.raise_for_status()
             return [MemoryBankSpec(**x) for x in response.json()]
 
-    async def get_memory_bank(
+    async def get_serving_memory_bank(
         self, bank_type: MemoryBankType
     ) -> Optional[MemoryBankSpec]:
         async with httpx.AsyncClient() as client:
@@ -55,7 +55,7 @@ class MemoryBanksClient(MemoryBanks):
 async def run_main(host: str, port: int, stream: bool):
     client = MemoryBanksClient(f"http://{host}:{port}")
 
-    response = await client.list_memory_banks()
+    response = await client.list_available_memory_banks()
     cprint(f"list_memory_banks response={response}", "green")
 
 

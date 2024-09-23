@@ -24,9 +24,9 @@ class MemoryBankSpec(BaseModel):
 
 class MemoryBanks(Protocol):
     @webmethod(route="/memory_banks/list", method="GET")
-    async def list_memory_banks(self) -> List[MemoryBankSpec]: ...
+    async def list_available_memory_banks(self) -> List[MemoryBankSpec]: ...
 
     @webmethod(route="/memory_banks/get", method="GET")
-    async def get_memory_bank(
+    async def get_serving_memory_bank(
         self, bank_type: MemoryBankType
     ) -> Optional[MemoryBankSpec]: ...

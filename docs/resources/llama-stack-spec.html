@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 10:08:50.987103"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 10:24:44.422779"
     },
     "servers": [
         {
@@ -1180,7 +1180,7 @@
                 ]
             }
         },
-        "/memory_banks/get": {
+        "/memory/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1190,7 +1190,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/MemoryBankSpec"
+                                            "$ref": "#/components/schemas/MemoryBank"
                                         },
                                         {
                                             "type": "null"
@@ -1206,11 +1206,11 @@
                 ],
                 "parameters": [
                     {
-                        "name": "bank_type",
+                        "name": "bank_id",
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "$ref": "#/components/schemas/MemoryBankType"
+                            "type": "string"
                         }
                     },
                     {
@@ -1256,6 +1256,51 @@
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/memory_banks/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/MemoryBankSpec"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/MemoryBankType"
                         }
                     },
                     {
@@ -1539,6 +1584,36 @@
                             "application/jsonl": {
                                 "schema": {
                                     "$ref": "#/components/schemas/MemoryBankSpec"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/memory/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemoryBank"
                                 }
                             }
                         }
@@ -4471,6 +4546,60 @@
                     "job_uuid"
                 ]
             },
+            "Model": {
+                "description": "The model family and SKU of the model along with other parameters corresponding to the model."
+            },
+            "ModelServingSpec": {
+                "type": "object",
+                "properties": {
+                    "llama_model": {
+                        "$ref": "#/components/schemas/Model"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_id": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_id",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "llama_model",
+                    "provider_config"
+                ]
+            },
             "MemoryBankType": {
                 "type": "string",
                 "enum": [
@@ -4528,60 +4657,6 @@
                 "additionalProperties": false,
                 "required": [
                     "bank_type",
-                    "provider_config"
-                ]
-            },
-            "Model": {
-                "description": "The model family and SKU of the model along with other parameters corresponding to the model."
-            },
-            "ModelServingSpec": {
-                "type": "object",
-                "properties": {
-                    "llama_model": {
-                        "$ref": "#/components/schemas/Model"
-                    },
-                    "provider_config": {
-                        "type": "object",
-                        "properties": {
-                            "provider_id": {
-                                "type": "string"
-                            },
-                            "config": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "provider_id",
-                            "config"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "llama_model",
                     "provider_config"
                 ]
             },
@@ -5895,25 +5970,25 @@
     ],
     "tags": [
         {
-            "name": "Datasets"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "Telemetry"
+            "name": "Inference"
         },
         {
             "name": "Agents"
         },
         {
-            "name": "BatchInference"
+            "name": "PostTraining"
+        },
+        {
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Models"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "BatchInference"
+        },
+        {
+            "name": "Safety"
         },
         {
             "name": "Evaluations"
@@ -5922,16 +5997,19 @@
             "name": "Shields"
         },
         {
-            "name": "Memory"
-        },
-        {
-            "name": "PostTraining"
+            "name": "Telemetry"
         },
         {
             "name": "RewardScoring"
         },
         {
-            "name": "Inference"
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Memory"
         },
         {
             "name": "BuiltinTool",
@@ -6274,20 +6352,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
-            "name": "MemoryBankType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankType\" />"
-        },
-        {
-            "name": "MemoryBankSpec",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankSpec\" />"
-        },
-        {
             "name": "Model",
             "description": "The model family and SKU of the model along with other parameters corresponding to the model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
         },
         {
             "name": "ModelServingSpec",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelServingSpec\" />"
+        },
+        {
+            "name": "MemoryBankType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankType\" />"
+        },
+        {
+            "name": "MemoryBankSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankSpec\" />"
         },
         {
             "name": "ShieldSpec",
@@ -6456,6 +6534,7 @@
                 "Evaluations",
                 "Inference",
                 "Memory",
+                "MemoryBanks",
                 "Models",
                 "PostTraining",
                 "RewardScoring",

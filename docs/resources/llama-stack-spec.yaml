@@ -2443,7 +2443,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-23 10:08:50.987103"
+    \ draft and subject to change.\n                Generated at 2024-09-23 10:24:44.422779"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3147,6 +3147,32 @@ paths:
           description: OK
       tags:
       - Memory
+  /memory/get:
+    get:
+      parameters:
+      - in: query
+        name: bank_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/MemoryBank'
+                - type: 'null'
+          description: OK
+      tags:
+      - Memory
   /memory/insert:
     post:
       parameters:
@@ -3165,6 +3191,25 @@ paths:
         required: true
       responses:
         '200':
+          description: OK
+      tags:
+      - Memory
+  /memory/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
       - Memory
@@ -3239,7 +3284,7 @@ paths:
                 - type: 'null'
           description: OK
       tags:
-      - Memory
+      - MemoryBanks
   /memory_banks/list:
     get:
       parameters:
@@ -3258,7 +3303,7 @@ paths:
                 $ref: '#/components/schemas/MemoryBankSpec'
           description: OK
       tags:
-      - Memory
+      - MemoryBanks
   /models/get:
     get:
       parameters:
@@ -3636,19 +3681,20 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Datasets
-- name: Safety
-- name: Telemetry
+- name: Inference
 - name: Agents
-- name: BatchInference
-- name: Models
+- name: PostTraining
 - name: SyntheticDataGeneration
+- name: Models
+- name: BatchInference
+- name: Safety
 - name: Evaluations
 - name: Shields
-- name: Memory
-- name: PostTraining
+- name: Telemetry
 - name: RewardScoring
-- name: Inference
+- name: MemoryBanks
+- name: Datasets
+- name: Memory
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3916,10 +3962,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankType" />
-  name: MemoryBankType
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankSpec" />
-  name: MemoryBankSpec
 - description: 'The model family and SKU of the model along with other parameters
     corresponding to the model.
 
@@ -3929,6 +3971,10 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ModelServingSpec"
     />
   name: ModelServingSpec
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankType" />
+  name: MemoryBankType
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankSpec" />
+  name: MemoryBankSpec
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldSpec" />
   name: ShieldSpec
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
@@ -4063,6 +4109,7 @@ x-tagGroups:
   - Evaluations
   - Inference
   - Memory
+  - MemoryBanks
   - Models
   - PostTraining
   - RewardScoring

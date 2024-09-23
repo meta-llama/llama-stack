@@ -95,7 +95,7 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
 
-    async def list_memory_banks(self) -> List[MemoryBankSpec]:
+    async def list_available_memory_banks(self) -> List[MemoryBankSpec]:
         specs = []
         for entry in self.routing_table_config:
             specs.append(
@@ -106,7 +106,7 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
             )
         return specs
 
-    async def get_memory_bank(self, bank_type: str) -> Optional[MemoryBankSpec]:
+    async def get_serving_memory_bank(self, bank_type: str) -> Optional[MemoryBankSpec]:
         for entry in self.routing_table_config:
             if entry.routing_key == bank_type:
                 return MemoryBankSpec(
