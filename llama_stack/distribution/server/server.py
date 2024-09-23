@@ -35,9 +35,6 @@ from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -45,6 +42,9 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 from llama_stack.distribution.distribution import (
@@ -315,7 +315,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         configs[api] = config
 
     apis_to_serve = run_config.apis_to_serve or set(
-        list(specs.keys()) + list(run_config.routing_tables.keys())
+        list(specs.keys()) + list(run_config.routing_table.keys())
     )
     print("apis_to_serve", apis_to_serve)
     for info in builtin_automatically_routed_apis():
@@ -331,15 +331,16 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         if info.router_api.value not in apis_to_serve:
             continue
 
-        if source_api.value not in run_config.routing_tables:
+        print("router_api", info.router_api)
+        if info.router_api.value not in run_config.routing_table:
             raise ValueError(f"Routing table for `{source_api.value}` is not provided?")
 
-        routing_table = run_config.routing_tables[source_api.value]
+        routing_table = run_config.routing_table[info.router_api.value]
 
         providers = all_providers[info.router_api]
 
         inner_specs = []
-        for rt_entry in routing_table.entries:
+        for rt_entry in routing_table:
             if rt_entry.provider_id not in providers:
                 raise ValueError(
                     f"Unknown provider `{rt_entry.provider_id}` is not available for API `{api}`"

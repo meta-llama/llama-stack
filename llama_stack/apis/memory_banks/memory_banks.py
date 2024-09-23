@@ -7,11 +7,11 @@
 from typing import List, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel, Field
 
 from llama_stack.apis.memory import MemoryBankType
 
 from llama_stack.distribution.datatypes import GenericProviderConfig
+from pydantic import BaseModel, Field
 
 
 @json_schema_type
@@ -23,10 +23,10 @@ class MemoryBankSpec(BaseModel):
 
 
 class MemoryBanks(Protocol):
-    @webmethod(route="/memory_banks/list", method="GET")
+    @webmethod(route="/memory_banks_router/list", method="GET")
     async def list_memory_banks(self) -> List[MemoryBankSpec]: ...
 
-    @webmethod(route="/memory_banks/get", method="GET")
+    @webmethod(route="/memory_banks_router/get", method="GET")
     async def get_memory_bank(
         self, bank_type: MemoryBankType
     ) -> Optional[MemoryBankSpec]: ...

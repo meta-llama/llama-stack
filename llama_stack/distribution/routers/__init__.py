@@ -12,7 +12,7 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 async def get_routing_table_impl(
     api: Api,
     inner_impls: List[Tuple[str, Any]],
-    routing_table_config: RoutingTableConfig,
+    routing_table_config: Dict[str, List[RoutableProviderConfig]],
     _deps,
 ) -> Any:
     from .routing_tables import (

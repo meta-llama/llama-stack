@@ -63,13 +63,6 @@ class RoutableProviderConfig(GenericProviderConfig):
     routing_key: str
 
 
-class RoutingTableConfig(BaseModel):
-    entries: List[RoutableProviderConfig] = Field(...)
-    keys: Optional[List[str]] = Field(
-        default=None,
-    )
-
-
 # Example: /inference, /safety
 @json_schema_type
 class AutoRoutedProviderSpec(ProviderSpec):
@@ -275,7 +268,7 @@ The list of APIs to serve. If not specified, all APIs specified in the provider_
 Provider configurations for each of the APIs provided by this package.
 """,
     )
-    routing_tables: Dict[str, RoutingTableConfig] = Field(
+    routing_table: Dict[str, List[RoutableProviderConfig]] = Field(
         default_factory=dict,
         description="""
 
