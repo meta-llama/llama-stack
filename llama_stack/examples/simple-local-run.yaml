@@ -9,7 +9,7 @@ apis_to_serve:
 - memory
 - models
 - telemetry
-provider_map:
+api_providers:
   inference:
     provider_id: meta-reference
     config:
