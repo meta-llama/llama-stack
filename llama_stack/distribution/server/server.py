@@ -307,6 +307,10 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         # TODO: check that these APIs are not in the routing table part of the config
         providers = all_providers[api]
 
+        # skip checks for API whose provider config is specified in routing_table
+        if isinstance(config, PlaceholderProviderConfig):
+            continue
+
         if config.provider_id not in providers:
             raise ValueError(
                 f"Unknown provider `{config.provider_id}` is not available for API `{api}`"

@@ -10,6 +10,17 @@ apis_to_serve:
 - safety
 - models
 api_providers:
+  inference:
+    providers:
+      - meta-reference
+      - remote::ollama
+  memory:
+    providers:
+      - meta-reference
+      - remote::pgvector
+  safety:
+    providers:
+      - meta-reference
   telemetry:
     provider_id: meta-reference
     config: {}
