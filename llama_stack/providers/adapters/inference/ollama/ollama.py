@@ -30,21 +30,21 @@ OLLAMA_SUPPORTED_SKUS = {
 class OllamaInferenceAdapter(Inference):
     def __init__(self, url: str) -> None:
         self.url = url
-        # tokenizer = Tokenizer.get_instance()
-        # self.formatter = ChatFormat(tokenizer)
+        tokenizer = Tokenizer.get_instance()
+        self.formatter = ChatFormat(tokenizer)
 
     @property
     def client(self) -> AsyncClient:
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
-        print("Ollama init")
-        # try:
-        #     await self.client.ps()
-        # except httpx.ConnectError as e:
-        #     raise RuntimeError(
-        #         "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
-        #     ) from e
+        print("Initializing Ollama, checking connectivity to server...")
+        try:
+            await self.client.ps()
+        except httpx.ConnectError as e:
+            raise RuntimeError(
+                "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
+            ) from e
 
     async def shutdown(self) -> None:
         pass
