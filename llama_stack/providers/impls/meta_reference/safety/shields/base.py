@@ -8,9 +8,24 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from llama_models.llama3.api.datatypes import interleaved_text_media_as_str, Message
+from pydantic import BaseModel
 from llama_stack.apis.safety import *  # noqa: F403
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
+
+
+# TODO: clean this up; just remove this type completely
+class ShieldResponse(BaseModel):
+    is_violation: bool
+    violation_type: Optional[str] = None
+    violation_return_message: Optional[str] = None
+
+
+# TODO: this is a caller / agent concern
+class OnViolationAction(Enum):
+    IGNORE = 0
+    WARN = 1
+    RAISE = 2
 
 
 class ShieldBase(ABC):
@@ -19,10 +34,6 @@ class ShieldBase(ABC):
         on_violation_action: OnViolationAction = OnViolationAction.RAISE,
     ):
         self.on_violation_action = on_violation_action
-
-    @abstractmethod
-    def get_shield_type(self) -> ShieldType:
-        raise NotImplementedError()
 
     @abstractmethod
     async def run(self, messages: List[Message]) -> ShieldResponse:
@@ -48,11 +59,6 @@ class TextShield(ShieldBase):
 
 
 class DummyShield(TextShield):
-    def get_shield_type(self) -> ShieldType:
-        return "dummy"
-
     async def run_impl(self, text: str) -> ShieldResponse:
         # Dummy return LOW to test e2e
-        return ShieldResponse(
-            shield_type=BuiltinShield.third_party_shield, is_violation=False
-        )
+        return ShieldResponse(is_violation=False)

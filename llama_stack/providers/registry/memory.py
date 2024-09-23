@@ -42,4 +42,13 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.memory.pgvector.PGVectorConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.memory,
+            adapter=AdapterSpec(
+                adapter_id="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.memory.sample",
+                config_class="llama_stack.providers.adapters.memory.sample.SampleConfig",
+            ),
+        ),
     ]

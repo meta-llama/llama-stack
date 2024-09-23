@@ -9,12 +9,21 @@ from typing import Any
 from pydantic import BaseModel
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
-from termcolor import cprint
-
-from llama_stack.distribution.distribution import api_providers, stack_apis
+from llama_stack.apis.memory.memory import MemoryBankType
+from llama_stack.distribution.distribution import (
+    api_providers,
+    builtin_automatically_routed_apis,
+    stack_apis,
+)
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
+from llama_stack.providers.impls.meta_reference.safety.config import (
+    MetaReferenceShieldType,
+)
+from prompt_toolkit import prompt
+from prompt_toolkit.validation import Validator
+from termcolor import cprint
 
 
 def make_routing_entry_type(config_class: Any):
@@ -25,71 +34,139 @@ def make_routing_entry_type(config_class: Any):
     return BaseModelWithConfig
 
 
+def get_builtin_apis(provider_backed_apis: List[str]) -> List[str]:
+    """Get corresponding builtin APIs given provider backed APIs"""
+    res = []
+    for inf in builtin_automatically_routed_apis():
+        if inf.router_api.value in provider_backed_apis:
+            res.append(inf.routing_table_api.value)
+
+    return res
+
+
 # TODO: make sure we can deal with existing configuration values correctly
 # instead of just overwriting them
 def configure_api_providers(
     config: StackRunConfig, spec: DistributionSpec
 ) -> StackRunConfig:
     apis = config.apis_to_serve or list(spec.providers.keys())
-    config.apis_to_serve = [a for a in apis if a != "telemetry"]
+    # append the bulitin routing APIs
+    apis += get_builtin_apis(apis)
+
+    router_api2builtin_api = {
+        inf.router_api.value: inf.routing_table_api.value
+        for inf in builtin_automatically_routed_apis()
+    }
+
+    config.apis_to_serve = list(set([a for a in apis if a != "telemetry"]))
 
     apis = [v.value for v in stack_apis()]
     all_providers = api_providers()
 
+    # configure simple case for with non-routing providers to api_providers
     for api_str in spec.providers.keys():
         if api_str not in apis:
             raise ValueError(f"Unknown API `{api_str}`")
 
-        cprint(f"Configuring API `{api_str}`...\n", "white", attrs=["bold"])
+        cprint(f"Configuring API `{api_str}`...", "green", attrs=["bold"])
         api = Api(api_str)
 
-        provider_or_providers = spec.providers[api_str]
-        if isinstance(provider_or_providers, list) and len(provider_or_providers) > 1:
-            print(
-                "You have specified multiple providers for this API. We will configure a routing table now. For each provider, provide a routing key followed by provider configuration.\n"
+        p = spec.providers[api_str]
+        cprint(f"=== Configuring provider `{p}` for API {api_str}...", "green")
+
+        if isinstance(p, list):
+            cprint(
+                f"[WARN] Interactive configuration of multiple providers {p} is not supported, configuring {p[0]} only, please manually configure {p[1:]} in routing_table of run.yaml",
+                "yellow",
             )
+            p = p[0]
 
+        provider_spec = all_providers[api][p]
+        config_type = instantiate_class_type(provider_spec.config_class)
+        try:
+            provider_config = config.api_providers.get(api_str)
+            if provider_config:
+                existing = config_type(**provider_config.config)
+            else:
+                existing = None
+        except Exception:
+            existing = None
+        cfg = prompt_for_config(config_type, existing)
+
+        if api_str in router_api2builtin_api:
+            # a routing api, we need to infer and assign it a routing_key and put it in the routing_table
+            routing_key = "<PLEASE_FILL_ROUTING_KEY>"
             routing_entries = []
-            for p in provider_or_providers:
-                print(f"Configuring provider `{p}`...")
-                provider_spec = all_providers[api][p]
-                config_type = instantiate_class_type(provider_spec.config_class)
-
-                # TODO: we need to validate the routing keys, and
-                # perhaps it is better if we break this out into asking
-                # for a routing key separately from the associated config
-                wrapper_type = make_routing_entry_type(config_type)
-                rt_entry = prompt_for_config(wrapper_type, None)
-
+            if api_str == "inference":
+                if hasattr(cfg, "model"):
+                    routing_key = cfg.model
+                else:
+                    routing_key = prompt(
+                        "> Please enter the supported model your provider has for inference: ",
+                        default="Meta-Llama3.1-8B-Instruct",
+                    )
                 routing_entries.append(
-                    ProviderRoutingEntry(
+                    RoutableProviderConfig(
+                        routing_key=routing_key,
                         provider_id=p,
-                        routing_key=rt_entry.routing_key,
-                        config=rt_entry.config.dict(),
+                        config=cfg.dict(),
                     )
                 )
-            config.provider_map[api_str] = routing_entries
-        else:
-            p = (
-                provider_or_providers[0]
-                if isinstance(provider_or_providers, list)
-                else provider_or_providers
-            )
-            print(f"Configuring provider `{p}`...")
-            provider_spec = all_providers[api][p]
-            config_type = instantiate_class_type(provider_spec.config_class)
-            try:
-                provider_config = config.provider_map.get(api_str)
-                if provider_config:
-                    existing = config_type(**provider_config.config)
+
+            if api_str == "safety":
+                # TODO: add support for other safety providers, and simplify safety provider config
+                if p == "meta-reference":
+                    for shield_type in MetaReferenceShieldType:
+                        routing_entries.append(
+                            RoutableProviderConfig(
+                                routing_key=shield_type.value,
+                                provider_id=p,
+                                config=cfg.dict(),
+                            )
+                        )
                 else:
-                    existing = None
-            except Exception:
-                existing = None
-            cfg = prompt_for_config(config_type, existing)
-            config.provider_map[api_str] = GenericProviderConfig(
+                    cprint(
+                        f"[WARN] Interactive configuration of safety provider {p} is not supported, please manually configure safety shields types in routing_table of run.yaml",
+                        "yellow",
+                    )
+                    routing_entries.append(
+                        RoutableProviderConfig(
+                            routing_key=routing_key,
+                            provider_id=p,
+                            config=cfg.dict(),
+                        )
+                    )
+
+            if api_str == "memory":
+                bank_types = list([x.value for x in MemoryBankType])
+                routing_key = prompt(
+                    "> Please enter the supported memory bank type your provider has for memory: ",
+                    default="vector",
+                    validator=Validator.from_callable(
+                        lambda x: x in bank_types,
+                        error_message="Invalid provider, please enter one of the following: {}".format(
+                            bank_types
+                        ),
+                    ),
+                )
+                routing_entries.append(
+                    RoutableProviderConfig(
+                        routing_key=routing_key,
+                        provider_id=p,
+                        config=cfg.dict(),
+                    )
+                )
+
+            config.routing_table[api_str] = routing_entries
+            config.api_providers[api_str] = PlaceholderProviderConfig(
+                providers=p if isinstance(p, list) else [p]
+            )
+        else:
+            config.api_providers[api_str] = GenericProviderConfig(
                 provider_id=p,
                 config=cfg.dict(),
             )
+
+        print("")
 
     return config

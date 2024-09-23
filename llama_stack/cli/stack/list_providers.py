@@ -47,6 +47,8 @@ class StackListProviders(Subcommand):
 
         rows = []
         for spec in providers_for_api.values():
+            if spec.provider_id == "sample":
+                continue
             rows.append(
                 [
                     spec.provider_id,

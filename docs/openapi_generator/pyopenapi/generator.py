@@ -9,9 +9,9 @@ import ipaddress
 import typing
 from typing import Any, Dict, Set, Union
 
-from strong_typing.core import JsonType
-from strong_typing.docstring import Docstring, parse_type
-from strong_typing.inspection import (
+from ..strong_typing.core import JsonType
+from ..strong_typing.docstring import Docstring, parse_type
+from ..strong_typing.inspection import (
     is_generic_list,
     is_type_optional,
     is_type_union,
@@ -19,15 +19,15 @@ from strong_typing.inspection import (
     unwrap_optional_type,
     unwrap_union_types,
 )
-from strong_typing.name import python_type_to_name
-from strong_typing.schema import (
+from ..strong_typing.name import python_type_to_name
+from ..strong_typing.schema import (
     get_schema_identifier,
     JsonSchemaGenerator,
     register_schema,
     Schema,
     SchemaOptions,
 )
-from strong_typing.serialization import json_dump_string, object_to_json
+from ..strong_typing.serialization import json_dump_string, object_to_json
 
 from .operations import (
     EndpointOperation,
@@ -462,6 +462,15 @@ class Generator:
 
         # parameters passed anywhere
         parameters = path_parameters + query_parameters
+        parameters += [
+            Parameter(
+                name="X-LlamaStack-ProviderData",
+                in_=ParameterLocation.Header,
+                description="JSON-encoded provider data which will be made available to the adapter servicing the API",
+                required=False,
+                schema=self.schema_builder.classdef_to_ref(str),
+            )
+        ]
 
         # data passed in payload
         if op.request_params:

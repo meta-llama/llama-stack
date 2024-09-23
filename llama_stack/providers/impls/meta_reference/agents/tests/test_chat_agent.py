@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from typing import AsyncIterator, List, Optional, Union
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -79,10 +78,10 @@ class MockInferenceAPI:
 
 
 class MockSafetyAPI:
-    async def run_shields(
-        self, messages: List[Message], shields: List[MagicMock]
-    ) -> List[ShieldResponse]:
-        return [ShieldResponse(shield_type="mock_shield", is_violation=False)]
+    async def run_shield(
+        self, shield_type: str, messages: List[Message]
+    ) -> RunShieldResponse:
+        return RunShieldResponse(violation=None)
 
 
 class MockMemoryAPI:
@@ -185,6 +184,7 @@ async def chat_agent(mock_inference_api, mock_safety_api, mock_memory_api):
             # ),
         ],
         tool_choice=ToolChoice.auto,
+        enable_session_persistence=False,
         input_shields=[],
         output_shields=[],
     )
@@ -221,13 +221,13 @@ async def test_chat_agent_create_and_execute_turn(chat_agent):
 
 
 @pytest.mark.asyncio
-async def test_run_shields_wrapper(chat_agent):
+async def test_run_multiple_shields_wrapper(chat_agent):
     messages = [UserMessage(content="Test message")]
-    shields = [ShieldDefinition(shield_type="test_shield")]
+    shields = ["test_shield"]
 
     responses = [
         chunk
-        async for chunk in chat_agent.run_shields_wrapper(
+        async for chunk in chat_agent.run_multiple_shields_wrapper(
             turn_id="test_turn_id",
             messages=messages,
             shields=shields,

@@ -6,7 +6,8 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.utils.kvstore import kvstore_dependencies
 
 
 def available_providers() -> List[ProviderSpec]:
@@ -19,15 +20,23 @@ def available_providers() -> List[ProviderSpec]:
                 "pillow",
                 "pandas",
                 "scikit-learn",
-                "torch",
-                "transformers",
-            ],
+            ]
+            + kvstore_dependencies(),
             module="llama_stack.providers.impls.meta_reference.agents",
-            config_class="llama_stack.providers.impls.meta_reference.agents.MetaReferenceImplConfig",
+            config_class="llama_stack.providers.impls.meta_reference.agents.MetaReferenceAgentsImplConfig",
             api_dependencies=[
                 Api.inference,
                 Api.safety,
                 Api.memory,
             ],
+        ),
+        remote_provider_spec(
+            api=Api.agents,
+            adapter=AdapterSpec(
+                adapter_id="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.agents.sample",
+                config_class="llama_stack.providers.adapters.agents.sample.SampleConfig",
+            ),
         ),
     ]

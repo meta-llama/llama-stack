@@ -112,7 +112,9 @@ class StackBuild(Subcommand):
             to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
 
-        build_image(build_config, build_file_path)
+        return_code = build_image(build_config, build_file_path)
+        if return_code != 0:
+            return
 
         cprint(
             f"Build spec configuration saved at {str(build_file_path)}",
@@ -125,7 +127,7 @@ class StackBuild(Subcommand):
             else (f"llamastack-{build_config.name}")
         )
         cprint(
-            f"You may now run `llama stack configure {configure_name}` or `llama stack configure {str(build_file_path)}`",
+            f"You can now run `llama stack configure {configure_name}`",
             color="green",
         )
 
@@ -160,7 +162,11 @@ class StackBuild(Subcommand):
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import yaml
-        from llama_stack.distribution.distribution import Api, api_providers
+        from llama_stack.distribution.distribution import (
+            Api,
+            api_providers,
+            builtin_automatically_routed_apis,
+        )
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
         from prompt_toolkit import prompt
         from prompt_toolkit.validation import Validator
@@ -213,8 +219,15 @@ class StackBuild(Subcommand):
             )
 
             providers = dict()
+            all_providers = api_providers()
+            routing_table_apis = set(
+                x.routing_table_api for x in builtin_automatically_routed_apis()
+            )
+
             for api in Api:
-                all_providers = api_providers()
+                if api in routing_table_apis:
+                    continue
+
                 providers_for_api = all_providers[api]
 
                 api_provider = prompt(

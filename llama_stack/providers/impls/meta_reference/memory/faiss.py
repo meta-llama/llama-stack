@@ -42,7 +42,6 @@ class FaissIndex(EmbeddingIndex):
         indexlen = len(self.id_by_index)
         for i, chunk in enumerate(chunks):
             self.chunk_by_index[indexlen + i] = chunk
-            logger.info(f"Adding chunk #{indexlen + i} tokens={chunk.token_count}")
             self.id_by_index[indexlen + i] = chunk.document_id
 
         self.index.add(np.array(embeddings).astype(np.float32))

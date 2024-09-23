@@ -8,6 +8,7 @@ import importlib
 from typing import Any, Dict
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from termcolor import cprint
 
 
 def instantiate_class_type(fully_qualified_name):
@@ -20,7 +21,7 @@ def instantiate_class_type(fully_qualified_name):
 async def instantiate_provider(
     provider_spec: ProviderSpec,
     deps: Dict[str, Any],
-    provider_config: ProviderMapEntry,
+    provider_config: Union[GenericProviderConfig, RoutingTable],
 ):
     module = importlib.import_module(provider_spec.module)
 
@@ -35,13 +36,20 @@ async def instantiate_provider(
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider_config.config)
         args = [config, deps]
-    elif isinstance(provider_spec, RouterProviderSpec):
-        method = "get_router_impl"
+    elif isinstance(provider_spec, AutoRoutedProviderSpec):
+        method = "get_auto_router_impl"
 
-        assert isinstance(provider_config, list)
+        config = None
+        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps]
+    elif isinstance(provider_spec, RoutingTableProviderSpec):
+        method = "get_routing_table_impl"
+
+        assert isinstance(provider_config, List)
+        routing_table = provider_config
+
         inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
         inner_impls = []
-        for routing_entry in provider_config:
+        for routing_entry in routing_table:
             impl = await instantiate_provider(
                 inner_specs[routing_entry.provider_id],
                 deps,
@@ -50,7 +58,7 @@ async def instantiate_provider(
             inner_impls.append((routing_entry.routing_key, impl))
 
         config = None
-        args = [inner_impls, deps]
+        args = [provider_spec.api, inner_impls, routing_table, deps]
     else:
         method = "get_provider_impl"
 

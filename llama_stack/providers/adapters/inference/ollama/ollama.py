@@ -38,6 +38,7 @@ class OllamaInferenceAdapter(Inference):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
+        print("Initializing Ollama, checking connectivity to server...")
         try:
             await self.client.ps()
         except httpx.ConnectError as e:
@@ -48,7 +49,14 @@ class OllamaInferenceAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def _messages_to_ollama_messages(self, messages: list[Message]) -> list:

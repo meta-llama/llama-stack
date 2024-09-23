@@ -6,13 +6,13 @@
 
 from typing import AsyncGenerator
 
+from fireworks.client import Fireworks
+
 from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
-
-from fireworks.client import Fireworks
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
@@ -42,7 +42,14 @@ class FireworksInferenceAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def _messages_to_fireworks_messages(self, messages: list[Message]) -> list:

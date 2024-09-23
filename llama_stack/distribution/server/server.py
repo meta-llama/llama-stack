@@ -35,9 +35,6 @@ from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -45,9 +42,17 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
-from llama_stack.distribution.distribution import api_endpoints, api_providers
+from llama_stack.distribution.distribution import (
+    api_endpoints,
+    api_providers,
+    builtin_automatically_routed_apis,
+)
+from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.utils.dynamic import instantiate_provider
 
 
@@ -176,7 +181,9 @@ def create_dynamic_passthrough(
     return endpoint
 
 
-def create_dynamic_typed_route(func: Any, method: str):
+def create_dynamic_typed_route(
+    func: Any, method: str, provider_data_validator: Optional[str]
+):
     hints = get_type_hints(func)
     response_model = hints.get("return")
 
@@ -188,8 +195,10 @@ def create_dynamic_typed_route(func: Any, method: str):
 
     if is_streaming:
 
-        async def endpoint(**kwargs):
+        async def endpoint(request: Request, **kwargs):
             await start_trace(func.__name__)
+
+            set_request_provider_data(request.headers, provider_data_validator)
 
             async def sse_generator(event_gen):
                 try:
@@ -217,8 +226,11 @@ def create_dynamic_typed_route(func: Any, method: str):
 
     else:
 
-        async def endpoint(**kwargs):
+        async def endpoint(request: Request, **kwargs):
             await start_trace(func.__name__)
+
+            set_request_provider_data(request.headers, provider_data_validator)
+
             try:
                 return (
                     await func(**kwargs)
@@ -232,20 +244,23 @@ def create_dynamic_typed_route(func: Any, method: str):
                 await end_trace()
 
     sig = inspect.signature(func)
+    new_params = [
+        inspect.Parameter(
+            "request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request
+        )
+    ]
+    new_params.extend(sig.parameters.values())
+
     if method == "post":
         # make sure every parameter is annotated with Body() so FASTAPI doesn't
         # do anything too intelligent and ask for some parameters in the query
         # and some in the body
-        endpoint.__signature__ = sig.replace(
-            parameters=[
-                param.replace(
-                    annotation=Annotated[param.annotation, Body(..., embed=True)]
-                )
-                for param in sig.parameters.values()
-            ]
-        )
-    else:
-        endpoint.__signature__ = sig
+        new_params = [new_params[0]] + [
+            param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
+            for param in new_params[1:]
+        ]
+
+    endpoint.__signature__ = sig.replace(parameters=new_params)
 
     return endpoint
 
@@ -276,52 +291,92 @@ def snake_to_camel(snake_str):
     return "".join(word.capitalize() for word in snake_str.split("_"))
 
 
-async def resolve_impls(
-    provider_map: Dict[str, ProviderMapEntry],
-) -> Dict[Api, Any]:
+async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, Any]:
     """
     Does two things:
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
     all_providers = api_providers()
-
     specs = {}
-    for api_str, item in provider_map.items():
+    configs = {}
+
+    for api_str, config in run_config.api_providers.items():
         api = Api(api_str)
+
+        # TODO: check that these APIs are not in the routing table part of the config
         providers = all_providers[api]
 
-        if isinstance(item, GenericProviderConfig):
-            if item.provider_id not in providers:
-                raise ValueError(
-                    f"Unknown provider `{provider_id}` is not available for API `{api}`"
-                )
-            specs[api] = providers[item.provider_id]
-        else:
-            assert isinstance(item, list)
-            inner_specs = []
-            for rt_entry in item:
-                if rt_entry.provider_id not in providers:
-                    raise ValueError(
-                        f"Unknown provider `{rt_entry.provider_id}` is not available for API `{api}`"
-                    )
-                inner_specs.append(providers[rt_entry.provider_id])
+        # skip checks for API whose provider config is specified in routing_table
+        if isinstance(config, PlaceholderProviderConfig):
+            continue
 
-            specs[api] = RouterProviderSpec(
-                api=api,
-                module=f"llama_stack.providers.routers.{api.value.lower()}",
-                api_dependencies=[],
-                inner_specs=inner_specs,
+        if config.provider_id not in providers:
+            raise ValueError(
+                f"Unknown provider `{config.provider_id}` is not available for API `{api}`"
             )
+        specs[api] = providers[config.provider_id]
+        configs[api] = config
+
+    apis_to_serve = run_config.apis_to_serve or set(
+        list(specs.keys()) + list(run_config.routing_table.keys())
+    )
+    for info in builtin_automatically_routed_apis():
+        source_api = info.routing_table_api
+
+        assert (
+            source_api not in specs
+        ), f"Routing table API {source_api} specified in wrong place?"
+        assert (
+            info.router_api not in specs
+        ), f"Auto-routed API {info.router_api} specified in wrong place?"
+
+        if info.router_api.value not in apis_to_serve:
+            continue
+
+        print("router_api", info.router_api)
+        if info.router_api.value not in run_config.routing_table:
+            raise ValueError(f"Routing table for `{source_api.value}` is not provided?")
+
+        routing_table = run_config.routing_table[info.router_api.value]
+
+        providers = all_providers[info.router_api]
+
+        inner_specs = []
+        for rt_entry in routing_table:
+            if rt_entry.provider_id not in providers:
+                raise ValueError(
+                    f"Unknown provider `{rt_entry.provider_id}` is not available for API `{api}`"
+                )
+            inner_specs.append(providers[rt_entry.provider_id])
+
+        specs[source_api] = RoutingTableProviderSpec(
+            api=source_api,
+            module="llama_stack.distribution.routers",
+            api_dependencies=[],
+            inner_specs=inner_specs,
+        )
+        configs[source_api] = routing_table
+
+        specs[info.router_api] = AutoRoutedProviderSpec(
+            api=info.router_api,
+            module="llama_stack.distribution.routers",
+            routing_table_api=source_api,
+            api_dependencies=[source_api],
+        )
+        configs[info.router_api] = {}
 
     sorted_specs = topological_sort(specs.values())
-
+    print(f"Resolved {len(sorted_specs)} providers in topological order")
+    for spec in sorted_specs:
+        print(f"  {spec.api}: {spec.provider_id}")
+    print("")
     impls = {}
     for spec in sorted_specs:
         api = spec.api
-
         deps = {api: impls[api] for api in spec.api_dependencies}
-        impl = await instantiate_provider(spec, deps, provider_map[api.value])
+        impl = await instantiate_provider(spec, deps, configs[api])
+
         impls[api] = impl
 
     return impls, specs
@@ -333,15 +388,23 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
     app = FastAPI()
 
-    impls, specs = asyncio.run(resolve_impls(config.provider_map))
+    impls, specs = asyncio.run(resolve_impls_with_routing(config))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
     all_endpoints = api_endpoints()
 
-    apis_to_serve = config.apis_to_serve or list(config.provider_map.keys())
+    if config.apis_to_serve:
+        apis_to_serve = set(config.apis_to_serve)
+        for inf in builtin_automatically_routed_apis():
+            if inf.router_api.value in apis_to_serve:
+                apis_to_serve.add(inf.routing_table_api)
+    else:
+        apis_to_serve = set(impls.keys())
+
     for api_str in apis_to_serve:
         api = Api(api_str)
+
         endpoints = all_endpoints[api]
         impl = impls[api]
 
@@ -365,7 +428,15 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
                 impl_method = getattr(impl, endpoint.name)
                 getattr(app, endpoint.method)(endpoint.route, response_model=None)(
-                    create_dynamic_typed_route(impl_method, endpoint.method)
+                    create_dynamic_typed_route(
+                        impl_method,
+                        endpoint.method,
+                        (
+                            provider_spec.provider_data_validator
+                            if not isinstance(provider_spec, RoutingTableProviderSpec)
+                            else None
+                        ),
+                    )
                 )
 
     for route in app.routes:

@@ -6,5 +6,8 @@
 
 from pydantic import BaseModel
 
+from llama_stack.providers.utils.kvstore import KVStoreConfig
 
-class MetaReferenceImplConfig(BaseModel): ...
+
+class MetaReferenceAgentsImplConfig(BaseModel):
+    persistence_store: KVStoreConfig

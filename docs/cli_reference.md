@@ -461,7 +461,7 @@ Serving POST /inference/batch_chat_completion
 Serving POST /inference/batch_completion
 Serving POST /inference/chat_completion
 Serving POST /inference/completion
-Serving POST /safety/run_shields
+Serving POST /safety/run_shield
 Serving POST /agentic_system/memory_bank/attach
 Serving POST /agentic_system/create
 Serving POST /agentic_system/session/create

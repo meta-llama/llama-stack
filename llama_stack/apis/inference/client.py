@@ -6,25 +6,19 @@
 
 import asyncio
 import json
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, List, Optional
 
 import fire
 import httpx
-
-from llama_stack.distribution.datatypes import RemoteProviderConfig
 from pydantic import BaseModel
+
+from llama_models.llama3.api import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
 from termcolor import cprint
 
-from .event_logger import EventLogger
+from llama_stack.distribution.datatypes import RemoteProviderConfig
 
-from .inference import (
-    ChatCompletionRequest,
-    ChatCompletionResponse,
-    ChatCompletionResponseStreamChunk,
-    CompletionRequest,
-    Inference,
-    UserMessage,
-)
+from .event_logger import EventLogger
 
 
 async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Inference:
@@ -48,7 +42,27 @@ class InferenceClient(Inference):
     async def completion(self, request: CompletionRequest) -> AsyncGenerator:
         raise NotImplementedError()
 
-    async def chat_completion(self, request: ChatCompletionRequest) -> AsyncGenerator:
+    async def chat_completion(
+        self,
+        model: str,
+        messages: List[Message],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        tools: Optional[List[ToolDefinition]] = None,
+        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
+        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
+        request = ChatCompletionRequest(
+            model=model,
+            messages=messages,
+            sampling_params=sampling_params,
+            tools=tools or [],
+            tool_choice=tool_choice,
+            tool_prompt_format=tool_prompt_format,
+            stream=stream,
+            logprobs=logprobs,
+        )
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 "POST",
@@ -91,11 +105,9 @@ async def run_main(host: str, port: int, stream: bool):
     )
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
-        ChatCompletionRequest(
-            model="Meta-Llama3.1-8B-Instruct",
-            messages=[message],
-            stream=stream,
-        )
+        model="Meta-Llama3.1-8B-Instruct",
+        messages=[message],
+        stream=stream,
     )
     async for log in EventLogger().log(iterator):
         log.print()

@@ -16,6 +16,7 @@ import httpx
 import numpy as np
 from numpy.typing import NDArray
 from pypdf import PdfReader
+from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -160,6 +161,8 @@ class BankWithIndex:
                 self.bank.config.overlap_size_in_tokens
                 or (self.bank.config.chunk_size_in_tokens // 4),
             )
+            if not chunks:
+                continue
             embeddings = model.encode([x.content for x in chunks]).astype(np.float32)
 
             await self.index.add_chunks(chunks, embeddings)

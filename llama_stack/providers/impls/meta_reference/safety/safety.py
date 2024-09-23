@@ -4,14 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import asyncio
-
 from llama_models.sku_list import resolve_model
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
-from llama_stack.apis.safety import *  # noqa
+from llama_stack.apis.safety import *  # noqa: F403
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 
-from .config import SafetyConfig
+from .config import MetaReferenceShieldType, SafetyConfig
+
 from .shields import (
     CodeScannerShield,
     InjectionShield,
@@ -19,7 +19,6 @@ from .shields import (
     LlamaGuardShield,
     PromptGuardShield,
     ShieldBase,
-    ThirdPartyShield,
 )
 
 
@@ -50,46 +49,58 @@ class MetaReferenceSafetyImpl(Safety):
             model_dir = resolve_and_get_path(shield_cfg.model)
             _ = PromptGuardShield.instance(model_dir)
 
-    async def run_shields(
+    async def run_shield(
         self,
+        shield_type: str,
         messages: List[Message],
-        shields: List[ShieldDefinition],
+        params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        shields = [shield_config_to_shield(c, self.config) for c in shields]
+        available_shields = [v.value for v in MetaReferenceShieldType]
+        assert shield_type in available_shields, f"Unknown shield {shield_type}"
 
-        responses = await asyncio.gather(*[shield.run(messages) for shield in shields])
+        shield = self.get_shield_impl(MetaReferenceShieldType(shield_type))
 
-        return RunShieldResponse(responses=responses)
+        messages = messages.copy()
+        # some shields like llama-guard require the first message to be a user message
+        # since this might be a tool call, first role might not be user
+        if len(messages) > 0 and messages[0].role != Role.user.value:
+            messages[0] = UserMessage(content=messages[0].content)
 
+        # TODO: we can refactor ShieldBase, etc. to be inline with the API types
+        res = await shield.run(messages)
+        violation = None
+        if res.is_violation:
+            violation = SafetyViolation(
+                violation_level=ViolationLevel.ERROR,
+                user_message=res.violation_return_message,
+                metadata={
+                    "violation_type": res.violation_type,
+                },
+            )
 
-def shield_type_equals(a: ShieldType, b: ShieldType):
-    return a == b or a == b.value
+        return RunShieldResponse(violation=violation)
 
-
-def shield_config_to_shield(
-    sc: ShieldDefinition, safety_config: SafetyConfig
-) -> ShieldBase:
-    if shield_type_equals(sc.shield_type, BuiltinShield.llama_guard):
-        assert (
-            safety_config.llama_guard_shield is not None
-        ), "Cannot use LlamaGuardShield since not present in config"
-        model_dir = resolve_and_get_path(safety_config.llama_guard_shield.model)
-        return LlamaGuardShield.instance(model_dir=model_dir)
-    elif shield_type_equals(sc.shield_type, BuiltinShield.jailbreak_shield):
-        assert (
-            safety_config.prompt_guard_shield is not None
-        ), "Cannot use Jailbreak Shield since Prompt Guard not present in config"
-        model_dir = resolve_and_get_path(safety_config.prompt_guard_shield.model)
-        return JailbreakShield.instance(model_dir)
-    elif shield_type_equals(sc.shield_type, BuiltinShield.injection_shield):
-        assert (
-            safety_config.prompt_guard_shield is not None
-        ), "Cannot use PromptGuardShield since not present in config"
-        model_dir = resolve_and_get_path(safety_config.prompt_guard_shield.model)
-        return InjectionShield.instance(model_dir)
-    elif shield_type_equals(sc.shield_type, BuiltinShield.code_scanner_guard):
-        return CodeScannerShield.instance()
-    elif shield_type_equals(sc.shield_type, BuiltinShield.third_party_shield):
-        return ThirdPartyShield.instance()
-    else:
-        raise ValueError(f"Unknown shield type: {sc.shield_type}")
+    def get_shield_impl(self, typ: MetaReferenceShieldType) -> ShieldBase:
+        cfg = self.config
+        if typ == MetaReferenceShieldType.llama_guard:
+            assert (
+                cfg.llama_guard_shield is not None
+            ), "Cannot use LlamaGuardShield since not present in config"
+            model_dir = resolve_and_get_path(cfg.llama_guard_shield.model)
+            return LlamaGuardShield.instance(model_dir=model_dir)
+        elif typ == MetaReferenceShieldType.jailbreak_shield:
+            assert (
+                cfg.prompt_guard_shield is not None
+            ), "Cannot use Jailbreak Shield since Prompt Guard not present in config"
+            model_dir = resolve_and_get_path(cfg.prompt_guard_shield.model)
+            return JailbreakShield.instance(model_dir)
+        elif typ == MetaReferenceShieldType.injection_shield:
+            assert (
+                cfg.prompt_guard_shield is not None
+            ), "Cannot use PromptGuardShield since not present in config"
+            model_dir = resolve_and_get_path(cfg.prompt_guard_shield.model)
+            return InjectionShield.instance(model_dir)
+        elif typ == MetaReferenceShieldType.code_scanner_guard:
+            return CodeScannerShield.instance()
+        else:
+            raise ValueError(f"Unknown shield type: {typ}")

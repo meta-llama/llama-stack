@@ -31,9 +31,6 @@ class ChromaIndex(EmbeddingIndex):
             embeddings
         ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
 
-        for i, chunk in enumerate(chunks):
-            print(f"Adding chunk #{i} tokens={chunk.token_count}")
-
         await self.collection.add(
             documents=[chunk.json() for chunk in chunks],
             embeddings=embeddings,

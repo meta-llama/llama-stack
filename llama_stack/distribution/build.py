@@ -93,4 +93,5 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             f"Failed to build target {build_config.name} with return code {return_code}",
             color="red",
         )
-        return
+    
+    return return_code

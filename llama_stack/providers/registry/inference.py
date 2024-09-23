@@ -29,6 +29,15 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_id="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.inference.sample",
+                config_class="llama_stack.providers.adapters.inference.sample.SampleConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_id="ollama",
                 pip_packages=["ollama"],
                 module="llama_stack.providers.adapters.inference.ollama",
@@ -63,6 +72,7 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.adapters.inference.together",
                 config_class="llama_stack.providers.adapters.inference.together.TogetherImplConfig",
+                header_extractor_class="llama_stack.providers.adapters.inference.together.TogetherHeaderExtractor",
             ),
         ),
     ]

@@ -1,0 +1,87 @@
+built_at: '2024-09-23T00:54:40.551416'
+image_name: test-2
+docker_image: null
+conda_env: test-2
+apis_to_serve:
+- shields
+- agents
+- models
+- memory
+- memory_banks
+- inference
+- safety
+api_providers:
+  inference:
+    providers:
+    - meta-reference
+  safety:
+    providers:
+    - meta-reference
+  agents:
+    provider_id: meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: /home/xiyan/.llama/runtime/kvstore.db
+  memory:
+    providers:
+    - meta-reference
+  telemetry:
+    provider_id: meta-reference
+    config: {}
+routing_table:
+  inference:
+  - provider_id: meta-reference
+    config:
+      model: Meta-Llama3.1-8B-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
+    routing_key: Meta-Llama3.1-8B-Instruct
+  safety:
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield:
+        model: Llama-Guard-3-8B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
+    routing_key: llama_guard
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield:
+        model: Llama-Guard-3-8B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
+    routing_key: code_scanner_guard
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield:
+        model: Llama-Guard-3-8B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
+    routing_key: injection_shield
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield:
+        model: Llama-Guard-3-8B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
+    routing_key: jailbreak_shield
+  memory:
+  - provider_id: meta-reference
+    config: {}
+    routing_key: vector

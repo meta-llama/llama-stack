@@ -145,7 +145,7 @@ class StackConfigure(Subcommand):
                 built_at=datetime.now(),
                 image_name=image_name,
                 apis_to_serve=[],
-                provider_map={},
+                api_providers={},
             )
 
         config = configure_api_providers(config, build_config.distribution_spec)
@@ -165,6 +165,6 @@ class StackConfigure(Subcommand):
         )
 
         cprint(
-            f"You can now run `llama stack run {image_name} --port PORT` or `llama stack run {run_config_file} --port PORT`",
+            f"You can now run `llama stack run {image_name} --port PORT`",
             color="green",
         )
