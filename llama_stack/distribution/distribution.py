@@ -8,8 +8,6 @@ import importlib
 import inspect
 from typing import Dict, List
 
-from pydantic import BaseModel
-
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
@@ -18,6 +16,8 @@ from llama_stack.apis.models import Models
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
+
+from pydantic import BaseModel
 
 from .datatypes import Api, ApiEndpoint, ProviderSpec, remote_provider_spec
 
