@@ -7,6 +7,7 @@
 import asyncio
 import copy
 import os
+import re
 import secrets
 import shutil
 import string
@@ -378,6 +379,11 @@ class ChatAgent(ShieldRunnerMixin):
 
         elif attachments and AgentTool.code_interpreter.value in enabled_tools:
             urls = [a.content for a in attachments if isinstance(a.content, URL)]
+            # TODO: we need to migrate URL away from str type
+            pattern = re.compile("^(https?://|file://|data:)")
+            urls += [
+                URL(uri=a.content) for a in attachments if pattern.match(a.content)
+            ]
             msg = await attachment_message(self.tempdir, urls)
             input_messages.append(msg)
 
