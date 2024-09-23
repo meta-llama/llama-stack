@@ -49,6 +49,7 @@ from llama_stack.apis.shields import *  # noqa: F403
 
 
 class LlamaStack(
+    MemoryBanks,
     Inference,
     BatchInference,
     Agents,
@@ -61,7 +62,6 @@ class LlamaStack(
     Memory,
     Evaluations,
     Models,
-    MemoryBanks,
     Shields,
 ):
     pass

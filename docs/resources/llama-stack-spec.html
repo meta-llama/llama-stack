@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 09:14:46.697401"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 10:08:50.987103"
     },
     "servers": [
         {
@@ -1180,7 +1180,7 @@
                 ]
             }
         },
-        "/memory/get": {
+        "/memory_banks/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1190,7 +1190,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/MemoryBank"
+                                            "$ref": "#/components/schemas/MemoryBankSpec"
                                         },
                                         {
                                             "type": "null"
@@ -1202,15 +1202,15 @@
                     }
                 },
                 "tags": [
-                    "MemoryBanks"
+                    "Memory"
                 ],
                 "parameters": [
                     {
-                        "name": "bank_id",
+                        "name": "bank_type",
                         "in": "query",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/MemoryBankType"
                         }
                     },
                     {
@@ -1530,7 +1530,7 @@
                 }
             }
         },
-        "/memory/list": {
+        "/memory_banks/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -1538,14 +1538,14 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/MemoryBank"
+                                    "$ref": "#/components/schemas/MemoryBankSpec"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "MemoryBanks"
+                    "Memory"
                 ],
                 "parameters": [
                     {
@@ -4471,6 +4471,66 @@
                     "job_uuid"
                 ]
             },
+            "MemoryBankType": {
+                "type": "string",
+                "enum": [
+                    "vector",
+                    "keyvalue",
+                    "keyword",
+                    "graph"
+                ]
+            },
+            "MemoryBankSpec": {
+                "type": "object",
+                "properties": {
+                    "bank_type": {
+                        "$ref": "#/components/schemas/MemoryBankType"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_id": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_id",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_type",
+                    "provider_config"
+                ]
+            },
             "Model": {
                 "description": "The model family and SKU of the model along with other parameters corresponding to the model."
             },
@@ -5835,34 +5895,10 @@
     ],
     "tags": [
         {
-            "name": "Evaluations"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Memory"
-        },
-        {
             "name": "Datasets"
         },
         {
-            "name": "Inference"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "RewardScoring"
+            "name": "Safety"
         },
         {
             "name": "Telemetry"
@@ -5871,10 +5907,31 @@
             "name": "Agents"
         },
         {
-            "name": "Safety"
+            "name": "BatchInference"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "Shields"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "BuiltinTool",
@@ -6217,6 +6274,14 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
+            "name": "MemoryBankType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankType\" />"
+        },
+        {
+            "name": "MemoryBankSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankSpec\" />"
+        },
+        {
             "name": "Model",
             "description": "The model family and SKU of the model along with other parameters corresponding to the model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
         },
@@ -6391,7 +6456,6 @@
                 "Evaluations",
                 "Inference",
                 "Memory",
-                "MemoryBanks",
                 "Models",
                 "PostTraining",
                 "RewardScoring",
@@ -6467,6 +6531,8 @@
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
+                "MemoryBankSpec",
+                "MemoryBankType",
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",

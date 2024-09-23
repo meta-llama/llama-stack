@@ -1039,6 +1039,41 @@ components:
       - content
       - metadata
       type: object
+    MemoryBankSpec:
+      additionalProperties: false
+      properties:
+        bank_type:
+          $ref: '#/components/schemas/MemoryBankType'
+        provider_config:
+          additionalProperties: false
+          properties:
+            config:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            provider_id:
+              type: string
+          required:
+          - provider_id
+          - config
+          type: object
+      required:
+      - bank_type
+      - provider_config
+      type: object
+    MemoryBankType:
+      enum:
+      - vector
+      - keyvalue
+      - keyword
+      - graph
+      type: string
     MemoryRetrievalStep:
       additionalProperties: false
       properties:
@@ -2408,7 +2443,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-23 09:14:46.697401"
+    \ draft and subject to change.\n                Generated at 2024-09-23 10:08:50.987103"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3112,32 +3147,6 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory/get:
-    get:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/MemoryBank'
-                - type: 'null'
-          description: OK
-      tags:
-      - MemoryBanks
   /memory/insert:
     post:
       parameters:
@@ -3159,25 +3168,6 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/MemoryBank'
-          description: OK
-      tags:
-      - MemoryBanks
   /memory/query:
     post:
       parameters:
@@ -3221,6 +3211,51 @@ paths:
         required: true
       responses:
         '200':
+          description: OK
+      tags:
+      - Memory
+  /memory_banks/get:
+    get:
+      parameters:
+      - in: query
+        name: bank_type
+        required: true
+        schema:
+          $ref: '#/components/schemas/MemoryBankType'
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/MemoryBankSpec'
+                - type: 'null'
+          description: OK
+      tags:
+      - Memory
+  /memory_banks/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/MemoryBankSpec'
           description: OK
       tags:
       - Memory
@@ -3601,20 +3636,19 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Evaluations
-- name: MemoryBanks
-- name: Memory
 - name: Datasets
-- name: Inference
-- name: BatchInference
-- name: PostTraining
-- name: SyntheticDataGeneration
-- name: Models
-- name: RewardScoring
+- name: Safety
 - name: Telemetry
 - name: Agents
-- name: Safety
+- name: BatchInference
+- name: Models
+- name: SyntheticDataGeneration
+- name: Evaluations
 - name: Shields
+- name: Memory
+- name: PostTraining
+- name: RewardScoring
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3882,6 +3916,10 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankType" />
+  name: MemoryBankType
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankSpec" />
+  name: MemoryBankSpec
 - description: 'The model family and SKU of the model along with other parameters
     corresponding to the model.
 
@@ -4025,7 +4063,6 @@ x-tagGroups:
   - Evaluations
   - Inference
   - Memory
-  - MemoryBanks
   - Models
   - PostTraining
   - RewardScoring
@@ -4098,6 +4135,8 @@ x-tagGroups:
   - LoraFinetuningConfig
   - MemoryBank
   - MemoryBankDocument
+  - MemoryBankSpec
+  - MemoryBankType
   - MemoryRetrievalStep
   - MemoryToolDefinition
   - MetricEvent
