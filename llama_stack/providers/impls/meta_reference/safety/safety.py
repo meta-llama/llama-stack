@@ -31,6 +31,7 @@ def resolve_and_get_path(model_name: str) -> str:
 
 class MetaReferenceSafetyImpl(Safety):
     def __init__(self, config: SafetyConfig) -> None:
+        print("Initializing MetaReferenceSafetyImpl w/ config", config)
         self.config = config
 
     async def initialize(self) -> None:

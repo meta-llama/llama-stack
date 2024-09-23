@@ -38,11 +38,30 @@ routing_table:
     - routing_key: llama_guard
       provider_id: meta-reference
       config:
-        model: Llama-Guard-3-8B
-        excluded_categories: []
-        disable_input_check: false
-        disable_output_check: false
+        llama_guard_shield:
+          model: Llama-Guard-3-8B
+          excluded_categories: []
+          disable_input_check: false
+          disable_output_check: false
+        prompt_guard_shield:
+          model: Prompt-Guard-86M
     - routing_key: prompt_guard
       provider_id: meta-reference
       config:
-        model: Prompt-Guard-86M
+        llama_guard_shield:
+          model: Llama-Guard-3-8B
+          excluded_categories: []
+          disable_input_check: false
+          disable_output_check: false
+        prompt_guard_shield:
+          model: Prompt-Guard-86M
+    - routing_key: injection_shield
+      provider_id: meta-reference
+      config:
+        llama_guard_shield:
+          model: Llama-Guard-3-8B
+          excluded_categories: []
+          disable_input_check: false
+          disable_output_check: false
+        prompt_guard_shield:
+          model: Prompt-Guard-86M

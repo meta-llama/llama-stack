@@ -8,6 +8,7 @@ import importlib
 from typing import Any, Dict
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from termcolor import cprint
 
 
 def instantiate_class_type(fully_qualified_name):
@@ -47,6 +48,7 @@ async def instantiate_provider(
         routing_table = provider_config
 
         inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
+        cprint(f"inner_specs: {inner_specs}", "cyan")
         inner_impls = []
         for routing_entry in routing_table:
             impl = await instantiate_provider(

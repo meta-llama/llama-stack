@@ -23,6 +23,7 @@ class CommonRoutingTableImpl(RoutingTable):
         routing_table_config: Dict[str, List[RoutableProviderConfig]],
     ) -> None:
         self.providers = {k: v for k, v in inner_impls}
+        print("routing table providers", self.providers)
         self.routing_keys = list(self.providers.keys())
         self.routing_table_config = routing_table_config
 
