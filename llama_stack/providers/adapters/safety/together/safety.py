@@ -7,39 +7,40 @@ import pydantic
 from together import Together
 
 import asyncio
+
+from llama_stack.distribution.request_headers import get_request_provider_data
 from .config import TogetherSafetyConfig
 from llama_stack.apis.safety import *
 import logging
+
+class TogetherHeaderInfo(BaseModel):
+    together_api_key: str
 
 
 class TogetherSafetyImpl(Safety):
     def __init__(self, config: TogetherSafetyConfig) -> None:
         self.config = config
-        self._client = None
-
-    @property
-    def client(self) -> Together:
-        if self._client == None:
-            self._client =  Together(api_key=self.config.api_key)
-        return self._client
-
-    @client.setter
-    def client(self, client: Together) -> None:
-        self._client = client
-
 
     async def initialize(self) -> None:
         pass
 
-    async def run_shields(
+    async def run_shield(
             self,
+            shield_type: str,
             messages: List[Message],
-            shields: List[ShieldDefinition],
+            params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
         # support only llama guard shield
-        for shield in shields:
-            if not isinstance(shield.shield_type, BuiltinShield) or shield.shield_type != BuiltinShield.llama_guard:
-                raise ValueError(f"shield type {shield.shield_type} is not supported")
+
+        if shield_type != "llama_guard":
+            raise ValueError(f"shield type {shield_type} is not supported")
+
+        provider_data = get_request_provider_data()
+        together_api_key = self.config.api_key
+        # @TODO error out if together_api_key is missing in the header
+        if provider_data is not None:
+            if isinstance(provider_data, TogetherHeaderInfo):
+                together_api_key = provider_data.together_api_key
 
         # messages can have role assistant or user
         api_messages = []
@@ -50,32 +51,26 @@ class TogetherSafetyImpl(Safety):
                 raise ValueError(f"role {message.role} is not supported")
 
         # construct Together request
-        responses = await asyncio.gather(*[get_safety_response(self.client, api_messages)])
-        return RunShieldResponse(responses=responses)
+        response = await asyncio.run(get_safety_response(together_api_key, api_messages))
+        return RunShieldResponse(violation=response)
 
-async def get_safety_response(client: Together, messages: List[Dict[str, str]]) -> Optional[ShieldResponse]:
+async def get_safety_response(api_key: str, messages: List[Dict[str, str]]) -> Optional[SafetyViolation]:
+    client = Together(api_key=api_key)
     response = client.chat.completions.create(messages=messages, model="meta-llama/Meta-Llama-Guard-3-8B")
     if len(response.choices) == 0:
-        return ShieldResponse(shield_type=BuiltinShield.llama_guard, is_violation=False)
+        return SafetyViolation(violation_level=ViolationLevel.INFO, user_message="safe")
 
     response_text = response.choices[0].message.content
     if response_text == 'safe':
-        return ShieldResponse(
-            shield_type=BuiltinShield.llama_guard,
-            is_violation=False,
-        )
+        return SafetyViolation(violation_level=ViolationLevel.INFO, user_message="safe")
     else:
         parts = response_text.split("\n")
         if not len(parts) == 2:
             return None
 
         if parts[0] == 'unsafe':
-            return ShieldResponse(
-                shield_type=BuiltinShield.llama_guard,
-                is_violation=True,
-                violation_type=parts[1],
-                violation_return_message="Sorry, I cannot do that"
-            )
+            SafetyViolation(violation_level=ViolationLevel.WARN, user_message="unsafe",
+                            metadata={"violation_type": parts[1]})
 
     return None
 
