@@ -77,8 +77,8 @@ ensure_conda_env_python310() {
 
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
-    pip install fastapi libcst
-    pip install --extra-index-url https://test.pypi.org/simple/ llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION $pip_dependencies
+    $CONDA_PREFIX/bin/pip install fastapi libcst
+    $CONDA_PREFIX/bin/pip install --extra-index-url https://test.pypi.org/simple/ llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION $pip_dependencies
   else
     # Re-installing llama-stack in the new conda environment
     if [ -n "$LLAMA_STACK_DIR" ]; then
@@ -88,9 +88,9 @@ ensure_conda_env_python310() {
       fi
 
       printf "Installing from LLAMA_STACK_DIR: $LLAMA_STACK_DIR\n"
-      pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
+      $CONDA_PREFIX/bin/pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
     else
-      pip install --no-cache-dir llama-stack
+      $CONDA_PREFIX/bin/pip install --no-cache-dir llama-stack
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -100,14 +100,14 @@ ensure_conda_env_python310() {
       fi
 
       printf "Installing from LLAMA_MODELS_DIR: $LLAMA_MODELS_DIR\n"
-      pip uninstall -y llama-models
-      pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
+      $CONDA_PREFIX/bin/pip uninstall -y llama-models
+      $CONDA_PREFIX/bin/pip install --no-cache-dir -e "$LLAMA_MODELS_DIR"
     fi
 
     # Install pip dependencies
     if [ -n "$pip_dependencies" ]; then
       printf "Installing pip dependencies: $pip_dependencies\n"
-      pip install $pip_dependencies
+      $CONDA_PREFIX/bin/pip install $pip_dependencies
     fi
   fi
 }
