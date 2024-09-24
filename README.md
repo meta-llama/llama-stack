@@ -55,7 +55,7 @@ conda create -n stack python=3.10
 conda activate stack
 
 cd llama-stack
-pip install -e .
+$CONDA_PREFIX/bin/pip install -e .
 ```
 
 ## The Llama CLI
