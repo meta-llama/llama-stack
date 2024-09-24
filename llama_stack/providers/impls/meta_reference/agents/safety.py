@@ -43,7 +43,7 @@ class ShieldRunnerMixin:
                 for shield_type in shield_types
             ]
         )
-        for shield_type, response in zip(shields, responses):
+        for shield_type, response in zip(shield_types, responses):
             if not response.violation:
                 continue
 
