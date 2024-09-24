@@ -1,7 +1,6 @@
 import json
 import uuid
 from typing import List, Optional, Dict, Any
-from urllib.parse import urlparse
 from numpy.typing import NDArray
 
 import weaviate
@@ -72,7 +71,6 @@ class WeaviateIndex(EmbeddingIndex):
 
 class WeaviateMemoryAdapter(Memory):
     def __init__(self, config: WeaviateConfig) -> None:
-        print(f"Initializing WeaviateMemoryAdapter with URL: {config.url}")
         self.config = config
         self.client = None
         self.cache = {}
@@ -85,9 +83,10 @@ class WeaviateMemoryAdapter(Memory):
                 assert isinstance(request_provider_data, WeaviateRequestProviderData)
 
                 print(f"WEAVIATE API KEY: {request_provider_data.weaviate_api_key}")
+                print(f"WEAVIATE CLUSTER URL: {request_provider_data.weaviate_cluster_url}")
             # Connect to Weaviate Cloud
             self.client = weaviate.connect_to_weaviate_cloud(
-                cluster_url = self.config.url,
+                cluster_url = request_provider_data.weaviate_cluster_url,
                 auth_credentials = Auth.api_key(request_provider_data.weaviate_api_key),
                 )
 

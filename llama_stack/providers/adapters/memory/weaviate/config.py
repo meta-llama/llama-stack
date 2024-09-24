@@ -11,8 +11,8 @@ class WeaviateRequestProviderData(BaseModel):
     # if there _is_ provider data, it must specify the API KEY
     # if you want it to be optional, use Optional[str]
     weaviate_api_key: str
+    weaviate_cluster_url: str
 
 @json_schema_type
 class WeaviateConfig(BaseModel):
-    url: str = Field(default="http://localhost:8080")
     collection: str = Field(default="MemoryBank")

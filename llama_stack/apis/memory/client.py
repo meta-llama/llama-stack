@@ -44,7 +44,8 @@ class MemoryClient(Memory):
                 },
                 headers={
                     "Content-Type": "application/json",
-                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234",
+                                                             "weaviate_cluster_url": "http://localhost:8080"}),
                 },
                 timeout=20,
             )
@@ -70,7 +71,8 @@ class MemoryClient(Memory):
                 },
                 headers={
                     "Content-Type": "application/json",
-                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234",
+                                                             "weaviate_cluster_url": "http://localhost:8080"}),
                 },
                 timeout=20,
             )
@@ -94,7 +96,8 @@ class MemoryClient(Memory):
                 },
                 headers={
                     "Content-Type": "application/json",
-                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234",
+                                                             "weaviate_cluster_url": "http://localhost:8080"}),
                 },
                 timeout=20,
             )
@@ -116,7 +119,8 @@ class MemoryClient(Memory):
                 },
                 headers={
                     "Content-Type": "application/json",
-                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234",
+                                                             "weaviate_cluster_url": "http://localhost:8080"}),
                 },
                 timeout=20,
             )
