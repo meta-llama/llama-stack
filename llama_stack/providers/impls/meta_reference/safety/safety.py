@@ -10,6 +10,11 @@ from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
+from llama_stack.providers.impls.meta_reference.agents.safety import SafetyException
+from llama_stack.providers.impls.meta_reference.safety.shields.base import (
+    OnViolationAction,
+)
+
 from .config import MetaReferenceShieldType, SafetyConfig
 
 from .shields import (
@@ -77,6 +82,14 @@ class MetaReferenceSafetyImpl(Safety):
                     "violation_type": res.violation_type,
                 },
             )
+
+            if shield.on_violation_action == OnViolationAction.RAISE:
+                raise SafetyException(violation)
+            elif shield.on_violation_action == OnViolationAction.WARN:
+                cprint(
+                    f"[Warn]{shield.__class__.__name__} raised a warning",
+                    color="red",
+                )
 
         return RunShieldResponse(violation=violation)
 

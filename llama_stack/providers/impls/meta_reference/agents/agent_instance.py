@@ -130,7 +130,7 @@ class ChatAgent(ShieldRunnerMixin):
                     # CompletionMessage itself in the ShieldResponse
                     messages.append(
                         CompletionMessage(
-                            content=violation.user_message,
+                            content=step.violation.user_message,
                             stop_reason=StopReason.end_of_turn,
                         )
                     )
