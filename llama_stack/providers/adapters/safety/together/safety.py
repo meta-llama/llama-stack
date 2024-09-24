@@ -36,11 +36,13 @@ class TogetherSafetyImpl(Safety):
             raise ValueError(f"shield type {shield_type} is not supported")
 
         provider_data = get_request_provider_data()
-        together_api_key = self.config.api_key
+        together_api_key = None
         # @TODO error out if together_api_key is missing in the header
         if provider_data is not None:
-            if isinstance(provider_data, TogetherHeaderInfo):
-                together_api_key = provider_data.together_api_key
+            if not isinstance(provider_data, TogetherHeaderInfo) or provider_data.together_api_key is None:
+                raise ValueError("provider Together api key in the header X-LlamaStack-ProviderData as { \"together_api_key\": <your api key>}")
+
+            together_api_key = provider_data.together_api_key
 
         # messages can have role assistant or user
         api_messages = []
