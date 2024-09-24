@@ -33,7 +33,6 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.safety.sample.SampleConfig",
             )
         ),
-
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
