@@ -4,11 +4,15 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 
-if [ "$#" -ne 4 ]; then
-  echo "Usage: $0 <build_name> <docker_base> <pip_dependencies>
-  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn'
+if [ "$#" -lt 4 ]; then
+  echo "Usage: $0 <build_name> <docker_base> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn' " >&2
   exit 1
 fi
+
+special_pip_deps="$5"
+
+set -euo pipefail
 
 build_name="$1"
 image_name="llamastack-$build_name"
@@ -20,8 +24,6 @@ pip_dependencies=$4
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
-
-set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
@@ -83,6 +85,13 @@ fi
 
 if [ -n "$pip_dependencies" ]; then
   add_to_docker "RUN pip install $pip_dependencies"
+fi
+
+if [ -n "$special_pip_deps" ]; then
+  IFS='#' read -ra parts <<< "$special_pip_deps"
+  for part in "${parts[@]}"; do
+    add_to_docker "RUN pip install $part"
+  done
 fi
 
 add_to_docker <<EOF

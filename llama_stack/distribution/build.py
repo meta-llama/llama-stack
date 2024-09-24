@@ -66,6 +66,14 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             if provider_spec.docker_image:
                 raise ValueError("A stack's dependencies cannot have a docker image")
 
+    special_deps = []
+    deps = []
+    for package in package_deps.pip_packages:
+        if "--no-deps" in package or "--index-url" in package:
+            special_deps.append(package)
+        else:
+            deps.append(package)
+
     if build_config.image_type == ImageType.docker.value:
         script = pkg_resources.resource_filename(
             "llama_stack", "distribution/build_container.sh"
@@ -75,7 +83,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             build_config.name,
             package_deps.docker_image,
             str(build_file_path),
-            " ".join(package_deps.pip_packages),
+            " ".join(deps),
         ]
     else:
         script = pkg_resources.resource_filename(
@@ -84,8 +92,11 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         args = [
             script,
             build_config.name,
-            " ".join(package_deps.pip_packages),
+            " ".join(deps),
         ]
+
+    if special_deps:
+        args.append("#".join(special_deps))
 
     return_code = run_with_pty(args)
     if return_code != 0:
@@ -93,5 +104,5 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             f"Failed to build target {build_config.name} with return code {return_code}",
             color="red",
         )
-    
+
     return return_code
