@@ -32,7 +32,7 @@ class ShieldRunnerMixin:
         self.output_shields = output_shields
 
     async def run_multiple_shields(
-        self, messages: List[Message], shields: List[str]
+        self, messages: List[Message], shield_types: List[str]
     ) -> None:
         responses = await asyncio.gather(
             *[
@@ -40,16 +40,18 @@ class ShieldRunnerMixin:
                     shield_type=shield_type,
                     messages=messages,
                 )
-                for shield_type in shields
+                for shield_type in shield_types
             ]
         )
+        for shield_type, response in zip(shield_types, responses):
+            if not response.violation:
+                continue
 
-        for shield, r in zip(shields, responses):
-            if r.violation:
-                if shield.on_violation_action == OnViolationAction.RAISE:
-                    raise SafetyException(r)
-                elif shield.on_violation_action == OnViolationAction.WARN:
-                    cprint(
-                        f"[Warn]{shield.__class__.__name__} raised a warning",
-                        color="red",
-                    )
+            violation = response.violation
+            if violation.violation_level == ViolationLevel.ERROR:
+                raise SafetyException(violation)
+            elif violation.violation_level == ViolationLevel.WARN:
+                cprint(
+                    f"[Warn]{shield_type} raised a warning",
+                    color="red",
+                )

@@ -55,7 +55,7 @@ class ModelDescribe(Subcommand):
             ("Description", model.description_markdown),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
             ("Weights format", model.quantization_format.value),
-            ("Model params.json", json.dumps(model.model_args, indent=4)),
+            ("Model params.json", json.dumps(model.arch_args, indent=4)),
         ]
 
         if model.recommended_sampling_params is not None:
