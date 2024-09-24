@@ -75,4 +75,15 @@ def available_providers() -> List[ProviderSpec]:
                 header_extractor_class="llama_stack.providers.adapters.inference.together.TogetherHeaderExtractor",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_id="bedrock",
+                pip_packages=[
+                    "boto3",
+                ],
+                module="llama_stack.providers.adapters.inference.bedrock",
+                config_class="llama_stack.providers.adapters.inference.bedrock.BedrockConfig",
+            ),
+        ),
     ]

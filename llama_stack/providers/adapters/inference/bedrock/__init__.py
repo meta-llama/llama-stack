@@ -1,0 +1,17 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+from .bedrock import BedrockInferenceAdapter
+from .config import BedrockConfig
+
+
+async def get_adapter_impl(config: BedrockConfig, _deps):
+    assert isinstance(config, BedrockConfig), f"Unexpected config type: {type(config)}"
+
+    impl = BedrockInferenceAdapter(config)
+
+    await impl.initialize()
+
+    return impl
