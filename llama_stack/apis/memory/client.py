@@ -13,9 +13,9 @@ from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
+from termcolor import cprint
 
 from llama_stack.distribution.datatypes import RemoteProviderConfig
-from termcolor import cprint
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.providers.utils.memory.file_utils import data_url_from_file
@@ -120,7 +120,7 @@ async def run_main(host: str, port: int, stream: bool):
         name="test_bank",
         config=VectorMemoryBankConfig(
             bank_id="test_bank",
-            embedding_model="dragon-roberta-query-2",
+            embedding_model="all-MiniLM-L6-v2",
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,
         ),
@@ -129,7 +129,7 @@ async def run_main(host: str, port: int, stream: bool):
 
     retrieved_bank = await client.get_memory_bank(bank.bank_id)
     assert retrieved_bank is not None
-    assert retrieved_bank.config.embedding_model == "dragon-roberta-query-2"
+    assert retrieved_bank.config.embedding_model == "all-MiniLM-L6-v2"
 
     urls = [
         "memory_optimizations.rst",
