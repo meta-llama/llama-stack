@@ -42,7 +42,10 @@ class MemoryClient(Memory):
                 params={
                     "bank_id": bank_id,
                 },
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                },
                 timeout=20,
             )
             r.raise_for_status()
@@ -65,7 +68,10 @@ class MemoryClient(Memory):
                     "config": config.dict(),
                     "url": url,
                 },
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                },
                 timeout=20,
             )
             r.raise_for_status()
@@ -86,7 +92,10 @@ class MemoryClient(Memory):
                     "bank_id": bank_id,
                     "documents": [d.dict() for d in documents],
                 },
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                },
                 timeout=20,
             )
             r.raise_for_status()
@@ -105,7 +114,10 @@ class MemoryClient(Memory):
                     "query": query,
                     "params": params,
                 },
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "X-LlamaStack-ProviderData": json.dumps({"weaviate_api_key": "1234"}),
+                },
                 timeout=20,
             )
             r.raise_for_status()
