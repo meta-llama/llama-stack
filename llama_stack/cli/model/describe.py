@@ -9,11 +9,11 @@ import json
 
 from llama_models.sku_list import resolve_model
 
-from termcolor import colored
-
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.cli.table import print_table
 from llama_stack.distribution.utils.serialize import EnumEncoder
+
+from termcolor import colored
 
 
 class ModelDescribe(Subcommand):
@@ -52,7 +52,7 @@ class ModelDescribe(Subcommand):
                 colored(model.descriptor(), "white", attrs=["bold"]),
             ),
             ("HuggingFace ID", model.huggingface_repo or "<Not Available>"),
-            ("Description", model.description_markdown),
+            ("Description", model.description),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
             ("Weights format", model.quantization_format.value),
             ("Model params.json", json.dumps(model.arch_args, indent=4)),
