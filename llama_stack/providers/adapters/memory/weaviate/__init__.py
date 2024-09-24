@@ -1,8 +1,8 @@
-from llama_stack.distribution.datatypes import RemoteProviderConfig
+from .config import WeaviateConfig
 
-async def get_adapter_impl(config: RemoteProviderConfig, _deps):
+async def get_adapter_impl(config: WeaviateConfig, _deps):
     from .weaviate import WeaviateMemoryAdapter
 
-    impl = WeaviateMemoryAdapter(config.url, config.username, config.password)
+    impl = WeaviateMemoryAdapter(config)
     await impl.initialize()
     return impl

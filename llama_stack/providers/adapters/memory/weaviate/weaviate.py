@@ -75,24 +75,24 @@ class WeaviateMemoryAdapter(Memory):
         self.client = None
         self.cache = {}
 
-    async def initialize(self) -> None:
+    async def initialize_client(self) -> weaviate.Client:
         try:
-
             request_provider_data = get_request_provider_data()
             if request_provider_data is not None:
                 assert isinstance(request_provider_data, WeaviateRequestProviderData)
 
                 print(f"WEAVIATE API KEY: {request_provider_data.weaviate_api_key}")
                 print(f"WEAVIATE CLUSTER URL: {request_provider_data.weaviate_cluster_url}")
+            
             # Connect to Weaviate Cloud
-            self.client = weaviate.connect_to_weaviate_cloud(
+            client =  weaviate.connect_to_weaviate_cloud(
                 cluster_url = request_provider_data.weaviate_cluster_url,
                 auth_credentials = Auth.api_key(request_provider_data.weaviate_api_key),
                 )
 
             # Create collection if it doesn't exist
-            if not self.client.collections.exists(self.config.collection):
-                self.client.collections.create(
+            if not client.collections.exists(self.config.collection):
+               client.collections.create(
                     name = self.config.collection,
                     vectorizer_config = wvc.config.Configure.Vectorizer.none(),
                     properties=[
@@ -102,6 +102,8 @@ class WeaviateMemoryAdapter(Memory):
                         ),
                     ]
                 )
+            
+            return client
 
         except Exception as e:
             import traceback
@@ -109,6 +111,8 @@ class WeaviateMemoryAdapter(Memory):
             raise RuntimeError("Could not connect to Weaviate server") from e
 
     async def shutdown(self) -> None:
+        self.client = self.initialize_client()
+
         if self.client:
             self.client.close()
 
@@ -125,7 +129,7 @@ class WeaviateMemoryAdapter(Memory):
             config=config,
             url=url,
         )
-        
+        self.client = self.initialize_client()
         # Store the bank as a new collection in Weaviate
         self.client.collections.create(
             name=bank_id
@@ -145,6 +149,9 @@ class WeaviateMemoryAdapter(Memory):
         return bank_index.bank
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
+        
+        self.client = self.initialize_client()
+
         if bank_id in self.cache:
             return self.cache[bank_id]
 
