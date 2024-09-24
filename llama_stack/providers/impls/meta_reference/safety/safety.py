@@ -10,6 +10,10 @@ from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
+from llama_stack.providers.impls.meta_reference.safety.shields.base import (
+    OnViolationAction,
+)
+
 from .config import MetaReferenceShieldType, SafetyConfig
 
 from .shields import (
@@ -69,9 +73,13 @@ class MetaReferenceSafetyImpl(Safety):
         # TODO: we can refactor ShieldBase, etc. to be inline with the API types
         res = await shield.run(messages)
         violation = None
-        if res.is_violation:
+        if res.is_violation and shield.on_violation_action != OnViolationAction.IGNORE:
             violation = SafetyViolation(
-                violation_level=ViolationLevel.ERROR,
+                violation_level=(
+                    ViolationLevel.ERROR
+                    if shield.on_violation_action == OnViolationAction.RAISE
+                    else ViolationLevel.WARN
+                ),
                 user_message=res.violation_return_message,
                 metadata={
                     "violation_type": res.violation_type,
