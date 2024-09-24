@@ -15,5 +15,4 @@ class WeaviateRequestProviderData(BaseModel):
 @json_schema_type
 class WeaviateConfig(BaseModel):
     url: str = Field(default="http://localhost:8080")
-    api_key: str = Field(default="")
     collection: str = Field(default="MemoryBank")
