@@ -1,10 +1,3 @@
-//
-//  LocalInference.h
-//  LocalInference
-//
-//  Created by Dalton Flanagan on 9/23/24.
-//
-
 #import <Foundation/Foundation.h>
 
 //! Project version number for LocalInference.
