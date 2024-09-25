@@ -7,8 +7,10 @@
 from llama_models.sku_list import resolve_model
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import Api
 
 from llama_stack.providers.impls.meta_reference.safety.shields.base import (
     OnViolationAction,
@@ -34,20 +36,11 @@ def resolve_and_get_path(model_name: str) -> str:
 
 
 class MetaReferenceSafetyImpl(Safety):
-    def __init__(self, config: SafetyConfig) -> None:
+    def __init__(self, config: SafetyConfig, deps) -> None:
         self.config = config
+        self.inference_api = deps[Api.inference]
 
     async def initialize(self) -> None:
-        shield_cfg = self.config.llama_guard_shield
-        if shield_cfg is not None:
-            model_dir = resolve_and_get_path(shield_cfg.model)
-            _ = LlamaGuardShield.instance(
-                model_dir=model_dir,
-                excluded_categories=shield_cfg.excluded_categories,
-                disable_input_check=shield_cfg.disable_input_check,
-                disable_output_check=shield_cfg.disable_output_check,
-            )
-
         shield_cfg = self.config.prompt_guard_shield
         if shield_cfg is not None:
             model_dir = resolve_and_get_path(shield_cfg.model)
@@ -91,11 +84,18 @@ class MetaReferenceSafetyImpl(Safety):
     def get_shield_impl(self, typ: MetaReferenceShieldType) -> ShieldBase:
         cfg = self.config
         if typ == MetaReferenceShieldType.llama_guard:
+            cfg = cfg.llama_guard_shield
             assert (
-                cfg.llama_guard_shield is not None
+                cfg is not None
             ), "Cannot use LlamaGuardShield since not present in config"
-            model_dir = resolve_and_get_path(cfg.llama_guard_shield.model)
-            return LlamaGuardShield.instance(model_dir=model_dir)
+            model_dir = resolve_and_get_path(cfg.model)
+
+            return LlamaGuardShield(
+                model_dir=model_dir,
+                excluded_categories=cfg.excluded_categories,
+                disable_input_check=cfg.disable_input_check,
+                disable_output_check=cfg.disable_output_check,
+            )
         elif typ == MetaReferenceShieldType.jailbreak_shield:
             assert (
                 cfg.prompt_guard_shield is not None
