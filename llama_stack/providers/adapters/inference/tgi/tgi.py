@@ -20,6 +20,7 @@ from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImpl
 
 logger = logging.getLogger(__name__)
 
+
 class _HfAdapter(Inference):
     client: AsyncInferenceClient
     max_tokens: int
@@ -214,6 +215,7 @@ class _HfAdapter(Inference):
                 )
             )
 
+
 class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
         self.client = AsyncInferenceClient(model=config.url, token=config.api_token)
@@ -221,12 +223,16 @@ class TGIAdapter(_HfAdapter):
         self.max_tokens = endpoint_info["max_total_tokens"]
         self.model_id = endpoint_info["model_id"]
 
+
 class InferenceAPIAdapter(_HfAdapter):
     async def initialize(self, config: InferenceAPIImplConfig) -> None:
-        self.client = AsyncInferenceClient(model=config.model_id, token=config.api_token)
+        self.client = AsyncInferenceClient(
+            model=config.model_id, token=config.api_token
+        )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
         self.model_id = endpoint_info["model_id"]
+
 
 class InferenceEndpointAdapter(_HfAdapter):
     async def initialize(self, config: InferenceEndpointImplConfig) -> None:
@@ -240,4 +246,6 @@ class InferenceEndpointAdapter(_HfAdapter):
         # Initialize the adapter
         self.client = endpoint.async_client
         self.model_id = endpoint.repository
-        self.max_tokens = int(endpoint.raw["model"]["image"]["custom"]["env"]["MAX_TOTAL_TOKENS"])
+        self.max_tokens = int(
+            endpoint.raw["model"]["image"]["custom"]["env"]["MAX_TOTAL_TOKENS"]
+        )

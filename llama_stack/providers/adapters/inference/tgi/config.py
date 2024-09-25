@@ -20,6 +20,7 @@ class TGIImplConfig(BaseModel):
         description="A bearer token if your TGI endpoint is protected.",
     )
 
+
 @json_schema_type
 class InferenceEndpointImplConfig(BaseModel):
     endpoint_name: str = Field(
@@ -40,5 +41,3 @@ class InferenceAPIImplConfig(BaseModel):
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
-
-

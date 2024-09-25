@@ -10,7 +10,10 @@ from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImpl
 from .tgi import InferenceAPIAdapter, InferenceEndpointAdapter, TGIAdapter
 
 
-async def get_adapter_impl(config: Union[InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig], _deps):
+async def get_adapter_impl(
+    config: Union[InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig],
+    _deps,
+):
     if isinstance(config, TGIImplConfig):
         impl = TGIAdapter()
     elif isinstance(config, InferenceAPIImplConfig):
