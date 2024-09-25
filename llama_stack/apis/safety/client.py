@@ -51,11 +51,6 @@ class SafetyClient(Safety):
                 ),
                 headers={
                     "Content-Type": "application/json",
-                    "X-LlamaStack-ProviderData": json.dumps(
-                        {
-                            "together_api_key": "1882f9a484fc7c6ce3e4dc90272d5db52346c93838daab3d704803181f396b22"
-                        }
-                    ),
                 },
                 timeout=20,
             )
