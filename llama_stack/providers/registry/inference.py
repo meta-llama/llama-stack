@@ -20,6 +20,7 @@ def available_providers() -> List[ProviderSpec]:
                 "fairscale",
                 "fbgemm-gpu==0.8.0",
                 "torch",
+                "torchvision",
                 "transformers",
                 "zmq",
             ],
@@ -73,17 +74,6 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.adapters.inference.together",
                 config_class="llama_stack.providers.adapters.inference.together.TogetherImplConfig",
                 header_extractor_class="llama_stack.providers.adapters.inference.together.TogetherHeaderExtractor",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
-                adapter_id="bedrock",
-                pip_packages=[
-                    "boto3",
-                ],
-                module="llama_stack.providers.adapters.inference.bedrock",
-                config_class="llama_stack.providers.adapters.inference.bedrock.BedrockConfig",
             ),
         ),
     ]

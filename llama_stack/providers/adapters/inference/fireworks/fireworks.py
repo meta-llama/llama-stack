@@ -15,14 +15,16 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 from .config import FireworksImplConfig
 
 FIREWORKS_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "fireworks/llama-v3p1-8b-instruct",
-    "Meta-Llama3.1-70B-Instruct": "fireworks/llama-v3p1-70b-instruct",
-    "Meta-Llama3.1-405B-Instruct": "fireworks/llama-v3p1-405b-instruct",
+    "Llama3.1-8B-Instruct": "fireworks/llama-v3p1-8b-instruct",
+    "Llama3.1-70B-Instruct": "fireworks/llama-v3p1-70b-instruct",
+    "Llama3.1-405B-Instruct": "fireworks/llama-v3p1-405b-instruct",
 }
 
 
@@ -106,7 +108,7 @@ class FireworksInferenceAdapter(Inference):
             logprobs=logprobs,
         )
 
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
 
         # accumulate sampling params and other options to pass to fireworks
         options = self.get_fireworks_chat_options(request)

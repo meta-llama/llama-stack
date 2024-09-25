@@ -9,9 +9,8 @@ import re
 from string import Template
 from typing import List, Optional
 
-import torch
 from llama_models.llama3.api.datatypes import Message, Role
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from llama_stack.apis.inference import *  # noqa: F403
 
 from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
 
@@ -100,38 +99,16 @@ PROMPT_TEMPLATE = Template(
 
 
 class LlamaGuardShield(ShieldBase):
-    @staticmethod
-    def instance(
-        on_violation_action=OnViolationAction.RAISE,
-        model_dir: str = None,
-        excluded_categories: List[str] = None,
-        disable_input_check: bool = False,
-        disable_output_check: bool = False,
-    ) -> "LlamaGuardShield":
-        global _INSTANCE
-        if _INSTANCE is None:
-            _INSTANCE = LlamaGuardShield(
-                on_violation_action,
-                model_dir,
-                excluded_categories,
-                disable_input_check,
-                disable_output_check,
-            )
-        return _INSTANCE
-
     def __init__(
         self,
-        on_violation_action: OnViolationAction = OnViolationAction.RAISE,
-        model_dir: str = None,
+        model: str,
+        inference_api: Inference,
         excluded_categories: List[str] = None,
         disable_input_check: bool = False,
         disable_output_check: bool = False,
+        on_violation_action: OnViolationAction = OnViolationAction.RAISE,
     ):
         super().__init__(on_violation_action)
-
-        dtype = torch.bfloat16
-
-        assert model_dir is not None, "Llama Guard model_dir is None"
 
         if excluded_categories is None:
             excluded_categories = []
@@ -140,17 +117,11 @@ class LlamaGuardShield(ShieldBase):
             x in SAFETY_CATEGORIES_TO_CODE_MAP.values() for x in excluded_categories
         ), "Invalid categories in excluded categories. Expected format is ['S1', 'S2', ..]"
 
-        self.device = "cuda"
+        self.model = model
+        self.inference_api = inference_api
         self.excluded_categories = excluded_categories
         self.disable_input_check = disable_input_check
         self.disable_output_check = disable_output_check
-
-        # load model
-        torch_dtype = torch.bfloat16
-        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_dir, torch_dtype=torch_dtype, device_map=self.device
-        )
 
     def check_unsafe_response(self, response: str) -> Optional[str]:
         match = re.match(r"^unsafe\n(.*)$", response)
@@ -212,26 +183,21 @@ class LlamaGuardShield(ShieldBase):
             )
         else:
             prompt = self.build_prompt(messages)
-            llama_guard_input = {
-                "role": "user",
-                "content": prompt,
-            }
-            input_ids = self.tokenizer.apply_chat_template(
-                [llama_guard_input], return_tensors="pt", tokenize=True
-            ).to(self.device)
-            prompt_len = input_ids.shape[1]
-            output = self.model.generate(
-                input_ids=input_ids,
-                max_new_tokens=20,
-                output_scores=True,
-                return_dict_in_generate=True,
-                pad_token_id=0,
-            )
-            generated_tokens = output.sequences[:, prompt_len:]
 
-            response = self.tokenizer.decode(
-                generated_tokens[0], skip_special_tokens=True
-            )
-            response = response.strip()
-            shield_response = self.get_shield_response(response)
+            # TODO: llama-stack inference protocol has issues with non-streaming inference code
+            content = ""
+            async for chunk in self.inference_api.chat_completion(
+                model=self.model,
+                messages=[
+                    UserMessage(content=prompt),
+                ],
+                stream=True,
+            ):
+                event = chunk.event
+                if event.event_type == ChatCompletionResponseEventType.progress:
+                    assert isinstance(event.delta, str)
+                    content += event.delta
+
+            content = content.strip()
+            shield_response = self.get_shield_response(content)
             return shield_response

@@ -15,14 +15,16 @@ from llama_models.sku_list import resolve_model
 from together import Together
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 from .config import TogetherImplConfig
 
 TOGETHER_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-    "Meta-Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-    "Meta-Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+    "Llama3.1-8B-Instruct": "meta-llama/Llama-3.1-8B-Instruct-Turbo",
+    "Llama3.1-70B-Instruct": "meta-llama/Llama-3.1-70B-Instruct-Turbo",
+    "Llama3.1-405B-Instruct": "meta-llama/Llama-3.1-405B-Instruct-Turbo",
 }
 
 
@@ -110,7 +112,7 @@ class TogetherInferenceAdapter(Inference):
         # accumulate sampling params and other options to pass to together
         options = self.get_together_chat_options(request)
         together_model = self.resolve_together_model(request.model)
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
 
         if not request.stream:
             # TODO: might need to add back an async here

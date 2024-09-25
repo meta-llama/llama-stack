@@ -4,26 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import textwrap
 import unittest
-from datetime import datetime
 
-from llama_models.llama3.api.datatypes import (
-    BuiltinTool,
-    SamplingParams,
-    SamplingStrategy,
-    StopReason,
-    SystemMessage,
-    ToolDefinition,
-    ToolParamDefinition,
-    ToolPromptFormat,
-    ToolResponseMessage,
-    UserMessage,
-)
-from llama_stack.inference.api import (
-    ChatCompletionRequest,
-    ChatCompletionResponseEventType,
-)
+from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.inference.api import *  # noqa: F403
 from llama_stack.inference.ollama.config import OllamaImplConfig
 from llama_stack.inference.ollama.ollama import get_provider_impl
 
@@ -52,7 +36,7 @@ class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
                 ),
             },
         )
-        self.valid_supported_model = "Meta-Llama3.1-8B-Instruct"
+        self.valid_supported_model = "Llama3.1-8B-Instruct"
 
     async def asyncTearDown(self):
         await self.api.shutdown()
@@ -272,7 +256,7 @@ class OllamaInferenceTests(unittest.IsolatedAsyncioTestCase):
         ollama_model = self.api.resolve_ollama_model(self.valid_supported_model)
         self.assertEqual(ollama_model, "llama3.1:8b-instruct-fp16")
 
-        invalid_model = "Meta-Llama3.1-8B"
+        invalid_model = "Llama3.1-8B"
         with self.assertRaisesRegex(
             AssertionError, f"Unsupported model: {invalid_model}"
         ):

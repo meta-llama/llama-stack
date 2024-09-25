@@ -44,7 +44,7 @@ def setup_download_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--source",
         choices=["meta", "huggingface"],
-        required=True,
+        default="meta",
     )
     parser.add_argument(
         "--model-id",
@@ -116,7 +116,7 @@ def _hf_download(
             "You can find your token by visiting https://huggingface.co/settings/tokens"
         )
     except RepositoryNotFoundError:
-        parser.error(f"Repository '{args.repo_id}' not found on the Hugging Face Hub.")
+        parser.error(f"Repository '{repo_id}' not found on the Hugging Face Hub.")
     except Exception as e:
         parser.error(e)
 

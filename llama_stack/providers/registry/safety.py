@@ -21,13 +21,15 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.safety,
             provider_id="meta-reference",
             pip_packages=[
-                "accelerate",
                 "codeshield",
-                "torch",
                 "transformers",
+                "torch --index-url https://download.pytorch.org/whl/cpu",
             ],
             module="llama_stack.providers.impls.meta_reference.safety",
             config_class="llama_stack.providers.impls.meta_reference.safety.SafetyConfig",
+            api_dependencies=[
+                Api.inference,
+            ],
         ),
         remote_provider_spec(
             api=Api.safety,
