@@ -4,21 +4,23 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .config import TGIImplConfig
-from .tgi import InferenceEndpointAdapter, TGIAdapter
+from typing import Union
+
+from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
+from .tgi import InferenceAPIAdapter, InferenceEndpointAdapter, TGIAdapter
 
 
-async def get_adapter_impl(config: TGIImplConfig, _deps):
-    assert isinstance(config, TGIImplConfig), f"Unexpected config type: {type(config)}"
-
-    if config.url is not None:
-        impl = TGIAdapter(config)
-    elif config.is_inference_endpoint():
-        impl = InferenceEndpointAdapter(config)
+async def get_adapter_impl(config: Union[InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig], _deps):
+    if isinstance(config, TGIImplConfig):
+        impl = TGIAdapter()
+    elif isinstance(config, InferenceAPIImplConfig):
+        impl = InferenceAPIAdapter()
+    elif isinstance(config, InferenceEndpointImplConfig):
+        impl = InferenceEndpointAdapter()
     else:
         raise ValueError(
-            "Invalid configuration. Specify either an URL or HF Inference Endpoint details (namespace and endpoint name)."
+            f"Invalid configuration. Expected 'TGIAdapter', 'InferenceAPIImplConfig' or 'InferenceEndpointImplConfig'. Got {type(config)}."
         )
 
-    await impl.initialize()
+    await impl.initialize(config)
     return impl

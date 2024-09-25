@@ -47,9 +47,27 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_id="tgi",
-                pip_packages=["huggingface_hub"],
+                pip_packages=["huggingface_hub", "aiohttp"],
                 module="llama_stack.providers.adapters.inference.tgi",
                 config_class="llama_stack.providers.adapters.inference.tgi.TGIImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_id="hf::serverless",
+                pip_packages=["huggingface_hub", "aiohttp"],
+                module="llama_stack.providers.adapters.inference.tgi",
+                config_class="llama_stack.providers.adapters.inference.tgi.InferenceAPIImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_id="hf::endpoint",
+                pip_packages=["huggingface_hub", "aiohttp"],
+                module="llama_stack.providers.adapters.inference.tgi",
+                config_class="llama_stack.providers.adapters.inference.tgi.InferenceEndpointImplConfig",
             ),
         ),
         remote_provider_spec(

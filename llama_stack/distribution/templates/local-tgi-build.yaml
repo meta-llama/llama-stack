@@ -1,6 +1,6 @@
 name: local-tgi
 distribution_spec:
-  description: Use TGI (local or with Hugging Face Inference Endpoints for running LLM inference. When using HF Inference Endpoints, you must provide the name of the endpoint).
+  description: Like local, but use a TGI server for running LLM inference.
   providers:
     inference: remote::tgi
     memory: meta-reference

@@ -12,18 +12,33 @@ from pydantic import BaseModel, Field
 
 @json_schema_type
 class TGIImplConfig(BaseModel):
-    url: Optional[str] = Field(
-        default=None,
-        description="The URL for the local TGI endpoint (e.g., http://localhost:8080)",
+    url: str = Field(
+        description="The URL for the TGI endpoint (e.g. 'http://localhost:8080')",
     )
     api_token: Optional[str] = Field(
         default=None,
-        description="The HF token for Hugging Face Inference Endpoints (will default to locally saved token if not provided)",
-    )
-    hf_endpoint_name: Optional[str] = Field(
-        default=None,
-        description="The name of the Hugging Face Inference Endpoint : can be either in the format of '{namespace}/{endpoint_name}' (namespace can be the username or organization name) or just '{endpoint_name}' if logged into the same account as the namespace",
+        description="A bearer token if your TGI endpoint is protected.",
     )
 
-    def is_inference_endpoint(self) -> bool:
-        return self.hf_endpoint_name is not None
+@json_schema_type
+class InferenceEndpointImplConfig(BaseModel):
+    endpoint_name: str = Field(
+        description="The name of the Hugging Face Inference Endpoint in the format of '{namespace}/{endpoint_name}' (e.g. 'my-cool-org/meta-llama-3-1-8b-instruct-rce'). Namespace is optional and will default to the user account if not provided.",
+    )
+    api_token: Optional[str] = Field(
+        default=None,
+        description="Your Hugging Face user access token (will default to locally saved token if not provided)",
+    )
+
+
+@json_schema_type
+class InferenceAPIImplConfig(BaseModel):
+    model_id: str = Field(
+        description="The model ID of the model on the Hugging Face Hub (e.g. 'meta-llama/Meta-Llama-3.1-70B-Instruct')",
+    )
+    api_token: Optional[str] = Field(
+        default=None,
+        description="Your Hugging Face user access token (will default to locally saved token if not provided)",
+    )
+
+
