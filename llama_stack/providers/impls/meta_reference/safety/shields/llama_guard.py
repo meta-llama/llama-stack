@@ -18,6 +18,7 @@ from transformers import (
 )
 
 from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
+from llama_models.llama3.api.datatypes import Message, Role
 
 
 SAFE_RESPONSE = "safe"
