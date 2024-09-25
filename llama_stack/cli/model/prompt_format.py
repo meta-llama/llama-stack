@@ -56,14 +56,14 @@ class ModelPromptFormat(Subcommand):
         try:
             model_id = CoreModelId(args.model_name)
         except ValueError:
-            raise argparse.ArgumentTypeError(
+            self.parser.error(
                 f"{args.model_name} is not a valid Model. Choose one from --\n{model_str}"
-            ) from None
+            )
 
         if model_id not in supported_model_ids:
-            raise argparse.ArgumentTypeError(
+            self.parser.error(
                 f"{model_id} is not a valid Model. Choose one from --\n {model_str}"
-            ) from None
+            )
 
         llama_3_1_file = pkg_resources.resource_filename(
             "llama_models", "llama3_1/prompt_format.md"
