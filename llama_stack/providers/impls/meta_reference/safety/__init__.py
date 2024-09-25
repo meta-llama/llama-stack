@@ -7,11 +7,11 @@
 from .config import SafetyConfig
 
 
-async def get_provider_impl(config: SafetyConfig, deps):
+async def get_provider_impl(config: SafetyConfig, _deps):
     from .safety import MetaReferenceSafetyImpl
 
     assert isinstance(config, SafetyConfig), f"Unexpected config type: {type(config)}"
 
-    impl = MetaReferenceSafetyImpl(config, deps)
+    impl = MetaReferenceSafetyImpl(config)
     await impl.initialize()
     return impl
