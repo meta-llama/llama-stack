@@ -21,7 +21,9 @@ from llama_stack.apis.inference import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 from .config import MetaReferenceImplConfig
 from .model_parallel import LlamaModelParallelGenerator
@@ -57,7 +59,7 @@ class MetaReferenceInferenceImpl(Inference):
         model: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
-        tools: Optional[List[ToolDefinition]] = [],
+        tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
@@ -70,14 +72,14 @@ class MetaReferenceInferenceImpl(Inference):
             model=model,
             messages=messages,
             sampling_params=sampling_params,
-            tools=tools,
+            tools=tools or [],
             tool_choice=tool_choice,
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
         )
 
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
         model = resolve_model(request.model)
         if model is None:
             raise RuntimeError(

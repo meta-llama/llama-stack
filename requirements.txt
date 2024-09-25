@@ -7,4 +7,5 @@ prompt-toolkit
 python-dotenv
 pydantic
 requests
+rich
 termcolor

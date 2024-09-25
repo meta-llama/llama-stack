@@ -14,7 +14,9 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 from .config import TGIImplConfig
 
@@ -95,7 +97,7 @@ class TGIAdapter(Inference):
             logprobs=logprobs,
         )
 
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
         model_input = self.formatter.encode_dialog_prompt(messages)
         prompt = self.tokenizer.decode(model_input.tokens)
 

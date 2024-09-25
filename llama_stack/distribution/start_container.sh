@@ -8,6 +8,7 @@
 
 DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
+LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
 
 set -euo pipefail
 
@@ -37,10 +38,25 @@ port="$1"
 shift
 
 set -x
-$DOCKER_BINARY run $DOCKER_OPTS -it \
-  -p $port:$port \
-  -v "$yaml_config:/app/config.yaml" \
-  $docker_image \
-  python -m llama_stack.distribution.server.server \
-  --yaml_config /app/config.yaml \
-  --port $port "$@"
+
+if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
+  $DOCKER_BINARY run $DOCKER_OPTS -it \
+    -p $port:$port \
+    -v "$yaml_config:/app/config.yaml" \
+    -v "$LLAMA_CHECKPOINT_DIR:/root/.llama" \
+    --gpus=all \
+    $docker_image \
+    python -m llama_stack.distribution.server.server \
+    --yaml_config /app/config.yaml \
+    --port $port "$@"
+fi
+
+if [ -z "$LLAMA_CHECKPOINT_DIR" ]; then
+  $DOCKER_BINARY run $DOCKER_OPTS -it \
+    -p $port:$port \
+    -v "$yaml_config:/app/config.yaml" \
+    $docker_image \
+    python -m llama_stack.distribution.server.server \
+    --yaml_config /app/config.yaml \
+    --port $port "$@"
+fi

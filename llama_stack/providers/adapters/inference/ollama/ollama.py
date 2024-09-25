@@ -16,14 +16,16 @@ from llama_models.sku_list import resolve_model
 from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
 OLLAMA_SUPPORTED_SKUS = {
-    # "Meta-Llama3.1-8B-Instruct": "llama3.1",
-    "Meta-Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
-    "Meta-Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
+    # "Llama3.1-8B-Instruct": "llama3.1",
+    "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
+    "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
 }
 
 
@@ -115,7 +117,7 @@ class OllamaInferenceAdapter(Inference):
             logprobs=logprobs,
         )
 
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
         # accumulate sampling params and other options to pass to ollama
         options = self.get_ollama_chat_options(request)
         ollama_model = self.resolve_ollama_model(request.model)

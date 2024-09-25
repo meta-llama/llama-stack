@@ -1,8 +1,69 @@
+# llama-stack
+
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
+[![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
+
+This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
+
+The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to invoking AI agents in production. Beyond definition, we're developing open-source versions and partnering with cloud providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
+
+The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
+
+
+## APIs
+
+The Llama Stack consists of the following set of APIs:
+
+- Inference
+- Safety
+- Memory
+- Agentic System
+- Evaluation
+- Post Training
+- Synthetic Data Generation
+- Reward Scoring
+
+Each of the APIs themselves is a collection of REST endpoints.
+
+## API Providers
+
+A Provider is what makes the API real -- they provide the actual implementation backing the API.
+
+As an example, for Inference, we could have the implementation be backed by open source libraries like `[ torch | vLLM | TensorRT ]` as possible options.
+
+A provider can also be just a pointer to a remote REST service -- for example, cloud providers or dedicated inference providers could serve these APIs.
+
+
+## Llama Stack Distribution
+
+A Distribution is where APIs and Providers are assembled together to provide a consistent whole to the end application developer. You can mix-and-match providers -- some could be backed by local code and some could be remote. As a hobbyist, you can serve a small model locally, but can choose a cloud provider for a large model. Regardless, the higher level APIs your app needs to work with don't need to change at all. You can even imagine moving across the server / mobile-device boundary as well always using the same uniform set of APIs for developing Generative AI applications.
+
+
+## Installation
+
+You can install this repository as a [package](https://pypi.org/project/llama-stack/) with `pip install llama-stack`
+
+If you want to install from source:
+
+```bash
+mkdir -p ~/local
+cd ~/local
+git clone git@github.com:meta-llama/llama-stack.git
+
+conda create -n stack python=3.10
+conda activate stack
+
+cd llama-stack
+$CONDA_PREFIX/bin/pip install -e .
+```
+
 # Getting Started
 
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
 This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
+
+You may also checkout this [notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) for trying out out demo scripts.
 
 ## Quick Cheatsheet
 - Quick 3 line command to build and start a LlamaStack server using our Meta Reference implementation for all API endpoints with `conda` as build type.
@@ -12,7 +73,7 @@ This guides allows you to quickly get started with building and running a Llama 
 ```
 llama stack build
 
-> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): my-local-llama-stack
+> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): my-local-stack
 > Enter the image type you want your distribution to be built with (docker or conda): conda
 
  Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.
@@ -24,47 +85,57 @@ llama stack build
 
  > (Optional) Enter a short description for your Llama Stack distribution:
 
-Build spec configuration saved at ~/.conda/envs/llamastack-my-local-llama-stack/my-local-llama-stack-build.yaml
+Build spec configuration saved at ~/.conda/envs/llamastack-my-local-stack/my-local-stack-build.yaml
+You can now run `llama stack configure my-local-stack`
 ```
 
 **`llama stack configure`**
 - Run `llama stack configure <name>` with the name you have previously defined in `build` step.
 ```
-llama stack configure my-local-llama-stack
+llama stack configure <name>
+```
+- You will be prompted to enter configurations for your Llama Stack
 
-Configuring APIs to serve...
-Enter comma-separated list of APIs to serve:
+```
+$ llama stack configure my-local-stack
 
+Could not find my-local-stack. Trying conda build name instead...
 Configuring API `inference`...
-
-Configuring provider `meta-reference`...
-Enter value for model (default: Meta-Llama3.1-8B-Instruct) (required):
+=== Configuring provider `meta-reference` for API inference...
+Enter value for model (default: Llama3.1-8B-Instruct) (required):
 Do you want to configure quantization? (y/n): n
 Enter value for torch_seed (optional):
-Enter value for max_seq_len (required): 4096
+Enter value for max_seq_len (default: 4096) (required):
 Enter value for max_batch_size (default: 1) (required):
-Configuring API `safety`...
 
-Configuring provider `meta-reference`...
+Configuring API `safety`...
+=== Configuring provider `meta-reference` for API safety...
 Do you want to configure llama_guard_shield? (y/n): n
 Do you want to configure prompt_guard_shield? (y/n): n
+
 Configuring API `agents`...
+=== Configuring provider `meta-reference` for API agents...
+Enter `type` for persistence_store (options: redis, sqlite, postgres) (default: sqlite):
 
-Configuring provider `meta-reference`...
+Configuring SqliteKVStoreConfig:
+Enter value for namespace (optional):
+Enter value for db_path (default: /home/xiyan/.llama/runtime/kvstore.db) (required):
+
 Configuring API `memory`...
+=== Configuring provider `meta-reference` for API memory...
+> Please enter the supported memory bank type your provider has for memory: vector
 
-Configuring provider `meta-reference`...
 Configuring API `telemetry`...
+=== Configuring provider `meta-reference` for API telemetry...
 
-Configuring provider `meta-reference`...
-> YAML configuration has been written to ~/.llama/builds/conda/my-local-llama-stack-run.yaml.
-You can now run `llama stack run my-local-llama-stack --port PORT` or `llama stack run ~/.llama/builds/conda/my-local-llama-stack-run.yaml --port PORT
+> YAML configuration has been written to ~/.llama/builds/conda/my-local-stack-run.yaml.
+You can now run `llama stack run my-local-stack --port PORT`
 ```
 
 **`llama stack run`**
 - Run `llama stack run <name>` with the name you have previously defined.
 ```
-llama stack run my-local-llama-stack
+llama stack run my-local-stack
 
 ...
 > initializing model parallel with size 1
@@ -126,7 +197,7 @@ llama stack build
 Running the command above will allow you to fill in the configuration to build your Llama Stack distribution, you will see the following outputs.
 
 ```
-> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): my-local-llama-stack
+> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): 8b-instruct
 > Enter the image type you want your distribution to be built with (docker or conda): conda
 
  Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.
@@ -138,8 +209,13 @@ Running the command above will allow you to fill in the configuration to build y
 
  > (Optional) Enter a short description for your Llama Stack distribution:
 
-Build spec configuration saved at ~/.conda/envs/llamastack-my-local-llama-stack/my-local-llama-stack-build.yaml
+Build spec configuration saved at ~/.conda/envs/llamastack-my-local-llama-stack/8b-instruct-build.yaml
 ```
+
+**Ollama (optional)**
+
+If you plan to use Ollama for inference, you'll need to install the server [via these instructions](https://ollama.com/download).
+
 
 #### Building from templates
 - To build from alternative API providers, we provide distribution templates for users to get started building a distribution backed by different providers.
@@ -236,7 +312,7 @@ llama stack configure [ <name> | <docker-image-name> | <path/to/name.build.yaml>
    - Run `docker images` to check list of available images on your machine.
 
 ```
-$ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
+$ llama stack configure 8b-instruct
 
 Configuring API: inference (meta-reference)
 Enter value for model (existing: Meta-Llama3.1-8B-Instruct) (required):
@@ -284,13 +360,13 @@ Note that all configurations as well as models are stored in `~/.llama`
 Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
 
 ```
-llama stack run ~/.llama/builds/conda/8b-instruct-run.yaml
+llama stack run 8b-instruct
 ```
 
 You should see the Llama Stack server start and print the APIs that it is supporting
 
 ```
-$ llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml
+$ llama stack run 8b-instruct
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
@@ -357,4 +433,4 @@ Similarly you can test safety (if you configured llama-guard and/or prompt-guard
 python -m llama_stack.apis.safety.client localhost 5000
 ```
 
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps) repo.
