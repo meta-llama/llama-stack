@@ -368,17 +368,19 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         providers = all_providers[info.router_api]
 
         inner_specs = []
+        inner_deps = []
         for rt_entry in routing_table:
             if rt_entry.provider_id not in providers:
                 raise ValueError(
                     f"Unknown provider `{rt_entry.provider_id}` is not available for API `{api}`"
                 )
             inner_specs.append(providers[rt_entry.provider_id])
+            inner_deps.extend(providers[rt_entry.provider_id].api_dependencies)
 
         specs[source_api] = RoutingTableProviderSpec(
             api=source_api,
             module="llama_stack.distribution.routers",
-            api_dependencies=[],
+            api_dependencies=inner_deps,
             inner_specs=inner_specs,
         )
         configs[source_api] = routing_table
