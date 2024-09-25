@@ -5,4 +5,6 @@ dist
 dev_requirements.txt
 build
 .DS_Store
+.idea
+*.iml
 llama_stack/configs/*
