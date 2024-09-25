@@ -483,4 +483,4 @@ Similarly you can test safety (if you configured llama-guard and/or prompt-guard
 python -m llama_stack.apis.safety.client localhost 5000
 ```
 
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
