@@ -1,11 +1,11 @@
-# llama-stack
+# Llama Stack
 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
 
-This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
+This repository contains the Llama Stack API specifications as well as API Providers and Llama Stack Distributions.
 
-The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to invoking AI agents in production. Beyond definition, we're developing open-source versions and partnering with cloud providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
+The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to building and running AI agents in production. Beyond definition, we are building providers for the Llama Stack APIs. These we're developing open-source versions and partnering with providers , ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
 
 The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
 
@@ -38,6 +38,28 @@ A provider can also be just a pointer to a remote REST service -- for example, c
 ## Llama Stack Distribution
 
 A Distribution is where APIs and Providers are assembled together to provide a consistent whole to the end application developer. You can mix-and-match providers -- some could be backed by local code and some could be remote. As a hobbyist, you can serve a small model locally, but can choose a cloud provider for a large model. Regardless, the higher level APIs your app needs to work with don't need to change at all. You can even imagine moving across the server / mobile-device boundary as well always using the same uniform set of APIs for developing Generative AI applications.
+
+## Supported Llama Stack Implementations
+### API Providers
+
+
+|  **API Provider Builder** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
+| :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+|  Meta Reference  |  Single Node | :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|  Fireworks  |  Hosted  | :heavy_check_mark:  | :heavy_check_mark:  |  :heavy_check_mark:  |    |   |
+|  AWS Bedrock  |  Hosted  |    |  :heavy_check_mark:  |    | :heavy_check_mark:  | |
+|  Together  |  Hosted  |  :heavy_check_mark:  |  :heavy_check_mark:  |   | :heavy_check_mark:  |  |
+|  Ollama  | Single Node   |    |  :heavy_check_mark:  |    |   |
+|  TGI  |  Hosted and Single Node  |    |  :heavy_check_mark:  |    |   |
+| Chroma | Single Node |  |  | :heavy_check_mark: |  |  |
+| PG Vector | Single Node |  |  | :heavy_check_mark: |  |  |
+| PyTorch ExecuTorch | On-device iOS | :heavy_check_mark:  | :heavy_check_mark:  |  |  |
+
+### Distributions
+|  **Distribution Provider** |  **Docker** | **Inference** | **Memory** | **Safety** | **Telemetry** |
+| :----: | :----: | :----: | :----: | :----: | :----: |
+|  Meta Reference |  [Local GPU](https://hub.docker.com/repository/docker/llamastack/llamastack-local-gpu/general), [Local CPU](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|  Dell-TGI |   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 
 ## Installation
