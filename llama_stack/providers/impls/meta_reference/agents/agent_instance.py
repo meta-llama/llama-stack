@@ -627,7 +627,7 @@ class ChatAgent(ShieldRunnerMixin):
             memory_bank = await self.memory_api.create_memory_bank(
                 name=f"memory_bank_{session_id}",
                 config=VectorMemoryBankConfig(
-                    embedding_model="sentence-transformer/all-MiniLM-L6-v2",
+                    embedding_model="all-MiniLM-L6-v2",
                     chunk_size_in_tokens=512,
                 ),
             )
