@@ -3,12 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5C03561F2CA3AB9600E3BB46 /* LlamaStackClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5C03561E2CA3AB9600E3BB46 /* LlamaStackClient */; };
-		5C5B6E212CA3D89F00AF6130 /* LlamaStackClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5C5B6E202CA3D89F00AF6130 /* LlamaStackClient */; };
+		5CADC71A2CA471CC007662D2 /* LlamaStackClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5CADC7192CA471CC007662D2 /* LlamaStackClient */; };
+		5CAF3DD82CA485740029CD2B /* LlamaStackClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5CAF3DD72CA485740029CD2B /* LlamaStackClient */; };
 		5CCBC60C2CA1F04A00E958D0 /* LocalInference.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CCBC60B2CA1F04A00E958D0 /* LocalInference.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5CCBC6752CA1F45800E958D0 /* executorch_debug in Frameworks */ = {isa = PBXBuildFile; productRef = 5CCBC6742CA1F45800E958D0 /* executorch_debug */; };
 		5CCBC6862CA1F64A00E958D0 /* LLaMARunner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CCBC6802CA1F63F00E958D0 /* LLaMARunner.framework */; platformFilter = ios; };
@@ -66,7 +66,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5CCBC6082CA1F04A00E958D0 /* LocalInference.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LocalInference.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CCBC6082CA1F04A00E958D0 /* LocalInferenceImpl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LocalInferenceImpl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CCBC60B2CA1F04A00E958D0 /* LocalInference.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocalInference.h; sourceTree = "<group>"; };
 		5CCBC6762CA1F63F00E958D0 /* LLaMA.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LLaMA.xcodeproj; path = "executorch/examples/demo-apps/apple_ios/LLaMA/LLaMA.xcodeproj"; sourceTree = "<group>"; };
 		5CCBC6892CA1F7A000E958D0 /* PromptTemplate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PromptTemplate.swift; sourceTree = "<group>"; };
@@ -80,8 +80,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5C03561F2CA3AB9600E3BB46 /* LlamaStackClient in Frameworks */,
-				5C5B6E212CA3D89F00AF6130 /* LlamaStackClient in Frameworks */,
+				5CADC71A2CA471CC007662D2 /* LlamaStackClient in Frameworks */,
+				5CAF3DD82CA485740029CD2B /* LlamaStackClient in Frameworks */,
 				5CCBC6932CA1F7D000E958D0 /* Stencil in Frameworks */,
 				5CCBC6862CA1F64A00E958D0 /* LLaMARunner.framework in Frameworks */,
 				5CCBC6752CA1F45800E958D0 /* executorch_debug in Frameworks */,
@@ -95,7 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				5CCBC6762CA1F63F00E958D0 /* LLaMA.xcodeproj */,
-				5CCBC60A2CA1F04A00E958D0 /* LocalInference */,
+				5CCBC60A2CA1F04A00E958D0 /* LocalInferenceImpl */,
 				5CCBC6092CA1F04A00E958D0 /* Products */,
 				5CCBC6852CA1F64A00E958D0 /* Frameworks */,
 			);
@@ -104,12 +104,12 @@
 		5CCBC6092CA1F04A00E958D0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5CCBC6082CA1F04A00E958D0 /* LocalInference.framework */,
+				5CCBC6082CA1F04A00E958D0 /* LocalInferenceImpl.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		5CCBC60A2CA1F04A00E958D0 /* LocalInference */ = {
+		5CCBC60A2CA1F04A00E958D0 /* LocalInferenceImpl */ = {
 			isa = PBXGroup;
 			children = (
 				5CCBC68A2CA1F7A000E958D0 /* LocalInference.swift */,
@@ -118,7 +118,7 @@
 				5CCBC68C2CA1F7A100E958D0 /* SystemPrompts.swift */,
 				5CCBC60B2CA1F04A00E958D0 /* LocalInference.h */,
 			);
-			path = LocalInference;
+			path = LocalInferenceImpl;
 			sourceTree = "<group>";
 		};
 		5CCBC6772CA1F63F00E958D0 /* Products */ = {
@@ -153,9 +153,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		5CCBC6072CA1F04A00E958D0 /* LocalInference */ = {
+		5CCBC6072CA1F04A00E958D0 /* LocalInferenceImpl */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5CCBC60F2CA1F04A00E958D0 /* Build configuration list for PBXNativeTarget "LocalInference" */;
+			buildConfigurationList = 5CCBC60F2CA1F04A00E958D0 /* Build configuration list for PBXNativeTarget "LocalInferenceImpl" */;
 			buildPhases = (
 				5CCBC6032CA1F04A00E958D0 /* Headers */,
 				5CCBC6042CA1F04A00E958D0 /* Sources */,
@@ -167,15 +167,15 @@
 			);
 			dependencies = (
 			);
-			name = LocalInference;
+			name = LocalInferenceImpl;
 			packageProductDependencies = (
 				5CCBC6742CA1F45800E958D0 /* executorch_debug */,
 				5CCBC6922CA1F7D000E958D0 /* Stencil */,
-				5C03561E2CA3AB9600E3BB46 /* LlamaStackClient */,
-				5C5B6E202CA3D89F00AF6130 /* LlamaStackClient */,
+				5CADC7192CA471CC007662D2 /* LlamaStackClient */,
+				5CAF3DD72CA485740029CD2B /* LlamaStackClient */,
 			);
 			productName = LocalInferenceProvider;
-			productReference = 5CCBC6082CA1F04A00E958D0 /* LocalInference.framework */;
+			productReference = 5CCBC6082CA1F04A00E958D0 /* LocalInferenceImpl.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -193,7 +193,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5CCBC6022CA1F04A00E958D0 /* Build configuration list for PBXProject "LocalInference" */;
+			buildConfigurationList = 5CCBC6022CA1F04A00E958D0 /* Build configuration list for PBXProject "LocalInferenceImpl" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -205,7 +205,7 @@
 			packageReferences = (
 				5CCBC6732CA1F45800E958D0 /* XCRemoteSwiftPackageReference "executorch" */,
 				5CCBC6912CA1F7D000E958D0 /* XCRemoteSwiftPackageReference "Stencil" */,
-				5C5B6E1F2CA3D89F00AF6130 /* XCLocalSwiftPackageReference "internal-llama-stack-client-swift" */,
+				5CAF3DD62CA485740029CD2B /* XCRemoteSwiftPackageReference "llama-stack-client-swift" */,
 			);
 			productRefGroup = 5CCBC6092CA1F04A00E958D0 /* Products */;
 			projectDirPath = "";
@@ -217,7 +217,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				5CCBC6072CA1F04A00E958D0 /* LocalInference */,
+				5CCBC6072CA1F04A00E958D0 /* LocalInferenceImpl */,
 			);
 		};
 /* End PBXProject section */
@@ -477,7 +477,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5CCBC6022CA1F04A00E958D0 /* Build configuration list for PBXProject "LocalInference" */ = {
+		5CCBC6022CA1F04A00E958D0 /* Build configuration list for PBXProject "LocalInferenceImpl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5CCBC60D2CA1F04A00E958D0 /* Debug */,
@@ -486,7 +486,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5CCBC60F2CA1F04A00E958D0 /* Build configuration list for PBXNativeTarget "LocalInference" */ = {
+		5CCBC60F2CA1F04A00E958D0 /* Build configuration list for PBXNativeTarget "LocalInferenceImpl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5CCBC6102CA1F04A00E958D0 /* Debug */,
@@ -497,14 +497,15 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		5C5B6E1F2CA3D89F00AF6130 /* XCLocalSwiftPackageReference "internal-llama-stack-client-swift" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "internal-llama-stack-client-swift";
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
+		5CAF3DD62CA485740029CD2B /* XCRemoteSwiftPackageReference "llama-stack-client-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/meta-llama/llama-stack-client-swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		5CCBC6732CA1F45800E958D0 /* XCRemoteSwiftPackageReference "executorch" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pytorch/executorch";
@@ -524,12 +525,13 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5C03561E2CA3AB9600E3BB46 /* LlamaStackClient */ = {
+		5CADC7192CA471CC007662D2 /* LlamaStackClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LlamaStackClient;
 		};
-		5C5B6E202CA3D89F00AF6130 /* LlamaStackClient */ = {
+		5CAF3DD72CA485740029CD2B /* LlamaStackClient */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 5CAF3DD62CA485740029CD2B /* XCRemoteSwiftPackageReference "llama-stack-client-swift" */;
 			productName = LlamaStackClient;
 		};
 		5CCBC6742CA1F45800E958D0 /* executorch_debug */ = {
