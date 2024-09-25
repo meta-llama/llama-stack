@@ -95,9 +95,9 @@ class StackBuild(Subcommand):
         # save build.yaml spec for building same distribution again
         if build_config.image_type == ImageType.docker.value:
             # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
-            llama_stack_path = Path(os.path.relpath(__file__)).parent.parent.parent
+            llama_stack_path = Path(os.path.abspath(__file__)).parent.parent.parent.parent
             build_dir = (
-                llama_stack_path / "configs/distributions" / build_config.image_type
+                llama_stack_path / "tmp/configs/"
             )
         else:
             build_dir = (
