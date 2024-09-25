@@ -119,7 +119,7 @@ class TGIAdapter(Inference):
             )
             stop_reason = None
             if response.details.finish_reason:
-                if response.details.finish_reason == "stop":
+                if response.details.finish_reason in ["stop", "eos_token"]:
                     stop_reason = StopReason.end_of_turn
                 elif response.details.finish_reason == "length":
                     stop_reason = StopReason.out_of_tokens

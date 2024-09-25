@@ -103,8 +103,7 @@ class InferenceRouter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        # TODO: we need to fix streaming response to align provider implementations with Protocol.
-        async for chunk in self.routing_table.get_provider_impl(model).chat_completion(
+        params = dict(
             model=model,
             messages=messages,
             sampling_params=sampling_params,
@@ -113,6 +112,10 @@ class InferenceRouter(Inference):
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+        )
+        # TODO: we need to fix streaming response to align provider implementations with Protocol.
+        async for chunk in self.routing_table.get_provider_impl(model).chat_completion(
+            **params
         ):
             yield chunk
 

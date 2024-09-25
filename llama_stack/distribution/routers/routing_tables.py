@@ -33,8 +33,10 @@ class CommonRoutingTableImpl(RoutingTable):
         for p in self.providers.values():
             await p.shutdown()
 
-    def get_provider_impl(self, routing_key: str) -> Optional[Any]:
-        return self.providers.get(routing_key)
+    def get_provider_impl(self, routing_key: str) -> Any:
+        if routing_key not in self.providers:
+            raise ValueError(f"Could not find provider for {routing_key}")
+        return self.providers[routing_key]
 
     def get_routing_keys(self) -> List[str]:
         return self.routing_keys
