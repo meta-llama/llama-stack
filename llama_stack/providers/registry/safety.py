@@ -41,10 +41,10 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
-                adapter_id="bedrock_guardrails",
-                pip_packages=['boto3',],
+                adapter_id="bedrock",
+                pip_packages=["boto3"],
                 module="llama_stack.providers.adapters.safety.bedrock",
-                config_class="llama_stack.providers.adapters.safety.bedrock.config.BedrockShieldConfig",
+                config_class="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyConfig",
             ),
         ),
         remote_provider_spec(

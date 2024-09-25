@@ -160,7 +160,7 @@ class StackConfigure(Subcommand):
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {run_config_file}.",
+            f"> YAML configuration has been written to `{run_config_file}`.",
             color="blue",
         )
 
