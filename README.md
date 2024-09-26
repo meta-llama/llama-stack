@@ -59,7 +59,7 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 |  **Distribution Provider** |  **Docker** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 | :----: | :----: | :----: | :----: | :----: | :----: |
 |  Meta Reference |  [Local GPU](https://hub.docker.com/repository/docker/llamastack/llamastack-local-gpu/general), [Local CPU](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|  Dell-TGI |   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|  Dell-TGI | [Local TGI + Chroma](https://hub.docker.com/repository/docker/llamastack/llamastack-local-tgi-chroma/general)  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 
 ## Installation
