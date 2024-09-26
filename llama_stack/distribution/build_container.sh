@@ -29,6 +29,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
 DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
+REPO_CONFIGS_DIR="$REPO_DIR/tmp/configs"
 
 TEMP_DIR=$(mktemp -d)
 
@@ -125,3 +126,21 @@ echo "You can run it with: podman run -p 8000:8000 $image_name"
 
 echo "Checking image builds..."
 $DOCKER_BINARY run $DOCKER_OPTS -it $image_name cat llamastack-build.yaml
+
+container_build_dir="/app/builds"
+
+echo "Configuring default configuration to docker container..."
+$DOCKER_BINARY run $DOCKER_OPTS -it \
+  -v $REPO_CONFIGS_DIR:$container_build_dir \
+  $image_name \
+  llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir
+
+tmp_container_name="$image_name-tmp"
+
+$DOCKER_BINARY create --name $tmp_container_name $image_name
+
+$DOCKER_BINARY cp "$REPO_CONFIGS_DIR/$build_name-run.yaml" $tmp_container_name:/app/
+
+$DOCKER_BINARY commit $tmp_container_name $image_name
+
+echo "Success!"
