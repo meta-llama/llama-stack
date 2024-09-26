@@ -51,7 +51,7 @@ class ModelDescribe(Subcommand):
                 colored("Model", "white", attrs=["bold"]),
                 colored(model.descriptor(), "white", attrs=["bold"]),
             ),
-            ("HuggingFace ID", model.huggingface_repo or "<Not Available>"),
+            ("Hugging Face ID", model.huggingface_repo or "<Not Available>"),
             ("Description", model.description),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
             ("Weights format", model.quantization_format.value),
