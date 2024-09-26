@@ -20,7 +20,7 @@ from llama_stack.inference.meta_reference.inference import get_provider_impl
 MODEL = "Llama3.1-8B-Instruct"
 HELPER_MSG = """
 This test needs llama-3.1-8b-instruct models.
-Please donwload using the llama cli
+Please download using the llama cli
 
 llama download --source huggingface --model-id llama3_1_8b_instruct --hf-token <HF_TOKEN>
 """

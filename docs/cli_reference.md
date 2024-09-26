@@ -3,7 +3,7 @@
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
 ### Subcommands
-1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace.
+1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
 2. `model`: Lists available models and their properties.
 3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](/docs/cli_reference.md#step-3-building-configuring-and-running-llama-stack-servers).
 
@@ -38,7 +38,7 @@ You should see a table like this:
 
 <pre style="font-family: monospace;">
 +----------------------------------+------------------------------------------+----------------+
-| Model Descriptor                 | HuggingFace Repo                         | Context Length |
+| Model Descriptor                 | Hugging Face Repo                        | Context Length |
 +----------------------------------+------------------------------------------+----------------+
 | Llama3.1-8B                      | meta-llama/Llama-3.1-8B                  | 128K           |
 +----------------------------------+------------------------------------------+----------------+
@@ -112,7 +112,7 @@ llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
 llama download --source meta --model-id Llama-Guard-3-8B --meta-url META_URL
 ```
 
-#### Downloading from [Huggingface](https://huggingface.co/meta-llama)
+#### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
 
@@ -180,7 +180,7 @@ llama model describe -m Llama3.2-3B-Instruct
 +-----------------------------+----------------------------------+
 | Model                       | Llama3.2-3B-Instruct             |
 +-----------------------------+----------------------------------+
-| HuggingFace ID              | meta-llama/Llama-3.2-3B-Instruct |
+| Hugging Face ID             | meta-llama/Llama-3.2-3B-Instruct |
 +-----------------------------+----------------------------------+
 | Description                 | Llama 3.2 3b instruct model      |
 +-----------------------------+----------------------------------+

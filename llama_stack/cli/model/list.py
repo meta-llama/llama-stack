@@ -36,7 +36,7 @@ class ModelList(Subcommand):
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
         headers = [
             "Model Descriptor",
-            "HuggingFace Repo",
+            "Hugging Face Repo",
             "Context Length",
         ]
 
