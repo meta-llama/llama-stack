@@ -14,11 +14,12 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     MllamaForConditionalGeneration,
-    MllamaProcessor,
+    MllamaProcessor
 )
 
+
 from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
-from llama_models.llama3.api.datatypes import Message, Role
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 
 SAFE_RESPONSE = "safe"
@@ -145,6 +146,8 @@ class LlamaGuardShield(ShieldBase):
         self.disable_output_check = disable_output_check
 
         torch_dtype = torch.bfloat16
+
+        self.model_dir = f"meta-llama/{self.get_model_name()}"
 
         if self.is_lg_vision():
 
