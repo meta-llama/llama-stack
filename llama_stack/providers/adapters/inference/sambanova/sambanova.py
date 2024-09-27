@@ -6,7 +6,6 @@
 
 from typing import AsyncGenerator
 
-import openai
 from openai import OpenAI
 
 from llama_models.llama3.api.chat_format import ChatFormat
