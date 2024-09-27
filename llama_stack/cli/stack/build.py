@@ -112,24 +112,20 @@ class StackBuild(Subcommand):
             to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
 
-        return_code = build_image(build_config, build_file_path)
-        if return_code != 0:
-            return
-
         cprint(
             f"Build spec configuration saved at {str(build_file_path)}",
             color="blue",
         )
 
-        configure_name = (
-            build_config.name
-            if build_config.image_type == "conda"
-            else (f"llamastack-{build_config.name}")
-        )
-        cprint(
-            f"You can now run `llama stack configure {configure_name}`",
-            color="green",
-        )
+        return_code = build_image(build_config, build_file_path)
+        if return_code != 0:
+            return
+
+        if build_config.image_type == "conda":
+            cprint(
+                f"You can now run `llama stack configure {build_config.name}`",
+                color="green",
+            )
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
