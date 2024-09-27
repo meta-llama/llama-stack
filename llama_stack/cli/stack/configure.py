@@ -77,37 +77,15 @@ class StackConfigure(Subcommand):
 
                 self._configure_llama_distribution(build_config, args.output_dir)
                 return
-
-        # if we get here, we need to try to find the docker image
-        cprint(
-            f"Could not find {build_config_file}. Trying docker image name instead...",
-            color="green",
-        )
-        docker_image = args.config
-        builds_dir = BUILDS_BASE_DIR / ImageType.docker.value
-        if args.output_dir:
-            builds_dir = Path(output_dir)
-        os.makedirs(builds_dir, exist_ok=True)
-
-        script = pkg_resources.resource_filename(
-            "llama_stack", "distribution/configure_container.sh"
-        )
-        script_args = [script, docker_image, str(builds_dir)]
-
-        return_code = run_with_pty(script_args)
-
-        # we have regenerated the build config file with script, now check if it exists
-        if return_code != 0:
-            self.parser.error(
-                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build first`. "
-            )
-            return
-
-        build_name = docker_image.removeprefix("llamastack-")
-        saved_file = str(builds_dir / f"{build_name}-run.yaml")
-        cprint(
-            f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
-            color="green",
+        
+        # if we get here, we need to prompt user to try configure inside docker image
+        self.parser.error(
+            f"""
+            Could not find {build_config_file}. Did you download a docker image?
+            Try running `docker run -it --entrypoint "/bin/bash" <image_name>`
+            `llama stack configure llamastack-build.yaml --output-dir  ./`
+            to set a new run configuration file. 
+            """,
         )
         return
 
