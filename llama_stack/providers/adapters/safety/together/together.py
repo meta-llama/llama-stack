@@ -19,6 +19,7 @@ from .config import TogetherSafetyConfig
 
 SAFETY_SHIELD_TYPES = {
     "Llama-Guard-3-8B": "meta-llama/Meta-Llama-Guard-3-8B",
+    "Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
 }
 
 

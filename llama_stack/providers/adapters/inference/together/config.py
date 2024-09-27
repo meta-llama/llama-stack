@@ -8,10 +8,6 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 
-class TogetherHeaderExtractor(BaseModel):
-    together_api_key: str
-
-
 @json_schema_type
 class TogetherImplConfig(BaseModel):
     url: str = Field(
