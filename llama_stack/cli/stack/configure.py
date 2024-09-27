@@ -99,7 +99,7 @@ class StackConfigure(Subcommand):
         # we have regenerated the build config file with script, now check if it exists
         if return_code != 0:
             self.parser.error(
-                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build first`. "
+                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build` first. "
             )
             return
 
