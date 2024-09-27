@@ -33,6 +33,8 @@ REPO_CONFIGS_DIR="$REPO_DIR/tmp/configs"
 
 TEMP_DIR=$(mktemp -d)
 
+llama stack configure $build_file_path --output-dir $REPO_CONFIGS_DIR
+
 add_to_docker() {
   local input
   output_file="$TEMP_DIR/Dockerfile"
@@ -100,11 +102,13 @@ add_to_docker <<EOF
 # This would be good in production but for debugging flexibility lets not add it right now
 # We need a more solid production ready entrypoint.sh anyway
 #
-# ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "./llamastack-run.yaml"]
 
 EOF
 
 add_to_docker "ADD tmp/configs/$(basename "$build_file_path") ./llamastack-build.yaml"
+
+add_to_docker "ADD tmp/configs/$(basename "$build_name-run.yaml") ./llamastack-run.yaml"
 
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
@@ -122,25 +126,4 @@ set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
 
-echo "You can run it with: podman run -p 8000:8000 $image_name"
-
-echo "Checking image builds..."
-$DOCKER_BINARY run $DOCKER_OPTS -it $image_name cat llamastack-build.yaml
-
-container_build_dir="/app/builds"
-
-echo "Configuring default configuration to docker container..."
-$DOCKER_BINARY run $DOCKER_OPTS -it \
-  -v $REPO_CONFIGS_DIR:$container_build_dir \
-  $image_name \
-  llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir
-
-tmp_container_name="$image_name-tmp"
-
-$DOCKER_BINARY create --name $tmp_container_name $image_name
-
-$DOCKER_BINARY cp "$REPO_CONFIGS_DIR/$build_name-run.yaml" $tmp_container_name:/app/
-
-$DOCKER_BINARY commit $tmp_container_name $image_name
-
-echo "Success!"
+echo "Success! You can run it with: $DOCKER_BINARY run -p 8000:8000 $image_name"
