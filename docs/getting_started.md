@@ -267,6 +267,9 @@ llama stack build --config llama_stack/distribution/templates/local-ollama-build
 
 #### How to build distribution with Docker image
 
+> [!TIP]
+> Podman is supported as an alternative to Docker. Set `DOCKER_BINARY` to `podman` in your environment to use Podman.
+
 To build a docker image, you may start off from a template and use the `--image-type docker` flag to specify `docker` as the build image type.
 
 ```
