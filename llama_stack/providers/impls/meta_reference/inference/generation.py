@@ -53,7 +53,7 @@ def model_checkpoint_dir(model) -> str:
 
     assert checkpoint_dir.exists(), (
         f"Could not find checkpoint dir: {checkpoint_dir}."
-        f"Please download model using `llama download {model.descriptor()}`"
+        f"Please download model using `llama download --model-id {model.descriptor()}`"
     )
     return str(checkpoint_dir)
 
