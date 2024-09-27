@@ -199,7 +199,11 @@ class StackBuild(Subcommand):
         if not args.config and not args.template:
             if not args.name:
                 name = prompt(
-                    "> Enter a name for your Llama Stack (e.g. my-local-stack): "
+                    "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
+                    validator=Validator.from_callable(
+                        lambda x: len(x) > 0,
+                        error_message="Name cannot be empty, please enter a name",
+                    ),
                 )
             else:
                 name = args.name
