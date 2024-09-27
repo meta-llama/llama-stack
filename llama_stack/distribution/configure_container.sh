@@ -27,6 +27,9 @@ docker_image="$1"
 host_build_dir="$2"
 container_build_dir="/app/builds"
 
+# Disable SELinux labels
+DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+
 set -x
 $DOCKER_BINARY run $DOCKER_OPTS -it \
   -v $host_build_dir:$container_build_dir \

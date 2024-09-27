@@ -39,6 +39,9 @@ shift
 
 set -x
 
+# Disable SELinux labels
+DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+
 if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
   $DOCKER_BINARY run $DOCKER_OPTS -it \
     -p $port:$port \
