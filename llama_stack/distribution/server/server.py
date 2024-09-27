@@ -442,7 +442,6 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
         endpoints = all_endpoints[api]
         impl = impls[api]
         
-        cprint(f"API={api_str}, endpoints={endpoints}", "green")
         provider_spec = specs[api]
         if (
             isinstance(provider_spec, RemoteProviderSpec)
