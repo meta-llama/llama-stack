@@ -410,9 +410,8 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     return impls, specs
 
 
-def main(default_yaml: str, port: int = 5000, disable_ipv6: bool = False, config: Optional[str] = None):
-    config_file = config or default_yaml
-    with open(config_file, "r") as fp:
+def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
+    with open(yaml_config, "r") as fp:
         config = StackRunConfig(**yaml.safe_load(fp))
 
     app = FastAPI()
