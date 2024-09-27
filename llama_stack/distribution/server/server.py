@@ -433,18 +433,15 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
     if config.apis_to_serve:
         apis_to_serve = set(config.apis_to_serve)
-        for inf in builtin_automatically_routed_apis():
-            if inf.router_api.value in apis_to_serve:
-                apis_to_serve.add(inf.routing_table_api)
     else:
         apis_to_serve = set(impls.keys())
-
+    
     for api_str in apis_to_serve:
         api = Api(api_str)
 
         endpoints = all_endpoints[api]
         impl = impls[api]
-
+        
         provider_spec = specs[api]
         if (
             isinstance(provider_spec, RemoteProviderSpec)
