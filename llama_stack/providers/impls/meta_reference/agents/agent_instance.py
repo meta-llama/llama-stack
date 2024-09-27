@@ -541,6 +541,7 @@ class ChatAgent(ShieldRunnerMixin):
                             )
                         )
                     )
+
                     yield AgentTurnResponseStreamChunk(
                         event=AgentTurnResponseEvent(
                             payload=AgentTurnResponseStepProgressPayload(

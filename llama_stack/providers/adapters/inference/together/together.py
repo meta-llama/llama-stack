@@ -3,7 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
 from typing import AsyncGenerator
 
 from llama_models.llama3.api.chat_format import ChatFormat
@@ -61,6 +60,20 @@ class TogetherInferenceAdapter(Inference):
                 role = "tool"
             else:
                 role = message.role
+
+            if role == "user" and type(message.content) == list:
+                contents = []
+                for content in message.content:
+                    if type(content) == str:
+                        contents.append({"type": "text", "text": content})
+                    elif type(content) == ImageMedia:
+                        contents.append(
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": content.image.uri},
+                            }
+                        )
+                message.content = contents
             together_messages.append({"role": role, "content": message.content})
 
         return together_messages

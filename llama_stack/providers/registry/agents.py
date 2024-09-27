@@ -29,6 +29,7 @@ def available_providers() -> List[ProviderSpec]:
                 Api.safety,
                 Api.memory,
             ],
+            provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
         ),
         remote_provider_spec(
             api=Api.agents,

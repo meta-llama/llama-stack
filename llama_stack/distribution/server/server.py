@@ -199,9 +199,12 @@ async def lifespan(app: FastAPI):
 
 
 def create_dynamic_passthrough(
-    downstream_url: str, downstream_headers: Optional[Dict[str, str]] = None
+    downstream_url: str,
+    provider_data_validators: List[str],
+    downstream_headers: Optional[Dict[str, str]] = None,
 ):
     async def endpoint(request: Request):
+        set_request_provider_data(request.headers, provider_data_validators)
         return await passthrough(request, downstream_url, downstream_headers)
 
     return endpoint
@@ -223,7 +226,6 @@ def create_dynamic_typed_route(
 
         async def endpoint(request: Request, **kwargs):
             await start_trace(func.__name__)
-
             set_request_provider_data(request.headers, provider_data_validators)
 
             async def sse_generator(event_gen):
@@ -446,6 +448,16 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
         impl = impls[api]
 
         provider_spec = specs[api]
+        validators = []
+        if isinstance(provider_spec, AutoRoutedProviderSpec):
+            inner_specs = specs[provider_spec.routing_table_api].inner_specs
+            for spec in inner_specs:
+                if spec.provider_data_validator:
+                    validators.append(spec.provider_data_validator)
+        elif not isinstance(provider_spec, RoutingTableProviderSpec):
+            if provider_spec.provider_data_validator:
+                validators.append(provider_spec.provider_data_validator)
+
         if (
             isinstance(provider_spec, RemoteProviderSpec)
             and provider_spec.adapter is None
@@ -453,7 +465,7 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
             for endpoint in endpoints:
                 url = impl.__provider_config__.url.rstrip("/") + endpoint.route
                 getattr(app, endpoint.method)(endpoint.route)(
-                    create_dynamic_passthrough(url)
+                    create_dynamic_passthrough(url, validators)
                 )
         else:
             for endpoint in endpoints:
@@ -464,16 +476,6 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
                     )
 
                 impl_method = getattr(impl, endpoint.name)
-
-                validators = []
-                if isinstance(provider_spec, AutoRoutedProviderSpec):
-                    inner_specs = specs[provider_spec.routing_table_api].inner_specs
-                    for spec in inner_specs:
-                        if spec.provider_data_validator:
-                            validators.append(spec.provider_data_validator)
-                elif not isinstance(provider_spec, RoutingTableProviderSpec):
-                    if provider_spec.provider_data_validator:
-                        validators.append(provider_spec.provider_data_validator)
 
                 getattr(app, endpoint.method)(endpoint.route, response_model=None)(
                     create_dynamic_typed_route(
