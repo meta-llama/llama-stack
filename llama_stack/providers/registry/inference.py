@@ -94,4 +94,15 @@ def available_providers() -> List[ProviderSpec]:
                 header_extractor_class="llama_stack.providers.adapters.inference.together.TogetherHeaderExtractor",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_id="sambanova",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.adapters.inference.sambanova",
+                config_class="llama_stack.providers.adapters.inference.sambanova.SambaNovaImplConfig",
+            ),
+        ),
     ]
