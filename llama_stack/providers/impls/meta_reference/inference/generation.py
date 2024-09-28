@@ -52,7 +52,7 @@ def model_checkpoint_dir(model) -> str:
         checkpoint_dir = checkpoint_dir / "original"
 
     assert checkpoint_dir.exists(), (
-        f"Could not find checkpoint dir: {checkpoint_dir}."
+        f"Could not find checkpoints in: {model_local_dir(model.descriptor())}. "
         f"Please download model using `llama download --model-id {model.descriptor()}`"
     )
     return str(checkpoint_dir)
@@ -185,11 +185,11 @@ class Llama:
     ) -> Generator:
         params = self.model.params
 
-        # input_tokens = [
-        #     self.formatter.vision_token if t == 128256 else t
-        #     for t in model_input.tokens
-        # ]
-        # cprint("Input to model -> " + self.tokenizer.decode(input_tokens), "red")
+        input_tokens = [
+            self.formatter.vision_token if t == 128256 else t
+            for t in model_input.tokens
+        ]
+        cprint("Input to model -> " + self.tokenizer.decode(input_tokens), "red")
         prompt_tokens = [model_input.tokens]
 
         bsz = 1
@@ -207,6 +207,7 @@ class Llama:
         total_len = min(max_gen_len + max_prompt_len, params.max_seq_len)
 
         is_vision = isinstance(self.model, CrossAttentionTransformer)
+        print(f"{is_vision=}")
         if is_vision:
             images = model_input.vision.images if model_input.vision is not None else []
             mask = model_input.vision.mask if model_input.vision is not None else []
