@@ -69,14 +69,23 @@ class StackConfigure(Subcommand):
             conda_dir = (
                 Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
             )
-            build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
+        else:
+            cprint(
+                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
+                color="green",
+            )
+            conda_dir = (
+                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
+            )
 
-            if build_config_file.exists():
-                with open(build_config_file, "r") as f:
-                    build_config = BuildConfig(**yaml.safe_load(f))
+        build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
-                self._configure_llama_distribution(build_config, args.output_dir)
-                return
+        if build_config_file.exists():
+            with open(build_config_file, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
+
+            self._configure_llama_distribution(build_config, args.output_dir)
+            return
 
         # if we get here, we need to try to find the docker image
         cprint(
