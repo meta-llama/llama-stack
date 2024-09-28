@@ -101,7 +101,7 @@ class StackBuild(Subcommand):
             )
         else:
             build_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent
+                Path(os.getenv("CONDA_PREFIX", "")).parent
                 / f"llamastack-{build_config.name}"
             )
 

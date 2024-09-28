@@ -67,7 +67,7 @@ class StackConfigure(Subcommand):
         )
         if os.getenv("CONDA_PREFIX"):
             conda_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
+                Path(os.getenv("CONDA_PREFIX", "")).parent / f"llamastack-{args.config}"
             )
             build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
