@@ -15,10 +15,10 @@ from llama_models.sku_list import resolve_model
 from together import Together
 
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.distribution.request_headers import get_request_provider_data
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
-from llama_stack.distribution.request_headers import get_request_provider_data
 
 from .config import TogetherImplConfig
 
