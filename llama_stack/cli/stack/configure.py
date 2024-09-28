@@ -65,7 +65,7 @@ class StackConfigure(Subcommand):
             f"Could not find {build_config_file}. Trying conda build name instead...",
             color="green",
         )
-        if os.getenv("CONDA_PREFIX"):
+        if os.getenv("CONDA_PREFIX", ""):
             conda_dir = (
                 Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
             )
