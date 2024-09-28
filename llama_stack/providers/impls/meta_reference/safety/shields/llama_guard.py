@@ -254,7 +254,6 @@ class LlamaGuardShield(ShieldBase):
                 for m in messages
             ]
         )
-        return conversations_str
         return PROMPT_TEMPLATE.substitute(
             agent_type=messages[-1].role.capitalize(),
             categories=categories_str,
