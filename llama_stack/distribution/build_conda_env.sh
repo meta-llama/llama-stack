@@ -19,7 +19,7 @@ fi
 
 if [ "$#" -lt 3 ]; then
   echo "Usage: $0 <distribution_type> <build_name> <build_file_path> <pip_dependencies> [<special_pip_deps>]" >&2
-  echo "Example: $0 <distribution_type> mybuild ./my-stack-run.yaml 'numpy pandas scipy'" >&2
+  echo "Example: $0 <distribution_type> mybuild ./my-stack-build.yaml 'numpy pandas scipy'" >&2
   exit 1
 fi
 
