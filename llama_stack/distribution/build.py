@@ -92,6 +92,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         args = [
             script,
             build_config.name,
+            str(build_file_path),
             " ".join(deps),
         ]
 

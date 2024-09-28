@@ -100,10 +100,7 @@ class StackBuild(Subcommand):
                 llama_stack_path / "tmp/configs/"
             )
         else:
-            build_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent
-                / f"llamastack-{build_config.name}"
-            )
+            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
 
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
@@ -115,11 +112,6 @@ class StackBuild(Subcommand):
         return_code = build_image(build_config, build_file_path)
         if return_code != 0:
             return
-
-        cprint(
-            f"Build spec configuration saved at {str(build_file_path)}",
-            color="blue",
-        )
 
         configure_name = (
             build_config.name
