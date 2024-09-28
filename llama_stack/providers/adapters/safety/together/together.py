@@ -83,9 +83,7 @@ async def get_safety_response(
 
     response_text = response.choices[0].message.content
     if response_text == "safe":
-        return SafetyViolation(
-            violation_level=ViolationLevel.INFO, user_message="safe", metadata={}
-        )
+        return None
 
     parts = response_text.split("\n")
     if len(parts) != 2:
