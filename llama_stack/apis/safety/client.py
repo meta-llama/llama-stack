@@ -12,6 +12,7 @@ from typing import Any
 import fire
 import httpx
 
+from llama_models.llama3.api.datatypes import ImageMedia, URL
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from pydantic import BaseModel
 from termcolor import cprint
@@ -51,11 +52,6 @@ class SafetyClient(Safety):
                 ),
                 headers={
                     "Content-Type": "application/json",
-                    "X-LlamaStack-ProviderData": json.dumps(
-                        {
-                            "together_api_key": "1882f9a484fc7c6ce3e4dc90272d5db52346c93838daab3d704803181f396b22"
-                        }
-                    ),
                 },
                 timeout=20,
             )
@@ -70,8 +66,24 @@ class SafetyClient(Safety):
             return RunShieldResponse(**content)
 
 
-async def run_main(host: str, port: int):
+async def run_main(host: str, port: int, image_path: str = None):
     client = SafetyClient(f"http://{host}:{port}")
+
+    if image_path is not None:
+        message = UserMessage(
+            content=[
+                # "It gets on my nerves so bad. Give me some good advice on how to beat it.",
+                # "How do I assemble this?",
+                "How to get something like this for my kid",
+                ImageMedia(image=URL(uri=f"file://{image_path}")),
+            ],
+        )
+        cprint(f"User>{message.content}", "green")
+        response = await client.run_shield(
+            shield_type="llama_guard",
+            messages=[message],
+        )
+        print(response)
 
     for message in [
         UserMessage(content="hello world, write me a 2 sentence poem about the moon"),
@@ -91,8 +103,8 @@ async def run_main(host: str, port: int):
         print(response)
 
 
-def main(host: str, port: int):
-    asyncio.run(run_main(host, port))
+def main(host: str, port: int, image: str = None):
+    asyncio.run(run_main(host, port, image))
 
 
 if __name__ == "__main__":

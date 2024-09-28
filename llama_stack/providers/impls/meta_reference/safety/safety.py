@@ -88,10 +88,10 @@ class MetaReferenceSafetyImpl(Safety):
             assert (
                 cfg is not None
             ), "Cannot use LlamaGuardShield since not present in config"
-            model_dir = resolve_and_get_path(cfg.model)
 
             return LlamaGuardShield(
-                model_dir=model_dir,
+                model=cfg.model,
+                inference_api=self.inference_api,
                 excluded_categories=cfg.excluded_categories,
                 disable_input_check=cfg.disable_input_check,
                 disable_output_check=cfg.disable_output_check,

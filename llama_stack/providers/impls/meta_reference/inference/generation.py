@@ -52,7 +52,7 @@ def model_checkpoint_dir(model) -> str:
         checkpoint_dir = checkpoint_dir / "original"
 
     assert checkpoint_dir.exists(), (
-        f"Could not find checkpoint dir: {checkpoint_dir}."
+        f"Could not find checkpoints in: {model_local_dir(model.descriptor())}. "
         f"Please download model using `llama download --model-id {model.descriptor()}`"
     )
     return str(checkpoint_dir)
