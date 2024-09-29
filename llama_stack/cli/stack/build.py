@@ -74,8 +74,8 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "--image-type",
             type=str,
-            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use conda by default",
-            default="conda",
+            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
+            choices=["conda", "docker"],
         )
 
     def _run_stack_build_command_from_build_config(
@@ -183,7 +183,8 @@ class StackBuild(Subcommand):
             with open(build_path, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
                 build_config.name = args.name
-                build_config.image_type = args.image_type
+                if args.image_type:
+                    build_config.image_type = args.image_type
                 self._run_stack_build_command_from_build_config(build_config)
 
             return
