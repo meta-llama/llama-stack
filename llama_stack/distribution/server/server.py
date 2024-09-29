@@ -207,9 +207,7 @@ def create_dynamic_passthrough(
     return endpoint
 
 
-def create_dynamic_typed_route(
-    func: Any, method: str, provider_data_validators: List[str]
-):
+def create_dynamic_typed_route(func: Any, method: str):
     hints = get_type_hints(func)
     response_model = hints.get("return")
 
@@ -224,7 +222,7 @@ def create_dynamic_typed_route(
         async def endpoint(request: Request, **kwargs):
             await start_trace(func.__name__)
 
-            set_request_provider_data(request.headers, provider_data_validators)
+            set_request_provider_data(request.headers)
 
             async def sse_generator(event_gen):
                 try:
@@ -255,7 +253,7 @@ def create_dynamic_typed_route(
         async def endpoint(request: Request, **kwargs):
             await start_trace(func.__name__)
 
-            set_request_provider_data(request.headers, provider_data_validators)
+            set_request_provider_data(request.headers)
 
             try:
                 return (
@@ -462,21 +460,10 @@ def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
 
                 impl_method = getattr(impl, endpoint.name)
 
-                validators = []
-                if isinstance(provider_spec, AutoRoutedProviderSpec):
-                    inner_specs = specs[provider_spec.routing_table_api].inner_specs
-                    for spec in inner_specs:
-                        if spec.provider_data_validator:
-                            validators.append(spec.provider_data_validator)
-                elif not isinstance(provider_spec, RoutingTableProviderSpec):
-                    if provider_spec.provider_data_validator:
-                        validators.append(provider_spec.provider_data_validator)
-
                 getattr(app, endpoint.method)(endpoint.route, response_model=None)(
                     create_dynamic_typed_route(
                         impl_method,
                         endpoint.method,
-                        validators,
                     )
                 )
 
