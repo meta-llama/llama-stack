@@ -9,7 +9,7 @@ import re
 from string import Template
 from typing import List, Optional
 
-from llama_models.llama3.api.datatypes import Message, Role
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 
 from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
@@ -66,8 +66,17 @@ DEFAULT_LG_V3_SAFETY_CATEGORIES = [
     CAT_SELF_HARM,
     CAT_SEXUAL_CONTENT,
     CAT_ELECTIONS,
-    CAT_CODE_INTERPRETER_ABUSE,
 ]
+
+
+MODEL_TO_SAFETY_CATEGORIES_MAP = {
+    CoreModelId.llama_guard_3_8b.value: (
+        DEFAULT_LG_V3_SAFETY_CATEGORIES + [CAT_CODE_INTERPRETER_ABUSE]
+    ),
+    CoreModelId.llama_guard_3_1b.value: DEFAULT_LG_V3_SAFETY_CATEGORIES,
+    CoreModelId.llama_guard_3_11b_vision.value: DEFAULT_LG_V3_SAFETY_CATEGORIES,
+}
+
 
 PROMPT_TASK = "Task: Check if there is unsafe content in '$agent_type' messages in conversations according our safety policy with the below categories."
 
@@ -117,6 +126,9 @@ class LlamaGuardShield(ShieldBase):
             x in SAFETY_CATEGORIES_TO_CODE_MAP.values() for x in excluded_categories
         ), "Invalid categories in excluded categories. Expected format is ['S1', 'S2', ..]"
 
+        if model not in MODEL_TO_SAFETY_CATEGORIES_MAP:
+            raise ValueError(f"Unsupported model: {model}")
+
         self.model = model
         self.inference_api = inference_api
         self.excluded_categories = excluded_categories
@@ -137,20 +149,110 @@ class LlamaGuardShield(ShieldBase):
         if set(excluded_categories) == set(SAFETY_CATEGORIES_TO_CODE_MAP.values()):
             excluded_categories = []
 
-        categories = []
-        for cat in DEFAULT_LG_V3_SAFETY_CATEGORIES:
+        final_categories = []
+
+        all_categories = MODEL_TO_SAFETY_CATEGORIES_MAP[self.model]
+        for cat in all_categories:
             cat_code = SAFETY_CATEGORIES_TO_CODE_MAP[cat]
             if cat_code in excluded_categories:
                 continue
-            categories.append(f"{cat_code}: {cat}.")
+            final_categories.append(f"{cat_code}: {cat}.")
 
-        return categories
+        return final_categories
+
+    def validate_messages(self, messages: List[Message]) -> None:
+        if len(messages) == 0:
+            raise ValueError("Messages must not be empty")
+        if messages[0].role != Role.user.value:
+            raise ValueError("Messages must start with user")
+
+        if len(messages) >= 2 and (
+            messages[0].role == Role.user.value and messages[1].role == Role.user.value
+        ):
+            messages = messages[1:]
+
+        for i in range(1, len(messages)):
+            if messages[i].role == messages[i - 1].role:
+                raise ValueError(
+                    f"Messages must alternate between user and assistant. Message {i} has the same role as message {i-1}"
+                )
+        return messages
+
+    async def run(self, messages: List[Message]) -> ShieldResponse:
+        messages = self.validate_messages(messages)
+        if self.disable_input_check and messages[-1].role == Role.user.value:
+            return ShieldResponse(is_violation=False)
+        elif self.disable_output_check and messages[-1].role == Role.assistant.value:
+            return ShieldResponse(
+                is_violation=False,
+            )
+
+        if self.model == CoreModelId.llama_guard_3_11b_vision.value:
+            shield_input_message = self.build_vision_shield_input(messages)
+        else:
+            shield_input_message = self.build_text_shield_input(messages)
+
+        # TODO: llama-stack inference protocol has issues with non-streaming inference code
+        content = ""
+        async for chunk in self.inference_api.chat_completion(
+            model=self.model,
+            messages=[shield_input_message],
+            stream=True,
+        ):
+            event = chunk.event
+            if event.event_type == ChatCompletionResponseEventType.progress:
+                assert isinstance(event.delta, str)
+                content += event.delta
+
+        content = content.strip()
+        shield_response = self.get_shield_response(content)
+        return shield_response
+
+    def build_text_shield_input(self, messages: List[Message]) -> UserMessage:
+        return UserMessage(content=self.build_prompt(messages))
+
+    def build_vision_shield_input(self, messages: List[Message]) -> UserMessage:
+        conversation = []
+        most_recent_img = None
+
+        for m in messages[::-1]:
+            if isinstance(m.content, str):
+                conversation.append(m)
+            elif isinstance(m.content, ImageMedia):
+                if most_recent_img is None and m.role == Role.user.value:
+                    most_recent_img = m.content
+                    conversation.append(m)
+            elif isinstance(m.content, list):
+                content = []
+                for c in m.content:
+                    if isinstance(c, str):
+                        content.append(c)
+                    elif isinstance(c, ImageMedia):
+                        if most_recent_img is None and m.role == Role.user.value:
+                            most_recent_img = c
+                            content.append(c)
+                    else:
+                        raise ValueError(f"Unknown content type: {c}")
+
+                conversation.append(UserMessage(content=content))
+            else:
+                raise ValueError(f"Unknown content type: {m.content}")
+
+        prompt = []
+        if most_recent_img is not None:
+            prompt.append(most_recent_img)
+        prompt.append(self.build_prompt(conversation[::-1]))
+
+        return UserMessage(content=prompt)
 
     def build_prompt(self, messages: List[Message]) -> str:
         categories = self.get_safety_categories()
         categories_str = "\n".join(categories)
         conversations_str = "\n\n".join(
-            [f"{m.role.capitalize()}: {m.content}" for m in messages]
+            [
+                f"{m.role.capitalize()}: {interleaved_text_media_as_str(m.content)}"
+                for m in messages
+            ]
         )
         return PROMPT_TEMPLATE.substitute(
             agent_type=messages[-1].role.capitalize(),
@@ -159,6 +261,7 @@ class LlamaGuardShield(ShieldBase):
         )
 
     def get_shield_response(self, response: str) -> ShieldResponse:
+        response = response.strip()
         if response == SAFE_RESPONSE:
             return ShieldResponse(is_violation=False)
         unsafe_code = self.check_unsafe_response(response)
@@ -173,31 +276,3 @@ class LlamaGuardShield(ShieldBase):
             )
 
         raise ValueError(f"Unexpected response: {response}")
-
-    async def run(self, messages: List[Message]) -> ShieldResponse:
-        if self.disable_input_check and messages[-1].role == Role.user.value:
-            return ShieldResponse(is_violation=False)
-        elif self.disable_output_check and messages[-1].role == Role.assistant.value:
-            return ShieldResponse(
-                is_violation=False,
-            )
-        else:
-            prompt = self.build_prompt(messages)
-
-            # TODO: llama-stack inference protocol has issues with non-streaming inference code
-            content = ""
-            async for chunk in self.inference_api.chat_completion(
-                model=self.model,
-                messages=[
-                    UserMessage(content=prompt),
-                ],
-                stream=True,
-            ):
-                event = chunk.event
-                if event.event_type == ChatCompletionResponseEventType.progress:
-                    assert isinstance(event.delta, str)
-                    content += event.delta
-
-            content = content.strip()
-            shield_response = self.get_shield_response(content)
-            return shield_response

@@ -10,6 +10,9 @@ from typing import Any, AsyncGenerator, List, Optional
 
 import fire
 import httpx
+
+from llama_models.llama3.api.datatypes import ImageMedia, URL
+
 from pydantic import BaseModel
 
 from llama_models.llama3.api import *  # noqa: F403
@@ -105,7 +108,7 @@ async def run_main(host: str, port: int, stream: bool):
     )
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
-        model="Meta-Llama3.1-8B-Instruct",
+        model="Llama3.1-8B-Instruct",
         messages=[message],
         stream=stream,
     )
@@ -113,8 +116,30 @@ async def run_main(host: str, port: int, stream: bool):
         log.print()
 
 
-def main(host: str, port: int, stream: bool = True):
-    asyncio.run(run_main(host, port, stream))
+async def run_mm_main(host: str, port: int, stream: bool, path: str):
+    client = InferenceClient(f"http://{host}:{port}")
+
+    message = UserMessage(
+        content=[
+            ImageMedia(image=URL(uri=f"file://{path}")),
+            "Describe this image in two sentences",
+        ],
+    )
+    cprint(f"User>{message.content}", "green")
+    iterator = client.chat_completion(
+        model="Llama3.2-11B-Vision-Instruct",
+        messages=[message],
+        stream=stream,
+    )
+    async for log in EventLogger().log(iterator):
+        log.print()
+
+
+def main(host: str, port: int, stream: bool = True, mm: bool = False, file: str = None):
+    if mm:
+        asyncio.run(run_mm_main(host, port, stream, file))
+    else:
+        asyncio.run(run_main(host, port, stream))
 
 
 if __name__ == "__main__":

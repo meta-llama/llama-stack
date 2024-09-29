@@ -9,34 +9,18 @@
 
 import asyncio
 import os
-import textwrap
 import unittest
 
-from datetime import datetime
-
-from llama_models.llama3.api.datatypes import (
-    BuiltinTool,
-    StopReason,
-    SystemMessage,
-    ToolDefinition,
-    ToolParamDefinition,
-    ToolPromptFormat,
-    ToolResponseMessage,
-    UserMessage,
-)
-
-from llama_stack.inference.api import (
-    ChatCompletionRequest,
-    ChatCompletionResponseEventType,
-)
+from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.inference.api import *  # noqa: F403
 from llama_stack.inference.meta_reference.config import MetaReferenceImplConfig
 from llama_stack.inference.meta_reference.inference import get_provider_impl
 
 
-MODEL = "Meta-Llama3.1-8B-Instruct"
+MODEL = "Llama3.1-8B-Instruct"
 HELPER_MSG = """
 This test needs llama-3.1-8b-instruct models.
-Please donwload using the llama cli
+Please download using the llama cli
 
 llama download --source huggingface --model-id llama3_1_8b_instruct --hf-token <HF_TOKEN>
 """
@@ -45,11 +29,10 @@ llama download --source huggingface --model-id llama3_1_8b_instruct --hf-token <
 class InferenceTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
-        # This runs the async setup function
         asyncio.run(cls.asyncSetUpClass())
 
     @classmethod
-    async def asyncSetUpClass(cls):
+    async def asyncSetUpClass(cls):  # noqa
         # assert model exists on local
         model_dir = os.path.expanduser(f"~/.llama/checkpoints/{MODEL}/original/")
         assert os.path.isdir(model_dir), HELPER_MSG
@@ -67,11 +50,10 @@ class InferenceTests(unittest.IsolatedAsyncioTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # This runs the async teardown function
         asyncio.run(cls.asyncTearDownClass())
 
     @classmethod
-    async def asyncTearDownClass(cls):
+    async def asyncTearDownClass(cls):  # noqa
         await cls.api.shutdown()
 
     async def asyncSetUp(self):

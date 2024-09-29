@@ -31,7 +31,10 @@ class LlamaGuardShieldConfig(BaseModel):
         permitted_models = [
             m.descriptor()
             for m in safety_models()
-            if m.core_model_id == CoreModelId.llama_guard_3_8b
+            if (
+                m.core_model_id
+                in {CoreModelId.llama_guard_3_8b, CoreModelId.llama_guard_3_11b_vision}
+            )
         ]
         if model not in permitted_models:
             raise ValueError(

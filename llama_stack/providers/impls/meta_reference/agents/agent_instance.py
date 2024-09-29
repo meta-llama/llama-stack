@@ -398,7 +398,11 @@ class ChatAgent(ShieldRunnerMixin):
                 color = "yellow"
             else:
                 color = None
-            cprint(f"{str(msg)}", color=color)
+            if len(str(msg)) > 1000:
+                msg_str = f"{str(msg)[:500]}...<more>...{str(msg)[-500:]}"
+            else:
+                msg_str = str(msg)
+            cprint(f"{msg_str}", color=color)
 
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
@@ -466,6 +470,13 @@ class ChatAgent(ShieldRunnerMixin):
                         stop_reason = event.stop_reason
 
             stop_reason = stop_reason or StopReason.out_of_tokens
+
+            # If tool calls are parsed successfully,
+            # if content is not made null the tool call str will also be in the content
+            # and tokens will have tool call syntax included twice
+            if tool_calls:
+                content = ""
+
             message = CompletionMessage(
                 content=content,
                 stop_reason=stop_reason,
@@ -627,7 +638,7 @@ class ChatAgent(ShieldRunnerMixin):
             memory_bank = await self.memory_api.create_memory_bank(
                 name=f"memory_bank_{session_id}",
                 config=VectorMemoryBankConfig(
-                    embedding_model="sentence-transformer/all-MiniLM-L6-v2",
+                    embedding_model="all-MiniLM-L6-v2",
                     chunk_size_in_tokens=512,
                 ),
             )

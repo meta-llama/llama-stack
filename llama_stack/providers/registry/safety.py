@@ -6,7 +6,13 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 
 def available_providers() -> List[ProviderSpec]:
@@ -32,6 +38,27 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=[],
                 module="llama_stack.providers.adapters.safety.sample",
                 config_class="llama_stack.providers.adapters.safety.sample.SampleConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_id="bedrock",
+                pip_packages=["boto3"],
+                module="llama_stack.providers.adapters.safety.bedrock",
+                config_class="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_id="together",
+                pip_packages=[
+                    "together",
+                ],
+                module="llama_stack.providers.adapters.safety.together",
+                config_class="llama_stack.providers.adapters.safety.together.TogetherSafetyConfig",
+                provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
             ),
         ),
     ]

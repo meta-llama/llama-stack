@@ -9,6 +9,10 @@ from typing import Any
 from pydantic import BaseModel
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from prompt_toolkit import prompt
+from prompt_toolkit.validation import Validator
+from termcolor import cprint
+
 from llama_stack.apis.memory.memory import MemoryBankType
 from llama_stack.distribution.distribution import (
     api_providers,
@@ -21,9 +25,6 @@ from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 from llama_stack.providers.impls.meta_reference.safety.config import (
     MetaReferenceShieldType,
 )
-from prompt_toolkit import prompt
-from prompt_toolkit.validation import Validator
-from termcolor import cprint
 
 
 def make_routing_entry_type(config_class: Any):

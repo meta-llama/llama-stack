@@ -9,7 +9,7 @@ import argparse
 from llama_stack.cli.model.describe import ModelDescribe
 from llama_stack.cli.model.download import ModelDownload
 from llama_stack.cli.model.list import ModelList
-from llama_stack.cli.model.template import ModelTemplate
+from llama_stack.cli.model.prompt_format import ModelPromptFormat
 
 from llama_stack.cli.subcommand import Subcommand
 
@@ -30,5 +30,5 @@ class ModelParser(Subcommand):
         # Add sub-commands
         ModelDownload.create(subparsers)
         ModelList.create(subparsers)
-        ModelTemplate.create(subparsers)
+        ModelPromptFormat.create(subparsers)
         ModelDescribe.create(subparsers)

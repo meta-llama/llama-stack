@@ -4,7 +4,7 @@ distribution_spec:
   providers:
     inference: remote::together
     memory: meta-reference
-    safety: meta-reference
+    safety: remote::together
     agents: meta-reference
     telemetry: meta-reference
 image_type: conda

@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 10:56:42.866760"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 16:58:41.469308"
     },
     "servers": [
         {
@@ -2028,9 +2028,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -2051,6 +2061,35 @@
                     "content",
                     "stop_reason",
                     "tool_calls"
+                ]
+            },
+            "ImageMedia": {
+                "type": "object",
+                "properties": {
+                    "image": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "format": {
+                                        "type": "string"
+                                    },
+                                    "format_description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "title": "This class represents an image object.  To create"
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "image"
                 ]
             },
             "SamplingParams": {
@@ -2116,9 +2155,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -2267,6 +2316,28 @@
                     "required": {
                         "type": "boolean",
                         "default": true
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -2278,7 +2349,8 @@
                 "type": "string",
                 "enum": [
                     "json",
-                    "function_tag"
+                    "function_tag",
+                    "python_list"
                 ],
                 "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
                 "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
@@ -2310,9 +2382,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -2325,6 +2407,11 @@
                     "tool_name",
                     "content"
                 ]
+            },
+            "URL": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^(https?://|file://|data:)"
             },
             "UserMessage": {
                 "type": "object",
@@ -2340,9 +2427,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -2353,9 +2450,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -2456,9 +2563,19 @@
                                     "type": "string"
                                 },
                                 {
+                                    "$ref": "#/components/schemas/ImageMedia"
+                                },
+                                {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ImageMedia"
+                                            }
+                                        ]
                                     }
                                 }
                             ]
@@ -2715,9 +2832,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -3298,11 +3425,6 @@
                     "engine"
                 ]
             },
-            "URL": {
-                "type": "string",
-                "format": "uri",
-                "pattern": "^(https?://|file://|data:)"
-            },
             "WolframAlphaToolDefinition": {
                 "type": "object",
                 "properties": {
@@ -3397,9 +3519,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             },
                             {
@@ -3732,9 +3864,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -3889,9 +4031,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -4317,9 +4469,19 @@
                                     "type": "string"
                                 },
                                 {
+                                    "$ref": "#/components/schemas/ImageMedia"
+                                },
+                                {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ImageMedia"
+                                            }
+                                        ]
                                     }
                                 }
                             ]
@@ -4516,9 +4678,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             },
                             {
@@ -5408,9 +5580,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -5461,9 +5643,19 @@
                                             "type": "string"
                                         },
                                         {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        },
+                                        {
                                             "type": "array",
                                             "items": {
-                                                "type": "string"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "$ref": "#/components/schemas/ImageMedia"
+                                                    }
+                                                ]
                                             }
                                         }
                                     ]
@@ -6028,31 +6220,31 @@
     ],
     "tags": [
         {
-            "name": "Inference"
-        },
-        {
             "name": "Shields"
         },
         {
-            "name": "Models"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "SyntheticDataGeneration"
+            "name": "BatchInference"
         },
         {
             "name": "RewardScoring"
         },
         {
-            "name": "PostTraining"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "MemoryBanks"
         },
         {
             "name": "Safety"
         },
         {
-            "name": "Evaluations"
+            "name": "Models"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "Memory"
@@ -6061,13 +6253,13 @@
             "name": "Telemetry"
         },
         {
-            "name": "Agents"
-        },
-        {
-            "name": "BatchInference"
+            "name": "PostTraining"
         },
         {
             "name": "Datasets"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "BuiltinTool",
@@ -6076,6 +6268,10 @@
         {
             "name": "CompletionMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionMessage\" />"
+        },
+        {
+            "name": "ImageMedia",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageMedia\" />"
         },
         {
             "name": "SamplingParams",
@@ -6116,6 +6312,10 @@
         {
             "name": "ToolResponseMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponseMessage\" />"
+        },
+        {
+            "name": "URL",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
             "name": "UserMessage",
@@ -6220,10 +6420,6 @@
         {
             "name": "SearchToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SearchToolDefinition\" />"
-        },
-        {
-            "name": "URL",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
             "name": "WolframAlphaToolDefinition",
@@ -6661,6 +6857,7 @@
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
                 "GetDocumentsRequest",
+                "ImageMedia",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "LogEventRequest",

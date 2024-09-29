@@ -103,7 +103,7 @@ add_to_docker <<EOF
 
 EOF
 
-add_to_docker "ADD $build_file_path ./llamastack-build.yaml"
+add_to_docker "ADD tmp/configs/$(basename "$build_file_path") ./llamastack-build.yaml"
 
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
@@ -116,6 +116,7 @@ fi
 if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
 fi
+
 set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x

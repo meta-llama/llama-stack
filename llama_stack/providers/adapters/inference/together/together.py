@@ -15,14 +15,20 @@ from llama_models.sku_list import resolve_model
 from together import Together
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.distribution.request_headers import get_request_provider_data
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 from .config import TogetherImplConfig
 
 TOGETHER_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-    "Meta-Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-    "Meta-Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+    "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+    "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+    "Llama3.2-3B-Instruct": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+    "Llama3.2-11B-Vision-Instruct": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+    "Llama3.2-90B-Vision-Instruct": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
 }
 
 
@@ -95,6 +101,16 @@ class TogetherInferenceAdapter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+
+        together_api_key = None
+        provider_data = get_request_provider_data()
+        if provider_data is None or not provider_data.together_api_key:
+            raise ValueError(
+                'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+            )
+        together_api_key = provider_data.together_api_key
+
+        client = Together(api_key=together_api_key)
         # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = ChatCompletionRequest(
             model=model,
@@ -110,11 +126,11 @@ class TogetherInferenceAdapter(Inference):
         # accumulate sampling params and other options to pass to together
         options = self.get_together_chat_options(request)
         together_model = self.resolve_together_model(request.model)
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
 
         if not request.stream:
             # TODO: might need to add back an async here
-            r = self.client.chat.completions.create(
+            r = client.chat.completions.create(
                 model=together_model,
                 messages=self._messages_to_together_messages(messages),
                 stream=False,
@@ -149,7 +165,7 @@ class TogetherInferenceAdapter(Inference):
             ipython = False
             stop_reason = None
 
-            for chunk in self.client.chat.completions.create(
+            for chunk in client.chat.completions.create(
                 model=together_model,
                 messages=self._messages_to_together_messages(messages),
                 stream=True,

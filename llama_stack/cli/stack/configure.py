@@ -65,18 +65,27 @@ class StackConfigure(Subcommand):
             f"Could not find {build_config_file}. Trying conda build name instead...",
             color="green",
         )
-        if os.getenv("CONDA_PREFIX"):
+        if os.getenv("CONDA_PREFIX", ""):
             conda_dir = (
                 Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
             )
-            build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
+        else:
+            cprint(
+                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
+                color="green",
+            )
+            conda_dir = (
+                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
+            )
 
-            if build_config_file.exists():
-                with open(build_config_file, "r") as f:
-                    build_config = BuildConfig(**yaml.safe_load(f))
+        build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
-                self._configure_llama_distribution(build_config, args.output_dir)
-                return
+        if build_config_file.exists():
+            with open(build_config_file, "r") as f:
+                build_config = BuildConfig(**yaml.safe_load(f))
+
+            self._configure_llama_distribution(build_config, args.output_dir)
+            return
 
         # if we get here, we need to try to find the docker image
         cprint(
@@ -99,7 +108,7 @@ class StackConfigure(Subcommand):
         # we have regenerated the build config file with script, now check if it exists
         if return_code != 0:
             self.parser.error(
-                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build first`. "
+                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build` first. "
             )
             return
 
@@ -160,7 +169,7 @@ class StackConfigure(Subcommand):
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {run_config_file}.",
+            f"> YAML configuration has been written to `{run_config_file}`.",
             color="blue",
         )
 

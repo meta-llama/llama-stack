@@ -2,9 +2,10 @@ blobfile
 fire
 httpx
 huggingface-hub
-llama-models>=0.0.24
+llama-models>=0.0.36
 prompt-toolkit
 python-dotenv
 pydantic
 requests
+rich
 termcolor
