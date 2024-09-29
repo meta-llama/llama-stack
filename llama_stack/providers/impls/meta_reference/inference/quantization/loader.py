@@ -14,15 +14,16 @@ import torch
 
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
 from llama_models.llama3.api.model import Transformer, TransformerBlock
+
+from termcolor import cprint
+from torch import Tensor
+
 from llama_stack.apis.inference import QuantizationType
 
 from llama_stack.apis.inference.config import (
     CheckpointQuantizationFormat,
     MetaReferenceImplConfig,
 )
-
-from termcolor import cprint
-from torch import Tensor
 
 
 def is_fbgemm_available() -> bool:

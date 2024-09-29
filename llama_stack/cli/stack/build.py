@@ -74,8 +74,8 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "--image-type",
             type=str,
-            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use conda by default",
-            default="conda",
+            help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
+            choices=["conda", "docker"],
         )
 
     def _run_stack_build_command_from_build_config(
@@ -100,10 +100,7 @@ class StackBuild(Subcommand):
                 llama_stack_path / "tmp/configs/"
             )
         else:
-            build_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent
-                / f"llamastack-{build_config.name}"
-            )
+            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
 
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
@@ -115,11 +112,6 @@ class StackBuild(Subcommand):
         return_code = build_image(build_config, build_file_path)
         if return_code != 0:
             return
-
-        cprint(
-            f"Build spec configuration saved at {str(build_file_path)}",
-            color="blue",
-        )
 
         configure_name = (
             build_config.name
@@ -191,7 +183,8 @@ class StackBuild(Subcommand):
             with open(build_path, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
                 build_config.name = args.name
-                build_config.image_type = args.image_type
+                if args.image_type:
+                    build_config.image_type = args.image_type
                 self._run_stack_build_command_from_build_config(build_config)
 
             return

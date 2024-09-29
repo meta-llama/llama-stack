@@ -13,7 +13,6 @@ import httpx
 
 from llama_models.llama3.api.datatypes import ImageMedia, URL
 
-from PIL import Image as PIL_Image
 from pydantic import BaseModel
 
 from llama_models.llama3.api import *  # noqa: F403
@@ -120,13 +119,9 @@ async def run_main(host: str, port: int, stream: bool):
 async def run_mm_main(host: str, port: int, stream: bool, path: str):
     client = InferenceClient(f"http://{host}:{port}")
 
-    with open(path, "rb") as f:
-        img = PIL_Image.open(f).convert("RGB")
-
     message = UserMessage(
         content=[
             ImageMedia(image=URL(uri=f"file://{path}")),
-            # ImageMedia(image=img),
             "Describe this image in two sentences",
         ],
     )

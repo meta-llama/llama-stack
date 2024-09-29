@@ -22,9 +22,9 @@ class StackListProviders(Subcommand):
         self.parser.set_defaults(func=self._run_providers_list_cmd)
 
     def _add_arguments(self):
-        from llama_stack.distribution.distribution import stack_apis
+        from llama_stack.distribution.datatypes import Api
 
-        api_values = [a.value for a in stack_apis()]
+        api_values = [a.value for a in Api]
         self.parser.add_argument(
             "api",
             type=str,

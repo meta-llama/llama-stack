@@ -91,7 +91,7 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.adapters.inference.together",
                 config_class="llama_stack.providers.adapters.inference.together.TogetherImplConfig",
-                header_extractor_class="llama_stack.providers.adapters.inference.together.TogetherHeaderExtractor",
+                provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
             ),
         ),
     ]
