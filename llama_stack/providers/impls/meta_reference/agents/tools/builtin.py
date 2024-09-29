@@ -117,7 +117,7 @@ class BingSearch:
             "q": query,
         }
 
-        response = requests.get(url=url, params=params, headers=headers)
+        response = requests.get(url=url, params=params, headers=headers, timeout=60)
         response.raise_for_status()
         clean = self._clean_response(response.json())
         return json.dumps(clean)
@@ -156,7 +156,7 @@ class BraveSearch:
             "Accept": "application/json",
         }
         payload = {"q": query}
-        response = requests.get(url=url, params=payload, headers=headers)
+        response = requests.get(url=url, params=payload, headers=headers, timeout=60)
         return json.dumps(self._clean_brave_response(response.json()))
 
     def _clean_brave_response(self, search_response, top_k=3):
@@ -275,7 +275,7 @@ class WolframAlphaTool(SingleMessageBuiltinTool):
         response = requests.get(
             self.url,
             params=params,
-        )
+        timeout=60)
 
         return json.dumps(self._clean_wolfram_alpha_response(response.json()))
 
