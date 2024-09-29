@@ -26,7 +26,6 @@ class WeaviateIndex(EmbeddingIndex):
 
         data_objects = []
         for i, chunk in enumerate(chunks):
-            print(f"Adding chunk #{i} tokens={chunk.token_count}")
             
             data_objects.append(wvc.data.DataObject(
                 properties={
@@ -80,9 +79,6 @@ class WeaviateMemoryAdapter(Memory):
             
             if request_provider_data is not None:
                 assert isinstance(request_provider_data, WeaviateRequestProviderData)
-
-                print(f"WEAVIATE API KEY: {request_provider_data.weaviate_api_key}")
-                print(f"WEAVIATE CLUSTER URL: {request_provider_data.weaviate_cluster_url}")
             
             # Connect to Weaviate Cloud
             return weaviate.connect_to_weaviate_cloud(
