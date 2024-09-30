@@ -408,7 +408,11 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     return impls, specs
 
 
-def main(yaml_config: str, port: int = 5000, disable_ipv6: bool = False):
+def main(
+    yaml_config: str = "./llamastack-run.yaml",
+    port: int = 5000,
+    disable_ipv6: bool = False,
+):
     with open(yaml_config, "r") as fp:
         config = StackRunConfig(**yaml.safe_load(fp))
 
