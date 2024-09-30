@@ -129,9 +129,3 @@ $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REP
 set +x
 
 echo "Success! You can run it with: $DOCKER_BINARY run -p 8000:8000 $image_name"
-
-echo "Checking image builds..."
-$DOCKER_BINARY run $DOCKER_OPTS -it $image_name cat llamastack-build.yaml
-
-echo "Checking image run..."
-$DOCKER_BINARY run $DOCKER_OPTS -it $image_name cat llamastack-run.yaml
