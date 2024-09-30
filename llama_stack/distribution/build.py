@@ -74,6 +74,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         else:
             deps.append(package)
     deps = list(set(deps))
+    special_deps = list(set(special_deps))
 
     if build_config.image_type == ImageType.docker.value:
         script = pkg_resources.resource_filename(
