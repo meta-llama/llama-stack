@@ -12,7 +12,8 @@ from botocore.config import Config
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
+
+from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfig
@@ -25,7 +26,7 @@ BEDROCK_SUPPORTED_MODELS = {
 }
 
 
-class BedrockInferenceAdapter(Inference):
+class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
 
     @staticmethod
     def _create_bedrock_client(config: BedrockConfig) -> BaseClient:
@@ -68,6 +69,9 @@ class BedrockInferenceAdapter(Inference):
         return boto3_session.client("bedrock-runtime", config=boto3_config)
 
     def __init__(self, config: BedrockConfig) -> None:
+        RoutableProviderForModels.__init__(
+            self, stack_to_provider_models_map=BEDROCK_SUPPORTED_MODELS
+        )
         self._config = config
 
         self._client = BedrockInferenceAdapter._create_bedrock_client(config)
@@ -93,22 +97,6 @@ class BedrockInferenceAdapter(Inference):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
         raise NotImplementedError()
-
-    @staticmethod
-    def resolve_bedrock_model(model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True)
-            in BEDROCK_SUPPORTED_MODELS
-        ), (
-            f"Unsupported model: {model_name}, use one of the supported models: "
-            f"{','.join(BEDROCK_SUPPORTED_MODELS.keys())}"
-        )
-
-        return BEDROCK_SUPPORTED_MODELS.get(
-            model.descriptor(shorten_default_variant=True)
-        )
 
     @staticmethod
     def _bedrock_stop_reason_to_stop_reason(bedrock_stop_reason: str) -> StopReason:
@@ -350,7 +338,7 @@ class BedrockInferenceAdapter(Inference):
     ) -> (
         AsyncGenerator
     ):  # Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]:
-        bedrock_model = BedrockInferenceAdapter.resolve_bedrock_model(model)
+        bedrock_model = self.map_to_provider_model(model)
         inference_config = BedrockInferenceAdapter.get_bedrock_inference_config(
             sampling_params
         )

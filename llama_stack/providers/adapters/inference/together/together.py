@@ -10,7 +10,6 @@ from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
 from together import Together
 
@@ -19,6 +18,7 @@ from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
+from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
 
 from .config import TogetherImplConfig
 
@@ -32,8 +32,13 @@ TOGETHER_SUPPORTED_MODELS = {
 }
 
 
-class TogetherInferenceAdapter(Inference, NeedsRequestProviderData):
+class TogetherInferenceAdapter(
+    Inference, NeedsRequestProviderData, RoutableProviderForModels
+):
     def __init__(self, config: TogetherImplConfig) -> None:
+        RoutableProviderForModels.__init__(
+            self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
+        )
         self.config = config
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
@@ -68,18 +73,6 @@ class TogetherInferenceAdapter(Inference, NeedsRequestProviderData):
             together_messages.append({"role": role, "content": message.content})
 
         return together_messages
-
-    def resolve_together_model(self, model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True)
-            in TOGETHER_SUPPORTED_MODELS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(TOGETHER_SUPPORTED_MODELS.keys())}"
-
-        return TOGETHER_SUPPORTED_MODELS.get(
-            model.descriptor(shorten_default_variant=True)
-        )
 
     def get_together_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -125,7 +118,7 @@ class TogetherInferenceAdapter(Inference, NeedsRequestProviderData):
 
         # accumulate sampling params and other options to pass to together
         options = self.get_together_chat_options(request)
-        together_model = self.resolve_together_model(request.model)
+        together_model = self.map_to_provider_model(request.model)
         messages = augment_messages_for_tools(request)
 
         if not request.stream:

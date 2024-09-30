@@ -11,7 +11,6 @@ import httpx
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
 from ollama import AsyncClient
 
@@ -19,6 +18,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
+from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
@@ -29,8 +29,11 @@ OLLAMA_SUPPORTED_SKUS = {
 }
 
 
-class OllamaInferenceAdapter(Inference):
+class OllamaInferenceAdapter(Inference, RoutableProviderForModels):
     def __init__(self, url: str) -> None:
+        RoutableProviderForModels.__init__(
+            self, stack_to_provider_models_map=OLLAMA_SUPPORTED_SKUS
+        )
         self.url = url
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
@@ -72,15 +75,6 @@ class OllamaInferenceAdapter(Inference):
 
         return ollama_messages
 
-    def resolve_ollama_model(self, model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True) in OLLAMA_SUPPORTED_SKUS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(OLLAMA_SUPPORTED_SKUS.keys())}"
-
-        return OLLAMA_SUPPORTED_SKUS.get(model.descriptor(shorten_default_variant=True))
-
     def get_ollama_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
         if request.sampling_params is not None:
@@ -120,7 +114,7 @@ class OllamaInferenceAdapter(Inference):
         messages = augment_messages_for_tools(request)
         # accumulate sampling params and other options to pass to ollama
         options = self.get_ollama_chat_options(request)
-        ollama_model = self.resolve_ollama_model(request.model)
+        ollama_model = self.map_to_provider_model(request.model)
 
         res = await self.client.ps()
         need_model_pull = True

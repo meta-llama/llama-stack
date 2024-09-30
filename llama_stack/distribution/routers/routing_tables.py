@@ -19,18 +19,31 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
-        inner_impls: List[Tuple[str, Any]],
+        inner_impls: List[Tuple[RoutingKey, Any]],
         routing_table_config: Dict[str, List[RoutableProviderConfig]],
     ) -> None:
-        self.providers = {k: v for k, v in inner_impls}
-        self.routing_keys = list(self.providers.keys())
+        self.unique_providers = []
+        self.providers = {}
+        self.routing_keys = []
+
+        for key, impl in inner_impls:
+            keys = key if isinstance(key, list) else [key]
+            self.unique_providers.append((keys, impl))
+
+            for k in keys:
+                if k in self.providers:
+                    raise ValueError(f"Duplicate routing key {k}")
+                self.providers[k] = impl
+                self.routing_keys.append(k)
+
         self.routing_table_config = routing_table_config
 
     async def initialize(self) -> None:
-        pass
+        for keys, p in self.unique_providers:
+            await p.register_routing_keys(keys)
 
     async def shutdown(self) -> None:
-        for p in self.providers.values():
+        for _, p in self.unique_providers:
             await p.shutdown()
 
     def get_provider_impl(self, routing_key: str) -> Any:

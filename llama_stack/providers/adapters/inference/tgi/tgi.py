@@ -13,6 +13,8 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
 
+from llama_stack.distribution.datatypes import RoutableProvider
+
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
@@ -23,7 +25,7 @@ from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImpl
 logger = logging.getLogger(__name__)
 
 
-class _HfAdapter(Inference):
+class _HfAdapter(Inference, RoutableProvider):
     client: AsyncInferenceClient
     max_tokens: int
     model_id: str
@@ -31,6 +33,14 @@ class _HfAdapter(Inference):
     def __init__(self) -> None:
         self.tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(self.tokenizer)
+
+    async def register_routing_keys(self, routing_keys: list[str]) -> None:
+        # these are the model names the Llama Stack will use to route requests to this provider
+        # perform validation here if necessary
+        self.routing_keys = routing_keys
+
+    def get_routing_keys(self) -> list[str]:
+        return self.routing_keys
 
     async def shutdown(self) -> None:
         pass

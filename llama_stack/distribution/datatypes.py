@@ -13,6 +13,10 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 
+LLAMA_STACK_BUILD_CONFIG_VERSION = "v1"
+LLAMA_STACK_RUN_CONFIG_VERSION = "v1"
+
+
 @json_schema_type
 class Api(Enum):
     inference = "inference"
@@ -54,6 +58,12 @@ class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...
 
 
+class RoutableProvider(Protocol):
+    async def register_routing_keys(self, keys: List[str]) -> None: ...
+
+    def get_routing_keys(self) -> List[str]: ...
+
+
 class GenericProviderConfig(BaseModel):
     provider_id: str
     config: Dict[str, Any]
@@ -65,8 +75,11 @@ class PlaceholderProviderConfig(BaseModel):
     providers: List[str]
 
 
+RoutingKey = Union[str, List[str]]
+
+
 class RoutableProviderConfig(GenericProviderConfig):
-    routing_key: str
+    routing_key: RoutingKey
 
 
 # Example: /inference, /safety
@@ -247,6 +260,7 @@ in the runtime configuration to help route to the correct provider.""",
 
 @json_schema_type
 class StackRunConfig(BaseModel):
+    version: str = LLAMA_STACK_RUN_CONFIG_VERSION
     built_at: datetime
 
     image_name: str = Field(
@@ -295,6 +309,7 @@ Provider configurations for each of the APIs provided by this package.
 
 @json_schema_type
 class BuildConfig(BaseModel):
+    version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
     name: str
     distribution_spec: DistributionSpec = Field(
         description="The distribution spec to build including API providers. "

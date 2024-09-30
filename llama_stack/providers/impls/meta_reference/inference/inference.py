@@ -6,21 +6,13 @@
 
 import asyncio
 
-from typing import AsyncIterator, Union
+from typing import AsyncIterator, List, Union
 
-from llama_models.llama3.api.datatypes import StopReason
 from llama_models.sku_list import resolve_model
 
-from llama_stack.apis.inference import (
-    ChatCompletionRequest,
-    ChatCompletionResponse,
-    ChatCompletionResponseEvent,
-    ChatCompletionResponseEventType,
-    ChatCompletionResponseStreamChunk,
-    Inference,
-    ToolCallDelta,
-    ToolCallParseStatus,
-)
+from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutableProvider
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
@@ -28,15 +20,12 @@ from llama_stack.providers.utils.inference.augment_messages import (
 from .config import MetaReferenceImplConfig
 from .model_parallel import LlamaModelParallelGenerator
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-
 # there's a single model parallel process running serving the model. for now,
 # we don't support multiple concurrent requests to this process.
 SEMAPHORE = asyncio.Semaphore(1)
 
 
-class MetaReferenceInferenceImpl(Inference):
+class MetaReferenceInferenceImpl(Inference, RoutableProvider):
     def __init__(self, config: MetaReferenceImplConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
@@ -48,6 +37,15 @@ class MetaReferenceInferenceImpl(Inference):
     async def initialize(self) -> None:
         self.generator = LlamaModelParallelGenerator(self.config)
         self.generator.start()
+
+    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+        assert (
+            len(routing_keys) == 1
+        ), f"Only one routing key is supported {routing_keys}"
+        assert routing_keys[0] == self.config.model
+
+    def get_routing_keys(self) -> List[str]:
+        return [self.config.model]
 
     async def shutdown(self) -> None:
         self.generator.stop()
