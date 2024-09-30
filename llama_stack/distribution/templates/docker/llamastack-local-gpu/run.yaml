@@ -1,0 +1,67 @@
+built_at: '2024-09-30T09:00:56.693751'
+image_name: local-gpu
+docker_image: local-gpu
+conda_env: null
+apis_to_serve:
+- memory
+- inference
+- agents
+- shields
+- safety
+- models
+- memory_banks
+api_providers:
+  inference:
+    providers:
+    - meta-reference
+  safety:
+    providers:
+    - meta-reference
+  agents:
+    provider_id: meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: /home/xiyan/.llama/runtime/kvstore.db
+  memory:
+    providers:
+    - meta-reference
+  telemetry:
+    provider_id: meta-reference
+    config: {}
+routing_table:
+  inference:
+  - provider_id: meta-reference
+    config:
+      model: Llama3.1-8B-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
+    routing_key: Llama3.1-8B-Instruct
+  safety:
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield: null
+      prompt_guard_shield: null
+    routing_key: llama_guard
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield: null
+      prompt_guard_shield: null
+    routing_key: code_scanner_guard
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield: null
+      prompt_guard_shield: null
+    routing_key: injection_shield
+  - provider_id: meta-reference
+    config:
+      llama_guard_shield: null
+      prompt_guard_shield: null
+    routing_key: jailbreak_shield
+  memory:
+  - provider_id: meta-reference
+    config: {}
+    routing_key: vector
