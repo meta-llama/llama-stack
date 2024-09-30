@@ -9,6 +9,7 @@
 DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
 LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
+LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 
 set -euo pipefail
 
@@ -42,24 +43,20 @@ set -x
 # Disable SELinux labels
 DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
 
+mounts=""
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):/app/llama-stack-source"
+fi
 if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
-  $DOCKER_BINARY run $DOCKER_OPTS -it \
-    -p $port:$port \
-    -v "$yaml_config:/app/config.yaml" \
-    -v "$LLAMA_CHECKPOINT_DIR:/root/.llama" \
-    --gpus=all \
-    $docker_image \
-    python -m llama_stack.distribution.server.server \
-    --yaml_config /app/config.yaml \
-    --port $port "$@"
+  mounts="$mounts -v $LLAMA_CHECKPOINT_DIR:/root/.llama"
+  DOCKER_OPTS="$DOCKER_OPTS --gpus=all"
 fi
 
-if [ -z "$LLAMA_CHECKPOINT_DIR" ]; then
-  $DOCKER_BINARY run $DOCKER_OPTS -it \
-    -p $port:$port \
-    -v "$yaml_config:/app/config.yaml" \
-    $docker_image \
-    python -m llama_stack.distribution.server.server \
-    --yaml_config /app/config.yaml \
-    --port $port "$@"
-fi
+$DOCKER_BINARY run $DOCKER_OPTS -it \
+  -p $port:$port \
+  -v "$yaml_config:/app/config.yaml" \
+  $mounts \
+  $docker_image \
+  python -m llama_stack.distribution.server.server \
+  --yaml_config /app/config.yaml \
+  --port $port "$@"

@@ -65,7 +65,11 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
     echo "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: $LLAMA_STACK_DIR${NC}" >&2
     exit 1
   fi
-  add_to_docker "RUN pip install $stack_mount"
+
+  # Install in editable format. We will mount the source code into the container
+  # so that changes will be reflected in the container without having to do a
+  # rebuild. This is just for development convenience.
+  add_to_docker "RUN pip install -e $stack_mount"
 else
   add_to_docker "RUN pip install llama-stack"
 fi

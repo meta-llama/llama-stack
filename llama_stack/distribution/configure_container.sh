@@ -8,6 +8,7 @@
 
 DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
+LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 
 set -euo pipefail
 
@@ -30,8 +31,14 @@ container_build_dir="/app/builds"
 # Disable SELinux labels
 DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
 
+mounts=""
+if [ -n "$LLAMA_STACK_DIR" ]; then
+  mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):/app/llama-stack-source"
+fi
+
 set -x
 $DOCKER_BINARY run $DOCKER_OPTS -it \
   -v $host_build_dir:$container_build_dir \
+  $mounts \
   $docker_image \
   llama stack configure ./llamastack-build.yaml --output-dir $container_build_dir
