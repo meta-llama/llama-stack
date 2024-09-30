@@ -112,12 +112,6 @@ class StackConfigure(Subcommand):
             )
             return
 
-        build_name = docker_image.removeprefix("llamastack-")
-        saved_file = str(builds_dir / f"{build_name}-run.yaml")
-        cprint(
-            f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
-            color="green",
-        )
         return
 
     def _configure_llama_distribution(
@@ -173,7 +167,8 @@ class StackConfigure(Subcommand):
             color="blue",
         )
 
-        cprint(
-            f"You can now run `llama stack run {image_name} --port PORT`",
-            color="green",
-        )
+        if build_config.image_type == "conda":
+            cprint(
+                f"You can now run `llama stack run {image_name} --port PORT`",
+                color="green",
+            )
