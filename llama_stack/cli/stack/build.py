@@ -113,10 +113,13 @@ class StackBuild(Subcommand):
         if return_code != 0:
             return
 
-        build_name = f"llamastack-{build_config.name}" if build_config.image_type == ImageType.docker.value else build_config.name
-
+        configure_name = (
+            build_config.name
+            if build_config.image_type == "conda"
+            else (f"llamastack-{build_config.name}")
+        )
         cprint(
-            f"You can now run `llama stack configure {build_name}`",
+            f"You can now run `llama stack configure {configure_name}`",
             color="green",
         )
 
