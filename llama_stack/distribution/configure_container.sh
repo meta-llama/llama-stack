@@ -35,8 +35,4 @@ $DOCKER_BINARY run $DOCKER_OPTS -it \
   --entrypoint "/usr/local/bin/llama" \
   -v $host_build_dir:$container_build_dir \
   $docker_image \
-  "stack" \
-  "configure" \
-  "./llamastack-build.yaml" \
-  "--output-dir" \
-  "$container_build_dir"
+  stack configure ./llamastack-build.yaml --output-dir $container_build_dir
