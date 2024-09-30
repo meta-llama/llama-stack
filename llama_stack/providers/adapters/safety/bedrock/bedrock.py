@@ -4,47 +4,63 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
+import logging
 
 import traceback
 from typing import Any, Dict, List
 
-from .config import BedrockSafetyConfig
+import boto3
+
 from llama_stack.apis.safety import *  # noqa
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-import json
-import logging
+from llama_stack.distribution.datatypes import RoutableProvider
 
-import boto3
+from .config import BedrockSafetyConfig
 
 
 logger = logging.getLogger(__name__)
 
 
-class BedrockSafetyAdapter(Safety):
+SUPPORTED_SHIELD_TYPES = [
+    "bedrock_guardrail",
+]
+
+
+class BedrockSafetyAdapter(Safety, RoutableProvider):
     def __init__(self, config: BedrockSafetyConfig) -> None:
+        if not config.aws_profile:
+            raise ValueError(f"Missing boto_client aws_profile in model info::{config}")
         self.config = config
 
     async def initialize(self) -> None:
-        if not self.config.aws_profile:
-            raise RuntimeError(
-                f"Missing boto_client aws_profile in model info::{self.config}"
-            )
-
         try:
-            print(f"initializing with profile --- > {self.config}::")
-            self.boto_client_profile = self.config.aws_profile
+            print(f"initializing with profile --- > {self.config}")
             self.boto_client = boto3.Session(
-                profile_name=self.boto_client_profile
+                profile_name=self.config.aws_profile
             ).client("bedrock-runtime")
         except Exception as e:
-            raise RuntimeError(f"Error initializing BedrockSafetyAdapter: {e}") from e
+            raise RuntimeError("Error initializing BedrockSafetyAdapter") from e
 
     async def shutdown(self) -> None:
         pass
 
+    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+        for key in routing_keys:
+            if key not in SUPPORTED_SHIELD_TYPES:
+                raise ValueError(f"Unknown safety shield type: {key}")
+
+        self.routing_keys = routing_keys
+
+    def get_routing_keys(self) -> List[str]:
+        return self.routing_keys
+
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse:
+        if shield_type not in SUPPORTED_SHIELD_TYPES:
+            raise ValueError(f"Unknown safety shield type: {shield_type}")
+
         """This is the implementation for the bedrock guardrails. The input to the guardrails is to be of this format
         ```content = [
             {

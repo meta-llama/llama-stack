@@ -14,6 +14,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutableProvider
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.providers.utils.memory.vector_store import (
@@ -62,7 +63,7 @@ class FaissIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class FaissMemoryImpl(Memory):
+class FaissMemoryImpl(Memory, RoutableProvider):
     def __init__(self, config: FaissImplConfig) -> None:
         self.config = config
         self.cache = {}
@@ -70,6 +71,13 @@ class FaissMemoryImpl(Memory):
     async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
+
+    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+        print(f"[faiss] Registering memory bank routing keys: {routing_keys}")
+        self.routing_keys = routing_keys
+
+    def get_routing_keys(self) -> List[str]:
+        return self.routing_keys
 
     async def create_memory_bank(
         self,

@@ -3,7 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from llama_models.sku_list import resolve_model
 from together import Together
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
@@ -13,43 +12,43 @@ from llama_stack.apis.safety import (
     SafetyViolation,
     ViolationLevel,
 )
+from llama_stack.distribution.datatypes import RoutableProvider
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 
 from .config import TogetherSafetyConfig
 
+
 SAFETY_SHIELD_TYPES = {
+    "llama_guard": "meta-llama/Meta-Llama-Guard-3-8B",
     "Llama-Guard-3-8B": "meta-llama/Meta-Llama-Guard-3-8B",
     "Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
 }
 
 
-def shield_type_to_model_name(shield_type: str) -> str:
-    if shield_type == "llama_guard":
-        shield_type = "Llama-Guard-3-8B"
-
-    model = resolve_model(shield_type)
-    if (
-        model is None
-        or not model.descriptor(shorten_default_variant=True) in SAFETY_SHIELD_TYPES
-        or model.model_family is not ModelFamily.safety
-    ):
-        raise ValueError(
-            f"{shield_type} is not supported, please use of {','.join(SAFETY_SHIELD_TYPES.keys())}"
-        )
-
-    return SAFETY_SHIELD_TYPES.get(model.descriptor(shorten_default_variant=True))
-
-
-class TogetherSafetyImpl(Safety, NeedsRequestProviderData):
+class TogetherSafetyImpl(Safety, NeedsRequestProviderData, RoutableProvider):
     def __init__(self, config: TogetherSafetyConfig) -> None:
         self.config = config
 
     async def initialize(self) -> None:
         pass
 
+    async def shutdown(self) -> None:
+        pass
+
+    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+        for key in routing_keys:
+            if key not in SAFETY_SHIELD_TYPES:
+                raise ValueError(f"Unknown safety shield type: {key}")
+        self.routing_keys = routing_keys
+
+    def get_routing_keys(self) -> List[str]:
+        return self.routing_keys
+
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse:
+        if shield_type not in SAFETY_SHIELD_TYPES:
+            raise ValueError(f"Unknown safety shield type: {shield_type}")
 
         together_api_key = None
         provider_data = self.get_request_provider_data()
@@ -59,7 +58,7 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData):
             )
         together_api_key = provider_data.together_api_key
 
-        model_name = shield_type_to_model_name(shield_type)
+        model_name = SAFETY_SHIELD_TYPES[shield_type]
 
         # messages can have role assistant or user
         api_messages = []
