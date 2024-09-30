@@ -96,12 +96,15 @@ class TogetherInferenceAdapter(
     ) -> AsyncGenerator:
 
         together_api_key = None
-        provider_data = self.get_request_provider_data()
-        if provider_data is None or not provider_data.together_api_key:
-            raise ValueError(
-                'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
-            )
-        together_api_key = provider_data.together_api_key
+        if self.config.api_key is not None:
+            together_api_key = self.config.api_key
+        else:
+            provider_data = self.get_request_provider_data()
+            if provider_data is None or not provider_data.together_api_key:
+                raise ValueError(
+                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+                )
+            together_api_key = provider_data.together_api_key
 
         client = Together(api_key=together_api_key)
         # wrapper request to make it easier to pass around (internal only, not exposed to API)

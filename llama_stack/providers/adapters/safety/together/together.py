@@ -51,12 +51,15 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData, RoutableProvider):
             raise ValueError(f"Unknown safety shield type: {shield_type}")
 
         together_api_key = None
-        provider_data = self.get_request_provider_data()
-        if provider_data is None or not provider_data.together_api_key:
-            raise ValueError(
-                'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
-            )
-        together_api_key = provider_data.together_api_key
+        if self.config.api_key is not None:
+            together_api_key = self.config.api_key
+        else:
+            provider_data = self.get_request_provider_data()
+            if provider_data is None or not provider_data.together_api_key:
+                raise ValueError(
+                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+                )
+            together_api_key = provider_data.together_api_key
 
         model_name = SAFETY_SHIELD_TYPES[shield_type]
 

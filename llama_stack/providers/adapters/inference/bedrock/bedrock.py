@@ -20,9 +20,9 @@ from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfi
 
 # mapping of Model SKUs to ollama models
 BEDROCK_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "meta.llama3-1-8b-instruct-v1:0",
-    "Meta-Llama3.1-70B-Instruct": "meta.llama3-1-70b-instruct-v1:0",
-    "Meta-Llama3.1-405B-Instruct": "meta.llama3-1-405b-instruct-v1:0",
+    "Llama3.1-8B-Instruct": "meta.llama3-1-8b-instruct-v1:0",
+    "Llama3.1-70B-Instruct": "meta.llama3-1-70b-instruct-v1:0",
+    "Llama3.1-405B-Instruct": "meta.llama3-1-405b-instruct-v1:0",
 }
 
 

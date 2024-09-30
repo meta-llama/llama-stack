@@ -23,7 +23,7 @@ class NeedsRequestProviderData:
         if not validator_class:
             raise ValueError(f"Provider {provider_id} does not have a validator")
 
-        val = _THREAD_LOCAL.provider_data_header_value
+        val = getattr(_THREAD_LOCAL, "provider_data_header_value", None)
         if not val:
             return None
 

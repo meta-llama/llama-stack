@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict
+from typing import Dict, List
 
 from llama_models.sku_list import resolve_model
 
