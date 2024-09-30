@@ -37,4 +37,6 @@ $DOCKER_BINARY run $DOCKER_OPTS -it \
   $docker_image \
   "stack" \
   "configure" \
-  "./llamastack-build.yaml"
+  "./llamastack-build.yaml" \
+  "--output-dir" \
+  "$container_build_dir"

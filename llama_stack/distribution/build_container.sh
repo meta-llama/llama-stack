@@ -128,4 +128,4 @@ set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
 
-echo "Success! You can run it with: $DOCKER_BINARY run -p 8000:8000 $image_name"
+echo "Success! You can run it with: $DOCKER_BINARY $DOCKER_OPTS run -p 5000:5000 $image_name"

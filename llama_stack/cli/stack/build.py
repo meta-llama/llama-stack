@@ -118,6 +118,11 @@ class StackBuild(Subcommand):
                 f"You can now run `llama stack configure {build_config.name}`",
                 color="green",
             )
+        else:
+            cprint(
+                f"You can now run `docker run -it -p 5000:5000 llamastack-{build_config.name}` or `llama stack configure llamastack-{build_config.name}`",
+                color="green",
+            )
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
