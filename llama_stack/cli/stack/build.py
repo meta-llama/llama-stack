@@ -29,26 +29,6 @@ def available_templates_specs() -> List[BuildConfig]:
 
     return template_specs
 
-def get_build_config_from_name(name: str) -> Optional[Path]:
-    if os.getenv("CONDA_PREFIX", ""):
-        conda_dir = (
-            Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
-        )
-    else:
-        cprint(
-            "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
-            color="green",
-        )
-        conda_dir = (
-            Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
-        )
-
-    build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
-    if build_config_file.exists():
-        return build_config_file
-
-    return None
-
 
 class StackBuild(Subcommand):
     def __init__(self, subparsers: argparse._SubParsersAction):
@@ -97,6 +77,25 @@ class StackBuild(Subcommand):
             help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
             choices=["conda", "docker"],
         )
+
+    def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
+        if os.getenv("CONDA_PREFIX", ""):
+            conda_dir = (
+                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.name}"
+            )
+        else:
+            cprint(
+                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
+                color="green",
+            )
+            conda_dir = (
+                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.name}"
+            )
+        build_config_file = Path(conda_dir) / f"{args.name}-build.yaml"
+        if build_config_file.exists():
+            return build_config_file
+
+        return None
 
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
@@ -211,9 +210,9 @@ class StackBuild(Subcommand):
 
         # try to see if we can find a pre-existing build config file through name
         if args.name:
-            maybe_build_config = get_build_config_from_name(args.name)
+            maybe_build_config = self._get_build_config_from_name(args)
             if maybe_build_config:
-                print(f"Building from existing build config for {args.name} in {str(maybe_build_config)}")
+                cprint(f"Building from existing build config for {args.name} in {str(maybe_build_config)}...", "green")
                 with open(maybe_build_config, "r") as f:
                     build_config = BuildConfig(**yaml.safe_load(f))
                     self._run_stack_build_command_from_build_config(build_config)
