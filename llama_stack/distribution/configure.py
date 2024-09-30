@@ -117,18 +117,18 @@ def configure_api_providers(
             if api_str == "safety":
                 # TODO: add support for other safety providers, and simplify safety provider config
                 if p == "meta-reference":
-                    for shield_type in MetaReferenceShieldType:
-                        routing_entries.append(
-                            RoutableProviderConfig(
-                                routing_key=shield_type.value,
-                                provider_id=p,
-                                config=cfg.dict(),
-                            )
+                    routing_entries.append(
+                        RoutableProviderConfig(
+                            routing_key=[s.value for s in MetaReferenceShieldType],
+                            provider_id=p,
+                            config=cfg.dict(),
                         )
+                    )
                 else:
                     cprint(
-                        f"[WARN] Interactive configuration of safety provider {p} is not supported, please manually configure safety shields types in routing_table of run.yaml",
+                        f"[WARN] Interactive configuration of safety provider {p} is not supported. Please look for `{routing_key}` in run.yaml and replace it appropriately.",
                         "yellow",
+                        attrs=["bold"],
                     )
                     routing_entries.append(
                         RoutableProviderConfig(
