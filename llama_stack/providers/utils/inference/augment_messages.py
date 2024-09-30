@@ -34,7 +34,7 @@ def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:
         return request.messages
 
     if model.model_family == ModelFamily.llama3_1 or (
-        model.model_family == ModelFamily.llama3_2 and is_multimodal(model)
+        model.model_family == ModelFamily.llama3_2 and is_multimodal(model.core_model_id)
     ):
         # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         return augment_messages_for_tools_llama_3_1(request)
