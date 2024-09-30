@@ -113,16 +113,12 @@ class StackBuild(Subcommand):
         if return_code != 0:
             return
 
-        if build_config.image_type == ImageType.conda.value:
-            cprint(
-                f"You can now run `llama stack configure {build_config.name}`",
-                color="green",
-            )
-        else:
-            cprint(
-                f"You can now run `docker run -it -p 5000:5000 llamastack-{build_config.name}` or `llama stack configure llamastack-{build_config.name}`",
-                color="green",
-            )
+        build_name = f"llamastack-{build_config.name}" if build_config.image_type == ImageType.docker.value else build_config.name
+
+        cprint(
+            f"You can now run `llama stack configure {build_name}`",
+            color="green",
+        )
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
