@@ -167,8 +167,7 @@ class StackConfigure(Subcommand):
             color="blue",
         )
 
-        if build_config.image_type == "conda":
-            cprint(
-                f"You can now run `llama stack run {image_name} --port PORT`",
-                color="green",
-            )
+        cprint(
+            f"You can now run `llama stack run {image_name} --port PORT`",
+            color="green",
+        )
