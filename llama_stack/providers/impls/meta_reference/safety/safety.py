@@ -51,15 +51,11 @@ class MetaReferenceSafetyImpl(Safety, RoutableProvider):
     async def shutdown(self) -> None:
         pass
 
-    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
         available_shields = [v.value for v in MetaReferenceShieldType]
         for key in routing_keys:
             if key not in available_shields:
                 raise ValueError(f"Unknown safety shield type: {key}")
-        self.routing_keys = routing_keys
-
-    def get_routing_keys(self) -> List[str]:
-        return self.routing_keys
 
     async def run_shield(
         self,

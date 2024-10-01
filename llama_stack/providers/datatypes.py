@@ -53,9 +53,13 @@ class RoutingTable(Protocol):
 
 
 class RoutableProvider(Protocol):
-    async def register_routing_keys(self, keys: List[str]) -> None: ...
+    """
+    A provider which sits behind the RoutingTable and can get routed to.
 
-    def get_routing_keys(self) -> List[str]: ...
+    All Inference / Safety / Memory providers fall into this bucket.
+    """
+
+    async def validate_routing_keys(self, keys: List[str]) -> None: ...
 
 
 class GenericProviderConfig(BaseModel):

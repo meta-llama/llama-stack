@@ -38,14 +38,11 @@ class MetaReferenceInferenceImpl(Inference, RoutableProvider):
         self.generator = LlamaModelParallelGenerator(self.config)
         self.generator.start()
 
-    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
         assert (
             len(routing_keys) == 1
         ), f"Only one routing key is supported {routing_keys}"
         assert routing_keys[0] == self.config.model
-
-    def get_routing_keys(self) -> List[str]:
-        return [self.config.model]
 
     async def shutdown(self) -> None:
         self.generator.stop()

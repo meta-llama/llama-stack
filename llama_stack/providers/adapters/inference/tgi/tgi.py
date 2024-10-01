@@ -34,13 +34,10 @@ class _HfAdapter(Inference, RoutableProvider):
         self.tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(self.tokenizer)
 
-    async def register_routing_keys(self, routing_keys: list[str]) -> None:
+    async def validate_routing_keys(self, routing_keys: list[str]) -> None:
         # these are the model names the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
-        self.routing_keys = routing_keys
-
-    def get_routing_keys(self) -> list[str]:
-        return self.routing_keys
+        pass
 
     async def shutdown(self) -> None:
         pass

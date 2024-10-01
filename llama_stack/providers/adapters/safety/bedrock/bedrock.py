@@ -45,15 +45,10 @@ class BedrockSafetyAdapter(Safety, RoutableProvider):
     async def shutdown(self) -> None:
         pass
 
-    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
         for key in routing_keys:
             if key not in SUPPORTED_SHIELD_TYPES:
                 raise ValueError(f"Unknown safety shield type: {key}")
-
-        self.routing_keys = routing_keys
-
-    def get_routing_keys(self) -> List[str]:
-        return self.routing_keys
 
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None

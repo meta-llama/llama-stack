@@ -16,16 +16,12 @@ class RoutableProviderForModels(RoutableProvider):
     def __init__(self, stack_to_provider_models_map: Dict[str, str]):
         self.stack_to_provider_models_map = stack_to_provider_models_map
 
-    async def register_routing_keys(self, routing_keys: List[str]):
+    async def validate_routing_keys(self, routing_keys: List[str]):
         for routing_key in routing_keys:
             if routing_key not in self.stack_to_provider_models_map:
                 raise ValueError(
                     f"Routing key {routing_key} not found in map {self.stack_to_provider_models_map}"
                 )
-        self.routing_keys = routing_keys
-
-    def get_routing_keys(self) -> List[str]:
-        return self.routing_keys
 
     def map_to_provider_model(self, routing_key: str) -> str:
         model = resolve_model(routing_key)

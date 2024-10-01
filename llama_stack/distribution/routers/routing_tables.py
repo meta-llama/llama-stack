@@ -44,7 +44,7 @@ class CommonRoutingTableImpl(RoutingTable):
             if isinstance(spec, RemoteProviderSpec) and spec.adapter is None:
                 continue
 
-            await p.register_routing_keys(keys)
+            await p.validate_routing_keys(keys)
 
     async def shutdown(self) -> None:
         for _, p in self.unique_providers:

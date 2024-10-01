@@ -93,12 +93,9 @@ class ChromaMemoryAdapter(Memory, RoutableProvider):
     async def shutdown(self) -> None:
         pass
 
-    async def register_routing_keys(self, routing_keys: List[str]) -> None:
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
         print(f"[chroma] Registering memory bank routing keys: {routing_keys}")
-        self.routing_keys = routing_keys
-
-    def get_routing_keys(self) -> List[str]:
-        return self.routing_keys
+        pass
 
     async def create_memory_bank(
         self,
