@@ -22,6 +22,7 @@ from llama_stack.providers.utils.inference.augment_messages import (
 
 from .config import FireworksImplConfig
 
+
 FIREWORKS_SUPPORTED_MODELS = {
     "Llama3.1-8B-Instruct": "fireworks/llama-v3p1-8b-instruct",
     "Llama3.1-70B-Instruct": "fireworks/llama-v3p1-70b-instruct",

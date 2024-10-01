@@ -18,7 +18,7 @@ from llama_stack.providers.utils.inference.routable import RoutableProviderForMo
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfig
 
-# mapping of Model SKUs to ollama models
+
 BEDROCK_SUPPORTED_MODELS = {
     "Llama3.1-8B-Instruct": "meta.llama3-1-8b-instruct-v1:0",
     "Llama3.1-70B-Instruct": "meta.llama3-1-70b-instruct-v1:0",

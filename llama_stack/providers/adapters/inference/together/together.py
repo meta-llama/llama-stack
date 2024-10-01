@@ -22,6 +22,7 @@ from llama_stack.providers.utils.inference.routable import RoutableProviderForMo
 
 from .config import TogetherImplConfig
 
+
 TOGETHER_SUPPORTED_MODELS = {
     "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
     "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
@@ -167,17 +168,10 @@ class TogetherInferenceAdapter(
                 stream=True,
                 **options,
             ):
-                if chunk.choices[0].finish_reason:
-                    if (
-                        stop_reason is None and chunk.choices[0].finish_reason == "stop"
-                    ) or (
-                        stop_reason is None and chunk.choices[0].finish_reason == "eos"
-                    ):
+                if finish_reason := chunk.choices[0].finish_reason:
+                    if stop_reason is None and finish_reason in ["stop", "eos"]:
                         stop_reason = StopReason.end_of_turn
-                    elif (
-                        stop_reason is None
-                        and chunk.choices[0].finish_reason == "length"
-                    ):
+                    elif stop_reason is None and finish_reason == "length":
                         stop_reason = StopReason.out_of_tokens
                     break
 
