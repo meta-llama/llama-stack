@@ -106,7 +106,7 @@ def available_providers() -> List[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.inference,
-            provider_id="vllm",
+            provider_type="vllm",
             pip_packages=[
                 "vllm",
             ],
