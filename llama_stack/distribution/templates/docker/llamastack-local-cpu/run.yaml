@@ -42,22 +42,7 @@ routing_table:
     config:
       llama_guard_shield: null
       prompt_guard_shield: null
-    routing_key: llama_guard
-  - provider_id: meta-reference
-    config:
-      llama_guard_shield: null
-      prompt_guard_shield: null
-    routing_key: code_scanner_guard
-  - provider_id: meta-reference
-    config:
-      llama_guard_shield: null
-      prompt_guard_shield: null
-    routing_key: injection_shield
-  - provider_id: meta-reference
-    config:
-      llama_guard_shield: null
-      prompt_guard_shield: null
-    routing_key: jailbreak_shield
+    routing_key: ["llama_guard", "code_scanner_guard", "injection_shield", "jailbreak_shield"]
   memory:
   - provider_id: meta-reference
     config: {}
