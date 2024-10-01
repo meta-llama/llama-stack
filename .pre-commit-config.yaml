@@ -51,3 +51,9 @@ repos:
 #   hooks:
 #     - id: pydoclint
 #       args: [--config=pyproject.toml]
+
+- repo: https://github.com/tcort/markdown-link-check
+  rev: v3.11.2
+  hooks:
+    - id: markdown-link-check
+      args: ['--quiet']
