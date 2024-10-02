@@ -39,7 +39,14 @@ class ModelDescribe(Subcommand):
         )
 
     def _run_model_describe_cmd(self, args: argparse.Namespace) -> None:
-        model = resolve_model(args.model_id)
+        from .safety_models import prompt_guard_model_sku
+
+        prompt_guard = prompt_guard_model_sku()
+        if args.model_id == prompt_guard.model_id:
+            model = prompt_guard
+        else:
+            model = resolve_model(args.model_id)
+
         if model is None:
             self.parser.error(
                 f"Model {args.model_id} not found; try 'llama model list' for a list of available models."
