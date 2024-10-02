@@ -40,8 +40,10 @@ shift
 
 set -x
 
-# Disable SELinux labels
-DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+if command -v selinuxenabled &> /dev/null && selinuxenabled; then
+  # Disable SELinux labels
+  DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+fi
 
 mounts=""
 if [ -n "$LLAMA_STACK_DIR" ]; then

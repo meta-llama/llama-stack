@@ -125,8 +125,10 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
 fi
 
-# Disable SELinux labels -- we don't want to relabel the llama-stack source dir
-DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+if command -v selinuxenabled &> /dev/null && selinuxenabled; then
+  # Disable SELinux labels -- we don't want to relabel the llama-stack source dir
+  DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+fi
 
 set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
