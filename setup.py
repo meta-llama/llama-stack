@@ -16,7 +16,7 @@ def read_requirements():
 
 setup(
     name="llama_stack",
-    version="0.0.36",
+    version="0.0.37",
     author="Meta Llama",
     author_email="llama-oss@meta.com",
     description="Llama Stack",
