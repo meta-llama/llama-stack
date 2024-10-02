@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Set
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.distribution import (
-    api_providers,
     builtin_automatically_routed_apis,
+    get_provider_registry,
 )
 from llama_stack.distribution.utils.dynamic import instantiate_provider
 
@@ -20,7 +20,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
-    all_providers = api_providers()
+    all_providers = get_provider_registry()
     specs = {}
     configs = {}
 
@@ -34,11 +34,11 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         if isinstance(config, PlaceholderProviderConfig):
             continue
 
-        if config.provider_id not in providers:
+        if config.provider_type not in providers:
             raise ValueError(
-                f"Unknown provider `{config.provider_id}` is not available for API `{api}`"
+                f"Provider `{config.provider_type}` is not available for API `{api}`"
             )
-        specs[api] = providers[config.provider_id]
+        specs[api] = providers[config.provider_type]
         configs[api] = config
 
     apis_to_serve = run_config.apis_to_serve or set(
@@ -68,12 +68,12 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         inner_specs = []
         inner_deps = []
         for rt_entry in routing_table:
-            if rt_entry.provider_id not in providers:
+            if rt_entry.provider_type not in providers:
                 raise ValueError(
-                    f"Unknown provider `{rt_entry.provider_id}` is not available for API `{api}`"
+                    f"Provider `{rt_entry.provider_type}` is not available for API `{api}`"
                 )
-            inner_specs.append(providers[rt_entry.provider_id])
-            inner_deps.extend(providers[rt_entry.provider_id].api_dependencies)
+            inner_specs.append(providers[rt_entry.provider_type])
+            inner_deps.extend(providers[rt_entry.provider_type].api_dependencies)
 
         specs[source_api] = RoutingTableProviderSpec(
             api=source_api,
@@ -94,7 +94,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     sorted_specs = topological_sort(specs.values())
     print(f"Resolved {len(sorted_specs)} providers in topological order")
     for spec in sorted_specs:
-        print(f"  {spec.api}: {spec.provider_id}")
+        print(f"  {spec.api}: {spec.provider_type}")
     print("")
     impls = {}
     for spec in sorted_specs:

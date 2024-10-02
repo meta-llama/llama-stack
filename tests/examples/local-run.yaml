@@ -18,7 +18,7 @@ api_providers:
     providers:
     - meta-reference
   agents:
-    provider_id: meta-reference
+    provider_type: meta-reference
     config:
       persistence_store:
         namespace: null
@@ -28,11 +28,11 @@ api_providers:
     providers:
     - meta-reference
   telemetry:
-    provider_id: meta-reference
+    provider_type: meta-reference
     config: {}
 routing_table:
   inference:
-  - provider_id: meta-reference
+  - provider_type: meta-reference
     config:
       model: Meta-Llama3.1-8B-Instruct
       quantization: null
@@ -41,10 +41,10 @@ routing_table:
       max_batch_size: 1
     routing_key: Meta-Llama3.1-8B-Instruct
   safety:
-  - provider_id: meta-reference
+  - provider_type: meta-reference
     config:
       llama_guard_shield:
-        model: Llama-Guard-3-8B
+        model: Llama-Guard-3-1B
         excluded_categories: []
         disable_input_check: false
         disable_output_check: false
@@ -52,6 +52,6 @@ routing_table:
         model: Prompt-Guard-86M
     routing_key: ["llama_guard", "code_scanner_guard", "injection_shield", "jailbreak_shield"]
   memory:
-  - provider_id: meta-reference
+  - provider_type: meta-reference
     config: {}
     routing_key: vector

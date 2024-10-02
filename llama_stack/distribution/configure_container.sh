@@ -28,8 +28,10 @@ docker_image="$1"
 host_build_dir="$2"
 container_build_dir="/app/builds"
 
-# Disable SELinux labels
-DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+if command -v selinuxenabled &> /dev/null && selinuxenabled; then
+  # Disable SELinux labels
+  DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
+fi
 
 mounts=""
 if [ -n "$LLAMA_STACK_DIR" ]; then

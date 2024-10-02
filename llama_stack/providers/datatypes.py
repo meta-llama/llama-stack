@@ -26,16 +26,9 @@ class Api(Enum):
 
 
 @json_schema_type
-class ApiEndpoint(BaseModel):
-    route: str
-    method: str
-    name: str
-
-
-@json_schema_type
 class ProviderSpec(BaseModel):
     api: Api
-    provider_id: str
+    provider_type: str
     config_class: str = Field(
         ...,
         description="Fully-qualified classname of the config for this provider",
@@ -63,7 +56,7 @@ class RoutableProvider(Protocol):
 
 
 class GenericProviderConfig(BaseModel):
-    provider_id: str
+    provider_type: str
     config: Dict[str, Any]
 
 
@@ -83,7 +76,7 @@ class RoutableProviderConfig(GenericProviderConfig):
 # Example: /inference, /safety
 @json_schema_type
 class AutoRoutedProviderSpec(ProviderSpec):
-    provider_id: str = "router"
+    provider_type: str = "router"
     config_class: str = ""
 
     docker_image: Optional[str] = None
@@ -108,7 +101,7 @@ class AutoRoutedProviderSpec(ProviderSpec):
 # Example: /models, /shields
 @json_schema_type
 class RoutingTableProviderSpec(ProviderSpec):
-    provider_id: str = "routing_table"
+    provider_type: str = "routing_table"
     config_class: str = ""
     docker_image: Optional[str] = None
 
@@ -126,7 +119,7 @@ class RoutingTableProviderSpec(ProviderSpec):
 
 @json_schema_type
 class AdapterSpec(BaseModel):
-    adapter_id: str = Field(
+    adapter_type: str = Field(
         ...,
         description="Unique identifier for this adapter",
     )
@@ -186,8 +179,8 @@ class RemoteProviderConfig(BaseModel):
         return f"http://{self.host}:{self.port}"
 
 
-def remote_provider_id(adapter_id: str) -> str:
-    return f"remote::{adapter_id}"
+def remote_provider_type(adapter_type: str) -> str:
+    return f"remote::{adapter_type}"
 
 
 @json_schema_type
@@ -233,8 +226,8 @@ def remote_provider_spec(
         if adapter and adapter.config_class
         else "llama_stack.distribution.datatypes.RemoteProviderConfig"
     )
-    provider_id = remote_provider_id(adapter.adapter_id) if adapter else "remote"
+    provider_type = remote_provider_type(adapter.adapter_type) if adapter else "remote"
 
     return RemoteProviderSpec(
-        api=api, provider_id=provider_id, config_class=config_class, adapter=adapter
+        api=api, provider_type=provider_type, config_class=config_class, adapter=adapter
     )

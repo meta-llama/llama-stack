@@ -1117,10 +1117,10 @@ components:
                 - type: array
                 - type: object
               type: object
-            provider_id:
+            provider_type:
               type: string
           required:
-          - provider_id
+          - provider_type
           - config
           type: object
       required:
@@ -1362,10 +1362,10 @@ components:
                 - type: array
                 - type: object
               type: object
-            provider_id:
+            provider_type:
               type: string
           required:
-          - provider_id
+          - provider_type
           - config
           type: object
       required:
@@ -1916,10 +1916,10 @@ components:
                 - type: array
                 - type: object
               type: object
-            provider_id:
+            provider_type:
               type: string
           required:
-          - provider_id
+          - provider_type
           - config
           type: object
         shield_type:

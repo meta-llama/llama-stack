@@ -17,7 +17,17 @@ from llama_stack.distribution.utils.exec import run_with_pty
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
-from llama_stack.distribution.distribution import api_providers, SERVER_DEPENDENCIES
+from llama_stack.distribution.distribution import get_provider_registry
+
+
+# These are the dependencies needed by the distribution server.
+# `llama-stack` is automatically installed by the installation script.
+SERVER_DEPENDENCIES = [
+    "fastapi",
+    "fire",
+    "httpx",
+    "uvicorn",
+]
 
 
 class ImageType(Enum):
@@ -42,7 +52,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
     )
 
     # extend package dependencies based on providers spec
-    all_providers = api_providers()
+    all_providers = get_provider_registry()
     for (
         api_str,
         provider_or_providers,

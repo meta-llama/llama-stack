@@ -34,9 +34,9 @@ class StackListProviders(Subcommand):
 
     def _run_providers_list_cmd(self, args: argparse.Namespace) -> None:
         from llama_stack.cli.table import print_table
-        from llama_stack.distribution.distribution import Api, api_providers
+        from llama_stack.distribution.distribution import Api, get_provider_registry
 
-        all_providers = api_providers()
+        all_providers = get_provider_registry()
         providers_for_api = all_providers[Api(args.api)]
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
@@ -47,11 +47,11 @@ class StackListProviders(Subcommand):
 
         rows = []
         for spec in providers_for_api.values():
-            if spec.provider_id == "sample":
+            if spec.provider_type == "sample":
                 continue
             rows.append(
                 [
-                    spec.provider_id,
+                    spec.provider_type,
                     ",".join(spec.pip_packages),
                 ]
             )
