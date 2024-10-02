@@ -51,7 +51,7 @@ def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
         module = importlib.import_module(f"llama_stack.providers.registry.{name}")
         ret[api] = {
             "remote": remote_provider_spec(api),
-            **{a.provider_id: a for a in module.available_providers()},
+            **{a.provider_type: a for a in module.available_providers()},
         }
 
     return ret

@@ -16,7 +16,7 @@ from llama_stack.distribution.datatypes import GenericProviderConfig
 class ShieldSpec(BaseModel):
     shield_type: str
     provider_config: GenericProviderConfig = Field(
-        description="Provider config for the model, including provider_id, and corresponding config. ",
+        description="Provider config for the model, including provider_type, and corresponding config. ",
     )
 
 

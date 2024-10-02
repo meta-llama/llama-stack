@@ -109,7 +109,7 @@ def configure_api_providers(
                 routing_entries.append(
                     RoutableProviderConfig(
                         routing_key=routing_key,
-                        provider_id=p,
+                        provider_type=p,
                         config=cfg.dict(),
                     )
                 )
@@ -120,7 +120,7 @@ def configure_api_providers(
                     routing_entries.append(
                         RoutableProviderConfig(
                             routing_key=[s.value for s in MetaReferenceShieldType],
-                            provider_id=p,
+                            provider_type=p,
                             config=cfg.dict(),
                         )
                     )
@@ -133,7 +133,7 @@ def configure_api_providers(
                     routing_entries.append(
                         RoutableProviderConfig(
                             routing_key=routing_key,
-                            provider_id=p,
+                            provider_type=p,
                             config=cfg.dict(),
                         )
                     )
@@ -153,7 +153,7 @@ def configure_api_providers(
                 routing_entries.append(
                     RoutableProviderConfig(
                         routing_key=routing_key,
-                        provider_id=p,
+                        provider_type=p,
                         config=cfg.dict(),
                     )
                 )
@@ -164,7 +164,7 @@ def configure_api_providers(
             )
         else:
             config.api_providers[api_str] = GenericProviderConfig(
-                provider_id=p,
+                provider_type=p,
                 config=cfg.dict(),
             )
 

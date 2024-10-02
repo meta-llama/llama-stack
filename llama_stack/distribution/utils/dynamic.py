@@ -46,11 +46,11 @@ async def instantiate_provider(
         assert isinstance(provider_config, List)
         routing_table = provider_config
 
-        inner_specs = {x.provider_id: x for x in provider_spec.inner_specs}
+        inner_specs = {x.provider_type: x for x in provider_spec.inner_specs}
         inner_impls = []
         for routing_entry in routing_table:
             impl = await instantiate_provider(
-                inner_specs[routing_entry.provider_id],
+                inner_specs[routing_entry.provider_type],
                 deps,
                 routing_entry,
             )

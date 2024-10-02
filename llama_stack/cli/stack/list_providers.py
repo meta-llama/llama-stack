@@ -47,11 +47,11 @@ class StackListProviders(Subcommand):
 
         rows = []
         for spec in providers_for_api.values():
-            if spec.provider_id == "sample":
+            if spec.provider_type == "sample":
                 continue
             rows.append(
                 [
-                    spec.provider_id,
+                    spec.provider_type,
                     ",".join(spec.pip_packages),
                 ]
             )

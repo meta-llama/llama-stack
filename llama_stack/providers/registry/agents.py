@@ -14,7 +14,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.agents,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
                 "matplotlib",
                 "pillow",
@@ -33,7 +33,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.agents,
             adapter=AdapterSpec(
-                adapter_id="sample",
+                adapter_type="sample",
                 pip_packages=[],
                 module="llama_stack.providers.adapters.agents.sample",
                 config_class="llama_stack.providers.adapters.agents.sample.SampleConfig",
