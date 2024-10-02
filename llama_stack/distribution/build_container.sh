@@ -18,7 +18,8 @@ build_name="$1"
 image_name="llamastack-$build_name"
 docker_base=$2
 build_file_path=$3
-pip_dependencies=$4
+host_build_dir=$4
+pip_dependencies=$5
 
 # Define color codes
 RED='\033[0;31m'
@@ -133,5 +134,7 @@ fi
 set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 set +x
+
+mv $REPO_CONFIGS_DIR/$build_name-run.yaml $host_build_dir
 
 echo "Success! You can run it with: $DOCKER_BINARY $DOCKER_OPTS run -p 5000:5000 $image_name"
