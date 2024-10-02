@@ -17,6 +17,53 @@ LLAMA_STACK_BUILD_CONFIG_VERSION = "v1"
 LLAMA_STACK_RUN_CONFIG_VERSION = "v1"
 
 
+RoutingKey = Union[str, List[str]]
+
+
+class GenericProviderConfig(BaseModel):
+    provider_type: str
+    config: Dict[str, Any]
+
+
+class RoutableProviderConfig(GenericProviderConfig):
+    routing_key: RoutingKey
+
+
+class PlaceholderProviderConfig(BaseModel):
+    """Placeholder provider config for API whose provider are defined in routing_table"""
+
+    providers: List[str]
+
+
+# Example: /inference, /safety
+class AutoRoutedProviderSpec(ProviderSpec):
+    provider_type: str = "router"
+    config_class: str = ""
+
+    docker_image: Optional[str] = None
+    routing_table_api: Api
+    module: str
+    provider_data_validator: Optional[str] = Field(
+        default=None,
+    )
+
+    @property
+    def pip_packages(self) -> List[str]:
+        raise AssertionError("Should not be called on AutoRoutedProviderSpec")
+
+
+# Example: /models, /shields
+@json_schema_type
+class RoutingTableProviderSpec(ProviderSpec):
+    provider_type: str = "routing_table"
+    config_class: str = ""
+    docker_image: Optional[str] = None
+
+    inner_specs: List[ProviderSpec]
+    module: str
+    pip_packages: List[str] = Field(default_factory=list)
+
+
 @json_schema_type
 class DistributionSpec(BaseModel):
     description: Optional[str] = Field(

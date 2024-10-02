@@ -11,12 +11,14 @@ from pydantic import BaseModel
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.inference import Inference
+from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
+
 from llama_stack.providers.datatypes import Api
 
 
@@ -38,6 +40,7 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         Api.models: Models,
         Api.shields: Shields,
         Api.memory_banks: MemoryBanks,
+        Api.inspect: Inspect,
     }
 
     for api, protocol in protocols.items():

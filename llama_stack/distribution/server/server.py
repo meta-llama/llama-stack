@@ -15,7 +15,6 @@ from collections.abc import (
     AsyncIterator as AsyncIteratorABC,
 )
 from contextlib import asynccontextmanager
-from http import HTTPStatus
 from ssl import SSLError
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, get_type_hints, Optional
 
@@ -26,7 +25,6 @@ import yaml
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi.routing import APIRoute
 from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
@@ -287,15 +285,6 @@ def main(
 
     app = FastAPI()
 
-    # Health check is added to enable deploying the docker container image on Kubernetes which require
-    # a health check that can return 200 for readiness and liveness check
-    class HealthCheck(BaseModel):
-        status: str = "OK"
-
-    @app.get("/healthcheck", status_code=HTTPStatus.OK, response_model=HealthCheck)
-    async def healthcheck():
-        return HealthCheck(status="OK")
-
     impls, specs = asyncio.run(resolve_impls_with_routing(config))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
@@ -307,6 +296,7 @@ def main(
     else:
         apis_to_serve = set(impls.keys())
 
+    apis_to_serve.add(Api.inspect)
     for api_str in apis_to_serve:
         api = Api(api_str)
 
@@ -340,14 +330,11 @@ def main(
                     )
                 )
 
-    for route in app.routes:
-        if isinstance(route, APIRoute):
-            cprint(
-                f"Serving {next(iter(route.methods))} {route.path}",
-                "white",
-                attrs=["bold"],
-            )
+        cprint(f"Serving API {api_str}", "white", attrs=["bold"])
+        for endpoint in endpoints:
+            cprint(f" {endpoint.method.upper()} {endpoint.route}", "white")
 
+    print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
     signal.signal(signal.SIGINT, handle_sigint)

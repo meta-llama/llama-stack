@@ -46,6 +46,8 @@ def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
     for api in stack_apis():
         if api in routing_table_apis:
             continue
+        if api == Api.inspect:
+            continue
 
         name = api.name.lower()
         module = importlib.import_module(f"llama_stack.providers.registry.{name}")
