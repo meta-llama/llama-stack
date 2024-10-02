@@ -5,7 +5,7 @@ huggingface-hub
 llama-models>=0.0.36
 prompt-toolkit
 python-dotenv
-pydantic
+pydantic>=2
 requests
 rich
 termcolor
