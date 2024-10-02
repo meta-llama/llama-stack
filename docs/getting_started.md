@@ -329,7 +329,7 @@ Configuring API: memory (meta-reference-faiss)
 Configuring API: safety (meta-reference)
 Do you want to configure llama_guard_shield? (y/n): y
 Entering sub-configuration for llama_guard_shield:
-Enter value for model (default: Llama-Guard-3-8B) (required):
+Enter value for model (default: Llama-Guard-3-1B) (required):
 Enter value for excluded_categories (default: []) (required):
 Enter value for disable_input_check (default: False) (required):
 Enter value for disable_output_check (default: False) (required):
@@ -351,7 +351,7 @@ After this step is successful, you should be able to find a run configuration sp
 
 As you can see, we did basic configuration above and configured:
 - inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
-- Llama Guard safety shield with model `Llama-Guard-3-8B`
+- Llama Guard safety shield with model `Llama-Guard-3-1B`
 - Prompt Guard safety shield with model `Prompt-Guard-86M`
 
 For how these configurations are stored as yaml, checkout the file printed at the end of the configuration.

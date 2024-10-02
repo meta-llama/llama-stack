@@ -44,7 +44,7 @@ routing_table:
   - provider_id: meta-reference
     config:
       llama_guard_shield:
-        model: Llama-Guard-3-8B
+        model: Llama-Guard-3-1B
         excluded_categories: []
         disable_input_check: false
         disable_output_check: false

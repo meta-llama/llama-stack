@@ -109,7 +109,7 @@ llama download --source meta --model-id Llama3.2-11B-Vision-Instruct --meta-url 
 # llama-agents have safety enabled by default. For this, you will need
 # safety models -- Llama-Guard and Prompt-Guard
 llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
-llama download --source meta --model-id Llama-Guard-3-8B --meta-url META_URL
+llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 ```
 
 #### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
@@ -121,7 +121,7 @@ llama download --source huggingface --model-id  Meta-Llama3.1-8B-Instruct --hf-t
 
 llama download --source huggingface --model-id Meta-Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
 
-llama download --source huggingface --model-id Llama-Guard-3-8B --ignore-patterns *original*
+llama download --source huggingface --model-id Llama-Guard-3-1B --ignore-patterns *original*
 llama download --source huggingface --model-id Prompt-Guard-86M --ignore-patterns *original*
 ```
 
@@ -376,7 +376,7 @@ Configuring API: memory (meta-reference-faiss)
 Configuring API: safety (meta-reference)
 Do you want to configure llama_guard_shield? (y/n): y
 Entering sub-configuration for llama_guard_shield:
-Enter value for model (default: Llama-Guard-3-8B) (required):
+Enter value for model (default: Llama-Guard-3-1B) (required):
 Enter value for excluded_categories (default: []) (required):
 Enter value for disable_input_check (default: False) (required):
 Enter value for disable_output_check (default: False) (required):
@@ -398,7 +398,7 @@ After this step is successful, you should be able to find a run configuration sp
 
 As you can see, we did basic configuration above and configured:
 - inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
-- Llama Guard safety shield with model `Llama-Guard-3-8B`
+- Llama Guard safety shield with model `Llama-Guard-3-1B`
 - Prompt Guard safety shield with model `Prompt-Guard-86M`
 
 For how these configurations are stored as yaml, checkout the file printed at the end of the configuration.

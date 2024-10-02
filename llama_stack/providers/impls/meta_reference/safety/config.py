@@ -20,7 +20,7 @@ class MetaReferenceShieldType(Enum):
 
 
 class LlamaGuardShieldConfig(BaseModel):
-    model: str = "Llama-Guard-3-8B"
+    model: str = "Llama-Guard-3-1B"
     excluded_categories: List[str] = []
     disable_input_check: bool = False
     disable_output_check: bool = False
@@ -33,7 +33,11 @@ class LlamaGuardShieldConfig(BaseModel):
             for m in safety_models()
             if (
                 m.core_model_id
-                in {CoreModelId.llama_guard_3_8b, CoreModelId.llama_guard_3_11b_vision}
+                in {
+                    CoreModelId.llama_guard_3_8b,
+                    CoreModelId.llama_guard_3_1b,
+                    CoreModelId.llama_guard_3_11b_vision,
+                }
             )
         ]
         if model not in permitted_models:
