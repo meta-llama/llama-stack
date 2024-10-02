@@ -101,7 +101,7 @@ class InferenceClient(Inference):
                             print(f"Error with parsing or validation: {e}")
 
 
-async def run_main(host: str, port: int, stream: bool, model: str):
+async def run_main(host: str, port: int, stream: bool, model: Optional[str]):
     client = InferenceClient(f"http://{host}:{port}")
 
     if not model:
@@ -120,7 +120,9 @@ async def run_main(host: str, port: int, stream: bool, model: str):
         log.print()
 
 
-async def run_mm_main(host: str, port: int, stream: bool, path: str, model: str):
+async def run_mm_main(
+    host: str, port: int, stream: bool, path: Optional[str], model: Optional[str]
+):
     client = InferenceClient(f"http://{host}:{port}")
 
     if not model:
@@ -147,8 +149,8 @@ def main(
     port: int,
     stream: bool = True,
     mm: bool = False,
-    file: str = None,
-    model: str = None,
+    file: Optional[str] = None,
+    model: Optional[str] = None,
 ):
     if mm:
         asyncio.run(run_mm_main(host, port, stream, file, model))
