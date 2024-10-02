@@ -34,7 +34,8 @@ REPO_CONFIGS_DIR="$REPO_DIR/tmp/configs"
 
 TEMP_DIR=$(mktemp -d)
 
-llama stack configure $build_file_path --output-dir $REPO_CONFIGS_DIR
+llama stack configure $build_file_path
+cp $host_build_dir/$build_name-run.yaml $REPO_CONFIGS_DIR
 
 add_to_docker() {
   local input
@@ -133,8 +134,9 @@ fi
 
 set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
-set +x
 
-mv $REPO_CONFIGS_DIR/$build_name-run.yaml $host_build_dir
+# clean up tmp/configs
+rm -rf $REPO_CONFIGS_DIR
+set +x
 
 echo "Success! You can run it with: $DOCKER_BINARY $DOCKER_OPTS run -p 5000:5000 $image_name"
