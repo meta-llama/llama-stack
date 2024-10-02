@@ -86,7 +86,11 @@ ensure_conda_env_python310() {
       llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION \
       $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
-      $CONDA_PREFIX/bin/pip install --no-deps "$special_pip_deps"
+      IFS='#' read -ra parts <<<"$special_pip_deps"
+      for part in "${parts[@]}"; do
+        echo "$part"
+        $CONDA_PREFIX/bin/pip install $part
+      done
     fi
   else
     # Re-installing llama-stack in the new conda environment
@@ -117,7 +121,7 @@ ensure_conda_env_python310() {
     printf "Installing pip dependencies\n"
     $CONDA_PREFIX/bin/pip install $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
-      IFS='#' read -ra parts <<< "$special_pip_deps"
+      IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
         echo "$part"
         $CONDA_PREFIX/bin/pip install $part
