@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Set
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.distribution import (
-    api_providers,
     builtin_automatically_routed_apis,
+    get_provider_registry,
 )
 from llama_stack.distribution.utils.dynamic import instantiate_provider
 
@@ -20,7 +20,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
-    all_providers = api_providers()
+    all_providers = get_provider_registry()
     specs = {}
     configs = {}
 

@@ -26,13 +26,6 @@ class Api(Enum):
 
 
 @json_schema_type
-class ApiEndpoint(BaseModel):
-    route: str
-    method: str
-    name: str
-
-
-@json_schema_type
 class ProviderSpec(BaseModel):
     api: Api
     provider_id: str

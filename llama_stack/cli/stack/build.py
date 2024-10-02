@@ -175,7 +175,7 @@ class StackBuild(Subcommand):
         import yaml
         from llama_stack.distribution.distribution import (
             Api,
-            api_providers,
+            get_provider_registry,
             builtin_automatically_routed_apis,
         )
         from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -245,7 +245,7 @@ class StackBuild(Subcommand):
             )
 
             providers = dict()
-            all_providers = api_providers()
+            all_providers = get_provider_registry()
             routing_table_apis = set(
                 x.routing_table_api for x in builtin_automatically_routed_apis()
             )

@@ -39,9 +39,10 @@ from llama_stack.providers.utils.telemetry.tracing import (
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
-from llama_stack.distribution.distribution import api_endpoints
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls_with_routing
+
+from .endpoints import get_all_api_endpoints
 
 
 def is_async_iterator_type(typ):
@@ -299,7 +300,7 @@ def main(
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
-    all_endpoints = api_endpoints()
+    all_endpoints = get_all_api_endpoints()
 
     if config.apis_to_serve:
         apis_to_serve = set(config.apis_to_serve)
