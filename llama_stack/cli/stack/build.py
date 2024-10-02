@@ -114,10 +114,10 @@ class StackBuild(Subcommand):
         # save build.yaml spec for building same distribution again
         if build_config.image_type == ImageType.docker.value:
             # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
-            llama_stack_path = Path(os.path.abspath(__file__)).parent.parent.parent.parent
-            build_dir = (
-                llama_stack_path / "tmp/configs/"
-            )
+            llama_stack_path = Path(
+                os.path.abspath(__file__)
+            ).parent.parent.parent.parent
+            build_dir = llama_stack_path / "tmp/configs/"
         else:
             build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
 
@@ -137,10 +137,16 @@ class StackBuild(Subcommand):
             if build_config.image_type == "conda"
             else (f"llamastack-{build_config.name}")
         )
-        cprint(
-            f"You can now run `llama stack configure {configure_name}`",
-            color="green",
-        )
+        if build_config.image_type == "conda":
+            cprint(
+                f"You can now run `llama stack configure {configure_name}`",
+                color="green",
+            )
+        else:
+            cprint(
+                f"You can now run `llama stack run {build_config.name}` or `llama stack configure {configure_name} to re-configure docker run config.`",
+                color="green",
+            )
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
@@ -212,7 +218,10 @@ class StackBuild(Subcommand):
         if args.name:
             maybe_build_config = self._get_build_config_from_name(args)
             if maybe_build_config:
-                cprint(f"Building from existing build config for {args.name} in {str(maybe_build_config)}...", "green")
+                cprint(
+                    f"Building from existing build config for {args.name} in {str(maybe_build_config)}...",
+                    "green",
+                )
                 with open(maybe_build_config, "r") as f:
                     build_config = BuildConfig(**yaml.safe_load(f))
                     self._run_stack_build_command_from_build_config(build_config)
