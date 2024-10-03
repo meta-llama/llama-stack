@@ -94,12 +94,21 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> List[ShieldSpec]:
         specs = []
         for entry in self.routing_table_config:
-            specs.append(
-                ShieldSpec(
-                    shield_type=entry.routing_key,
-                    provider_config=entry,
+            if isinstance(entry.routing_key, list):
+                for k in entry.routing_key:
+                    specs.append(
+                        ShieldSpec(
+                            shield_type=k,
+                            provider_config=entry,
+                        )
+                    )
+            else:
+                specs.append(
+                    ShieldSpec(
+                        shield_type=entry.routing_key,
+                        provider_config=entry,
+                    )
                 )
-            )
         return specs
 
     async def get_shield(self, shield_type: str) -> Optional[ShieldSpec]:
