@@ -10,7 +10,11 @@ apis_to_serve:
 - memory_banks
 - inference
 - safety
+- evals
 api_providers:
+  evals:
+    provider_type: meta-reference
+    config: {}
   inference:
     providers:
     - meta-reference
@@ -34,12 +38,12 @@ routing_table:
   inference:
   - provider_type: meta-reference
     config:
-      model: Llama3.1-8B-Instruct
+      model: Llama3.2-1B
       quantization: null
       torch_seed: null
       max_seq_len: 4096
       max_batch_size: 1
-    routing_key: Llama3.1-8B-Instruct
+    routing_key: Llama3.2-1B
   safety:
   - provider_type: meta-reference
     config:

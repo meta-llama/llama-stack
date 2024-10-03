@@ -10,6 +10,7 @@ from typing import Dict, List
 from pydantic import BaseModel
 
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.evals import Evals
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.memory import Memory
@@ -41,6 +42,7 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
         Api.shields: Shields,
         Api.memory_banks: MemoryBanks,
         Api.inspect: Inspect,
+        Api.evals: Evals,
     }
 
     for api, protocol in protocols.items():
