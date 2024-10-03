@@ -17,7 +17,6 @@ from termcolor import cprint
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
-from llama_stack.distribution.distribution import api_providers, SERVER_DEPENDENCIES
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 from llama_stack.distribution.distribution import get_provider_registry
 
