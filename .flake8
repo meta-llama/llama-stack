@@ -21,7 +21,7 @@ ignore =
 optional-ascii-coding = True
 exclude =
     ./.git,
-    ./docs,
+    ./docs/*,
     ./build,
     ./scripts,
     ./venv,
