@@ -10,7 +10,7 @@ if [ "$#" -lt 4 ]; then
   exit 1
 fi
 
-special_pip_deps="$5"
+special_pip_deps="$6"
 
 set -euo pipefail
 
