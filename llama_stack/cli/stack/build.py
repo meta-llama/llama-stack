@@ -144,7 +144,7 @@ class StackBuild(Subcommand):
             )
         else:
             cprint(
-                f"You can now run `llama stack run {build_config.name}` or `llama stack configure {configure_name}`",
+                f"You can now run `llama stack run {build_config.name}`",
                 color="green",
             )
 
