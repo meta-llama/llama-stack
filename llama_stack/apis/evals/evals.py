@@ -51,6 +51,13 @@ class EvaluateTaskRequestCommon(BaseModel):
 
 
 @json_schema_type
+class EvaluateResponse(BaseModel):
+    """Scores for evaluation."""
+
+    scores = Dict[str, str]
+
+
+@json_schema_type
 class EvaluateTextGenerationRequest(EvaluateTaskRequestCommon):
     """Request to evaluate text generation."""
 
@@ -91,29 +98,18 @@ class EvaluationJobCreateResponse(BaseModel):
 
 
 class Evaluations(Protocol):
-    @webmethod(route="/evaluate/text_generation/")
-    def create_evaluation_job(self, model: str, dataset: str) -> EvaluationJob: ...
-
-    # @webmethod(route="/evaluate/text_generation/")
-    # def evaluate_text_generation(
-    #     self,
-    #     metrics: List[TextGenerationMetric],
-    # ) -> EvaluationJob: ...
-
-    # @webmethod(route="/evaluate/question_answering/")
-    # def evaluate_question_answering(
-    #     self,
-    #     metrics: List[QuestionAnsweringMetric],
-    # ) -> EvaluationJob: ...
-
-    # @webmethod(route="/evaluate/summarization/")
-    # def evaluate_summarization(
-    #     self,
-    #     metrics: List[SummarizationMetric],
-    # ) -> EvaluationJob: ...
+    @webmethod(route="/evaluate")
+    async def evaluate(
+        self, model: str, dataset: str, task: str
+    ) -> EvaluateResponse: ...
 
     @webmethod(route="/evaluate/jobs")
     def get_evaluation_jobs(self) -> List[EvaluationJob]: ...
+
+    @webmethod(route="/evaluate/job/create")
+    async def create_evaluation_job(
+        self, model: str, dataset: str, task: str
+    ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/job/status")
     def get_evaluation_job_status(
