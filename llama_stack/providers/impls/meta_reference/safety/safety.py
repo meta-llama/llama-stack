@@ -6,8 +6,6 @@
 
 from typing import Any, Dict, List
 
-from llama_models.sku_list import resolve_model
-
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
@@ -20,21 +18,9 @@ from llama_stack.providers.impls.meta_reference.safety.shields.base import (
 
 from .config import MetaReferenceShieldType, SafetyConfig
 
-from .shields import (
-    CodeScannerShield,
-    InjectionShield,
-    JailbreakShield,
-    LlamaGuardShield,
-    PromptGuardShield,
-    ShieldBase,
-)
+from .shields import CodeScannerShield, LlamaGuardShield, ShieldBase
 
-
-def resolve_and_get_path(model_name: str) -> str:
-    model = resolve_model(model_name)
-    assert model is not None, f"Could not resolve model {model_name}"
-    model_dir = model_local_dir(model.descriptor())
-    return model_dir
+PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
 
 class MetaReferenceSafetyImpl(Safety, RoutableProvider):
@@ -43,9 +29,10 @@ class MetaReferenceSafetyImpl(Safety, RoutableProvider):
         self.inference_api = deps[Api.inference]
 
     async def initialize(self) -> None:
-        shield_cfg = self.config.prompt_guard_shield
-        if shield_cfg is not None:
-            model_dir = resolve_and_get_path(shield_cfg.model)
+        if self.config.enable_prompt_guard:
+            from .shields import PromptGuardShield
+
+            model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             _ = PromptGuardShield.instance(model_dir)
 
     async def shutdown(self) -> None:
@@ -108,16 +95,14 @@ class MetaReferenceSafetyImpl(Safety, RoutableProvider):
                 disable_output_check=cfg.disable_output_check,
             )
         elif typ == MetaReferenceShieldType.jailbreak_shield:
-            assert (
-                cfg.prompt_guard_shield is not None
-            ), "Cannot use Jailbreak Shield since Prompt Guard not present in config"
-            model_dir = resolve_and_get_path(cfg.prompt_guard_shield.model)
+            from .shields import JailbreakShield
+
+            model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             return JailbreakShield.instance(model_dir)
         elif typ == MetaReferenceShieldType.injection_shield:
-            assert (
-                cfg.prompt_guard_shield is not None
-            ), "Cannot use PromptGuardShield since not present in config"
-            model_dir = resolve_and_get_path(cfg.prompt_guard_shield.model)
+            from .shields import InjectionShield
+
+            model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             return InjectionShield.instance(model_dir)
         elif typ == MetaReferenceShieldType.code_scanner_guard:
             return CodeScannerShield.instance()

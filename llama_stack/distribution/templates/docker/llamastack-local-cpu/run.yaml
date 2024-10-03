@@ -36,7 +36,7 @@ routing_table:
     config:
       host: localhost
       port: 6000
-    routing_key: Meta-Llama3.1-8B-Instruct
+    routing_key: Llama3.1-8B-Instruct
   safety:
   - provider_type: meta-reference
     config:

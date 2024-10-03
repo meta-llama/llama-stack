@@ -47,10 +47,6 @@ class LlamaGuardShieldConfig(BaseModel):
         return model
 
 
-class PromptGuardShieldConfig(BaseModel):
-    model: str = "Prompt-Guard-86M"
-
-
 class SafetyConfig(BaseModel):
     llama_guard_shield: Optional[LlamaGuardShieldConfig] = None
-    prompt_guard_shield: Optional[PromptGuardShieldConfig] = None
+    enable_prompt_guard: Optional[bool] = False

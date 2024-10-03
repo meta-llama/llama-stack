@@ -117,10 +117,10 @@ Provider configurations for each of the APIs provided by this package.
         description="""
 
         E.g. The following is a ProviderRoutingEntry for models:
-        - routing_key: Meta-Llama3.1-8B-Instruct
+        - routing_key: Llama3.1-8B-Instruct
           provider_type: meta-reference
           config:
-              model: Meta-Llama3.1-8B-Instruct
+              model: Llama3.1-8B-Instruct
               quantization: null
               torch_seed: null
               max_seq_len: 4096
