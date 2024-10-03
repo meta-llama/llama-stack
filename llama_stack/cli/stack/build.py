@@ -253,6 +253,8 @@ class StackBuild(Subcommand):
             for api in Api:
                 if api in routing_table_apis:
                     continue
+                if api == Api.inspect:
+                    continue
 
                 providers_for_api = all_providers[api]
 
