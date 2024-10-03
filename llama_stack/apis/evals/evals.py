@@ -71,6 +71,7 @@ class EvaluateSummarizationRequest(EvaluateTaskRequestCommon):
     metrics: List[SummarizationMetric]
 
 
+@json_schema_type
 class EvaluationJobStatusResponse(BaseModel):
     job_uuid: str
 
@@ -82,24 +83,34 @@ class EvaluationJobArtifactsResponse(BaseModel):
     job_uuid: str
 
 
+@json_schema_type
+class EvaluationJobCreateResponse(BaseModel):
+    """Response to create a evaluation job."""
+
+    job_uuid: str
+
+
 class Evaluations(Protocol):
     @webmethod(route="/evaluate/text_generation/")
-    def evaluate_text_generation(
-        self,
-        metrics: List[TextGenerationMetric],
-    ) -> EvaluationJob: ...
+    def create_evaluation_job(self, model: str, dataset: str) -> EvaluationJob: ...
 
-    @webmethod(route="/evaluate/question_answering/")
-    def evaluate_question_answering(
-        self,
-        metrics: List[QuestionAnsweringMetric],
-    ) -> EvaluationJob: ...
+    # @webmethod(route="/evaluate/text_generation/")
+    # def evaluate_text_generation(
+    #     self,
+    #     metrics: List[TextGenerationMetric],
+    # ) -> EvaluationJob: ...
 
-    @webmethod(route="/evaluate/summarization/")
-    def evaluate_summarization(
-        self,
-        metrics: List[SummarizationMetric],
-    ) -> EvaluationJob: ...
+    # @webmethod(route="/evaluate/question_answering/")
+    # def evaluate_question_answering(
+    #     self,
+    #     metrics: List[QuestionAnsweringMetric],
+    # ) -> EvaluationJob: ...
+
+    # @webmethod(route="/evaluate/summarization/")
+    # def evaluate_summarization(
+    #     self,
+    #     metrics: List[SummarizationMetric],
+    # ) -> EvaluationJob: ...
 
     @webmethod(route="/evaluate/jobs")
     def get_evaluation_jobs(self) -> List[EvaluationJob]: ...
