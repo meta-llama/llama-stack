@@ -38,17 +38,16 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
     ]
 
 
-def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
-    ret = {}
+def providable_apis() -> List[Api]:
     routing_table_apis = set(
         x.routing_table_api for x in builtin_automatically_routed_apis()
     )
-    for api in stack_apis():
-        if api in routing_table_apis:
-            continue
-        if api == Api.inspect:
-            continue
+    return [api for api in Api if api not in routing_table_apis and api != Api.inspect]
 
+
+def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
+    ret = {}
+    for api in providable_apis():
         name = api.name.lower()
         module = importlib.import_module(f"llama_stack.providers.registry.{name}")
         ret[api] = {
