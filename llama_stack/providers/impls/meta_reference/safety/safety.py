@@ -18,14 +18,7 @@ from llama_stack.providers.impls.meta_reference.safety.shields.base import (
 
 from .config import MetaReferenceShieldType, SafetyConfig
 
-from .shields import (
-    CodeScannerShield,
-    InjectionShield,
-    JailbreakShield,
-    LlamaGuardShield,
-    PromptGuardShield,
-    ShieldBase,
-)
+from .shields import CodeScannerShield, LlamaGuardShield, ShieldBase
 
 PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
@@ -36,8 +29,9 @@ class MetaReferenceSafetyImpl(Safety, RoutableProvider):
         self.inference_api = deps[Api.inference]
 
     async def initialize(self) -> None:
-        shield_cfg = self.config.prompt_guard_shield
-        if shield_cfg is not None:
+        if self.config.enable_prompt_guard:
+            from .shields import PromptGuardShield
+
             model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             _ = PromptGuardShield.instance(model_dir)
 
@@ -101,9 +95,13 @@ class MetaReferenceSafetyImpl(Safety, RoutableProvider):
                 disable_output_check=cfg.disable_output_check,
             )
         elif typ == MetaReferenceShieldType.jailbreak_shield:
+            from .shields import JailbreakShield
+
             model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             return JailbreakShield.instance(model_dir)
         elif typ == MetaReferenceShieldType.injection_shield:
+            from .shields import InjectionShield
+
             model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             return InjectionShield.instance(model_dir)
         elif typ == MetaReferenceShieldType.code_scanner_guard:

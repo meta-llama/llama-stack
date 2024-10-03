@@ -23,7 +23,7 @@ if [ "$#" -lt 3 ]; then
   exit 1
 fi
 
-special_pip_deps="$3"
+special_pip_deps="$4"
 
 set -euo pipefail
 

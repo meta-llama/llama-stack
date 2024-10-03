@@ -117,9 +117,9 @@ llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
 
 ```bash
-llama download --source huggingface --model-id  Meta-Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
+llama download --source huggingface --model-id  Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
 
-llama download --source huggingface --model-id Meta-Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
+llama download --source huggingface --model-id Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
 
 llama download --source huggingface --model-id Llama-Guard-3-1B --ignore-patterns *original*
 llama download --source huggingface --model-id Prompt-Guard-86M --ignore-patterns *original*
@@ -230,7 +230,7 @@ You will be shown a Markdown formatted description of the model interface and ho
 - Please see our [Getting Started](getting_started.md) guide for more details on how to build and start a Llama Stack distribution.
 
 ### Step 3.1 Build
-In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
+In the following steps, imagine we'll be working with a `Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `8b-instruct`)
 - `image_type`: our build image type (`conda | docker`)
 - `distribution_spec`: our distribution specs for specifying API providers
@@ -365,7 +365,7 @@ llama stack configure [ <name> | <docker-image-name> | <path/to/name.build.yaml>
 $ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
 
 Configuring API: inference (meta-reference)
-Enter value for model (existing: Meta-Llama3.1-8B-Instruct) (required):
+Enter value for model (existing: Llama3.1-8B-Instruct) (required):
 Enter value for quantization (optional):
 Enter value for torch_seed (optional):
 Enter value for max_seq_len (existing: 4096) (required):
@@ -397,7 +397,7 @@ YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yam
 After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may edit this file to change the settings.
 
 As you can see, we did basic configuration above and configured:
-- inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
+- inference to run on model `Llama3.1-8B-Instruct` (obtained from `llama model list`)
 - Llama Guard safety shield with model `Llama-Guard-3-1B`
 - Prompt Guard safety shield with model `Prompt-Guard-86M`
 

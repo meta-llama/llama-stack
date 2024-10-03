@@ -41,6 +41,7 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="ollama",
                 pip_packages=["ollama"],
+                config_class="llama_stack.providers.adapters.inference.ollama.OllamaImplConfig",
                 module="llama_stack.providers.adapters.inference.ollama",
             ),
         ),

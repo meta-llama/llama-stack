@@ -34,12 +34,12 @@ routing_table:
   inference:
   - provider_type: meta-reference
     config:
-      model: Meta-Llama3.1-8B-Instruct
+      model: Llama3.1-8B-Instruct
       quantization: null
       torch_seed: null
       max_seq_len: 4096
       max_batch_size: 1
-    routing_key: Meta-Llama3.1-8B-Instruct
+    routing_key: Llama3.1-8B-Instruct
   safety:
   - provider_type: meta-reference
     config:

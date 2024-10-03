@@ -23,9 +23,10 @@ from llama_stack.providers.utils.inference.routable import RoutableProviderForMo
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
 OLLAMA_SUPPORTED_SKUS = {
-    # "Llama3.1-8B-Instruct": "llama3.1",
     "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
     "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
+    "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
+    "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
 }
 
 
