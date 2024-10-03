@@ -39,7 +39,9 @@ class StackConfigure(Subcommand):
         )
 
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
+        import json
         import os
+        import subprocess
         from pathlib import Path
 
         import pkg_resources
@@ -65,18 +67,19 @@ class StackConfigure(Subcommand):
             f"Could not find {build_config_file}. Trying conda build name instead...",
             color="green",
         )
-        if os.getenv("CONDA_PREFIX", ""):
-            conda_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
-            )
-        else:
-            cprint(
-                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
-                color="green",
-            )
-            conda_dir = (
-                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
-            )
+
+        conda_dir = (
+            Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
+        )
+        output = subprocess.check_output(
+            ["bash", "-c", "conda info --json -a | jq '.envs'"]
+        )
+        conda_envs = json.loads(output.decode("utf-8"))
+
+        for x in conda_envs:
+            if x.endswith(f"/llamastack-{args.config}"):
+                conda_dir = Path(x)
+                break
 
         build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
