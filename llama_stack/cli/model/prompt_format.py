@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import argparse
-import subprocess
 import textwrap
 from io import StringIO
 
@@ -110,7 +109,4 @@ def render_markdown_to_pager(markdown_content: str):
     console = Console(file=output, force_terminal=True, width=100)  # Set a fixed width
     console.print(md)
     rendered_content = output.getvalue()
-
-    # Pipe to pager
-    pager = subprocess.Popen(["less", "-R"], stdin=subprocess.PIPE)
-    pager.communicate(input=rendered_content.encode())
+    print(rendered_content)

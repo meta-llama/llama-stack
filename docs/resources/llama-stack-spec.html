@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-23 16:58:41.469308"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-02 15:40:53.008257"
     },
     "servers": [
         {
@@ -1542,6 +1542,36 @@
                 ]
             }
         },
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthInfo"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/memory/insert": {
             "post": {
                 "responses": {
@@ -1651,6 +1681,75 @@
                 },
                 "tags": [
                     "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/providers/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/ProviderInfo"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/routes/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/RouteInfo"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
                 ],
                 "parameters": [
                     {
@@ -4783,7 +4882,7 @@
                     "provider_config": {
                         "type": "object",
                         "properties": {
-                            "provider_id": {
+                            "provider_type": {
                                 "type": "string"
                             },
                             "config": {
@@ -4814,7 +4913,7 @@
                         },
                         "additionalProperties": false,
                         "required": [
-                            "provider_id",
+                            "provider_type",
                             "config"
                         ]
                     }
@@ -4843,7 +4942,7 @@
                     "provider_config": {
                         "type": "object",
                         "properties": {
-                            "provider_id": {
+                            "provider_type": {
                                 "type": "string"
                             },
                             "config": {
@@ -4874,7 +4973,7 @@
                         },
                         "additionalProperties": false,
                         "required": [
-                            "provider_id",
+                            "provider_type",
                             "config"
                         ]
                     }
@@ -4894,7 +4993,7 @@
                     "provider_config": {
                         "type": "object",
                         "properties": {
-                            "provider_id": {
+                            "provider_type": {
                                 "type": "string"
                             },
                             "config": {
@@ -4925,7 +5024,7 @@
                         },
                         "additionalProperties": false,
                         "required": [
-                            "provider_id",
+                            "provider_type",
                             "config"
                         ]
                     }
@@ -5086,6 +5185,18 @@
                     "job_uuid"
                 ]
             },
+            "HealthInfo": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "status"
+                ]
+            },
             "InsertDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -5106,6 +5217,45 @@
                 "required": [
                     "bank_id",
                     "documents"
+                ]
+            },
+            "ProviderInfo": {
+                "type": "object",
+                "properties": {
+                    "provider_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "provider_type",
+                    "description"
+                ]
+            },
+            "RouteInfo": {
+                "type": "object",
+                "properties": {
+                    "route": {
+                        "type": "string"
+                    },
+                    "method": {
+                        "type": "string"
+                    },
+                    "providers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "route",
+                    "method",
+                    "providers"
                 ]
             },
             "LogSeverity": {
@@ -6220,19 +6370,34 @@
     ],
     "tags": [
         {
-            "name": "Shields"
+            "name": "Datasets"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "Memory"
         },
         {
             "name": "BatchInference"
         },
         {
-            "name": "RewardScoring"
+            "name": "Agents"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Shields"
         },
         {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Agents"
+            "name": "Models"
+        },
+        {
+            "name": "RewardScoring"
         },
         {
             "name": "MemoryBanks"
@@ -6241,25 +6406,13 @@
             "name": "Safety"
         },
         {
-            "name": "Models"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Memory"
+            "name": "Evaluations"
         },
         {
             "name": "Telemetry"
         },
         {
             "name": "PostTraining"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Evaluations"
         },
         {
             "name": "BuiltinTool",
@@ -6654,8 +6807,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
         },
         {
+            "name": "HealthInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
+        },
+        {
             "name": "InsertDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+        },
+        {
+            "name": "ProviderInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ProviderInfo\" />"
+        },
+        {
+            "name": "RouteInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RouteInfo\" />"
         },
         {
             "name": "LogSeverity",
@@ -6787,6 +6952,7 @@
                 "Datasets",
                 "Evaluations",
                 "Inference",
+                "Inspect",
                 "Memory",
                 "MemoryBanks",
                 "Models",
@@ -6857,6 +7023,7 @@
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
                 "GetDocumentsRequest",
+                "HealthInfo",
                 "ImageMedia",
                 "InferenceStep",
                 "InsertDocumentsRequest",
@@ -6880,6 +7047,7 @@
                 "PostTrainingJobStatus",
                 "PostTrainingJobStatusResponse",
                 "PreferenceOptimizeRequest",
+                "ProviderInfo",
                 "QLoraFinetuningConfig",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
@@ -6888,6 +7056,7 @@
                 "RestAPIMethod",
                 "RewardScoreRequest",
                 "RewardScoringResponse",
+                "RouteInfo",
                 "RunShieldRequest",
                 "RunShieldResponse",
                 "SafetyViolation",

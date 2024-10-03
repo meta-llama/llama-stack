@@ -908,6 +908,14 @@ components:
       required:
       - document_ids
       type: object
+    HealthInfo:
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+      required:
+      - status
+      type: object
     ImageMedia:
       additionalProperties: false
       properties:
@@ -1117,10 +1125,10 @@ components:
                 - type: array
                 - type: object
               type: object
-            provider_id:
+            provider_type:
               type: string
           required:
-          - provider_id
+          - provider_type
           - config
           type: object
       required:
@@ -1362,10 +1370,10 @@ components:
                 - type: array
                 - type: object
               type: object
-            provider_id:
+            provider_type:
               type: string
           required:
-          - provider_id
+          - provider_type
           - config
           type: object
       required:
@@ -1543,6 +1551,17 @@ components:
       - hyperparam_search_config
       - logger_config
       type: object
+    ProviderInfo:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        provider_type:
+          type: string
+      required:
+      - provider_type
+      - description
+      type: object
     QLoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -1703,6 +1722,22 @@ components:
       - scored_generations
       title: Response from the reward scoring. Batch of (prompt, response, score)
         tuples that pass the threshold.
+      type: object
+    RouteInfo:
+      additionalProperties: false
+      properties:
+        method:
+          type: string
+        providers:
+          items:
+            type: string
+          type: array
+        route:
+          type: string
+      required:
+      - route
+      - method
+      - providers
       type: object
     RunShieldRequest:
       additionalProperties: false
@@ -1916,10 +1951,10 @@ components:
                 - type: array
                 - type: object
               type: object
-            provider_id:
+            provider_type:
               type: string
           required:
-          - provider_id
+          - provider_type
           - config
           type: object
         shield_type:
@@ -2569,7 +2604,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-09-23 16:58:41.469308"
+    \ draft and subject to change.\n                Generated at 2024-10-02 15:40:53.008257"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3093,6 +3128,25 @@ paths:
           description: OK
       tags:
       - Evaluations
+  /health:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthInfo'
+          description: OK
+      tags:
+      - Inspect
   /inference/chat_completion:
     post:
       parameters:
@@ -3637,6 +3691,27 @@ paths:
           description: OK
       tags:
       - PostTraining
+  /providers/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  $ref: '#/components/schemas/ProviderInfo'
+                type: object
+          description: OK
+      tags:
+      - Inspect
   /reward_scoring/score:
     post:
       parameters:
@@ -3662,6 +3737,29 @@ paths:
           description: OK
       tags:
       - RewardScoring
+  /routes/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  items:
+                    $ref: '#/components/schemas/RouteInfo'
+                  type: array
+                type: object
+          description: OK
+      tags:
+      - Inspect
   /safety/run_shield:
     post:
       parameters:
@@ -3807,20 +3905,21 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Shields
+- name: Datasets
+- name: Inspect
+- name: Memory
 - name: BatchInference
-- name: RewardScoring
-- name: SyntheticDataGeneration
 - name: Agents
+- name: Inference
+- name: Shields
+- name: SyntheticDataGeneration
+- name: Models
+- name: RewardScoring
 - name: MemoryBanks
 - name: Safety
-- name: Models
-- name: Inference
-- name: Memory
+- name: Evaluations
 - name: Telemetry
 - name: PostTraining
-- name: Datasets
-- name: Evaluations
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4135,9 +4234,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJob"
     />
   name: PostTrainingJob
+- description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
+  name: HealthInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ProviderInfo" />
+  name: ProviderInfo
+- description: <SchemaDefinition schemaRef="#/components/schemas/RouteInfo" />
+  name: RouteInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogSeverity" />
   name: LogSeverity
 - description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
@@ -4236,6 +4341,7 @@ x-tagGroups:
   - Datasets
   - Evaluations
   - Inference
+  - Inspect
   - Memory
   - MemoryBanks
   - Models
@@ -4303,6 +4409,7 @@ x-tagGroups:
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
   - GetDocumentsRequest
+  - HealthInfo
   - ImageMedia
   - InferenceStep
   - InsertDocumentsRequest
@@ -4326,6 +4433,7 @@ x-tagGroups:
   - PostTrainingJobStatus
   - PostTrainingJobStatusResponse
   - PreferenceOptimizeRequest
+  - ProviderInfo
   - QLoraFinetuningConfig
   - QueryDocumentsRequest
   - QueryDocumentsResponse
@@ -4334,6 +4442,7 @@ x-tagGroups:
   - RestAPIMethod
   - RewardScoreRequest
   - RewardScoringResponse
+  - RouteInfo
   - RunShieldRequest
   - RunShieldResponse
   - SafetyViolation

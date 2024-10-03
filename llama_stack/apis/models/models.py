@@ -20,7 +20,7 @@ class ModelServingSpec(BaseModel):
         description="All metadatas associated with llama model (defined in llama_models.models.sku_list).",
     )
     provider_config: GenericProviderConfig = Field(
-        description="Provider config for the model, including provider_id, and corresponding config. ",
+        description="Provider config for the model, including provider_type, and corresponding config. ",
     )
 
 

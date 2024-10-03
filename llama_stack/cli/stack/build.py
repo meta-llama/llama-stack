@@ -179,12 +179,7 @@ class StackBuild(Subcommand):
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import yaml
-        from llama_stack.distribution.distribution import (
-            Api,
-            api_providers,
-            builtin_automatically_routed_apis,
-        )
-        from llama_stack.distribution.utils.dynamic import instantiate_class_type
+        from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
@@ -249,22 +244,12 @@ class StackBuild(Subcommand):
             )
 
             cprint(
-                f"\n Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.",
+                "\n Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.",
                 color="green",
             )
 
             providers = dict()
-            all_providers = api_providers()
-            routing_table_apis = set(
-                x.routing_table_api for x in builtin_automatically_routed_apis()
-            )
-
-            for api in Api:
-                if api in routing_table_apis:
-                    continue
-
-                providers_for_api = all_providers[api]
-
+            for api, providers_for_api in get_provider_registry().items():
                 api_provider = prompt(
                     "> Enter provider for the {} API: (default=meta-reference): ".format(
                         api.value

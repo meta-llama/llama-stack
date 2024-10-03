@@ -19,7 +19,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.safety,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
                 "codeshield",
                 "transformers",
@@ -34,7 +34,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
-                adapter_id="sample",
+                adapter_type="sample",
                 pip_packages=[],
                 module="llama_stack.providers.adapters.safety.sample",
                 config_class="llama_stack.providers.adapters.safety.sample.SampleConfig",
@@ -43,7 +43,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
-                adapter_id="bedrock",
+                adapter_type="bedrock",
                 pip_packages=["boto3"],
                 module="llama_stack.providers.adapters.safety.bedrock",
                 config_class="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyConfig",
@@ -52,7 +52,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.safety,
             adapter=AdapterSpec(
-                adapter_id="together",
+                adapter_type="together",
                 pip_packages=[
                     "together",
                 ],

@@ -18,10 +18,10 @@ class NeedsRequestProviderData:
         spec = self.__provider_spec__
         assert spec, f"Provider spec not set on {self.__class__}"
 
-        provider_id = spec.provider_id
+        provider_type = spec.provider_type
         validator_class = spec.provider_data_validator
         if not validator_class:
-            raise ValueError(f"Provider {provider_id} does not have a validator")
+            raise ValueError(f"Provider {provider_type} does not have a validator")
 
         val = getattr(_THREAD_LOCAL, "provider_data_header_value", None)
         if not val:

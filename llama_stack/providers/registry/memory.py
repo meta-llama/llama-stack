@@ -34,7 +34,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.memory,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.impls.meta_reference.memory",
             config_class="llama_stack.providers.impls.meta_reference.memory.FaissImplConfig",
@@ -42,7 +42,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             Api.memory,
             AdapterSpec(
-                adapter_id="chromadb",
+                adapter_type="chromadb",
                 pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
                 module="llama_stack.providers.adapters.memory.chroma",
             ),
@@ -50,7 +50,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             Api.memory,
             AdapterSpec(
-                adapter_id="pgvector",
+                adapter_type="pgvector",
                 pip_packages=EMBEDDING_DEPS + ["psycopg2-binary"],
                 module="llama_stack.providers.adapters.memory.pgvector",
                 config_class="llama_stack.providers.adapters.memory.pgvector.PGVectorConfig",
@@ -59,7 +59,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.memory,
             adapter=AdapterSpec(
-                adapter_id="sample",
+                adapter_type="sample",
                 pip_packages=[],
                 module="llama_stack.providers.adapters.memory.sample",
                 config_class="llama_stack.providers.adapters.memory.sample.SampleConfig",

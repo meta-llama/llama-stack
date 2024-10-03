@@ -15,8 +15,8 @@ from termcolor import cprint
 
 from llama_stack.apis.memory.memory import MemoryBankType
 from llama_stack.distribution.distribution import (
-    api_providers,
     builtin_automatically_routed_apis,
+    get_provider_registry,
     stack_apis,
 )
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -62,7 +62,7 @@ def configure_api_providers(
     config.apis_to_serve = list(set([a for a in apis if a != "telemetry"]))
 
     apis = [v.value for v in stack_apis()]
-    all_providers = api_providers()
+    all_providers = get_provider_registry()
 
     # configure simple case for with non-routing providers to api_providers
     for api_str in spec.providers.keys():
@@ -109,7 +109,7 @@ def configure_api_providers(
                 routing_entries.append(
                     RoutableProviderConfig(
                         routing_key=routing_key,
-                        provider_id=p,
+                        provider_type=p,
                         config=cfg.dict(),
                     )
                 )
@@ -120,7 +120,7 @@ def configure_api_providers(
                     routing_entries.append(
                         RoutableProviderConfig(
                             routing_key=[s.value for s in MetaReferenceShieldType],
-                            provider_id=p,
+                            provider_type=p,
                             config=cfg.dict(),
                         )
                     )
@@ -133,7 +133,7 @@ def configure_api_providers(
                     routing_entries.append(
                         RoutableProviderConfig(
                             routing_key=routing_key,
-                            provider_id=p,
+                            provider_type=p,
                             config=cfg.dict(),
                         )
                     )
@@ -153,7 +153,7 @@ def configure_api_providers(
                 routing_entries.append(
                     RoutableProviderConfig(
                         routing_key=routing_key,
-                        provider_id=p,
+                        provider_type=p,
                         config=cfg.dict(),
                     )
                 )
@@ -164,7 +164,7 @@ def configure_api_providers(
             )
         else:
             config.api_providers[api_str] = GenericProviderConfig(
-                provider_id=p,
+                provider_type=p,
                 config=cfg.dict(),
             )
 
