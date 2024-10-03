@@ -77,8 +77,9 @@ class StackConfigure(Subcommand):
         conda_envs = json.loads(output.decode("utf-8"))
 
         for x in conda_envs:
-            if x.endswith(f"llamastack-{args.config}"):
+            if x.endswith(f"/llamastack-{args.config}"):
                 conda_dir = Path(x)
+                break
 
         build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
