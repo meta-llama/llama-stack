@@ -50,20 +50,6 @@ class LlamaGuardShieldConfig(BaseModel):
 class PromptGuardShieldConfig(BaseModel):
     model: str = "Prompt-Guard-86M"
 
-    @validator("model")
-    @classmethod
-    def validate_model(cls, model: str) -> str:
-        permitted_models = [
-            m.descriptor()
-            for m in safety_models()
-            if m.core_model_id == CoreModelId.prompt_guard_86m
-        ]
-        if model not in permitted_models:
-            raise ValueError(
-                f"Invalid model: {model}. Must be one of {permitted_models}"
-            )
-        return model
-
 
 class SafetyConfig(BaseModel):
     llama_guard_shield: Optional[LlamaGuardShieldConfig] = None
