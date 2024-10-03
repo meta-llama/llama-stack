@@ -47,8 +47,7 @@ class LlamaGuardShieldConfig(BaseModel):
         return model
 
 
-class PromptGuardShieldConfig(BaseModel):
-    model: str = "Prompt-Guard-86M"
+class PromptGuardShieldConfig(BaseModel): ...
 
 
 class SafetyConfig(BaseModel):
