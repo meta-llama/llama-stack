@@ -1,6 +1,6 @@
 name: Pre-commit
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   pre-commit:
@@ -24,5 +24,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install pre-commit
 
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Fetch head commit from PR
+        run: git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }} pr-${{ github.event.pull_request.number }} > changed_files.txt
+          cat changed_files.txt
+
       - name: Run pre-commit
-        run: pre-commit run --all-files
+        run: |
+          if [ -s changed_files.txt ]; then
+            pre-commit run --files $(cat changed_files.txt | tr '\n' ' ')
+          else
+            echo "No changed files to run pre-commit on."
+          fi
