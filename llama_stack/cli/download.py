@@ -158,11 +158,10 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         info = prompt_guard_download_info()
     else:
         model = resolve_model(args.model_id)
+        if model is None:
+            parser.error(f"Model {args.model_id} not found")
+            return
         info = llama_meta_net_info(model)
-
-    if model is None:
-        parser.error(f"Model {args.model_id} not found")
-        return
 
     if args.source == "huggingface":
         _hf_download(model, args.hf_token, args.ignore_patterns, parser)
