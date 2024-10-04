@@ -72,9 +72,9 @@ class StackConfigure(Subcommand):
             Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
         )
         output = subprocess.check_output(
-            ["bash", "-c", "conda info --json -a | jq '.envs'"]
+            ["bash", "-c", "conda info --json -a"]
         )
-        conda_envs = json.loads(output.decode("utf-8"))
+        conda_envs = json.loads(output.decode("utf-8"))["envs"]
 
         for x in conda_envs:
             if x.endswith(f"/llamastack-{args.config}"):
