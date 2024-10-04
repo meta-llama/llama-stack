@@ -21,23 +21,18 @@ class BaseTask(ABC):
 
     @abstractmethod
     def preprocess_sample(self, sample):
-        """
-        F1: preprocess sample
-        """
         raise NotImplementedError()
 
     @abstractmethod
     def postprocess_sample(self, sample):
-        """
-        F2: postprocess sample
-        """
         raise NotImplementedError()
 
     @abstractmethod
     def score_sample(self, sample, ground_truth):
-        """
-        F3: score sample
-        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def aggregate_results(self, eval_results):
         raise NotImplementedError()
 
     def preprocess(self):

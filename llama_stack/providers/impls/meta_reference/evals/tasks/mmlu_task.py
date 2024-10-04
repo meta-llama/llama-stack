@@ -6,6 +6,7 @@
 import re
 
 from .task import BaseTask
+from llama_stack.apis.evals import *  # noqa: F403
 
 QUERY_TEMPLATE_MULTICHOICE = """
 Answer the following multiple choice question and make the answer very simple. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD.
@@ -119,9 +120,6 @@ class MMLUTask(BaseTask):
         super().__init__(dataset, *args, **kwargs)
 
     def preprocess_sample(self, sample):
-        """
-        F1: preprocess sample
-        """
         content = QUERY_TEMPLATE_MULTICHOICE.format(**sample)
         return {
             "role": "user",
@@ -129,16 +127,10 @@ class MMLUTask(BaseTask):
         }
 
     def postprocess_sample(self, sample):
-        """
-        F2: postprocess sample
-        """
         normalized = normalize_response(sample)
         return normalized
 
     def score_sample(self, sample, expected):
-        """
-        F3: score sample
-        """
         extracted_answer = None
         for answer_regex in MULTILINGUAL_ANSWER_REGEXES:
             regex = MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(answer_regex)
@@ -149,4 +141,10 @@ class MMLUTask(BaseTask):
         score = (
             1.0 if extracted_answer and extracted_answer == expected["Answer"] else 0.0
         )
+        # TODO: generalize this into SingleEvalResult
         return score
+
+    def aggregate_results(self, eval_results):
+        return EvaluateResponse(
+            metrics={"score": sum(eval_results) / len(eval_results)}
+        )

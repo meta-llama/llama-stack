@@ -35,8 +35,7 @@ class MetaReferenceEvalsImpl(Evals):
         task: str,
     ) -> EvaluateResponse:
         cprint(f"model={model}, dataset={dataset}, task={task}", "red")
-        dataset = get_dataset("mmlu-simple-eval-en")
-
+        dataset = get_dataset(dataset)
         task_impl = get_task(task, dataset)
         x1 = task_impl.preprocess()
 
@@ -52,11 +51,6 @@ class MetaReferenceEvalsImpl(Evals):
                 generation_outputs.append(x.completion_message.content)
 
         x2 = task_impl.postprocess(generation_outputs)
-        scores = task_impl.score(x2)
-        print(scores)
-
-        return EvaluateResponse(
-            metrics={
-                "accuracy": 0.5,
-            }
-        )
+        eval_results = task_impl.score(x2)
+        eval_response = task_impl.aggregate_results(eval_results)
+        return eval_response
