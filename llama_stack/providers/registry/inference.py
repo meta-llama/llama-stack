@@ -68,7 +68,7 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_id="databricks",
+                adapter_type="databricks",
                 pip_packages=[
                     "openai",
                 ],

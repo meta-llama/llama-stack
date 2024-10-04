@@ -12,11 +12,11 @@ from pydantic import BaseModel, Field
 
 @json_schema_type
 class DatabricksImplConfig(BaseModel):
-    url: Optional[str] = Field(
+    url: str = Field(
         default=None,
         description="The URL for the Databricks model serving endpoint",
     )
-    api_token: Optional[str] = Field(
+    api_token: str = Field(
         default=None,
         description="The Databricks API token",
     )

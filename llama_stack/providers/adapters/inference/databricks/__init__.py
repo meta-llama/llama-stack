@@ -5,20 +5,12 @@
 # the root directory of this source tree.
 
 from .config import DatabricksImplConfig
-from .databricks import InferenceEndpointAdapter, DatabricksAdapter
-
+from .databricks import DatabricksInferenceAdapter
 
 async def get_adapter_impl(config: DatabricksImplConfig, _deps):
-    assert isinstance(config, DatabricksImplConfig), f"Unexpected config type: {type(config)}"
-
-    if config.url is not None:
-        impl = DatabricksAdapter(config)
-    elif config.is_inference_endpoint():
-        impl = InferenceEndpointAdapter(config)
-    else:
-        raise ValueError(
-            "Invalid configuration. Specify either an URL or HF Inference Endpoint details (namespace and endpoint name)."
-        )
-
+    assert isinstance(
+        config, DatabricksImplConfig
+    ), f"Unexpected config type: {type(config)}"
+    impl = DatabricksInferenceAdapter(config)
     await impl.initialize()
     return impl
