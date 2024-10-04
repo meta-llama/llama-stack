@@ -6,6 +6,7 @@ llama-models>=0.0.39
 prompt-toolkit
 python-dotenv
 pydantic>=2
+jq
 requests
 rich
 termcolor
