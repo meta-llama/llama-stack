@@ -37,7 +37,7 @@ class EvaluateTaskRequestCommon(BaseModel):
 class EvaluateResponse(BaseModel):
     """Scores for evaluation."""
 
-    metrics: Dict[str, float]
+    metrics: Dict[str, str]
 
 
 @json_schema_type

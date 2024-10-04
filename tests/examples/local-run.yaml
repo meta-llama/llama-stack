@@ -13,7 +13,7 @@ apis_to_serve:
 - evals
 api_providers:
   evals:
-    provider_type: meta-reference
+    provider_type: eleuther
     config: {}
   inference:
     providers:

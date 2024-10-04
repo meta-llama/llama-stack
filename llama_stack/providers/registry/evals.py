@@ -27,4 +27,16 @@ def available_providers() -> List[ProviderSpec]:
                 Api.inference,
             ],
         ),
+        InlineProviderSpec(
+            api=Api.evals,
+            provider_type="eleuther",
+            pip_packages=[
+                "lm-eval",
+            ],
+            module="llama_stack.providers.adapters.evals.eleuther",
+            config_class="llama_stack.providers.adapters.evals.eleuther.EleutherEvalsImplConfig",
+            api_dependencies=[
+                Api.inference,
+            ],
+        ),
     ]
