@@ -8,10 +8,10 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.evals import *  # noqa: F403
 from termcolor import cprint
 
-from llama_stack.providers.impls.meta_reference.evals.datas.utils import (  # noqa: F403
+from llama_stack.providers.impls.meta_reference.evals.datas.dataset_registry import (
     get_dataset,
 )
-from llama_stack.providers.impls.meta_reference.evals.tasks.utils import (  # noqa: F403
+from llama_stack.providers.impls.meta_reference.evals.tasks.task_registry import (
     get_task,
 )
 
@@ -35,27 +35,25 @@ class MetaReferenceEvalsImpl(Evals):
         task: str,
     ) -> EvaluateResponse:
         cprint(f"model={model}, dataset={dataset}, task={task}", "red")
+        dataset = get_dataset("mmlu-simple-eval-en")
 
-        # resolve dataset
-        # - either a custom URL dataset or HF URL dataset
-        dataset = get_dataset("mmlu_eval")
-        print(dataset.dataset)
-
-        # # resolve task and execute task
         task_impl = get_task(task, dataset)
-        print(task_impl)
+        x1 = task_impl.preprocess()
 
-        # # F1: this will generate a preprocessed list of input messages for model
-        # x1 = task_impl.preprocess(dataset)
+        # TODO: replace w/ batch inference & async return eval job
+        generation_outputs = []
+        for msg in x1[:5]:
+            response = self.inference_api.chat_completion(
+                model=model,
+                messages=[msg],
+                stream=False,
+            )
+            async for x in response:
+                generation_outputs.append(x.completion_message.content)
 
-        # # call inference API w/ model
-        # generation_outputs = ["response1", "response2", "response3"]
-
-        # # F2: post process
-        # x2 = task_impl.postprocess(generation_outputs)
-
-        # # F3: score generation outputs
-        # scores = task_impl.score(x2)
+        x2 = task_impl.postprocess(generation_outputs)
+        scores = task_impl.score(x2)
+        print(scores)
 
         return EvaluateResponse(
             metrics={

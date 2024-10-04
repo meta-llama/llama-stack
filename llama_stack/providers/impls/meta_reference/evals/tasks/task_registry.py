@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from .tasks import *  # noqa: F403
+from .mmlu_task import MMLUTask
 
 # TODO: make this into a config based registry
 TASKS_REGISTRY = {

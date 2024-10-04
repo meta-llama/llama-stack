@@ -33,6 +33,7 @@ class EvaluationClient(Evals):
                     "task": task,
                 },
                 headers={"Content-Type": "application/json"},
+                timeout=3600,
             )
             response.raise_for_status()
             return EvaluateResponse(**response.json())
@@ -43,7 +44,7 @@ async def run_main(host: str, port: int):
 
     response = await client.run_evals(
         "Llama3.1-8B-Instruct",
-        "mmlu.csv",
+        "mmlu-simple-eval-en",
         "mmlu",
     )
     cprint(f"evaluate response={response}", "green")

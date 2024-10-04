@@ -8,8 +8,7 @@ from abc import ABC, abstractmethod
 
 class BaseTask(ABC):
     """
-    Base class for all evaluation tasks.
-    Each task needs to implement the following methods:
+    Base class for all evaluation tasks. Each task needs to implement the following methods:
     - F1: preprocess_sample(self)
     - F2: postprocess_sample(self)
     - F3: score_sample(self)
@@ -42,40 +41,13 @@ class BaseTask(ABC):
         raise NotImplementedError()
 
     def preprocess(self):
-        pass
+        return [self.preprocess_sample(sample) for sample in self.dataset]
 
-    def postprocess(self):
-        pass
+    def postprocess(self, generation):
+        return [self.postprocess_sample(sample) for sample in generation]
 
-    def score(self, generation):
-        pass
-
-
-class MMLUTask(BaseTask):
-    """
-    MMLU Task. Each task needs to implement the following methods:
-    - F1: preprocess_sample(self)
-    - F2: postprocess_sample(self)
-    - F3: score_sample(self)
-    """
-
-    def __init__(self, dataset, *args, **kwargs):
-        super().__init__(dataset, *args, **kwargs)
-
-    def preprocess_sample(self, sample):
-        """
-        F1: preprocess sample
-        """
-        pass
-
-    def postprocess_sample(self, sample):
-        """
-        F2: postprocess sample
-        """
-        pass
-
-    def score_sample(self, sample):
-        """
-        F3: score sample
-        """
-        pass
+    def score(self, postprocessed):
+        return [
+            self.score_sample(sample, ground_truth)
+            for sample, ground_truth in zip(postprocessed, self.dataset)
+        ]

@@ -109,7 +109,7 @@ async def run_main(host: str, port: int, stream: bool):
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
         model="Llama3.1-8B-Instruct",
-        messages=[message],
+        messages=[message, UserMessage(content="write me 3 sentence about the sun.")],
         stream=stream,
     )
     async for log in EventLogger().log(iterator):
