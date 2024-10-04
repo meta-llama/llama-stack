@@ -19,6 +19,7 @@ def available_providers() -> List[ProviderSpec]:
                 "pillow",
                 "pandas",
                 "scikit-learn",
+                "datasets",
             ],
             module="llama_stack.providers.impls.meta_reference.evals",
             config_class="llama_stack.providers.impls.meta_reference.evals.MetaReferenceEvalsImplConfig",
