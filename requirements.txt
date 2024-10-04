@@ -8,4 +8,5 @@ python-dotenv
 pydantic>=2
 requests
 rich
+setuptools
 termcolor
