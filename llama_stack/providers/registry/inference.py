@@ -66,6 +66,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="vllm",
                 pip_packages=["openai"],
                 module="llama_stack.providers.adapters.inference.vllm",
+                config_class="llama_stack.providers.adapters.inference.vllm.VLLMImplConfig",
             ),
         ),
         remote_provider_spec(

@@ -22,8 +22,8 @@ from .config import VLLMImplConfig
 # Reference: https://docs.vllm.ai/en/latest/models/supported_models.html
 VLLM_SUPPORTED_MODELS = {
     "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct",
-    "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct",
+    # "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+    # "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct",
 }
 
 
