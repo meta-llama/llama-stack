@@ -156,6 +156,11 @@ async def instantiate_provider(
         assert isinstance(provider_config, GenericProviderConfig)
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider_config.config)
+
+        if hasattr(provider_config, "routing_key"):
+            routing_key = provider_config.routing_key
+            deps["routing_key"] = routing_key
+
         args = [config, deps]
     elif isinstance(provider_spec, AutoRoutedProviderSpec):
         method = "get_auto_router_impl"
