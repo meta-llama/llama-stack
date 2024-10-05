@@ -1,9 +1,16 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+from datetime import datetime
+
 import pytest
 import yaml
-from datetime import datetime
 from llama_stack.distribution.configure import (
-    parse_and_maybe_upgrade_config,
     LLAMA_STACK_RUN_CONFIG_VERSION,
+    parse_and_maybe_upgrade_config,
 )
 
 
@@ -90,16 +97,20 @@ def old_config():
           telemetry:
             provider_type: noop
             config: {{}}
-    """.format(built_at=datetime.now().isoformat())
+    """.format(
+            built_at=datetime.now().isoformat()
+        )
     )
 
 
 @pytest.fixture
 def invalid_config():
-    return yaml.safe_load("""
+    return yaml.safe_load(
+        """
         routing_table: {}
         api_providers: {}
-    """)
+    """
+    )
 
 
 def test_parse_and_maybe_upgrade_config_up_to_date(up_to_date_config):
