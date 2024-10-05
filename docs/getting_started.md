@@ -66,8 +66,13 @@ This guides allows you to quickly get started with building and running a Llama 
 You may also checkout this [notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) for trying out out demo scripts.
 
 ## Quick Cheatsheet
-- Quick 3 line command to build and start a LlamaStack server using our Meta Reference implementation for all API endpoints with `conda` as build type.
 
+#### Via docker
+```
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local-gpu
+```
+
+#### Via conda
 **`llama stack build`**
 - You'll be prompted to enter build information interactively.
 ```
