@@ -31,6 +31,10 @@ class RedisKVStoreConfig(CommonConfig):
     host: str = "localhost"
     port: int = 6379
 
+    @property
+    def url(self) -> str:
+        return f"redis://{self.host}:{self.port}"
+
 
 class SqliteKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.sqlite.value] = KVStoreType.sqlite.value
