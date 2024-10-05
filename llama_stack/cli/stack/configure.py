@@ -148,14 +148,17 @@ class StackConfigure(Subcommand):
                 "yellow",
                 attrs=["bold"],
             )
-            config_dict = yaml.safe_load(config_file.read_text())
+            config_dict = yaml.safe_load(run_config_file.read_text())
             config = parse_and_maybe_upgrade_config(config_dict)
         else:
             config = StackRunConfig(
                 built_at=datetime.now(),
                 image_name=image_name,
                 apis_to_serve=[],
-                api_providers={},
+                providers={},
+                models=[],
+                shields=[],
+                memory_banks=[],
             )
 
         config = configure_api_providers(config, build_config.distribution_spec)

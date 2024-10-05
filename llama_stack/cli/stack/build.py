@@ -150,9 +150,6 @@ class StackBuild(Subcommand):
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
-
-        import yaml
-
         from llama_stack.cli.table import print_table
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions

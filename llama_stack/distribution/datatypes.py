@@ -75,6 +75,7 @@ in the runtime configuration to help route to the correct provider.""",
     )
 
 
+# TODO: rename as ProviderInstanceConfig
 class Provider(BaseModel):
     provider_id: str
     provider_type: str
@@ -108,8 +109,8 @@ The list of APIs to serve. If not specified, all APIs specified in the provider_
     providers: Dict[str, List[Provider]]
 
     models: List[ModelDef]
-    memory_banks: List[MemoryBankDef]
     shields: List[ShieldDef]
+    memory_banks: List[MemoryBankDef]
 
 
 #     api_providers: Dict[

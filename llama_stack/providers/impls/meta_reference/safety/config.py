@@ -22,8 +22,6 @@ class MetaReferenceShieldType(Enum):
 class LlamaGuardShieldConfig(BaseModel):
     model: str = "Llama-Guard-3-1B"
     excluded_categories: List[str] = []
-    disable_input_check: bool = False
-    disable_output_check: bool = False
 
     @field_validator("model")
     @classmethod

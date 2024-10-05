@@ -91,8 +91,6 @@ class MetaReferenceSafetyImpl(Safety, RoutableProvider):
                 model=cfg.model,
                 inference_api=self.inference_api,
                 excluded_categories=cfg.excluded_categories,
-                disable_input_check=cfg.disable_input_check,
-                disable_output_check=cfg.disable_output_check,
             )
         elif typ == MetaReferenceShieldType.jailbreak_shield:
             from .shields import JailbreakShield
