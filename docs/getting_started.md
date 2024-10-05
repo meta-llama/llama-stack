@@ -72,6 +72,10 @@ You may also checkout this [notebook](https://github.com/meta-llama/llama-stack/
 docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local-gpu
 ```
 
+> [!NOTE]
+> `~/.llama` should be the path containing downloaded weights of Llama models. 
+
+
 #### Via conda
 **`llama stack build`**
 - You'll be prompted to enter build information interactively.
