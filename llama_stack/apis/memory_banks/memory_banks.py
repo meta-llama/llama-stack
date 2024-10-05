@@ -4,29 +4,67 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol
+from enum import Enum
+from typing import List, Literal, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
-
-from llama_stack.apis.memory import MemoryBankType
-
-from llama_stack.distribution.datatypes import GenericProviderConfig
+from typing_extensions import Annotated
 
 
 @json_schema_type
-class MemoryBankSpec(BaseModel):
-    bank_type: MemoryBankType
-    provider_config: GenericProviderConfig = Field(
-        description="Provider config for the model, including provider_type, and corresponding config. ",
-    )
+class MemoryBankType(Enum):
+    vector = "vector"
+    keyvalue = "keyvalue"
+    keyword = "keyword"
+    graph = "graph"
+
+
+class CommonDef(BaseModel):
+    identifier: str
+    provider_id: str
+
+
+@json_schema_type
+class VectorMemoryBankDef(CommonDef):
+    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+    embedding_model: str
+    chunk_size_in_tokens: int
+    overlap_size_in_tokens: Optional[int] = None
+
+
+@json_schema_type
+class KeyValueMemoryBankDef(CommonDef):
+    type: Literal[MemoryBankType.keyvalue.value] = MemoryBankType.keyvalue.value
+
+
+@json_schema_type
+class KeywordMemoryBankDef(CommonDef):
+    type: Literal[MemoryBankType.keyword.value] = MemoryBankType.keyword.value
+
+
+@json_schema_type
+class GraphMemoryBankDef(CommonDef):
+    type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+
+
+MemoryBankDef = Annotated[
+    Union[
+        VectorMemoryBankDef,
+        KeyValueMemoryBankDef,
+        KeywordMemoryBankDef,
+        GraphMemoryBankDef,
+    ],
+    Field(discriminator="type"),
+]
 
 
 class MemoryBanks(Protocol):
     @webmethod(route="/memory_banks/list", method="GET")
-    async def list_available_memory_banks(self) -> List[MemoryBankSpec]: ...
+    async def list_memory_banks(self) -> List[MemoryBankDef]: ...
 
     @webmethod(route="/memory_banks/get", method="GET")
-    async def get_serving_memory_bank(
-        self, bank_type: MemoryBankType
-    ) -> Optional[MemoryBankSpec]: ...
+    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]: ...
+
+    @webmethod(route="/memory_banks/register", method="POST")
+    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...

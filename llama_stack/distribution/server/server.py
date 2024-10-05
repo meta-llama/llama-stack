@@ -285,7 +285,7 @@ def main(
 
     app = FastAPI()
 
-    impls, specs = asyncio.run(resolve_impls_with_routing(config))
+    impls = asyncio.run(resolve_impls_with_routing(config))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
@@ -303,11 +303,7 @@ def main(
         endpoints = all_endpoints[api]
         impl = impls[api]
 
-        provider_spec = specs[api]
-        if (
-            isinstance(provider_spec, RemoteProviderSpec)
-            and provider_spec.adapter is None
-        ):
+        if is_passthrough(impl.__provider_spec__):
             for endpoint in endpoints:
                 url = impl.__provider_config__.url.rstrip("/") + endpoint.route
                 getattr(app, endpoint.method)(endpoint.route)(

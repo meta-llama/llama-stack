@@ -6,27 +6,32 @@
 
 from typing import List, Optional, Protocol
 
-from llama_models.llama3.api.datatypes import Model
-
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
-from llama_stack.distribution.datatypes import GenericProviderConfig
-
 
 @json_schema_type
-class ModelServingSpec(BaseModel):
-    llama_model: Model = Field(
-        description="All metadatas associated with llama model (defined in llama_models.models.sku_list).",
+class ModelDef(BaseModel):
+    identifier: str = Field(
+        description="A unique identifier for the model type",
     )
-    provider_config: GenericProviderConfig = Field(
-        description="Provider config for the model, including provider_type, and corresponding config. ",
+    llama_model: str = Field(
+        description="Pointer to the core Llama family model",
     )
+    provider_id: str = Field(
+        description="The provider instance which serves this model"
+    )
+    # For now, we are only supporting core llama models but as soon as finetuned
+    # and other custom models (for example various quantizations) are allowed, there
+    # will be more metadata fields here
 
 
 class Models(Protocol):
     @webmethod(route="/models/list", method="GET")
-    async def list_models(self) -> List[ModelServingSpec]: ...
+    async def list_models(self) -> List[ModelDef]: ...
 
     @webmethod(route="/models/get", method="GET")
-    async def get_model(self, core_model_id: str) -> Optional[ModelServingSpec]: ...
+    async def get_model(self, identifier: str) -> Optional[ModelDef]: ...
+
+    @webmethod(route="/models/register", method="POST")
+    async def register_model(self, model: ModelDef) -> None: ...

@@ -129,7 +129,10 @@ class StackConfigure(Subcommand):
         import yaml
         from termcolor import cprint
 
-        from llama_stack.distribution.configure import configure_api_providers
+        from llama_stack.distribution.configure import (
+            configure_api_providers,
+            parse_and_maybe_upgrade_config,
+        )
         from llama_stack.distribution.utils.serialize import EnumEncoder
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
@@ -145,7 +148,8 @@ class StackConfigure(Subcommand):
                 "yellow",
                 attrs=["bold"],
             )
-            config = StackRunConfig(**yaml.safe_load(run_config_file.read_text()))
+            config_dict = yaml.safe_load(config_file.read_text())
+            config = parse_and_maybe_upgrade_config(config_dict)
         else:
             config = StackRunConfig(
                 built_at=datetime.now(),

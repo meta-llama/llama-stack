@@ -11,10 +11,13 @@ from typing import Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 from llama_stack.providers.datatypes import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.shields import *  # noqa: F403
+from llama_stack.apis.memory_banks import *  # noqa: F403
 
 
-LLAMA_STACK_BUILD_CONFIG_VERSION = "v1"
-LLAMA_STACK_RUN_CONFIG_VERSION = "v1"
+LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
+LLAMA_STACK_RUN_CONFIG_VERSION = "2"
 
 
 RoutingKey = Union[str, List[str]]
@@ -27,12 +30,6 @@ class GenericProviderConfig(BaseModel):
 
 class RoutableProviderConfig(GenericProviderConfig):
     routing_key: RoutingKey
-
-
-class PlaceholderProviderConfig(BaseModel):
-    """Placeholder provider config for API whose provider are defined in routing_table"""
-
-    providers: List[str]
 
 
 # Example: /inference, /safety
@@ -53,18 +50,16 @@ class AutoRoutedProviderSpec(ProviderSpec):
 
 
 # Example: /models, /shields
-@json_schema_type
 class RoutingTableProviderSpec(ProviderSpec):
     provider_type: str = "routing_table"
     config_class: str = ""
     docker_image: Optional[str] = None
 
-    inner_specs: List[ProviderSpec]
+    router_api: Api
     module: str
     pip_packages: List[str] = Field(default_factory=list)
 
 
-@json_schema_type
 class DistributionSpec(BaseModel):
     description: Optional[str] = Field(
         default="",
@@ -80,7 +75,12 @@ in the runtime configuration to help route to the correct provider.""",
     )
 
 
-@json_schema_type
+class Provider(BaseModel):
+    provider_id: str
+    provider_type: str
+    config: Dict[str, Any]
+
+
 class StackRunConfig(BaseModel):
     version: str = LLAMA_STACK_RUN_CONFIG_VERSION
     built_at: datetime
@@ -105,31 +105,37 @@ this could be just a hash
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
 
-    api_providers: Dict[
-        str, Union[GenericProviderConfig, PlaceholderProviderConfig]
-    ] = Field(
-        description="""
-Provider configurations for each of the APIs provided by this package.
-""",
-    )
-    routing_table: Dict[str, List[RoutableProviderConfig]] = Field(
-        default_factory=dict,
-        description="""
+    providers: Dict[str, List[Provider]]
 
-        E.g. The following is a ProviderRoutingEntry for models:
-        - routing_key: Llama3.1-8B-Instruct
-          provider_type: meta-reference
-          config:
-              model: Llama3.1-8B-Instruct
-              quantization: null
-              torch_seed: null
-              max_seq_len: 4096
-              max_batch_size: 1
-        """,
-    )
+    models: List[ModelDef]
+    memory_banks: List[MemoryBankDef]
+    shields: List[ShieldDef]
 
 
-@json_schema_type
+#     api_providers: Dict[
+#         str, Union[GenericProviderConfig, PlaceholderProviderConfig]
+#     ] = Field(
+#         description="""
+# Provider configurations for each of the APIs provided by this package.
+# """,
+#     )
+#     routing_table: Dict[str, List[RoutableProviderConfig]] = Field(
+#         default_factory=dict,
+#         description="""
+
+#         E.g. The following is a ProviderRoutingEntry for models:
+#         - routing_key: Llama3.1-8B-Instruct
+#           provider_type: meta-reference
+#           config:
+#               model: Llama3.1-8B-Instruct
+#               quantization: null
+#               torch_seed: null
+#               max_seq_len: 4096
+#               max_batch_size: 1
+#         """,
+#     )
+
+
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
     name: str

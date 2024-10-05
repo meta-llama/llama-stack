@@ -6,15 +6,19 @@
 
 from typing import Dict, List
 from llama_stack.apis.inspect import *  # noqa: F403
-
+from pydantic import BaseModel
 
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
 from llama_stack.providers.datatypes import *  # noqa: F403
 
 
-def is_passthrough(spec: ProviderSpec) -> bool:
-    return isinstance(spec, RemoteProviderSpec) and spec.adapter is None
+class DistributionInspectConfig(BaseModel):
+    pass
+
+
+def get_provider_impl(*args, **kwargs):
+    return DistributionInspectImpl()
 
 
 class DistributionInspectImpl(Inspect):

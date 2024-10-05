@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from llama_models.sku_list import CoreModelId, safety_models
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 
 class MetaReferenceShieldType(Enum):
@@ -25,7 +25,7 @@ class LlamaGuardShieldConfig(BaseModel):
     disable_input_check: bool = False
     disable_output_check: bool = False
 
-    @validator("model")
+    @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:
         permitted_models = [

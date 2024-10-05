@@ -154,6 +154,10 @@ as being "Llama Stack compatible"
         return None
 
 
+def is_passthrough(spec: ProviderSpec) -> bool:
+    return isinstance(spec, RemoteProviderSpec) and spec.adapter is None
+
+
 # Can avoid this by using Pydantic computed_field
 def remote_provider_spec(
     api: Api, adapter: Optional[AdapterSpec] = None
