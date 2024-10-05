@@ -33,8 +33,8 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[
                 "lm-eval",
             ],
-            module="llama_stack.providers.adapters.evals.eleuther",
-            config_class="llama_stack.providers.adapters.evals.eleuther.EleutherEvalsImplConfig",
+            module="llama_stack.providers.impls.third_party.evals.eleuther",
+            config_class="llama_stack.providers.impls.third_party.evals.eleuther.EleutherEvalsImplConfig",
             api_dependencies=[
                 Api.inference,
             ],

@@ -15,6 +15,9 @@ api_providers:
   evals:
     provider_type: eleuther
     config: {}
+  # evals:
+  #   provider_type: meta-reference
+  #   config: {}
   inference:
     providers:
     - meta-reference

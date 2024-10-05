@@ -146,5 +146,5 @@ class MMLUTask(BaseTask):
 
     def aggregate_results(self, eval_results):
         return EvaluateResponse(
-            metrics={"score": sum(eval_results) / len(eval_results)}
+            metrics={"score": str(sum(eval_results) / len(eval_results))}
         )
