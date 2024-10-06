@@ -18,7 +18,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
-from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
@@ -27,12 +27,13 @@ OLLAMA_SUPPORTED_SKUS = {
     "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
     "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
     "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
+    "Llama-Guard-3-8B": "xe/llamaguard3:latest",
 }
 
 
-class OllamaInferenceAdapter(Inference, RoutableProviderForModels):
+class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, url: str) -> None:
-        RoutableProviderForModels.__init__(
+        ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=OLLAMA_SUPPORTED_SKUS
         )
         self.url = url

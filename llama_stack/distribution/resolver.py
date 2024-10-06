@@ -20,6 +20,7 @@ class ProviderWithSpec(Provider):
     spec: ProviderSpec
 
 
+# TODO: this code is not very straightforward to follow and needs one more round of refactoring
 async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, Any]:
     """
     Does two things:
@@ -134,7 +135,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     print("")
 
     impls = {}
-    inner_impls_by_provider_id = {f"inner-{x}": {} for x in router_apis}
+    inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
     for api_str, provider in sorted_providers:
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
 

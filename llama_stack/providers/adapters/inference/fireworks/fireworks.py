@@ -13,7 +13,7 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.augment_messages import (
@@ -30,9 +30,9 @@ FIREWORKS_SUPPORTED_MODELS = {
 }
 
 
-class FireworksInferenceAdapter(Inference, RoutableProviderForModels):
+class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: FireworksImplConfig) -> None:
-        RoutableProviderForModels.__init__(
+        ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=FIREWORKS_SUPPORTED_MODELS
         )
         self.config = config

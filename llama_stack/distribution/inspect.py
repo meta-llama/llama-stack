@@ -17,12 +17,17 @@ class DistributionInspectConfig(BaseModel):
     pass
 
 
-def get_provider_impl(*args, **kwargs):
-    return DistributionInspectImpl()
+async def get_provider_impl(*args, **kwargs):
+    impl = DistributionInspectImpl()
+    await impl.initialize()
+    return impl
 
 
 class DistributionInspectImpl(Inspect):
     def __init__(self):
+        pass
+
+    async def initialize(self) -> None:
         pass
 
     async def list_providers(self) -> Dict[str, List[ProviderInfo]]:

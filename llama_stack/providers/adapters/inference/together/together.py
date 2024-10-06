@@ -18,7 +18,7 @@ from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
-from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from .config import TogetherImplConfig
 
@@ -34,10 +34,10 @@ TOGETHER_SUPPORTED_MODELS = {
 
 
 class TogetherInferenceAdapter(
-    Inference, NeedsRequestProviderData, RoutableProviderForModels
+    ModelRegistryHelper, Inference, NeedsRequestProviderData
 ):
     def __init__(self, config: TogetherImplConfig) -> None:
-        RoutableProviderForModels.__init__(
+        ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
         )
         self.config = config

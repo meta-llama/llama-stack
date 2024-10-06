@@ -14,14 +14,13 @@ from llama_stack.apis.safety import *  # noqa: F403
 
 
 class MemoryRouter(Memory):
-    """Routes to an provider based on the memory bank type"""
+    """Routes to an provider based on the memory bank identifier"""
 
     def __init__(
         self,
         routing_table: RoutingTable,
     ) -> None:
         self.routing_table = routing_table
-        self.bank_id_to_type = {}
 
     async def initialize(self) -> None:
         pass
@@ -29,32 +28,14 @@ class MemoryRouter(Memory):
     async def shutdown(self) -> None:
         pass
 
-    def get_provider_from_bank_id(self, bank_id: str) -> Any:
-        bank_type = self.bank_id_to_type.get(bank_id)
-        if not bank_type:
-            raise ValueError(f"Could not find bank type for {bank_id}")
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        return self.routing_table.list_memory_banks()
 
-        provider = self.routing_table.get_provider_impl(bank_type)
-        if not provider:
-            raise ValueError(f"Could not find provider for {bank_type}")
-        return provider
+    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
+        return self.routing_table.get_memory_bank(identifier)
 
-    async def create_memory_bank(
-        self,
-        name: str,
-        config: MemoryBankConfig,
-        url: Optional[URL] = None,
-    ) -> MemoryBank:
-        bank_type = config.type
-        bank = await self.routing_table.get_provider_impl(bank_type).create_memory_bank(
-            name, config, url
-        )
-        self.bank_id_to_type[bank.bank_id] = bank_type
-        return bank
-
-    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        provider = self.get_provider_from_bank_id(bank_id)
-        return await provider.get_memory_bank(bank_id)
+    async def register_memory_bank(self, bank: MemoryBankDef) -> None:
+        await self.routing_table.register_memory_bank(bank)
 
     async def insert_documents(
         self,
@@ -62,7 +43,7 @@ class MemoryRouter(Memory):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        return await self.get_provider_from_bank_id(bank_id).insert_documents(
+        return await self.routing_table.get_provider_impl(bank_id).insert_documents(
             bank_id, documents, ttl_seconds
         )
 
@@ -72,7 +53,7 @@ class MemoryRouter(Memory):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        return await self.get_provider_from_bank_id(bank_id).query_documents(
+        return await self.routing_table.get_provider_impl(bank_id).query_documents(
             bank_id, query, params
         )
 
@@ -91,6 +72,15 @@ class InferenceRouter(Inference):
 
     async def shutdown(self) -> None:
         pass
+
+    async def list_models(self) -> List[ModelDef]:
+        return self.routing_table.list_models()
+
+    async def get_model(self, identifier: str) -> Optional[ModelDef]:
+        return self.routing_table.get_model(identifier)
+
+    async def register_model(self, model: ModelDef) -> None:
+        await self.routing_table.register_model(model)
 
     async def chat_completion(
         self,
@@ -158,6 +148,15 @@ class SafetyRouter(Safety):
 
     async def shutdown(self) -> None:
         pass
+
+    async def list_shields(self) -> List[ShieldDef]:
+        return self.routing_table.list_shields()
+
+    async def get_shield(self, shield_type: str) -> Optional[ShieldDef]:
+        return self.routing_table.get_shield(shield_type)
+
+    async def register_shield(self, shield: ShieldDef) -> None:
+        await self.routing_table.register_shield(shield)
 
     async def run_shield(
         self,
