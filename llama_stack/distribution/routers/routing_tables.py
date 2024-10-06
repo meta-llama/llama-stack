@@ -4,31 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.inference import Inference
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.safety import Safety
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
-
-
-RoutableObject = Union[
-    ModelDef,
-    ShieldDef,
-    MemoryBankDef,
-]
-
-RoutedProtocol = Union[
-    Inference,
-    Safety,
-    Memory,
-]
 
 
 class CommonRoutingTableImpl(RoutingTable):
@@ -46,19 +30,14 @@ class CommonRoutingTableImpl(RoutingTable):
         self.impls_by_provider_id = impls_by_provider_id
         self.registry = registry
 
-    async def initialize(self) -> None:
-        keys_by_provider = {}
+        self.routing_key_to_object = {}
         for obj in self.registry:
-            keys = keys_by_provider.setdefault(obj.provider_id, [])
-            keys.append(obj.routing_key)
+            self.routing_key_to_object[obj.identifier] = obj
 
-        for provider_id, keys in keys_by_provider.items():
-            p = self.impls_by_provider_id[provider_id]
-            spec = p.__provider_spec__
-            if is_passthrough(spec):
-                continue
-
-            await p.validate_routing_keys(keys)
+    async def initialize(self) -> None:
+        for obj in self.registry:
+            p = self.impls_by_provider_id[obj.provider_id]
+            await self.register_object(obj, p)
 
     async def shutdown(self) -> None:
         pass
@@ -75,8 +54,24 @@ class CommonRoutingTableImpl(RoutingTable):
                 return obj
         return None
 
+    def register_object(self, obj: RoutableObject) -> None:
+        if obj.identifier in self.routing_key_to_object:
+            raise ValueError(f"Object `{obj.identifier}` already registered")
+
+        if obj.provider_id not in self.impls_by_provider_id:
+            raise ValueError(f"Provider `{obj.provider_id}` not found")
+
+        p = self.impls_by_provider_id[obj.provider_id]
+        await p.register_object(obj)
+
+        self.routing_key_to_object[obj.identifier] = obj
+        self.registry.append(obj)
+
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
+    async def register_object(self, obj: ModelDef, p: Inference) -> None:
+        await p.register_model(obj)
+
     async def list_models(self) -> List[ModelDef]:
         return self.registry
 
@@ -84,10 +79,13 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         return self.get_object_by_identifier(identifier)
 
     async def register_model(self, model: ModelDef) -> None:
-        raise NotImplementedError()
+        await self.register_object(model)
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
+    async def register_object(self, obj: ShieldDef, p: Safety) -> None:
+        await p.register_shield(obj)
+
     async def list_shields(self) -> List[ShieldDef]:
         return self.registry
 
@@ -95,10 +93,13 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
         return self.get_object_by_identifier(shield_type)
 
     async def register_shield(self, shield: ShieldDef) -> None:
-        raise NotImplementedError()
+        await self.register_object(shield)
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
+    async def register_object(self, obj: MemoryBankDef, p: Memory) -> None:
+        await p.register_memory_bank(obj)
+
     async def list_memory_banks(self) -> List[MemoryBankDef]:
         return self.registry
 
@@ -106,4 +107,4 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
         return self.get_object_by_identifier(identifier)
 
     async def register_memory_bank(self, bank: MemoryBankDef) -> None:
-        raise NotImplementedError()
+        await self.register_object(bank)

@@ -261,7 +261,7 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBank] = None
+    memory_bank: Optional[MemoryBankDef] = None
 
 
 class AgentConfigCommon(BaseModel):

@@ -12,11 +12,9 @@ from llama_models.sku_list import CoreModelId, safety_models
 from pydantic import BaseModel, field_validator
 
 
-class MetaReferenceShieldType(Enum):
-    llama_guard = "llama_guard"
-    code_scanner_guard = "code_scanner_guard"
-    injection_shield = "injection_shield"
-    jailbreak_shield = "jailbreak_shield"
+class PromptGuardType(Enum):
+    injection = "injection"
+    jailbreak = "jailbreak"
 
 
 class LlamaGuardShieldConfig(BaseModel):

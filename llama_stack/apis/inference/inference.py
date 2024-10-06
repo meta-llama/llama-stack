@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
 
 
 class LogProbConfig(BaseModel):
@@ -203,3 +204,12 @@ class Inference(Protocol):
         model: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse: ...
+
+    @webmethod(route="/inference/register_model")
+    async def register_model(self, model: ModelDef) -> None: ...
+
+    @webmethod(route="/inference/list_models")
+    async def list_models(self) -> List[ModelDef]: ...
+
+    @webmethod(route="/inference/get_model")
+    async def get_model(self, identifier: str) -> Optional[ModelDef]: ...

@@ -48,16 +48,6 @@ class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...
 
 
-class RoutableProvider(Protocol):
-    """
-    A provider which sits behind the RoutingTable and can get routed to.
-
-    All Inference / Safety / Memory providers fall into this bucket.
-    """
-
-    async def validate_routing_keys(self, keys: List[str]) -> None: ...
-
-
 @json_schema_type
 class AdapterSpec(BaseModel):
     adapter_type: str = Field(

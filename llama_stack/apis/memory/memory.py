@@ -15,6 +15,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.memory_banks import *  # noqa: F403
 
 
 @json_schema_type
@@ -76,3 +77,12 @@ class Memory(Protocol):
         bank_id: str,
         document_ids: List[str],
     ) -> None: ...
+
+    @webmethod(route="/memory/register_memory_bank")
+    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...
+
+    @webmethod(route="/memory/list_memory_banks")
+    async def list_memory_banks(self) -> List[MemoryBankDef]: ...
+
+    @webmethod(route="/memory/get_memory_bank")
+    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]: ...

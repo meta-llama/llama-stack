@@ -10,8 +10,6 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 from .routing_tables import (
     MemoryBanksRoutingTable,
     ModelsRoutingTable,
-    RoutableObject,
-    RoutedProtocol,
     ShieldsRoutingTable,
 )
 
