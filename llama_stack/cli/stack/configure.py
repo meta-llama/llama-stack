@@ -154,7 +154,7 @@ class StackConfigure(Subcommand):
             config = StackRunConfig(
                 built_at=datetime.now(),
                 image_name=image_name,
-                apis_to_serve=[],
+                apis=[],
                 providers={},
                 models=[],
                 shields=[],

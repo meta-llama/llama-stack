@@ -291,8 +291,8 @@ def main(
 
     all_endpoints = get_all_api_endpoints()
 
-    if config.apis_to_serve:
-        apis_to_serve = set(config.apis_to_serve)
+    if config.apis:
+        apis_to_serve = set(config.apis)
     else:
         apis_to_serve = set(impls.keys())
 

@@ -59,7 +59,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         key = api_str if api not in router_apis else f"inner-{api_str}"
         providers_with_specs[key] = specs
 
-    apis_to_serve = run_config.apis_to_serve or set(
+    apis_to_serve = run_config.apis or set(
         list(providers_with_specs.keys()) + list(routing_table_apis)
     )
 

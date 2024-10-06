@@ -64,8 +64,8 @@ def configure_api_providers(
 ) -> StackRunConfig:
     is_nux = len(config.providers) == 0
 
-    apis = set((config.apis_to_serve or list(build_spec.providers.keys())))
-    config.apis_to_serve = [a for a in apis if a != "telemetry"]
+    apis = set((config.apis or list(build_spec.providers.keys())))
+    config.apis = [a for a in apis if a != "telemetry"]
 
     if is_nux:
         print(
@@ -79,7 +79,7 @@ def configure_api_providers(
 
     provider_registry = get_provider_registry()
     builtin_apis = [a.routing_table_api for a in builtin_automatically_routed_apis()]
-    for api_str in config.apis_to_serve:
+    for api_str in config.apis:
         api = Api(api_str)
         if api in builtin_apis:
             continue
@@ -341,6 +341,9 @@ def upgrade_from_routing_table_to_registry(
 
     del config_dict["routing_table"]
     del config_dict["api_providers"]
+
+    config_dict["apis"] = config_dict["apis_to_serve"]
+    del config_dict["apis_to_serve"]
 
     return config_dict
 

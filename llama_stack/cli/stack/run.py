@@ -46,6 +46,7 @@ class StackRun(Subcommand):
 
         import pkg_resources
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
@@ -75,6 +76,7 @@ class StackRun(Subcommand):
             )
             return
 
+        cprint(f"Using config `{config_file}`", "green")
         with open(config_file, "r") as f:
             config = StackRunConfig(**yaml.safe_load(f))
 

@@ -39,15 +39,6 @@ RoutedProtocol = Union[
 ]
 
 
-class GenericProviderConfig(BaseModel):
-    provider_type: str
-    config: Dict[str, Any]
-
-
-class RoutableProviderConfig(GenericProviderConfig):
-    routing_key: RoutingKey
-
-
 # Example: /inference, /safety
 class AutoRoutedProviderSpec(ProviderSpec):
     provider_type: str = "router"
@@ -92,7 +83,6 @@ in the runtime configuration to help route to the correct provider.""",
     )
 
 
-# TODO: rename as ProviderInstanceConfig
 class Provider(BaseModel):
     provider_id: str
     provider_type: str
@@ -118,40 +108,36 @@ this could be just a hash
         default=None,
         description="Reference to the conda environment if this package refers to a conda environment",
     )
-    apis_to_serve: List[str] = Field(
+    apis: List[str] = Field(
         description="""
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
 
-    providers: Dict[str, List[Provider]]
+    providers: Dict[str, List[Provider]] = Field(
+        description="""
+One or more providers to use for each API. The same provider_type (e.g., meta-reference)
+can be instantiated multiple times (with different configs) if necessary.
+""",
+    )
 
-    models: List[ModelDef]
-    shields: List[ShieldDef]
-    memory_banks: List[MemoryBankDef]
-
-
-#     api_providers: Dict[
-#         str, Union[GenericProviderConfig, PlaceholderProviderConfig]
-#     ] = Field(
-#         description="""
-# Provider configurations for each of the APIs provided by this package.
-# """,
-#     )
-#     routing_table: Dict[str, List[RoutableProviderConfig]] = Field(
-#         default_factory=dict,
-#         description="""
-
-#         E.g. The following is a ProviderRoutingEntry for models:
-#         - routing_key: Llama3.1-8B-Instruct
-#           provider_type: meta-reference
-#           config:
-#               model: Llama3.1-8B-Instruct
-#               quantization: null
-#               torch_seed: null
-#               max_seq_len: 4096
-#               max_batch_size: 1
-#         """,
-#     )
+    models: List[ModelDef] = Field(
+        description="""
+List of model definitions to serve. This list may get extended by
+/models/register API calls at runtime.
+""",
+    )
+    shields: List[ShieldDef] = Field(
+        description="""
+List of shield definitions to serve. This list may get extended by
+/shields/register API calls at runtime.
+""",
+    )
+    memory_banks: List[MemoryBankDef] = Field(
+        description="""
+List of memory bank definitions to serve. This list may get extended by
+/memory_banks/register API calls at runtime.
+""",
+    )
 
 
 class BuildConfig(BaseModel):

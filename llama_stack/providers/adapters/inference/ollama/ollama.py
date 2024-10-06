@@ -20,8 +20,7 @@ from llama_stack.providers.utils.inference.augment_messages import (
 )
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
-# TODO: Eventually this will move to the llama cli model list command
-# mapping of Model SKUs to ollama models
+
 OLLAMA_SUPPORTED_SKUS = {
     "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
     "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
