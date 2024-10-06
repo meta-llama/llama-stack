@@ -45,10 +45,15 @@ class OllamaInferenceAdapter(Inference, RoutableProviderForModels):
     def client(self) -> AsyncClient:
         return AsyncClient(host=self.url)
 
-    async def initialize(self, routing_key: str) -> None:
+    async def initialize(self) -> None:
         print("Initializing Ollama, checking connectivity to server...")
         try:
             await self.client.ps()
+            routing_key = self._deps.get("routing_key")
+            if not routing_key:
+                raise ValueError(
+                    "Routing key is required for the Ollama adapter but was not found."
+                )
             ollama_model = self.map_to_provider_model(routing_key)
             print(f"Connected to Ollama server. Pre-downloading {ollama_model}...")
             await self.predownload_models(ollama_model)

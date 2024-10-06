@@ -15,12 +15,6 @@ async def get_adapter_impl(config: RemoteProviderConfig, _deps):
     from .ollama import OllamaInferenceAdapter
 
     impl = OllamaInferenceAdapter(config.url)
-
-    routing_key = _deps.get("routing_key")
-    if not routing_key:
-        raise ValueError(
-            "Routing key is required for the Ollama adapter but was not found."
-        )
-
-    await impl.initialize(routing_key)
+    impl._deps = _deps
+    await impl.initialize()
     return impl
