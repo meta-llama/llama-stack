@@ -7,6 +7,10 @@
 from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 
+class OllamaImplConfig(RemoteProviderConfig):
+    port: int = 11434
+
+
 async def get_adapter_impl(config: RemoteProviderConfig, _deps):
     from .ollama import OllamaInferenceAdapter
 

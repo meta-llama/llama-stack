@@ -41,16 +41,16 @@ class StackConfigure(Subcommand):
     def _run_stack_configure_cmd(self, args: argparse.Namespace) -> None:
         import json
         import os
+        import subprocess
         from pathlib import Path
 
         import pkg_resources
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
-
         from llama_stack.distribution.utils.exec import run_with_pty
-        from termcolor import cprint
 
         docker_image = None
 
@@ -67,7 +67,20 @@ class StackConfigure(Subcommand):
             f"Could not find {build_config_file}. Trying conda build name instead...",
             color="green",
         )
-        conda_dir = Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.config}"
+
+        conda_dir = (
+            Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
+        )
+        output = subprocess.check_output(
+            ["bash", "-c", "conda info --json -a"]
+        )
+        conda_envs = json.loads(output.decode("utf-8"))["envs"]
+
+        for x in conda_envs:
+            if x.endswith(f"/llamastack-{args.config}"):
+                conda_dir = Path(x)
+                break
+
         build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
 
         if build_config_file.exists():
@@ -98,16 +111,10 @@ class StackConfigure(Subcommand):
         # we have regenerated the build config file with script, now check if it exists
         if return_code != 0:
             self.parser.error(
-                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build first`. "
+                f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build` first. "
             )
             return
 
-        build_name = docker_image.removeprefix("llamastack-")
-        saved_file = str(builds_dir / f"{build_name}-run.yaml")
-        cprint(
-            f"YAML configuration has been written to {saved_file}. You can now run `llama stack run {saved_file}`",
-            color="green",
-        )
         return
 
     def _configure_llama_distribution(
@@ -120,11 +127,10 @@ class StackConfigure(Subcommand):
         from pathlib import Path
 
         import yaml
-        from llama_stack.distribution.configure import configure_api_providers
-
-        from llama_stack.distribution.utils.exec import run_with_pty
-        from llama_stack.distribution.utils.serialize import EnumEncoder
         from termcolor import cprint
+
+        from llama_stack.distribution.configure import configure_api_providers
+        from llama_stack.distribution.utils.serialize import EnumEncoder
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
         if output_dir:
@@ -145,7 +151,7 @@ class StackConfigure(Subcommand):
                 built_at=datetime.now(),
                 image_name=image_name,
                 apis_to_serve=[],
-                provider_map={},
+                api_providers={},
             )
 
         config = configure_api_providers(config, build_config.distribution_spec)
@@ -160,11 +166,11 @@ class StackConfigure(Subcommand):
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
-            f"> YAML configuration has been written to {run_config_file}.",
+            f"> YAML configuration has been written to `{run_config_file}`.",
             color="blue",
         )
 
         cprint(
-            f"You can now run `llama stack run {image_name} --port PORT` or `llama stack run {run_config_file} --port PORT`",
+            f"You can now run `llama stack run {image_name} --port PORT`",
             color="green",
         )

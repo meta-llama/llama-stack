@@ -59,7 +59,7 @@ class TestE2E(unittest.IsolatedAsyncioTestCase):
             host=TestE2E.HOST,
             port=TestE2E.PORT,
             custom_tools=custom_tools,
-            # model="Meta-Llama3.1-70B-Instruct",  # Defaults to 8B
+            # model="Llama3.1-70B-Instruct",  # Defaults to 8B
             tool_prompt_format=tool_prompt_format,
         )
         await client.create_session(__file__)

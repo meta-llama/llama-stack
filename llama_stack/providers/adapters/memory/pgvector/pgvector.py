@@ -5,16 +5,17 @@
 # the root directory of this source tree.
 
 import uuid
-
 from typing import List, Tuple
 
 import psycopg2
 from numpy.typing import NDArray
 from psycopg2 import sql
 from psycopg2.extras import execute_values, Json
-from pydantic import BaseModel
-from llama_stack.apis.memory import *  # noqa: F403
 
+from pydantic import BaseModel
+
+from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutableProvider
 
 from llama_stack.providers.utils.memory.vector_store import (
     ALL_MINILM_L6_V2_DIMENSION,
@@ -80,7 +81,6 @@ class PGVectorIndex(EmbeddingIndex):
 
         values = []
         for i, chunk in enumerate(chunks):
-            print(f"Adding chunk #{i} tokens={chunk.token_count}")
             values.append(
                 (
                     f"{chunk.document_id}:chunk-{i}",
@@ -119,7 +119,7 @@ class PGVectorIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class PGVectorMemoryAdapter(Memory):
+class PGVectorMemoryAdapter(Memory, RoutableProvider):
     def __init__(self, config: PGVectorConfig) -> None:
         print(f"Initializing PGVectorMemoryAdapter -> {config.host}:{config.port}")
         self.config = config
@@ -159,6 +159,10 @@ class PGVectorMemoryAdapter(Memory):
             raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:
+        pass
+
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
+        print(f"[pgvector] Registering memory bank routing keys: {routing_keys}")
         pass
 
     async def create_memory_bank(

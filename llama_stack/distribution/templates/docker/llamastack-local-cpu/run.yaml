@@ -1,0 +1,49 @@
+built_at: '2024-09-30T09:04:30.533391'
+image_name: local-cpu
+docker_image: local-cpu
+conda_env: null
+apis_to_serve:
+- agents
+- inference
+- models
+- memory
+- safety
+- shields
+- memory_banks
+api_providers:
+  inference:
+    providers:
+    - remote::ollama
+  safety:
+    providers:
+    - meta-reference
+  agents:
+    provider_type: meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: /home/xiyan/.llama/runtime/kvstore.db
+  memory:
+    providers:
+    - meta-reference
+  telemetry:
+    provider_type: meta-reference
+    config: {}
+routing_table:
+  inference:
+  - provider_type: remote::ollama
+    config:
+      host: localhost
+      port: 6000
+    routing_key: Llama3.1-8B-Instruct
+  safety:
+  - provider_type: meta-reference
+    config:
+      llama_guard_shield: null
+      prompt_guard_shield: null
+    routing_key: ["llama_guard", "code_scanner_guard", "injection_shield", "jailbreak_shield"]
+  memory:
+  - provider_type: meta-reference
+    config: {}
+    routing_key: vector

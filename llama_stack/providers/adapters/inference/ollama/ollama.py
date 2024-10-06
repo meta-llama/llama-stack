@@ -11,24 +11,30 @@ import httpx
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
 from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
+from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
 
 # TODO: Eventually this will move to the llama cli model list command
 # mapping of Model SKUs to ollama models
 OLLAMA_SUPPORTED_SKUS = {
-    # "Meta-Llama3.1-8B-Instruct": "llama3.1",
-    "Meta-Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
-    "Meta-Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
+    "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
+    "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
+    "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
+    "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
 }
 
 
-class OllamaInferenceAdapter(Inference):
+class OllamaInferenceAdapter(Inference, RoutableProviderForModels):
     def __init__(self, url: str) -> None:
+        RoutableProviderForModels.__init__(
+            self, stack_to_provider_models_map=OLLAMA_SUPPORTED_SKUS
+        )
         self.url = url
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
@@ -38,6 +44,7 @@ class OllamaInferenceAdapter(Inference):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
+        print("Initializing Ollama, checking connectivity to server...")
         try:
             await self.client.ps()
         except httpx.ConnectError as e:
@@ -48,7 +55,14 @@ class OllamaInferenceAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def _messages_to_ollama_messages(self, messages: list[Message]) -> list:
@@ -61,15 +75,6 @@ class OllamaInferenceAdapter(Inference):
             ollama_messages.append({"role": role, "content": message.content})
 
         return ollama_messages
-
-    def resolve_ollama_model(self, model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True) in OLLAMA_SUPPORTED_SKUS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(OLLAMA_SUPPORTED_SKUS.keys())}"
-
-        return OLLAMA_SUPPORTED_SKUS.get(model.descriptor(shorten_default_variant=True))
 
     def get_ollama_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -107,10 +112,10 @@ class OllamaInferenceAdapter(Inference):
             logprobs=logprobs,
         )
 
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
         # accumulate sampling params and other options to pass to ollama
         options = self.get_ollama_chat_options(request)
-        ollama_model = self.resolve_ollama_model(request.model)
+        ollama_model = self.map_to_provider_model(request.model)
 
         res = await self.client.ps()
         need_model_pull = True

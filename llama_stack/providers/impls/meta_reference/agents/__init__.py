@@ -8,17 +8,13 @@ from typing import Dict
 
 from llama_stack.distribution.datatypes import Api, ProviderSpec
 
-from .config import MetaReferenceImplConfig
+from .config import MetaReferenceAgentsImplConfig
 
 
 async def get_provider_impl(
-    config: MetaReferenceImplConfig, deps: Dict[Api, ProviderSpec]
+    config: MetaReferenceAgentsImplConfig, deps: Dict[Api, ProviderSpec]
 ):
     from .agents import MetaReferenceAgentsImpl
-
-    assert isinstance(
-        config, MetaReferenceImplConfig
-    ), f"Unexpected config type: {type(config)}"
 
     impl = MetaReferenceAgentsImpl(
         config,

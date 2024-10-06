@@ -7,13 +7,9 @@
 from termcolor import cprint
 
 from .base import ShieldResponse, TextShield
-from llama_stack.apis.safety import *  # noqa: F403
 
 
 class CodeScannerShield(TextShield):
-    def get_shield_type(self) -> ShieldType:
-        return BuiltinShield.code_scanner_guard
-
     async def run_impl(self, text: str) -> ShieldResponse:
         from codeshield.cs import CodeShield
 
@@ -21,7 +17,6 @@ class CodeScannerShield(TextShield):
         result = await CodeShield.scan_code(text)
         if result.is_insecure:
             return ShieldResponse(
-                shield_type=BuiltinShield.code_scanner_guard,
                 is_violation=True,
                 violation_type=",".join(
                     [issue.pattern_id for issue in result.issues_found]
@@ -29,6 +24,4 @@ class CodeScannerShield(TextShield):
                 violation_return_message="Sorry, I found security concerns in the code.",
             )
         else:
-            return ShieldResponse(
-                shield_type=BuiltinShield.code_scanner_guard, is_violation=False
-            )
+            return ShieldResponse(is_violation=False)

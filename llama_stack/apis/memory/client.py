@@ -13,9 +13,9 @@ from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
+from termcolor import cprint
 
 from llama_stack.distribution.datatypes import RemoteProviderConfig
-from termcolor import cprint
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.providers.utils.memory.file_utils import data_url_from_file
@@ -38,7 +38,7 @@ class MemoryClient(Memory):
     async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
         async with httpx.AsyncClient() as client:
             r = await client.get(
-                f"{self.base_url}/memory_banks/get",
+                f"{self.base_url}/memory/get",
                 params={
                     "bank_id": bank_id,
                 },
@@ -59,7 +59,7 @@ class MemoryClient(Memory):
     ) -> MemoryBank:
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"{self.base_url}/memory_banks/create",
+                f"{self.base_url}/memory/create",
                 json={
                     "name": name,
                     "config": config.dict(),
@@ -81,7 +81,7 @@ class MemoryClient(Memory):
     ) -> None:
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"{self.base_url}/memory_bank/insert",
+                f"{self.base_url}/memory/insert",
                 json={
                     "bank_id": bank_id,
                     "documents": [d.dict() for d in documents],
@@ -99,7 +99,7 @@ class MemoryClient(Memory):
     ) -> QueryDocumentsResponse:
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"{self.base_url}/memory_bank/query",
+                f"{self.base_url}/memory/query",
                 json={
                     "bank_id": bank_id,
                     "query": query,
@@ -120,7 +120,7 @@ async def run_main(host: str, port: int, stream: bool):
         name="test_bank",
         config=VectorMemoryBankConfig(
             bank_id="test_bank",
-            embedding_model="dragon-roberta-query-2",
+            embedding_model="all-MiniLM-L6-v2",
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,
         ),
@@ -129,7 +129,7 @@ async def run_main(host: str, port: int, stream: bool):
 
     retrieved_bank = await client.get_memory_bank(bank.bank_id)
     assert retrieved_bank is not None
-    assert retrieved_bank.config.embedding_model == "dragon-roberta-query-2"
+    assert retrieved_bank.config.embedding_model == "all-MiniLM-L6-v2"
 
     urls = [
         "memory_optimizations.rst",

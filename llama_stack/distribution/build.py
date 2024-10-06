@@ -8,16 +8,27 @@ from enum import Enum
 from typing import List, Optional
 
 import pkg_resources
+
+from llama_stack.distribution.utils.exec import run_with_pty
 from pydantic import BaseModel
 
 from termcolor import cprint
 
-from llama_stack.distribution.utils.exec import run_with_pty
-
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
-from llama_stack.distribution.distribution import api_providers, SERVER_DEPENDENCIES
+from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
+from llama_stack.distribution.distribution import get_provider_registry
+
+
+# These are the dependencies needed by the distribution server.
+# `llama-stack` is automatically installed by the installation script.
+SERVER_DEPENDENCIES = [
+    "fastapi",
+    "fire",
+    "httpx",
+    "uvicorn",
+]
 
 
 class ImageType(Enum):
@@ -42,7 +53,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
     )
 
     # extend package dependencies based on providers spec
-    all_providers = api_providers()
+    all_providers = get_provider_registry()
     for (
         api_str,
         provider_or_providers,
@@ -66,6 +77,16 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             if provider_spec.docker_image:
                 raise ValueError("A stack's dependencies cannot have a docker image")
 
+    special_deps = []
+    deps = []
+    for package in package_deps.pip_packages:
+        if "--no-deps" in package or "--index-url" in package:
+            special_deps.append(package)
+        else:
+            deps.append(package)
+    deps = list(set(deps))
+    special_deps = list(set(special_deps))
+
     if build_config.image_type == ImageType.docker.value:
         script = pkg_resources.resource_filename(
             "llama_stack", "distribution/build_container.sh"
@@ -75,7 +96,8 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             build_config.name,
             package_deps.docker_image,
             str(build_file_path),
-            " ".join(package_deps.pip_packages),
+            str(BUILDS_BASE_DIR / ImageType.docker.value),
+            " ".join(deps),
         ]
     else:
         script = pkg_resources.resource_filename(
@@ -84,8 +106,12 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         args = [
             script,
             build_config.name,
-            " ".join(package_deps.pip_packages),
+            str(build_file_path),
+            " ".join(deps),
         ]
+
+    if special_deps:
+        args.append("#".join(special_deps))
 
     return_code = run_with_pty(args)
     if return_code != 0:
@@ -93,4 +119,5 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             f"Failed to build target {build_config.name} with return code {return_code}",
             color="red",
         )
-        return
+
+    return return_code

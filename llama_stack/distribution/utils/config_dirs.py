@@ -8,10 +8,14 @@ import os
 from pathlib import Path
 
 
-LLAMA_STACK_CONFIG_DIR = Path(os.path.expanduser("~/.llama/"))
+LLAMA_STACK_CONFIG_DIR = Path(
+    os.getenv("LLAMA_STACK_CONFIG_DIR", os.path.expanduser("~/.llama/"))
+)
 
 DISTRIBS_BASE_DIR = LLAMA_STACK_CONFIG_DIR / "distributions"
 
 DEFAULT_CHECKPOINT_DIR = LLAMA_STACK_CONFIG_DIR / "checkpoints"
 
 BUILDS_BASE_DIR = LLAMA_STACK_CONFIG_DIR / "builds"
+
+RUNTIME_BASE_DIR = LLAMA_STACK_CONFIG_DIR / "runtime"

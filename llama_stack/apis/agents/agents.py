@@ -37,8 +37,8 @@ class AgentTool(Enum):
 
 
 class ToolDefinitionCommon(BaseModel):
-    input_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
-    output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
+    input_shields: Optional[List[str]] = Field(default_factory=list)
+    output_shields: Optional[List[str]] = Field(default_factory=list)
 
 
 class SearchEngineType(Enum):
@@ -151,6 +151,7 @@ MemoryQueryGeneratorConfig = Annotated[
 ]
 
 
+@json_schema_type
 class MemoryToolDefinition(ToolDefinitionCommon):
     type: Literal[AgentTool.memory.value] = AgentTool.memory.value
     memory_bank_configs: List[MemoryBankConfig] = Field(default_factory=list)
@@ -208,7 +209,7 @@ class ToolExecutionStep(StepCommon):
 @json_schema_type
 class ShieldCallStep(StepCommon):
     step_type: Literal[StepType.shield_call.value] = StepType.shield_call.value
-    response: ShieldResponse
+    violation: Optional[SafetyViolation]
 
 
 @json_schema_type
@@ -266,8 +267,8 @@ class Session(BaseModel):
 class AgentConfigCommon(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
-    input_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
-    output_shields: Optional[List[ShieldDefinition]] = Field(default_factory=list)
+    input_shields: Optional[List[str]] = Field(default_factory=list)
+    output_shields: Optional[List[str]] = Field(default_factory=list)
 
     tools: Optional[List[AgentToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
@@ -275,11 +276,14 @@ class AgentConfigCommon(BaseModel):
         default=ToolPromptFormat.json
     )
 
+    max_infer_iters: int = 10
+
 
 @json_schema_type
 class AgentConfig(AgentConfigCommon):
     model: str
     instructions: str
+    enable_session_persistence: bool
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):

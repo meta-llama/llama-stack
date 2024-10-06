@@ -14,6 +14,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutableProvider
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.providers.utils.memory.vector_store import (
@@ -42,7 +43,6 @@ class FaissIndex(EmbeddingIndex):
         indexlen = len(self.id_by_index)
         for i, chunk in enumerate(chunks):
             self.chunk_by_index[indexlen + i] = chunk
-            logger.info(f"Adding chunk #{indexlen + i} tokens={chunk.token_count}")
             self.id_by_index[indexlen + i] = chunk.document_id
 
         self.index.add(np.array(embeddings).astype(np.float32))
@@ -63,7 +63,7 @@ class FaissIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class FaissMemoryImpl(Memory):
+class FaissMemoryImpl(Memory, RoutableProvider):
     def __init__(self, config: FaissImplConfig) -> None:
         self.config = config
         self.cache = {}
@@ -71,6 +71,10 @@ class FaissMemoryImpl(Memory):
     async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
+
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
+        print(f"[faiss] Registering memory bank routing keys: {routing_keys}")
+        pass
 
     async def create_memory_bank(
         self,

@@ -10,24 +10,36 @@ from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
 from together import Together
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
+from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
 
 from .config import TogetherImplConfig
 
+
 TOGETHER_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-    "Meta-Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-    "Meta-Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+    "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+    "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+    "Llama3.2-3B-Instruct": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+    "Llama3.2-11B-Vision-Instruct": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+    "Llama3.2-90B-Vision-Instruct": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
 }
 
 
-class TogetherInferenceAdapter(Inference):
+class TogetherInferenceAdapter(
+    Inference, NeedsRequestProviderData, RoutableProviderForModels
+):
     def __init__(self, config: TogetherImplConfig) -> None:
+        RoutableProviderForModels.__init__(
+            self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
+        )
         self.config = config
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
@@ -42,7 +54,14 @@ class TogetherInferenceAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def _messages_to_together_messages(self, messages: list[Message]) -> list:
@@ -55,18 +74,6 @@ class TogetherInferenceAdapter(Inference):
             together_messages.append({"role": role, "content": message.content})
 
         return together_messages
-
-    def resolve_together_model(self, model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True)
-            in TOGETHER_SUPPORTED_MODELS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(TOGETHER_SUPPORTED_MODELS.keys())}"
-
-        return TOGETHER_SUPPORTED_MODELS.get(
-            model.descriptor(shorten_default_variant=True)
-        )
 
     def get_together_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -88,6 +95,19 @@ class TogetherInferenceAdapter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+
+        together_api_key = None
+        if self.config.api_key is not None:
+            together_api_key = self.config.api_key
+        else:
+            provider_data = self.get_request_provider_data()
+            if provider_data is None or not provider_data.together_api_key:
+                raise ValueError(
+                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+                )
+            together_api_key = provider_data.together_api_key
+
+        client = Together(api_key=together_api_key)
         # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = ChatCompletionRequest(
             model=model,
@@ -102,12 +122,12 @@ class TogetherInferenceAdapter(Inference):
 
         # accumulate sampling params and other options to pass to together
         options = self.get_together_chat_options(request)
-        together_model = self.resolve_together_model(request.model)
-        messages = prepare_messages(request)
+        together_model = self.map_to_provider_model(request.model)
+        messages = augment_messages_for_tools(request)
 
         if not request.stream:
             # TODO: might need to add back an async here
-            r = self.client.chat.completions.create(
+            r = client.chat.completions.create(
                 model=together_model,
                 messages=self._messages_to_together_messages(messages),
                 stream=False,
@@ -142,23 +162,16 @@ class TogetherInferenceAdapter(Inference):
             ipython = False
             stop_reason = None
 
-            for chunk in self.client.chat.completions.create(
+            for chunk in client.chat.completions.create(
                 model=together_model,
                 messages=self._messages_to_together_messages(messages),
                 stream=True,
                 **options,
             ):
-                if chunk.choices[0].finish_reason:
-                    if (
-                        stop_reason is None and chunk.choices[0].finish_reason == "stop"
-                    ) or (
-                        stop_reason is None and chunk.choices[0].finish_reason == "eos"
-                    ):
+                if finish_reason := chunk.choices[0].finish_reason:
+                    if stop_reason is None and finish_reason in ["stop", "eos"]:
                         stop_reason = StopReason.end_of_turn
-                    elif (
-                        stop_reason is None
-                        and chunk.choices[0].finish_reason == "length"
-                    ):
+                    elif stop_reason is None and finish_reason == "length":
                         stop_reason = StopReason.out_of_tokens
                     break
 

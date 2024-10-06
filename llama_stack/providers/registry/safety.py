@@ -6,21 +6,59 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_stack.distribution.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 
 def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.safety,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
-                "accelerate",
                 "codeshield",
-                "torch",
                 "transformers",
+                "torch --index-url https://download.pytorch.org/whl/cpu",
             ],
             module="llama_stack.providers.impls.meta_reference.safety",
             config_class="llama_stack.providers.impls.meta_reference.safety.SafetyConfig",
+            api_dependencies=[
+                Api.inference,
+            ],
+        ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.safety.sample",
+                config_class="llama_stack.providers.adapters.safety.sample.SampleConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="bedrock",
+                pip_packages=["boto3"],
+                module="llama_stack.providers.adapters.safety.bedrock",
+                config_class="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="together",
+                pip_packages=[
+                    "together",
+                ],
+                module="llama_stack.providers.adapters.safety.together",
+                config_class="llama_stack.providers.adapters.safety.together.TogetherSafetyConfig",
+                provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
+            ),
         ),
     ]

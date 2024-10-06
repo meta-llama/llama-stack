@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-09-17 12:55:45.538053"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-02 15:40:53.008257"
     },
     "servers": [
         {
@@ -46,7 +46,17 @@
                 "tags": [
                     "BatchInference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -76,7 +86,17 @@
                 "tags": [
                     "BatchInference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -99,7 +119,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -122,7 +152,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -159,7 +199,17 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -196,7 +246,17 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -226,7 +286,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -256,7 +326,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -286,7 +366,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -309,7 +399,17 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -322,7 +422,7 @@
                 }
             }
         },
-        "/memory_banks/create": {
+        "/memory/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -339,7 +439,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -362,7 +472,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -385,7 +505,17 @@
                 "tags": [
                     "Agents"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -408,7 +538,17 @@
                 "tags": [
                     "Datasets"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -421,7 +561,7 @@
                 }
             }
         },
-        "/memory_bank/documents/delete": {
+        "/memory/documents/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -431,7 +571,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -444,7 +594,7 @@
                 }
             }
         },
-        "/memory_banks/drop": {
+        "/memory/drop": {
             "post": {
                 "responses": {
                     "200": {
@@ -461,7 +611,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -491,7 +651,17 @@
                 "tags": [
                     "Inference"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -521,7 +691,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -551,7 +731,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -581,7 +771,17 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -624,6 +824,15 @@
                         "name": "session_id",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -682,6 +891,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -719,6 +937,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -748,11 +975,20 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
         },
-        "/memory_bank/documents/get": {
+        "/memory/documents/get": {
             "post": {
                 "responses": {
                     "200": {
@@ -774,6 +1010,15 @@
                         "name": "bank_id",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -816,6 +1061,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -842,6 +1096,15 @@
                         "name": "job_uuid",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -874,6 +1137,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -895,10 +1167,20 @@
                 "tags": [
                     "Evaluations"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
-        "/memory_banks/get": {
+        "/memory/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -927,6 +1209,150 @@
                         "name": "bank_id",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/models/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ModelServingSpec"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "core_model_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/memory_banks/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/MemoryBankSpec"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "bank_type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/MemoryBankType"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/shields/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ShieldSpec"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Shields"
+                ],
+                "parameters": [
+                    {
+                        "name": "shield_type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -959,6 +1385,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -985,6 +1420,15 @@
                         "name": "job_uuid",
                         "in": "query",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1017,6 +1461,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -1046,6 +1499,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
             }
@@ -1067,10 +1529,50 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
-        "/memory_bank/insert": {
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthInfo"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/memory/insert": {
             "post": {
                 "responses": {
                     "200": {
@@ -1080,7 +1582,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1101,6 +1613,36 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
+                                    "$ref": "#/components/schemas/MemoryBankSpec"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/memory/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
                                     "$ref": "#/components/schemas/MemoryBank"
                                 }
                             }
@@ -1110,7 +1652,146 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/models/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModelServingSpec"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/providers/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/ProviderInfo"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/routes/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/RouteInfo"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/shields/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ShieldSpec"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Shields"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/telemetry/log_event": {
@@ -1123,7 +1804,17 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1153,7 +1844,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1166,7 +1867,7 @@
                 }
             }
         },
-        "/memory_bank/query": {
+        "/memory/query": {
             "post": {
                 "responses": {
                     "200": {
@@ -1183,7 +1884,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1213,7 +1924,17 @@
                 "tags": [
                     "RewardScoring"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1226,7 +1947,7 @@
                 }
             }
         },
-        "/safety/run_shields": {
+        "/safety/run_shield": {
             "post": {
                 "responses": {
                     "200": {
@@ -1243,12 +1964,22 @@
                 "tags": [
                     "Safety"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RunShieldsRequest"
+                                "$ref": "#/components/schemas/RunShieldRequest"
                             }
                         }
                     },
@@ -1273,7 +2004,17 @@
                 "tags": [
                     "PostTraining"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1303,7 +2044,17 @@
                 "tags": [
                     "SyntheticDataGeneration"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1316,7 +2067,7 @@
                 }
             }
         },
-        "/memory_bank/update": {
+        "/memory/update": {
             "post": {
                 "responses": {
                     "200": {
@@ -1326,7 +2077,17 @@
                 "tags": [
                     "Memory"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1357,7 +2118,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "assistant"
+                        "const": "assistant",
+                        "default": "assistant"
                     },
                     "content": {
                         "oneOf": [
@@ -1365,9 +2127,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -1390,26 +2162,61 @@
                     "tool_calls"
                 ]
             },
+            "ImageMedia": {
+                "type": "object",
+                "properties": {
+                    "image": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "format": {
+                                        "type": "string"
+                                    },
+                                    "format_description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "title": "This class represents an image object.  To create"
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "image"
+                ]
+            },
             "SamplingParams": {
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "$ref": "#/components/schemas/SamplingStrategy"
+                        "$ref": "#/components/schemas/SamplingStrategy",
+                        "default": "greedy"
                     },
                     "temperature": {
-                        "type": "number"
+                        "type": "number",
+                        "default": 0.0
                     },
                     "top_p": {
-                        "type": "number"
+                        "type": "number",
+                        "default": 0.95
                     },
                     "top_k": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 0
                     },
                     "max_tokens": {
-                        "type": "integer"
+                        "type": "integer",
+                        "default": 0
                     },
                     "repetition_penalty": {
-                        "type": "number"
+                        "type": "number",
+                        "default": 1.0
                     }
                 },
                 "additionalProperties": false,
@@ -1438,7 +2245,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "system"
+                        "const": "system",
+                        "default": "system"
                     },
                     "content": {
                         "oneOf": [
@@ -1446,9 +2254,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -1595,7 +2413,30 @@
                         "type": "string"
                     },
                     "required": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -1607,7 +2448,8 @@
                 "type": "string",
                 "enum": [
                     "json",
-                    "function_tag"
+                    "function_tag",
+                    "python_list"
                 ],
                 "title": "This Enum refers to the prompt format for calling custom / zero shot tools",
                 "description": "`json` --\n    Refers to the json format for calling tools.\n    The json format takes the form like\n    {\n        \"type\": \"function\",\n        \"function\" : {\n            \"name\": \"function_name\",\n            \"description\": \"function_description\",\n            \"parameters\": {...}\n        }\n    }\n\n`function_tag` --\n    This is an example of how you could define\n    your own user defined format for making tool calls.\n    The function_tag format looks like this,\n    <function=function_name>(parameters)</function>\n\nThe detailed prompts for each of these formats are added to llama cli"
@@ -1617,7 +2459,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "ipython"
+                        "const": "ipython",
+                        "default": "ipython"
                     },
                     "call_id": {
                         "type": "string"
@@ -1638,9 +2481,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -1654,12 +2507,18 @@
                     "content"
                 ]
             },
+            "URL": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^(https?://|file://|data:)"
+            },
             "UserMessage": {
                 "type": "object",
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "user"
+                        "const": "user",
+                        "default": "user"
                     },
                     "content": {
                         "oneOf": [
@@ -1667,9 +2526,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -1680,9 +2549,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -1741,7 +2620,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -1782,9 +2662,19 @@
                                     "type": "string"
                                 },
                                 {
+                                    "$ref": "#/components/schemas/ImageMedia"
+                                },
+                                {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ImageMedia"
+                                            }
+                                        ]
                                     }
                                 }
                             ]
@@ -1797,7 +2687,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -1895,7 +2786,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -2039,9 +2931,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -2056,7 +2958,8 @@
                         "type": "object",
                         "properties": {
                             "top_k": {
-                                "type": "integer"
+                                "type": "integer",
+                                "default": 0
                             }
                         },
                         "additionalProperties": false
@@ -2118,13 +3021,13 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "tools": {
@@ -2147,214 +3050,39 @@
                                     "$ref": "#/components/schemas/FunctionCallToolDefinition"
                                 },
                                 {
-                                    "type": "object",
-                                    "properties": {
-                                        "input_shields": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ShieldDefinition"
-                                            }
-                                        },
-                                        "output_shields": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ShieldDefinition"
-                                            }
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "memory"
-                                        },
-                                        "memory_bank_configs": {
-                                            "type": "array",
-                                            "items": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "vector"
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "keyvalue"
-                                                            },
-                                                            "keys": {
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                }
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type",
-                                                            "keys"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "keyword"
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "bank_id": {
-                                                                "type": "string"
-                                                            },
-                                                            "type": {
-                                                                "type": "string",
-                                                                "const": "graph"
-                                                            },
-                                                            "entities": {
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                }
-                                                            }
-                                                        },
-                                                        "additionalProperties": false,
-                                                        "required": [
-                                                            "bank_id",
-                                                            "type",
-                                                            "entities"
-                                                        ]
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        "query_generator_config": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "const": "default"
-                                                        },
-                                                        "sep": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "type",
-                                                        "sep"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "const": "llm"
-                                                        },
-                                                        "model": {
-                                                            "type": "string"
-                                                        },
-                                                        "template": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "type",
-                                                        "model",
-                                                        "template"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "const": "custom"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "type"
-                                                    ]
-                                                }
-                                            ]
-                                        },
-                                        "max_tokens_in_context": {
-                                            "type": "integer"
-                                        },
-                                        "max_chunks": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type",
-                                        "memory_bank_configs",
-                                        "query_generator_config",
-                                        "max_tokens_in_context",
-                                        "max_chunks"
-                                    ]
+                                    "$ref": "#/components/schemas/MemoryToolDefinition"
                                 }
                             ]
                         }
                     },
                     "tool_choice": {
-                        "$ref": "#/components/schemas/ToolChoice"
+                        "$ref": "#/components/schemas/ToolChoice",
+                        "default": "auto"
                     },
                     "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat"
+                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "default": "json"
+                    },
+                    "max_infer_iters": {
+                        "type": "integer",
+                        "default": 10
                     },
                     "model": {
                         "type": "string"
                     },
                     "instructions": {
                         "type": "string"
+                    },
+                    "enable_session_persistence": {
+                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "max_infer_iters",
                     "model",
-                    "instructions"
-                ]
-            },
-            "BuiltinShield": {
-                "type": "string",
-                "enum": [
-                    "llama_guard",
-                    "code_scanner_guard",
-                    "third_party_shield",
-                    "injection_shield",
-                    "jailbreak_shield"
+                    "instructions",
+                    "enable_session_persistence"
                 ]
             },
             "CodeInterpreterToolDefinition": {
@@ -2363,21 +3091,23 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
-                        "const": "code_interpreter"
+                        "const": "code_interpreter",
+                        "default": "code_interpreter"
                     },
                     "enable_inline_code_execution": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default": true
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -2395,18 +3125,19 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
-                        "const": "function_call"
+                        "const": "function_call",
+                        "default": "function_call"
                     },
                     "function_name": {
                         "type": "string"
@@ -2432,12 +3163,194 @@
                     "parameters"
                 ]
             },
-            "OnViolationAction": {
-                "type": "integer",
-                "enum": [
-                    0,
-                    1,
-                    2
+            "MemoryToolDefinition": {
+                "type": "object",
+                "properties": {
+                    "input_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "output_shields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "memory",
+                        "default": "memory"
+                    },
+                    "memory_bank_configs": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "vector",
+                                            "default": "vector"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyvalue",
+                                            "default": "keyvalue"
+                                        },
+                                        "keys": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "keys"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "keyword",
+                                            "default": "keyword"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bank_id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "graph",
+                                            "default": "graph"
+                                        },
+                                        "entities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "bank_id",
+                                        "type",
+                                        "entities"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "query_generator_config": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "default",
+                                        "default": "default"
+                                    },
+                                    "sep": {
+                                        "type": "string",
+                                        "default": " "
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "sep"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "llm",
+                                        "default": "llm"
+                                    },
+                                    "model": {
+                                        "type": "string"
+                                    },
+                                    "template": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "model",
+                                    "template"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "custom",
+                                        "default": "custom"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
+                    },
+                    "max_tokens_in_context": {
+                        "type": "integer",
+                        "default": 4096
+                    },
+                    "max_chunks": {
+                        "type": "integer",
+                        "default": 10
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "memory_bank_configs",
+                    "query_generator_config",
+                    "max_tokens_in_context",
+                    "max_chunks"
                 ]
             },
             "PhotogenToolDefinition": {
@@ -2446,18 +3359,19 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
-                        "const": "photogen"
+                        "const": "photogen",
+                        "default": "photogen"
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -2574,25 +3488,30 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
-                        "const": "brave_search"
+                        "const": "brave_search",
+                        "default": "brave_search"
+                    },
+                    "api_key": {
+                        "type": "string"
                     },
                     "engine": {
                         "type": "string",
                         "enum": [
                             "bing",
                             "brave"
-                        ]
+                        ],
+                        "default": "brave"
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -2601,48 +3520,9 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
+                    "api_key",
                     "engine"
                 ]
-            },
-            "ShieldDefinition": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinShield"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
-                        }
-                    },
-                    "on_violation_action": {
-                        "$ref": "#/components/schemas/OnViolationAction"
-                    },
-                    "execution_config": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "shield_type",
-                    "on_violation_action"
-                ]
-            },
-            "URL": {
-                "type": "string",
-                "format": "uri",
-                "pattern": "^(https?://|file://|data:)"
             },
             "WolframAlphaToolDefinition": {
                 "type": "object",
@@ -2650,18 +3530,22 @@
                     "input_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "output_shields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                            "type": "string"
                         }
                     },
                     "type": {
                         "type": "string",
-                        "const": "wolfram_alpha"
+                        "const": "wolfram_alpha",
+                        "default": "wolfram_alpha"
+                    },
+                    "api_key": {
+                        "type": "string"
                     },
                     "remote_execution": {
                         "$ref": "#/components/schemas/RestAPIExecutionConfig"
@@ -2669,7 +3553,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type"
+                    "type",
+                    "api_key"
                 ]
             },
             "CreateAgentRequest": {
@@ -2733,9 +3618,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             },
                             {
@@ -2826,7 +3721,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "step_complete"
+                        "const": "step_complete",
+                        "default": "step_complete"
                     },
                     "step_type": {
                         "type": "string",
@@ -2866,7 +3762,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "step_progress"
+                        "const": "step_progress",
+                        "default": "step_progress"
                     },
                     "step_type": {
                         "type": "string",
@@ -2902,7 +3799,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "step_start"
+                        "const": "step_start",
+                        "default": "step_start"
                     },
                     "step_type": {
                         "type": "string",
@@ -2966,7 +3864,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "turn_complete"
+                        "const": "turn_complete",
+                        "default": "turn_complete"
                     },
                     "turn": {
                         "$ref": "#/components/schemas/Turn"
@@ -2983,7 +3882,8 @@
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "const": "turn_start"
+                        "const": "turn_start",
+                        "default": "turn_start"
                     },
                     "turn_id": {
                         "type": "string"
@@ -3014,7 +3914,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "inference"
+                        "const": "inference",
+                        "default": "inference"
                     },
                     "model_response": {
                         "$ref": "#/components/schemas/CompletionMessage"
@@ -3047,7 +3948,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "memory_retrieval"
+                        "const": "memory_retrieval",
+                        "default": "memory_retrieval"
                     },
                     "memory_bank_ids": {
                         "type": "array",
@@ -3061,9 +3963,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -3076,6 +3988,47 @@
                     "step_type",
                     "memory_bank_ids",
                     "inserted_context"
+                ]
+            },
+            "SafetyViolation": {
+                "type": "object",
+                "properties": {
+                    "violation_level": {
+                        "$ref": "#/components/schemas/ViolationLevel"
+                    },
+                    "user_message": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "violation_level",
+                    "metadata"
                 ]
             },
             "ShieldCallStep": {
@@ -3097,47 +4050,18 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "shield_call"
+                        "const": "shield_call",
+                        "default": "shield_call"
                     },
-                    "response": {
-                        "$ref": "#/components/schemas/ShieldResponse"
+                    "violation": {
+                        "$ref": "#/components/schemas/SafetyViolation"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "turn_id",
                     "step_id",
-                    "step_type",
-                    "response"
-                ]
-            },
-            "ShieldResponse": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BuiltinShield"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "is_violation": {
-                        "type": "boolean"
-                    },
-                    "violation_type": {
-                        "type": "string"
-                    },
-                    "violation_return_message": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "shield_type",
-                    "is_violation"
+                    "step_type"
                 ]
             },
             "ToolExecutionStep": {
@@ -3159,7 +4083,8 @@
                     },
                     "step_type": {
                         "type": "string",
-                        "const": "tool_execution"
+                        "const": "tool_execution",
+                        "default": "tool_execution"
                     },
                     "tool_calls": {
                         "type": "array",
@@ -3205,9 +4130,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -3290,6 +4225,14 @@
                     "started_at"
                 ],
                 "title": "A single turn in an interaction with an Agentic System."
+            },
+            "ViolationLevel": {
+                "type": "string",
+                "enum": [
+                    "info",
+                    "warn",
+                    "error"
+                ]
             },
             "TrainEvalDataset": {
                 "type": "object",
@@ -3375,7 +4318,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "vector"
+                                        "const": "vector",
+                                        "default": "vector"
                                     },
                                     "embedding_model": {
                                         "type": "string"
@@ -3399,7 +4343,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyvalue"
+                                        "const": "keyvalue",
+                                        "default": "keyvalue"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3412,7 +4357,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyword"
+                                        "const": "keyword",
+                                        "default": "keyword"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3425,7 +4371,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "graph"
+                                        "const": "graph",
+                                        "default": "graph"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3461,7 +4408,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "vector"
+                                        "const": "vector",
+                                        "default": "vector"
                                     },
                                     "embedding_model": {
                                         "type": "string"
@@ -3485,7 +4433,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyvalue"
+                                        "const": "keyvalue",
+                                        "default": "keyvalue"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3498,7 +4447,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "keyword"
+                                        "const": "keyword",
+                                        "default": "keyword"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3511,7 +4461,8 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "graph"
+                                        "const": "graph",
+                                        "default": "graph"
                                     }
                                 },
                                 "additionalProperties": false,
@@ -3617,9 +4568,19 @@
                                     "type": "string"
                                 },
                                 {
+                                    "$ref": "#/components/schemas/ImageMedia"
+                                },
+                                {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ImageMedia"
+                                            }
+                                        ]
                                     }
                                 }
                             ]
@@ -3816,9 +4777,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             },
                             {
@@ -3897,6 +4868,171 @@
                 "additionalProperties": false,
                 "required": [
                     "job_uuid"
+                ]
+            },
+            "Model": {
+                "description": "The model family and SKU of the model along with other parameters corresponding to the model."
+            },
+            "ModelServingSpec": {
+                "type": "object",
+                "properties": {
+                    "llama_model": {
+                        "$ref": "#/components/schemas/Model"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_type": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_type",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "llama_model",
+                    "provider_config"
+                ]
+            },
+            "MemoryBankType": {
+                "type": "string",
+                "enum": [
+                    "vector",
+                    "keyvalue",
+                    "keyword",
+                    "graph"
+                ]
+            },
+            "MemoryBankSpec": {
+                "type": "object",
+                "properties": {
+                    "bank_type": {
+                        "$ref": "#/components/schemas/MemoryBankType"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_type": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_type",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "bank_type",
+                    "provider_config"
+                ]
+            },
+            "ShieldSpec": {
+                "type": "object",
+                "properties": {
+                    "shield_type": {
+                        "type": "string"
+                    },
+                    "provider_config": {
+                        "type": "object",
+                        "properties": {
+                            "provider_type": {
+                                "type": "string"
+                            },
+                            "config": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "provider_type",
+                            "config"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shield_type",
+                    "provider_config"
                 ]
             },
             "Trace": {
@@ -4049,6 +5185,18 @@
                     "job_uuid"
                 ]
             },
+            "HealthInfo": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "status"
+                ]
+            },
             "InsertDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -4069,6 +5217,45 @@
                 "required": [
                     "bank_id",
                     "documents"
+                ]
+            },
+            "ProviderInfo": {
+                "type": "object",
+                "properties": {
+                    "provider_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "provider_type",
+                    "description"
+                ]
+            },
+            "RouteInfo": {
+                "type": "object",
+                "properties": {
+                    "route": {
+                        "type": "string"
+                    },
+                    "method": {
+                        "type": "string"
+                    },
+                    "providers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "route",
+                    "method",
+                    "providers"
                 ]
             },
             "LogSeverity": {
@@ -4122,7 +5309,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "metric"
+                        "const": "metric",
+                        "default": "metric"
                     },
                     "metric": {
                         "type": "string"
@@ -4157,7 +5345,8 @@
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "span_end"
+                        "const": "span_end",
+                        "default": "span_end"
                     },
                     "status": {
                         "$ref": "#/components/schemas/SpanStatus"
@@ -4174,7 +5363,8 @@
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "span_start"
+                        "const": "span_start",
+                        "default": "span_start"
                     },
                     "name": {
                         "type": "string"
@@ -4236,7 +5426,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "structured_log"
+                        "const": "structured_log",
+                        "default": "structured_log"
                     },
                     "payload": {
                         "oneOf": [
@@ -4298,7 +5489,8 @@
                     },
                     "type": {
                         "type": "string",
-                        "const": "unstructured_log"
+                        "const": "unstructured_log",
+                        "default": "unstructured_log"
                     },
                     "message": {
                         "type": "string"
@@ -4538,9 +5730,19 @@
                                 "type": "string"
                             },
                             {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
                                 }
                             }
                         ]
@@ -4591,9 +5793,19 @@
                                             "type": "string"
                                         },
                                         {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        },
+                                        {
                                             "type": "array",
                                             "items": {
-                                                "type": "string"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "$ref": "#/components/schemas/ImageMedia"
+                                                    }
+                                                ]
                                             }
                                         }
                                     ]
@@ -4773,9 +5985,12 @@
                     "score"
                 ]
             },
-            "RunShieldsRequest": {
+            "RunShieldRequest": {
                 "type": "object",
                 "properties": {
+                    "shield_type": {
+                        "type": "string"
+                    },
                     "messages": {
                         "type": "array",
                         "items": {
@@ -4795,33 +6010,47 @@
                             ]
                         }
                     },
-                    "shields": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldDefinition"
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "shield_type",
                     "messages",
-                    "shields"
+                    "params"
                 ]
             },
             "RunShieldResponse": {
                 "type": "object",
                 "properties": {
-                    "responses": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ShieldResponse"
-                        }
+                    "violation": {
+                        "$ref": "#/components/schemas/SafetyViolation"
                     }
                 },
-                "additionalProperties": false,
-                "required": [
-                    "responses"
-                ]
+                "additionalProperties": false
             },
             "DoraFinetuningConfig": {
                 "type": "object",
@@ -5141,37 +6370,49 @@
     ],
     "tags": [
         {
-            "name": "Agents"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
             "name": "Datasets"
         },
         {
-            "name": "RewardScoring"
+            "name": "Inspect"
         },
         {
-            "name": "Evaluations"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Inference"
+            "name": "Memory"
         },
         {
             "name": "BatchInference"
         },
         {
-            "name": "Memory"
+            "name": "Agents"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "RewardScoring"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "PostTraining"
         },
         {
             "name": "BuiltinTool",
@@ -5180,6 +6421,10 @@
         {
             "name": "CompletionMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionMessage\" />"
+        },
+        {
+            "name": "ImageMedia",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageMedia\" />"
         },
         {
             "name": "SamplingParams",
@@ -5220,6 +6465,10 @@
         {
             "name": "ToolResponseMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponseMessage\" />"
+        },
+        {
+            "name": "URL",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
             "name": "UserMessage",
@@ -5298,10 +6547,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentConfig\" />"
         },
         {
-            "name": "BuiltinShield",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinShield\" />"
-        },
-        {
             "name": "CodeInterpreterToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CodeInterpreterToolDefinition\" />"
         },
@@ -5310,8 +6555,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
         },
         {
-            "name": "OnViolationAction",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OnViolationAction\" />"
+            "name": "MemoryToolDefinition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryToolDefinition\" />"
         },
         {
             "name": "PhotogenToolDefinition",
@@ -5328,14 +6573,6 @@
         {
             "name": "SearchToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SearchToolDefinition\" />"
-        },
-        {
-            "name": "ShieldDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefinition\" />"
-        },
-        {
-            "name": "URL",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
             "name": "WolframAlphaToolDefinition",
@@ -5402,12 +6639,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryRetrievalStep\" />"
         },
         {
-            "name": "ShieldCallStep",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
+            "name": "SafetyViolation",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SafetyViolation\" />"
         },
         {
-            "name": "ShieldResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldResponse\" />"
+            "name": "ShieldCallStep",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldCallStep\" />"
         },
         {
             "name": "ToolExecutionStep",
@@ -5420,6 +6657,10 @@
         {
             "name": "Turn",
             "description": "A single turn in an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Turn\" />"
+        },
+        {
+            "name": "ViolationLevel",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
         },
         {
             "name": "TrainEvalDataset",
@@ -5518,6 +6759,26 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
+            "name": "Model",
+            "description": "The model family and SKU of the model along with other parameters corresponding to the model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
+        },
+        {
+            "name": "ModelServingSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelServingSpec\" />"
+        },
+        {
+            "name": "MemoryBankType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankType\" />"
+        },
+        {
+            "name": "MemoryBankSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankSpec\" />"
+        },
+        {
+            "name": "ShieldSpec",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldSpec\" />"
+        },
+        {
             "name": "Trace",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Trace\" />"
         },
@@ -5546,8 +6807,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
         },
         {
+            "name": "HealthInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
+        },
+        {
             "name": "InsertDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+        },
+        {
+            "name": "ProviderInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ProviderInfo\" />"
+        },
+        {
+            "name": "RouteInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RouteInfo\" />"
         },
         {
             "name": "LogSeverity",
@@ -5630,8 +6903,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
         },
         {
-            "name": "RunShieldsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldsRequest\" />"
+            "name": "RunShieldRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldRequest\" />"
         },
         {
             "name": "RunShieldResponse",
@@ -5679,10 +6952,14 @@
                 "Datasets",
                 "Evaluations",
                 "Inference",
+                "Inspect",
                 "Memory",
+                "MemoryBanks",
+                "Models",
                 "PostTraining",
                 "RewardScoring",
                 "Safety",
+                "Shields",
                 "SyntheticDataGeneration",
                 "Telemetry"
             ]
@@ -5706,7 +6983,6 @@
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
-                "BuiltinShield",
                 "BuiltinTool",
                 "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
@@ -5747,6 +7023,8 @@
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
                 "GetDocumentsRequest",
+                "HealthInfo",
+                "ImageMedia",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "LogEventRequest",
@@ -5754,9 +7032,13 @@
                 "LoraFinetuningConfig",
                 "MemoryBank",
                 "MemoryBankDocument",
+                "MemoryBankSpec",
+                "MemoryBankType",
                 "MemoryRetrievalStep",
+                "MemoryToolDefinition",
                 "MetricEvent",
-                "OnViolationAction",
+                "Model",
+                "ModelServingSpec",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
@@ -5765,6 +7047,7 @@
                 "PostTrainingJobStatus",
                 "PostTrainingJobStatusResponse",
                 "PreferenceOptimizeRequest",
+                "ProviderInfo",
                 "QLoraFinetuningConfig",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
@@ -5773,8 +7056,10 @@
                 "RestAPIMethod",
                 "RewardScoreRequest",
                 "RewardScoringResponse",
+                "RouteInfo",
+                "RunShieldRequest",
                 "RunShieldResponse",
-                "RunShieldsRequest",
+                "SafetyViolation",
                 "SamplingParams",
                 "SamplingStrategy",
                 "ScoredDialogGenerations",
@@ -5782,8 +7067,7 @@
                 "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
-                "ShieldDefinition",
-                "ShieldResponse",
+                "ShieldSpec",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
@@ -5813,6 +7097,7 @@
                 "UnstructuredLogEvent",
                 "UpdateDocumentsRequest",
                 "UserMessage",
+                "ViolationLevel",
                 "WolframAlphaToolDefinition"
             ]
         }

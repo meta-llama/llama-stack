@@ -5,87 +5,40 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Dict, List, Optional, Protocol, Union
+from typing import Any, Dict, List, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.common.deployment_types import RestAPIExecutionConfig
 
 
 @json_schema_type
-class BuiltinShield(Enum):
-    llama_guard = "llama_guard"
-    code_scanner_guard = "code_scanner_guard"
-    third_party_shield = "third_party_shield"
-    injection_shield = "injection_shield"
-    jailbreak_shield = "jailbreak_shield"
-
-
-ShieldType = Union[BuiltinShield, str]
+class ViolationLevel(Enum):
+    INFO = "info"
+    WARN = "warn"
+    ERROR = "error"
 
 
 @json_schema_type
-class OnViolationAction(Enum):
-    IGNORE = 0
-    WARN = 1
-    RAISE = 2
+class SafetyViolation(BaseModel):
+    violation_level: ViolationLevel
 
+    # what message should you convey to the user
+    user_message: Optional[str] = None
 
-@json_schema_type
-class ShieldDefinition(BaseModel):
-    shield_type: ShieldType
-    description: Optional[str] = None
-    parameters: Optional[Dict[str, ToolParamDefinition]] = None
-    on_violation_action: OnViolationAction = OnViolationAction.RAISE
-    execution_config: Optional[RestAPIExecutionConfig] = None
-
-    @validator("shield_type", pre=True)
-    @classmethod
-    def validate_field(cls, v):
-        if isinstance(v, str):
-            try:
-                return BuiltinShield(v)
-            except ValueError:
-                return v
-        return v
-
-
-@json_schema_type
-class ShieldResponse(BaseModel):
-    shield_type: ShieldType
-    # TODO(ashwin): clean this up
-    is_violation: bool
-    violation_type: Optional[str] = None
-    violation_return_message: Optional[str] = None
-
-    @validator("shield_type", pre=True)
-    @classmethod
-    def validate_field(cls, v):
-        if isinstance(v, str):
-            try:
-                return BuiltinShield(v)
-            except ValueError:
-                return v
-        return v
-
-
-@json_schema_type
-class RunShieldRequest(BaseModel):
-    messages: List[Message]
-    shields: List[ShieldDefinition]
+    # additional metadata (including specific violation codes) more for
+    # debugging, telemetry
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
 class RunShieldResponse(BaseModel):
-    responses: List[ShieldResponse]
+    violation: Optional[SafetyViolation] = None
 
 
 class Safety(Protocol):
-    @webmethod(route="/safety/run_shields")
-    async def run_shields(
-        self,
-        messages: List[Message],
-        shields: List[ShieldDefinition],
+    @webmethod(route="/safety/run_shield")
+    async def run_shield(
+        self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse: ...

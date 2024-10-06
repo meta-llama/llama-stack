@@ -13,9 +13,32 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.telemetry,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[],
             module="llama_stack.providers.impls.meta_reference.telemetry",
             config_class="llama_stack.providers.impls.meta_reference.telemetry.ConsoleConfig",
+        ),
+        remote_provider_spec(
+            api=Api.telemetry,
+            adapter=AdapterSpec(
+                adapter_type="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.telemetry.sample",
+                config_class="llama_stack.providers.adapters.telemetry.sample.SampleConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.telemetry,
+            adapter=AdapterSpec(
+                adapter_type="opentelemetry-jaeger",
+                pip_packages=[
+                    "opentelemetry-api",
+                    "opentelemetry-sdk",
+                    "opentelemetry-exporter-jaeger",
+                    "opentelemetry-semantic-conventions",
+                ],
+                module="llama_stack.providers.adapters.telemetry.opentelemetry",
+                config_class="llama_stack.providers.adapters.telemetry.opentelemetry.OpenTelemetryConfig",
+            ),
         ),
     ]

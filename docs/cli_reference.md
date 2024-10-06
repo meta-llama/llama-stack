@@ -3,9 +3,9 @@
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
 ### Subcommands
-1. `download`: `llama` cli tools supports downloading the model from Meta or HuggingFace.
+1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
 2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](/docs/cli_reference.md#step-3-building-configuring-and-running-llama-stack-servers).
+3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](cli_reference.md#step-3-building-and-configuring-llama-stack-distributions).
 
 ### Sample Usage
 
@@ -37,67 +37,91 @@ llama model list
 You should see a table like this:
 
 <pre style="font-family: monospace;">
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Model Descriptor                      | HuggingFace Repo                            | Context Length | Hardware Requirements      |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-8B                      | meta-llama/Meta-Llama-3.1-8B                | 128K           | 1 GPU, each >= 20GB VRAM   |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-70B                     | meta-llama/Meta-Llama-3.1-70B               | 128K           | 8 GPUs, each >= 20GB VRAM  |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-405B:bf16-mp8           |                                             | 128K           | 8 GPUs, each >= 120GB VRAM |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-405B                    | meta-llama/Meta-Llama-3.1-405B-FP8          | 128K           | 8 GPUs, each >= 70GB VRAM  |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-405B:bf16-mp16          | meta-llama/Meta-Llama-3.1-405B              | 128K           | 16 GPUs, each >= 70GB VRAM |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-8B-Instruct             | meta-llama/Meta-Llama-3.1-8B-Instruct       | 128K           | 1 GPU, each >= 20GB VRAM   |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-70B-Instruct            | meta-llama/Meta-Llama-3.1-70B-Instruct      | 128K           | 8 GPUs, each >= 20GB VRAM  |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-405B-Instruct:bf16-mp8  |                                             | 128K           | 8 GPUs, each >= 120GB VRAM |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-405B-Instruct           | meta-llama/Meta-Llama-3.1-405B-Instruct-FP8 | 128K           | 8 GPUs, each >= 70GB VRAM  |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Meta-Llama3.1-405B-Instruct:bf16-mp16 | meta-llama/Meta-Llama-3.1-405B-Instruct     | 128K           | 16 GPUs, each >= 70GB VRAM |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Llama-Guard-3-8B                      | meta-llama/Llama-Guard-3-8B                 | 128K           | 1 GPU, each >= 20GB VRAM   |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Llama-Guard-3-8B:int8-mp1             | meta-llama/Llama-Guard-3-8B-INT8            | 128K           | 1 GPU, each >= 10GB VRAM   |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
-| Prompt-Guard-86M                      | meta-llama/Prompt-Guard-86M                 | 128K           | 1 GPU, each >= 1GB VRAM    |
-+---------------------------------------+---------------------------------------------+----------------+----------------------------+
++----------------------------------+------------------------------------------+----------------+
+| Model Descriptor                 | Hugging Face Repo                        | Context Length |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-8B                      | meta-llama/Llama-3.1-8B                  | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-70B                     | meta-llama/Llama-3.1-70B                 | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-405B:bf16-mp8           | meta-llama/Llama-3.1-405B                | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-405B                    | meta-llama/Llama-3.1-405B-FP8            | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-405B:bf16-mp16          | meta-llama/Llama-3.1-405B                | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-8B-Instruct             | meta-llama/Llama-3.1-8B-Instruct         | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-70B-Instruct            | meta-llama/Llama-3.1-70B-Instruct        | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-405B-Instruct:bf16-mp8  | meta-llama/Llama-3.1-405B-Instruct       | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-405B-Instruct           | meta-llama/Llama-3.1-405B-Instruct-FP8   | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.1-405B-Instruct:bf16-mp16 | meta-llama/Llama-3.1-405B-Instruct       | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-1B                      | meta-llama/Llama-3.2-1B                  | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-3B                      | meta-llama/Llama-3.2-3B                  | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-11B-Vision              | meta-llama/Llama-3.2-11B-Vision          | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-90B-Vision              | meta-llama/Llama-3.2-90B-Vision          | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-1B-Instruct             | meta-llama/Llama-3.2-1B-Instruct         | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-3B-Instruct             | meta-llama/Llama-3.2-3B-Instruct         | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-11B-Vision-Instruct     | meta-llama/Llama-3.2-11B-Vision-Instruct | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama3.2-90B-Vision-Instruct     | meta-llama/Llama-3.2-90B-Vision-Instruct | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama-Guard-3-11B-Vision         | meta-llama/Llama-Guard-3-11B-Vision      | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama-Guard-3-1B:int4-mp1        | meta-llama/Llama-Guard-3-1B-INT4         | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama-Guard-3-1B                 | meta-llama/Llama-Guard-3-1B              | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama-Guard-3-8B                 | meta-llama/Llama-Guard-3-8B              | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama-Guard-3-8B:int8-mp1        | meta-llama/Llama-Guard-3-8B-INT8         | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Prompt-Guard-86M                 | meta-llama/Prompt-Guard-86M              | 128K           |
++----------------------------------+------------------------------------------+----------------+
+| Llama-Guard-2-8B                 | meta-llama/Llama-Guard-2-8B              | 4K             |
++----------------------------------+------------------------------------------+----------------+
 </pre>
 
 To download models, you can use the llama download command.
 
 #### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
 
-Here is an example download command to get the 8B/70B Instruct model. You will need META_URL which can be obtained from [here](https://llama.meta.com/docs/getting_the_models/meta/)
+Here is an example download command to get the 3B-Instruct/11B-Vision-Instruct model. You will need META_URL which can be obtained from [here](https://llama.meta.com/docs/getting_the_models/meta/)
 
 Download the required checkpoints using the following commands:
 ```bash
 # download the 8B model, this can be run on a single GPU
-llama download --source meta --model-id Meta-Llama3.1-8B-Instruct --meta-url META_URL
+llama download --source meta --model-id Llama3.2-3B-Instruct --meta-url META_URL
 
 # you can also get the 70B model, this will require 8 GPUs however
-llama download --source meta --model-id Meta-Llama3.1-70B-Instruct --meta-url META_URL
+llama download --source meta --model-id Llama3.2-11B-Vision-Instruct --meta-url META_URL
 
 # llama-agents have safety enabled by default. For this, you will need
 # safety models -- Llama-Guard and Prompt-Guard
 llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
-llama download --source meta --model-id Llama-Guard-3-8B --meta-url META_URL
+llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 ```
 
-#### Downloading from [Huggingface](https://huggingface.co/meta-llama)
+#### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
 
 ```bash
-llama download --source huggingface --model-id  Meta-Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
+llama download --source huggingface --model-id  Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
 
-llama download --source huggingface --model-id Meta-Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
+llama download --source huggingface --model-id Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
 
-llama download --source huggingface --model-id Llama-Guard-3-8B --ignore-patterns *original*
+llama download --source huggingface --model-id Llama-Guard-3-1B --ignore-patterns *original*
 llama download --source huggingface --model-id Prompt-Guard-86M --ignore-patterns *original*
 ```
 
@@ -124,7 +148,7 @@ The `llama model` command helps you explore the model’s interface.
 ### 2.1 Subcommands
 1. `download`: Download the model from different sources. (meta, huggingface)
 2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
-3. `template`: <TODO: What is a template?>
+3. `prompt-format`: Show llama model message formats.
 4. `describe`: Describes all the properties of the model.
 
 ### 2.2 Sample Usage
@@ -135,7 +159,7 @@ The `llama model` command helps you explore the model’s interface.
 llama model --help
 ```
 <pre style="font-family: monospace;">
-usage: llama model [-h] {download,list,template,describe} ...
+usage: llama model [-h] {download,list,prompt-format,describe} ...
 
 Work with llama models
 
@@ -143,127 +167,70 @@ options:
   -h, --help            show this help message and exit
 
 model_subcommands:
-  {download,list,template,describe}
+  {download,list,prompt-format,describe}
 </pre>
 
 You can use the describe command to know more about a model:
 ```
-llama model describe -m Meta-Llama3.1-8B-Instruct
+llama model describe -m Llama3.2-3B-Instruct
 ```
 ### 2.3 Describe
 
 <pre style="font-family: monospace;">
-+-----------------------------+---------------------------------------+
-| Model                       | Meta-                                 |
-|                             | Llama3.1-8B-Instruct                  |
-+-----------------------------+---------------------------------------+
-| HuggingFace ID              | meta-llama/Meta-Llama-3.1-8B-Instruct |
-+-----------------------------+---------------------------------------+
-| Description                 | Llama 3.1 8b instruct model           |
-+-----------------------------+---------------------------------------+
-| Context Length              | 128K tokens                           |
-+-----------------------------+---------------------------------------+
-| Weights format              | bf16                                  |
-+-----------------------------+---------------------------------------+
-| Model params.json           | {                                     |
-|                             |     "dim": 4096,                      |
-|                             |     "n_layers": 32,                   |
-|                             |     "n_heads": 32,                    |
-|                             |     "n_kv_heads": 8,                  |
-|                             |     "vocab_size": 128256,             |
-|                             |     "ffn_dim_multiplier": 1.3,        |
-|                             |     "multiple_of": 1024,              |
-|                             |     "norm_eps": 1e-05,                |
-|                             |     "rope_theta": 500000.0,           |
-|                             |     "use_scaled_rope": true           |
-|                             | }                                     |
-+-----------------------------+---------------------------------------+
-| Recommended sampling params | {                                     |
-|                             |     "strategy": "top_p",              |
-|                             |     "temperature": 1.0,               |
-|                             |     "top_p": 0.9,                     |
-|                             |     "top_k": 0                        |
-|                             | }                                     |
-+-----------------------------+---------------------------------------+
++-----------------------------+----------------------------------+
+| Model                       | Llama3.2-3B-Instruct             |
++-----------------------------+----------------------------------+
+| Hugging Face ID             | meta-llama/Llama-3.2-3B-Instruct |
++-----------------------------+----------------------------------+
+| Description                 | Llama 3.2 3b instruct model      |
++-----------------------------+----------------------------------+
+| Context Length              | 128K tokens                      |
++-----------------------------+----------------------------------+
+| Weights format              | bf16                             |
++-----------------------------+----------------------------------+
+| Model params.json           | {                                |
+|                             |     "dim": 3072,                 |
+|                             |     "n_layers": 28,              |
+|                             |     "n_heads": 24,               |
+|                             |     "n_kv_heads": 8,             |
+|                             |     "vocab_size": 128256,        |
+|                             |     "ffn_dim_multiplier": 1.0,   |
+|                             |     "multiple_of": 256,          |
+|                             |     "norm_eps": 1e-05,           |
+|                             |     "rope_theta": 500000.0,      |
+|                             |     "use_scaled_rope": true      |
+|                             | }                                |
++-----------------------------+----------------------------------+
+| Recommended sampling params | {                                |
+|                             |     "strategy": "top_p",         |
+|                             |     "temperature": 1.0,          |
+|                             |     "top_p": 0.9,                |
+|                             |     "top_k": 0                   |
+|                             | }                                |
++-----------------------------+----------------------------------+
 </pre>
-### 2.4 Template
-You can even run `llama model template` see all of the templates and their tokens:
+### 2.4 Prompt Format
+You can even run `llama model prompt-format` see all of the templates and their tokens:
 
 ```
-llama model template
+llama model prompt-format -m Llama3.2-3B-Instruct
 ```
+<p align="center">
+<img width="719" alt="image" src="https://github.com/user-attachments/assets/c5332026-8c0b-4edc-b438-ec60cd7ca554">
+</p>
 
-<pre style="font-family: monospace;">
-+-----------+---------------------------------+
-| Role      | Template Name                   |
-+-----------+---------------------------------+
-| user      | user-default                    |
-| assistant | assistant-builtin-tool-call     |
-| assistant | assistant-custom-tool-call      |
-| assistant | assistant-default               |
-| system    | system-builtin-and-custom-tools |
-| system    | system-builtin-tools-only       |
-| system    | system-custom-tools-only        |
-| system    | system-default                  |
-| tool      | tool-success                    |
-| tool      | tool-failure                    |
-+-----------+---------------------------------+
-</pre>
 
-And fetch an example by passing it to `--name`:
-```
-llama model template --name tool-success
-```
-
-<pre style="font-family: monospace;">
-+----------+----------------------------------------------------------------+
-| Name     | tool-success                                                   |
-+----------+----------------------------------------------------------------+
-| Template | <|start_header_id|>ipython<|end_header_id|>                    |
-|          |                                                                |
-|          | completed                                                      |
-|          | [stdout]{"results":["something                                 |
-|          | something"]}[/stdout]<|eot_id|>                                |
-|          |                                                                |
-+----------+----------------------------------------------------------------+
-| Notes    | Note ipython header and [stdout]                               |
-+----------+----------------------------------------------------------------+
-</pre>
-
-Or:
-```
-llama model template --name system-builtin-tools-only
-```
-
-<pre style="font-family: monospace;">
-+----------+--------------------------------------------+
-| Name     | system-builtin-tools-only                  |
-+----------+--------------------------------------------+
-| Template | <|start_header_id|>system<|end_header_id|> |
-|          |                                            |
-|          | Environment: ipython                       |
-|          | Tools: brave_search, wolfram_alpha         |
-|          |                                            |
-|          | Cutting Knowledge Date: December 2023      |
-|          | Today Date: 21 August 2024                 |
-|          | <|eot_id|>                                 |
-|          |                                            |
-+----------+--------------------------------------------+
-| Notes    |                                            |
-+----------+--------------------------------------------+
-</pre>
-
-These commands can help understand the model interface and how prompts / messages are formatted for various scenarios.
+You will be shown a Markdown formatted description of the model interface and how prompts / messages are formatted for various scenarios.
 
 **NOTE**: Outputs in terminal are color printed to show special tokens.
 
 
 ## Step 3: Building, and Configuring Llama Stack Distributions
 
-- Please see our [Getting Started](getting_started.md) guide for details.
+- Please see our [Getting Started](getting_started.md) guide for more details on how to build and start a Llama Stack distribution.
 
 ### Step 3.1 Build
-In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
+In the following steps, imagine we'll be working with a `Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `8b-instruct`)
 - `image_type`: our build image type (`conda | docker`)
 - `distribution_spec`: our distribution specs for specifying API providers
@@ -398,7 +365,7 @@ llama stack configure [ <name> | <docker-image-name> | <path/to/name.build.yaml>
 $ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
 
 Configuring API: inference (meta-reference)
-Enter value for model (existing: Meta-Llama3.1-8B-Instruct) (required):
+Enter value for model (existing: Llama3.1-8B-Instruct) (required):
 Enter value for quantization (optional):
 Enter value for torch_seed (optional):
 Enter value for max_seq_len (existing: 4096) (required):
@@ -409,7 +376,7 @@ Configuring API: memory (meta-reference-faiss)
 Configuring API: safety (meta-reference)
 Do you want to configure llama_guard_shield? (y/n): y
 Entering sub-configuration for llama_guard_shield:
-Enter value for model (default: Llama-Guard-3-8B) (required):
+Enter value for model (default: Llama-Guard-3-1B) (required):
 Enter value for excluded_categories (default: []) (required):
 Enter value for disable_input_check (default: False) (required):
 Enter value for disable_output_check (default: False) (required):
@@ -430,8 +397,8 @@ YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yam
 After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may edit this file to change the settings.
 
 As you can see, we did basic configuration above and configured:
-- inference to run on model `Meta-Llama3.1-8B-Instruct` (obtained from `llama model list`)
-- Llama Guard safety shield with model `Llama-Guard-3-8B`
+- inference to run on model `Llama3.1-8B-Instruct` (obtained from `llama model list`)
+- Llama Guard safety shield with model `Llama-Guard-3-1B`
 - Prompt Guard safety shield with model `Prompt-Guard-86M`
 
 For how these configurations are stored as yaml, checkout the file printed at the end of the configuration.
@@ -461,7 +428,7 @@ Serving POST /inference/batch_chat_completion
 Serving POST /inference/batch_completion
 Serving POST /inference/chat_completion
 Serving POST /inference/completion
-Serving POST /safety/run_shields
+Serving POST /safety/run_shield
 Serving POST /agentic_system/memory_bank/attach
 Serving POST /agentic_system/create
 Serving POST /agentic_system/session/create
@@ -516,4 +483,4 @@ Similarly you can test safety (if you configured llama-guard and/or prompt-guard
 python -m llama_stack.apis.safety.client localhost 5000
 ```
 
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/sdk_examples) repo.
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.

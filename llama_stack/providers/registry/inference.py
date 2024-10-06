@@ -13,13 +13,14 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.inference,
-            provider_id="meta-reference",
+            provider_type="meta-reference",
             pip_packages=[
                 "accelerate",
                 "blobfile",
                 "fairscale",
                 "fbgemm-gpu==0.8.0",
                 "torch",
+                "torchvision",
                 "transformers",
                 "zmq",
             ],
@@ -29,16 +30,26 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_id="ollama",
+                adapter_type="sample",
+                pip_packages=[],
+                module="llama_stack.providers.adapters.inference.sample",
+                config_class="llama_stack.providers.adapters.inference.sample.SampleConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="ollama",
                 pip_packages=["ollama"],
+                config_class="llama_stack.providers.adapters.inference.ollama.OllamaImplConfig",
                 module="llama_stack.providers.adapters.inference.ollama",
             ),
         ),
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_id="tgi",
-                pip_packages=["huggingface_hub"],
+                adapter_type="tgi",
+                pip_packages=["huggingface_hub", "aiohttp"],
                 module="llama_stack.providers.adapters.inference.tgi",
                 config_class="llama_stack.providers.adapters.inference.tgi.TGIImplConfig",
             ),
@@ -46,7 +57,25 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_id="fireworks",
+                adapter_type="hf::serverless",
+                pip_packages=["huggingface_hub", "aiohttp"],
+                module="llama_stack.providers.adapters.inference.tgi",
+                config_class="llama_stack.providers.adapters.inference.tgi.InferenceAPIImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="hf::endpoint",
+                pip_packages=["huggingface_hub", "aiohttp"],
+                module="llama_stack.providers.adapters.inference.tgi",
+                config_class="llama_stack.providers.adapters.inference.tgi.InferenceEndpointImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="fireworks",
                 pip_packages=[
                     "fireworks-ai",
                 ],
@@ -57,12 +86,22 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_id="together",
+                adapter_type="together",
                 pip_packages=[
                     "together",
                 ],
                 module="llama_stack.providers.adapters.inference.together",
                 config_class="llama_stack.providers.adapters.inference.together.TogetherImplConfig",
+                provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="bedrock",
+                pip_packages=["boto3"],
+                module="llama_stack.providers.adapters.inference.bedrock",
+                config_class="llama_stack.providers.adapters.inference.bedrock.BedrockConfig",
             ),
         ),
         remote_provider_spec(
@@ -75,5 +114,14 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.adapters.inference.databricks",
                 config_class="llama_stack.providers.adapters.inference.databricks.DatabricksImplConfig",
             ),
+        ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_type="vllm",
+            pip_packages=[
+                "vllm",
+            ],
+            module="llama_stack.providers.impls.vllm",
+            config_class="llama_stack.providers.impls.vllm.VLLMConfig",
         ),
     ]

@@ -6,28 +6,35 @@
 
 from typing import AsyncGenerator
 
+from fireworks.client import Fireworks
+
 from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
-from fireworks.client import Fireworks
+from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prepare_messages import prepare_messages
+from llama_stack.providers.utils.inference.augment_messages import (
+    augment_messages_for_tools,
+)
 
 from .config import FireworksImplConfig
 
+
 FIREWORKS_SUPPORTED_MODELS = {
-    "Meta-Llama3.1-8B-Instruct": "fireworks/llama-v3p1-8b-instruct",
-    "Meta-Llama3.1-70B-Instruct": "fireworks/llama-v3p1-70b-instruct",
-    "Meta-Llama3.1-405B-Instruct": "fireworks/llama-v3p1-405b-instruct",
+    "Llama3.1-8B-Instruct": "fireworks/llama-v3p1-8b-instruct",
+    "Llama3.1-70B-Instruct": "fireworks/llama-v3p1-70b-instruct",
+    "Llama3.1-405B-Instruct": "fireworks/llama-v3p1-405b-instruct",
 }
 
 
-class FireworksInferenceAdapter(Inference):
+class FireworksInferenceAdapter(Inference, RoutableProviderForModels):
     def __init__(self, config: FireworksImplConfig) -> None:
+        RoutableProviderForModels.__init__(
+            self, stack_to_provider_models_map=FIREWORKS_SUPPORTED_MODELS
+        )
         self.config = config
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
@@ -42,7 +49,14 @@ class FireworksInferenceAdapter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> AsyncGenerator:
         raise NotImplementedError()
 
     def _messages_to_fireworks_messages(self, messages: list[Message]) -> list:
@@ -55,18 +69,6 @@ class FireworksInferenceAdapter(Inference):
             fireworks_messages.append({"role": role, "content": message.content})
 
         return fireworks_messages
-
-    def resolve_fireworks_model(self, model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True)
-            in FIREWORKS_SUPPORTED_MODELS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(FIREWORKS_SUPPORTED_MODELS.keys())}"
-
-        return FIREWORKS_SUPPORTED_MODELS.get(
-            model.descriptor(shorten_default_variant=True)
-        )
 
     def get_fireworks_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -99,11 +101,11 @@ class FireworksInferenceAdapter(Inference):
             logprobs=logprobs,
         )
 
-        messages = prepare_messages(request)
+        messages = augment_messages_for_tools(request)
 
         # accumulate sampling params and other options to pass to fireworks
         options = self.get_fireworks_chat_options(request)
-        fireworks_model = self.resolve_fireworks_model(request.model)
+        fireworks_model = self.map_to_provider_model(request.model)
 
         if not request.stream:
             r = await self.client.chat.completions.acreate(

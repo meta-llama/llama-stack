@@ -6,20 +6,18 @@
 
 from typing import Optional
 
-from llama_models.datatypes import ModelFamily
+from llama_models.datatypes import *  # noqa: F403
+from llama_models.sku_list import resolve_model
 
-from llama_models.schema_utils import json_schema_type
-from llama_models.sku_list import all_registered_models, resolve_model
-
+from llama_stack.apis.inference import *  # noqa: F401, F403
 from pydantic import BaseModel, Field, field_validator
 
-from llama_stack.apis.inference import QuantizationConfig
+from llama_stack.providers.utils.inference import supported_inference_models
 
 
-@json_schema_type
 class MetaReferenceImplConfig(BaseModel):
     model: str = Field(
-        default="Meta-Llama3.1-8B-Instruct",
+        default="Llama3.1-8B-Instruct",
         description="Model descriptor from `llama model list`",
     )
     quantization: Optional[QuantizationConfig] = None
@@ -30,11 +28,7 @@ class MetaReferenceImplConfig(BaseModel):
     @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:
-        permitted_models = [
-            m.descriptor()
-            for m in all_registered_models()
-            if m.model_family == ModelFamily.llama3_1
-        ]
+        permitted_models = supported_inference_models()
         if model not in permitted_models:
             model_list = "\n\t".join(permitted_models)
             raise ValueError(
@@ -44,14 +38,9 @@ class MetaReferenceImplConfig(BaseModel):
 
     @property
     def model_parallel_size(self) -> int:
-        # HUGE HACK ALERT: this will be fixed when we move inference configuration
+        # HACK ALERT: this will be fixed when we move inference configuration
         # to ModelsRegistry and we can explicitly ask for `model_parallel_size`
         # as configuration there
-        gpu_count = 1
         resolved = resolve_model(self.model)
         assert resolved is not None
-        descriptor = resolved.descriptor().lower()
-        if "-70b" in descriptor or "-405b" in descriptor:
-            gpu_count = 8
-
-        return gpu_count
+        return resolved.pth_file_count

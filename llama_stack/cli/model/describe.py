@@ -39,7 +39,14 @@ class ModelDescribe(Subcommand):
         )
 
     def _run_model_describe_cmd(self, args: argparse.Namespace) -> None:
-        model = resolve_model(args.model_id)
+        from .safety_models import prompt_guard_model_sku
+
+        prompt_guard = prompt_guard_model_sku()
+        if args.model_id == prompt_guard.model_id:
+            model = prompt_guard
+        else:
+            model = resolve_model(args.model_id)
+
         if model is None:
             self.parser.error(
                 f"Model {args.model_id} not found; try 'llama model list' for a list of available models."
@@ -51,11 +58,11 @@ class ModelDescribe(Subcommand):
                 colored("Model", "white", attrs=["bold"]),
                 colored(model.descriptor(), "white", attrs=["bold"]),
             ),
-            ("HuggingFace ID", model.huggingface_repo or "<Not Available>"),
-            ("Description", model.description_markdown),
+            ("Hugging Face ID", model.huggingface_repo or "<Not Available>"),
+            ("Description", model.description),
             ("Context Length", f"{model.max_seq_length // 1024}K tokens"),
             ("Weights format", model.quantization_format.value),
-            ("Model params.json", json.dumps(model.model_args, indent=4)),
+            ("Model params.json", json.dumps(model.arch_args, indent=4)),
         ]
 
         if model.recommended_sampling_params is not None:

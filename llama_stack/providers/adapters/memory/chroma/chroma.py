@@ -13,7 +13,7 @@ import chromadb
 from numpy.typing import NDArray
 
 from llama_stack.apis.memory import *  # noqa: F403
-
+from llama_stack.distribution.datatypes import RoutableProvider
 
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
@@ -30,9 +30,6 @@ class ChromaIndex(EmbeddingIndex):
         assert len(chunks) == len(
             embeddings
         ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
-
-        for i, chunk in enumerate(chunks):
-            print(f"Adding chunk #{i} tokens={chunk.token_count}")
 
         await self.collection.add(
             documents=[chunk.json() for chunk in chunks],
@@ -68,7 +65,7 @@ class ChromaIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class ChromaMemoryAdapter(Memory):
+class ChromaMemoryAdapter(Memory, RoutableProvider):
     def __init__(self, url: str) -> None:
         print(f"Initializing ChromaMemoryAdapter with url: {url}")
         url = url.rstrip("/")
@@ -94,6 +91,10 @@ class ChromaMemoryAdapter(Memory):
             raise RuntimeError("Could not connect to Chroma server") from e
 
     async def shutdown(self) -> None:
+        pass
+
+    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
+        print(f"[chroma] Registering memory bank routing keys: {routing_keys}")
         pass
 
     async def create_memory_bank(

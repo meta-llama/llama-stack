@@ -34,14 +34,16 @@ class ModelList(Subcommand):
         )
 
     def _run_model_list_cmd(self, args: argparse.Namespace) -> None:
+        from .safety_models import prompt_guard_model_sku
+
         headers = [
             "Model Descriptor",
-            "HuggingFace Repo",
+            "Hugging Face Repo",
             "Context Length",
         ]
 
         rows = []
-        for model in all_registered_models():
+        for model in all_registered_models() + [prompt_guard_model_sku()]:
             if not args.show_all and not model.is_featured:
                 continue
 
