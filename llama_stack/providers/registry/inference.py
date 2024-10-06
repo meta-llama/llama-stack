@@ -104,4 +104,13 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.inference.bedrock.BedrockConfig",
             ),
         ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_type="vllm",
+            pip_packages=[
+                "vllm",
+            ],
+            module="llama_stack.providers.impls.vllm",
+            config_class="llama_stack.providers.impls.vllm.VLLMConfig",
+        ),
     ]
