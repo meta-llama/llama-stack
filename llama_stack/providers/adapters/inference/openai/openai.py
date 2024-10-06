@@ -173,7 +173,7 @@ class OpenAIInferenceAdapter(Inference):
                         stop_reason = StopReason.out_of_tokens
                     break
 
-                text = chunk.choices[0].message.content
+                text = chunk.choices[0].delta.content
                 if text is None:
                     continue
 
