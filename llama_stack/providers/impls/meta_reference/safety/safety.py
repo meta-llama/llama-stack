@@ -33,7 +33,6 @@ class MetaReferenceSafetyImpl(Safety):
     def __init__(self, config: SafetyConfig, deps) -> None:
         self.config = config
         self.inference_api = deps[Api.inference]
-        self.registered_shields = []
 
         self.available_shields = [ShieldType.code_scanner.value]
         if config.llama_guard_shield:
@@ -55,24 +54,13 @@ class MetaReferenceSafetyImpl(Safety):
         if shield.type not in self.available_shields:
             raise ValueError(f"Unsupported safety shield type: {shield.type}")
 
-        self.registered_shields.append(shield)
-
-    async def list_shields(self) -> List[ShieldDef]:
-        return self.registered_shields
-
-    async def get_shield(self, identifier: str) -> Optional[ShieldDef]:
-        for shield in self.registered_shields:
-            if shield.identifier == identifier:
-                return shield
-        return None
-
     async def run_shield(
         self,
         shield_type: str,
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        shield_def = await self.get_shield(shield_type)
+        shield_def = await self.shield_store.get_shield(shield_type)
         if not shield_def:
             raise ValueError(f"Unknown shield {shield_type}")
 

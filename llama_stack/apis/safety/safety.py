@@ -38,7 +38,13 @@ class RunShieldResponse(BaseModel):
     violation: Optional[SafetyViolation] = None
 
 
+class ShieldStore(Protocol):
+    def get_shield(self, identifier: str) -> ShieldDef: ...
+
+
 class Safety(Protocol):
+    shield_store: ShieldStore
+
     @webmethod(route="/safety/run_shield")
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
@@ -46,9 +52,3 @@ class Safety(Protocol):
 
     @webmethod(route="/safety/register_shield")
     async def register_shield(self, shield: ShieldDef) -> None: ...
-
-    @webmethod(route="/safety/list_shields")
-    async def list_shields(self) -> List[ShieldDef]: ...
-
-    @webmethod(route="/safety/get_shield")
-    async def get_shield(self, identifier: str) -> Optional[ShieldDef]: ...

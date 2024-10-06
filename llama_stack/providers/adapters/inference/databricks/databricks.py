@@ -6,20 +6,21 @@
 
 from typing import AsyncGenerator
 
-from openai import OpenAI
-
 from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message, StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
+
+from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from .config import DatabricksImplConfig
+
 
 DATABRICKS_SUPPORTED_MODELS = {
     "Llama3.1-70B-Instruct": "databricks-meta-llama-3-1-70b-instruct",
@@ -27,18 +28,18 @@ DATABRICKS_SUPPORTED_MODELS = {
 }
 
 
-class DatabricksInferenceAdapter(Inference):
+class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: DatabricksImplConfig) -> None:
+        ModelRegistryHelper.__init__(
+            self, stack_to_provider_models_map=DATABRICKS_SUPPORTED_MODELS
+        )
         self.config = config
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
 
     @property
     def client(self) -> OpenAI:
-        return OpenAI(
-            base_url=self.config.url, 
-            api_key=self.config.api_token
-        )
+        return OpenAI(base_url=self.config.url, api_key=self.config.api_token)
 
     async def initialize(self) -> None:
         return
@@ -64,18 +65,6 @@ class DatabricksInferenceAdapter(Inference):
             databricks_messages.append({"role": role, "content": message.content})
 
         return databricks_messages
-
-    def resolve_databricks_model(self, model_name: str) -> str:
-        model = resolve_model(model_name)
-        assert (
-            model is not None
-            and model.descriptor(shorten_default_variant=True)
-            in DATABRICKS_SUPPORTED_MODELS
-        ), f"Unsupported model: {model_name}, use one of the supported models: {','.join(DATABRICKS_SUPPORTED_MODELS.keys())}"
-
-        return DATABRICKS_SUPPORTED_MODELS.get(
-            model.descriptor(shorten_default_variant=True)
-        )
 
     def get_databricks_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -110,10 +99,9 @@ class DatabricksInferenceAdapter(Inference):
 
         messages = augment_messages_for_tools(request)
         options = self.get_databricks_chat_options(request)
-        databricks_model = self.resolve_databricks_model(request.model)
+        databricks_model = self.map_to_provider_model(request.model)
 
         if not request.stream:
-
             r = self.client.chat.completions.create(
                 model=databricks_model,
                 messages=self._messages_to_databricks_messages(messages),
@@ -154,10 +142,7 @@ class DatabricksInferenceAdapter(Inference):
                 **options,
             ):
                 if chunk.choices[0].finish_reason:
-                    if (
-                        stop_reason is None
-                        and chunk.choices[0].finish_reason == "stop"
-                    ):
+                    if stop_reason is None and chunk.choices[0].finish_reason == "stop":
                         stop_reason = StopReason.end_of_turn
                     elif (
                         stop_reason is None

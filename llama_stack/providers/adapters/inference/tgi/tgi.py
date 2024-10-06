@@ -12,6 +12,7 @@ from huggingface_hub import AsyncInferenceClient, HfApi
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason
 from llama_models.llama3.api.tokenizer import Tokenizer
+from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.utils.inference.augment_messages import (
@@ -32,16 +33,18 @@ class _HfAdapter(Inference):
         self.tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(self.tokenizer)
 
-    # TODO: make this work properly by checking this against the model_id being
-    # served by the remote endpoint
     async def register_model(self, model: ModelDef) -> None:
-        pass
+        resolved_model = resolve_model(model.identifier)
+        if resolved_model is None:
+            raise ValueError(f"Unknown model: {model.identifier}")
 
-    async def list_models(self) -> List[ModelDef]:
-        return []
+        if not resolved_model.huggingface_repo:
+            raise ValueError(
+                f"Model {model.identifier} does not have a HuggingFace repo"
+            )
 
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
-        return None
+        if self.model_id != resolved_model.huggingface_repo:
+            raise ValueError(f"Model mismatch: {model.identifier} != {self.model_id}")
 
     async def shutdown(self) -> None:
         pass

@@ -83,15 +83,6 @@ class FaissMemoryImpl(Memory):
         )
         self.cache[memory_bank.identifier] = index
 
-    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
-        index = self.cache.get(identifier)
-        if index is None:
-            return None
-        return index.bank
-
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
-        return [x.bank for x in self.cache.values()]
-
     async def insert_documents(
         self,
         bank_id: str,

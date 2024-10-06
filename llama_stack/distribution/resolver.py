@@ -151,6 +151,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
             deps,
             inner_impls,
         )
+        # TODO: ugh slightly redesign this shady looking code
         if "inner-" in api_str:
             inner_impls_by_provider_id[api_str][provider.provider_id] = impl
         else:

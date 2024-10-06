@@ -173,7 +173,13 @@ class EmbeddingsResponse(BaseModel):
     embeddings: List[List[float]]
 
 
+class ModelStore(Protocol):
+    def get_model(self, identifier: str) -> ModelDef: ...
+
+
 class Inference(Protocol):
+    model_store: ModelStore
+
     @webmethod(route="/inference/completion")
     async def completion(
         self,
@@ -207,9 +213,3 @@ class Inference(Protocol):
 
     @webmethod(route="/inference/register_model")
     async def register_model(self, model: ModelDef) -> None: ...
-
-    @webmethod(route="/inference/list_models")
-    async def list_models(self) -> List[ModelDef]: ...
-
-    @webmethod(route="/inference/get_model")
-    async def get_model(self, identifier: str) -> Optional[ModelDef]: ...

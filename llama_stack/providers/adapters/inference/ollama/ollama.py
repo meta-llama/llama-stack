@@ -21,7 +21,7 @@ from llama_stack.providers.utils.inference.augment_messages import (
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 
-OLLAMA_SUPPORTED_SKUS = {
+OLLAMA_SUPPORTED_MODELS = {
     "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
     "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
     "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
@@ -33,7 +33,7 @@ OLLAMA_SUPPORTED_SKUS = {
 class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, url: str) -> None:
         ModelRegistryHelper.__init__(
-            self, stack_to_provider_models_map=OLLAMA_SUPPORTED_SKUS
+            self, stack_to_provider_models_map=OLLAMA_SUPPORTED_MODELS
         )
         self.url = url
         tokenizer = Tokenizer.get_instance()

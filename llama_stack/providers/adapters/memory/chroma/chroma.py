@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import json
-import uuid
 from typing import List
 from urllib.parse import urlparse
 
@@ -13,7 +12,6 @@ import chromadb
 from numpy.typing import NDArray
 
 from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.distribution.datatypes import RoutableProvider
 
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
@@ -65,7 +63,7 @@ class ChromaIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class ChromaMemoryAdapter(Memory, RoutableProvider):
+class ChromaMemoryAdapter(Memory):
     def __init__(self, url: str) -> None:
         print(f"Initializing ChromaMemoryAdapter with url: {url}")
         url = url.rstrip("/")
@@ -93,48 +91,33 @@ class ChromaMemoryAdapter(Memory, RoutableProvider):
     async def shutdown(self) -> None:
         pass
 
-    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
-        print(f"[chroma] Registering memory bank routing keys: {routing_keys}")
-        pass
-
-    async def create_memory_bank(
+    async def register_memory_bank(
         self,
-        name: str,
-        config: MemoryBankConfig,
-        url: Optional[URL] = None,
-    ) -> MemoryBank:
-        bank_id = str(uuid.uuid4())
-        bank = MemoryBank(
-            bank_id=bank_id,
-            name=name,
-            config=config,
-            url=url,
-        )
+        memory_bank: MemoryBankDef,
+    ) -> None:
+        assert (
+            memory_bank.type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.type}"
+
         collection = await self.client.create_collection(
-            name=bank_id,
-            metadata={"bank": bank.json()},
+            name=memory_bank.identifier,
         )
         bank_index = BankWithIndex(
-            bank=bank, index=ChromaIndex(self.client, collection)
+            bank=memory_bank, index=ChromaIndex(self.client, collection)
         )
-        self.cache[bank_id] = bank_index
-        return bank
-
-    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        bank_index = await self._get_and_cache_bank_index(bank_id)
-        if bank_index is None:
-            return None
-        return bank_index.bank
+        self.cache[memory_bank.identifier] = bank_index
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:
             return self.cache[bank_id]
 
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        if bank is None:
+            raise ValueError(f"Bank {bank_id} not found")
+
         collections = await self.client.list_collections()
         for collection in collections:
             if collection.name == bank_id:
-                print(collection.metadata)
-                bank = MemoryBank(**json.loads(collection.metadata["bank"]))
                 index = BankWithIndex(
                     bank=bank,
                     index=ChromaIndex(self.client, collection),

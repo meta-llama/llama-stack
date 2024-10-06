@@ -38,7 +38,13 @@ class QueryDocumentsResponse(BaseModel):
     scores: List[float]
 
 
+class MemoryBankStore(Protocol):
+    def get_memory_bank(self, bank_id: str) -> Optional[MemoryBankDef]: ...
+
+
 class Memory(Protocol):
+    memory_bank_store: MemoryBankStore
+
     # this will just block now until documents are inserted, but it should
     # probably return a Job instance which can be polled for completion
     @webmethod(route="/memory/insert")
@@ -80,9 +86,3 @@ class Memory(Protocol):
 
     @webmethod(route="/memory/register_memory_bank")
     async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...
-
-    @webmethod(route="/memory/list_memory_banks")
-    async def list_memory_banks(self) -> List[MemoryBankDef]: ...
-
-    @webmethod(route="/memory/get_memory_bank")
-    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]: ...
