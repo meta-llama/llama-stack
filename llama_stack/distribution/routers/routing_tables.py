@@ -42,7 +42,8 @@ class CommonRoutingTableImpl(RoutingTable):
             await self.register_object(obj, p)
 
     async def shutdown(self) -> None:
-        pass
+        for p in self.impls_by_provider_id.values():
+            await p.shutdown()
 
     def get_provider_impl(self, routing_key: str) -> Any:
         if routing_key not in self.routing_key_to_object:

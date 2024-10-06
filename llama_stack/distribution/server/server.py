@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import functools
 import inspect
 import json
 import signal
@@ -169,11 +170,20 @@ async def passthrough(
         await end_trace(SpanStatus.OK if not erred else SpanStatus.ERROR)
 
 
-def handle_sigint(*args, **kwargs):
+def handle_sigint(app, *args, **kwargs):
     print("SIGINT or CTRL-C detected. Exiting gracefully...")
+
+    async def run_shutdown():
+        for impl in app.__llama_stack_impls__.values():
+            print(f"Shutting down {impl}")
+            await impl.shutdown()
+
+    asyncio.run(run_shutdown())
+
     loop = asyncio.get_event_loop()
     for task in asyncio.all_tasks(loop):
         task.cancel()
+
     loop.stop()
 
 
@@ -181,7 +191,10 @@ def handle_sigint(*args, **kwargs):
 async def lifespan(app: FastAPI):
     print("Starting up")
     yield
+
     print("Shutting down")
+    for impl in app.__llama_stack_impls__.values():
+        await impl.shutdown()
 
 
 def create_dynamic_passthrough(
@@ -333,7 +346,9 @@ def main(
     print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
-    signal.signal(signal.SIGINT, handle_sigint)
+    signal.signal(signal.SIGINT, functools.partial(handle_sigint, app))
+
+    app.__llama_stack_impls__ = impls
 
     import uvicorn
 

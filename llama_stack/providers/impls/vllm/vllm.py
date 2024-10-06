@@ -42,7 +42,7 @@ from llama_stack.apis.inference.inference import (
 from llama_stack.providers.utils.inference.augment_messages import (
     augment_messages_for_tools,
 )
-from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from .config import VLLMConfig
 
@@ -75,7 +75,7 @@ def _vllm_sampling_params(sampling_params: Any) -> SamplingParams:
     return SamplingParams().from_optional(**kwargs)
 
 
-class VLLMInferenceImpl(Inference, RoutableProviderForModels):
+class VLLMInferenceImpl(Inference, ModelRegistryHelper):
     """Inference implementation for vLLM."""
 
     HF_MODEL_MAPPINGS = {
@@ -109,7 +109,7 @@ class VLLMInferenceImpl(Inference, RoutableProviderForModels):
 
     def __init__(self, config: VLLMConfig):
         Inference.__init__(self)
-        RoutableProviderForModels.__init__(
+        ModelRegistryHelper.__init__(
             self,
             stack_to_provider_models_map=self.HF_MODEL_MAPPINGS,
         )
