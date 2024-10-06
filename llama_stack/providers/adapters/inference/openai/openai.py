@@ -21,14 +21,11 @@ from .config import OpenAIImplConfig
 
 
 class OpenAIInferenceAdapter(Inference):
+    max_tokens: int
+    model_id: str
+
     def __init__(self, config: OpenAIImplConfig) -> None:
         self.config = config
-
-        # For testing purposes
-        # This model's maximum context length is 6144 tokens.
-        self.max_tokens = 6144
-        self.model_id = "mistral-7b-instruct"
-
         tokenizer = Tokenizer.get_instance()
         self.formatter = ChatFormat(tokenizer)
 
@@ -66,7 +63,7 @@ class OpenAIInferenceAdapter(Inference):
 
     def resolve_openai_model(self, model_name: str) -> str:
         # TODO: This should be overriden by other classes
-        return self.model_id
+        return model_name
 
     def get_openai_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -106,7 +103,7 @@ class OpenAIInferenceAdapter(Inference):
         model_input = self.formatter.encode_dialog_prompt(messages)
 
         input_tokens = len(model_input.tokens)
-        # TODO: There is a potential bug here
+        # TODO: There is a potential bug here to be investigated
         # max_new_tokens = min(
         #     request.sampling_params.max_tokens or (self.max_tokens - input_tokens),
         #     self.max_tokens - input_tokens - 1,
