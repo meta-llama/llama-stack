@@ -23,7 +23,7 @@ api_providers:
       persistence_store:
         namespace: null
         type: sqlite
-        db_path: ~.llama/runtime/kvstore.db
+        db_path: ~/.llama/runtime/kvstore.db
   memory:
     providers:
     - meta-reference
