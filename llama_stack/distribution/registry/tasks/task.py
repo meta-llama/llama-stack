@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 
 class BaseTask(ABC):
     """
+    A task represents a single evaluation benchmark, including it's dataset, preprocessing, postprocessing and scoring methods.
     Base class for all evaluation tasks. Each task needs to implement the following methods:
     - F1: preprocess_sample(self)
     - F2: postprocess_sample(self)

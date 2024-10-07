@@ -5,8 +5,8 @@
 # the root directory of this source tree.
 import re
 
-from .task import BaseTask
 from llama_stack.apis.evals import *  # noqa: F403
+from llama_stack.distribution.registry.tasks.task import BaseTask
 
 QUERY_TEMPLATE_MULTICHOICE = """
 Answer the following multiple choice question and make the answer very simple. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD.

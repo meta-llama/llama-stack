@@ -8,12 +8,15 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.evals import *  # noqa: F403
 from termcolor import cprint
 
+from llama_stack.distribution.registry.tasks.task_registry import TaskRegistry
+
 from llama_stack.providers.impls.meta_reference.evals.datas.dataset_registry import (
     get_dataset,
 )
-from llama_stack.providers.impls.meta_reference.evals.tasks.task_registry import (
-    get_task,
-)
+
+# from llama_stack.providers.impls.meta_reference.evals.tasks.task_registry import (
+#     get_task,
+# )
 
 from .config import MetaReferenceEvalsImplConfig
 
@@ -36,7 +39,8 @@ class MetaReferenceEvalsImpl(Evals):
     ) -> EvaluateResponse:
         cprint(f"model={model}, dataset={dataset}, task={task}", "red")
         dataset = get_dataset(dataset)
-        task_impl = get_task(task, dataset)
+        task_impl = TaskRegistry.get_task(task)(dataset)
+
         x1 = task_impl.preprocess()
 
         # TODO: replace w/ batch inference & async return eval job

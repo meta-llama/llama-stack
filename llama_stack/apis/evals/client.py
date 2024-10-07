@@ -43,20 +43,20 @@ async def run_main(host: str, port: int):
     client = EvaluationClient(f"http://{host}:{port}")
 
     # CustomDataset
-    # response = await client.run_evals(
-    #     "Llama3.1-8B-Instruct",
-    #     "mmlu-simple-eval-en",
-    #     "mmlu",
-    # )
-    # cprint(f"evaluate response={response}", "green")
-
-    # Eleuther Eval
     response = await client.run_evals(
         "Llama3.1-8B-Instruct",
-        "PLACEHOLDER_DATASET_NAME",
+        "mmlu-simple-eval-en",
         "mmlu",
     )
-    cprint(response.metrics["metrics_table"], "red")
+    cprint(f"evaluate response={response}", "green")
+
+    # Eleuther Eval
+    # response = await client.run_evals(
+    #     "Llama3.1-8B-Instruct",
+    #     "PLACEHOLDER_DATASET_NAME",
+    #     "mmlu",
+    # )
+    # cprint(response.metrics["metrics_table"], "red")
 
 
 def main(host: str, port: int):
