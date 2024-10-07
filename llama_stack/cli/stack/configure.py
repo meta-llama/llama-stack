@@ -71,9 +71,7 @@ class StackConfigure(Subcommand):
         conda_dir = (
             Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
         )
-        output = subprocess.check_output(
-            ["bash", "-c", "conda info --json -a"]
-        )
+        output = subprocess.check_output(["bash", "-c", "conda info --json"])
         conda_envs = json.loads(output.decode("utf-8"))["envs"]
 
         for x in conda_envs:

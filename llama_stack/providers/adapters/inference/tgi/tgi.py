@@ -243,7 +243,7 @@ class TGIAdapter(_HfAdapter):
 class InferenceAPIAdapter(_HfAdapter):
     async def initialize(self, config: InferenceAPIImplConfig) -> None:
         self.client = AsyncInferenceClient(
-            model=config.model_id, token=config.api_token
+            model=config.huggingface_repo, token=config.api_token
         )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
