@@ -64,7 +64,6 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         + [x.value for x in routing_table_apis]
         + [x.value for x in router_apis]
     )
-    print(f"{apis_to_serve=}")
 
     for info in builtin_automatically_routed_apis():
         if info.router_api.value not in apis_to_serve:

@@ -39,14 +39,6 @@ RoutedProtocol = Union[
 ]
 
 
-class ModelRegistry(Protocol):
-    def get_model(self, identifier: str) -> ModelDef: ...
-
-
-class MemoryBankRegistry(Protocol):
-    def get_memory_bank(self, identifier: str) -> MemoryBankDef: ...
-
-
 # Example: /inference, /safety
 class AutoRoutedProviderSpec(ProviderSpec):
     provider_type: str = "router"
