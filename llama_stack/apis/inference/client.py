@@ -6,7 +6,6 @@
 
 import asyncio
 import json
-import sys
 from typing import Any, AsyncGenerator, List, Optional
 
 import fire
@@ -101,7 +100,9 @@ class InferenceClient(Inference):
                             print(f"Error with parsing or validation: {e}")
 
 
-async def run_main(host: str, port: int, stream: bool, model: Optional[str]):
+async def run_main(
+    host: str, port: int, stream: bool, model: Optional[str], logprobs: bool
+):
     client = InferenceClient(f"http://{host}:{port}")
 
     if not model:
@@ -115,9 +116,15 @@ async def run_main(host: str, port: int, stream: bool, model: Optional[str]):
         model=model,
         messages=[message],
         stream=stream,
+        logprobs=logprobs,
     )
-    async for log in EventLogger().log(iterator):
-        log.print()
+
+    if logprobs:
+        async for chunk in iterator:
+            cprint(f"Response: {chunk}", "red")
+    else:
+        async for log in EventLogger().log(iterator):
+            log.print()
 
 
 async def run_mm_main(
@@ -149,13 +156,14 @@ def main(
     port: int,
     stream: bool = True,
     mm: bool = False,
+    logprobs: bool = False,
     file: Optional[str] = None,
     model: Optional[str] = None,
 ):
     if mm:
         asyncio.run(run_mm_main(host, port, stream, file, model))
     else:
-        asyncio.run(run_main(host, port, stream, model))
+        asyncio.run(run_main(host, port, stream, model, logprobs))
 
 
 if __name__ == "__main__":
