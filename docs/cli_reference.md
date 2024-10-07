@@ -1,6 +1,6 @@
 # Llama CLI Reference
 
-The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
+The `llama` CLI tool helps you setup and use the Llama Stack & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
 ### Subcommands
 1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
