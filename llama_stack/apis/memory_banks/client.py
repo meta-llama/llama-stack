@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 
 from typing import Any, Dict, List, Optional
 
@@ -70,30 +69,9 @@ class MemoryBanksClient(MemoryBanks):
             j = response.json()
             return deserialize_memory_bank_def(j)
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{self.base_url}/memory/register_memory_bank",
-                json={
-                    "memory_bank": json.loads(memory_bank.json()),
-                },
-                headers={"Content-Type": "application/json"},
-            )
-            response.raise_for_status()
-
 
 async def run_main(host: str, port: int, stream: bool):
     client = MemoryBanksClient(f"http://{host}:{port}")
-
-    await client.register_memory_bank(
-        VectorMemoryBankDef(
-            identifier="test_bank",
-            provider_id="",
-            embedding_model="all-MiniLM-L6-v2",
-            chunk_size_in_tokens=512,
-            overlap_size_in_tokens=64,
-        ),
-    )
 
     response = await client.list_memory_banks()
     cprint(f"list_memory_banks response={response}", "green")

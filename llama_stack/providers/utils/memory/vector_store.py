@@ -153,15 +153,15 @@ class BankWithIndex:
         self,
         documents: List[MemoryBankDocument],
     ) -> None:
-        model = get_embedding_model(self.bank.config.embedding_model)
+        model = get_embedding_model(self.bank.embedding_model)
         for doc in documents:
             content = await content_from_doc(doc)
             chunks = make_overlapped_chunks(
                 doc.document_id,
                 content,
-                self.bank.config.chunk_size_in_tokens,
-                self.bank.config.overlap_size_in_tokens
-                or (self.bank.config.chunk_size_in_tokens // 4),
+                self.bank.chunk_size_in_tokens,
+                self.bank.overlap_size_in_tokens
+                or (self.bank.chunk_size_in_tokens // 4),
             )
             if not chunks:
                 continue
@@ -189,6 +189,6 @@ class BankWithIndex:
         else:
             query_str = _process(query)
 
-        model = get_embedding_model(self.bank.config.embedding_model)
+        model = get_embedding_model(self.bank.embedding_model)
         query_vector = model.encode([query_str])[0].astype(np.float32)
         return await self.index.query(query_vector, k)
