@@ -36,8 +36,8 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
             self, stack_to_provider_models_map=OLLAMA_SUPPORTED_MODELS
         )
         self.url = url
-        tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(tokenizer)
+        self.tokenizer = Tokenizer.get_instance()
+        self.formatter = ChatFormat(self.tokenizer)
 
     @property
     def client(self) -> AsyncClient:
@@ -64,17 +64,6 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         raise NotImplementedError()
-
-    def _messages_to_ollama_messages(self, messages: list[Message]) -> list:
-        ollama_messages = []
-        for message in messages:
-            if message.role == "ipython":
-                role = "tool"
-            else:
-                role = message.role
-            ollama_messages.append({"role": role, "content": message.content})
-
-        return ollama_messages
 
     def get_ollama_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
@@ -113,6 +102,9 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
         )
 
         messages = augment_messages_for_tools(request)
+        model_input = self.formatter.encode_dialog_prompt(messages)
+        prompt = self.tokenizer.decode(model_input.tokens)
+
         # accumulate sampling params and other options to pass to ollama
         options = self.get_ollama_chat_options(request)
         ollama_model = self.map_to_provider_model(request.model)
@@ -131,13 +123,16 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
                 status["status"] == "success"
             ), f"Failed to pull model {self.model} in ollama"
 
+        common_params = {
+            "model": ollama_model,
+            "prompt": prompt,
+            "options": options,
+            "raw": True,
+            "stream": request.stream,
+        }
+
         if not request.stream:
-            r = await self.client.chat(
-                model=ollama_model,
-                messages=self._messages_to_ollama_messages(messages),
-                stream=False,
-                options=options,
-            )
+            r = await self.client.generate(**common_params)
             stop_reason = None
             if r["done"]:
                 if r["done_reason"] == "stop":
@@ -146,7 +141,7 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
                     stop_reason = StopReason.out_of_tokens
 
             completion_message = self.formatter.decode_assistant_message_from_content(
-                r["message"]["content"], stop_reason
+                r["response"], stop_reason
             )
             yield ChatCompletionResponse(
                 completion_message=completion_message,
@@ -159,12 +154,7 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
                     delta="",
                 )
             )
-            stream = await self.client.chat(
-                model=ollama_model,
-                messages=self._messages_to_ollama_messages(messages),
-                stream=True,
-                options=options,
-            )
+            stream = await self.client.generate(**common_params)
 
             buffer = ""
             ipython = False
@@ -178,8 +168,7 @@ class OllamaInferenceAdapter(ModelRegistryHelper, Inference):
                         stop_reason = StopReason.out_of_tokens
                     break
 
-                text = chunk["message"]["content"]
-
+                text = chunk["response"]
                 # check if its a tool call ( aka starts with <|python_tag|> )
                 if not ipython and text.startswith("<|python_tag|>"):
                     ipython = True

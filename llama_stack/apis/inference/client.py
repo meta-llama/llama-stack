@@ -67,25 +67,26 @@ class InferenceClient(Inference):
             logprobs=logprobs,
         )
         async with httpx.AsyncClient() as client:
-            async with client.stream(
-                "POST",
-                f"{self.base_url}/inference/chat_completion",
-                json=encodable_dict(request),
-                headers={"Content-Type": "application/json"},
-                timeout=20,
-            ) as response:
-                if response.status_code != 200:
-                    content = await response.aread()
-                    cprint(
-                        f"Error: HTTP {response.status_code} {content.decode()}", "red"
-                    )
-                    return
+            if stream:
+                async with client.stream(
+                    "POST",
+                    f"{self.base_url}/inference/chat_completion",
+                    json=encodable_dict(request),
+                    headers={"Content-Type": "application/json"},
+                    timeout=20,
+                ) as response:
+                    if response.status_code != 200:
+                        content = await response.aread()
+                        cprint(
+                            f"Error: HTTP {response.status_code} {content.decode()}",
+                            "red",
+                        )
+                        return
 
-                async for line in response.aiter_lines():
-                    if line.startswith("data:"):
-                        data = line[len("data: ") :]
-                        try:
-                            if request.stream:
+                    async for line in response.aiter_lines():
+                        if line.startswith("data:"):
+                            data = line[len("data: ") :]
+                            try:
                                 if "error" in data:
                                     cprint(data, "red")
                                     continue
@@ -93,11 +94,20 @@ class InferenceClient(Inference):
                                 yield ChatCompletionResponseStreamChunk(
                                     **json.loads(data)
                                 )
-                            else:
-                                yield ChatCompletionResponse(**json.loads(data))
-                        except Exception as e:
-                            print(data)
-                            print(f"Error with parsing or validation: {e}")
+                            except Exception as e:
+                                print(data)
+                                print(f"Error with parsing or validation: {e}")
+            else:
+                response = await client.post(
+                    f"{self.base_url}/inference/chat_completion",
+                    json=encodable_dict(request),
+                    headers={"Content-Type": "application/json"},
+                    timeout=20,
+                )
+
+                response.raise_for_status()
+                j = response.json()
+                yield ChatCompletionResponse(**j)
 
 
 async def run_main(

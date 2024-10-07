@@ -100,8 +100,6 @@ class _HfAdapter(Inference):
             self.max_tokens - input_tokens - 1,
         )
 
-        print(f"Calculated max_new_tokens: {max_new_tokens}")
-
         options = self.get_chat_options(request)
         if not request.stream:
             response = await self.client.text_generation(
@@ -119,8 +117,9 @@ class _HfAdapter(Inference):
                 elif response.details.finish_reason == "length":
                     stop_reason = StopReason.out_of_tokens
 
+            generated_text = "".join(t.text for t in response.details.tokens)
             completion_message = self.formatter.decode_assistant_message_from_content(
-                response.generated_text,
+                generated_text,
                 stop_reason,
             )
             yield ChatCompletionResponse(

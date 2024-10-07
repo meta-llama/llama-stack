@@ -1,0 +1,15 @@
+providers:
+  - provider_id: test-ollama
+    provider_type: remote::ollama
+    config:
+      host: localhost
+      port: 11434
+  - provider_id: test-tgi
+    provider_type: remote::tgi
+    config:
+      url: http://localhost:7001
+  - provider_id: test-remote
+    provider_type: remote
+    config:
+      host: localhost
+      port: 7002

@@ -109,6 +109,7 @@ this could be just a hash
         description="Reference to the conda environment if this package refers to a conda environment",
     )
     apis: List[str] = Field(
+        default_factory=list,
         description="""
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
