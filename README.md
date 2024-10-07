@@ -55,7 +55,6 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 | Chroma | Single Node |  |  | :heavy_check_mark: |  |  |
 | PG Vector | Single Node |  |  | :heavy_check_mark: |  |  |
 | PyTorch ExecuTorch | On-device iOS | :heavy_check_mark:  | :heavy_check_mark:  |  |  |
-| [vLLM](https://docs.vllm.ai/en/latest/) | Single Node |  | :heavy_check_mark:  |  |  |
 
 ### Distributions
 |  **Distribution Provider** |  **Docker** | **Inference** | **Memory** | **Safety** | **Telemetry** |
