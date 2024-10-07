@@ -152,7 +152,7 @@ class StackConfigure(Subcommand):
             config = StackRunConfig(
                 built_at=datetime.now(),
                 image_name=image_name,
-                apis=[],
+                apis=list(build_config.distribution_spec.providers.keys()),
                 providers={},
                 models=[],
                 shields=[],

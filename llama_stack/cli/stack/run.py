@@ -7,7 +7,6 @@
 import argparse
 
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 class StackRun(Subcommand):
@@ -49,8 +48,8 @@ class StackRun(Subcommand):
         from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
+        from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
         from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
-
         from llama_stack.distribution.utils.exec import run_with_pty
 
         if not args.config:
@@ -78,7 +77,8 @@ class StackRun(Subcommand):
 
         cprint(f"Using config `{config_file}`", "green")
         with open(config_file, "r") as f:
-            config = StackRunConfig(**yaml.safe_load(f))
+            config_dict = yaml.safe_load(config_file.read_text())
+            config = parse_and_maybe_upgrade_config(config_dict)
 
         if config.docker_image:
             script = pkg_resources.resource_filename(

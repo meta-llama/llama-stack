@@ -22,7 +22,7 @@ def available_templates_specs() -> List[BuildConfig]:
     import yaml
 
     template_specs = []
-    for p in TEMPLATES_PATH.rglob("*.yaml"):
+    for p in TEMPLATES_PATH.rglob("*build.yaml"):
         with open(p, "r") as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs.append(build_config)
