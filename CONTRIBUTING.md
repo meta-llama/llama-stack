@@ -1,4 +1,4 @@
-# Contributing to Llama-Models
+# Contributing to Llama-Stack
 We want to make contributing to this project as easy and transparent as
 possible.
 
@@ -32,7 +32,7 @@ outlined on that page and do not file a public issue.
 * ...
 
 ## Tips
-* If you are developing with a llama-models repository checked out and need your distribution to reflect changes from there, set `LLAMA_MODELS_DIR` to that dir when running any of the `llama` CLI commands.
+* If you are developing with a llama-stack repository checked out and need your distribution to reflect changes from there, set `LLAMA_STACK_DIR` to that dir when running any of the `llama` CLI commands.
 
 ## License
 By contributing to Llama, you agree that your contributions will be licensed
