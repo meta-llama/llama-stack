@@ -673,7 +673,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _retrieve_context(
         self, session_id: str, messages: List[Message], attachments: List[Attachment]
-    ) -> Tuple[List[str], List[int]]:  # (rag_context, bank_ids)
+    ) -> Tuple[Optional[List[str]], Optional[List[int]]]:  # (rag_context, bank_ids)
         bank_ids = []
 
         memory = self._memory_tool_definition()
@@ -722,12 +722,13 @@ class ChatAgent(ShieldRunnerMixin):
         chunks = [c for r in results for c in r.chunks]
         scores = [s for r in results for s in r.scores]
 
+        if not chunks:
+            return None, bank_ids
+
         # sort by score
         chunks, scores = zip(
             *sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True)
         )
-        if not chunks:
-            return None, bank_ids
 
         tokens = 0
         picked = []
