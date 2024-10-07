@@ -31,7 +31,6 @@ class MetaReferenceInferenceImpl(Inference):
         if model is None:
             raise RuntimeError(f"Unknown model: {config.model}, Run `llama model list`")
         self.model = model
-        self.registered_model_defs = []
         # verify that the checkpoint actually is for this model lol
 
     async def initialize(self) -> None:
@@ -39,24 +38,10 @@ class MetaReferenceInferenceImpl(Inference):
         self.generator.start()
 
     async def register_model(self, model: ModelDef) -> None:
-        existing = await self.get_model(model.identifier)
-        if existing is not None:
-            return
-
         if model.identifier != self.model.descriptor():
             raise RuntimeError(
                 f"Model mismatch: {model.identifier} != {self.model.descriptor()}"
             )
-        self.registered_model_defs = [model]
-
-    async def list_models(self) -> List[ModelDef]:
-        return self.registered_model_defs
-
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
-        for model in self.registered_model_defs:
-            if model.identifier == identifier:
-                return model
-        return None
 
     async def shutdown(self) -> None:
         self.generator.stop()
