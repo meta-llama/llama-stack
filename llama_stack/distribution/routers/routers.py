@@ -28,14 +28,8 @@ class MemoryRouter(Memory):
     async def shutdown(self) -> None:
         pass
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
-        return self.routing_table.list_memory_banks()
-
-    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
-        return self.routing_table.get_memory_bank(identifier)
-
-    async def register_memory_bank(self, bank: MemoryBankDef) -> None:
-        await self.routing_table.register_memory_bank(bank)
+    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
+        await self.routing_table.register_memory_bank(memory_bank)
 
     async def insert_documents(
         self,
@@ -72,12 +66,6 @@ class InferenceRouter(Inference):
 
     async def shutdown(self) -> None:
         pass
-
-    async def list_models(self) -> List[ModelDef]:
-        return self.routing_table.list_models()
-
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
-        return self.routing_table.get_model(identifier)
 
     async def register_model(self, model: ModelDef) -> None:
         await self.routing_table.register_model(model)
@@ -148,12 +136,6 @@ class SafetyRouter(Safety):
 
     async def shutdown(self) -> None:
         pass
-
-    async def list_shields(self) -> List[ShieldDef]:
-        return self.routing_table.list_shields()
-
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDef]:
-        return self.routing_table.get_shield(shield_type)
 
     async def register_shield(self, shield: ShieldDef) -> None:
         await self.routing_table.register_shield(shield)

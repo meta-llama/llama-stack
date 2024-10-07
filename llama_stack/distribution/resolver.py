@@ -60,8 +60,11 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         providers_with_specs[key] = specs
 
     apis_to_serve = run_config.apis or set(
-        list(providers_with_specs.keys()) + list(routing_table_apis)
+        list(providers_with_specs.keys())
+        + [x.value for x in routing_table_apis]
+        + [x.value for x in router_apis]
     )
+    print(f"{apis_to_serve=}")
 
     for info in builtin_automatically_routed_apis():
         if info.router_api.value not in apis_to_serve:
@@ -112,18 +115,22 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
     sorted_providers = topological_sort(
         {k: v.values() for k, v in providers_with_specs.items()}
     )
+    apis = [x[1].spec.api for x in sorted_providers]
     sorted_providers.append(
         (
             "inspect",
             ProviderWithSpec(
                 provider_id="__builtin__",
                 provider_type="__builtin__",
-                config={},
+                config={
+                    "run_config": run_config.dict(),
+                },
                 spec=InlineProviderSpec(
                     api=Api.inspect,
                     provider_type="__builtin__",
                     config_class="llama_stack.distribution.inspect.DistributionInspectConfig",
                     module="llama_stack.distribution.inspect",
+                    api_dependencies=apis,
                 ),
             ),
         )
@@ -233,6 +240,7 @@ async def instantiate_provider(
 
     fn = getattr(module, method)
     impl = await fn(*args)
+    impl.__provider_id__ = provider.provider_id
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
     return impl

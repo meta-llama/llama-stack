@@ -241,13 +241,15 @@ class StackBuild(Subcommand):
                 default="conda",
             )
 
-            cprint(textwrap.dedent(
-                """
+            cprint(
+                textwrap.dedent(
+                    """
                 Llama Stack is composed of several APIs working together. Let's select
                 the provider types (implementations) you want to use for these APIs.
                 """,
-            ),
-                color="green")
+                ),
+                color="green",
+            )
 
             print("Tip: use <TAB> to see options for the providers.\n")
 
@@ -257,9 +259,7 @@ class StackBuild(Subcommand):
                     x for x in providers_for_api.keys() if x != "remote"
                 ]
                 api_provider = prompt(
-                    "> Enter provider for API {}: ".format(
-                        api.value
-                    ),
+                    "> Enter provider for API {}: ".format(api.value),
                     completer=WordCompleter(available_providers),
                     complete_while_typing=True,
                     validator=Validator.from_callable(

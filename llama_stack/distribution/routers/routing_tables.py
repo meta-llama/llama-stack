@@ -80,18 +80,29 @@ class CommonRoutingTableImpl(RoutingTable):
                 return obj
         return None
 
-    async def register_object(self, obj: RoutableObject) -> Any:
+    async def register_object(self, obj: RoutableObject):
         if obj.identifier in self.routing_key_to_object:
-            raise ValueError(f"Object `{obj.identifier}` already registered")
+            print(f"Object `{obj.identifier}` is already registered")
+            return
 
-        if obj.provider_id not in self.impls_by_provider_id:
-            raise ValueError(f"Provider `{obj.provider_id}` not found")
+        if not obj.provider_id:
+            provider_ids = list(self.impls_by_provider_id.keys())
+            if not provider_ids:
+                raise ValueError("No providers found")
+
+            print(f"Picking provider `{provider_ids[0]}` for {obj.identifier}")
+            obj.provider_id = provider_ids[0]
+        else:
+            if obj.provider_id not in self.impls_by_provider_id:
+                raise ValueError(f"Provider `{obj.provider_id}` not found")
 
         p = self.impls_by_provider_id[obj.provider_id]
         await register_object_with_provider(obj, p)
 
         self.routing_key_to_object[obj.identifier] = obj
         self.registry.append(obj)
+
+        # TODO: persist this to a store
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):

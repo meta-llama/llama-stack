@@ -64,8 +64,8 @@ def configure_api_providers(
 ) -> StackRunConfig:
     is_nux = len(config.providers) == 0
 
-    apis = set((config.apis or list(build_spec.providers.keys())))
-    config.apis = [a for a in apis if a != "telemetry"]
+    # keep this default so all APIs are served
+    config.apis = []
 
     if is_nux:
         print(
@@ -79,7 +79,8 @@ def configure_api_providers(
 
     provider_registry = get_provider_registry()
     builtin_apis = [a.routing_table_api for a in builtin_automatically_routed_apis()]
-    for api_str in config.apis:
+    apis_to_serve = [a.value for a in Api if a not in (Api.telemetry, Api.inspect)]
+    for api_str in apis_to_serve:
         api = Api(api_str)
         if api in builtin_apis:
             continue

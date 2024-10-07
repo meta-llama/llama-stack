@@ -12,15 +12,15 @@ from pydantic import BaseModel
 
 @json_schema_type
 class ProviderInfo(BaseModel):
+    provider_id: str
     provider_type: str
-    description: str
 
 
 @json_schema_type
 class RouteInfo(BaseModel):
     route: str
     method: str
-    providers: List[str]
+    provider_types: List[str]
 
 
 @json_schema_type

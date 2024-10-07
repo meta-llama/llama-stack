@@ -8,52 +8,56 @@ from typing import Dict, List
 from llama_stack.apis.inspect import *  # noqa: F403
 from pydantic import BaseModel
 
-from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
 from llama_stack.providers.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 class DistributionInspectConfig(BaseModel):
-    pass
+    run_config: StackRunConfig
 
 
-async def get_provider_impl(*args, **kwargs):
-    impl = DistributionInspectImpl()
+async def get_provider_impl(config, deps):
+    impl = DistributionInspectImpl(config, deps)
     await impl.initialize()
     return impl
 
 
 class DistributionInspectImpl(Inspect):
-    def __init__(self):
-        pass
+    def __init__(self, config, deps):
+        self.config = config
+        self.deps = deps
 
     async def initialize(self) -> None:
         pass
 
     async def list_providers(self) -> Dict[str, List[ProviderInfo]]:
+        run_config = self.config.run_config
+
         ret = {}
-        all_providers = get_provider_registry()
-        for api, providers in all_providers.items():
-            ret[api.value] = [
+        for api, providers in run_config.providers.items():
+            ret[api] = [
                 ProviderInfo(
+                    provider_id=p.provider_id,
                     provider_type=p.provider_type,
-                    description="Passthrough" if is_passthrough(p) else "",
                 )
-                for p in providers.values()
+                for p in providers
             ]
 
         return ret
 
     async def list_routes(self) -> Dict[str, List[RouteInfo]]:
+        run_config = self.config.run_config
+
         ret = {}
         all_endpoints = get_all_api_endpoints()
-
         for api, endpoints in all_endpoints.items():
+            providers = run_config.providers.get(api.value, [])
             ret[api.value] = [
                 RouteInfo(
                     route=e.route,
                     method=e.method,
-                    providers=[],
+                    provider_types=[p.provider_type for p in providers],
                 )
                 for e in endpoints
             ]
