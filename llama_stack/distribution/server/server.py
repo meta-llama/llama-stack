@@ -58,13 +58,28 @@ def is_async_iterator_type(typ):
     )
 
 
-def create_sse_event(data: Any) -> str:
+def create_sse_event(data: Any, **kwargs) -> str:
     if isinstance(data, BaseModel):
         data = data.json()
     else:
         data = json.dumps(data)
 
-    return f"data: {data}\n\n"
+    # !!FIX THIS ASAP!! grossest hack ever; not really SSE
+    #
+    # we use the return type of the function to determine if there's an AsyncGenerator
+    # and change the implementation to send SSE. unfortunately, chat_completion() takes a
+    # parameter called stream which _changes_ the return type. one correct way to fix this is:
+    #
+    # - have separate underlying functions for streaming and non-streaming because they need
+    #   to operate differently anyhow
+    # - do a late binding of the return type based on the parameters passed in
+    if kwargs.get("stream", False):
+        return f"data: {data}\n\n"
+    else:
+        print(
+            f"!!FIX THIS ASAP!! Sending non-SSE event because client really is non-SSE: {data}"
+        )
+        return data
 
 
 async def global_exception_handler(request: Request, exc: Exception):
@@ -226,7 +241,7 @@ def create_dynamic_typed_route(func: Any, method: str):
             async def sse_generator(event_gen):
                 try:
                     async for item in event_gen:
-                        yield create_sse_event(item)
+                        yield create_sse_event(item, **kwargs)
                         await asyncio.sleep(0.01)
                 except asyncio.CancelledError:
                     print("Generator cancelled")
