@@ -33,7 +33,12 @@ class CustomDataset(BaseDataset):
     def load(self):
         if self.dataset:
             return
-        df = pandas.read_csv(self.url)
+        # TODO: better support w/ data url
+        if self.url.endswith(".csv"):
+            df = pandas.read_csv(self.url)
+        elif self.url.endswith(".xlsx"):
+            df = pandas.read_excel(self.url)
+
         self.dataset = Dataset.from_pandas(df)
 
 
