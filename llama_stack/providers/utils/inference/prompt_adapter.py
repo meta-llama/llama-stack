@@ -26,7 +26,7 @@ from llama_stack.providers.utils.inference import supported_inference_models
 def chat_completion_request_to_prompt(
     request: ChatCompletionRequest, formatter: ChatFormat
 ) -> str:
-    messages = augment_messages_for_tools(request)
+    messages = chat_completion_request_to_messages(request)
     model_input = formatter.encode_dialog_prompt(messages)
     return formatter.tokenizer.decode(model_input.tokens)
 
@@ -34,7 +34,7 @@ def chat_completion_request_to_prompt(
 def chat_completion_request_to_model_input_info(
     request: ChatCompletionRequest, formatter: ChatFormat
 ) -> Tuple[str, int]:
-    messages = augment_messages_for_tools(request)
+    messages = chat_completion_request_to_messages(request)
     model_input = formatter.encode_dialog_prompt(messages)
     return (
         formatter.tokenizer.decode(model_input.tokens),
@@ -42,7 +42,9 @@ def chat_completion_request_to_model_input_info(
     )
 
 
-def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:
+def chat_completion_request_to_messages(
+    request: ChatCompletionRequest,
+) -> List[Message]:
     """Reads chat completion request and augments the messages to handle tools.
     For eg. for llama_3_1, add system message with the appropriate tools or
     add user messsage for custom tools, etc.

@@ -15,14 +15,14 @@ from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
 
-from llama_stack.providers.utils.inference.augment_messages import (
-    chat_completion_request_to_prompt,
-)
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
+)
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    chat_completion_request_to_prompt,
 )
 
 from .config import DatabricksImplConfig

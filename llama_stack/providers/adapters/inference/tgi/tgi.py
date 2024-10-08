@@ -14,15 +14,15 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.augment_messages import (
-    chat_completion_request_to_model_input_info,
-)
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
     process_chat_completion_response,
     process_chat_completion_stream_response,
+)
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    chat_completion_request_to_model_input_info,
 )
 
 from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
