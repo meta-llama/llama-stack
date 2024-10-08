@@ -180,6 +180,17 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="clarifai",
+                pip_packages=[
+                    "clarifai",
+                ],
+                module="llama_stack.providers.adapters.inference.clarifai",
+                config_class="llama_stack.providers.adapters.inference.clarifai.ClarifaiImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="nvidia",
                 pip_packages=[
                     "openai",
