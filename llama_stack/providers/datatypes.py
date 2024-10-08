@@ -43,8 +43,6 @@ class ProviderSpec(BaseModel):
 
 
 class RoutingTable(Protocol):
-    def get_routing_keys(self) -> List[str]: ...
-
     def get_provider_impl(self, routing_key: str) -> Any: ...
 
 

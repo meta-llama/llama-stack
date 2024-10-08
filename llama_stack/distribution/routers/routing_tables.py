@@ -70,8 +70,12 @@ class CommonRoutingTableImpl(RoutingTable):
 
     def get_provider_impl(self, routing_key: str) -> Any:
         if routing_key not in self.routing_key_to_object:
-            raise ValueError(f"Could not find provider for {routing_key}")
+            raise ValueError(f"Object `{routing_key}` not registered")
+
         obj = self.routing_key_to_object[routing_key]
+        if obj.provider_id not in self.impls_by_provider_id:
+            raise ValueError(f"Provider `{obj.provider_id}` not found")
+
         return self.impls_by_provider_id[obj.provider_id]
 
     def get_object_by_identifier(self, identifier: str) -> Optional[RoutableObject]:

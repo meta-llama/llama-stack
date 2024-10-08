@@ -147,10 +147,9 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
 
         inner_impls = {}
         if isinstance(provider.spec, RoutingTableProviderSpec):
-            for entry in provider.spec.registry:
-                inner_impls[entry.provider_id] = inner_impls_by_provider_id[
-                    f"inner-{provider.spec.router_api.value}"
-                ][entry.provider_id]
+            inner_impls = inner_impls_by_provider_id[
+                f"inner-{provider.spec.router_api.value}"
+            ]
 
         impl = await instantiate_provider(
             provider,
