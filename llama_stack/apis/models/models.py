@@ -18,8 +18,8 @@ class ModelDef(BaseModel):
     llama_model: str = Field(
         description="Pointer to the core Llama family model",
     )
-    provider_id: str = Field(
-        description="The provider instance which serves this model"
+    provider_id: Optional[str] = Field(
+        default=None, description="The provider instance which serves this model"
     )
     # For now, we are only supporting core llama models but as soon as finetuned
     # and other custom models (for example various quantizations) are allowed, there

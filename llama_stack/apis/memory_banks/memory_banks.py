@@ -22,7 +22,7 @@ class MemoryBankType(Enum):
 
 class CommonDef(BaseModel):
     identifier: str
-    provider_id: str
+    provider_id: Optional[str] = None
 
 
 @json_schema_type

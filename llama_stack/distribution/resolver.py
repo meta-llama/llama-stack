@@ -50,8 +50,10 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
                     f"Provider `{provider.provider_type}` is not available for API `{api}`"
                 )
 
+            p = all_api_providers[api][provider.provider_type]
+            p.deps__ = [a.value for a in p.api_dependencies]
             spec = ProviderWithSpec(
-                spec=all_api_providers[api][provider.provider_type],
+                spec=p,
                 **(provider.dict()),
             )
             specs[provider.provider_id] = spec
@@ -93,6 +95,10 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
                     registry=registry,
                     module="llama_stack.distribution.routers",
                     api_dependencies=inner_deps,
+                    deps__=(
+                        [x.value for x in inner_deps]
+                        + [f"inner-{info.router_api.value}"]
+                    ),
                 ),
             )
         }
@@ -107,6 +113,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
                     module="llama_stack.distribution.routers",
                     routing_table_api=info.routing_table_api,
                     api_dependencies=[info.routing_table_api],
+                    deps__=([info.routing_table_api.value]),
                 ),
             )
         }
@@ -130,6 +137,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
                     config_class="llama_stack.distribution.inspect.DistributionInspectConfig",
                     module="llama_stack.distribution.inspect",
                     api_dependencies=apis,
+                    deps__=([x.value for x in apis]),
                 ),
             ),
         )
@@ -175,10 +183,8 @@ def topological_sort(
 
         deps = []
         for provider in providers:
-            for dep in provider.spec.api_dependencies:
-                deps.append(dep.value)
-            if isinstance(provider, AutoRoutedProviderSpec):
-                deps.append(f"inner-{provider.api}")
+            for dep in provider.spec.deps__:
+                deps.append(dep)
 
         for dep in deps:
             if dep not in visited:

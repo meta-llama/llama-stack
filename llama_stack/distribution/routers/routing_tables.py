@@ -39,6 +39,7 @@ class CommonRoutingTableImpl(RoutingTable):
     ) -> None:
         for obj in registry:
             if obj.provider_id not in impls_by_provider_id:
+                print(f"{impls_by_provider_id=}")
                 raise ValueError(
                     f"Provider `{obj.provider_id}` pointed by `{obj.identifier}` not found"
                 )
@@ -70,7 +71,7 @@ class CommonRoutingTableImpl(RoutingTable):
 
     def get_provider_impl(self, routing_key: str) -> Any:
         if routing_key not in self.routing_key_to_object:
-            raise ValueError(f"Object `{routing_key}` not registered")
+            raise ValueError(f"`{routing_key}` not registered")
 
         obj = self.routing_key_to_object[routing_key]
         if obj.provider_id not in self.impls_by_provider_id:
@@ -86,7 +87,7 @@ class CommonRoutingTableImpl(RoutingTable):
 
     async def register_object(self, obj: RoutableObject):
         if obj.identifier in self.routing_key_to_object:
-            print(f"Object `{obj.identifier}` is already registered")
+            print(f"`{obj.identifier}` is already registered")
             return
 
         if not obj.provider_id:

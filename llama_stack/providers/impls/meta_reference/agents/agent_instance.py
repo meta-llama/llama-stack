@@ -144,6 +144,8 @@ class ChatAgent(ShieldRunnerMixin):
     async def create_and_execute_turn(
         self, request: AgentTurnCreateRequest
     ) -> AsyncGenerator:
+        assert request.stream is True, "Non-streaming not supported"
+
         session_info = await self.storage.get_session_info(request.session_id)
         if session_info is None:
             raise ValueError(f"Session {request.session_id} not found")
@@ -635,14 +637,13 @@ class ChatAgent(ShieldRunnerMixin):
             raise ValueError(f"Session {session_id} not found")
 
         if session_info.memory_bank_id is None:
-            memory_bank = await self.memory_api.create_memory_bank(
-                name=f"memory_bank_{session_id}",
-                config=VectorMemoryBankConfig(
-                    embedding_model="all-MiniLM-L6-v2",
-                    chunk_size_in_tokens=512,
-                ),
+            bank_id = f"memory_bank_{session_id}"
+            memory_bank = VectorMemoryBankDef(
+                identifier=bank_id,
+                embedding_model="all-MiniLM-L6-v2",
+                chunk_size_in_tokens=512,
             )
-            bank_id = memory_bank.bank_id
+            await self.memory_api.register_memory_bank(memory_bank)
             await self.storage.add_memory_bank_to_session(session_id, bank_id)
         else:
             bank_id = session_info.memory_bank_id

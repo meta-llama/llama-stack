@@ -100,7 +100,7 @@ class MetaReferenceAgentsImpl(Agents):
             session_id=session_id,
         )
 
-    async def create_agent_turn(
+    def create_agent_turn(
         self,
         agent_id: str,
         session_id: str,
@@ -113,16 +113,22 @@ class MetaReferenceAgentsImpl(Agents):
         attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
-        agent = await self.get_agent(agent_id)
-
-        # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
             session_id=session_id,
             messages=messages,
             attachments=attachments,
-            stream=stream,
+            stream=True,
         )
+        if stream:
+            return self._create_agent_turn_streaming(request)
+        else:
+            raise NotImplementedError("Non-streaming agent turns not yet implemented")
 
+    async def _create_agent_turn_streaming(
+        self,
+        request: AgentTurnCreateRequest,
+    ) -> AsyncGenerator:
+        agent = await self.get_agent(request.agent_id)
         async for event in agent.create_and_execute_turn(request):
             yield event

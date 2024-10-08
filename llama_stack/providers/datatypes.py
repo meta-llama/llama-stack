@@ -41,6 +41,9 @@ class ProviderSpec(BaseModel):
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
 
+    # used internally by the resolver; this is a hack for now
+    deps__: List[str] = Field(default_factory=list)
+
 
 class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...

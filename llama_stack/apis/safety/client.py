@@ -96,12 +96,6 @@ async def run_main(host: str, port: int, image_path: str = None):
         )
         print(response)
 
-        response = await client.run_shield(
-            shield_type="injection_shield",
-            messages=[message],
-        )
-        print(response)
-
 
 def main(host: str, port: int, image: str = None):
     asyncio.run(run_main(host, port, image))

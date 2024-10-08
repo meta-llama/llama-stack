@@ -11,13 +11,9 @@ import json
 import signal
 import traceback
 
-from collections.abc import (
-    AsyncGenerator as AsyncGeneratorABC,
-    AsyncIterator as AsyncIteratorABC,
-)
 from contextlib import asynccontextmanager
 from ssl import SSLError
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, get_type_hints, Optional
+from typing import Any, Dict, Optional
 
 import fire
 import httpx
@@ -44,42 +40,13 @@ from llama_stack.distribution.resolver import resolve_impls_with_routing
 from .endpoints import get_all_api_endpoints
 
 
-def is_async_iterator_type(typ):
-    if hasattr(typ, "__origin__"):
-        origin = typ.__origin__
-        if isinstance(origin, type):
-            return issubclass(
-                origin,
-                (AsyncIterator, AsyncGenerator, AsyncIteratorABC, AsyncGeneratorABC),
-            )
-        return False
-    return isinstance(
-        typ, (AsyncIterator, AsyncGenerator, AsyncIteratorABC, AsyncGeneratorABC)
-    )
-
-
-def create_sse_event(data: Any, **kwargs) -> str:
+def create_sse_event(data: Any) -> str:
     if isinstance(data, BaseModel):
         data = data.json()
     else:
         data = json.dumps(data)
 
-    # !!FIX THIS ASAP!! grossest hack ever; not really SSE
-    #
-    # we use the return type of the function to determine if there's an AsyncGenerator
-    # and change the implementation to send SSE. unfortunately, chat_completion() takes a
-    # parameter called stream which _changes_ the return type. one correct way to fix this is:
-    #
-    # - have separate underlying functions for streaming and non-streaming because they need
-    #   to operate differently anyhow
-    # - do a late binding of the return type based on the parameters passed in
-    if kwargs.get("stream", False):
-        return f"data: {data}\n\n"
-    else:
-        print(
-            f"!!FIX THIS ASAP!! Sending non-SSE event because client really is non-SSE: {data}"
-        )
-        return data
+    return f"data: {data}\n\n"
 
 
 async def global_exception_handler(request: Request, exc: Exception):
@@ -221,65 +188,56 @@ def create_dynamic_passthrough(
     return endpoint
 
 
+def is_streaming_request(func_name: str, request: Request, **kwargs):
+    # TODO: pass the api method and punt it to the Protocol definition directly
+    return kwargs.get("stream", False)
+
+
+async def sse_generator(event_gen):
+    try:
+        async for item in event_gen:
+            yield create_sse_event(item)
+            await asyncio.sleep(0.01)
+    except asyncio.CancelledError:
+        print("Generator cancelled")
+        await event_gen.aclose()
+    except Exception as e:
+        traceback.print_exception(e)
+        yield create_sse_event(
+            {
+                "error": {
+                    "message": str(translate_exception(e)),
+                },
+            }
+        )
+    finally:
+        await end_trace()
+
+
 def create_dynamic_typed_route(func: Any, method: str):
-    hints = get_type_hints(func)
-    response_model = hints.get("return")
 
-    # NOTE: I think it is better to just add a method within each Api
-    # "Protocol" / adapter-impl to tell what sort of a response this request
-    # is going to produce. /chat_completion can produce a streaming or
-    # non-streaming response depending on if request.stream is True / False.
-    is_streaming = is_async_iterator_type(response_model)
+    async def endpoint(request: Request, **kwargs):
+        await start_trace(func.__name__)
 
-    if is_streaming:
+        set_request_provider_data(request.headers)
 
-        async def endpoint(request: Request, **kwargs):
-            await start_trace(func.__name__)
-
-            set_request_provider_data(request.headers)
-
-            async def sse_generator(event_gen):
-                try:
-                    async for item in event_gen:
-                        yield create_sse_event(item, **kwargs)
-                        await asyncio.sleep(0.01)
-                except asyncio.CancelledError:
-                    print("Generator cancelled")
-                    await event_gen.aclose()
-                except Exception as e:
-                    traceback.print_exception(e)
-                    yield create_sse_event(
-                        {
-                            "error": {
-                                "message": str(translate_exception(e)),
-                            },
-                        }
-                    )
-                finally:
-                    await end_trace()
-
-            return StreamingResponse(
-                sse_generator(func(**kwargs)), media_type="text/event-stream"
-            )
-
-    else:
-
-        async def endpoint(request: Request, **kwargs):
-            await start_trace(func.__name__)
-
-            set_request_provider_data(request.headers)
-
-            try:
+        is_streaming = is_streaming_request(func.__name__, request, **kwargs)
+        try:
+            if is_streaming:
+                return StreamingResponse(
+                    sse_generator(func(**kwargs)), media_type="text/event-stream"
+                )
+            else:
                 return (
                     await func(**kwargs)
                     if asyncio.iscoroutinefunction(func)
                     else func(**kwargs)
                 )
-            except Exception as e:
-                traceback.print_exception(e)
-                raise translate_exception(e) from e
-            finally:
-                await end_trace()
+        except Exception as e:
+            traceback.print_exception(e)
+            raise translate_exception(e) from e
+        finally:
+            await end_trace()
 
     sig = inspect.signature(func)
     new_params = [

@@ -23,11 +23,11 @@ class ShieldDef(BaseModel):
     identifier: str = Field(
         description="A unique identifier for the shield type",
     )
-    provider_id: str = Field(
-        description="The provider instance which serves this shield"
-    )
     type: str = Field(
         description="The type of shield this is; the value is one of the ShieldType enum"
+    )
+    provider_id: Optional[str] = Field(
+        default=None, description="The provider instance which serves this shield"
     )
     params: Dict[str, Any] = Field(
         default_factory=dict,
