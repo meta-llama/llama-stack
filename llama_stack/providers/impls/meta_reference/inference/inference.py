@@ -136,7 +136,7 @@ class MetaReferenceInferenceImpl(Inference, RoutableProvider):
                             len(token_result.logprobs) == 1
                         ), "Expected logprob to contain 1 result for the current token"
                         assert (
-                            logprobs.top_k == 1
+                            request.logprobs.top_k == 1
                         ), "Only top_k=1 is supported for LogProbConfig"
 
                         logprobs.append(
