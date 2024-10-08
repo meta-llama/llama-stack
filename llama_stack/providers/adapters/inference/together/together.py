@@ -8,7 +8,7 @@ from typing import AsyncGenerator
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message, StopReason
+from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from together import Together
@@ -16,9 +16,14 @@ from together import Together
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.augment_messages import (
-    augment_messages_for_tools,
+    chat_completion_request_to_prompt,
 )
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.openai_compat import (
+    get_sampling_options,
+    process_chat_completion_response,
+    process_chat_completion_stream_response,
+)
 
 from .config import TogetherImplConfig
 
@@ -41,8 +46,7 @@ class TogetherInferenceAdapter(
             self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
         )
         self.config = config
-        self.tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(self.tokenizer)
+        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     @property
     def client(self) -> Together:
@@ -64,16 +68,7 @@ class TogetherInferenceAdapter(
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def get_together_chat_options(self, request: ChatCompletionRequest) -> dict:
-        options = {}
-        if request.sampling_params is not None:
-            for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
-                if getattr(request.sampling_params, attr):
-                    options[attr] = getattr(request.sampling_params, attr)
-
-        return options
-
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -84,7 +79,6 @@ class TogetherInferenceAdapter(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-
         together_api_key = None
         if self.config.api_key is not None:
             together_api_key = self.config.api_key
@@ -109,148 +103,39 @@ class TogetherInferenceAdapter(
             logprobs=logprobs,
         )
 
-        # accumulate sampling params and other options to pass to together
-        options = self.get_together_chat_options(request)
-        together_model = self.map_to_provider_model(request.model)
-        messages = augment_messages_for_tools(request)
-        model_input = self.formatter.encode_dialog_prompt(messages)
-        prompt = self.tokenizer.decode(model_input.tokens)
-
-        if not request.stream:
-            # TODO: might need to add back an async here
-            r = client.completions.create(
-                model=together_model,
-                prompt=prompt,
-                stream=False,
-                **options,
-            )
-            stop_reason = None
-            choice = r.choices[0]
-            if choice.finish_reason:
-                if choice.finish_reason in ["stop", "eos"]:
-                    stop_reason = StopReason.end_of_turn
-                    stop_reason = StopReason.end_of_turn
-                elif choice.finish_reason == "length":
-                    stop_reason = StopReason.out_of_tokens
-
-            completion_message = self.formatter.decode_assistant_message_from_content(
-                choice.text, stop_reason
-            )
-            yield ChatCompletionResponse(
-                completion_message=completion_message,
-                logprobs=None,
-            )
+        if stream:
+            return self._stream_chat_completion(request, client)
         else:
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.start,
-                    delta="",
-                )
-            )
+            return self._nonstream_chat_completion(request, client)
 
-            buffer = ""
-            ipython = False
-            stop_reason = None
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest, client: Together
+    ) -> ChatCompletionResponse:
+        params = self._get_params(request)
+        r = client.completions.create(**params)
+        return process_chat_completion_response(request, r, self.formatter)
 
-            for chunk in client.completions.create(
-                model=together_model,
-                prompt=prompt,
-                stream=True,
-                **options,
-            ):
-                choice = chunk.choices[0]
-                if finish_reason := choice.finish_reason:
-                    if stop_reason is None and finish_reason in ["stop", "eos"]:
-                        stop_reason = StopReason.end_of_turn
-                    elif stop_reason is None and finish_reason == "length":
-                        stop_reason = StopReason.out_of_tokens
-                    break
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest, client: Together
+    ) -> AsyncGenerator:
+        params = self._get_params(request)
 
-                text = choice.delta.content
-                if text is None:
-                    continue
+        # if we shift to TogetherAsyncClient, we won't need this wrapper
+        async def _to_async_generator():
+            s = client.completions.create(**params)
+            for chunk in s:
+                yield chunk
 
-                # check if its a tool call ( aka starts with <|python_tag|> )
-                if not ipython and text.startswith("<|python_tag|>"):
-                    ipython = True
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=ToolCallDelta(
-                                content="",
-                                parse_status=ToolCallParseStatus.started,
-                            ),
-                        )
-                    )
-                    buffer += text
-                    continue
+        stream = _to_async_generator()
+        async for chunk in process_chat_completion_stream_response(
+            request, stream, self.formatter
+        ):
+            yield chunk
 
-                if ipython:
-                    if text == "<|eot_id|>":
-                        stop_reason = StopReason.end_of_turn
-                        text = ""
-                        continue
-                    elif text == "<|eom_id|>":
-                        stop_reason = StopReason.end_of_message
-                        text = ""
-                        continue
-
-                    buffer += text
-                    delta = ToolCallDelta(
-                        content=text,
-                        parse_status=ToolCallParseStatus.in_progress,
-                    )
-
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=delta,
-                            stop_reason=stop_reason,
-                        )
-                    )
-                else:
-                    buffer += text
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=text,
-                            stop_reason=stop_reason,
-                        )
-                    )
-
-            # parse tool calls and report errors
-            message = self.formatter.decode_assistant_message_from_content(
-                buffer, stop_reason
-            )
-            parsed_tool_calls = len(message.tool_calls) > 0
-            if ipython and not parsed_tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content="",
-                            parse_status=ToolCallParseStatus.failure,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
-
-            for tool_call in message.tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content=tool_call,
-                            parse_status=ToolCallParseStatus.success,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
-
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
-                    delta="",
-                    stop_reason=stop_reason,
-                )
-            )
+    def _get_params(self, request: ChatCompletionRequest) -> dict:
+        return {
+            "model": self.map_to_provider_model(request.model),
+            "prompt": chat_completion_request_to_prompt(request, self.formatter),
+            "stream": request.stream,
+            **get_sampling_options(request),
+        }

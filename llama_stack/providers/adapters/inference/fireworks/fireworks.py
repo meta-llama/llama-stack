@@ -10,14 +10,19 @@ from fireworks.client import Fireworks
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message, StopReason
+from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
-
 from llama_stack.apis.inference import *  # noqa: F403
+
 from llama_stack.providers.utils.inference.augment_messages import (
-    augment_messages_for_tools,
+    chat_completion_request_to_prompt,
+)
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.openai_compat import (
+    get_sampling_options,
+    process_chat_completion_response,
+    process_chat_completion_stream_response,
 )
 
 from .config import FireworksImplConfig
@@ -38,12 +43,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
             self, stack_to_provider_models_map=FIREWORKS_SUPPORTED_MODELS
         )
         self.config = config
-        self.tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(self.tokenizer)
-
-    @property
-    def client(self) -> Fireworks:
-        return Fireworks(api_key=self.config.api_key)
+        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         return
@@ -51,7 +51,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(
+    def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -61,16 +61,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def get_fireworks_chat_options(self, request: ChatCompletionRequest) -> dict:
-        options = {}
-        if request.sampling_params is not None:
-            for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
-                if getattr(request.sampling_params, attr):
-                    options[attr] = getattr(request.sampling_params, attr)
-
-        return options
-
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -92,154 +83,41 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
             logprobs=logprobs,
         )
 
-        messages = augment_messages_for_tools(request)
-        model_input = self.formatter.encode_dialog_prompt(messages)
-        prompt = self.tokenizer.decode(model_input.tokens)
+        client = Fireworks(api_key=self.config.api_key)
+        if stream:
+            return self._stream_chat_completion(request, client)
+        else:
+            return self._nonstream_chat_completion(request, client)
+
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest, client: Fireworks
+    ) -> ChatCompletionResponse:
+        params = self._get_params(request)
+        r = await client.completion.acreate(**params)
+        return process_chat_completion_response(request, r, self.formatter)
+
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest, client: Fireworks
+    ) -> AsyncGenerator:
+        params = self._get_params(request)
+
+        stream = client.completion.acreate(**params)
+        async for chunk in process_chat_completion_stream_response(
+            request, stream, self.formatter
+        ):
+            yield chunk
+
+    def _get_params(self, request: ChatCompletionRequest) -> dict:
+        prompt = chat_completion_request_to_prompt(request, self.formatter)
         # Fireworks always prepends with BOS
         if prompt.startswith("<|begin_of_text|>"):
             prompt = prompt[len("<|begin_of_text|>") :]
 
-        # accumulate sampling params and other options to pass to fireworks
-        options = self.get_fireworks_chat_options(request)
+        options = get_sampling_options(request)
         options.setdefault("max_tokens", 512)
-
-        fireworks_model = self.map_to_provider_model(request.model)
-
-        if not request.stream:
-            r = await self.client.completion.acreate(
-                model=fireworks_model,
-                prompt=prompt,
-                stream=False,
-                **options,
-            )
-            stop_reason = None
-            if r.choices[0].finish_reason:
-                if r.choices[0].finish_reason == "stop":
-                    stop_reason = StopReason.end_of_turn
-                elif r.choices[0].finish_reason == "length":
-                    stop_reason = StopReason.out_of_tokens
-
-            completion_message = self.formatter.decode_assistant_message_from_content(
-                r.choices[0].text, stop_reason
-            )
-
-            yield ChatCompletionResponse(
-                completion_message=completion_message,
-                logprobs=None,
-            )
-        else:
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.start,
-                    delta="",
-                )
-            )
-
-            buffer = ""
-            ipython = False
-            stop_reason = None
-
-            async for chunk in self.client.completion.acreate(
-                model=fireworks_model,
-                prompt=prompt,
-                stream=True,
-                **options,
-            ):
-                if chunk.choices[0].finish_reason:
-                    if stop_reason is None and chunk.choices[0].finish_reason == "stop":
-                        stop_reason = StopReason.end_of_turn
-                    elif (
-                        stop_reason is None
-                        and chunk.choices[0].finish_reason == "length"
-                    ):
-                        stop_reason = StopReason.out_of_tokens
-                    break
-
-                text = chunk.choices[0].text
-                if text is None:
-                    continue
-
-                # check if its a tool call ( aka starts with <|python_tag|> )
-                if not ipython and text.startswith("<|python_tag|>"):
-                    ipython = True
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=ToolCallDelta(
-                                content="",
-                                parse_status=ToolCallParseStatus.started,
-                            ),
-                        )
-                    )
-                    buffer += text
-                    continue
-
-                if ipython:
-                    if text == "<|eot_id|>":
-                        stop_reason = StopReason.end_of_turn
-                        text = ""
-                        continue
-                    elif text == "<|eom_id|>":
-                        stop_reason = StopReason.end_of_message
-                        text = ""
-                        continue
-
-                    buffer += text
-                    delta = ToolCallDelta(
-                        content=text,
-                        parse_status=ToolCallParseStatus.in_progress,
-                    )
-
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=delta,
-                            stop_reason=stop_reason,
-                        )
-                    )
-                else:
-                    buffer += text
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=text,
-                            stop_reason=stop_reason,
-                        )
-                    )
-
-            # parse tool calls and report errors
-            message = self.formatter.decode_assistant_message_from_content(
-                buffer, stop_reason
-            )
-            parsed_tool_calls = len(message.tool_calls) > 0
-            if ipython and not parsed_tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content="",
-                            parse_status=ToolCallParseStatus.failure,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
-
-            for tool_call in message.tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content=tool_call,
-                            parse_status=ToolCallParseStatus.success,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
-
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
-                    delta="",
-                    stop_reason=stop_reason,
-                )
-            )
+        return {
+            "model": self.map_to_provider_model(request.model),
+            "prompt": prompt,
+            "stream": request.stream,
+            **options,
+        }

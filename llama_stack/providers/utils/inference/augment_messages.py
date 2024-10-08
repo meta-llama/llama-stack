@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+from llama_models.llama3.api.chat_format import ChatFormat
 from termcolor import cprint
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
@@ -17,6 +18,14 @@ from llama_models.llama3.prompt_templates import (
 from llama_models.sku_list import resolve_model
 
 from llama_stack.providers.utils.inference import supported_inference_models
+
+
+def chat_completion_request_to_prompt(
+    request: ChatCompletionRequest, formatter: ChatFormat
+) -> str:
+    messages = augment_messages_for_tools(request)
+    model_input = formatter.encode_dialog_prompt(messages)
+    return formatter.tokenizer.decode(model_input.tokens)
 
 
 def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:
@@ -48,7 +57,6 @@ def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:
 def augment_messages_for_tools_llama_3_1(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-
     assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
 
     existing_messages = request.messages
