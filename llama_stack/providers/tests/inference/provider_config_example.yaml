@@ -13,3 +13,13 @@ providers:
     config:
       host: localhost
       port: 7002
+  - provider_id: test-together
+    provider_type: remote::together
+    config: {}
+# if a provider needs private keys from the client, they use the
+# "get_request_provider_data" function (see distribution/request_headers.py)
+# this is a place to provide such data.
+provider_data:
+  "test-together":
+    together_api_key:
+      0xdeadbeefputrealapikeyhere

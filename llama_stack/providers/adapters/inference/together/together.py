@@ -64,17 +64,6 @@ class TogetherInferenceAdapter(
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def _messages_to_together_messages(self, messages: list[Message]) -> list:
-        together_messages = []
-        for message in messages:
-            if message.role == "ipython":
-                role = "tool"
-            else:
-                role = message.role
-            together_messages.append({"role": role, "content": message.content})
-
-        return together_messages
-
     def get_together_chat_options(self, request: ChatCompletionRequest) -> dict:
         options = {}
         if request.sampling_params is not None:
