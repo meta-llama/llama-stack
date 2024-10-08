@@ -297,7 +297,7 @@ class Llama:
                 token=next_token[0].item(),
                 text=self.tokenizer.decode(next_token.tolist()),
                 logprobs=(
-                    token_logprobs[:, prev_pos + 1 : cur_pos + 1][0].tolist()
+                    token_logprobs[:, cur_pos : cur_pos + 1][0].tolist()
                     if logprobs
                     else None
                 ),

@@ -132,7 +132,20 @@ class MetaReferenceInferenceImpl(Inference, RoutableProvider):
 
                 if not request.stream:
                     if request.logprobs:
-                        logprobs.append(token_result.logprob)
+                        assert (
+                            len(token_result.logprobs) == 1
+                        ), "Expected logprob to contain 1 result for the current token"
+                        assert (
+                            request.logprobs.top_k == 1
+                        ), "Only top_k=1 is supported for LogProbConfig"
+
+                        logprobs.append(
+                            TokenLogProbs(
+                                logprobs_by_token={
+                                    token_result.text: token_result.logprobs[0]
+                                }
+                            )
+                        )
 
                     continue
 
