@@ -12,19 +12,11 @@ from llama_stack.apis.safety import *  # noqa: F403
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import Api
 
-from llama_stack.providers.impls.meta_reference.safety.shields.base import (
-    OnViolationAction,
-)
-
+from .base import OnViolationAction, ShieldBase
 from .config import SafetyConfig
+from .llama_guard import LlamaGuardShield
+from .prompt_guard import InjectionShield, JailbreakShield, PromptGuardShield
 
-from .shields import (
-    CodeScannerShield,
-    InjectionShield,
-    JailbreakShield,
-    LlamaGuardShield,
-    ShieldBase,
-)
 
 PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
@@ -34,7 +26,7 @@ class MetaReferenceSafetyImpl(Safety):
         self.config = config
         self.inference_api = deps[Api.inference]
 
-        self.available_shields = [ShieldType.code_scanner.value]
+        self.available_shields = []
         if config.llama_guard_shield:
             self.available_shields.append(ShieldType.llama_guard.value)
         if config.enable_prompt_guard:
@@ -42,8 +34,6 @@ class MetaReferenceSafetyImpl(Safety):
 
     async def initialize(self) -> None:
         if self.config.enable_prompt_guard:
-            from .shields import PromptGuardShield
-
             model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             _ = PromptGuardShield.instance(model_dir)
 
@@ -107,7 +97,5 @@ class MetaReferenceSafetyImpl(Safety):
                 return JailbreakShield.instance(model_dir)
             else:
                 raise ValueError(f"Unknown prompt guard type: {subtype}")
-        elif shield.type == ShieldType.code_scanner.value:
-            return CodeScannerShield.instance()
         else:
             raise ValueError(f"Unknown shield type: {shield.type}")
