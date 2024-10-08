@@ -69,7 +69,7 @@ class ChatCompletionResponseEvent(BaseModel):
 
     event_type: ChatCompletionResponseEventType
     delta: Union[str, ToolCallDelta]
-    logprobs: Optional[List[float]] = None
+    logprobs: Optional[List[TokenLogProbs]] = None
     stop_reason: Optional[StopReason] = None
 
 
@@ -80,7 +80,7 @@ class CompletionRequest(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
     stream: Optional[bool] = False
-    logprobs: Optional[bool] = False
+    logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
@@ -88,7 +88,7 @@ class CompletionResponse(BaseModel):
     """Completion response."""
 
     completion_message: CompletionMessage
-    logprobs: Optional[List[float]] = None
+    logprobs: Optional[List[TokenLogProbs]] = None
 
 
 @json_schema_type
@@ -97,7 +97,7 @@ class CompletionResponseStreamChunk(BaseModel):
 
     delta: str
     stop_reason: Optional[StopReason] = None
-    logprobs: Optional[List[float]] = None
+    logprobs: Optional[List[TokenLogProbs]] = None
 
 
 @json_schema_type
@@ -105,7 +105,7 @@ class BatchCompletionRequest(BaseModel):
     model: str
     content_batch: List[InterleavedTextMedia]
     sampling_params: Optional[SamplingParams] = SamplingParams()
-    logprobs: Optional[bool] = False
+    logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
@@ -129,7 +129,7 @@ class ChatCompletionRequest(BaseModel):
     )
 
     stream: Optional[bool] = False
-    logprobs: Optional[bool] = False
+    logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
@@ -144,7 +144,7 @@ class ChatCompletionResponse(BaseModel):
     """Chat completion response."""
 
     completion_message: CompletionMessage
-    logprobs: Optional[List[float]] = None
+    logprobs: Optional[List[TokenLogProbs]] = None
 
 
 @json_schema_type
@@ -159,7 +159,7 @@ class BatchChatCompletionRequest(BaseModel):
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
-    logprobs: Optional[bool] = False
+    logprobs: Optional[LogProbConfig] = None
 
 
 @json_schema_type
@@ -180,7 +180,7 @@ class Inference(Protocol):
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         stream: Optional[bool] = False,
-        logprobs: Optional[bool] = None,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
 
     @webmethod(route="/inference/chat_completion")
@@ -194,7 +194,7 @@ class Inference(Protocol):
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
-        logprobs: Optional[bool] = None,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
 
     @webmethod(route="/inference/embeddings")

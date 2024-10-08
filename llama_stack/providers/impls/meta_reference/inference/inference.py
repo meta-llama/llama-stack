@@ -58,7 +58,7 @@ class MetaReferenceInferenceImpl(Inference, RoutableProvider):
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
-        logprobs: Optional[bool] = None,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncIterator[
         Union[ChatCompletionResponseStreamChunk, ChatCompletionResponse]
     ]:
@@ -135,7 +135,13 @@ class MetaReferenceInferenceImpl(Inference, RoutableProvider):
                         assert (
                             len(token_result.logprobs) == 1
                         ), "Expected logprob to contain 1 result for the current token"
-                        logprobs.append(token_result.logprobs[0])
+                        logprobs.append(
+                            TokenLogProbs(
+                                logprobs_by_token={
+                                    token_result.text: token_result.logprobs[0]
+                                }
+                            )
+                        )
 
                     continue
 

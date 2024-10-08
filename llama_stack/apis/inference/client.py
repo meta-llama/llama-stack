@@ -112,11 +112,19 @@ async def run_main(
         content="hello world, write me a 2 sentence poem about the moon"
     )
     cprint(f"User>{message.content}", "green")
+
+    if logprobs:
+        logprobs_config = LogProbConfig(
+            top_k=1,
+        )
+    else:
+        logprobs_config = None
+
     iterator = client.chat_completion(
         model=model,
         messages=[message],
         stream=stream,
-        logprobs=logprobs,
+        logprobs=logprobs_config,
     )
 
     if logprobs:
