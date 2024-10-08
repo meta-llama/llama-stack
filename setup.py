@@ -30,7 +30,13 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/meta-llama/llama-stack",
     packages=find_packages(),
-    classifiers=[],
+    classifiers=[
+          'License :: OSI Approved :: MIT License',
+          'Programming Language :: Python :: 3',
+          'Operating System :: OS Independent',
+          'Intended Audience :: Science/Research',
+          'Topic :: Scientific/Engineering'
+    ],
     python_requires=">=3.10",
     install_requires=read_requirements(),
     include_package_data=True,
