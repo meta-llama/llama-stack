@@ -3,8 +3,11 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+from typing import Tuple
+
 from llama_models.llama3.api.chat_format import ChatFormat
 from termcolor import cprint
+
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_models.datatypes import ModelFamily
@@ -26,6 +29,17 @@ def chat_completion_request_to_prompt(
     messages = augment_messages_for_tools(request)
     model_input = formatter.encode_dialog_prompt(messages)
     return formatter.tokenizer.decode(model_input.tokens)
+
+
+def chat_completion_request_to_model_input_info(
+    request: ChatCompletionRequest, formatter: ChatFormat
+) -> Tuple[str, int]:
+    messages = augment_messages_for_tools(request)
+    model_input = formatter.encode_dialog_prompt(messages)
+    return (
+        formatter.tokenizer.decode(model_input.tokens),
+        len(model_input.tokens),
+    )
 
 
 def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:

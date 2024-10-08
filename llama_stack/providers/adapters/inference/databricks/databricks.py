@@ -8,16 +8,22 @@ from typing import AsyncGenerator
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message, StopReason
+from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
+
 from llama_stack.providers.utils.inference.augment_messages import (
-    augment_messages_for_tools,
+    chat_completion_request_to_prompt,
 )
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.openai_compat import (
+    get_sampling_options,
+    process_chat_completion_response,
+    process_chat_completion_stream_response,
+)
 
 from .config import DatabricksImplConfig
 
@@ -34,12 +40,7 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
             self, stack_to_provider_models_map=DATABRICKS_SUPPORTED_MODELS
         )
         self.config = config
-        tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(tokenizer)
-
-    @property
-    def client(self) -> OpenAI:
-        return OpenAI(base_url=self.config.url, api_key=self.config.api_token)
+        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self) -> None:
         return
@@ -47,35 +48,10 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def validate_routing_keys(self, routing_keys: list[str]) -> None:
-        # these are the model names the Llama Stack will use to route requests to this provider
-        # perform validation here if necessary
-        pass
-
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    def completion(self, request: CompletionRequest) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def _messages_to_databricks_messages(self, messages: list[Message]) -> list:
-        databricks_messages = []
-        for message in messages:
-            if message.role == "ipython":
-                role = "tool"
-            else:
-                role = message.role
-            databricks_messages.append({"role": role, "content": message.content})
-
-        return databricks_messages
-
-    def get_databricks_chat_options(self, request: ChatCompletionRequest) -> dict:
-        options = {}
-        if request.sampling_params is not None:
-            for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
-                if getattr(request.sampling_params, attr):
-                    options[attr] = getattr(request.sampling_params, attr)
-
-        return options
-
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -97,146 +73,39 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
             logprobs=logprobs,
         )
 
-        messages = augment_messages_for_tools(request)
-        options = self.get_databricks_chat_options(request)
-        databricks_model = self.map_to_provider_model(request.model)
-
-        if not request.stream:
-            r = self.client.chat.completions.create(
-                model=databricks_model,
-                messages=self._messages_to_databricks_messages(messages),
-                stream=False,
-                **options,
-            )
-
-            stop_reason = None
-            if r.choices[0].finish_reason:
-                if r.choices[0].finish_reason == "stop":
-                    stop_reason = StopReason.end_of_turn
-                elif r.choices[0].finish_reason == "length":
-                    stop_reason = StopReason.out_of_tokens
-
-            completion_message = self.formatter.decode_assistant_message_from_content(
-                r.choices[0].message.content, stop_reason
-            )
-            yield ChatCompletionResponse(
-                completion_message=completion_message,
-                logprobs=None,
-            )
+        client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
+        if stream:
+            return self._stream_chat_completion(request, client)
         else:
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.start,
-                    delta="",
-                )
-            )
+            return self._nonstream_chat_completion(request, client)
 
-            buffer = ""
-            ipython = False
-            stop_reason = None
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest, client: OpenAI
+    ) -> ChatCompletionResponse:
+        params = self._get_params(request)
+        r = client.completions.create(**params)
+        return process_chat_completion_response(request, r, self.formatter)
 
-            for chunk in self.client.chat.completions.create(
-                model=databricks_model,
-                messages=self._messages_to_databricks_messages(messages),
-                stream=True,
-                **options,
-            ):
-                if chunk.choices[0].finish_reason:
-                    if stop_reason is None and chunk.choices[0].finish_reason == "stop":
-                        stop_reason = StopReason.end_of_turn
-                    elif (
-                        stop_reason is None
-                        and chunk.choices[0].finish_reason == "length"
-                    ):
-                        stop_reason = StopReason.out_of_tokens
-                    break
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest, client: OpenAI
+    ) -> AsyncGenerator:
+        params = self._get_params(request)
 
-                text = chunk.choices[0].delta.content
+        async def _to_async_generator():
+            s = client.completions.create(**params)
+            for chunk in s:
+                yield chunk
 
-                if text is None:
-                    continue
+        stream = _to_async_generator()
+        async for chunk in process_chat_completion_stream_response(
+            request, stream, self.formatter
+        ):
+            yield chunk
 
-                # check if its a tool call ( aka starts with <|python_tag|> )
-                if not ipython and text.startswith("<|python_tag|>"):
-                    ipython = True
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=ToolCallDelta(
-                                content="",
-                                parse_status=ToolCallParseStatus.started,
-                            ),
-                        )
-                    )
-                    buffer += text
-                    continue
-
-                if ipython:
-                    if text == "<|eot_id|>":
-                        stop_reason = StopReason.end_of_turn
-                        text = ""
-                        continue
-                    elif text == "<|eom_id|>":
-                        stop_reason = StopReason.end_of_message
-                        text = ""
-                        continue
-
-                    buffer += text
-                    delta = ToolCallDelta(
-                        content=text,
-                        parse_status=ToolCallParseStatus.in_progress,
-                    )
-
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=delta,
-                            stop_reason=stop_reason,
-                        )
-                    )
-                else:
-                    buffer += text
-                    yield ChatCompletionResponseStreamChunk(
-                        event=ChatCompletionResponseEvent(
-                            event_type=ChatCompletionResponseEventType.progress,
-                            delta=text,
-                            stop_reason=stop_reason,
-                        )
-                    )
-
-            # parse tool calls and report errors
-            message = self.formatter.decode_assistant_message_from_content(
-                buffer, stop_reason
-            )
-            parsed_tool_calls = len(message.tool_calls) > 0
-            if ipython and not parsed_tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content="",
-                            parse_status=ToolCallParseStatus.failure,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
-
-            for tool_call in message.tool_calls:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content=tool_call,
-                            parse_status=ToolCallParseStatus.success,
-                        ),
-                        stop_reason=stop_reason,
-                    )
-                )
-
-            yield ChatCompletionResponseStreamChunk(
-                event=ChatCompletionResponseEvent(
-                    event_type=ChatCompletionResponseEventType.complete,
-                    delta="",
-                    stop_reason=stop_reason,
-                )
-            )
+    def _get_params(self, request: ChatCompletionRequest) -> dict:
+        return {
+            "model": self.map_to_provider_model(request.model),
+            "prompt": chat_completion_request_to_prompt(request, self.formatter),
+            "stream": request.stream,
+            **get_sampling_options(request),
+        }

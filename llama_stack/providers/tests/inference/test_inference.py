@@ -55,8 +55,8 @@ def get_expected_stop_reason(model: str):
 @pytest_asyncio.fixture(
     scope="session",
     params=[
-        # {"model": Llama_8B},
-        {"model": Llama_3B},
+        {"model": Llama_8B},
+        # {"model": Llama_3B},
     ],
     ids=lambda d: d["model"],
 )

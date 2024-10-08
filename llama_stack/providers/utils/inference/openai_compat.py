@@ -60,6 +60,8 @@ def process_chat_completion_response(
     if reason := choice.finish_reason:
         if reason in ["stop", "eos"]:
             stop_reason = StopReason.end_of_turn
+        elif reason == "eom":
+            stop_reason = StopReason.end_of_message
         elif reason == "length":
             stop_reason = StopReason.out_of_tokens
 
@@ -96,7 +98,7 @@ async def process_chat_completion_stream_response(
         finish_reason = choice.finish_reason
 
         if finish_reason:
-            if stop_reason is None and finish_reason in ["stop", "eos"]:
+            if stop_reason is None and finish_reason in ["stop", "eos", "eos_token"]:
                 stop_reason = StopReason.end_of_turn
             elif stop_reason is None and finish_reason == "length":
                 stop_reason = StopReason.out_of_tokens
@@ -118,16 +120,16 @@ async def process_chat_completion_stream_response(
             buffer += text
             continue
 
-        if ipython:
-            if text == "<|eot_id|>":
-                stop_reason = StopReason.end_of_turn
-                text = ""
-                continue
-            elif text == "<|eom_id|>":
-                stop_reason = StopReason.end_of_message
-                text = ""
-                continue
+        if text == "<|eot_id|>":
+            stop_reason = StopReason.end_of_turn
+            text = ""
+            continue
+        elif text == "<|eom_id|>":
+            stop_reason = StopReason.end_of_message
+            text = ""
+            continue
 
+        if ipython:
             buffer += text
             delta = ToolCallDelta(
                 content=text,

@@ -48,10 +48,6 @@ class TogetherInferenceAdapter(
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
-    @property
-    def client(self) -> Together:
-        return Together(api_key=self.config.api_key)
-
     async def initialize(self) -> None:
         return
 
@@ -91,7 +87,6 @@ class TogetherInferenceAdapter(
             together_api_key = provider_data.together_api_key
 
         client = Together(api_key=together_api_key)
-        # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
