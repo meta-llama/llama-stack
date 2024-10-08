@@ -11,6 +11,23 @@ from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.providers.tests.resolver import resolve_impls_for_test
 
+# How to run this test:
+#
+# 1. Ensure you have a conda with the right dependencies installed. This is a bit tricky
+#    since it depends on the provider you are testing. On top of that you need
+#    `pytest` and `pytest-asyncio` installed.
+#
+# 2. Copy and modify the provider_config_example.yaml depending on the provider you are testing.
+#
+# 3. Run:
+#
+# ```bash
+# PROVIDER_ID=<your_provider> \
+#   PROVIDER_CONFIG=provider_config.yaml \
+#   pytest -s llama_stack/providers/tests/memory/test_memory.py \
+#   --tb=short --disable-warnings
+# ```
+
 
 @pytest_asyncio.fixture(scope="session")
 async def memory_impl():
