@@ -84,7 +84,7 @@ class InferenceClient(Inference):
 
             response.raise_for_status()
             j = response.json()
-            yield ChatCompletionResponse(**j)
+            return ChatCompletionResponse(**j)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest

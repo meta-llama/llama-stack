@@ -67,7 +67,6 @@ def sample_documents():
 async def register_memory_bank(memory_impl: Memory):
     bank = VectorMemoryBankDef(
         identifier="test_bank",
-        provider_id="",
         embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=512,
         overlap_size_in_tokens=64,

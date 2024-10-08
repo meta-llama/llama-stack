@@ -68,7 +68,6 @@ async def inference_settings(request):
             ModelDef(
                 identifier=model,
                 llama_model=model,
-                provider_id="",
             )
         ],
     )
