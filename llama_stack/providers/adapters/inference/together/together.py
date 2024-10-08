@@ -41,8 +41,8 @@ class TogetherInferenceAdapter(
             self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
         )
         self.config = config
-        tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(tokenizer)
+        self.tokenizer = Tokenizer.get_instance()
+        self.formatter = ChatFormat(self.tokenizer)
 
     @property
     def client(self) -> Together:
@@ -124,27 +124,28 @@ class TogetherInferenceAdapter(
         options = self.get_together_chat_options(request)
         together_model = self.map_to_provider_model(request.model)
         messages = augment_messages_for_tools(request)
+        model_input = self.formatter.encode_dialog_prompt(messages)
+        prompt = self.tokenizer.decode(model_input.tokens)
 
         if not request.stream:
             # TODO: might need to add back an async here
-            r = client.chat.completions.create(
+            r = client.completions.create(
                 model=together_model,
-                messages=self._messages_to_together_messages(messages),
+                prompt=prompt,
                 stream=False,
                 **options,
             )
             stop_reason = None
-            if r.choices[0].finish_reason:
-                if (
-                    r.choices[0].finish_reason == "stop"
-                    or r.choices[0].finish_reason == "eos"
-                ):
+            choice = r.choices[0]
+            if choice.finish_reason:
+                if choice.finish_reason in ["stop", "eos"]:
                     stop_reason = StopReason.end_of_turn
-                elif r.choices[0].finish_reason == "length":
+                    stop_reason = StopReason.end_of_turn
+                elif choice.finish_reason == "length":
                     stop_reason = StopReason.out_of_tokens
 
             completion_message = self.formatter.decode_assistant_message_from_content(
-                r.choices[0].message.content, stop_reason
+                choice.text, stop_reason
             )
             yield ChatCompletionResponse(
                 completion_message=completion_message,
@@ -162,20 +163,21 @@ class TogetherInferenceAdapter(
             ipython = False
             stop_reason = None
 
-            for chunk in client.chat.completions.create(
+            for chunk in client.completions.create(
                 model=together_model,
-                messages=self._messages_to_together_messages(messages),
+                prompt=prompt,
                 stream=True,
                 **options,
             ):
-                if finish_reason := chunk.choices[0].finish_reason:
+                choice = chunk.choices[0]
+                if finish_reason := choice.finish_reason:
                     if stop_reason is None and finish_reason in ["stop", "eos"]:
                         stop_reason = StopReason.end_of_turn
                     elif stop_reason is None and finish_reason == "length":
                         stop_reason = StopReason.out_of_tokens
                     break
 
-                text = chunk.choices[0].delta.content
+                text = choice.delta.content
                 if text is None:
                     continue
 
