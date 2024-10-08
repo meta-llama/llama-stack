@@ -99,7 +99,7 @@ class ChromaMemoryAdapter(Memory):
             memory_bank.type == MemoryBankType.vector.value
         ), f"Only vector banks are supported {memory_bank.type}"
 
-        collection = await self.client.create_collection(
+        collection = await self.client.get_or_create_collection(
             name=memory_bank.identifier,
         )
         bank_index = BankWithIndex(
