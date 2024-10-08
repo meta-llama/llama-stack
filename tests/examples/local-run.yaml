@@ -39,18 +39,18 @@ api_providers:
     config: {}
 routing_table:
   inference:
-  # - provider_type: meta-reference
-  #   config:
-  #     model: Llama3.2-1B-Instruct
-  #     quantization: null
-  #     torch_seed: null
-  #     max_seq_len: 4096
-  #     max_batch_size: 1
-  #   routing_key: Llama3.2-1B-Instruct
-  - provider_type: remote::tgi
+  - provider_type: meta-reference
     config:
-      url: http://127.0.0.1:5009
-    routing_key: Llama3.1-8B-Instruct
+      model: Llama3.2-1B-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
+    routing_key: Llama3.2-1B-Instruct
+  # - provider_type: remote::tgi
+  #   config:
+  #     url: http://127.0.0.1:5009
+  #   routing_key: Llama3.1-8B-Instruct
   safety:
   - provider_type: meta-reference
     config:

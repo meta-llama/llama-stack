@@ -14,10 +14,6 @@ from llama_stack.providers.impls.meta_reference.evals.datas.dataset_registry imp
     get_dataset,
 )
 
-# from llama_stack.providers.impls.meta_reference.evals.tasks.task_registry import (
-#     get_task,
-# )
-
 from .config import MetaReferenceEvalsImplConfig
 
 
@@ -45,7 +41,9 @@ class MetaReferenceEvalsImpl(Evals):
 
         # TODO: replace w/ batch inference & async return eval job
         generation_outputs = []
+        print("generation start")
         for msg in x1[:5]:
+            print("generation for msg: ", msg)
             response = self.inference_api.chat_completion(
                 model=model,
                 messages=[msg],
