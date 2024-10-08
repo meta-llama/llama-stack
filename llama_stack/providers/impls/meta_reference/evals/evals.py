@@ -8,11 +8,9 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.evals import *  # noqa: F403
 from termcolor import cprint
 
-from llama_stack.distribution.registry.tasks.task_registry import TaskRegistry
+from llama_stack.distribution.registry.datasets.dataset_registry import DatasetRegistry
 
-from llama_stack.providers.impls.meta_reference.evals.datas.dataset_registry import (
-    get_dataset,
-)
+from llama_stack.distribution.registry.tasks.task_registry import TaskRegistry
 
 from .config import MetaReferenceEvalsImplConfig
 
@@ -34,7 +32,8 @@ class MetaReferenceEvalsImpl(Evals):
         task: str,
     ) -> EvaluateResponse:
         cprint(f"model={model}, dataset={dataset}, task={task}", "red")
-        dataset = get_dataset(dataset)
+        dataset = DatasetRegistry.get_dataset(dataset)
+        dataset.load()
         task_impl = TaskRegistry.get_task(task)(dataset)
 
         x1 = task_impl.preprocess()

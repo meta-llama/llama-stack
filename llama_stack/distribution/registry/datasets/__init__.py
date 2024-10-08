@@ -3,9 +3,11 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from .datasets import CustomDataset, HFDataset
 
-# TODO: make this into a config based registry
+# TODO: make these import config based
+from .dataset import CustomDataset, HFDataset
+from .dataset_registry import DatasetRegistry
+
 DATASETS_REGISTRY = {
     "mmlu-simple-eval-en": CustomDataset(
         name="mmlu_eval",
@@ -17,8 +19,5 @@ DATASETS_REGISTRY = {
     ),
 }
 
-
-def get_dataset(dataset_id: str):
-    dataset = DATASETS_REGISTRY[dataset_id]
-    dataset.load()
-    return dataset
+for k, v in DATASETS_REGISTRY.items():
+    DatasetRegistry.register(k, v)
