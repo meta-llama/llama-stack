@@ -1,8 +1,9 @@
-built_at: '2024-09-30T09:00:56.693751'
+version: '2'
+built_at: '2024-10-08T17:42:33.690666'
 image_name: local-gpu
 docker_image: local-gpu
 conda_env: null
-apis_to_serve:
+apis:
 - memory
 - inference
 - agents
@@ -10,43 +11,63 @@ apis_to_serve:
 - safety
 - models
 - memory_banks
-api_providers:
+providers:
   inference:
-    providers:
-    - meta-reference
-  safety:
-    providers:
-    - meta-reference
-  agents:
+  - provider_id: meta-reference
     provider_type: meta-reference
-    config:
-      persistence_store:
-        namespace: null
-        type: sqlite
-        db_path: ~/.llama/runtime/kvstore.db
-  memory:
-    providers:
-    - meta-reference
-  telemetry:
-    provider_type: meta-reference
-    config: {}
-routing_table:
-  inference:
-  - provider_type: meta-reference
     config:
       model: Llama3.1-8B-Instruct
       quantization: null
       torch_seed: null
       max_seq_len: 4096
       max_batch_size: 1
-    routing_key: Llama3.1-8B-Instruct
   safety:
-  - provider_type: meta-reference
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config:
       llama_guard_shield: null
       prompt_guard_shield: null
-    routing_key: ["llama_guard", "code_scanner_guard", "injection_shield", "jailbreak_shield"]
   memory:
-  - provider_type: meta-reference
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config: {}
-    routing_key: vector
+  agents:
+  - provider_id: meta-reference
+    provider_type: meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/kvstore.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: meta-reference
+    config: {}
+models:
+- identifier: Llama3.1-8B-Instruct
+  llama_model: Llama3.1-8B-Instruct
+  provider_id: meta-reference
+shields:
+- identifier: llama_guard
+  type: llama_guard
+  provider_id: meta-reference
+  params: {}
+- identifier: code_scanner_guard
+  type: llama_guard
+  provider_id: meta-reference
+  params: {}
+- identifier: injection_shield
+  type: llama_guard
+  provider_id: meta-reference
+  params: {}
+- identifier: jailbreak_shield
+  type: llama_guard
+  provider_id: meta-reference
+  params: {}
+memory_banks:
+- identifier: vector
+  provider_id: meta-reference
+  type: vector
+  embedding_model: all-MiniLM-L6-v2
+  chunk_size_in_tokens: 512
+  overlap_size_in_tokens: null
