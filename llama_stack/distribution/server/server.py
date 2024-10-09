@@ -285,7 +285,7 @@ def main(
     else:
         apis_to_serve = set(impls.keys())
 
-    apis_to_serve.add(Api.inspect)
+    apis_to_serve.add("inspect")
     for api_str in apis_to_serve:
         api = Api(api_str)
 
