@@ -87,7 +87,6 @@ class LlamaModelParallelGenerator:
         logprobs: bool = False,
         tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
     ) -> Generator:
-        print("logprobs", logprobs)
         req_obj = InferenceArgs(
             messages=deepcopy(messages),
             temperature=temperature,
