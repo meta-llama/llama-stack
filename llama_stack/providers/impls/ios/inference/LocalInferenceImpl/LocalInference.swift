@@ -34,6 +34,10 @@ public class LocalInference: Inference {
     }
   }
 
+  public func stop() {
+    runnerHolder.runner?.stop()
+  }
+
   public func chatCompletion(request: Components.Schemas.ChatCompletionRequest) -> AsyncStream<Components.Schemas.ChatCompletionResponseStreamChunk> {
     return AsyncStream { continuation in
       runnerQueue.async {
