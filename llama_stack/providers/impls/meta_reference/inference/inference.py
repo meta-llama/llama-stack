@@ -34,6 +34,7 @@ class MetaReferenceInferenceImpl(Inference):
         # verify that the checkpoint actually is for this model lol
 
     async def initialize(self) -> None:
+        print(f"Loading model `{self.model.descriptor()}`")
         self.generator = LlamaModelParallelGenerator(self.config)
         self.generator.start()
 
