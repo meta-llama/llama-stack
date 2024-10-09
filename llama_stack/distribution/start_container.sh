@@ -61,4 +61,5 @@ $DOCKER_BINARY run $DOCKER_OPTS -it \
   $docker_image \
   python -m llama_stack.distribution.server.server \
   --yaml_config /app/config.yaml \
+  --disable-ipv6 \
   --port $port "$@"
