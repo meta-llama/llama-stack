@@ -35,11 +35,13 @@ from llama_models.llama3.reference_impl.multimodal.model import (
     CrossAttentionTransformer,
 )
 from llama_models.sku_list import resolve_model
-from termcolor import cprint
 
 from llama_stack.apis.inference import QuantizationType
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
+
+from pydantic import BaseModel
+from termcolor import cprint
 
 from .config import MetaReferenceImplConfig
 
@@ -58,8 +60,7 @@ def model_checkpoint_dir(model) -> str:
     return str(checkpoint_dir)
 
 
-@dataclass
-class TokenResult:
+class TokenResult(BaseModel):
     token: int
     text: str
     logprobs: Optional[List[float]] = None

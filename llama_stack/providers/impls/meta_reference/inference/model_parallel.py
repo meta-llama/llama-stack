@@ -17,17 +17,7 @@ from llama_models.sku_list import resolve_model
 
 from .config import MetaReferenceImplConfig
 from .generation import Llama, model_checkpoint_dir
-from .parallel_utils import ModelParallelProcessGroup
-
-
-@dataclass
-class InferenceArgs:
-    messages: List[Message]
-    temperature: float
-    top_p: float
-    max_gen_len: int
-    logprobs: bool
-    tool_prompt_format: ToolPromptFormat
+from .parallel_utils import InferenceArgs, ModelParallelProcessGroup
 
 
 class ModelRunner:
@@ -102,7 +92,7 @@ class LlamaModelParallelGenerator:
             temperature=temperature,
             top_p=top_p,
             max_gen_len=max_gen_len,
-            logprobs=logprobs,
+            logprobs=logprobs or False,
             tool_prompt_format=tool_prompt_format,
         )
 
