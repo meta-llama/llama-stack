@@ -90,7 +90,6 @@ class EleutherEvalsWrapper(LM):
     def generate_until(self, requests, disable_tqdm: bool = False) -> List[str]:
         res = []
         for req in requests:
-            print("generation for msg: ", req.args[0])
             response = self.inference_api.chat_completion(
                 model=self.model,
                 messages=[
@@ -144,7 +143,7 @@ class EleutherEvalsAdapter(Evals):
         output = evaluate(
             eluther_wrapper,
             task_dict,
-            limit=1,
+            limit=10,
         )
 
         formatted_output = lm_eval.utils.make_table(output)

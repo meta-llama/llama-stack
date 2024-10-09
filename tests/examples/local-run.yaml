@@ -21,7 +21,7 @@ providers:
   - provider_id: meta-reference
     provider_type: meta-reference
     config:
-      model: Llama3.2-1B-Instruct
+      model: Llama3.1-8B-Instruct
       quantization: null
       torch_seed: null
       max_seq_len: 4096
@@ -54,8 +54,8 @@ providers:
     provider_type: meta-reference
     config: {}
 models:
-- identifier: Llama3.2-1B-Instruct
-  llama_model: Llama3.2-1B-Instruct
+- identifier: Llama3.1-8B-Instruct
+  llama_model: Llama3.1-8B-Instruct
   provider_id: meta-reference
 shields:
 - identifier: llama_guard

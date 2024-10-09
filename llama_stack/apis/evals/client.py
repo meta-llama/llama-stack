@@ -44,7 +44,7 @@ async def run_main(host: str, port: int):
 
     # CustomDataset
     response = await client.run_evals(
-        "Llama3.2-1B-Instruct",
+        "Llama3.1-8B-Instruct",
         "mmlu-simple-eval-en",
         "mmlu",
     )
