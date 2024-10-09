@@ -43,13 +43,12 @@ class MetaReferenceEvalsImpl(Evals):
         print("generation start")
         for msg in x1[:5]:
             print("generation for msg: ", msg)
-            response = self.inference_api.chat_completion(
+            response = await self.inference_api.chat_completion(
                 model=model,
                 messages=[msg],
                 stream=False,
             )
-            async for x in response:
-                generation_outputs.append(x.completion_message.content)
+            generation_outputs.append(response.completion_message.content)
 
         x2 = task_impl.postprocess(generation_outputs)
         eval_results = task_impl.score(x2)

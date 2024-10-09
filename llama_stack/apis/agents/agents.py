@@ -261,7 +261,7 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBank] = None
+    memory_bank: Optional[MemoryBankDef] = None
 
 
 class AgentConfigCommon(BaseModel):
@@ -411,8 +411,10 @@ class Agents(Protocol):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse: ...
 
+    # This method is not `async def` because it can result in either an
+    # `AsyncGenerator` or a `AgentTurnCreateResponse` depending on the value of `stream`.
     @webmethod(route="/agents/turn/create")
-    async def create_agent_turn(
+    def create_agent_turn(
         self,
         agent_id: str,
         session_id: str,

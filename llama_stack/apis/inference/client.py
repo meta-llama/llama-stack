@@ -42,10 +42,10 @@ class InferenceClient(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    def completion(self, request: CompletionRequest) -> AsyncGenerator:
         raise NotImplementedError()
 
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -66,6 +66,29 @@ class InferenceClient(Inference):
             stream=stream,
             logprobs=logprobs,
         )
+        if stream:
+            return self._stream_chat_completion(request)
+        else:
+            return self._nonstream_chat_completion(request)
+
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> ChatCompletionResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/inference/chat_completion",
+                json=encodable_dict(request),
+                headers={"Content-Type": "application/json"},
+                timeout=20,
+            )
+
+            response.raise_for_status()
+            j = response.json()
+            return ChatCompletionResponse(**j)
+
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> AsyncGenerator:
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 "POST",
@@ -77,7 +100,8 @@ class InferenceClient(Inference):
                 if response.status_code != 200:
                     content = await response.aread()
                     cprint(
-                        f"Error: HTTP {response.status_code} {content.decode()}", "red"
+                        f"Error: HTTP {response.status_code} {content.decode()}",
+                        "red",
                     )
                     return
 
@@ -85,39 +109,58 @@ class InferenceClient(Inference):
                     if line.startswith("data:"):
                         data = line[len("data: ") :]
                         try:
-                            if request.stream:
-                                if "error" in data:
-                                    cprint(data, "red")
-                                    continue
+                            if "error" in data:
+                                cprint(data, "red")
+                                continue
 
-                                yield ChatCompletionResponseStreamChunk(
-                                    **json.loads(data)
-                                )
-                            else:
-                                yield ChatCompletionResponse(**json.loads(data))
+                            yield ChatCompletionResponseStreamChunk(**json.loads(data))
                         except Exception as e:
                             print(data)
                             print(f"Error with parsing or validation: {e}")
 
 
-async def run_main(host: str, port: int, stream: bool):
+async def run_main(
+    host: str, port: int, stream: bool, model: Optional[str], logprobs: bool
+):
     client = InferenceClient(f"http://{host}:{port}")
+
+    if not model:
+        model = "Llama3.1-8B-Instruct"
 
     message = UserMessage(
         content="hello world, write me a 2 sentence poem about the moon"
     )
     cprint(f"User>{message.content}", "green")
+
+    if logprobs:
+        logprobs_config = LogProbConfig(
+            top_k=1,
+        )
+    else:
+        logprobs_config = None
+
     iterator = client.chat_completion(
-        model="Llama3.1-8B-Instruct",
+        model=model,
         messages=[message],
         stream=stream,
+        logprobs=logprobs_config,
     )
-    async for log in EventLogger().log(iterator):
-        log.print()
+
+    if logprobs:
+        async for chunk in iterator:
+            cprint(f"Response: {chunk}", "red")
+    else:
+        async for log in EventLogger().log(iterator):
+            log.print()
 
 
-async def run_mm_main(host: str, port: int, stream: bool, path: str):
+async def run_mm_main(
+    host: str, port: int, stream: bool, path: Optional[str], model: Optional[str]
+):
     client = InferenceClient(f"http://{host}:{port}")
+
+    if not model:
+        model = "Llama3.2-11B-Vision-Instruct"
 
     message = UserMessage(
         content=[
@@ -127,7 +170,7 @@ async def run_mm_main(host: str, port: int, stream: bool, path: str):
     )
     cprint(f"User>{message.content}", "green")
     iterator = client.chat_completion(
-        model="Llama3.2-11B-Vision-Instruct",
+        model=model,
         messages=[message],
         stream=stream,
     )
@@ -135,11 +178,19 @@ async def run_mm_main(host: str, port: int, stream: bool, path: str):
         log.print()
 
 
-def main(host: str, port: int, stream: bool = True, mm: bool = False, file: str = None):
+def main(
+    host: str,
+    port: int,
+    stream: bool = True,
+    mm: bool = False,
+    logprobs: bool = False,
+    file: Optional[str] = None,
+    model: Optional[str] = None,
+):
     if mm:
-        asyncio.run(run_mm_main(host, port, stream, file))
+        asyncio.run(run_mm_main(host, port, stream, file, model))
     else:
-        asyncio.run(run_main(host, port, stream))
+        asyncio.run(run_main(host, port, stream, model, logprobs))
 
 
 if __name__ == "__main__":

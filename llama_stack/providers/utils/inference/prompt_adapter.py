@@ -3,7 +3,11 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+from typing import Tuple
+
+from llama_models.llama3.api.chat_format import ChatFormat
 from termcolor import cprint
+
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_models.datatypes import ModelFamily
@@ -19,7 +23,28 @@ from llama_models.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
 
-def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:
+def chat_completion_request_to_prompt(
+    request: ChatCompletionRequest, formatter: ChatFormat
+) -> str:
+    messages = chat_completion_request_to_messages(request)
+    model_input = formatter.encode_dialog_prompt(messages)
+    return formatter.tokenizer.decode(model_input.tokens)
+
+
+def chat_completion_request_to_model_input_info(
+    request: ChatCompletionRequest, formatter: ChatFormat
+) -> Tuple[str, int]:
+    messages = chat_completion_request_to_messages(request)
+    model_input = formatter.encode_dialog_prompt(messages)
+    return (
+        formatter.tokenizer.decode(model_input.tokens),
+        len(model_input.tokens),
+    )
+
+
+def chat_completion_request_to_messages(
+    request: ChatCompletionRequest,
+) -> List[Message]:
     """Reads chat completion request and augments the messages to handle tools.
     For eg. for llama_3_1, add system message with the appropriate tools or
     add user messsage for custom tools, etc.
@@ -48,7 +73,6 @@ def augment_messages_for_tools(request: ChatCompletionRequest) -> List[Message]:
 def augment_messages_for_tools_llama_3_1(
     request: ChatCompletionRequest,
 ) -> List[Message]:
-
     assert request.tool_choice == ToolChoice.auto, "Only `ToolChoice.auto` supported"
 
     existing_messages = request.messages

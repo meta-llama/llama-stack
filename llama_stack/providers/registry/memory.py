@@ -57,6 +57,16 @@ def available_providers() -> List[ProviderSpec]:
             ),
         ),
         remote_provider_spec(
+            Api.memory,
+            AdapterSpec(
+                adapter_type="weaviate",
+                pip_packages=EMBEDDING_DEPS + ["weaviate-client"],
+                module="llama_stack.providers.adapters.memory.weaviate",
+                config_class="llama_stack.providers.adapters.memory.weaviate.WeaviateConfig",
+                provider_data_validator="llama_stack.providers.adapters.memory.weaviate.WeaviateRequestProviderData",
+            ),
+        ),
+        remote_provider_spec(
             api=Api.memory,
             adapter=AdapterSpec(
                 adapter_type="sample",

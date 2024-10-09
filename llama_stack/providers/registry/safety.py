@@ -21,7 +21,6 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.safety,
             provider_type="meta-reference",
             pip_packages=[
-                "codeshield",
                 "transformers",
                 "torch --index-url https://download.pytorch.org/whl/cpu",
             ],
@@ -60,5 +59,15 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.safety.together.TogetherSafetyConfig",
                 provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
             ),
+        ),
+        InlineProviderSpec(
+            api=Api.safety,
+            provider_type="meta-reference/codeshield",
+            pip_packages=[
+                "codeshield",
+            ],
+            module="llama_stack.providers.impls.meta_reference.codeshield",
+            config_class="llama_stack.providers.impls.meta_reference.codeshield.CodeShieldConfig",
+            api_dependencies=[],
         ),
     ]

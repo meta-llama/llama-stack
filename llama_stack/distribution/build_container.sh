@@ -10,7 +10,7 @@ if [ "$#" -lt 4 ]; then
   exit 1
 fi
 
-special_pip_deps="$5"
+special_pip_deps="$6"
 
 set -euo pipefail
 
@@ -18,7 +18,8 @@ build_name="$1"
 image_name="llamastack-$build_name"
 docker_base=$2
 build_file_path=$3
-pip_dependencies=$4
+host_build_dir=$4
+pip_dependencies=$5
 
 # Define color codes
 RED='\033[0;31m'
@@ -33,7 +34,8 @@ REPO_CONFIGS_DIR="$REPO_DIR/tmp/configs"
 
 TEMP_DIR=$(mktemp -d)
 
-llama stack configure $build_file_path --output-dir $REPO_CONFIGS_DIR
+llama stack configure $build_file_path
+cp $host_build_dir/$build_name-run.yaml $REPO_CONFIGS_DIR
 
 add_to_docker() {
   local input
@@ -132,6 +134,9 @@ fi
 
 set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+
+# clean up tmp/configs
+rm -rf $REPO_CONFIGS_DIR
 set +x
 
 echo "Success! You can run it with: $DOCKER_BINARY $DOCKER_OPTS run -p 5000:5000 $image_name"

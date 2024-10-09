@@ -11,6 +11,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.shields import *  # noqa: F403
 
 
 @json_schema_type
@@ -37,8 +38,17 @@ class RunShieldResponse(BaseModel):
     violation: Optional[SafetyViolation] = None
 
 
+class ShieldStore(Protocol):
+    def get_shield(self, identifier: str) -> ShieldDef: ...
+
+
 class Safety(Protocol):
+    shield_store: ShieldStore
+
     @webmethod(route="/safety/run_shield")
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse: ...
+
+    @webmethod(route="/safety/register_shield")
+    async def register_shield(self, shield: ShieldDef) -> None: ...

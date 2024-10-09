@@ -8,15 +8,16 @@ from enum import Enum
 from typing import List, Optional
 
 import pkg_resources
+
+from llama_stack.distribution.utils.exec import run_with_pty
 from pydantic import BaseModel
 
 from termcolor import cprint
 
-from llama_stack.distribution.utils.exec import run_with_pty
-
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
+from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 from llama_stack.distribution.distribution import get_provider_registry
 
 
@@ -95,6 +96,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             build_config.name,
             package_deps.docker_image,
             str(build_file_path),
+            str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(deps),
         ]
     else:

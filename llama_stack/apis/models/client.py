@@ -56,7 +56,7 @@ async def run_main(host: str, port: int, stream: bool):
     response = await client.list_models()
     cprint(f"list_models response={response}", "green")
 
-    response = await client.get_model("Meta-Llama3.1-8B-Instruct")
+    response = await client.get_model("Llama3.1-8B-Instruct")
     cprint(f"get_model response={response}", "blue")
 
     response = await client.get_model("Llama-Guard-3-1B")

@@ -1,7 +1,7 @@
 # llama-stack
 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
-[![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/TZAAYNVtrU)
+[![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
 
 This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
 
@@ -66,8 +66,17 @@ This guides allows you to quickly get started with building and running a Llama 
 You may also checkout this [notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) for trying out out demo scripts.
 
 ## Quick Cheatsheet
-- Quick 3 line command to build and start a LlamaStack server using our Meta Reference implementation for all API endpoints with `conda` as build type.
 
+#### Via docker
+```
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local-gpu
+```
+
+> [!NOTE]
+> `~/.llama` should be the path containing downloaded weights of Llama models. 
+
+
+#### Via conda
 **`llama stack build`**
 - You'll be prompted to enter build information interactively.
 ```

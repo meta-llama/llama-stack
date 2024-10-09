@@ -16,7 +16,7 @@ def read_requirements():
 
 setup(
     name="llama_stack",
-    version="0.0.38",
+    version="0.0.40",
     author="Meta Llama",
     author_email="llama-oss@meta.com",
     description="Llama Stack",
@@ -30,7 +30,16 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/meta-llama/llama-stack",
     packages=find_packages(),
-    classifiers=[],
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+    ],
     python_requires=">=3.10",
     install_requires=read_requirements(),
     include_package_data=True,

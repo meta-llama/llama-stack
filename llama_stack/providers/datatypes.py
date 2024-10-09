@@ -43,21 +43,12 @@ class ProviderSpec(BaseModel):
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
 
+    # used internally by the resolver; this is a hack for now
+    deps__: List[str] = Field(default_factory=list)
+
 
 class RoutingTable(Protocol):
-    def get_routing_keys(self) -> List[str]: ...
-
     def get_provider_impl(self, routing_key: str) -> Any: ...
-
-
-class RoutableProvider(Protocol):
-    """
-    A provider which sits behind the RoutingTable and can get routed to.
-
-    All Inference / Safety / Memory providers fall into this bucket.
-    """
-
-    async def validate_routing_keys(self, keys: List[str]) -> None: ...
 
 
 @json_schema_type
@@ -154,6 +145,10 @@ as being "Llama Stack compatible"
         if self.adapter:
             return self.adapter.provider_data_validator
         return None
+
+
+def is_passthrough(spec: ProviderSpec) -> bool:
+    return isinstance(spec, RemoteProviderSpec) and spec.adapter is None
 
 
 # Can avoid this by using Pydantic computed_field

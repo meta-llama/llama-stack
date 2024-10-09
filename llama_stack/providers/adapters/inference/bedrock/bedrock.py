@@ -13,7 +13,7 @@ from botocore.config import Config
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfig
@@ -26,7 +26,7 @@ BEDROCK_SUPPORTED_MODELS = {
 }
 
 
-class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
+class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
 
     @staticmethod
     def _create_bedrock_client(config: BedrockConfig) -> BaseClient:
@@ -69,7 +69,7 @@ class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
         return boto3_session.client("bedrock-runtime", config=boto3_config)
 
     def __init__(self, config: BedrockConfig) -> None:
-        RoutableProviderForModels.__init__(
+        ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=BEDROCK_SUPPORTED_MODELS
         )
         self._config = config

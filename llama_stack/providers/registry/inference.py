@@ -41,6 +41,7 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="ollama",
                 pip_packages=["ollama"],
+                config_class="llama_stack.providers.adapters.inference.ollama.OllamaImplConfig",
                 module="llama_stack.providers.adapters.inference.ollama",
             ),
         ),
@@ -102,5 +103,25 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.adapters.inference.bedrock",
                 config_class="llama_stack.providers.adapters.inference.bedrock.BedrockConfig",
             ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="databricks",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.adapters.inference.databricks",
+                config_class="llama_stack.providers.adapters.inference.databricks.DatabricksImplConfig",
+            ),
+        ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_type="vllm",
+            pip_packages=[
+                "vllm",
+            ],
+            module="llama_stack.providers.impls.vllm",
+            config_class="llama_stack.providers.impls.vllm.VLLMConfig",
         ),
     ]

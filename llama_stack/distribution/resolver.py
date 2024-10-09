@@ -13,138 +13,207 @@ from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
     get_provider_registry,
 )
-from llama_stack.distribution.inspect import DistributionInspectImpl
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 
+# TODO: make all this naming far less atrocious. Provider. ProviderSpec. ProviderWithSpec. WTF!
+class ProviderWithSpec(Provider):
+    spec: ProviderSpec
+
+
+# TODO: this code is not very straightforward to follow and needs one more round of refactoring
 async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, Any]:
     """
     Does two things:
     - flatmaps, sorts and resolves the providers in dependency order
     - for each API, produces either a (local, passthrough or router) implementation
     """
-    all_providers = get_provider_registry()
-    specs = {}
-    configs = {}
+    all_api_providers = get_provider_registry()
 
-    for api_str, config in run_config.api_providers.items():
-        api = Api(api_str)
-
-        # TODO: check that these APIs are not in the routing table part of the config
-        providers = all_providers[api]
-
-        # skip checks for API whose provider config is specified in routing_table
-        if isinstance(config, PlaceholderProviderConfig):
-            continue
-
-        if config.provider_type not in providers:
-            raise ValueError(
-                f"Provider `{config.provider_type}` is not available for API `{api}`"
-            )
-        specs[api] = providers[config.provider_type]
-        configs[api] = config
-
-    apis_to_serve = run_config.apis_to_serve or set(
-        list(specs.keys()) + list(run_config.routing_table.keys())
+    routing_table_apis = set(
+        x.routing_table_api for x in builtin_automatically_routed_apis()
     )
+    router_apis = set(x.router_api for x in builtin_automatically_routed_apis())
+
+    providers_with_specs = {}
+
+    for api_str, providers in run_config.providers.items():
+        api = Api(api_str)
+        if api in routing_table_apis:
+            raise ValueError(
+                f"Provider for `{api_str}` is automatically provided and cannot be overridden"
+            )
+
+        specs = {}
+        for provider in providers:
+            if provider.provider_type not in all_api_providers[api]:
+                raise ValueError(
+                    f"Provider `{provider.provider_type}` is not available for API `{api}`"
+                )
+
+            p = all_api_providers[api][provider.provider_type]
+            p.deps__ = [a.value for a in p.api_dependencies]
+            spec = ProviderWithSpec(
+                spec=p,
+                **(provider.dict()),
+            )
+            specs[provider.provider_id] = spec
+
+        key = api_str if api not in router_apis else f"inner-{api_str}"
+        providers_with_specs[key] = specs
+
+    apis_to_serve = run_config.apis or set(
+        list(providers_with_specs.keys())
+        + [x.value for x in routing_table_apis]
+        + [x.value for x in router_apis]
+    )
+
     for info in builtin_automatically_routed_apis():
-        source_api = info.routing_table_api
-
-        assert (
-            source_api not in specs
-        ), f"Routing table API {source_api} specified in wrong place?"
-        assert (
-            info.router_api not in specs
-        ), f"Auto-routed API {info.router_api} specified in wrong place?"
-
         if info.router_api.value not in apis_to_serve:
             continue
 
-        if info.router_api.value not in run_config.routing_table:
-            raise ValueError(f"Routing table for `{source_api.value}` is not provided?")
+        available_providers = providers_with_specs[f"inner-{info.router_api.value}"]
 
-        routing_table = run_config.routing_table[info.router_api.value]
-
-        providers = all_providers[info.router_api]
-
-        inner_specs = []
         inner_deps = []
-        for rt_entry in routing_table:
-            if rt_entry.provider_type not in providers:
+        registry = getattr(run_config, info.routing_table_api.value)
+        for entry in registry:
+            if entry.provider_id not in available_providers:
                 raise ValueError(
-                    f"Provider `{rt_entry.provider_type}` is not available for API `{api}`"
+                    f"Provider `{entry.provider_id}` not found. Available providers: {list(available_providers.keys())}"
                 )
-            inner_specs.append(providers[rt_entry.provider_type])
-            inner_deps.extend(providers[rt_entry.provider_type].api_dependencies)
 
-        specs[source_api] = RoutingTableProviderSpec(
-            api=source_api,
-            module="llama_stack.distribution.routers",
-            api_dependencies=inner_deps,
-            inner_specs=inner_specs,
+            provider = available_providers[entry.provider_id]
+            inner_deps.extend(provider.spec.api_dependencies)
+
+        providers_with_specs[info.routing_table_api.value] = {
+            "__builtin__": ProviderWithSpec(
+                provider_id="__builtin__",
+                provider_type="__routing_table__",
+                config={},
+                spec=RoutingTableProviderSpec(
+                    api=info.routing_table_api,
+                    router_api=info.router_api,
+                    registry=registry,
+                    module="llama_stack.distribution.routers",
+                    api_dependencies=inner_deps,
+                    deps__=(
+                        [x.value for x in inner_deps]
+                        + [f"inner-{info.router_api.value}"]
+                    ),
+                ),
+            )
+        }
+
+        providers_with_specs[info.router_api.value] = {
+            "__builtin__": ProviderWithSpec(
+                provider_id="__builtin__",
+                provider_type="__autorouted__",
+                config={},
+                spec=AutoRoutedProviderSpec(
+                    api=info.router_api,
+                    module="llama_stack.distribution.routers",
+                    routing_table_api=info.routing_table_api,
+                    api_dependencies=[info.routing_table_api],
+                    deps__=([info.routing_table_api.value]),
+                ),
+            )
+        }
+
+    sorted_providers = topological_sort(
+        {k: v.values() for k, v in providers_with_specs.items()}
+    )
+    apis = [x[1].spec.api for x in sorted_providers]
+    sorted_providers.append(
+        (
+            "inspect",
+            ProviderWithSpec(
+                provider_id="__builtin__",
+                provider_type="__builtin__",
+                config={
+                    "run_config": run_config.dict(),
+                },
+                spec=InlineProviderSpec(
+                    api=Api.inspect,
+                    provider_type="__builtin__",
+                    config_class="llama_stack.distribution.inspect.DistributionInspectConfig",
+                    module="llama_stack.distribution.inspect",
+                    api_dependencies=apis,
+                    deps__=([x.value for x in apis]),
+                ),
+            ),
         )
-        configs[source_api] = routing_table
-
-        specs[info.router_api] = AutoRoutedProviderSpec(
-            api=info.router_api,
-            module="llama_stack.distribution.routers",
-            routing_table_api=source_api,
-            api_dependencies=[source_api],
-        )
-        configs[info.router_api] = {}
-
-    sorted_specs = topological_sort(specs.values())
-    print(f"Resolved {len(sorted_specs)} providers in topological order")
-    for spec in sorted_specs:
-        print(f"  {spec.api}: {spec.provider_type}")
-    print("")
-    impls = {}
-    for spec in sorted_specs:
-        api = spec.api
-        deps = {api: impls[api] for api in spec.api_dependencies}
-        impl = await instantiate_provider(spec, deps, configs[api])
-
-        impls[api] = impl
-
-    impls[Api.inspect] = DistributionInspectImpl()
-    specs[Api.inspect] = InlineProviderSpec(
-        api=Api.inspect,
-        provider_type="__distribution_builtin__",
-        config_class="",
-        module="",
     )
 
-    return impls, specs
+    print(f"Resolved {len(sorted_providers)} providers in topological order")
+    for api_str, provider in sorted_providers:
+        print(f"  {api_str}: ({provider.provider_id}) {provider.spec.provider_type}")
+    print("")
+
+    impls = {}
+    inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
+    for api_str, provider in sorted_providers:
+        deps = {a: impls[a] for a in provider.spec.api_dependencies}
+
+        inner_impls = {}
+        if isinstance(provider.spec, RoutingTableProviderSpec):
+            inner_impls = inner_impls_by_provider_id[
+                f"inner-{provider.spec.router_api.value}"
+            ]
+
+        impl = await instantiate_provider(
+            provider,
+            deps,
+            inner_impls,
+        )
+        # TODO: ugh slightly redesign this shady looking code
+        if "inner-" in api_str:
+            inner_impls_by_provider_id[api_str][provider.provider_id] = impl
+        else:
+            api = Api(api_str)
+            impls[api] = impl
+
+    return impls
 
 
-def topological_sort(providers: List[ProviderSpec]) -> List[ProviderSpec]:
-    by_id = {x.api: x for x in providers}
+def topological_sort(
+    providers_with_specs: Dict[str, List[ProviderWithSpec]],
+) -> List[ProviderWithSpec]:
+    def dfs(kv, visited: Set[str], stack: List[str]):
+        api_str, providers = kv
+        visited.add(api_str)
 
-    def dfs(a: ProviderSpec, visited: Set[Api], stack: List[Api]):
-        visited.add(a.api)
+        deps = []
+        for provider in providers:
+            for dep in provider.spec.deps__:
+                deps.append(dep)
 
-        for api in a.api_dependencies:
-            if api not in visited:
-                dfs(by_id[api], visited, stack)
+        for dep in deps:
+            if dep not in visited:
+                dfs((dep, providers_with_specs[dep]), visited, stack)
 
-        stack.append(a.api)
+        stack.append(api_str)
 
     visited = set()
     stack = []
 
-    for a in providers:
-        if a.api not in visited:
-            dfs(a, visited, stack)
+    for api_str, providers in providers_with_specs.items():
+        if api_str not in visited:
+            dfs((api_str, providers), visited, stack)
 
-    return [by_id[x] for x in stack]
+    flattened = []
+    for api_str in stack:
+        for provider in providers_with_specs[api_str]:
+            flattened.append((api_str, provider))
+    return flattened
 
 
 # returns a class implementing the protocol corresponding to the Api
 async def instantiate_provider(
-    provider_spec: ProviderSpec,
+    provider: ProviderWithSpec,
     deps: Dict[str, Any],
-    provider_config: Union[GenericProviderConfig, RoutingTable],
+    inner_impls: Dict[str, Any],
 ):
+    provider_spec = provider.spec
     module = importlib.import_module(provider_spec.module)
 
     args = []
@@ -154,9 +223,8 @@ async def instantiate_provider(
         else:
             method = "get_client_impl"
 
-        assert isinstance(provider_config, GenericProviderConfig)
         config_type = instantiate_class_type(provider_spec.config_class)
-        config = config_type(**provider_config.config)
+        config = config_type(**provider.config)
         args = [config, deps]
     elif isinstance(provider_spec, AutoRoutedProviderSpec):
         method = "get_auto_router_impl"
@@ -166,31 +234,18 @@ async def instantiate_provider(
     elif isinstance(provider_spec, RoutingTableProviderSpec):
         method = "get_routing_table_impl"
 
-        assert isinstance(provider_config, List)
-        routing_table = provider_config
-
-        inner_specs = {x.provider_type: x for x in provider_spec.inner_specs}
-        inner_impls = []
-        for routing_entry in routing_table:
-            impl = await instantiate_provider(
-                inner_specs[routing_entry.provider_type],
-                deps,
-                routing_entry,
-            )
-            inner_impls.append((routing_entry.routing_key, impl))
-
         config = None
-        args = [provider_spec.api, inner_impls, routing_table, deps]
+        args = [provider_spec.api, provider_spec.registry, inner_impls, deps]
     else:
         method = "get_provider_impl"
 
-        assert isinstance(provider_config, GenericProviderConfig)
         config_type = instantiate_class_type(provider_spec.config_class)
-        config = config_type(**provider_config.config)
+        config = config_type(**provider.config)
         args = [config, deps]
 
     fn = getattr(module, method)
     impl = await fn(*args)
+    impl.__provider_id__ = provider.provider_id
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
     return impl

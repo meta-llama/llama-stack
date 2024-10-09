@@ -71,10 +71,8 @@ class StackConfigure(Subcommand):
         conda_dir = (
             Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
         )
-        output = subprocess.check_output(
-            ["bash", "-c", "conda info --json -a | jq '.envs'"]
-        )
-        conda_envs = json.loads(output.decode("utf-8"))
+        output = subprocess.check_output(["bash", "-c", "conda info --json"])
+        conda_envs = json.loads(output.decode("utf-8"))["envs"]
 
         for x in conda_envs:
             if x.endswith(f"/llamastack-{args.config}"):
@@ -129,7 +127,10 @@ class StackConfigure(Subcommand):
         import yaml
         from termcolor import cprint
 
-        from llama_stack.distribution.configure import configure_api_providers
+        from llama_stack.distribution.configure import (
+            configure_api_providers,
+            parse_and_maybe_upgrade_config,
+        )
         from llama_stack.distribution.utils.serialize import EnumEncoder
 
         builds_dir = BUILDS_BASE_DIR / build_config.image_type
@@ -145,13 +146,17 @@ class StackConfigure(Subcommand):
                 "yellow",
                 attrs=["bold"],
             )
-            config = StackRunConfig(**yaml.safe_load(run_config_file.read_text()))
+            config_dict = yaml.safe_load(run_config_file.read_text())
+            config = parse_and_maybe_upgrade_config(config_dict)
         else:
             config = StackRunConfig(
                 built_at=datetime.now(),
                 image_name=image_name,
-                apis_to_serve=[],
-                api_providers={},
+                apis=list(build_config.distribution_spec.providers.keys()),
+                providers={},
+                models=[],
+                shields=[],
+                memory_banks=[],
             )
 
         config = configure_api_providers(config, build_config.distribution_spec)

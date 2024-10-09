@@ -4,9 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 
-from llama_models.sku_list import resolve_model
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.models import *  # noqa: F403
@@ -16,129 +15,129 @@ from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
+def get_impl_api(p: Any) -> Api:
+    return p.__provider_spec__.api
+
+
+async def register_object_with_provider(obj: RoutableObject, p: Any) -> None:
+    api = get_impl_api(p)
+    if api == Api.inference:
+        await p.register_model(obj)
+    elif api == Api.safety:
+        await p.register_shield(obj)
+    elif api == Api.memory:
+        await p.register_memory_bank(obj)
+
+
+# TODO: this routing table maintains state in memory purely. We need to
+# add persistence to it when we add dynamic registration of objects.
 class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
-        inner_impls: List[Tuple[RoutingKey, Any]],
-        routing_table_config: Dict[str, List[RoutableProviderConfig]],
+        registry: List[RoutableObject],
+        impls_by_provider_id: Dict[str, RoutedProtocol],
     ) -> None:
-        self.unique_providers = []
-        self.providers = {}
-        self.routing_keys = []
+        for obj in registry:
+            if obj.provider_id not in impls_by_provider_id:
+                print(f"{impls_by_provider_id=}")
+                raise ValueError(
+                    f"Provider `{obj.provider_id}` pointed by `{obj.identifier}` not found"
+                )
 
-        for key, impl in inner_impls:
-            keys = key if isinstance(key, list) else [key]
-            self.unique_providers.append((keys, impl))
+        self.impls_by_provider_id = impls_by_provider_id
+        self.registry = registry
 
-            for k in keys:
-                if k in self.providers:
-                    raise ValueError(f"Duplicate routing key {k}")
-                self.providers[k] = impl
-                self.routing_keys.append(k)
+        for p in self.impls_by_provider_id.values():
+            api = get_impl_api(p)
+            if api == Api.inference:
+                p.model_store = self
+            elif api == Api.safety:
+                p.shield_store = self
+            elif api == Api.memory:
+                p.memory_bank_store = self
 
-        self.routing_table_config = routing_table_config
+        self.routing_key_to_object = {}
+        for obj in self.registry:
+            self.routing_key_to_object[obj.identifier] = obj
 
     async def initialize(self) -> None:
-        for keys, p in self.unique_providers:
-            spec = p.__provider_spec__
-            if isinstance(spec, RemoteProviderSpec) and spec.adapter is None:
-                continue
-
-            await p.validate_routing_keys(keys)
+        for obj in self.registry:
+            p = self.impls_by_provider_id[obj.provider_id]
+            await register_object_with_provider(obj, p)
 
     async def shutdown(self) -> None:
-        for _, p in self.unique_providers:
+        for p in self.impls_by_provider_id.values():
             await p.shutdown()
 
     def get_provider_impl(self, routing_key: str) -> Any:
-        if routing_key not in self.providers:
-            raise ValueError(f"Could not find provider for {routing_key}")
-        return self.providers[routing_key]
+        if routing_key not in self.routing_key_to_object:
+            raise ValueError(f"`{routing_key}` not registered")
 
-    def get_routing_keys(self) -> List[str]:
-        return self.routing_keys
+        obj = self.routing_key_to_object[routing_key]
+        if obj.provider_id not in self.impls_by_provider_id:
+            raise ValueError(f"Provider `{obj.provider_id}` not found")
 
-    def get_provider_config(self, routing_key: str) -> Optional[GenericProviderConfig]:
-        for entry in self.routing_table_config:
-            if entry.routing_key == routing_key:
-                return entry
+        return self.impls_by_provider_id[obj.provider_id]
+
+    def get_object_by_identifier(self, identifier: str) -> Optional[RoutableObject]:
+        for obj in self.registry:
+            if obj.identifier == identifier:
+                return obj
         return None
+
+    async def register_object(self, obj: RoutableObject):
+        if obj.identifier in self.routing_key_to_object:
+            print(f"`{obj.identifier}` is already registered")
+            return
+
+        if not obj.provider_id:
+            provider_ids = list(self.impls_by_provider_id.keys())
+            if not provider_ids:
+                raise ValueError("No providers found")
+
+            print(f"Picking provider `{provider_ids[0]}` for {obj.identifier}")
+            obj.provider_id = provider_ids[0]
+        else:
+            if obj.provider_id not in self.impls_by_provider_id:
+                raise ValueError(f"Provider `{obj.provider_id}` not found")
+
+        p = self.impls_by_provider_id[obj.provider_id]
+        await register_object_with_provider(obj, p)
+
+        self.routing_key_to_object[obj.identifier] = obj
+        self.registry.append(obj)
+
+        # TODO: persist this to a store
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
+    async def list_models(self) -> List[ModelDef]:
+        return self.registry
 
-    async def list_models(self) -> List[ModelServingSpec]:
-        specs = []
-        for entry in self.routing_table_config:
-            model_id = entry.routing_key
-            specs.append(
-                ModelServingSpec(
-                    llama_model=resolve_model(model_id),
-                    provider_config=entry,
-                )
-            )
-        return specs
+    async def get_model(self, identifier: str) -> Optional[ModelDef]:
+        return self.get_object_by_identifier(identifier)
 
-    async def get_model(self, core_model_id: str) -> Optional[ModelServingSpec]:
-        for entry in self.routing_table_config:
-            if entry.routing_key == core_model_id:
-                return ModelServingSpec(
-                    llama_model=resolve_model(core_model_id),
-                    provider_config=entry,
-                )
-        return None
+    async def register_model(self, model: ModelDef) -> None:
+        await self.register_object(model)
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
+    async def list_shields(self) -> List[ShieldDef]:
+        return self.registry
 
-    async def list_shields(self) -> List[ShieldSpec]:
-        specs = []
-        for entry in self.routing_table_config:
-            if isinstance(entry.routing_key, list):
-                for k in entry.routing_key:
-                    specs.append(
-                        ShieldSpec(
-                            shield_type=k,
-                            provider_config=entry,
-                        )
-                    )
-            else:
-                specs.append(
-                    ShieldSpec(
-                        shield_type=entry.routing_key,
-                        provider_config=entry,
-                    )
-                )
-        return specs
+    async def get_shield(self, shield_type: str) -> Optional[ShieldDef]:
+        return self.get_object_by_identifier(shield_type)
 
-    async def get_shield(self, shield_type: str) -> Optional[ShieldSpec]:
-        for entry in self.routing_table_config:
-            if entry.routing_key == shield_type:
-                return ShieldSpec(
-                    shield_type=entry.routing_key,
-                    provider_config=entry,
-                )
-        return None
+    async def register_shield(self, shield: ShieldDef) -> None:
+        await self.register_object(shield)
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        return self.registry
 
-    async def list_available_memory_banks(self) -> List[MemoryBankSpec]:
-        specs = []
-        for entry in self.routing_table_config:
-            specs.append(
-                MemoryBankSpec(
-                    bank_type=entry.routing_key,
-                    provider_config=entry,
-                )
-            )
-        return specs
+    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
+        return self.get_object_by_identifier(identifier)
 
-    async def get_serving_memory_bank(self, bank_type: str) -> Optional[MemoryBankSpec]:
-        for entry in self.routing_table_config:
-            if entry.routing_key == bank_type:
-                return MemoryBankSpec(
-                    bank_type=entry.routing_key,
-                    provider_config=entry,
-                )
-        return None
+    async def register_memory_bank(self, bank: MemoryBankDef) -> None:
+        await self.register_object(bank)

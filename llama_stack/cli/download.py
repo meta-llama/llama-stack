@@ -158,11 +158,10 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         info = prompt_guard_download_info()
     else:
         model = resolve_model(args.model_id)
+        if model is None:
+            parser.error(f"Model {args.model_id} not found")
+            return
         info = llama_meta_net_info(model)
-
-    if model is None:
-        parser.error(f"Model {args.model_id} not found")
-        return
 
     if args.source == "huggingface":
         _hf_download(model, args.hf_token, args.ignore_patterns, parser)
@@ -170,7 +169,7 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         meta_url = args.meta_url
         if not meta_url:
             meta_url = input(
-                "Please provide the signed URL you received via email (e.g., https://llama3-1.llamameta.net/*?Policy...): "
+                "Please provide the signed URL you received via email after visiting https://www.llama.com/llama-downloads/ (e.g., https://llama3-1.llamameta.net/*?Policy...): "
             )
             assert meta_url is not None and "llamameta.net" in meta_url
         _meta_download(model, meta_url, info)

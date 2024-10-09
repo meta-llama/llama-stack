@@ -580,63 +580,6 @@ components:
       - uuid
       - dataset
       type: object
-    CreateMemoryBankRequest:
-      additionalProperties: false
-      properties:
-        config:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              chunk_size_in_tokens:
-                type: integer
-              embedding_model:
-                type: string
-              overlap_size_in_tokens:
-                type: integer
-              type:
-                const: vector
-                default: vector
-                type: string
-            required:
-            - type
-            - embedding_model
-            - chunk_size_in_tokens
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: keyvalue
-                default: keyvalue
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: keyword
-                default: keyword
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: graph
-                default: graph
-                type: string
-            required:
-            - type
-            type: object
-        name:
-          type: string
-        url:
-          $ref: '#/components/schemas/URL'
-      required:
-      - name
-      - config
-      type: object
     DPOAlignmentConfig:
       additionalProperties: false
       properties:
@@ -738,14 +681,6 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
-      type: object
-    DropMemoryBankRequest:
-      additionalProperties: false
-      properties:
-        bank_id:
-          type: string
-      required:
-      - bank_id
       type: object
     EmbeddingsRequest:
       additionalProperties: false
@@ -908,6 +843,21 @@ components:
       required:
       - document_ids
       type: object
+    GraphMemoryBankDef:
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+        provider_id:
+          type: string
+        type:
+          const: graph
+          default: graph
+          type: string
+      required:
+      - identifier
+      - type
+      type: object
     HealthInfo:
       additionalProperties: false
       properties:
@@ -973,6 +923,36 @@ components:
       - bank_id
       - documents
       type: object
+    KeyValueMemoryBankDef:
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+        provider_id:
+          type: string
+        type:
+          const: keyvalue
+          default: keyvalue
+          type: string
+      required:
+      - identifier
+      - type
+      type: object
+    KeywordMemoryBankDef:
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+        provider_id:
+          type: string
+        type:
+          const: keyword
+          default: keyword
+          type: string
+      required:
+      - identifier
+      - type
+      type: object
     LogEventRequest:
       additionalProperties: false
       properties:
@@ -1015,66 +995,6 @@ components:
       - rank
       - alpha
       type: object
-    MemoryBank:
-      additionalProperties: false
-      properties:
-        bank_id:
-          type: string
-        config:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              chunk_size_in_tokens:
-                type: integer
-              embedding_model:
-                type: string
-              overlap_size_in_tokens:
-                type: integer
-              type:
-                const: vector
-                default: vector
-                type: string
-            required:
-            - type
-            - embedding_model
-            - chunk_size_in_tokens
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: keyvalue
-                default: keyvalue
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: keyword
-                default: keyword
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: graph
-                default: graph
-                type: string
-            required:
-            - type
-            type: object
-        name:
-          type: string
-        url:
-          $ref: '#/components/schemas/URL'
-      required:
-      - bank_id
-      - name
-      - config
-      type: object
     MemoryBankDocument:
       additionalProperties: false
       properties:
@@ -1107,41 +1027,6 @@ components:
       - content
       - metadata
       type: object
-    MemoryBankSpec:
-      additionalProperties: false
-      properties:
-        bank_type:
-          $ref: '#/components/schemas/MemoryBankType'
-        provider_config:
-          additionalProperties: false
-          properties:
-            config:
-              additionalProperties:
-                oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-              type: object
-            provider_type:
-              type: string
-          required:
-          - provider_type
-          - config
-          type: object
-      required:
-      - bank_type
-      - provider_config
-      type: object
-    MemoryBankType:
-      enum:
-      - vector
-      - keyvalue
-      - keyword
-      - graph
-      type: string
     MemoryRetrievalStep:
       additionalProperties: false
       properties:
@@ -1349,36 +1234,18 @@ components:
       - value
       - unit
       type: object
-    Model:
-      description: The model family and SKU of the model along with other parameters
-        corresponding to the model.
-    ModelServingSpec:
+    ModelDef:
       additionalProperties: false
       properties:
+        identifier:
+          type: string
         llama_model:
-          $ref: '#/components/schemas/Model'
-        provider_config:
-          additionalProperties: false
-          properties:
-            config:
-              additionalProperties:
-                oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-              type: object
-            provider_type:
-              type: string
-          required:
-          - provider_type
-          - config
-          type: object
+          type: string
+        provider_id:
+          type: string
       required:
+      - identifier
       - llama_model
-      - provider_config
       type: object
     OptimizerConfig:
       additionalProperties: false
@@ -1554,13 +1421,13 @@ components:
     ProviderInfo:
       additionalProperties: false
       properties:
-        description:
+        provider_id:
           type: string
         provider_type:
           type: string
       required:
+      - provider_id
       - provider_type
-      - description
       type: object
     QLoraFinetuningConfig:
       additionalProperties: false
@@ -1650,6 +1517,56 @@ components:
       enum:
       - dpo
       type: string
+    RegisterMemoryBankRequest:
+      additionalProperties: false
+      properties:
+        memory_bank:
+          oneOf:
+          - $ref: '#/components/schemas/VectorMemoryBankDef'
+          - $ref: '#/components/schemas/KeyValueMemoryBankDef'
+          - $ref: '#/components/schemas/KeywordMemoryBankDef'
+          - $ref: '#/components/schemas/GraphMemoryBankDef'
+      required:
+      - memory_bank
+      type: object
+    RegisterModelRequest:
+      additionalProperties: false
+      properties:
+        model:
+          $ref: '#/components/schemas/ModelDef'
+      required:
+      - model
+      type: object
+    RegisterShieldRequest:
+      additionalProperties: false
+      properties:
+        shield:
+          additionalProperties: false
+          properties:
+            identifier:
+              type: string
+            params:
+              additionalProperties:
+                oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+              type: object
+            provider_id:
+              type: string
+            type:
+              type: string
+          required:
+          - identifier
+          - type
+          - params
+          type: object
+      required:
+      - shield
+      type: object
     RestAPIExecutionConfig:
       additionalProperties: false
       properties:
@@ -1728,7 +1645,7 @@ components:
       properties:
         method:
           type: string
-        providers:
+        provider_types:
           items:
             type: string
           type: array
@@ -1737,7 +1654,7 @@ components:
       required:
       - route
       - method
-      - providers
+      - provider_types
       type: object
     RunShieldRequest:
       additionalProperties: false
@@ -1892,7 +1809,11 @@ components:
       additionalProperties: false
       properties:
         memory_bank:
-          $ref: '#/components/schemas/MemoryBank'
+          oneOf:
+          - $ref: '#/components/schemas/VectorMemoryBankDef'
+          - $ref: '#/components/schemas/KeyValueMemoryBankDef'
+          - $ref: '#/components/schemas/KeywordMemoryBankDef'
+          - $ref: '#/components/schemas/GraphMemoryBankDef'
         session_id:
           type: string
         session_name:
@@ -1935,33 +1856,29 @@ components:
       - step_id
       - step_type
       type: object
-    ShieldSpec:
+    ShieldDef:
       additionalProperties: false
       properties:
-        provider_config:
-          additionalProperties: false
-          properties:
-            config:
-              additionalProperties:
-                oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-              type: object
-            provider_type:
-              type: string
-          required:
-          - provider_type
-          - config
+        identifier:
+          type: string
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
           type: object
-        shield_type:
+        provider_id:
+          type: string
+        type:
           type: string
       required:
-      - shield_type
-      - provider_config
+      - identifier
+      - type
+      - params
       type: object
     SpanEndPayload:
       additionalProperties: false
@@ -2571,6 +2488,29 @@ components:
       - role
       - content
       type: object
+    VectorMemoryBankDef:
+      additionalProperties: false
+      properties:
+        chunk_size_in_tokens:
+          type: integer
+        embedding_model:
+          type: string
+        identifier:
+          type: string
+        overlap_size_in_tokens:
+          type: integer
+        provider_id:
+          type: string
+        type:
+          const: vector
+          default: vector
+          type: string
+      required:
+      - identifier
+      - type
+      - embedding_model
+      - chunk_size_in_tokens
+      type: object
     ViolationLevel:
       enum:
       - info
@@ -2604,7 +2544,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-02 15:40:53.008257"
+    \ draft and subject to change.\n                Generated at 2024-10-08 15:18:57.600111"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3226,7 +3166,7 @@ paths:
           description: OK
       tags:
       - Inference
-  /memory/create:
+  /inference/register_model:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3240,17 +3180,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateMemoryBankRequest'
+              $ref: '#/components/schemas/RegisterModelRequest'
         required: true
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
-      - Memory
+      - Models
   /memory/documents/delete:
     post:
       parameters:
@@ -3302,57 +3238,6 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory/drop:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DropMemoryBankRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: string
-          description: OK
-      tags:
-      - Memory
-  /memory/get:
-    get:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/MemoryBank'
-                - type: 'null'
-          description: OK
-      tags:
-      - Memory
   /memory/insert:
     post:
       parameters:
@@ -3371,25 +3256,6 @@ paths:
         required: true
       responses:
         '200':
-          description: OK
-      tags:
-      - Memory
-  /memory/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
       - Memory
@@ -3443,10 +3309,10 @@ paths:
     get:
       parameters:
       - in: query
-        name: bank_type
+        name: identifier
         required: true
         schema:
-          $ref: '#/components/schemas/MemoryBankType'
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -3460,7 +3326,11 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/MemoryBankSpec'
+                - oneOf:
+                  - $ref: '#/components/schemas/VectorMemoryBankDef'
+                  - $ref: '#/components/schemas/KeyValueMemoryBankDef'
+                  - $ref: '#/components/schemas/KeywordMemoryBankDef'
+                  - $ref: '#/components/schemas/GraphMemoryBankDef'
                 - type: 'null'
           description: OK
       tags:
@@ -3480,15 +3350,40 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/MemoryBankSpec'
+                oneOf:
+                - $ref: '#/components/schemas/VectorMemoryBankDef'
+                - $ref: '#/components/schemas/KeyValueMemoryBankDef'
+                - $ref: '#/components/schemas/KeywordMemoryBankDef'
+                - $ref: '#/components/schemas/GraphMemoryBankDef'
           description: OK
       tags:
       - MemoryBanks
+  /memory_banks/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterMemoryBankRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Memory
   /models/get:
     get:
       parameters:
       - in: query
-        name: core_model_id
+        name: identifier
         required: true
         schema:
           type: string
@@ -3505,7 +3400,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ModelServingSpec'
+                - $ref: '#/components/schemas/ModelDef'
                 - type: 'null'
           description: OK
       tags:
@@ -3525,7 +3420,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ModelServingSpec'
+                $ref: '#/components/schemas/ModelDef'
           description: OK
       tags:
       - Models
@@ -3760,6 +3655,27 @@ paths:
           description: OK
       tags:
       - Inspect
+  /safety/register_shield:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterShieldRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Shields
   /safety/run_shield:
     post:
       parameters:
@@ -3806,7 +3722,29 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ShieldSpec'
+                - additionalProperties: false
+                  properties:
+                    identifier:
+                      type: string
+                    params:
+                      additionalProperties:
+                        oneOf:
+                        - type: 'null'
+                        - type: boolean
+                        - type: number
+                        - type: string
+                        - type: array
+                        - type: object
+                      type: object
+                    provider_id:
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - identifier
+                  - type
+                  - params
+                  type: object
                 - type: 'null'
           description: OK
       tags:
@@ -3826,7 +3764,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ShieldSpec'
+                $ref: '#/components/schemas/ShieldDef'
           description: OK
       tags:
       - Shields
@@ -3905,21 +3843,21 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Datasets
-- name: Inspect
-- name: Memory
 - name: BatchInference
-- name: Agents
+- name: Datasets
 - name: Inference
-- name: Shields
-- name: SyntheticDataGeneration
-- name: Models
-- name: RewardScoring
-- name: MemoryBanks
-- name: Safety
 - name: Evaluations
-- name: Telemetry
+- name: Memory
+- name: Safety
 - name: PostTraining
+- name: MemoryBanks
+- name: Models
+- name: Shields
+- name: Inspect
+- name: SyntheticDataGeneration
+- name: Telemetry
+- name: Agents
+- name: RewardScoring
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4123,11 +4061,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequest"
     />
   name: CreateDatasetRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateMemoryBankRequest"
-    />
-  name: CreateMemoryBankRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
-  name: MemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
     />
   name: DeleteAgentsRequest
@@ -4140,9 +4073,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDocumentsRequest"
     />
   name: DeleteDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DropMemoryBankRequest"
-    />
-  name: DropMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
@@ -4163,11 +4093,23 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetAgentsSessionRequest"
     />
   name: GetAgentsSessionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankDef"
+    />
+  name: GraphMemoryBankDef
+- description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBankDef"
+    />
+  name: KeyValueMemoryBankDef
+- description: <SchemaDefinition schemaRef="#/components/schemas/KeywordMemoryBankDef"
+    />
+  name: KeywordMemoryBankDef
 - description: 'A single session of an interaction with an Agentic System.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/Session" />'
   name: Session
+- description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBankDef"
+    />
+  name: VectorMemoryBankDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
   name: AgentStepResponse
@@ -4189,21 +4131,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
-- description: 'The model family and SKU of the model along with other parameters
-    corresponding to the model.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/Model" />'
-  name: Model
-- description: <SchemaDefinition schemaRef="#/components/schemas/ModelServingSpec"
-    />
-  name: ModelServingSpec
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankType" />
-  name: MemoryBankType
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankSpec" />
-  name: MemoryBankSpec
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldSpec" />
-  name: ShieldSpec
+- description: <SchemaDefinition schemaRef="#/components/schemas/ModelDef" />
+  name: ModelDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: 'Checkpoint created during training runs
@@ -4243,6 +4172,8 @@ tags:
   name: ProviderInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/RouteInfo" />
   name: RouteInfo
+- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDef" />
+  name: ShieldDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogSeverity" />
   name: LogSeverity
 - description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
@@ -4282,6 +4213,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsResponse"
     />
   name: QueryDocumentsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterMemoryBankRequest"
+    />
+  name: RegisterMemoryBankRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterModelRequest"
+    />
+  name: RegisterModelRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterShieldRequest"
+    />
+  name: RegisterShieldRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DialogGenerations"
     />
   name: DialogGenerations
@@ -4387,7 +4327,6 @@ x-tagGroups:
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
   - CreateDatasetRequest
-  - CreateMemoryBankRequest
   - DPOAlignmentConfig
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
@@ -4395,7 +4334,6 @@ x-tagGroups:
   - DeleteDocumentsRequest
   - DialogGenerations
   - DoraFinetuningConfig
-  - DropMemoryBankRequest
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvaluateQuestionAnsweringRequest
@@ -4409,22 +4347,21 @@ x-tagGroups:
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
   - GetDocumentsRequest
+  - GraphMemoryBankDef
   - HealthInfo
   - ImageMedia
   - InferenceStep
   - InsertDocumentsRequest
+  - KeyValueMemoryBankDef
+  - KeywordMemoryBankDef
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
-  - MemoryBank
   - MemoryBankDocument
-  - MemoryBankSpec
-  - MemoryBankType
   - MemoryRetrievalStep
   - MemoryToolDefinition
   - MetricEvent
-  - Model
-  - ModelServingSpec
+  - ModelDef
   - OptimizerConfig
   - PhotogenToolDefinition
   - PostTrainingJob
@@ -4438,6 +4375,9 @@ x-tagGroups:
   - QueryDocumentsRequest
   - QueryDocumentsResponse
   - RLHFAlgorithm
+  - RegisterMemoryBankRequest
+  - RegisterModelRequest
+  - RegisterShieldRequest
   - RestAPIExecutionConfig
   - RestAPIMethod
   - RewardScoreRequest
@@ -4453,7 +4393,7 @@ x-tagGroups:
   - SearchToolDefinition
   - Session
   - ShieldCallStep
-  - ShieldSpec
+  - ShieldDef
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus
@@ -4483,5 +4423,6 @@ x-tagGroups:
   - UnstructuredLogEvent
   - UpdateDocumentsRequest
   - UserMessage
+  - VectorMemoryBankDef
   - ViolationLevel
   - WolframAlphaToolDefinition
