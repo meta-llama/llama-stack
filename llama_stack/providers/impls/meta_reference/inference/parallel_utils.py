@@ -124,7 +124,7 @@ def mp_rank_0() -> bool:
 
 
 def encode_msg(msg: ProcessingMessage) -> bytes:
-    return msg.model_dump_json().encode("utf-8")
+    return ProcessingMessageWrapper(payload=msg).model_dump_json().encode("utf-8")
 
 
 def retrieve_requests(reply_socket_url: str):
