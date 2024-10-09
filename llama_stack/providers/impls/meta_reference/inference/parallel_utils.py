@@ -56,28 +56,24 @@ class ReadyRequest(BaseModel):
     type: Literal[ProcessingMessageName.ready_request] = (
         ProcessingMessageName.ready_request
     )
-    message: str = "READY?"
 
 
 class ReadyResponse(BaseModel):
     type: Literal[ProcessingMessageName.ready_response] = (
         ProcessingMessageName.ready_response
     )
-    message: str = "YES READY"
 
 
 class EndSentinel(BaseModel):
     type: Literal[ProcessingMessageName.end_sentinel] = (
         ProcessingMessageName.end_sentinel
     )
-    message: str = "__end_sentinel__"
 
 
 class CancelSentinel(BaseModel):
     type: Literal[ProcessingMessageName.cancel_sentinel] = (
         ProcessingMessageName.cancel_sentinel
     )
-    message: str = "__cancel_sentinel__"
 
 
 class TaskRequest(BaseModel):
@@ -143,7 +139,7 @@ def retrieve_requests(reply_socket_url: str):
             reply_socket.send_multipart([client_id, encode_msg(ready_response)])
             break
 
-    def send_obj(obj: Union[ProcessingMessage, BaseModel]):
+    def send_obj(obj: ProcessingMessage):
         reply_socket.send_multipart([client_id, encode_msg(obj)])
 
     while True:
