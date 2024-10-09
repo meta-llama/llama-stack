@@ -335,7 +335,7 @@ def upgrade_from_routing_table_to_registry(
     provider_map = config_dict.get("api_providers", config_dict.get("provider_map", {}))
     if provider_map:
         for api_str, provider in provider_map.items():
-            if isinstance(provider, dict):
+            if isinstance(provider, dict) and "provider_type" in provider:
                 providers_by_api[api_str] = [
                     Provider(
                         provider_id=f"{provider['provider_type']}",
