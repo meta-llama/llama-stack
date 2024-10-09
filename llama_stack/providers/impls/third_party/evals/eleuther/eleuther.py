@@ -102,9 +102,8 @@ class EleutherEvalsWrapper(LM):
                 stream=False,
             )
             print(response)
-            res.append(response.completion_message)
+            res.append(response.completion_message.content)
 
-        print(response)
         return res
 
 
