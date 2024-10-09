@@ -23,14 +23,16 @@ class EvaluationClient(Evals):
     async def shutdown(self) -> None:
         pass
 
-    async def run_evals(self, model: str, dataset: str, task: str) -> EvaluateResponse:
+    async def run_evals(
+        self, model: str, task: str, dataset: Optional[str] = None
+    ) -> EvaluateResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/evals/run",
                 json={
                     "model": model,
-                    "dataset": dataset,
                     "task": task,
+                    "dataset": dataset,
                 },
                 headers={"Content-Type": "application/json"},
                 timeout=3600,
@@ -43,20 +45,19 @@ async def run_main(host: str, port: int):
     client = EvaluationClient(f"http://{host}:{port}")
 
     # CustomDataset
-    response = await client.run_evals(
-        "Llama3.1-8B-Instruct",
-        "mmlu-simple-eval-en",
-        "mmlu",
-    )
-    cprint(f"evaluate response={response}", "green")
-
-    # Eleuther Eval
     # response = await client.run_evals(
-    #     "Llama3.1-8B-Instruct",
-    #     "PLACEHOLDER_DATASET_NAME",
-    #     "mmlu",
+    #     model="Llama3.1-8B-Instruct",
+    #     dataset="mmlu-simple-eval-en",
+    #     task="mmlu",
     # )
-    # cprint(response.metrics["metrics_table"], "red")
+    # cprint(f"evaluate response={response}", "green")
+
+    # Eleuther Eval Task
+    response = await client.run_evals(
+        model="Llama3.1-8B-Instruct",
+        task="meta_mmlu_pro_instruct",
+    )
+    cprint(response.metrics["metrics_table"], "red")
 
 
 def main(host: str, port: int):

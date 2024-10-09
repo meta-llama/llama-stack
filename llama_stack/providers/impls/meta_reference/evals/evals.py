@@ -28,14 +28,17 @@ class MetaReferenceEvalsImpl(Evals):
     async def run_evals(
         self,
         model: str,
-        dataset: str,
         task: str,
+        dataset: Optional[str] = None,
     ) -> EvaluateResponse:
         cprint(f"model={model}, dataset={dataset}, task={task}", "red")
+        if not dataset:
+            raise ValueError("dataset must be specified for mete-reference evals")
+
         dataset = DatasetRegistry.get_dataset(dataset)
         dataset.load()
-        task_impl = TaskRegistry.get_task(task)(dataset)
 
+        task_impl = TaskRegistry.get_task(task)(dataset)
         x1 = task_impl.preprocess()
 
         # TODO: replace w/ batch inference & async return eval job

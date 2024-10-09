@@ -64,8 +64,8 @@ class Evals(Protocol):
     async def run_evals(
         self,
         model: str,
-        dataset: str,
         task: str,
+        dataset: Optional[str] = None,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/evals/jobs")
