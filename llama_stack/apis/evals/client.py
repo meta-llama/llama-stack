@@ -55,7 +55,8 @@ async def run_main(host: str, port: int):
     # Eleuther Eval Task
     response = await client.run_evals(
         model="Llama3.1-8B-Instruct",
-        task="meta_mmlu_pro_instruct",
+        # task="meta_mmlu_pro_instruct",
+        task="meta_ifeval",
     )
     cprint(response.metrics["metrics_table"], "red")
 

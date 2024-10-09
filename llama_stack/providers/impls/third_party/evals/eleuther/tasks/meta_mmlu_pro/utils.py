@@ -32,4 +32,4 @@ def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
     )
     dataset = dataset.rename_column("is_correct", "previously_is_correct")
     dataset = dataset.map(_process_doc)
-    return dataset.map(_process_doc)
+    return dataset

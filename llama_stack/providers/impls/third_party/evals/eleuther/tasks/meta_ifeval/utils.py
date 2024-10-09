@@ -7,6 +7,8 @@
 import dataclasses
 from typing import Dict, Optional, Union
 
+import datasets
+
 from lm_eval.tasks.ifeval import instructions_registry
 
 
@@ -143,3 +145,47 @@ def agg_inst_level_acc(items):
     flat_items = [item for sublist in items for item in sublist]
     inst_level_acc = sum(flat_items) / len(flat_items)
     return inst_level_acc
+
+
+def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
+    def _get_question(example: dict) -> dict:
+        # get the question from the ifeval dataset
+        example["input_question"] = (
+            eval(
+                example["input_question"]
+                .replace("null", "None")
+                .replace("true", "True")
+                .replace("false", "False")
+            )["dialog"][0]["body"]
+            .replace("Is it True that the first song", "Is it true that the first song")
+            .replace("Is the following True", "Is the following true")
+        )
+        example["input_final_prompts"] = example["input_final_prompts"][0]
+        return example
+
+    original_dataset_name = "wis-k/instruction-following-eval"
+    ifeval_data = datasets.load_dataset(original_dataset_name, split="train")
+    ifeval_df = ifeval_data.to_pandas()
+    ifeval_df = ifeval_df.rename(columns={"prompt": "input_question"})
+
+    meta_dataset = dataset.map(_get_question)
+    meta_df = meta_dataset.to_pandas()
+
+    # join the two datasets on the input_question column
+    joined = meta_df.join(ifeval_df.set_index("input_question"), on="input_question")
+    joined = joined.rename(columns={"input_final_prompts": "prompt"})
+    joined = joined.rename(columns={"is_correct": "previous_is_correct"})
+    joined = datasets.Dataset.from_pandas(joined)
+    joined = joined.select_columns(
+        [
+            "input_question",
+            "prompt",
+            "previous_is_correct",
+            "instruction_id_list",
+            "kwargs",
+            "output_prediction_text",
+            "key",
+        ]
+    )
+    joined.rename_column("output_prediction_text", "previous_output_prediction_text")
+    return joined
