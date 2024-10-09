@@ -13,12 +13,13 @@ import threading
 from pathlib import Path
 
 import lm_eval
+import tqdm
 from lm_eval.api.model import LM
 from lm_eval.evaluator import evaluate, get_task_list
 from lm_eval.tasks import get_task_dict, TaskManager
 from termcolor import cprint
 
-from .config import EleutherEvalsImplConfig  # noqa
+from .config import EleutherEvalsImplConfig
 
 
 # https://stackoverflow.com/questions/74703727/how-to-call-async-function-from-sync-funcion-and-get-result-while-a-loop-is-alr
@@ -99,7 +100,7 @@ class EleutherEvalsWrapper(LM):
         res = []
         if not _thr.is_alive():
             _thr.start()
-        for req in requests:
+        for req in tqdm.tqdm(requests):
             chat_completion_coro_fn = self.inference_api.chat_completion(
                 model=self.model,
                 messages=[
@@ -138,6 +139,7 @@ class EleutherEvalsAdapter(Evals):
         eluther_wrapper = EleutherEvalsWrapper(self.inference_api, model)
         current_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 
+        # custom registry of harness tasks
         task_manager = TaskManager(
             include_path=str(current_dir / "tasks"),
         )

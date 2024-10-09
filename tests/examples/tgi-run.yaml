@@ -18,14 +18,10 @@ providers:
     provider_type: eleuther
     config: {}
   inference:
-  - provider_id: meta-reference
-    provider_type: meta-reference
+  - provider_id: remote::tgi
+    provider_type: remote::tgi
     config:
-      model: Llama3.1-8B-Instruct
-      quantization: null
-      torch_seed: null
-      max_seq_len: 4096
-      max_batch_size: 1
+      url: http://127.0.0.1:5009
   safety:
   - provider_id: meta-reference
     provider_type: meta-reference
@@ -56,7 +52,7 @@ providers:
 models:
 - identifier: Llama3.1-8B-Instruct
   llama_model: Llama3.1-8B-Instruct
-  provider_id: meta-reference
+  provider_id: remote::tgi
 shields:
 - identifier: llama_guard
   type: llama_guard
