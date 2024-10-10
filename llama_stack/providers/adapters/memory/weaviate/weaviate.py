@@ -14,6 +14,7 @@ from weaviate.classes.init import Auth
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
@@ -78,7 +79,9 @@ class WeaviateIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class WeaviateMemoryAdapter(Memory, NeedsRequestProviderData):
+class WeaviateMemoryAdapter(
+    Memory, NeedsRequestProviderData, MemoryBanksProtocolPrivate
+):
     def __init__(self, config: WeaviateConfig) -> None:
         self.config = config
         self.client_cache = {}
@@ -135,6 +138,9 @@ class WeaviateMemoryAdapter(Memory, NeedsRequestProviderData):
             index=WeaviateIndex(client=client, collection_name=memory_bank.identifier),
         )
         self.cache[memory_bank.identifier] = index
+
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        return [i.bank for i in self.cache.values()]
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:

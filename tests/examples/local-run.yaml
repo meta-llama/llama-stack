@@ -48,19 +48,3 @@ providers:
   - provider_id: meta-reference
     provider_type: meta-reference
     config: {}
-models:
-- identifier: Llama3.1-8B-Instruct
-  llama_model: Llama3.1-8B-Instruct
-  provider_id: meta-reference
-shields:
-- identifier: llama_guard
-  type: llama_guard
-  provider_id: meta-reference
-  params: {}
-memory_banks:
-- identifier: vector
-  provider_id: meta-reference
-  type: vector
-  embedding_model: all-MiniLM-L6-v2
-  chunk_size_in_tokens: 512
-  overlap_size_in_tokens: null
