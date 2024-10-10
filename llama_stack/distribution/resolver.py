@@ -109,7 +109,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
 
         providers_with_specs[info.routing_table_api.value] = {
             "__builtin__": ProviderWithSpec(
-                provider_id="__builtin__",
+                provider_id="__routing_table__",
                 provider_type="__routing_table__",
                 config={},
                 spec=RoutingTableProviderSpec(
@@ -124,7 +124,7 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
 
         providers_with_specs[info.router_api.value] = {
             "__builtin__": ProviderWithSpec(
-                provider_id="__builtin__",
+                provider_id="__autorouted__",
                 provider_type="__autorouted__",
                 config={},
                 spec=AutoRoutedProviderSpec(
@@ -162,9 +162,9 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
         )
     )
 
-    print(f"Resolved {len(sorted_providers)} providers in topological order")
+    print(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
-        print(f"  {api_str}: ({provider.provider_id}) {provider.spec.provider_type}")
+        print(f" {api_str} => {provider.provider_id}")
     print("")
 
     impls = {}
