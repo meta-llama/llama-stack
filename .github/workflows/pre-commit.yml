@@ -1,0 +1,45 @@
+name: Pre-commit
+
+on: [pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - name: Set up Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            **/requirements*.txt
+            .pre-commit-config.yaml
+
+      - name: Install pre-commit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Fetch head commit from PR
+        run: git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }} pr-${{ github.event.pull_request.number }} > changed_files.txt
+          cat changed_files.txt
+
+      - name: Run pre-commit
+        run: |
+          if [ -s changed_files.txt ]; then
+            pre-commit run --files $(cat changed_files.txt | tr '\n' ' ')
+          else
+            echo "No changed files to run pre-commit on."
+          fi
