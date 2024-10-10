@@ -149,6 +149,7 @@ class StackBuild(Subcommand):
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
+
         from llama_stack.cli.table import print_table
 
         # eventually, this should query a registry at llama.meta.com/llamastack/distributions
@@ -175,6 +176,7 @@ class StackBuild(Subcommand):
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import textwrap
+
         import yaml
         from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
@@ -256,7 +258,9 @@ class StackBuild(Subcommand):
             providers = dict()
             for api, providers_for_api in get_provider_registry().items():
                 available_providers = [
-                    x for x in providers_for_api.keys() if x != "remote"
+                    x
+                    for x in providers_for_api.keys()
+                    if x not in ("remote", "remote::sample")
                 ]
                 api_provider = prompt(
                     "> Enter provider for API {}: ".format(api.value),

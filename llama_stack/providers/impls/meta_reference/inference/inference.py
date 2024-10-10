@@ -17,7 +17,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
 )
 
-from .config import MetaReferenceImplConfig
+from .config import MetaReferenceInferenceConfig
 from .model_parallel import LlamaModelParallelGenerator
 
 # there's a single model parallel process running serving the model. for now,
@@ -26,7 +26,7 @@ SEMAPHORE = asyncio.Semaphore(1)
 
 
 class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
-    def __init__(self, config: MetaReferenceImplConfig) -> None:
+    def __init__(self, config: MetaReferenceInferenceConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
         if model is None:

@@ -16,7 +16,7 @@ from llama_stack.apis.agents import *  # noqa: F403
 from ..agents import (
     AGENT_INSTANCES_BY_ID,
     MetaReferenceAgentsImpl,
-    MetaReferenceImplConfig,
+    MetaReferenceInferenceConfig,
 )
 
 
@@ -166,7 +166,7 @@ def mock_memory_api():
 @pytest.fixture
 async def chat_agent(mock_inference_api, mock_safety_api, mock_memory_api):
     impl = MetaReferenceAgentsImpl(
-        config=MetaReferenceImplConfig(),
+        config=MetaReferenceInferenceConfig(),
         inference_api=mock_inference_api,
         safety_api=mock_safety_api,
         memory_api=mock_memory_api,

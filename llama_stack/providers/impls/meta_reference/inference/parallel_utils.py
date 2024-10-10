@@ -11,7 +11,7 @@ import tempfile
 import time
 import uuid
 from enum import Enum
-from typing import Any, Callable, Generator, List, Literal, Optional, Union
+from typing import Callable, Generator, List, Literal, Optional, Union
 
 import torch
 
@@ -317,7 +317,7 @@ def start_model_parallel_process(
 
     request_socket.send(encode_msg(ReadyRequest()))
     response = request_socket.recv()
-    print(f"Finished model load {response}")
+    print("Loaded model...")
 
     return request_socket, process
 
