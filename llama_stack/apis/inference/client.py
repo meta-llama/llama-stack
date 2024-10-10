@@ -42,10 +42,10 @@ class InferenceClient(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    def completion(self, request: CompletionRequest) -> AsyncGenerator:
         raise NotImplementedError()
 
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -66,6 +66,29 @@ class InferenceClient(Inference):
             stream=stream,
             logprobs=logprobs,
         )
+        if stream:
+            return self._stream_chat_completion(request)
+        else:
+            return self._nonstream_chat_completion(request)
+
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> ChatCompletionResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/inference/chat_completion",
+                json=encodable_dict(request),
+                headers={"Content-Type": "application/json"},
+                timeout=20,
+            )
+
+            response.raise_for_status()
+            j = response.json()
+            return ChatCompletionResponse(**j)
+
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> AsyncGenerator:
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 "POST",
@@ -77,7 +100,8 @@ class InferenceClient(Inference):
                 if response.status_code != 200:
                     content = await response.aread()
                     cprint(
-                        f"Error: HTTP {response.status_code} {content.decode()}", "red"
+                        f"Error: HTTP {response.status_code} {content.decode()}",
+                        "red",
                     )
                     return
 
@@ -85,16 +109,11 @@ class InferenceClient(Inference):
                     if line.startswith("data:"):
                         data = line[len("data: ") :]
                         try:
-                            if request.stream:
-                                if "error" in data:
-                                    cprint(data, "red")
-                                    continue
+                            if "error" in data:
+                                cprint(data, "red")
+                                continue
 
-                                yield ChatCompletionResponseStreamChunk(
-                                    **json.loads(data)
-                                )
-                            else:
-                                yield ChatCompletionResponse(**json.loads(data))
+                            yield ChatCompletionResponseStreamChunk(**json.loads(data))
                         except Exception as e:
                             print(data)
                             print(f"Error with parsing or validation: {e}")

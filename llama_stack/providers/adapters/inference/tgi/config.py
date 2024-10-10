@@ -34,7 +34,7 @@ class InferenceEndpointImplConfig(BaseModel):
 
 @json_schema_type
 class InferenceAPIImplConfig(BaseModel):
-    model_id: str = Field(
+    huggingface_repo: str = Field(
         description="The model ID of the model on the Hugging Face Hub (e.g. 'meta-llama/Meta-Llama-3.1-70B-Instruct')",
     )
     api_token: Optional[str] = Field(

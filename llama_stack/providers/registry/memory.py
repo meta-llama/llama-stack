@@ -62,6 +62,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="weaviate",
                 pip_packages=EMBEDDING_DEPS + ["weaviate-client"],
                 module="llama_stack.providers.adapters.memory.weaviate",
+                config_class="llama_stack.providers.adapters.memory.weaviate.WeaviateConfig",
                 provider_data_validator="llama_stack.providers.adapters.memory.weaviate.WeaviateRequestProviderData",
             ),
         ),

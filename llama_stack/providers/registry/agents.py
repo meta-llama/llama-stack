@@ -28,6 +28,7 @@ def available_providers() -> List[ProviderSpec]:
                 Api.inference,
                 Api.safety,
                 Api.memory,
+                Api.memory_banks,
             ],
         ),
         remote_provider_spec(

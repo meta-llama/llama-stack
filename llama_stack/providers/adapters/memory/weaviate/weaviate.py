@@ -1,14 +1,20 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
 import json
-import uuid
-from typing import List, Optional, Dict, Any
-from numpy.typing import NDArray
+
+from typing import Any, Dict, List, Optional
 
 import weaviate
 import weaviate.classes as wvc
+from numpy.typing import NDArray
 from weaviate.classes.init import Auth
 
-from llama_stack.apis.memory import *
-from llama_stack.distribution.request_headers import get_request_provider_data
+from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
@@ -16,162 +22,154 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import WeaviateConfig, WeaviateRequestProviderData
 
+
 class WeaviateIndex(EmbeddingIndex):
-    def __init__(self, client: weaviate.Client, collection: str):
+    def __init__(self, client: weaviate.Client, collection_name: str):
         self.client = client
-        self.collection = collection
+        self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
-        assert len(chunks) == len(embeddings), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
+        assert len(chunks) == len(
+            embeddings
+        ), f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
 
         data_objects = []
         for i, chunk in enumerate(chunks):
-            
-            data_objects.append(wvc.data.DataObject(
-                properties={
-                    "chunk_content": chunk,
-                },
-                vector = embeddings[i].tolist()
-            ))
+            data_objects.append(
+                wvc.data.DataObject(
+                    properties={
+                        "chunk_content": chunk.json(),
+                    },
+                    vector=embeddings[i].tolist(),
+                )
+            )
 
         # Inserting chunks into a prespecified Weaviate collection
-        assert self.collection is not None, "Collection name must be specified"
-        my_collection = self.client.collections.get(self.collection)
-        
-        await my_collection.data.insert_many(data_objects)
+        collection = self.client.collections.get(self.collection_name)
 
+        # TODO: make this async friendly
+        collection.data.insert_many(data_objects)
 
     async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
-        assert self.collection is not None, "Collection name must be specified"
+        collection = self.client.collections.get(self.collection_name)
 
-        my_collection = self.client.collections.get(self.collection)
-        
-        results = my_collection.query.near_vector(
-            near_vector = embedding.tolist(),
-            limit = k,
-            return_meta_data = wvc.query.MetadataQuery(distance=True)
+        results = collection.query.near_vector(
+            near_vector=embedding.tolist(),
+            limit=k,
+            return_metadata=wvc.query.MetadataQuery(distance=True),
         )
 
         chunks = []
         scores = []
         for doc in results.objects:
+            chunk_json = doc.properties["chunk_content"]
             try:
-                chunk = doc.properties["chunk_content"]
-                chunks.append(chunk)
-                scores.append(1.0 / doc.metadata.distance)
-            
-            except Exception as e:
+                chunk_dict = json.loads(chunk_json)
+                chunk = Chunk(**chunk_dict)
+            except Exception:
                 import traceback
+
                 traceback.print_exc()
-                print(f"Failed to parse document: {e}")
+                print(f"Failed to parse document: {chunk_json}")
+                continue
+
+            chunks.append(chunk)
+            scores.append(1.0 / doc.metadata.distance)
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class WeaviateMemoryAdapter(Memory):
+class WeaviateMemoryAdapter(
+    Memory, NeedsRequestProviderData, MemoryBanksProtocolPrivate
+):
     def __init__(self, config: WeaviateConfig) -> None:
         self.config = config
-        self.client = None
+        self.client_cache = {}
         self.cache = {}
 
     def _get_client(self) -> weaviate.Client:
-            request_provider_data = get_request_provider_data()
-            
-            if request_provider_data is not None:
-                assert isinstance(request_provider_data, WeaviateRequestProviderData)
-            
-            # Connect to Weaviate Cloud
-            return weaviate.connect_to_weaviate_cloud(
-                cluster_url = request_provider_data.weaviate_cluster_url,
-                auth_credentials = Auth.api_key(request_provider_data.weaviate_api_key),
-                )
+        provider_data = self.get_request_provider_data()
+        assert provider_data is not None, "Request provider data must be set"
+        assert isinstance(provider_data, WeaviateRequestProviderData)
+
+        key = f"{provider_data.weaviate_cluster_url}::{provider_data.weaviate_api_key}"
+        if key in self.client_cache:
+            return self.client_cache[key]
+
+        client = weaviate.connect_to_weaviate_cloud(
+            cluster_url=provider_data.weaviate_cluster_url,
+            auth_credentials=Auth.api_key(provider_data.weaviate_api_key),
+        )
+        self.client_cache[key] = client
+        return client
 
     async def initialize(self) -> None:
-        try:
-            self.client = self._get_client()
-
-            # Create collection if it doesn't exist
-            if not self.client.collections.exists(self.config.collection):
-               self.client.collections.create(
-                    name = self.config.collection,
-                    vectorizer_config = wvc.config.Configure.Vectorizer.none(),
-                    properties=[
-                        wvc.config.Property(
-                        name="chunk_content",
-                        data_type=wvc.config.DataType.TEXT,
-                        ),
-                    ]
-                )
-
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            raise RuntimeError("Could not connect to Weaviate server") from e
+        pass
 
     async def shutdown(self) -> None:
-        self.client = self._get_client()
+        for client in self.client_cache.values():
+            client.close()
 
-        if self.client:
-            self.client.close()
-
-    async def create_memory_bank(
+    async def register_memory_bank(
         self,
-        name: str,
-        config: MemoryBankConfig,
-        url: Optional[URL] = None,
-    ) -> MemoryBank:
-        bank_id = str(uuid.uuid4())
-        bank = MemoryBank(
-            bank_id=bank_id,
-            name=name,
-            config=config,
-            url=url,
-        )
-        self.client = self._get_client()
-        
-        # Store the bank as a new collection in Weaviate
-        self.client.collections.create(
-            name=bank_id
-        )
+        memory_bank: MemoryBankDef,
+    ) -> None:
+        assert (
+            memory_bank.type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.type}"
+
+        client = self._get_client()
+
+        # Create collection if it doesn't exist
+        if not client.collections.exists(memory_bank.identifier):
+            client.collections.create(
+                name=memory_bank.identifier,
+                vectorizer_config=wvc.config.Configure.Vectorizer.none(),
+                properties=[
+                    wvc.config.Property(
+                        name="chunk_content",
+                        data_type=wvc.config.DataType.TEXT,
+                    ),
+                ],
+            )
 
         index = BankWithIndex(
-            bank=bank,
-            index=WeaviateIndex(cleint = self.client, collection = bank_id),
+            bank=memory_bank,
+            index=WeaviateIndex(client=client, collection_name=memory_bank.identifier),
         )
-        self.cache[bank_id] = index
-        return bank
+        self.cache[memory_bank.identifier] = index
 
-    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        bank_index = await self._get_and_cache_bank_index(bank_id)
-        if bank_index is None:
-            return None
-        return bank_index.bank
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        # TODO: right now the Llama Stack is the source of truth for these banks. That is
+        # not ideal. It should be Weaviate which is the source of truth. Unfortunately,
+        # list() happens at Stack startup when the Weaviate client (credentials) is not
+        # yet available. We need to figure out a way to make this work.
+        return [i.bank for i in self.cache.values()]
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
-        
-        self.client = self._get_client()
-
         if bank_id in self.cache:
             return self.cache[bank_id]
 
-        collections = await self.client.collections.list_all().keys()
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        if not bank:
+            raise ValueError(f"Bank {bank_id} not found")
 
-        for collection in collections:
-            if collection == bank_id:
-                bank = MemoryBank(**json.loads(collection.metadata["bank"]))
-                index = BankWithIndex(
-                    bank=bank,
-                    index=WeaviateIndex(self.client, collection),
-                )
-                self.cache[bank_id] = index
-                return index
+        client = self._get_client()
+        if not client.collections.exists(bank_id):
+            raise ValueError(f"Collection with name `{bank_id}` not found")
 
-        return None
+        index = BankWithIndex(
+            bank=bank,
+            index=WeaviateIndex(client=client, collection_name=bank_id),
+        )
+        self.cache[bank_id] = index
+        return index
 
     async def insert_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
+        ttl_seconds: Optional[int] = None,
     ) -> None:
         index = await self._get_and_cache_bank_index(bank_id)
         if not index:

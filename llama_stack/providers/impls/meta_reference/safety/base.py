@@ -44,7 +44,6 @@ def message_content_as_str(message: Message) -> str:
     return interleaved_text_media_as_str(message.content)
 
 
-# For shields that operate on simple strings
 class TextShield(ShieldBase):
     def convert_messages_to_text(self, messages: List[Message]) -> str:
         return "\n".join([message_content_as_str(m) for m in messages])
@@ -56,9 +55,3 @@ class TextShield(ShieldBase):
     @abstractmethod
     async def run_impl(self, text: str) -> ShieldResponse:
         raise NotImplementedError()
-
-
-class DummyShield(TextShield):
-    async def run_impl(self, text: str) -> ShieldResponse:
-        # Dummy return LOW to test e2e
-        return ShieldResponse(is_violation=False)

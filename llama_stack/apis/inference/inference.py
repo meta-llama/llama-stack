@@ -6,7 +6,7 @@
 
 from enum import Enum
 
-from typing import List, Literal, Optional, Protocol, Union
+from typing import List, Literal, Optional, Protocol, runtime_checkable, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
 
 
 class LogProbConfig(BaseModel):
@@ -172,9 +173,18 @@ class EmbeddingsResponse(BaseModel):
     embeddings: List[List[float]]
 
 
+class ModelStore(Protocol):
+    def get_model(self, identifier: str) -> ModelDef: ...
+
+
+@runtime_checkable
 class Inference(Protocol):
+    model_store: ModelStore
+
+    # This method is not `async def` because it can result in either an
+    # `AsyncGenerator` or a `CompletionResponse` depending on the value of `stream`.
     @webmethod(route="/inference/completion")
-    async def completion(
+    def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -183,8 +193,10 @@ class Inference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
 
+    # This method is not `async def` because it can result in either an
+    # `AsyncGenerator` or a `ChatCompletionResponse` depending on the value of `stream`.
     @webmethod(route="/inference/chat_completion")
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],

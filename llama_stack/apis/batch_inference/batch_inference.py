@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol
+from typing import List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -47,6 +47,7 @@ class BatchChatCompletionResponse(BaseModel):
     completion_message_batch: List[CompletionMessage]
 
 
+@runtime_checkable
 class BatchInference(Protocol):
     @webmethod(route="/batch_inference/completion")
     async def batch_completion(

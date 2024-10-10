@@ -4,15 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
 
 class WeaviateRequestProviderData(BaseModel):
-    # if there _is_ provider data, it must specify the API KEY
-    # if you want it to be optional, use Optional[str]
     weaviate_api_key: str
     weaviate_cluster_url: str
 
-@json_schema_type
+
 class WeaviateConfig(BaseModel):
-    collection: str = Field(default="MemoryBank")
+    pass
