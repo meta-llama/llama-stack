@@ -288,8 +288,7 @@ def main(
         apis_to_serve = set(impls.keys())
 
     for inf in builtin_automatically_routed_apis():
-        if inf.router_api.value in apis_to_serve:
-            apis_to_serve.add(inf.routing_table_api.value)
+        apis_to_serve.add(inf.routing_table_api.value)
 
     apis_to_serve.add("inspect")
     for api_str in apis_to_serve:
