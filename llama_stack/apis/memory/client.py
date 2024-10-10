@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 import os
 from pathlib import Path
 
@@ -34,17 +33,6 @@ class MemoryClient(Memory):
 
     async def shutdown(self) -> None:
         pass
-
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{self.base_url}/memory/register_memory_bank",
-                json={
-                    "memory_bank": json.loads(memory_bank.json()),
-                },
-                headers={"Content-Type": "application/json"},
-            )
-            response.raise_for_status()
 
     async def insert_documents(
         self,
