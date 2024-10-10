@@ -22,20 +22,6 @@ def up_to_date_config():
         image_name: foo
         apis_to_serve: []
         built_at: {built_at}
-        models:
-          - identifier: model1
-            provider_id: provider1
-            llama_model: Llama3.1-8B-Instruct
-        shields:
-          - identifier: shield1
-            type: llama_guard
-            provider_id: provider1
-        memory_banks:
-          - identifier: memory1
-            type: vector
-            provider_id: provider1
-            embedding_model: all-MiniLM-L6-v2
-            chunk_size_in_tokens: 512
         providers:
           inference:
             - provider_id: provider1
@@ -116,18 +102,12 @@ def invalid_config():
 def test_parse_and_maybe_upgrade_config_up_to_date(up_to_date_config):
     result = parse_and_maybe_upgrade_config(up_to_date_config)
     assert result.version == LLAMA_STACK_RUN_CONFIG_VERSION
-    assert len(result.models) == 1
-    assert len(result.shields) == 1
-    assert len(result.memory_banks) == 1
     assert "inference" in result.providers
 
 
 def test_parse_and_maybe_upgrade_config_old_format(old_config):
     result = parse_and_maybe_upgrade_config(old_config)
     assert result.version == LLAMA_STACK_RUN_CONFIG_VERSION
-    assert len(result.models) == 2
-    assert len(result.shields) == 2
-    assert len(result.memory_banks) == 1
     assert all(
         api in result.providers
         for api in ["inference", "safety", "memory", "telemetry"]
