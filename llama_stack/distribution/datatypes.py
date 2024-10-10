@@ -34,8 +34,8 @@ RoutableObject = Union[
 
 RoutableObjectWithProvider = Union[
     ModelDefWithProvider,
-    ShieldDef,
-    MemoryBankDef,
+    ShieldDefWithProvider,
+    MemoryBankDefWithProvider,
 ]
 
 RoutedProtocol = Union[
