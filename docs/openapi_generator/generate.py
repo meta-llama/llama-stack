@@ -71,7 +71,7 @@ class LlamaStack(
 
 # TODO: this should be fixed in the generator itself so it reads appropriate annotations
 STREAMING_ENDPOINTS = [
-    "/agentic_system/turn/create",
+    "/agents/turn/create",
     "/inference/chat_completion",
 ]
 
