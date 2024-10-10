@@ -6,7 +6,7 @@
 
 from enum import Enum
 
-from typing import List, Literal, Optional, Protocol, Union
+from typing import List, Literal, Optional, Protocol, runtime_checkable, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -177,6 +177,7 @@ class ModelStore(Protocol):
     def get_model(self, identifier: str) -> ModelDef: ...
 
 
+@runtime_checkable
 class Inference(Protocol):
     model_store: ModelStore
 
@@ -214,6 +215,3 @@ class Inference(Protocol):
         model: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse: ...
-
-    @webmethod(route="/inference/register_model")
-    async def register_model(self, model: ModelDef) -> None: ...

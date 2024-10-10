@@ -4,15 +4,49 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import importlib
+import inspect
 
 from typing import Any, Dict, List, Set
 
+from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
+
+from llama_stack.apis.agents import Agents
+from llama_stack.apis.inference import Inference
+from llama_stack.apis.inspect import Inspect
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import MemoryBanks
+from llama_stack.apis.models import Models
+from llama_stack.apis.safety import Safety
+from llama_stack.apis.shields import Shields
+from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
     get_provider_registry,
 )
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+
+def api_protocol_map() -> Dict[Api, Any]:
+    return {
+        Api.agents: Agents,
+        Api.inference: Inference,
+        Api.inspect: Inspect,
+        Api.memory: Memory,
+        Api.memory_banks: MemoryBanks,
+        Api.models: Models,
+        Api.safety: Safety,
+        Api.shields: Shields,
+        Api.telemetry: Telemetry,
+    }
+
+
+def additional_protocols_map() -> Dict[Api, Any]:
+    return {
+        Api.inference: ModelsProtocolPrivate,
+        Api.memory: MemoryBanksProtocolPrivate,
+        Api.safety: ShieldsProtocolPrivate,
+    }
 
 
 # TODO: make all this naming far less atrocious. Provider. ProviderSpec. ProviderWithSpec. WTF!
@@ -73,17 +107,6 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
 
         available_providers = providers_with_specs[f"inner-{info.router_api.value}"]
 
-        inner_deps = []
-        registry = getattr(run_config, info.routing_table_api.value)
-        for entry in registry:
-            if entry.provider_id not in available_providers:
-                raise ValueError(
-                    f"Provider `{entry.provider_id}` not found. Available providers: {list(available_providers.keys())}"
-                )
-
-            provider = available_providers[entry.provider_id]
-            inner_deps.extend(provider.spec.api_dependencies)
-
         providers_with_specs[info.routing_table_api.value] = {
             "__builtin__": ProviderWithSpec(
                 provider_id="__builtin__",
@@ -92,13 +115,9 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
                 spec=RoutingTableProviderSpec(
                     api=info.routing_table_api,
                     router_api=info.router_api,
-                    registry=registry,
                     module="llama_stack.distribution.routers",
-                    api_dependencies=inner_deps,
-                    deps__=(
-                        [x.value for x in inner_deps]
-                        + [f"inner-{info.router_api.value}"]
-                    ),
+                    api_dependencies=[],
+                    deps__=([f"inner-{info.router_api.value}"]),
                 ),
             )
         }
@@ -212,6 +231,9 @@ async def instantiate_provider(
     deps: Dict[str, Any],
     inner_impls: Dict[str, Any],
 ):
+    protocols = api_protocol_map()
+    additional_protocols = additional_protocols_map()
+
     provider_spec = provider.spec
     module = importlib.import_module(provider_spec.module)
 
@@ -234,7 +256,7 @@ async def instantiate_provider(
         method = "get_routing_table_impl"
 
         config = None
-        args = [provider_spec.api, provider_spec.registry, inner_impls, deps]
+        args = [provider_spec.api, inner_impls, deps]
     else:
         method = "get_provider_impl"
 
@@ -247,4 +269,55 @@ async def instantiate_provider(
     impl.__provider_id__ = provider.provider_id
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
+
+    check_protocol_compliance(impl, protocols[provider_spec.api])
+    if (
+        not isinstance(provider_spec, AutoRoutedProviderSpec)
+        and provider_spec.api in additional_protocols
+    ):
+        additional_api = additional_protocols[provider_spec.api]
+        check_protocol_compliance(impl, additional_api)
+
     return impl
+
+
+def check_protocol_compliance(obj: Any, protocol: Any) -> None:
+    missing_methods = []
+
+    mro = type(obj).__mro__
+    for name, value in inspect.getmembers(protocol):
+        if inspect.isfunction(value) and hasattr(value, "__webmethod__"):
+            if not hasattr(obj, name):
+                missing_methods.append((name, "missing"))
+            elif not callable(getattr(obj, name)):
+                missing_methods.append((name, "not_callable"))
+            else:
+                # Check if the method signatures are compatible
+                obj_method = getattr(obj, name)
+                proto_sig = inspect.signature(value)
+                obj_sig = inspect.signature(obj_method)
+
+                proto_params = set(proto_sig.parameters)
+                proto_params.discard("self")
+                obj_params = set(obj_sig.parameters)
+                obj_params.discard("self")
+                if not (proto_params <= obj_params):
+                    print(
+                        f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}"
+                    )
+                    missing_methods.append((name, "signature_mismatch"))
+                else:
+                    # Check if the method is actually implemented in the class
+                    method_owner = next(
+                        (cls for cls in mro if name in cls.__dict__), None
+                    )
+                    if (
+                        method_owner is None
+                        or method_owner.__name__ == protocol.__name__
+                    ):
+                        missing_methods.append((name, "not_actually_implemented"))
+
+    if missing_methods:
+        raise ValueError(
+            f"Provider `{obj.__provider_id__} ({obj.__provider_spec__.api})` does not implement the following methods:\n{missing_methods}"
+        )

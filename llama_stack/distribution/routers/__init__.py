@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, List
+from typing import Any
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from .routing_tables import (
@@ -16,7 +16,6 @@ from .routing_tables import (
 
 async def get_routing_table_impl(
     api: Api,
-    registry: List[RoutableObject],
     impls_by_provider_id: Dict[str, RoutedProtocol],
     _deps,
 ) -> Any:
@@ -28,7 +27,7 @@ async def get_routing_table_impl(
     if api.value not in api_to_tables:
         raise ValueError(f"API {api.value} not found in router map")
 
-    impl = api_to_tables[api.value](registry, impls_by_provider_id)
+    impl = api_to_tables[api.value](impls_by_provider_id)
     await impl.initialize()
     return impl
 

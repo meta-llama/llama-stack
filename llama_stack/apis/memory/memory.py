@@ -8,7 +8,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List, Optional, Protocol
+from typing import List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -42,6 +42,7 @@ class MemoryBankStore(Protocol):
     def get_memory_bank(self, bank_id: str) -> Optional[MemoryBankDef]: ...
 
 
+@runtime_checkable
 class Memory(Protocol):
     memory_bank_store: MemoryBankStore
 
@@ -55,13 +56,6 @@ class Memory(Protocol):
         ttl_seconds: Optional[int] = None,
     ) -> None: ...
 
-    @webmethod(route="/memory/update")
-    async def update_documents(
-        self,
-        bank_id: str,
-        documents: List[MemoryBankDocument],
-    ) -> None: ...
-
     @webmethod(route="/memory/query")
     async def query_documents(
         self,
@@ -69,20 +63,3 @@ class Memory(Protocol):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse: ...
-
-    @webmethod(route="/memory/documents/get", method="GET")
-    async def get_documents(
-        self,
-        bank_id: str,
-        document_ids: List[str],
-    ) -> List[MemoryBankDocument]: ...
-
-    @webmethod(route="/memory/documents/delete", method="DELETE")
-    async def delete_documents(
-        self,
-        bank_id: str,
-        document_ids: List[str],
-    ) -> None: ...
-
-    @webmethod(route="/memory/register_memory_bank")
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...

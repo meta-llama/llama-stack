@@ -4,34 +4,39 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 
-@json_schema_type
 class ModelDef(BaseModel):
     identifier: str = Field(
-        description="A unique identifier for the model type",
+        description="A unique name for the model type",
     )
     llama_model: str = Field(
-        description="Pointer to the core Llama family model",
+        description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
     )
-    provider_id: Optional[str] = Field(
-        default=None, description="The provider instance which serves this model"
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Any additional metadata for this model",
     )
-    # For now, we are only supporting core llama models but as soon as finetuned
-    # and other custom models (for example various quantizations) are allowed, there
-    # will be more metadata fields here
 
 
+@json_schema_type
+class ModelDefWithProvider(ModelDef):
+    provider_id: str = Field(
+        description="The provider ID for this model",
+    )
+
+
+@runtime_checkable
 class Models(Protocol):
     @webmethod(route="/models/list", method="GET")
-    async def list_models(self) -> List[ModelDef]: ...
+    async def list_models(self) -> List[ModelDefWithProvider]: ...
 
     @webmethod(route="/models/get", method="GET")
-    async def get_model(self, identifier: str) -> Optional[ModelDef]: ...
+    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]: ...
 
     @webmethod(route="/models/register", method="POST")
-    async def register_model(self, model: ModelDef) -> None: ...
+    async def register_model(self, model: ModelDefWithProvider) -> None: ...

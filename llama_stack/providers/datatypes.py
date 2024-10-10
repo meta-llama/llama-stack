@@ -10,6 +10,11 @@ from typing import Any, List, Optional, Protocol
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.memory_banks import MemoryBankDef
+
+from llama_stack.apis.models import ModelDef
+from llama_stack.apis.shields import ShieldDef
+
 
 @json_schema_type
 class Api(Enum):
@@ -26,6 +31,30 @@ class Api(Enum):
 
     # built-in API
     inspect = "inspect"
+
+
+class ModelsProtocolPrivate(Protocol):
+    async def list_models(self) -> List[ModelDef]: ...
+
+    async def get_model(self, identifier: str) -> Optional[ModelDef]: ...
+
+    async def register_model(self, model: ModelDef) -> None: ...
+
+
+class ShieldsProtocolPrivate(Protocol):
+    async def list_shields(self) -> List[ShieldDef]: ...
+
+    async def get_shield(self, identifier: str) -> Optional[ShieldDef]: ...
+
+    async def register_shield(self, shield: ShieldDef) -> None: ...
+
+
+class MemoryBanksProtocolPrivate(Protocol):
+    async def list_memory_banks(self) -> List[MemoryBankDef]: ...
+
+    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]: ...
+
+    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...
 
 
 @json_schema_type

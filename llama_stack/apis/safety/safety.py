@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Protocol
+from typing import Any, Dict, List, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
@@ -42,6 +42,7 @@ class ShieldStore(Protocol):
     def get_shield(self, identifier: str) -> ShieldDef: ...
 
 
+@runtime_checkable
 class Safety(Protocol):
     shield_store: ShieldStore
 
@@ -49,6 +50,3 @@ class Safety(Protocol):
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse: ...
-
-    @webmethod(route="/safety/register_shield")
-    async def register_shield(self, shield: ShieldDef) -> None: ...

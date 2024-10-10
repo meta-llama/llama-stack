@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Protocol
+from typing import Dict, List, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
@@ -29,6 +29,7 @@ class HealthInfo(BaseModel):
     # TODO: add a provider level status
 
 
+@runtime_checkable
 class Inspect(Protocol):
     @webmethod(route="/providers/list", method="GET")
     async def list_providers(self) -> Dict[str, ProviderInfo]: ...

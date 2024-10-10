@@ -6,7 +6,16 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -404,6 +413,7 @@ class AgentStepResponse(BaseModel):
     step: Step
 
 
+@runtime_checkable
 class Agents(Protocol):
     @webmethod(route="/agents/create")
     async def create_agent(

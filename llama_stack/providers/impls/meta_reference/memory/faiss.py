@@ -15,6 +15,8 @@ from numpy.typing import NDArray
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+
 from llama_stack.providers.utils.memory.vector_store import (
     ALL_MINILM_L6_V2_DIMENSION,
     BankWithIndex,
@@ -61,7 +63,7 @@ class FaissIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class FaissMemoryImpl(Memory):
+class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: FaissImplConfig) -> None:
         self.config = config
         self.cache = {}
@@ -82,6 +84,16 @@ class FaissMemoryImpl(Memory):
             bank=memory_bank, index=FaissIndex(ALL_MINILM_L6_V2_DIMENSION)
         )
         self.cache[memory_bank.identifier] = index
+
+    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
+        banks = await self.list_memory_banks()
+        for bank in banks:
+            if bank.identifier == identifier:
+                return bank
+        return None
+
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        return [i.bank for i in self.cache.values()]
 
     async def insert_documents(
         self,

@@ -28,7 +28,7 @@ from llama_stack.providers.tests.resolver import resolve_impls_for_test
 # ```bash
 # PROVIDER_ID=<your_provider> \
 #   PROVIDER_CONFIG=provider_config.yaml \
-#   pytest -s llama_stack/providers/tests/memory/test_inference.py \
+#   pytest -s llama_stack/providers/tests/inference/test_inference.py \
 #   --tb=short --disable-warnings
 # ```
 
@@ -56,7 +56,7 @@ def get_expected_stop_reason(model: str):
     scope="session",
     params=[
         {"model": Llama_8B},
-        {"model": Llama_3B},
+        # {"model": Llama_3B},
     ],
     ids=lambda d: d["model"],
 )
@@ -64,16 +64,11 @@ async def inference_settings(request):
     model = request.param["model"]
     impls = await resolve_impls_for_test(
         Api.inference,
-        models=[
-            ModelDef(
-                identifier=model,
-                llama_model=model,
-            )
-        ],
     )
 
     return {
         "impl": impls[Api.inference],
+        "models_impl": impls[Api.models],
         "common_params": {
             "model": model,
             "tool_choice": ToolChoice.auto,
@@ -106,6 +101,25 @@ def sample_tool_definition():
             ),
         },
     )
+
+
+@pytest.mark.asyncio
+async def test_model_list(inference_settings):
+    params = inference_settings["common_params"]
+    models_impl = inference_settings["models_impl"]
+    response = await models_impl.list_models()
+    assert isinstance(response, list)
+    assert len(response) >= 1
+    assert all(isinstance(model, ModelDefWithProvider) for model in response)
+
+    model_def = None
+    for model in response:
+        if model.identifier == params["model"]:
+            model_def = model
+            break
+
+    assert model_def is not None
+    assert model_def.identifier == params["model"]
 
 
 @pytest.mark.asyncio

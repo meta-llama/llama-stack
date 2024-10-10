@@ -12,6 +12,7 @@ from llama_models.sku_list import resolve_model
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.providers.datatypes import ModelDef, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
 )
@@ -24,7 +25,7 @@ from .model_parallel import LlamaModelParallelGenerator
 SEMAPHORE = asyncio.Semaphore(1)
 
 
-class MetaReferenceInferenceImpl(Inference):
+class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
     def __init__(self, config: MetaReferenceImplConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
@@ -39,13 +40,37 @@ class MetaReferenceInferenceImpl(Inference):
         self.generator.start()
 
     async def register_model(self, model: ModelDef) -> None:
-        if model.identifier != self.model.descriptor():
-            raise RuntimeError(
-                f"Model mismatch: {model.identifier} != {self.model.descriptor()}"
+        raise ValueError("Dynamic model registration is not supported")
+
+    async def list_models(self) -> List[ModelDef]:
+        return [
+            ModelDef(
+                identifier=self.model.descriptor(),
+                llama_model=self.model.descriptor(),
             )
+        ]
+
+    async def get_model(self, identifier: str) -> Optional[ModelDef]:
+        if self.model.descriptor() != identifier:
+            return None
+
+        return ModelDef(
+            identifier=self.model.descriptor(),
+            llama_model=self.model.descriptor(),
+        )
 
     async def shutdown(self) -> None:
         self.generator.stop()
+
+    def completion(
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
+    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
+        raise NotImplementedError()
 
     def chat_completion(
         self,
@@ -255,3 +280,10 @@ class MetaReferenceInferenceImpl(Inference):
                     stop_reason=stop_reason,
                 )
             )
+
+    async def embeddings(
+        self,
+        model: str,
+        contents: List[InterleavedTextMedia],
+    ) -> EmbeddingsResponse:
+        raise NotImplementedError()

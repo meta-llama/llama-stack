@@ -32,6 +32,12 @@ RoutableObject = Union[
     MemoryBankDef,
 ]
 
+RoutableObjectWithProvider = Union[
+    ModelDefWithProvider,
+    ShieldDef,
+    MemoryBankDef,
+]
+
 RoutedProtocol = Union[
     Inference,
     Safety,
@@ -63,7 +69,6 @@ class RoutingTableProviderSpec(ProviderSpec):
     docker_image: Optional[str] = None
 
     router_api: Api
-    registry: List[RoutableObject]
     module: str
     pip_packages: List[str] = Field(default_factory=list)
 
@@ -118,25 +123,6 @@ The list of APIs to serve. If not specified, all APIs specified in the provider_
         description="""
 One or more providers to use for each API. The same provider_type (e.g., meta-reference)
 can be instantiated multiple times (with different configs) if necessary.
-""",
-    )
-
-    models: List[ModelDef] = Field(
-        description="""
-List of model definitions to serve. This list may get extended by
-/models/register API calls at runtime.
-""",
-    )
-    shields: List[ShieldDef] = Field(
-        description="""
-List of shield definitions to serve. This list may get extended by
-/shields/register API calls at runtime.
-""",
-    )
-    memory_banks: List[MemoryBankDef] = Field(
-        description="""
-List of memory bank definitions to serve. This list may get extended by
-/memory_banks/register API calls at runtime.
 """,
     )
 

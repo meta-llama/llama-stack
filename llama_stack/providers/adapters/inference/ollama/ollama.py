@@ -15,6 +15,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
@@ -35,7 +36,7 @@ OLLAMA_SUPPORTED_MODELS = {
 }
 
 
-class OllamaInferenceAdapter(Inference):
+class OllamaInferenceAdapter(Inference, Models):
     def __init__(self, url: str) -> None:
         self.url = url
         self.formatter = ChatFormat(Tokenizer.get_instance())

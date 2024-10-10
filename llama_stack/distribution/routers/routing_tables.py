@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
@@ -29,115 +29,145 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> None:
         await p.register_memory_bank(obj)
 
 
+Registry = Dict[str, List[RoutableObjectWithProvider]]
+
+
 # TODO: this routing table maintains state in memory purely. We need to
 # add persistence to it when we add dynamic registration of objects.
 class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
-        registry: List[RoutableObject],
         impls_by_provider_id: Dict[str, RoutedProtocol],
     ) -> None:
-        for obj in registry:
-            if obj.provider_id not in impls_by_provider_id:
-                print(f"{impls_by_provider_id=}")
-                raise ValueError(
-                    f"Provider `{obj.provider_id}` pointed by `{obj.identifier}` not found"
-                )
-
         self.impls_by_provider_id = impls_by_provider_id
-        self.registry = registry
 
-        for p in self.impls_by_provider_id.values():
+    async def initialize(self) -> None:
+        self.registry: Registry = {}
+
+        def add_objects(objs: List[RoutableObjectWithProvider]) -> None:
+            for obj in objs:
+                if obj.identifier not in self.registry:
+                    self.registry[obj.identifier] = []
+
+                self.registry[obj.identifier].append(obj)
+
+        for pid, p in self.impls_by_provider_id.items():
             api = get_impl_api(p)
             if api == Api.inference:
                 p.model_store = self
+                models = await p.list_models()
+                add_objects(
+                    [ModelDefWithProvider(**m.dict(), provider_id=pid) for m in models]
+                )
+
             elif api == Api.safety:
                 p.shield_store = self
+                shields = await p.list_shields()
+                add_objects(
+                    [
+                        ShieldDefWithProvider(**s.dict(), provider_id=pid)
+                        for s in shields
+                    ]
+                )
+
             elif api == Api.memory:
                 p.memory_bank_store = self
+                memory_banks = await p.list_memory_banks()
 
-        self.routing_key_to_object = {}
-        for obj in self.registry:
-            self.routing_key_to_object[obj.identifier] = obj
+                # do in-memory updates due to pesky Annotated unions
+                for m in memory_banks:
+                    m.provider_id = pid
 
-    async def initialize(self) -> None:
-        for obj in self.registry:
-            p = self.impls_by_provider_id[obj.provider_id]
-            await register_object_with_provider(obj, p)
+                add_objects(memory_banks)
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
             await p.shutdown()
 
-    def get_provider_impl(self, routing_key: str) -> Any:
-        if routing_key not in self.routing_key_to_object:
+    def get_provider_impl(
+        self, routing_key: str, provider_id: Optional[str] = None
+    ) -> Any:
+        if routing_key not in self.registry:
             raise ValueError(f"`{routing_key}` not registered")
 
-        obj = self.routing_key_to_object[routing_key]
+        objs = self.registry[routing_key]
+        for obj in objs:
+            if not provider_id or provider_id == obj.provider_id:
+                return self.impls_by_provider_id[obj.provider_id]
+
+        raise ValueError(f"Provider not found for `{routing_key}`")
+
+    def get_object_by_identifier(
+        self, identifier: str
+    ) -> Optional[RoutableObjectWithProvider]:
+        objs = self.registry.get(identifier, [])
+        if not objs:
+            return None
+
+        # kind of ill-defined behavior here, but we'll just return the first one
+        return objs[0]
+
+    async def register_object(self, obj: RoutableObjectWithProvider):
+        entries = self.registry.get(obj.identifier, [])
+        for entry in entries:
+            if entry.provider_id == obj.provider_id:
+                print(f"`{obj.identifier}` already registered with `{obj.provider_id}`")
+                return
+
         if obj.provider_id not in self.impls_by_provider_id:
             raise ValueError(f"Provider `{obj.provider_id}` not found")
-
-        return self.impls_by_provider_id[obj.provider_id]
-
-    def get_object_by_identifier(self, identifier: str) -> Optional[RoutableObject]:
-        for obj in self.registry:
-            if obj.identifier == identifier:
-                return obj
-        return None
-
-    async def register_object(self, obj: RoutableObject):
-        if obj.identifier in self.routing_key_to_object:
-            print(f"`{obj.identifier}` is already registered")
-            return
-
-        if not obj.provider_id:
-            provider_ids = list(self.impls_by_provider_id.keys())
-            if not provider_ids:
-                raise ValueError("No providers found")
-
-            print(f"Picking provider `{provider_ids[0]}` for {obj.identifier}")
-            obj.provider_id = provider_ids[0]
-        else:
-            if obj.provider_id not in self.impls_by_provider_id:
-                raise ValueError(f"Provider `{obj.provider_id}` not found")
 
         p = self.impls_by_provider_id[obj.provider_id]
         await register_object_with_provider(obj, p)
 
-        self.routing_key_to_object[obj.identifier] = obj
-        self.registry.append(obj)
+        if obj.identifier not in self.registry:
+            self.registry[obj.identifier] = []
+        self.registry[obj.identifier].append(obj)
 
         # TODO: persist this to a store
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
-    async def list_models(self) -> List[ModelDef]:
-        return self.registry
+    async def list_models(self) -> List[ModelDefWithProvider]:
+        objects = []
+        for objs in self.registry.values():
+            objects.extend(objs)
+        return objects
 
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
+    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]:
         return self.get_object_by_identifier(identifier)
 
-    async def register_model(self, model: ModelDef) -> None:
+    async def register_model(self, model: ModelDefWithProvider) -> None:
         await self.register_object(model)
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> List[ShieldDef]:
-        return self.registry
+        objects = []
+        for objs in self.registry.values():
+            objects.extend(objs)
+        return objects
 
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDef]:
+    async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]:
         return self.get_object_by_identifier(shield_type)
 
-    async def register_shield(self, shield: ShieldDef) -> None:
+    async def register_shield(self, shield: ShieldDefWithProvider) -> None:
         await self.register_object(shield)
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
-        return self.registry
+    async def list_memory_banks(self) -> List[MemoryBankDefWithProvider]:
+        objects = []
+        for objs in self.registry.values():
+            objects.extend(objs)
+        return objects
 
-    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
+    async def get_memory_bank(
+        self, identifier: str
+    ) -> Optional[MemoryBankDefWithProvider]:
         return self.get_object_by_identifier(identifier)
 
-    async def register_memory_bank(self, bank: MemoryBankDef) -> None:
-        await self.register_object(bank)
+    async def register_memory_bank(
+        self, memory_bank: MemoryBankDefWithProvider
+    ) -> None:
+        await self.register_object(memory_bank)
