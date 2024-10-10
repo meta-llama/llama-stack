@@ -109,3 +109,10 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
             "stream": request.stream,
             **get_sampling_options(request),
         }
+
+    async def embeddings(
+        self,
+        model: str,
+        contents: List[InterleavedTextMedia],
+    ) -> EmbeddingsResponse:
+        raise NotImplementedError()

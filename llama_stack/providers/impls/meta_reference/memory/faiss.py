@@ -85,13 +85,6 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = index
 
-    async def get_memory_bank(self, identifier: str) -> Optional[MemoryBankDef]:
-        banks = await self.list_memory_banks()
-        for bank in banks:
-            if bank.identifier == identifier:
-                return bank
-        return None
-
     async def list_memory_banks(self) -> List[MemoryBankDef]:
         return [i.bank for i in self.cache.values()]
 

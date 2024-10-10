@@ -63,19 +63,6 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             )
         ]
 
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
-        model = self.huggingface_repo_to_llama_model_id.get(self.model_id)
-        if model != identifier:
-            return None
-
-        return ModelDef(
-            identifier=model,
-            llama_model=model,
-            metadata={
-                "huggingface_repo": self.model_id,
-            },
-        )
-
     async def shutdown(self) -> None:
         pass
 

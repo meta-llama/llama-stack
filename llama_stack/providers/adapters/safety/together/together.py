@@ -8,6 +8,7 @@ from together import Together
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 
 from .config import TogetherSafetyConfig
 
@@ -19,7 +20,7 @@ TOGETHER_SHIELD_MODEL_MAP = {
 }
 
 
-class TogetherSafetyImpl(Safety, NeedsRequestProviderData):
+class TogetherSafetyImpl(Safety, NeedsRequestProviderData, ShieldsProtocolPrivate):
     def __init__(self, config: TogetherSafetyConfig) -> None:
         self.config = config
 
@@ -30,8 +31,16 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData):
         pass
 
     async def register_shield(self, shield: ShieldDef) -> None:
-        if shield.type != ShieldType.llama_guard.value:
-            raise ValueError(f"Unsupported safety shield type: {shield.type}")
+        raise ValueError("Registering dynamic shields is not supported")
+
+    async def list_shields(self) -> List[ShieldDef]:
+        return [
+            ShieldDef(
+                identifier=ShieldType.llama_guard.value,
+                type=ShieldType.llama_guard.value,
+                params={},
+            )
+        ]
 
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
@@ -86,7 +95,6 @@ async def get_safety_response(
     if parts[0] == "unsafe":
         return SafetyViolation(
             violation_level=ViolationLevel.ERROR,
-            user_message="unsafe",
             metadata={"violation_type": parts[1]},
         )
 

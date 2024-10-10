@@ -85,7 +85,6 @@ class MemoryClient(Memory):
 
 
 async def run_main(host: str, port: int, stream: bool):
-    client = MemoryClient(f"http://{host}:{port}")
     banks_client = MemoryBanksClient(f"http://{host}:{port}")
 
     bank = VectorMemoryBankDef(
@@ -95,7 +94,7 @@ async def run_main(host: str, port: int, stream: bool):
         chunk_size_in_tokens=512,
         overlap_size_in_tokens=64,
     )
-    await client.register_memory_bank(bank)
+    await banks_client.register_memory_bank(bank)
 
     retrieved_bank = await banks_client.get_memory_bank(bank.identifier)
     assert retrieved_bank is not None
@@ -129,6 +128,8 @@ async def run_main(host: str, port: int, stream: bool):
         )
         for i, path in enumerate(files)
     ]
+
+    client = MemoryClient(f"http://{host}:{port}")
 
     # insert some documents
     await client.insert_documents(

@@ -15,7 +15,8 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
+
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
@@ -36,7 +37,7 @@ OLLAMA_SUPPORTED_MODELS = {
 }
 
 
-class OllamaInferenceAdapter(Inference, Models):
+class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, url: str) -> None:
         self.url = url
         self.formatter = ChatFormat(Tokenizer.get_instance())
@@ -58,26 +59,30 @@ class OllamaInferenceAdapter(Inference, Models):
         pass
 
     async def register_model(self, model: ModelDef) -> None:
-        if model.identifier not in OLLAMA_SUPPORTED_MODELS:
-            raise ValueError(
-                f"Unsupported model {model.identifier}. Supported models: {OLLAMA_SUPPORTED_MODELS.keys()}"
+        raise ValueError("Dynamic model registration is not supported")
+
+    async def list_models(self) -> List[ModelDef]:
+        ollama_to_llama = {v: k for k, v in OLLAMA_SUPPORTED_MODELS.items()}
+
+        ret = []
+        res = await self.client.ps()
+        for r in res["models"]:
+            if r["model"] not in ollama_to_llama:
+                print(f"Ollama is running a model unknown to Llama Stack: {r['model']}")
+                continue
+
+            llama_model = ollama_to_llama[r["model"]]
+            ret.append(
+                ModelDef(
+                    identifier=llama_model,
+                    llama_model=llama_model,
+                    metadata={
+                        "ollama_model": r["model"],
+                    },
+                )
             )
 
-        ollama_model = OLLAMA_SUPPORTED_MODELS[model.identifier]
-        res = await self.client.ps()
-        need_model_pull = True
-        for r in res["models"]:
-            if ollama_model == r["model"]:
-                need_model_pull = False
-                break
-
-        print(f"Ollama model `{ollama_model}` needs pull -> {need_model_pull}")
-        if need_model_pull:
-            print(f"Pulling model: {ollama_model}")
-            status = await self.client.pull(ollama_model)
-            assert (
-                status["status"] == "success"
-            ), f"Failed to pull model {self.model} in ollama"
+        return ret
 
     def completion(
         self,
@@ -161,3 +166,10 @@ class OllamaInferenceAdapter(Inference, Models):
             request, stream, self.formatter
         ):
             yield chunk
+
+    async def embeddings(
+        self,
+        model: str,
+        contents: List[InterleavedTextMedia],
+    ) -> EmbeddingsResponse:
+        raise NotImplementedError()

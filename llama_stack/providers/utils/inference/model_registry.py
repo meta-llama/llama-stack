@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from llama_models.sku_list import resolve_model
 
@@ -39,9 +39,3 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         for llama_model, provider_model in self.stack_to_provider_models_map.items():
             models.append(ModelDef(identifier=llama_model, llama_model=llama_model))
         return models
-
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
-        if identifier not in self.stack_to_provider_models_map:
-            return None
-
-        return ModelDef(identifier=identifier, llama_model=identifier)

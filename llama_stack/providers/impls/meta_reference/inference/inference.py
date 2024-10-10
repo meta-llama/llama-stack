@@ -50,15 +50,6 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             )
         ]
 
-    async def get_model(self, identifier: str) -> Optional[ModelDef]:
-        if self.model.descriptor() != identifier:
-            return None
-
-        return ModelDef(
-            identifier=self.model.descriptor(),
-            llama_model=self.model.descriptor(),
-        )
-
     async def shutdown(self) -> None:
         self.generator.stop()
 
