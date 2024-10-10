@@ -154,9 +154,6 @@ class StackConfigure(Subcommand):
                 image_name=image_name,
                 apis=list(build_config.distribution_spec.providers.keys()),
                 providers={},
-                models=[],
-                shields=[],
-                memory_banks=[],
             )
 
         config = configure_api_providers(config, build_config.distribution_spec)
