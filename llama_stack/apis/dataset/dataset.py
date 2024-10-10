@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# from enum import Enum
 from typing import Any, Dict, Optional, Protocol
 
 from llama_models.llama3.api.datatypes import URL
