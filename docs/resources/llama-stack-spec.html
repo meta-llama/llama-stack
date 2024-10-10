@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-08 15:18:57.600111"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-09 21:10:09.073430"
     },
     "servers": [
         {
@@ -521,39 +521,6 @@
                 }
             }
         },
-        "/memory/documents/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteDocumentsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/inference/embeddings": {
             "post": {
                 "responses": {
@@ -908,54 +875,6 @@
                 ]
             }
         },
-        "/memory/documents/get": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GetDocumentsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/evaluate/job/artifacts": {
             "get": {
                 "responses": {
@@ -1168,7 +1087,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ModelDef"
+                                            "$ref": "#/components/schemas/ModelDefWithProvider"
                                         },
                                         {
                                             "type": "null"
@@ -1213,49 +1132,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "type": "object",
-                                            "properties": {
-                                                "identifier": {
-                                                    "type": "string"
-                                                },
-                                                "type": {
-                                                    "type": "string"
-                                                },
-                                                "provider_id": {
-                                                    "type": "string"
-                                                },
-                                                "params": {
-                                                    "type": "object",
-                                                    "additionalProperties": {
-                                                        "oneOf": [
-                                                            {
-                                                                "type": "null"
-                                                            },
-                                                            {
-                                                                "type": "boolean"
-                                                            },
-                                                            {
-                                                                "type": "number"
-                                                            },
-                                                            {
-                                                                "type": "string"
-                                                            },
-                                                            {
-                                                                "type": "array"
-                                                            },
-                                                            {
-                                                                "type": "object"
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "identifier",
-                                                "type",
-                                                "params"
-                                            ]
+                                            "$ref": "#/components/schemas/ShieldDefWithProvider"
                                         },
                                         {
                                             "type": "null"
@@ -1586,7 +1463,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ModelDef"
+                                    "$ref": "#/components/schemas/ModelDefWithProvider"
                                 }
                             }
                         }
@@ -1685,7 +1562,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ShieldDef"
+                                    "$ref": "#/components/schemas/ShieldDefWithProvider"
                                 }
                             }
                         }
@@ -1828,7 +1705,7 @@
                     }
                 },
                 "tags": [
-                    "Memory"
+                    "MemoryBanks"
                 ],
                 "parameters": [
                     {
@@ -1853,7 +1730,7 @@
                 }
             }
         },
-        "/inference/register_model": {
+        "/models/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -1886,7 +1763,7 @@
                 }
             }
         },
-        "/safety/register_shield": {
+        "/shields/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2072,39 +1949,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory/update": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateDocumentsRequest"
                             }
                         }
                     },
@@ -4357,25 +4201,6 @@
                     "dataset_uuid"
                 ]
             },
-            "DeleteDocumentsRequest": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
-                    "document_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id",
-                    "document_ids"
-                ]
-            },
             "EmbeddingsRequest": {
                 "type": "object",
                 "properties": {
@@ -4522,7 +4347,8 @@
                         "type": "string"
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "default": ""
                     },
                     "type": {
                         "type": "string",
@@ -4533,6 +4359,7 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
+                    "provider_id",
                     "type"
                 ]
             },
@@ -4543,7 +4370,8 @@
                         "type": "string"
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "default": ""
                     },
                     "type": {
                         "type": "string",
@@ -4554,6 +4382,7 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
+                    "provider_id",
                     "type"
                 ]
             },
@@ -4564,7 +4393,8 @@
                         "type": "string"
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "default": ""
                     },
                     "type": {
                         "type": "string",
@@ -4575,6 +4405,7 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
+                    "provider_id",
                     "type"
                 ]
             },
@@ -4630,7 +4461,8 @@
                         "type": "string"
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "default": ""
                     },
                     "type": {
                         "type": "string",
@@ -4650,6 +4482,7 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
+                    "provider_id",
                     "type",
                     "embedding_model",
                     "chunk_size_in_tokens"
@@ -4678,89 +4511,6 @@
                 "additionalProperties": false,
                 "required": [
                     "step"
-                ]
-            },
-            "GetDocumentsRequest": {
-                "type": "object",
-                "properties": {
-                    "document_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "document_ids"
-                ]
-            },
-            "MemoryBankDocument": {
-                "type": "object",
-                "properties": {
-                    "document_id": {
-                        "type": "string"
-                    },
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "document_id",
-                    "content",
-                    "metadata"
                 ]
             },
             "EvaluationJobArtifactsResponse": {
@@ -4800,7 +4550,7 @@
                     "job_uuid"
                 ]
             },
-            "ModelDef": {
+            "ModelDefWithProvider": {
                 "type": "object",
                 "properties": {
                     "identifier": {
@@ -4809,6 +4559,31 @@
                     "llama_model": {
                         "type": "string"
                     },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
                     "provider_id": {
                         "type": "string"
                     }
@@ -4816,7 +4591,55 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "llama_model"
+                    "llama_model",
+                    "metadata",
+                    "provider_id"
+                ]
+            },
+            "ShieldDefWithProvider": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "type",
+                    "params",
+                    "provider_id"
                 ]
             },
             "Trace": {
@@ -4981,6 +4804,74 @@
                     "status"
                 ]
             },
+            "MemoryBankDocument": {
+                "type": "object",
+                "properties": {
+                    "document_id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "document_id",
+                    "content",
+                    "metadata"
+                ]
+            },
             "InsertDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -5040,51 +4931,6 @@
                     "route",
                     "method",
                     "provider_types"
-                ]
-            },
-            "ShieldDef": {
-                "type": "object",
-                "properties": {
-                    "identifier": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "params": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "identifier",
-                    "type",
-                    "params"
                 ]
             },
             "LogSeverity": {
@@ -5696,7 +5542,7 @@
                 "type": "object",
                 "properties": {
                     "model": {
-                        "$ref": "#/components/schemas/ModelDef"
+                        "$ref": "#/components/schemas/ModelDefWithProvider"
                     }
                 },
                 "additionalProperties": false,
@@ -5708,49 +5554,7 @@
                 "type": "object",
                 "properties": {
                     "shield": {
-                        "type": "object",
-                        "properties": {
-                            "identifier": {
-                                "type": "string"
-                            },
-                            "type": {
-                                "type": "string"
-                            },
-                            "provider_id": {
-                                "type": "string"
-                            },
-                            "params": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "identifier",
-                            "type",
-                            "params"
-                        ]
+                        "$ref": "#/components/schemas/ShieldDefWithProvider"
                     }
                 },
                 "additionalProperties": false,
@@ -6260,25 +6064,6 @@
                     "synthetic_data"
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
-            },
-            "UpdateDocumentsRequest": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
-                    "documents": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MemoryBankDocument"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id",
-                    "documents"
-                ]
             }
         },
         "responses": {}
@@ -6290,49 +6075,49 @@
     ],
     "tags": [
         {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Evaluations"
+            "name": "RewardScoring"
         },
         {
             "name": "Memory"
         },
         {
-            "name": "Safety"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "MemoryBanks"
+            "name": "SyntheticDataGeneration"
         },
         {
             "name": "Models"
         },
         {
-            "name": "Shields"
+            "name": "Safety"
         },
         {
-            "name": "Inspect"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Telemetry"
+            "name": "BatchInference"
         },
         {
             "name": "Agents"
         },
         {
-            "name": "RewardScoring"
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Evaluations"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "BuiltinTool",
@@ -6607,10 +6392,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDatasetRequest\" />"
         },
         {
-            "name": "DeleteDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDocumentsRequest\" />"
-        },
-        {
             "name": "EmbeddingsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsRequest\" />"
         },
@@ -6663,14 +6444,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentStepResponse\" />"
         },
         {
-            "name": "GetDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetDocumentsRequest\" />"
-        },
-        {
-            "name": "MemoryBankDocument",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
-        },
-        {
             "name": "EvaluationJobArtifactsResponse",
             "description": "Artifacts of a evaluation job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobArtifactsResponse\" />"
         },
@@ -6683,8 +6456,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
-            "name": "ModelDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDef\" />"
+            "name": "ModelDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDefWithProvider\" />"
+        },
+        {
+            "name": "ShieldDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefWithProvider\" />"
         },
         {
             "name": "Trace",
@@ -6719,6 +6496,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
         },
         {
+            "name": "MemoryBankDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
+        },
+        {
             "name": "InsertDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
         },
@@ -6729,10 +6510,6 @@
         {
             "name": "RouteInfo",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RouteInfo\" />"
-        },
-        {
-            "name": "ShieldDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDef\" />"
         },
         {
             "name": "LogSeverity",
@@ -6861,10 +6638,6 @@
         {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
-        },
-        {
-            "name": "UpdateDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateDocumentsRequest\" />"
         }
     ],
     "x-tagGroups": [
@@ -6929,7 +6702,6 @@
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
                 "DeleteDatasetRequest",
-                "DeleteDocumentsRequest",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
@@ -6944,7 +6716,6 @@
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
-                "GetDocumentsRequest",
                 "GraphMemoryBankDef",
                 "HealthInfo",
                 "ImageMedia",
@@ -6959,7 +6730,7 @@
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",
-                "ModelDef",
+                "ModelDefWithProvider",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
@@ -6991,7 +6762,7 @@
                 "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
-                "ShieldDef",
+                "ShieldDefWithProvider",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
@@ -7019,7 +6790,6 @@
                 "Turn",
                 "URL",
                 "UnstructuredLogEvent",
-                "UpdateDocumentsRequest",
                 "UserMessage",
                 "VectorMemoryBankDef",
                 "ViolationLevel",

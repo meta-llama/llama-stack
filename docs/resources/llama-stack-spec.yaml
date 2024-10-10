@@ -624,19 +624,6 @@ components:
       required:
       - dataset_uuid
       type: object
-    DeleteDocumentsRequest:
-      additionalProperties: false
-      properties:
-        bank_id:
-          type: string
-        document_ids:
-          items:
-            type: string
-          type: array
-      required:
-      - bank_id
-      - document_ids
-      type: object
     DialogGenerations:
       additionalProperties: false
       properties:
@@ -833,22 +820,13 @@ components:
             type: string
           type: array
       type: object
-    GetDocumentsRequest:
-      additionalProperties: false
-      properties:
-        document_ids:
-          items:
-            type: string
-          type: array
-      required:
-      - document_ids
-      type: object
     GraphMemoryBankDef:
       additionalProperties: false
       properties:
         identifier:
           type: string
         provider_id:
+          default: ''
           type: string
         type:
           const: graph
@@ -856,6 +834,7 @@ components:
           type: string
       required:
       - identifier
+      - provider_id
       - type
       type: object
     HealthInfo:
@@ -929,6 +908,7 @@ components:
         identifier:
           type: string
         provider_id:
+          default: ''
           type: string
         type:
           const: keyvalue
@@ -936,6 +916,7 @@ components:
           type: string
       required:
       - identifier
+      - provider_id
       - type
       type: object
     KeywordMemoryBankDef:
@@ -944,6 +925,7 @@ components:
         identifier:
           type: string
         provider_id:
+          default: ''
           type: string
         type:
           const: keyword
@@ -951,6 +933,7 @@ components:
           type: string
       required:
       - identifier
+      - provider_id
       - type
       type: object
     LogEventRequest:
@@ -1234,18 +1217,30 @@ components:
       - value
       - unit
       type: object
-    ModelDef:
+    ModelDefWithProvider:
       additionalProperties: false
       properties:
         identifier:
           type: string
         llama_model:
           type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
         provider_id:
           type: string
       required:
       - identifier
       - llama_model
+      - metadata
+      - provider_id
       type: object
     OptimizerConfig:
       additionalProperties: false
@@ -1533,7 +1528,7 @@ components:
       additionalProperties: false
       properties:
         model:
-          $ref: '#/components/schemas/ModelDef'
+          $ref: '#/components/schemas/ModelDefWithProvider'
       required:
       - model
       type: object
@@ -1541,29 +1536,7 @@ components:
       additionalProperties: false
       properties:
         shield:
-          additionalProperties: false
-          properties:
-            identifier:
-              type: string
-            params:
-              additionalProperties:
-                oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
-              type: object
-            provider_id:
-              type: string
-            type:
-              type: string
-          required:
-          - identifier
-          - type
-          - params
-          type: object
+          $ref: '#/components/schemas/ShieldDefWithProvider'
       required:
       - shield
       type: object
@@ -1856,7 +1829,7 @@ components:
       - step_id
       - step_type
       type: object
-    ShieldDef:
+    ShieldDefWithProvider:
       additionalProperties: false
       properties:
         identifier:
@@ -1879,6 +1852,7 @@ components:
       - identifier
       - type
       - params
+      - provider_id
       type: object
     SpanEndPayload:
       additionalProperties: false
@@ -2446,19 +2420,6 @@ components:
       - message
       - severity
       type: object
-    UpdateDocumentsRequest:
-      additionalProperties: false
-      properties:
-        bank_id:
-          type: string
-        documents:
-          items:
-            $ref: '#/components/schemas/MemoryBankDocument'
-          type: array
-      required:
-      - bank_id
-      - documents
-      type: object
     UserMessage:
       additionalProperties: false
       properties:
@@ -2500,6 +2461,7 @@ components:
         overlap_size_in_tokens:
           type: integer
         provider_id:
+          default: ''
           type: string
         type:
           const: vector
@@ -2507,6 +2469,7 @@ components:
           type: string
       required:
       - identifier
+      - provider_id
       - type
       - embedding_model
       - chunk_size_in_tokens
@@ -2544,7 +2507,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-08 15:18:57.600111"
+    \ draft and subject to change.\n                Generated at 2024-10-09 21:10:09.073430"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3166,78 +3129,6 @@ paths:
           description: OK
       tags:
       - Inference
-  /inference/register_model:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterModelRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Models
-  /memory/documents/delete:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Memory
-  /memory/documents/get:
-    post:
-      parameters:
-      - in: query
-        name: bank_id
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/MemoryBankDocument'
-          description: OK
-      tags:
-      - Memory
   /memory/insert:
     post:
       parameters:
@@ -3281,27 +3172,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryDocumentsResponse'
-          description: OK
-      tags:
-      - Memory
-  /memory/update:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateDocumentsRequest'
-        required: true
-      responses:
-        '200':
           description: OK
       tags:
       - Memory
@@ -3378,7 +3248,7 @@ paths:
         '200':
           description: OK
       tags:
-      - Memory
+      - MemoryBanks
   /models/get:
     get:
       parameters:
@@ -3400,7 +3270,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ModelDef'
+                - $ref: '#/components/schemas/ModelDefWithProvider'
                 - type: 'null'
           description: OK
       tags:
@@ -3420,7 +3290,28 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ModelDef'
+                $ref: '#/components/schemas/ModelDefWithProvider'
+          description: OK
+      tags:
+      - Models
+  /models/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterModelRequest'
+        required: true
+      responses:
+        '200':
           description: OK
       tags:
       - Models
@@ -3655,27 +3546,6 @@ paths:
           description: OK
       tags:
       - Inspect
-  /safety/register_shield:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterShieldRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Shields
   /safety/run_shield:
     post:
       parameters:
@@ -3722,29 +3592,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - additionalProperties: false
-                  properties:
-                    identifier:
-                      type: string
-                    params:
-                      additionalProperties:
-                        oneOf:
-                        - type: 'null'
-                        - type: boolean
-                        - type: number
-                        - type: string
-                        - type: array
-                        - type: object
-                      type: object
-                    provider_id:
-                      type: string
-                    type:
-                      type: string
-                  required:
-                  - identifier
-                  - type
-                  - params
-                  type: object
+                - $ref: '#/components/schemas/ShieldDefWithProvider'
                 - type: 'null'
           description: OK
       tags:
@@ -3764,7 +3612,28 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ShieldDef'
+                $ref: '#/components/schemas/ShieldDefWithProvider'
+          description: OK
+      tags:
+      - Shields
+  /shields/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterShieldRequest'
+        required: true
+      responses:
+        '200':
           description: OK
       tags:
       - Shields
@@ -3843,21 +3712,21 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: BatchInference
-- name: Datasets
-- name: Inference
-- name: Evaluations
-- name: Memory
-- name: Safety
-- name: PostTraining
-- name: MemoryBanks
-- name: Models
-- name: Shields
-- name: Inspect
-- name: SyntheticDataGeneration
-- name: Telemetry
-- name: Agents
 - name: RewardScoring
+- name: Memory
+- name: SyntheticDataGeneration
+- name: Models
+- name: Safety
+- name: BatchInference
+- name: Agents
+- name: MemoryBanks
+- name: Shields
+- name: Datasets
+- name: Evaluations
+- name: Inspect
+- name: PostTraining
+- name: Telemetry
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4070,9 +3939,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDatasetRequest"
     />
   name: DeleteDatasetRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDocumentsRequest"
-    />
-  name: DeleteDocumentsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
@@ -4113,12 +3979,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
   name: AgentStepResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/GetDocumentsRequest"
-    />
-  name: GetDocumentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
-    />
-  name: MemoryBankDocument
 - description: 'Artifacts of a evaluation job.
 
 
@@ -4131,8 +3991,12 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
     />
   name: EvaluationJobStatusResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/ModelDef" />
-  name: ModelDef
+- description: <SchemaDefinition schemaRef="#/components/schemas/ModelDefWithProvider"
+    />
+  name: ModelDefWithProvider
+- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefWithProvider"
+    />
+  name: ShieldDefWithProvider
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: 'Checkpoint created during training runs
@@ -4165,6 +4029,9 @@ tags:
   name: PostTrainingJob
 - description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
   name: HealthInfo
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
+    />
+  name: MemoryBankDocument
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
@@ -4172,8 +4039,6 @@ tags:
   name: ProviderInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/RouteInfo" />
   name: RouteInfo
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDef" />
-  name: ShieldDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogSeverity" />
   name: LogSeverity
 - description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
@@ -4270,9 +4135,6 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
     />'
   name: SyntheticDataGenerationResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateDocumentsRequest"
-    />
-  name: UpdateDocumentsRequest
 x-tagGroups:
 - name: Operations
   tags:
@@ -4331,7 +4193,6 @@ x-tagGroups:
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
   - DeleteDatasetRequest
-  - DeleteDocumentsRequest
   - DialogGenerations
   - DoraFinetuningConfig
   - EmbeddingsRequest
@@ -4346,7 +4207,6 @@ x-tagGroups:
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
-  - GetDocumentsRequest
   - GraphMemoryBankDef
   - HealthInfo
   - ImageMedia
@@ -4361,7 +4221,7 @@ x-tagGroups:
   - MemoryRetrievalStep
   - MemoryToolDefinition
   - MetricEvent
-  - ModelDef
+  - ModelDefWithProvider
   - OptimizerConfig
   - PhotogenToolDefinition
   - PostTrainingJob
@@ -4393,7 +4253,7 @@ x-tagGroups:
   - SearchToolDefinition
   - Session
   - ShieldCallStep
-  - ShieldDef
+  - ShieldDefWithProvider
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus
@@ -4421,7 +4281,6 @@ x-tagGroups:
   - Turn
   - URL
   - UnstructuredLogEvent
-  - UpdateDocumentsRequest
   - UserMessage
   - VectorMemoryBankDef
   - ViolationLevel

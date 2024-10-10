@@ -41,20 +41,6 @@ async def safety_settings():
     }
 
 
-@pytest.fixture
-def sample_tool_definition():
-    return ToolDefinition(
-        tool_name="get_weather",
-        description="Get the current weather",
-        parameters={
-            "location": ToolParamDefinition(
-                param_type="string",
-                description="The city and state, e.g. San Francisco, CA",
-            ),
-        },
-    )
-
-
 @pytest.mark.asyncio
 async def test_shield_list(safety_settings):
     shields_impl = safety_settings["shields_impl"]
