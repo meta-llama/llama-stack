@@ -81,6 +81,8 @@ async def register_memory_bank(banks_impl: MemoryBanks):
 
 @pytest.mark.asyncio
 async def test_banks_list(memory_settings):
+    # NOTE: this needs you to ensure that you are starting from a clean state
+    # but so far we don't have an unregister API unfortunately, so be careful
     banks_impl = memory_settings["memory_banks_impl"]
     response = await banks_impl.list_memory_banks()
     assert isinstance(response, list)
