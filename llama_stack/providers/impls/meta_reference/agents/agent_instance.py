@@ -24,6 +24,7 @@ from termcolor import cprint
 from llama_stack.apis.agents import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 
 from llama_stack.providers.utils.kvstore import KVStore
@@ -56,6 +57,7 @@ class ChatAgent(ShieldRunnerMixin):
         agent_config: AgentConfig,
         inference_api: Inference,
         memory_api: Memory,
+        memory_banks_api: MemoryBanks,
         safety_api: Safety,
         persistence_store: KVStore,
     ):
@@ -63,6 +65,7 @@ class ChatAgent(ShieldRunnerMixin):
         self.agent_config = agent_config
         self.inference_api = inference_api
         self.memory_api = memory_api
+        self.memory_banks_api = memory_banks_api
         self.safety_api = safety_api
         self.storage = AgentPersistence(agent_id, persistence_store)
 
@@ -643,7 +646,7 @@ class ChatAgent(ShieldRunnerMixin):
                 embedding_model="all-MiniLM-L6-v2",
                 chunk_size_in_tokens=512,
             )
-            await self.memory_api.register_memory_bank(memory_bank)
+            await self.memory_banks_api.register_memory_bank(memory_bank)
             await self.storage.add_memory_bank_to_session(session_id, bank_id)
         else:
             bank_id = session_info.memory_bank_id
