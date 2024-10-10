@@ -137,3 +137,25 @@ class MetaReferenceAgentsImpl(Agents):
         agent = await self.get_agent(request.agent_id)
         async for event in agent.create_and_execute_turn(request):
             yield event
+
+    async def get_agents_turn(self, agent_id: str, turn_id: str) -> Turn:
+        raise NotImplementedError()
+
+    async def get_agents_step(
+        self, agent_id: str, turn_id: str, step_id: str
+    ) -> AgentStepResponse:
+        raise NotImplementedError()
+
+    async def get_agents_session(
+        self,
+        agent_id: str,
+        session_id: str,
+        turn_ids: Optional[List[str]] = None,
+    ) -> Session:
+        raise NotImplementedError()
+
+    async def delete_agents_session(self, agent_id: str, session_id: str) -> None:
+        raise NotImplementedError()
+
+    async def delete_agents(self, agent_id: str) -> None:
+        raise NotImplementedError()

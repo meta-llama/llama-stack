@@ -21,5 +21,4 @@ providers:
 # this is a place to provide such data.
 provider_data:
   "test-together":
-    together_api_key:
-      0xdeadbeefputrealapikeyhere
+    together_api_key: 0xdeadbeefputrealapikeyhere
