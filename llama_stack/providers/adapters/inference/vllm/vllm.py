@@ -50,12 +50,12 @@ class VLLMInferenceAdapter(ModelRegistryHelper, Inference):
         pass
 
     def completion(
-            self,
-            model: str,
-            content: InterleavedTextMedia,
-            sampling_params: Optional[SamplingParams] = SamplingParams(),
-            stream: Optional[bool] = False,
-            logprobs: Optional[LogProbConfig] = None,
+        self,
+        model: str,
+        content: InterleavedTextMedia,
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        stream: Optional[bool] = False,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
         raise NotImplementedError()
 
