@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 from typing import AbstractSet, Dict
 
-from .dataset import BaseDataset
+from llama_stack.apis.dataset import BaseDataset
 
 
 class DatasetRegistry:

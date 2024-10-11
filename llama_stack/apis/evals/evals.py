@@ -33,6 +33,7 @@ class EvaluateTaskConfig(BaseModel):
 class EvaluateResponse(BaseModel):
     """Scores for evaluation."""
 
+    preprocess_output: GenerationOutput
     metrics: Dict[str, str]
 
 
