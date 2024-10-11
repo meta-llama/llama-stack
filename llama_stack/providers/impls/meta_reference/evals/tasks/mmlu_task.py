@@ -111,7 +111,14 @@ def normalize_extracted_answer(extracted_answer: str) -> str:
     )
 
 
-class MMLUTask(BaseTask):
+class MMLUTask(
+    BaseTask[
+        DictSample,
+        InferencePreprocessedSample,
+        InferencePredictionSample,
+        InferencePostprocessedSample,
+    ]
+):
     """
     MMLU Task.
     """
@@ -120,6 +127,7 @@ class MMLUTask(BaseTask):
         super().__init__(dataset, *args, **kwargs)
 
     def preprocess_sample(self, sample):
+        print(sample)
         content = QUERY_TEMPLATE_MULTICHOICE.format(**sample)
         return {
             "role": "user",
