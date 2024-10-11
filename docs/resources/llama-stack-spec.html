@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-02 15:40:53.008257"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-10 15:29:56.831109"
     },
     "servers": [
         {
@@ -355,7 +355,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "text/event-stream": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
                                 }
@@ -415,46 +415,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/CreateDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory/create": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBank"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CreateMemoryBankRequest"
                             }
                         }
                     },
@@ -554,79 +514,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/DeleteDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory/documents/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteDocumentsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory/drop": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DropMemoryBankRequest"
                             }
                         }
                     },
@@ -988,54 +875,6 @@
                 ]
             }
         },
-        "/memory/documents/get": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBankDocument"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GetDocumentsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/evaluate/job/artifacts": {
             "get": {
                 "responses": {
@@ -1180,7 +1019,7 @@
                 ]
             }
         },
-        "/memory/get": {
+        "/memory_banks/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1190,7 +1029,20 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/MemoryBank"
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/VectorMemoryBankDef"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/KeyValueMemoryBankDef"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/KeywordMemoryBankDef"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/GraphMemoryBankDef"
+                                                }
+                                            ]
                                         },
                                         {
                                             "type": "null"
@@ -1202,11 +1054,11 @@
                     }
                 },
                 "tags": [
-                    "Memory"
+                    "MemoryBanks"
                 ],
                 "parameters": [
                     {
-                        "name": "bank_id",
+                        "name": "identifier",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1235,7 +1087,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ModelServingSpec"
+                                            "$ref": "#/components/schemas/ModelDefWithProvider"
                                         },
                                         {
                                             "type": "null"
@@ -1251,56 +1103,11 @@
                 ],
                 "parameters": [
                     {
-                        "name": "core_model_id",
+                        "name": "identifier",
                         "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/memory_banks/get": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/MemoryBankSpec"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "bank_type",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/MemoryBankType"
                         }
                     },
                     {
@@ -1325,7 +1132,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ShieldSpec"
+                                            "$ref": "#/components/schemas/ShieldDefWithProvider"
                                         },
                                         {
                                             "type": "null"
@@ -1613,7 +1420,20 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/MemoryBankSpec"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/VectorMemoryBankDef"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/KeyValueMemoryBankDef"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/KeywordMemoryBankDef"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/GraphMemoryBankDef"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -1621,36 +1441,6 @@
                 },
                 "tags": [
                     "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/memory/list": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MemoryBank"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Memory"
                 ],
                 "parameters": [
                     {
@@ -1673,7 +1463,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ModelServingSpec"
+                                    "$ref": "#/components/schemas/ModelDefWithProvider"
                                 }
                             }
                         }
@@ -1772,7 +1562,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ShieldSpec"
+                                    "$ref": "#/components/schemas/ShieldDefWithProvider"
                                 }
                             }
                         }
@@ -1900,6 +1690,105 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/QueryDocumentsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/memory_banks/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterMemoryBankRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/models/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterModelRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/shields/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Shields"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterShieldRequest"
                             }
                         }
                     },
@@ -2060,39 +1949,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory/update": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Memory"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateDocumentsRequest"
                             }
                         }
                     },
@@ -4305,184 +4161,6 @@
                     "dataset"
                 ]
             },
-            "CreateMemoryBankRequest": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "config": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "vector",
-                                        "default": "vector"
-                                    },
-                                    "embedding_model": {
-                                        "type": "string"
-                                    },
-                                    "chunk_size_in_tokens": {
-                                        "type": "integer"
-                                    },
-                                    "overlap_size_in_tokens": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "embedding_model",
-                                    "chunk_size_in_tokens"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "keyvalue",
-                                        "default": "keyvalue"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "keyword",
-                                        "default": "keyword"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "graph",
-                                        "default": "graph"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "config"
-                ]
-            },
-            "MemoryBank": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "config": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "vector",
-                                        "default": "vector"
-                                    },
-                                    "embedding_model": {
-                                        "type": "string"
-                                    },
-                                    "chunk_size_in_tokens": {
-                                        "type": "integer"
-                                    },
-                                    "overlap_size_in_tokens": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "embedding_model",
-                                    "chunk_size_in_tokens"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "keyvalue",
-                                        "default": "keyvalue"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "keyword",
-                                        "default": "keyword"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "graph",
-                                        "default": "graph"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
-                    },
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id",
-                    "name",
-                    "config"
-                ]
-            },
             "DeleteAgentsRequest": {
                 "type": "object",
                 "properties": {
@@ -4521,37 +4199,6 @@
                 "additionalProperties": false,
                 "required": [
                     "dataset_uuid"
-                ]
-            },
-            "DeleteDocumentsRequest": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
-                    "document_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id",
-                    "document_ids"
-                ]
-            },
-            "DropMemoryBankRequest": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id"
                 ]
             },
             "EmbeddingsRequest": {
@@ -4693,6 +4340,75 @@
                 },
                 "additionalProperties": false
             },
+            "GraphMemoryBankDef": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "graph",
+                        "default": "graph"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_id",
+                    "type"
+                ]
+            },
+            "KeyValueMemoryBankDef": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "keyvalue",
+                        "default": "keyvalue"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_id",
+                    "type"
+                ]
+            },
+            "KeywordMemoryBankDef": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "keyword",
+                        "default": "keyword"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_id",
+                    "type"
+                ]
+            },
             "Session": {
                 "type": "object",
                 "properties": {
@@ -4713,7 +4429,20 @@
                         "format": "date-time"
                     },
                     "memory_bank": {
-                        "$ref": "#/components/schemas/MemoryBank"
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/VectorMemoryBankDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/KeyValueMemoryBankDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/KeywordMemoryBankDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/GraphMemoryBankDef"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -4724,6 +4453,40 @@
                     "started_at"
                 ],
                 "title": "A single session of an interaction with an Agentic System."
+            },
+            "VectorMemoryBankDef": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "vector",
+                        "default": "vector"
+                    },
+                    "embedding_model": {
+                        "type": "string"
+                    },
+                    "chunk_size_in_tokens": {
+                        "type": "integer"
+                    },
+                    "overlap_size_in_tokens": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_id",
+                    "type",
+                    "embedding_model",
+                    "chunk_size_in_tokens"
+                ]
             },
             "AgentStepResponse": {
                 "type": "object",
@@ -4748,89 +4511,6 @@
                 "additionalProperties": false,
                 "required": [
                     "step"
-                ]
-            },
-            "GetDocumentsRequest": {
-                "type": "object",
-                "properties": {
-                    "document_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "document_ids"
-                ]
-            },
-            "MemoryBankDocument": {
-                "type": "object",
-                "properties": {
-                    "document_id": {
-                        "type": "string"
-                    },
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "document_id",
-                    "content",
-                    "metadata"
                 ]
             },
             "EvaluationJobArtifactsResponse": {
@@ -4870,169 +4550,96 @@
                     "job_uuid"
                 ]
             },
-            "Model": {
-                "description": "The model family and SKU of the model along with other parameters corresponding to the model."
-            },
-            "ModelServingSpec": {
+            "ModelDefWithProvider": {
                 "type": "object",
                 "properties": {
-                    "llama_model": {
-                        "$ref": "#/components/schemas/Model"
-                    },
-                    "provider_config": {
-                        "type": "object",
-                        "properties": {
-                            "provider_type": {
-                                "type": "string"
-                            },
-                            "config": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "provider_type",
-                            "config"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "llama_model",
-                    "provider_config"
-                ]
-            },
-            "MemoryBankType": {
-                "type": "string",
-                "enum": [
-                    "vector",
-                    "keyvalue",
-                    "keyword",
-                    "graph"
-                ]
-            },
-            "MemoryBankSpec": {
-                "type": "object",
-                "properties": {
-                    "bank_type": {
-                        "$ref": "#/components/schemas/MemoryBankType"
-                    },
-                    "provider_config": {
-                        "type": "object",
-                        "properties": {
-                            "provider_type": {
-                                "type": "string"
-                            },
-                            "config": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "provider_type",
-                            "config"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_type",
-                    "provider_config"
-                ]
-            },
-            "ShieldSpec": {
-                "type": "object",
-                "properties": {
-                    "shield_type": {
+                    "identifier": {
                         "type": "string"
                     },
-                    "provider_config": {
+                    "llama_model": {
+                        "type": "string"
+                    },
+                    "metadata": {
                         "type": "object",
-                        "properties": {
-                            "provider_type": {
-                                "type": "string"
-                            },
-                            "config": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "oneOf": [
-                                        {
-                                            "type": "null"
-                                        },
-                                        {
-                                            "type": "boolean"
-                                        },
-                                        {
-                                            "type": "number"
-                                        },
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array"
-                                        },
-                                        {
-                                            "type": "object"
-                                        }
-                                    ]
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
                                 }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "provider_type",
-                            "config"
-                        ]
+                            ]
+                        }
+                    },
+                    "provider_id": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "shield_type",
-                    "provider_config"
+                    "identifier",
+                    "llama_model",
+                    "metadata",
+                    "provider_id"
+                ]
+            },
+            "ShieldDefWithProvider": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "type",
+                    "params",
+                    "provider_id"
                 ]
             },
             "Trace": {
@@ -5197,6 +4804,74 @@
                     "status"
                 ]
             },
+            "MemoryBankDocument": {
+                "type": "object",
+                "properties": {
+                    "document_id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ImageMedia"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ImageMedia"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "$ref": "#/components/schemas/URL"
+                            }
+                        ]
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "document_id",
+                    "content",
+                    "metadata"
+                ]
+            },
             "InsertDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -5222,17 +4897,17 @@
             "ProviderInfo": {
                 "type": "object",
                 "properties": {
-                    "provider_type": {
+                    "provider_id": {
                         "type": "string"
                     },
-                    "description": {
+                    "provider_type": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "provider_type",
-                    "description"
+                    "provider_id",
+                    "provider_type"
                 ]
             },
             "RouteInfo": {
@@ -5244,7 +4919,7 @@
                     "method": {
                         "type": "string"
                     },
-                    "providers": {
+                    "provider_types": {
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -5255,7 +4930,7 @@
                 "required": [
                     "route",
                     "method",
-                    "providers"
+                    "provider_types"
                 ]
             },
             "LogSeverity": {
@@ -5838,6 +5513,55 @@
                     "scores"
                 ]
             },
+            "RegisterMemoryBankRequest": {
+                "type": "object",
+                "properties": {
+                    "memory_bank": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/VectorMemoryBankDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/KeyValueMemoryBankDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/KeywordMemoryBankDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/GraphMemoryBankDef"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "memory_bank"
+                ]
+            },
+            "RegisterModelRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "$ref": "#/components/schemas/ModelDefWithProvider"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model"
+                ]
+            },
+            "RegisterShieldRequest": {
+                "type": "object",
+                "properties": {
+                    "shield": {
+                        "$ref": "#/components/schemas/ShieldDefWithProvider"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "shield"
+                ]
+            },
             "DialogGenerations": {
                 "type": "object",
                 "properties": {
@@ -6340,25 +6064,6 @@
                     "synthetic_data"
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
-            },
-            "UpdateDocumentsRequest": {
-                "type": "object",
-                "properties": {
-                    "bank_id": {
-                        "type": "string"
-                    },
-                    "documents": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MemoryBankDocument"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bank_id",
-                    "documents"
-                ]
             }
         },
         "responses": {}
@@ -6370,49 +6075,49 @@
     ],
     "tags": [
         {
-            "name": "Datasets"
+            "name": "Evaluations"
         },
         {
             "name": "Inspect"
         },
         {
-            "name": "Memory"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Models"
-        },
-        {
             "name": "RewardScoring"
         },
         {
-            "name": "MemoryBanks"
+            "name": "Datasets"
         },
         {
-            "name": "Safety"
-        },
-        {
-            "name": "Evaluations"
+            "name": "Models"
         },
         {
             "name": "Telemetry"
         },
         {
             "name": "PostTraining"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "MemoryBanks"
         },
         {
             "name": "BuiltinTool",
@@ -6675,14 +6380,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetRequest\" />"
         },
         {
-            "name": "CreateMemoryBankRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateMemoryBankRequest\" />"
-        },
-        {
-            "name": "MemoryBank",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
-        },
-        {
             "name": "DeleteAgentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsRequest\" />"
         },
@@ -6693,14 +6390,6 @@
         {
             "name": "DeleteDatasetRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDatasetRequest\" />"
-        },
-        {
-            "name": "DeleteDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDocumentsRequest\" />"
-        },
-        {
-            "name": "DropMemoryBankRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DropMemoryBankRequest\" />"
         },
         {
             "name": "EmbeddingsRequest",
@@ -6731,20 +6420,28 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgentsSessionRequest\" />"
         },
         {
+            "name": "GraphMemoryBankDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBankDef\" />"
+        },
+        {
+            "name": "KeyValueMemoryBankDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeyValueMemoryBankDef\" />"
+        },
+        {
+            "name": "KeywordMemoryBankDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/KeywordMemoryBankDef\" />"
+        },
+        {
             "name": "Session",
             "description": "A single session of an interaction with an Agentic System.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Session\" />"
         },
         {
+            "name": "VectorMemoryBankDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/VectorMemoryBankDef\" />"
+        },
+        {
             "name": "AgentStepResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentStepResponse\" />"
-        },
-        {
-            "name": "GetDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetDocumentsRequest\" />"
-        },
-        {
-            "name": "MemoryBankDocument",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "EvaluationJobArtifactsResponse",
@@ -6759,24 +6456,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
-            "name": "Model",
-            "description": "The model family and SKU of the model along with other parameters corresponding to the model.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
+            "name": "ModelDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDefWithProvider\" />"
         },
         {
-            "name": "ModelServingSpec",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelServingSpec\" />"
-        },
-        {
-            "name": "MemoryBankType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankType\" />"
-        },
-        {
-            "name": "MemoryBankSpec",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankSpec\" />"
-        },
-        {
-            "name": "ShieldSpec",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldSpec\" />"
+            "name": "ShieldDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefWithProvider\" />"
         },
         {
             "name": "Trace",
@@ -6809,6 +6494,10 @@
         {
             "name": "HealthInfo",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
+        },
+        {
+            "name": "MemoryBankDocument",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBankDocument\" />"
         },
         {
             "name": "InsertDocumentsRequest",
@@ -6883,6 +6572,18 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
         },
         {
+            "name": "RegisterMemoryBankRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterMemoryBankRequest\" />"
+        },
+        {
+            "name": "RegisterModelRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterModelRequest\" />"
+        },
+        {
+            "name": "RegisterShieldRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterShieldRequest\" />"
+        },
+        {
             "name": "DialogGenerations",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DialogGenerations\" />"
         },
@@ -6937,10 +6638,6 @@
         {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
-        },
-        {
-            "name": "UpdateDocumentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateDocumentsRequest\" />"
         }
     ],
     "x-tagGroups": [
@@ -7001,15 +6698,12 @@
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
                 "CreateDatasetRequest",
-                "CreateMemoryBankRequest",
                 "DPOAlignmentConfig",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
                 "DeleteDatasetRequest",
-                "DeleteDocumentsRequest",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
-                "DropMemoryBankRequest",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvaluateQuestionAnsweringRequest",
@@ -7022,23 +6716,21 @@
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
-                "GetDocumentsRequest",
+                "GraphMemoryBankDef",
                 "HealthInfo",
                 "ImageMedia",
                 "InferenceStep",
                 "InsertDocumentsRequest",
+                "KeyValueMemoryBankDef",
+                "KeywordMemoryBankDef",
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
-                "MemoryBank",
                 "MemoryBankDocument",
-                "MemoryBankSpec",
-                "MemoryBankType",
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",
-                "Model",
-                "ModelServingSpec",
+                "ModelDefWithProvider",
                 "OptimizerConfig",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
@@ -7052,6 +6744,9 @@
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "RLHFAlgorithm",
+                "RegisterMemoryBankRequest",
+                "RegisterModelRequest",
+                "RegisterShieldRequest",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
                 "RewardScoreRequest",
@@ -7067,7 +6762,7 @@
                 "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
-                "ShieldSpec",
+                "ShieldDefWithProvider",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
@@ -7095,8 +6790,8 @@
                 "Turn",
                 "URL",
                 "UnstructuredLogEvent",
-                "UpdateDocumentsRequest",
                 "UserMessage",
+                "VectorMemoryBankDef",
                 "ViolationLevel",
                 "WolframAlphaToolDefinition"
             ]

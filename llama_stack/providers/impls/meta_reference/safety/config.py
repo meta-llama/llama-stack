@@ -9,23 +9,19 @@ from typing import List, Optional
 
 from llama_models.sku_list import CoreModelId, safety_models
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 
-class MetaReferenceShieldType(Enum):
-    llama_guard = "llama_guard"
-    code_scanner_guard = "code_scanner_guard"
-    injection_shield = "injection_shield"
-    jailbreak_shield = "jailbreak_shield"
+class PromptGuardType(Enum):
+    injection = "injection"
+    jailbreak = "jailbreak"
 
 
 class LlamaGuardShieldConfig(BaseModel):
     model: str = "Llama-Guard-3-1B"
     excluded_categories: List[str] = []
-    disable_input_check: bool = False
-    disable_output_check: bool = False
 
-    @validator("model")
+    @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:
         permitted_models = [

@@ -1,0 +1,24 @@
+providers:
+  - provider_id: test-faiss
+    provider_type: meta-reference
+    config: {}
+  - provider_id: test-chroma
+    provider_type: remote::chroma
+    config:
+      host: localhost
+      port: 6001
+  - provider_id: test-remote
+    provider_type: remote
+    config:
+      host: localhost
+      port: 7002
+  - provider_id: test-weaviate
+    provider_type: remote::weaviate
+    config: {}
+# if a provider needs private keys from the client, they use the
+# "get_request_provider_data" function (see distribution/request_headers.py)
+# this is a place to provide such data.
+provider_data:
+  "test-weaviate":
+    weaviate_api_key: 0xdeadbeefputrealapikeyhere
+    weaviate_cluster_url: http://foobarbaz

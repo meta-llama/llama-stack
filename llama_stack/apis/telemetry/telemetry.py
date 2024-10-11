@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, Protocol, Union
+from typing import Any, Dict, Literal, Optional, Protocol, runtime_checkable, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -123,6 +123,7 @@ Event = Annotated[
 ]
 
 
+@runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/log_event")
     async def log_event(self, event: Event) -> None: ...

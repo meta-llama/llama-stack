@@ -9,15 +9,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
-from llama_stack.apis.agents import Agents
-from llama_stack.apis.inference import Inference
-from llama_stack.apis.inspect import Inspect
-from llama_stack.apis.memory import Memory
-from llama_stack.apis.memory_banks import MemoryBanks
-from llama_stack.apis.models import Models
-from llama_stack.apis.safety import Safety
-from llama_stack.apis.shields import Shields
-from llama_stack.apis.telemetry import Telemetry
+from llama_stack.distribution.resolver import api_protocol_map
 
 from llama_stack.providers.datatypes import Api
 
@@ -31,18 +23,7 @@ class ApiEndpoint(BaseModel):
 def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
     apis = {}
 
-    protocols = {
-        Api.inference: Inference,
-        Api.safety: Safety,
-        Api.agents: Agents,
-        Api.memory: Memory,
-        Api.telemetry: Telemetry,
-        Api.models: Models,
-        Api.shields: Shields,
-        Api.memory_banks: MemoryBanks,
-        Api.inspect: Inspect,
-    }
-
+    protocols = api_protocol_map()
     for api, protocol in protocols.items():
         endpoints = []
         protocol_methods = inspect.getmembers(protocol, predicate=inspect.isfunction)

@@ -15,12 +15,11 @@ from pydantic import BaseModel, Field, field_validator
 from llama_stack.providers.utils.inference import supported_inference_models
 
 
-class MetaReferenceImplConfig(BaseModel):
+class MetaReferenceInferenceConfig(BaseModel):
     model: str = Field(
         default="Llama3.1-8B-Instruct",
         description="Model descriptor from `llama model list`",
     )
-    quantization: Optional[QuantizationConfig] = None
     torch_seed: Optional[int] = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
@@ -38,9 +37,9 @@ class MetaReferenceImplConfig(BaseModel):
 
     @property
     def model_parallel_size(self) -> int:
-        # HACK ALERT: this will be fixed when we move inference configuration
-        # to ModelsRegistry and we can explicitly ask for `model_parallel_size`
-        # as configuration there
         resolved = resolve_model(self.model)
-        assert resolved is not None
         return resolved.pth_file_count
+
+
+class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
+    quantization: QuantizationConfig

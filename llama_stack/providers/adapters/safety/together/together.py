@@ -6,26 +6,21 @@
 from together import Together
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.safety import (
-    RunShieldResponse,
-    Safety,
-    SafetyViolation,
-    ViolationLevel,
-)
-from llama_stack.distribution.datatypes import RoutableProvider
+from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 
 from .config import TogetherSafetyConfig
 
 
-SAFETY_SHIELD_TYPES = {
+TOGETHER_SHIELD_MODEL_MAP = {
     "llama_guard": "meta-llama/Meta-Llama-Guard-3-8B",
     "Llama-Guard-3-8B": "meta-llama/Meta-Llama-Guard-3-8B",
     "Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
 }
 
 
-class TogetherSafetyImpl(Safety, NeedsRequestProviderData, RoutableProvider):
+class TogetherSafetyImpl(Safety, NeedsRequestProviderData, ShieldsProtocolPrivate):
     def __init__(self, config: TogetherSafetyConfig) -> None:
         self.config = config
 
@@ -35,16 +30,28 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData, RoutableProvider):
     async def shutdown(self) -> None:
         pass
 
-    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
-        for key in routing_keys:
-            if key not in SAFETY_SHIELD_TYPES:
-                raise ValueError(f"Unknown safety shield type: {key}")
+    async def register_shield(self, shield: ShieldDef) -> None:
+        raise ValueError("Registering dynamic shields is not supported")
+
+    async def list_shields(self) -> List[ShieldDef]:
+        return [
+            ShieldDef(
+                identifier=ShieldType.llama_guard.value,
+                type=ShieldType.llama_guard.value,
+                params={},
+            )
+        ]
 
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse:
-        if shield_type not in SAFETY_SHIELD_TYPES:
-            raise ValueError(f"Unknown safety shield type: {shield_type}")
+        shield_def = await self.shield_store.get_shield(shield_type)
+        if not shield_def:
+            raise ValueError(f"Unknown shield {shield_type}")
+
+        model = shield_def.params.get("model", "llama_guard")
+        if model not in TOGETHER_SHIELD_MODEL_MAP:
+            raise ValueError(f"Unsupported safety model: {model}")
 
         together_api_key = None
         if self.config.api_key is not None:
@@ -57,8 +64,6 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData, RoutableProvider):
                 )
             together_api_key = provider_data.together_api_key
 
-        model_name = SAFETY_SHIELD_TYPES[shield_type]
-
         # messages can have role assistant or user
         api_messages = []
         for message in messages:
@@ -66,7 +71,7 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData, RoutableProvider):
                 api_messages.append({"role": message.role, "content": message.content})
 
         violation = await get_safety_response(
-            together_api_key, model_name, api_messages
+            together_api_key, TOGETHER_SHIELD_MODEL_MAP[model], api_messages
         )
         return RunShieldResponse(violation=violation)
 
@@ -90,7 +95,6 @@ async def get_safety_response(
     if parts[0] == "unsafe":
         return SafetyViolation(
             violation_level=ViolationLevel.ERROR,
-            user_message="unsafe",
             metadata={"violation_type": parts[1]},
         )
 

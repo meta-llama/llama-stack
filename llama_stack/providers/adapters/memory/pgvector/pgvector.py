@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import uuid
 from typing import List, Tuple
 
 import psycopg2
@@ -12,11 +11,11 @@ from numpy.typing import NDArray
 from psycopg2 import sql
 from psycopg2.extras import execute_values, Json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, parse_obj_as
 
 from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.distribution.datatypes import RoutableProvider
 
+from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     ALL_MINILM_L6_V2_DIMENSION,
     BankWithIndex,
@@ -46,23 +45,17 @@ def upsert_models(cur, keys_models: List[Tuple[str, BaseModel]]):
     execute_values(cur, query, values, template="(%s, %s)")
 
 
-def load_models(cur, keys: List[str], cls):
+def load_models(cur, cls):
     query = "SELECT key, data FROM metadata_store"
-    if keys:
-        placeholders = ",".join(["%s"] * len(keys))
-        query += f" WHERE key IN ({placeholders})"
-        cur.execute(query, keys)
-    else:
-        cur.execute(query)
-
+    cur.execute(query)
     rows = cur.fetchall()
-    return [cls(**row["data"]) for row in rows]
+    return [parse_obj_as(cls, row["data"]) for row in rows]
 
 
 class PGVectorIndex(EmbeddingIndex):
-    def __init__(self, bank: MemoryBank, dimension: int, cursor):
+    def __init__(self, bank: MemoryBankDef, dimension: int, cursor):
         self.cursor = cursor
-        self.table_name = f"vector_store_{bank.name}"
+        self.table_name = f"vector_store_{bank.identifier}"
 
         self.cursor.execute(
             f"""
@@ -119,7 +112,7 @@ class PGVectorIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class PGVectorMemoryAdapter(Memory, RoutableProvider):
+class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: PGVectorConfig) -> None:
         print(f"Initializing PGVectorMemoryAdapter -> {config.host}:{config.port}")
         self.config = config
@@ -161,57 +154,37 @@ class PGVectorMemoryAdapter(Memory, RoutableProvider):
     async def shutdown(self) -> None:
         pass
 
-    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
-        print(f"[pgvector] Registering memory bank routing keys: {routing_keys}")
-        pass
-
-    async def create_memory_bank(
+    async def register_memory_bank(
         self,
-        name: str,
-        config: MemoryBankConfig,
-        url: Optional[URL] = None,
-    ) -> MemoryBank:
-        bank_id = str(uuid.uuid4())
-        bank = MemoryBank(
-            bank_id=bank_id,
-            name=name,
-            config=config,
-            url=url,
-        )
+        memory_bank: MemoryBankDef,
+    ) -> None:
+        assert (
+            memory_bank.type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.type}"
+
         upsert_models(
             self.cursor,
             [
-                (bank.bank_id, bank),
+                (memory_bank.identifier, memory_bank),
             ],
         )
+
         index = BankWithIndex(
-            bank=bank,
-            index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
+            bank=memory_bank,
+            index=PGVectorIndex(memory_bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
         )
-        self.cache[bank_id] = index
-        return bank
+        self.cache[memory_bank.identifier] = index
 
-    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        bank_index = await self._get_and_cache_bank_index(bank_id)
-        if bank_index is None:
-            return None
-        return bank_index.bank
-
-    async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
-        if bank_id in self.cache:
-            return self.cache[bank_id]
-
-        banks = load_models(self.cursor, [bank_id], MemoryBank)
-        if not banks:
-            return None
-
-        bank = banks[0]
-        index = BankWithIndex(
-            bank=bank,
-            index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
-        )
-        self.cache[bank_id] = index
-        return index
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        banks = load_models(self.cursor, MemoryBankDef)
+        for bank in banks:
+            if bank.identifier not in self.cache:
+                index = BankWithIndex(
+                    bank=bank,
+                    index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
+                )
+                self.cache[bank.identifier] = index
+        return banks
 
     async def insert_documents(
         self,
@@ -219,7 +192,7 @@ class PGVectorMemoryAdapter(Memory, RoutableProvider):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = await self._get_and_cache_bank_index(bank_id)
+        index = self.cache.get(bank_id, None)
         if not index:
             raise ValueError(f"Bank {bank_id} not found")
 
@@ -231,7 +204,7 @@ class PGVectorMemoryAdapter(Memory, RoutableProvider):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        index = await self._get_and_cache_bank_index(bank_id)
+        index = self.cache.get(bank_id, None)
         if not index:
             raise ValueError(f"Bank {bank_id} not found")
 

@@ -5,18 +5,15 @@
 # the root directory of this source tree.
 
 import asyncio
+import functools
 import inspect
 import json
 import signal
 import traceback
 
-from collections.abc import (
-    AsyncGenerator as AsyncGeneratorABC,
-    AsyncIterator as AsyncIteratorABC,
-)
 from contextlib import asynccontextmanager
 from ssl import SSLError
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, get_type_hints, Optional
+from typing import Any, Dict, Optional
 
 import fire
 import httpx
@@ -28,6 +25,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
+
+from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -41,20 +40,6 @@ from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls_with_routing
 
 from .endpoints import get_all_api_endpoints
-
-
-def is_async_iterator_type(typ):
-    if hasattr(typ, "__origin__"):
-        origin = typ.__origin__
-        if isinstance(origin, type):
-            return issubclass(
-                origin,
-                (AsyncIterator, AsyncGenerator, AsyncIteratorABC, AsyncGeneratorABC),
-            )
-        return False
-    return isinstance(
-        typ, (AsyncIterator, AsyncGenerator, AsyncIteratorABC, AsyncGeneratorABC)
-    )
 
 
 def create_sse_event(data: Any) -> str:
@@ -169,11 +154,20 @@ async def passthrough(
         await end_trace(SpanStatus.OK if not erred else SpanStatus.ERROR)
 
 
-def handle_sigint(*args, **kwargs):
+def handle_sigint(app, *args, **kwargs):
     print("SIGINT or CTRL-C detected. Exiting gracefully...")
+
+    async def run_shutdown():
+        for impl in app.__llama_stack_impls__.values():
+            print(f"Shutting down {impl}")
+            await impl.shutdown()
+
+    asyncio.run(run_shutdown())
+
     loop = asyncio.get_event_loop()
     for task in asyncio.all_tasks(loop):
         task.cancel()
+
     loop.stop()
 
 
@@ -181,7 +175,10 @@ def handle_sigint(*args, **kwargs):
 async def lifespan(app: FastAPI):
     print("Starting up")
     yield
+
     print("Shutting down")
+    for impl in app.__llama_stack_impls__.values():
+        await impl.shutdown()
 
 
 def create_dynamic_passthrough(
@@ -193,65 +190,59 @@ def create_dynamic_passthrough(
     return endpoint
 
 
+def is_streaming_request(func_name: str, request: Request, **kwargs):
+    # TODO: pass the api method and punt it to the Protocol definition directly
+    return kwargs.get("stream", False)
+
+
+async def maybe_await(value):
+    if inspect.iscoroutine(value):
+        return await value
+    return value
+
+
+async def sse_generator(event_gen):
+    try:
+        async for item in event_gen:
+            yield create_sse_event(item)
+            await asyncio.sleep(0.01)
+    except asyncio.CancelledError:
+        print("Generator cancelled")
+        await event_gen.aclose()
+    except Exception as e:
+        traceback.print_exception(e)
+        yield create_sse_event(
+            {
+                "error": {
+                    "message": str(translate_exception(e)),
+                },
+            }
+        )
+    finally:
+        await end_trace()
+
+
 def create_dynamic_typed_route(func: Any, method: str):
-    hints = get_type_hints(func)
-    response_model = hints.get("return")
 
-    # NOTE: I think it is better to just add a method within each Api
-    # "Protocol" / adapter-impl to tell what sort of a response this request
-    # is going to produce. /chat_completion can produce a streaming or
-    # non-streaming response depending on if request.stream is True / False.
-    is_streaming = is_async_iterator_type(response_model)
+    async def endpoint(request: Request, **kwargs):
+        await start_trace(func.__name__)
 
-    if is_streaming:
+        set_request_provider_data(request.headers)
 
-        async def endpoint(request: Request, **kwargs):
-            await start_trace(func.__name__)
-
-            set_request_provider_data(request.headers)
-
-            async def sse_generator(event_gen):
-                try:
-                    async for item in event_gen:
-                        yield create_sse_event(item)
-                        await asyncio.sleep(0.01)
-                except asyncio.CancelledError:
-                    print("Generator cancelled")
-                    await event_gen.aclose()
-                except Exception as e:
-                    traceback.print_exception(e)
-                    yield create_sse_event(
-                        {
-                            "error": {
-                                "message": str(translate_exception(e)),
-                            },
-                        }
-                    )
-                finally:
-                    await end_trace()
-
-            return StreamingResponse(
-                sse_generator(func(**kwargs)), media_type="text/event-stream"
-            )
-
-    else:
-
-        async def endpoint(request: Request, **kwargs):
-            await start_trace(func.__name__)
-
-            set_request_provider_data(request.headers)
-
-            try:
-                return (
-                    await func(**kwargs)
-                    if asyncio.iscoroutinefunction(func)
-                    else func(**kwargs)
+        is_streaming = is_streaming_request(func.__name__, request, **kwargs)
+        try:
+            if is_streaming:
+                return StreamingResponse(
+                    sse_generator(func(**kwargs)), media_type="text/event-stream"
                 )
-            except Exception as e:
-                traceback.print_exception(e)
-                raise translate_exception(e) from e
-            finally:
-                await end_trace()
+            else:
+                value = func(**kwargs)
+                return await maybe_await(value)
+        except Exception as e:
+            traceback.print_exception(e)
+            raise translate_exception(e) from e
+        finally:
+            await end_trace()
 
     sig = inspect.signature(func)
     new_params = [
@@ -285,29 +276,28 @@ def main(
 
     app = FastAPI()
 
-    impls, specs = asyncio.run(resolve_impls_with_routing(config))
+    impls = asyncio.run(resolve_impls_with_routing(config))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
     all_endpoints = get_all_api_endpoints()
 
-    if config.apis_to_serve:
-        apis_to_serve = set(config.apis_to_serve)
+    if config.apis:
+        apis_to_serve = set(config.apis)
     else:
         apis_to_serve = set(impls.keys())
 
-    apis_to_serve.add(Api.inspect)
+    for inf in builtin_automatically_routed_apis():
+        apis_to_serve.add(inf.routing_table_api.value)
+
+    apis_to_serve.add("inspect")
     for api_str in apis_to_serve:
         api = Api(api_str)
 
         endpoints = all_endpoints[api]
         impl = impls[api]
 
-        provider_spec = specs[api]
-        if (
-            isinstance(provider_spec, RemoteProviderSpec)
-            and provider_spec.adapter is None
-        ):
+        if is_passthrough(impl.__provider_spec__):
             for endpoint in endpoints:
                 url = impl.__provider_config__.url.rstrip("/") + endpoint.route
                 getattr(app, endpoint.method)(endpoint.route)(
@@ -337,7 +327,9 @@ def main(
     print("")
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
-    signal.signal(signal.SIGINT, handle_sigint)
+    signal.signal(signal.SIGINT, functools.partial(handle_sigint, app))
+
+    app.__llama_stack_impls__ = impls
 
     import uvicorn
 

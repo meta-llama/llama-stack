@@ -11,9 +11,8 @@ import json
 import os
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, List, Optional
+from typing import Generator, List, Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -35,13 +34,13 @@ from llama_models.llama3.reference_impl.multimodal.model import (
     CrossAttentionTransformer,
 )
 from llama_models.sku_list import resolve_model
-from termcolor import cprint
 
-from llama_stack.apis.inference import QuantizationType
+from pydantic import BaseModel
+from termcolor import cprint
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
 
-from .config import MetaReferenceImplConfig
+from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
 
 
 def model_checkpoint_dir(model) -> str:
@@ -58,8 +57,7 @@ def model_checkpoint_dir(model) -> str:
     return str(checkpoint_dir)
 
 
-@dataclass
-class TokenResult:
+class TokenResult(BaseModel):
     token: int
     text: str
     logprobs: Optional[List[float]] = None
@@ -67,7 +65,11 @@ class TokenResult:
 
 class Llama:
     @staticmethod
-    def build(config: MetaReferenceImplConfig):
+    def build(
+        config: Union[
+            MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+        ]
+    ):
         """
         Build a Llama instance by initializing and loading a model checkpoint.
 
@@ -76,15 +78,6 @@ class Llama:
             and loads the pre-trained model and tokenizer.
         """
         model = resolve_model(config.model)
-
-        if (
-            config.quantization
-            and config.quantization.type == QuantizationType.fp8.value
-        ):
-            from .quantization.loader import is_fbgemm_available
-
-            if not is_fbgemm_available():
-                raise ImportError("fbgemm-gpu is required for FP8 quantization")
 
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
@@ -133,12 +126,7 @@ class Llama:
             model_args.vocab_size == tokenizer.n_words
         ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
 
-        fp8 = (
-            config.quantization
-            and config.quantization.type == QuantizationType.fp8.value
-        )
-
-        if fp8:
+        if isinstance(config, MetaReferenceQuantizedInferenceConfig):
             from .quantization.loader import convert_to_quantized_model
 
             # load on CPU in bf16 so that fp8 conversion does not find an

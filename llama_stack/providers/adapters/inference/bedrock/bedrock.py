@@ -13,7 +13,7 @@ from botocore.config import Config
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.providers.utils.inference.routable import RoutableProviderForModels
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfig
@@ -26,57 +26,16 @@ BEDROCK_SUPPORTED_MODELS = {
 }
 
 
-class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
-
-    @staticmethod
-    def _create_bedrock_client(config: BedrockConfig) -> BaseClient:
-        retries_config = {
-            k: v
-            for k, v in dict(
-                total_max_attempts=config.total_max_attempts,
-                mode=config.retry_mode,
-            ).items()
-            if v is not None
-        }
-
-        config_args = {
-            k: v
-            for k, v in dict(
-                region_name=config.region_name,
-                retries=retries_config if retries_config else None,
-                connect_timeout=config.connect_timeout,
-                read_timeout=config.read_timeout,
-            ).items()
-            if v is not None
-        }
-
-        boto3_config = Config(**config_args)
-
-        session_args = {
-            k: v
-            for k, v in dict(
-                aws_access_key_id=config.aws_access_key_id,
-                aws_secret_access_key=config.aws_secret_access_key,
-                aws_session_token=config.aws_session_token,
-                region_name=config.region_name,
-                profile_name=config.profile_name,
-            ).items()
-            if v is not None
-        }
-
-        boto3_session = boto3.session.Session(**session_args)
-
-        return boto3_session.client("bedrock-runtime", config=boto3_config)
-
+# NOTE: this is not quite tested after the recent refactors
+class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: BedrockConfig) -> None:
-        RoutableProviderForModels.__init__(
+        ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=BEDROCK_SUPPORTED_MODELS
         )
         self._config = config
 
-        self._client = BedrockInferenceAdapter._create_bedrock_client(config)
-        tokenizer = Tokenizer.get_instance()
-        self.formatter = ChatFormat(tokenizer)
+        self._client = _create_bedrock_client(config)
+        self.formatter = ChatFormat(Tokenizer.get_instance())
 
     @property
     def client(self) -> BaseClient:
@@ -88,7 +47,7 @@ class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
     async def shutdown(self) -> None:
         self.client.close()
 
-    async def completion(
+    def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -258,7 +217,7 @@ class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
 
     @staticmethod
     def _tool_parameters_to_input_schema(
-        tool_parameters: Optional[Dict[str, ToolParamDefinition]]
+        tool_parameters: Optional[Dict[str, ToolParamDefinition]],
     ) -> Dict:
         input_schema = {"type": "object"}
         if not tool_parameters:
@@ -324,7 +283,7 @@ class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
             )
         return tool_config
 
-    async def chat_completion(
+    def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -443,3 +402,50 @@ class BedrockInferenceAdapter(Inference, RoutableProviderForModels):
                 else:
                     # Ignored
                     pass
+
+    async def embeddings(
+        self,
+        model: str,
+        contents: List[InterleavedTextMedia],
+    ) -> EmbeddingsResponse:
+        raise NotImplementedError()
+
+
+def _create_bedrock_client(config: BedrockConfig) -> BaseClient:
+    retries_config = {
+        k: v
+        for k, v in dict(
+            total_max_attempts=config.total_max_attempts,
+            mode=config.retry_mode,
+        ).items()
+        if v is not None
+    }
+
+    config_args = {
+        k: v
+        for k, v in dict(
+            region_name=config.region_name,
+            retries=retries_config if retries_config else None,
+            connect_timeout=config.connect_timeout,
+            read_timeout=config.read_timeout,
+        ).items()
+        if v is not None
+    }
+
+    boto3_config = Config(**config_args)
+
+    session_args = {
+        k: v
+        for k, v in dict(
+            aws_access_key_id=config.aws_access_key_id,
+            aws_secret_access_key=config.aws_secret_access_key,
+            aws_session_token=config.aws_session_token,
+            region_name=config.region_name,
+            profile_name=config.profile_name,
+        ).items()
+        if v is not None
+    }
+
+    boto3_session = boto3.session.Session(**session_args)
+
+    return boto3_session.client("bedrock-runtime", config=boto3_config)

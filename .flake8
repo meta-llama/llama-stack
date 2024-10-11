@@ -21,11 +21,11 @@ ignore =
 optional-ascii-coding = True
 exclude =
     ./.git,
-    ./docs
-    ./build
+    ./docs/*,
+    ./build,
     ./scripts,
     ./venv,
-    *.pyi
-    .pre-commit-config.yaml
-    *.md
+    *.pyi,
+    .pre-commit-config.yaml,
+    *.md,
     .flake8

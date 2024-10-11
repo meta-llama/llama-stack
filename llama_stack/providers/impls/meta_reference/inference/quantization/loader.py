@@ -22,17 +22,8 @@ from torch import Tensor
 from llama_stack.apis.inference import QuantizationType
 
 from llama_stack.providers.impls.meta_reference.inference.config import (
-    MetaReferenceImplConfig,
+    MetaReferenceQuantizedInferenceConfig,
 )
-
-
-def is_fbgemm_available() -> bool:
-    try:
-        import fbgemm_gpu.experimental.gen_ai  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
 
 
 def swiglu_wrapper(
@@ -47,7 +38,7 @@ def swiglu_wrapper(
 
 def convert_to_quantized_model(
     model: Transformer,
-    config: MetaReferenceImplConfig,
+    config: MetaReferenceQuantizedInferenceConfig,
     fp8_activation_scale_ub: Optional[float] = 1200.0,
 ) -> Transformer:
     if config.quantization.type == QuantizationType.bf16.value:

@@ -9,14 +9,12 @@ from .config import SampleConfig
 
 from llama_stack.apis.memory import *  # noqa: F403
 
-from llama_stack.distribution.datatypes import RoutableProvider
 
-
-class SampleMemoryImpl(Memory, RoutableProvider):
+class SampleMemoryImpl(Memory):
     def __init__(self, config: SampleConfig):
         self.config = config
 
-    async def validate_routing_keys(self, routing_keys: list[str]) -> None:
+    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
         # these are the memory banks the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
         pass

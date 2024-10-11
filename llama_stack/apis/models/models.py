@@ -4,29 +4,39 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List, Optional, Protocol
-
-from llama_models.llama3.api.datatypes import Model
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
-from llama_stack.distribution.datatypes import GenericProviderConfig
+
+class ModelDef(BaseModel):
+    identifier: str = Field(
+        description="A unique name for the model type",
+    )
+    llama_model: str = Field(
+        description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Any additional metadata for this model",
+    )
 
 
 @json_schema_type
-class ModelServingSpec(BaseModel):
-    llama_model: Model = Field(
-        description="All metadatas associated with llama model (defined in llama_models.models.sku_list).",
-    )
-    provider_config: GenericProviderConfig = Field(
-        description="Provider config for the model, including provider_type, and corresponding config. ",
+class ModelDefWithProvider(ModelDef):
+    provider_id: str = Field(
+        description="The provider ID for this model",
     )
 
 
+@runtime_checkable
 class Models(Protocol):
     @webmethod(route="/models/list", method="GET")
-    async def list_models(self) -> List[ModelServingSpec]: ...
+    async def list_models(self) -> List[ModelDefWithProvider]: ...
 
     @webmethod(route="/models/get", method="GET")
-    async def get_model(self, core_model_id: str) -> Optional[ModelServingSpec]: ...
+    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]: ...
+
+    @webmethod(route="/models/register", method="POST")
+    async def register_model(self, model: ModelDefWithProvider) -> None: ...

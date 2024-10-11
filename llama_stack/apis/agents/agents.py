@@ -6,7 +6,16 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -261,7 +270,7 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBank] = None
+    memory_bank: Optional[MemoryBankDef] = None
 
 
 class AgentConfigCommon(BaseModel):
@@ -404,6 +413,7 @@ class AgentStepResponse(BaseModel):
     step: Step
 
 
+@runtime_checkable
 class Agents(Protocol):
     @webmethod(route="/agents/create")
     async def create_agent(
@@ -411,8 +421,10 @@ class Agents(Protocol):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse: ...
 
+    # This method is not `async def` because it can result in either an
+    # `AsyncGenerator` or a `AgentTurnCreateResponse` depending on the value of `stream`.
     @webmethod(route="/agents/turn/create")
-    async def create_agent_turn(
+    def create_agent_turn(
         self,
         agent_id: str,
         session_id: str,

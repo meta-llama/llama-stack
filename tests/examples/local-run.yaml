@@ -1,8 +1,9 @@
-built_at: '2024-09-23T00:54:40.551416'
+version: '2'
+built_at: '2024-10-08T17:40:45.325529'
 image_name: local
 docker_image: null
 conda_env: local
-apis_to_serve:
+apis:
 - shields
 - agents
 - models
@@ -10,38 +11,19 @@ apis_to_serve:
 - memory_banks
 - inference
 - safety
-api_providers:
+providers:
   inference:
-    providers:
-    - meta-reference
-  safety:
-    providers:
-    - meta-reference
-  agents:
+  - provider_id: meta-reference
     provider_type: meta-reference
-    config:
-      persistence_store:
-        namespace: null
-        type: sqlite
-        db_path: /home/xiyan/.llama/runtime/kvstore.db
-  memory:
-    providers:
-    - meta-reference
-  telemetry:
-    provider_type: meta-reference
-    config: {}
-routing_table:
-  inference:
-  - provider_type: meta-reference
     config:
       model: Llama3.1-8B-Instruct
       quantization: null
       torch_seed: null
       max_seq_len: 4096
       max_batch_size: 1
-    routing_key: Llama3.1-8B-Instruct
   safety:
-  - provider_type: meta-reference
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config:
       llama_guard_shield:
         model: Llama-Guard-3-1B
@@ -50,8 +32,19 @@ routing_table:
         disable_output_check: false
       prompt_guard_shield:
         model: Prompt-Guard-86M
-    routing_key: ["llama_guard", "code_scanner_guard", "injection_shield", "jailbreak_shield"]
   memory:
-  - provider_type: meta-reference
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config: {}
-    routing_key: vector
+  agents:
+  - provider_id: meta-reference
+    provider_type: meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: /home/xiyan/.llama/runtime/kvstore.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: meta-reference
+    config: {}
