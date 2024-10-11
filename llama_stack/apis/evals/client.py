@@ -54,27 +54,29 @@ class EvaluationClient(Evals):
 async def run_main(host: str, port: int):
     client = EvaluationClient(f"http://{host}:{port}")
 
-    # CustomDataset
+    # Custom Eval Task
+    # response = await client.run_evals(
+    #     model="Llama3.1-8B-Instruct",
+    #     dataset="mmlu-simple-eval-en",
+    #     task="mmlu",
+    #     eval_task_config=EvaluateTaskConfig(
+    #         n_samples=2,
+    #     ),
+    # )
+
+    # Eleuther Eval Task
     response = await client.run_evals(
         model="Llama3.1-8B-Instruct",
-        dataset="mmlu-simple-eval-en",
-        task="mmlu",
+        # task="meta_mmlu_pro_instruct",
+        task="meta_ifeval",
         eval_task_config=EvaluateTaskConfig(
             n_samples=2,
         ),
     )
-    cprint(f"evaluate response={response}", "green")
-
-    # Eleuther Eval Task
-    # response = await client.run_evals(
-    #     model="Llama3.1-8B-Instruct",
-    #     task="meta_mmlu_pro_instruct",
-    #     # task="meta_ifeval",
-    #     eval_task_config=EvaluateTaskConfig(
-    #         n_samples=2,
-    #     )
-    # )
-    # cprint(response.metrics["metrics_table"], "red")
+    if response.formatted_report:
+        cprint(response.formatted_report, "green")
+    else:
+        cprint(f"evaluate response={response}", "green")
 
 
 def main(host: str, port: int):

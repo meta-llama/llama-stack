@@ -157,12 +157,14 @@ class EleutherEvalsAdapter(Evals):
             limit=eval_task_config.n_samples,
         )
 
+        eval_result = EvalResult(
+            metrics={},
+        )
         formatted_output = lm_eval.utils.make_table(output)
 
         cprint(formatted_output, "green")
 
         return EvaluateResponse(
-            metrics={
-                "metrics_table": formatted_output,
-            },
+            eval_result=eval_result,
+            formatted_report=formatted_output,
         )
