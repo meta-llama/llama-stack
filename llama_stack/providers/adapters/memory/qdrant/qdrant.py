@@ -6,14 +6,15 @@
 
 import traceback
 import uuid
-from typing import List
+from typing import Any, Dict, List
 
 from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
+from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+
 from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.distribution.datatypes import RoutableProvider
 
 from llama_stack.providers.adapters.memory.qdrant.config import QdrantConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -22,7 +23,6 @@ from llama_stack.providers.utils.memory.vector_store import (
 )
 
 CHUNK_ID_KEY = "_chunk_id"
-METADATA_COLLECTION_NAME = "metadata_store"
 
 
 def convert_id(_id: str) -> str:
@@ -37,9 +37,9 @@ def convert_id(_id: str) -> str:
 
 
 class QdrantIndex(EmbeddingIndex):
-    def __init__(self, client: AsyncQdrantClient, bank: MemoryBank):
+    def __init__(self, client: AsyncQdrantClient, collection_name: str):
         self.client = client
-        self.collection_name = bank.name
+        self.collection_name = collection_name
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
         assert len(chunks) == len(
@@ -61,7 +61,8 @@ class QdrantIndex(EmbeddingIndex):
                 PointStruct(
                     id=convert_id(chunk_id),
                     vector=embedding,
-                    payload=chunk.model_dump() | {CHUNK_ID_KEY: chunk_id},
+                    payload={"chunk_content": chunk.model_dump()}
+                    | {CHUNK_ID_KEY: chunk_id},
                 )
             )
 
@@ -70,7 +71,10 @@ class QdrantIndex(EmbeddingIndex):
     async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
         results = (
             await self.client.query_points(
-                collection_name=self.collection_name, query=embedding.tolist(), limit=k
+                collection_name=self.collection_name,
+                query=embedding.tolist(),
+                limit=k,
+                with_payload=True,
             )
         ).points
 
@@ -80,8 +84,7 @@ class QdrantIndex(EmbeddingIndex):
             assert point.payload is not None
 
             try:
-                point.payload.pop(CHUNK_ID_KEY, None)
-                chunk = Chunk(**point.payload)
+                chunk = Chunk(**point.payload["chunk_content"])
             except Exception:
                 traceback.print_exc()
                 continue
@@ -92,84 +95,49 @@ class QdrantIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class QdrantVectorMemoryAdapter(Memory, RoutableProvider):
+class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: QdrantConfig) -> None:
         self.config = config
-        self.client = None
+        self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}
 
     async def initialize(self) -> None:
-        try:
-            self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
-
-            if not await self.client.collection_exists(METADATA_COLLECTION_NAME):
-                await self.client.create_collection(
-                    METADATA_COLLECTION_NAME, vectors_config={}
-                )
-        except Exception as e:
-            import traceback
-
-            traceback.print_exc()
-            raise RuntimeError(f"Could not connect to Qdrant: {e}") from e
+        pass
 
     async def shutdown(self) -> None:
-        pass
+        self.client.close()
 
-    async def validate_routing_keys(self, routing_keys: List[str]) -> None:
-        print(f"[qdrant] Registering memory bank routing keys: {routing_keys}")
-        pass
-
-    async def create_memory_bank(
+    async def register_memory_bank(
         self,
-        name: str,
-        config: MemoryBankConfig,
-        url: Optional[URL] = None,
-    ) -> MemoryBank:
-        bank_id = str(uuid.uuid4())
-        bank = MemoryBank(
-            bank_id=bank_id,
-            name=name,
-            config=config,
-            url=url,
-        )
-
-        await self.client.upsert(
-            METADATA_COLLECTION_NAME,
-            points=[
-                PointStruct(
-                    id=convert_id(bank_id), vector={}, payload=bank.model_dump()
-                )
-            ],
-        )
+        memory_bank: MemoryBankDef,
+    ) -> None:
+        assert (
+            memory_bank.type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.type}"
 
         index = BankWithIndex(
-            bank=bank,
-            index=QdrantIndex(self.client, bank),
+            bank=memory_bank,
+            index=QdrantIndex(self.client, memory_bank.identifier),
         )
-        self.cache[bank_id] = index
-        return bank
 
-    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        bank_index = await self._get_and_cache_bank_index(bank_id)
-        if bank_index is None:
-            return None
-        return bank_index.bank
+        self.cache[memory_bank.identifier] = index
+
+    async def list_memory_banks(self) -> List[MemoryBankDef]:
+        # Qdrant doesn't have collection level metadata to store the bank properties
+        # So we only return from the cache value
+        return [i.bank for i in self.cache.values()]
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:
             return self.cache[bank_id]
 
-        bank_point = await self.client.retrieve(
-            METADATA_COLLECTION_NAME, ids=[convert_id(bank_id)], with_payload=True
-        )
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        if not bank:
+            raise ValueError(f"Bank {bank_id} not found")
 
-        if not bank_point:
-            return None
-
-        bank = MemoryBank(**bank_point[0].payload)
         index = BankWithIndex(
             bank=bank,
-            index=QdrantIndex(self.client, bank),
+            index=QdrantIndex(client=self.client, collection_name=bank_id),
         )
         self.cache[bank_id] = index
         return index
