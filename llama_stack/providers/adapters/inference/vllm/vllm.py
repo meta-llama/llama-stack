@@ -29,7 +29,8 @@ from .config import VLLMImplConfig
 
 # Reference: https://docs.vllm.ai/en/latest/models/supported_models.html
 VLLM_SUPPORTED_MODELS = {
-    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3-70B-Instruct",
+    "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct",
     "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct",
 }
 
@@ -48,7 +49,14 @@ class VLLMInferenceAdapter(ModelRegistryHelper, Inference):
     async def shutdown(self) -> None:
         pass
 
-    def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    def completion(
+            self,
+            model: str,
+            content: InterleavedTextMedia,
+            sampling_params: Optional[SamplingParams] = SamplingParams(),
+            stream: Optional[bool] = False,
+            logprobs: Optional[LogProbConfig] = None,
+    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
         raise NotImplementedError()
 
     def chat_completion(
