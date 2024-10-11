@@ -9,9 +9,7 @@ from .vllm import VLLMInferenceAdapter
 
 
 async def get_adapter_impl(config: VLLMImplConfig, _deps):
-    assert isinstance(
-        config, VLLMImplConfig
-    ), f"Unexpected config type: {type(config)}"
+    assert isinstance(config, VLLMImplConfig), f"Unexpected config type: {type(config)}"
     impl = VLLMInferenceAdapter(config)
     await impl.initialize()
     return impl
