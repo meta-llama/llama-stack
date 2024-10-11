@@ -108,7 +108,7 @@ class TogetherInferenceAdapter(
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
         r = client.completions.create(**params)
-        return process_chat_completion_response(request, r, self.formatter)
+        return process_chat_completion_response(r, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, client: Together
@@ -123,7 +123,7 @@ class TogetherInferenceAdapter(
 
         stream = _to_async_generator()
         async for chunk in process_chat_completion_stream_response(
-            request, stream, self.formatter
+            stream, self.formatter
         ):
             yield chunk
 

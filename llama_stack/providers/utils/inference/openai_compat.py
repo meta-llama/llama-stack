@@ -50,9 +50,7 @@ def text_from_choice(choice) -> str:
 
 
 def process_chat_completion_response(
-    request: ChatCompletionRequest,
-    response: OpenAICompatCompletionResponse,
-    formatter: ChatFormat,
+    response: OpenAICompatCompletionResponse, formatter: ChatFormat
 ) -> ChatCompletionResponse:
     choice = response.choices[0]
 
@@ -78,9 +76,7 @@ def process_chat_completion_response(
 
 
 async def process_chat_completion_stream_response(
-    request: ChatCompletionRequest,
-    stream: AsyncGenerator[OpenAICompatCompletionResponse, None],
-    formatter: ChatFormat,
+    stream: AsyncGenerator[OpenAICompatCompletionResponse, None], formatter: ChatFormat
 ) -> AsyncGenerator:
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
