@@ -6,15 +6,14 @@
 from typing import AsyncGenerator
 
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
+from llama_models.sku_list import all_registered_models
 
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
 
-from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,
@@ -27,19 +26,15 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import VLLMImplConfig
 
 
-# Reference: https://docs.vllm.ai/en/latest/models/supported_models.html
-VLLM_SUPPORTED_MODELS = {
-    "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct",
-    "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct",
-}
+class VLLMInferenceAdapter(Inference):
+    model_id: str
 
-
-class VLLMInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: VLLMImplConfig) -> None:
-        ModelRegistryHelper.__init__(
-            self, stack_to_provider_models_map=VLLM_SUPPORTED_MODELS
-        )
+        self.huggingface_repo_to_llama_model_id = {
+            model.huggingface_repo: model.descriptor()
+            for model in all_registered_models()
+            if model.huggingface_repo
+        }
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -48,6 +43,19 @@ class VLLMInferenceAdapter(ModelRegistryHelper, Inference):
 
     async def shutdown(self) -> None:
         pass
+
+    async def list_models(self) -> List[ModelDef]:
+        repo = self.model_id
+        identifier = self.huggingface_repo_to_llama_model_id[repo]
+        return [
+            ModelDef(
+                identifier=identifier,
+                llama_model=identifier,
+                metadata={
+                    "huggingface_repo": repo,
+                },
+            )
+        ]
 
     def completion(
         self,
@@ -99,6 +107,8 @@ class VLLMInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> AsyncGenerator:
         params = self._get_params(request)
 
+        # TODO: Can we use client.completions.acreate() or maybe there is another way to directly create an async
+        #  generator so this wrapper is not necessary?
         async def _to_async_generator():
             s = client.completions.create(**params)
             for chunk in s:
@@ -112,7 +122,7 @@ class VLLMInferenceAdapter(ModelRegistryHelper, Inference):
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
-            "model": self.map_to_provider_model(request.model),
+            "model": request.model,
             "prompt": chat_completion_request_to_prompt(request, self.formatter),
             "stream": request.stream,
             **get_sampling_options(request),
