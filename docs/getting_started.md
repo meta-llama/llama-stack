@@ -73,7 +73,7 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local
 ```
 
 > [!NOTE]
-> `~/.llama` should be the path containing downloaded weights of Llama models. 
+> `~/.llama` should be the path containing downloaded weights of Llama models.
 
 
 #### Via conda
