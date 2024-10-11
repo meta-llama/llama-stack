@@ -9,14 +9,9 @@ from .vllm import VLLMInferenceAdapter
 
 
 async def get_adapter_impl(config: VLLMImplConfig, _deps):
-    assert isinstance(config, VLLMImplConfig), f"Unexpected config type: {type(config)}"
-
-    if config.url is not None:
-        impl = VLLMInferenceAdapter(config)
-    else:
-        raise ValueError(
-            "Invalid configuration. Specify either an URL or HF Inference Endpoint details (namespace and endpoint name)."
-        )
-
+    assert isinstance(
+        config, VLLMImplConfig
+    ), f"Unexpected config type: {type(config)}"
+    impl = VLLMInferenceAdapter(config)
     await impl.initialize()
     return impl
