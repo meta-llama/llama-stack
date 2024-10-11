@@ -71,16 +71,7 @@ class EvaluateTaskConfig(BaseModel):
     sampling_params: SamplingParams = SamplingParams()
 
 
-class BaseTask(
-    ABC,
-    Generic[
-        TDatasetSample,
-        TPreprocessedSample,
-        TPredictionSample,
-        TPostprocessedSample,
-        TSingleEvalResult,
-    ],
-):
+class BaseTask(ABC, Generic[TDatasetSample, TProcessedSample]):
     """
     A task represents a single evaluation benchmark, including it's dataset, preprocessing, postprocessing and scoring methods.
     Base class for all evaluation tasks. Each task needs to implement the following methods:
@@ -94,17 +85,15 @@ class BaseTask(
         self._name = self.__class__.__name__
 
     @abstractmethod
-    def preprocess_sample(self, sample: TDatasetSample) -> TPreprocessedSample:
+    def preprocess_sample(self, sample: TDatasetSample) -> TProcessedSample:
         raise NotImplementedError()
 
     @abstractmethod
-    def postprocess_sample(self, sample: TPredictionSample) -> TPostprocessedSample:
+    def postprocess_sample(self, sample: TProcessedSample) -> TProcessedSample:
         raise NotImplementedError()
 
     @abstractmethod
-    def score_sample(
-        self, sample: TPostprocessedSample, ground_truth: TPreprocessedSample
-    ):
+    def score_sample(self, sample: TProcessedSample) -> SingleEvalResult:
         raise NotImplementedError()
 
     @abstractmethod
@@ -112,24 +101,15 @@ class BaseTask(
         raise NotImplementedError()
 
     def preprocess(
-        self, dataset: BaseDataset[TDatasetSample]
-    ) -> List[TPreprocessedSample]:
-        return [self.preprocess_sample(sample) for sample in self.dataset]
+        self, dataset: BaseDataset[TProcessedSample]
+    ) -> List[TProcessedSample]:
+        return [self.preprocess_sample(sample) for sample in dataset]
 
-    def postprocess(
-        self, generation: List[TPredictionSample]
-    ) -> List[TPostprocessedSample]:
+    def postprocess(self, generation: List[TProcessedSample]) -> List[TProcessedSample]:
         return [self.postprocess_sample(sample) for sample in generation]
 
-    def score(
-        self,
-        postprocessed: List[TPostprocessedSample],
-        preprocessed_dataset: List[TPreprocessedSample],
-    ) -> List[TSingleEvalResult]:
-        return [
-            self.score_sample(sample, ground_truth)
-            for sample, ground_truth in zip(postprocessed, self.preprocessed_dataset)
-        ]
+    def score(self, postprocessed: List[TProcessedSample]) -> List[SingleEvalResult]:
+        return [self.score_sample(sample) for sample in postprocessed]
 
 
 class Evals(Protocol):

@@ -9,11 +9,12 @@ from enum import Enum
 from typing import Any, Dict, Generic, Iterator, Literal, Protocol, TypeVar, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-# A sample (row) from raw dataset
+# A sample (row) from dataset
 TDatasetSample = TypeVar("TDatasetSample")
 
 
@@ -26,46 +27,20 @@ class DictSample(DatasetSample):
     data: Dict[str, Any]
 
 
+# A sample (row) from evals intermediate dataset
+TProcessedSample = TypeVar("TProcessedSample")
+
+
 @json_schema_type
-class ProcessedDictSample(DatasetSample):
-    data: Dict[str, Any]
-    preprocessed: Dict[str, Any]
-    prediction: Dict[str, Any]
-    postprocessed: Dict[str, Any]
+class PredictionSample(BaseModel):
+    completion_message: str
 
 
-# # A sample (row) after preprocessing the raw dataset
-# TPreprocessedSample = TypeVar("TPreprocessedSample")
-
-# @json_schema_type
-# class PreprocessedSample(BaseModel): ...
-
-# @json_schema_type
-# class InferencePreprocessedSample(PreprocessedSample):
-#     # TODO: either keep it generic or specific to inference API
-#     # messages: List[Message]
-#     data: Dict[str, Any]
-
-# # A sample (row) from model prediction output
-# TPredictionSample = TypeVar("TPredictionSample")
-
-# @json_schema_type
-# class PredictionSample(BaseModel): ...
-
-# @json_schema_type
-# class InferencePredictionSample(PredictionSample):
-#     data: Dict[str, Any]
-
-
-# # A sample (row) from post-processed output
-# TPostprocessedSample = TypeVar("TPostprocessedSample")
-
-# @json_schema_type
-# class PostprocessedSample(BaseModel): ...
-
-# @json_schema_type
-# class InferencePostprocessedSample(PredictionSample):
-#     data: Dict[str, Any]
+@json_schema_type
+class ProcessedDictSample(DictSample):
+    preprocessed: Optional[Dict[str, Any]] = None
+    prediction: Optional[PredictionSample] = None
+    postprocessed: Optional[Dict[str, Any]] = None
 
 
 @json_schema_type

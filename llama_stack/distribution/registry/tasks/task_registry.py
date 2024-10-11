@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 from typing import AbstractSet, Dict
 
-from .task import BaseTask
+from llama_stack.apis.evals import BaseTask
 
 
 class TaskRegistry:
