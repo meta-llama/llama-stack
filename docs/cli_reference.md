@@ -110,19 +110,26 @@ llama download --source meta --model-id Llama3.2-11B-Vision-Instruct --meta-url 
 # safety models -- Llama-Guard and Prompt-Guard
 llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
 llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
+
+# Download multiple models with a single command
+llama download --source meta --model-ids Llama3.2-3B-Instruct,Llama3.2-11B-Vision-Instruct --meta-url META_URL_1,META_URL_2
 ```
+
 
 #### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
 
 ```bash
-llama download --source huggingface --model-id  Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
+llama download --source huggingface --model-id Llama3.1-8B-Instruct --hf-token <HF_TOKEN>
 
 llama download --source huggingface --model-id Llama3.1-70B-Instruct --hf-token <HF_TOKEN>
 
 llama download --source huggingface --model-id Llama-Guard-3-1B --ignore-patterns *original*
 llama download --source huggingface --model-id Prompt-Guard-86M --ignore-patterns *original*
+
+# Download multiple models with a single command
+llama download --source huggingface --model-ids Llama3.2-3B-Instruct,Llama3.2-11B-Vision-Instruct --hf-token <HF_TOKEN>
 ```
 
 **Important:** Set your environment variable `HF_TOKEN` or pass in `--hf-token` to the command to validate your access. You can find your token at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
