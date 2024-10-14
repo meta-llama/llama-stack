@@ -53,6 +53,7 @@ class MetaReferenceEvalsImpl(Evals):
                 scoring_config=EvaluateScoringConfig(
                     scorer_config_list=[
                         EvaluateSingleScorerConfig(scorer_name="accuracy"),
+                        EvaluateSingleScorerConfig(scorer_name="random"),
                     ]
                 ),
             )
