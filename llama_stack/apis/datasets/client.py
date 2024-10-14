@@ -26,7 +26,7 @@ def deserialize_dataset_def(j: Optional[Dict[str, Any]]) -> Optional[DatasetDef]
         raise ValueError(f"Unknown dataset type: {j['type']}")
 
 
-class DatasetClient(Datasets):
+class DatasetsClient(Datasets):
     def __init__(self, base_url: str):
         self.base_url = base_url
 
@@ -104,7 +104,7 @@ class DatasetClient(Datasets):
 
 
 async def run_main(host: str, port: int):
-    client = DatasetClient(f"http://{host}:{port}")
+    client = DatasetsClient(f"http://{host}:{port}")
 
     # register dataset
     response = await client.create_dataset(
@@ -112,6 +112,16 @@ async def run_main(host: str, port: int):
             identifier="test-dataset",
             url="https://openaipublic.blob.core.windows.net/simple-evals/mmlu.csv",
         ),
+    )
+    cprint(response, "green")
+
+    # register HF dataset
+    response = await client.create_dataset(
+        dataset_def=HuggingfaceDatasetDef(
+            identifier="hellaswag",
+            dataset_name="hellaswag",
+            kwargs={"split": "validation", "trust_remote_code": True},
+        )
     )
     cprint(response, "green")
 

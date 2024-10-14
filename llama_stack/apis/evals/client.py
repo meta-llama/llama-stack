@@ -12,6 +12,7 @@ import httpx
 from termcolor import cprint
 
 from .evals import *  # noqa: F403
+from ..datasets.client import DatasetsClient
 
 
 class EvaluationClient(Evals):
@@ -54,12 +55,30 @@ class EvaluationClient(Evals):
 async def run_main(host: str, port: int):
     client = EvaluationClient(f"http://{host}:{port}")
 
+    dataset_client = DatasetsClient(f"http://{host}:{port}")
+
     # Custom Eval Task
+
+    # 1. register custom dataset
+    response = await dataset_client.create_dataset(
+        dataset_def=CustomDatasetDef(
+            identifier="mmlu-simple-eval-en",
+            url="https://openaipublic.blob.core.windows.net/simple-evals/mmlu.csv",
+        ),
+    )
+    cprint(f"datasets/create: {response}", "cyan")
+
+    # 2. run evals on the registered dataset
     response = await client.run_evals(
         model="Llama3.1-8B-Instruct",
         dataset="mmlu-simple-eval-en",
         task="mmlu",
     )
+
+    if response.formatted_report:
+        cprint(response.formatted_report, "green")
+    else:
+        cprint(f"Response: {response}", "green")
 
     # Eleuther Eval Task
     # response = await client.run_evals(
@@ -70,10 +89,6 @@ async def run_main(host: str, port: int):
     #         n_samples=2,
     #     ),
     # )
-    if response.formatted_report:
-        cprint(response.formatted_report, "green")
-    else:
-        cprint(f"Response: {response}", "green")
 
 
 def main(host: str, port: int):
