@@ -47,6 +47,9 @@ class MetaReferenceEvalsImpl(Evals):
                     dataset_name=dataset,
                     row_limit=3,
                 ),
+                processor_config=EvaluateProcessorConfig(
+                    processor_identifier="mmlu",
+                ),
                 generation_config=EvaluateModelGenerationConfig(
                     model=model,
                 ),

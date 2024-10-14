@@ -90,14 +90,20 @@ class EvaluatePostprocessConfig(BaseModel):
 
 
 @json_schema_type
+class EvaluateProcessorConfig(BaseModel):
+    processor_identifier: str
+    preprocess_config: Optional[EvaluatePreprocessConfig] = None
+    postprocess_config: Optional[EvaluatePostprocessConfig] = None
+
+
+@json_schema_type
 class EvaluateJudgeScoringConfig(BaseModel): ...
 
 
 @json_schema_type
 class LLMJudgeConfig(BaseModel):
-    judge_preprocess_config: EvaluatePreprocessConfig
+    judge_processor_config: EvaluateProcessorConfig
     judge_model_generation_config: EvaluateModelGenerationConfig
-    judge_postprocess_config: EvaluatePostprocessConfig
     judge_scoring_config: EvaluateJudgeScoringConfig
 
 
@@ -116,9 +122,8 @@ class EvaluateScoringConfig(BaseModel):
 @json_schema_type
 class EvaluateTaskConfig(BaseModel):
     dataset_config: EvaluateDatasetConfig
-    preprocess_config: Optional[EvaluatePreprocessConfig] = None
+    processor_config: EvaluateProcessorConfig
     generation_config: EvaluateModelGenerationConfig
-    postprocess_config: Optional[EvaluatePostprocessConfig] = None
     scoring_config: EvaluateScoringConfig
 
 
