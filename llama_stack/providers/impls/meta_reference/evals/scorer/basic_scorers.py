@@ -6,7 +6,7 @@
 import random
 
 from llama_stack.apis.evals.evals import BaseScorer, EvalResult, SingleEvalResult
-from llama_stack.apis.dataset.dataset import *  # noqa: F401 F403
+from llama_stack.apis.datasets.datasets import *  # noqa: F401 F403
 
 
 class AggregateScorer(BaseScorer[ScorerInputSample]):

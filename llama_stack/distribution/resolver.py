@@ -12,6 +12,7 @@ from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.evals import Evals
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
@@ -23,6 +24,7 @@ from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
+    builtin_registry_apis,
     get_provider_registry,
 )
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -40,6 +42,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.shields: Shields,
         Api.telemetry: Telemetry,
         Api.evals: Evals,
+        Api.datasets: Datasets,
     }
 
 
@@ -135,6 +138,20 @@ async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, An
                     routing_table_api=info.routing_table_api,
                     api_dependencies=[info.routing_table_api],
                     deps__=([info.routing_table_api.value]),
+                ),
+            )
+        }
+
+    for info in builtin_registry_apis():
+        providers_with_specs[info.registry_api.value] = {
+            "__builtin__": ProviderWithSpec(
+                provider_id="__registry__",
+                provider_type="__registry__",
+                config={},
+                spec=RegistryProviderSpec(
+                    api=info.registry_api,
+                    module="llama_stack.distribution.registry",
+                    deps__=[],
                 ),
             )
         }
@@ -259,6 +276,12 @@ async def instantiate_provider(
 
         config = None
         args = [provider_spec.api, inner_impls, deps]
+    elif isinstance(provider_spec, RegistryProviderSpec):
+        print("ROUTER PROVIDER SPEC")
+        method = "get_registry_impl"
+
+        config = None
+        args = [provider_spec.api, deps]
     else:
         method = "get_provider_impl"
 

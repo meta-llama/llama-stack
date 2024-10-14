@@ -9,11 +9,9 @@ from termcolor import cprint
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.evals import *  # noqa: F403
-from llama_stack.apis.dataset import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 
 from .config import MetaReferenceEvalsImplConfig
-
-# from llama_stack.distribution.registry.tasks.task_registry import TaskRegistry
 from .tasks.run_eval_task import RunEvalTask
 
 
@@ -47,7 +45,7 @@ class MetaReferenceEvalsImpl(Evals):
             eval_task_config = EvaluateTaskConfig(
                 dataset_config=EvaluateDatasetConfig(
                     dataset_name=dataset,
-                    row_limit=2,
+                    row_limit=3,
                 ),
                 generation_config=EvaluateModelGenerationConfig(
                     model=model,

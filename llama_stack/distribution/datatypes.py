@@ -73,6 +73,16 @@ class RoutingTableProviderSpec(ProviderSpec):
     pip_packages: List[str] = Field(default_factory=list)
 
 
+# Example: /datasets
+class RegistryProviderSpec(ProviderSpec):
+    provider_type: str = "registry"
+    config_class: str = ""
+    docker_image: Optional[str] = None
+
+    module: str
+    pip_packages: List[str] = Field(default_factory=list)
+
+
 class DistributionSpec(BaseModel):
     description: Optional[str] = Field(
         default="",

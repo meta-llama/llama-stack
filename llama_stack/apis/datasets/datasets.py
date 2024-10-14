@@ -143,19 +143,19 @@ class BaseDataset(ABC, Generic[TDatasetSample]):
 
 class Datasets(Protocol):
     @webmethod(route="/datasets/create")
-    def create_dataset(
+    async def create_dataset(
         self,
-        dataset: DatasetDef,
+        dataset_def: DatasetDef,
     ) -> None: ...
 
     @webmethod(route="/datasets/get")
-    def get_dataset(
+    async def get_dataset(
         self,
         dataset_identifier: str,
     ) -> DatasetDef: ...
 
     @webmethod(route="/datasets/delete")
-    def delete_dataset(
+    async def delete_dataset(
         self,
-        dataset_uuid: str,
+        dataset_identifier: str,
     ) -> None: ...

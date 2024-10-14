@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 
 # TODO: make these import config based
-from llama_stack.apis.dataset import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 from ..registry import Registry
-from .dataset import CustomDataset, HuggingfaceDataset
+from .dataset_wrappers import CustomDataset, HuggingfaceDataset
 
 
 class DatasetRegistry(Registry[BaseDataset]):

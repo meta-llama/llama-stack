@@ -12,6 +12,7 @@ apis:
 - inference
 - safety
 - evals
+- datasets
 providers:
   evals:
   - provider_id: meta-reference

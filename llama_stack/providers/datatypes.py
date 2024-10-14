@@ -28,10 +28,12 @@ class Api(Enum):
     models = "models"
     shields = "shields"
     memory_banks = "memory_banks"
-    evals = "evals"
 
     # built-in API
     inspect = "inspect"
+
+    evals = "evals"
+    datasets = "datasets"
 
 
 class ModelsProtocolPrivate(Protocol):

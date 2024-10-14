@@ -21,6 +21,19 @@ class AutoRoutedApiInfo(BaseModel):
     router_api: Api
 
 
+class RegistryApiInfo(BaseModel):
+    registry_api: Api
+    # registry: Registry
+
+
+def builtin_registry_apis() -> List[RegistryApiInfo]:
+    return [
+        RegistryApiInfo(
+            registry_api=Api.datasets,
+        )
+    ]
+
+
 def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
     return [
         AutoRoutedApiInfo(
@@ -42,7 +55,12 @@ def providable_apis() -> List[Api]:
     routing_table_apis = set(
         x.routing_table_api for x in builtin_automatically_routed_apis()
     )
-    return [api for api in Api if api not in routing_table_apis and api != Api.inspect]
+    registry_apis = set(
+        x.registry_api for x in builtin_registry_apis() if x.registry_api
+    )
+    non_providable_apis = routing_table_apis | registry_apis | {Api.inspect}
+
+    return [api for api in Api if api not in non_providable_apis]
 
 
 def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
