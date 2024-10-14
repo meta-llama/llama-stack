@@ -42,6 +42,7 @@ Here is a list of the various API providers and available distributions that can
 |        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |
 |       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |
 |         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |
+|         Clarifai         |         Hosted         |            |       ✅       |            |            |               |
 |           Groq           |         Hosted         |            |       ✅       |            |            |               |
 |          Ollama          |      Single Node       |            |       ✅       |            |            |               |
 |           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |
