@@ -7,8 +7,6 @@ import re
 
 from llama_stack.apis.evals import *  # noqa: F403
 
-# from llama_stack.distribution.registry.tasks.task import BaseTask
-
 QUERY_TEMPLATE_MULTICHOICE = """
 Answer the following multiple choice question and make the answer very simple. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD.
 
@@ -112,60 +110,78 @@ def normalize_extracted_answer(extracted_answer: str) -> str:
     )
 
 
-class MMLUTask(BaseTask[DictSample, ProcessedDictSample]):
+class MMLUProcessor(
+    BaseGeneratorProcessor[
+        DictSample, PreprocessedSample, GenerationResponseSample, ScorerInputSample
+    ]
+):
     """
-    MMLU Task.
+    Generator processor for MMLU
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def preprocess_sample(self, sample: ProcessedDictSample) -> ProcessedDictSample:
+    def preprocess_sample(self, sample: DictSample) -> PreprocessedSample:
         content = QUERY_TEMPLATE_MULTICHOICE.format(**sample.data)
-        preprocessed = {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": content,
-                }
-            ],
-        }
-        processed_sample = ProcessedDictSample(
-            data=sample.data,
-            preprocessed=preprocessed,
+        preprocessed_msgs = [
+            {
+                "role": "user",
+                "content": content,
+            }
+        ]
+        processed_sample = PreprocessedSample(
+            generation_input=GenerationInput(
+                messages=preprocessed_msgs,
+            )
         )
         return processed_sample
 
-    def postprocess_sample(self, sample: ProcessedDictSample) -> ProcessedDictSample:
-        if not sample.postprocessed:
-            sample.postprocessed = {}
-        sample.postprocessed["postprocessed"] = normalize_response(
-            sample.prediction.completion_message
-        )
-        return sample
+    def postprocess_sample(
+        self, generation_sample: GenerationResponseSample, dataset_sample: DictSample
+    ) -> ScorerInputSample:
+        response_text = generation_sample.generation_output.completion_message
+        normalized_response = normalize_response(response_text)
 
-    def score_sample(self, sample: ProcessedDictSample) -> SingleEvalResult:
-        postprocessed_output = sample.postprocessed["postprocessed"]
-        expected_answer = sample.data["Answer"]
-
-        extracted_answer = None
+        # extract answer
+        extracted_answer = ""
         for answer_regex in MULTILINGUAL_ANSWER_REGEXES:
             regex = MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(answer_regex)
-            match = re.search(regex, postprocessed_output)
+            match = re.search(regex, normalized_response)
             if match:
                 extracted_answer = normalize_extracted_answer(match.group(1))
                 break
 
-        score = 1.0 if extracted_answer and extracted_answer == expected_answer else 0.0
-
-        return SingleEvalResult(
-            score_data={
-                "score": score,
-            },
+        return ScorerInputSample(
+            generation_output=PostprocessedGeneration(
+                completion_message=response_text,
+                transformed_generation=extracted_answer,
+            ),
+            expected_output=dataset_sample.data["Answer"],
         )
 
-    def aggregate_results(self, eval_results: List[SingleEvalResult]) -> EvalResult:
-        print("aggregate_results", eval_results)
-        sum_score = sum([result.score_data["score"] for result in eval_results])
+    # def score_sample(self, sample: ProcessedDictSample) -> SingleEvalResult:
+    #     postprocessed_output = sample.postprocessed["postprocessed"]
+    #     expected_answer = sample.data["Answer"]
 
-        return EvalResult(metrics={"score": str(sum_score / len(eval_results))})
+    #     extracted_answer = None
+    #     for answer_regex in MULTILINGUAL_ANSWER_REGEXES:
+    #         regex = MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(answer_regex)
+    #         match = re.search(regex, postprocessed_output)
+    #         if match:
+    #             extracted_answer = normalize_extracted_answer(match.group(1))
+    #             break
+
+    #     score = 1.0 if extracted_answer and extracted_answer == expected_answer else 0.0
+
+    #     return SingleEvalResult(
+    #         score_data={
+    #             "score": score,
+    #         },
+    #     )
+
+    # def aggregate_results(self, eval_results: List[SingleEvalResult]) -> EvalResult:
+    #     print("aggregate_results", eval_results)
+    #     sum_score = sum([result.score_data["score"] for result in eval_results])
+
+    #     return EvalResult(metrics={"score": str(sum_score / len(eval_results))})

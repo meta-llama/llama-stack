@@ -14,6 +14,25 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
+
+@json_schema_type
+class GenerationInput(BaseModel):
+    messages: List[Message]
+
+
+@json_schema_type
+class GenerationOutput(BaseModel):
+    completion_message: str
+    logprobs: Optional[List[TokenLogProbs]] = None
+
+
+@json_schema_type
+class PostprocessedGeneration(BaseModel):
+    completion_message: str
+    # structured transformed output from raw_completion_message to compute scorer metrics
+    transformed_generation: Optional[Any] = None
+
+
 # A sample (row) from dataset
 TDatasetSample = TypeVar("TDatasetSample")
 
@@ -27,20 +46,32 @@ class DictSample(DatasetSample):
     data: Dict[str, Any]
 
 
-# A sample (row) from evals intermediate dataset
-TProcessedSample = TypeVar("TProcessedSample")
+# A sample (row) from evals intermediate dataset after preprocessing
+TPreprocessedSample = TypeVar("TPreprocessedSample")
 
 
 @json_schema_type
-class PredictionSample(BaseModel):
-    completion_message: str
+class PreprocessedSample(DatasetSample):
+    generation_input: GenerationInput
+
+
+# A sample (row) from evals intermediate dataset after inference
+TGenerationResponseSample = TypeVar("TGenerationResponseSample")
 
 
 @json_schema_type
-class ProcessedDictSample(DictSample):
-    preprocessed: Optional[Dict[str, Any]] = None
-    prediction: Optional[PredictionSample] = None
-    postprocessed: Optional[Dict[str, Any]] = None
+class GenerationResponseSample(DatasetSample):
+    generation_output: GenerationOutput
+
+
+# A sample (row) for prepared evals dataset ready for scoring
+TScorerInputSample = TypeVar("TScorerInputSample")
+
+
+@json_schema_type
+class ScorerInputSample(DatasetSample):
+    generation_output: PostprocessedGeneration
+    expected_output: Union[str, List[str]]
 
 
 @json_schema_type

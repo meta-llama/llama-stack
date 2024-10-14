@@ -14,8 +14,8 @@ apis:
 - evals
 providers:
   evals:
-  - provider_id: eleuther
-    provider_type: eleuther
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config: {}
   inference:
   - provider_id: remote::tgi

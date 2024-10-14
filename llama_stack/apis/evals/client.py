@@ -33,7 +33,7 @@ class EvaluationClient(Evals):
     ) -> EvaluateResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/evals/run",
+                f"{self.base_url}/evals/run_eval_task",
                 json={
                     "model": model,
                     "task": task,
@@ -55,28 +55,25 @@ async def run_main(host: str, port: int):
     client = EvaluationClient(f"http://{host}:{port}")
 
     # Custom Eval Task
+    response = await client.run_evals(
+        model="Llama3.1-8B-Instruct",
+        dataset="mmlu-simple-eval-en",
+        task="mmlu",
+    )
+
+    # Eleuther Eval Task
     # response = await client.run_evals(
     #     model="Llama3.1-8B-Instruct",
-    #     dataset="mmlu-simple-eval-en",
-    #     task="mmlu",
+    #     # task="meta_mmlu_pro_instruct",
+    #     task="meta_ifeval",
     #     eval_task_config=EvaluateTaskConfig(
     #         n_samples=2,
     #     ),
     # )
-
-    # Eleuther Eval Task
-    response = await client.run_evals(
-        model="Llama3.1-8B-Instruct",
-        # task="meta_mmlu_pro_instruct",
-        task="meta_ifeval",
-        eval_task_config=EvaluateTaskConfig(
-            n_samples=2,
-        ),
-    )
     if response.formatted_report:
         cprint(response.formatted_report, "green")
     else:
-        cprint(f"evaluate response={response}", "green")
+        cprint(f"Response: {response}", "green")
 
 
 def main(host: str, port: int):
