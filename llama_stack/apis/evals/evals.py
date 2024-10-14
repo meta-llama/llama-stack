@@ -171,7 +171,7 @@ class BaseGeneratorProcessor(
         raise NotImplementedError()
 
 
-class BaseGenerator(ABC, Generic[TGenerationResponseSample]):
+class BaseGenerator(ABC, Generic[TPreprocessedSample, TGenerationResponseSample]):
     """
     Base class for all generators. Each generator needs to implement the following methods:
     - generate(self, preprocessed_dataset)
@@ -184,7 +184,7 @@ class BaseGenerator(ABC, Generic[TGenerationResponseSample]):
         return self.__class__.__name__
 
     @abstractmethod
-    def generate(
+    async def generate(
         self, preprocessed_dataset: List[TPreprocessedSample]
     ) -> List[TGenerationResponseSample]:
         raise NotImplementedError()
@@ -231,7 +231,7 @@ class BaseTask(ABC):
         self.scorer = scorer
 
     @abstractmethod
-    def run(self, *args, **kwargs) -> EvalResult:
+    async def run(self, *args, **kwargs) -> EvalResult:
         raise NotImplementedError()
 
 
