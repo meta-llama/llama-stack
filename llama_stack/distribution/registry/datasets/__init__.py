@@ -6,8 +6,13 @@
 
 # TODO: make these import config based
 from llama_stack.apis.dataset import *  # noqa: F403
+from ..registry import Registry
 from .dataset import CustomDataset, HuggingfaceDataset
-from .dataset_registry import DatasetRegistry
+
+
+class DatasetRegistry(Registry[BaseDataset]):
+    _REGISTRY: Dict[str, BaseDataset] = {}
+
 
 DATASETS_REGISTRY = [
     CustomDataset(
