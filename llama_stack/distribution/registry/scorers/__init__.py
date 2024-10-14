@@ -9,10 +9,7 @@ from llama_stack.providers.impls.meta_reference.evals.scorer.basic_scorers impor
 
 from ..registry import Registry
 
-
-class ScorerRegistry(Registry[BaseScorer]):
-    _REGISTRY: Dict[str, BaseScorer] = {}
-
+ScorerRegistry = Registry[BaseScorer]()
 
 SCORER_REGISTRY = {
     "accuracy": AccuracyScorer,

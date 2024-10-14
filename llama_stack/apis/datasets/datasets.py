@@ -29,8 +29,7 @@ class GenerationOutput(BaseModel):
 @json_schema_type
 class PostprocessedGeneration(BaseModel):
     completion_message: str
-    # structured transformed output from raw_completion_message to compute scorer metrics
-    transformed_generation: Optional[Any] = None
+    logprobs: Optional[List[TokenLogProbs]] = None
 
 
 # A sample (row) from dataset
@@ -70,8 +69,15 @@ TScorerInputSample = TypeVar("TScorerInputSample")
 
 @json_schema_type
 class ScorerInputSample(DatasetSample):
-    generation_output: PostprocessedGeneration
-    expected_output: Union[str, List[str]]
+    """
+    A dataset is required to have the following columns to be used for scoring:
+    - generated_answer: str
+    - expected_answer: Union[str, List[str]]
+    """
+
+    generated_answer: str
+    expected_answer: Union[str, List[str]]
+    generation_output: Optional[PostprocessedGeneration] = None
 
 
 @json_schema_type

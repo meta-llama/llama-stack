@@ -3,36 +3,34 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import AbstractSet, Dict, Generic, TypeVar
+from typing import AbstractSet, Generic, TypeVar
 
 TRegistry = TypeVar("TRegistry")
 
 
 class Registry(Generic[TRegistry]):
-    _REGISTRY: Dict[str, TRegistry] = {}
 
-    @staticmethod
-    def names() -> AbstractSet[str]:
-        return Registry._REGISTRY.keys()
+    def __init__(self) -> None:
+        super().__init__()
+        self.registry = {}
 
-    @staticmethod
-    def register(name: str, task: TRegistry) -> None:
-        if name in Registry._REGISTRY:
+    def names(self) -> AbstractSet[str]:
+        return self.registry.keys()
+
+    def register(self, name: str, task: TRegistry) -> None:
+        if name in self.registry:
             raise ValueError(f"Dataset {name} already exists.")
-        Registry._REGISTRY[name] = task
+        self.registry[name] = task
 
-    @staticmethod
-    def get(name: str) -> TRegistry:
-        if name not in Registry._REGISTRY:
+    def get(self, name: str) -> TRegistry:
+        if name not in self.registry:
             raise ValueError(f"Dataset {name} not found.")
-        return Registry._REGISTRY[name]
+        return self.registry[name]
 
-    @staticmethod
-    def delete(name: str) -> None:
-        if name not in Registry._REGISTRY:
+    def delete(self, name: str) -> None:
+        if name not in self.registry:
             raise ValueError(f"Dataset {name} not found.")
-        del Registry._REGISTRY[name]
+        del self.registry[name]
 
-    @staticmethod
-    def reset() -> None:
-        Registry._REGISTRY = {}
+    def reset(self) -> None:
+        self.registry = {}

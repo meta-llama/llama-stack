@@ -217,18 +217,8 @@ class BaseScorer(ABC, Generic[TScorerInputSample]):
 
 
 class BaseTask(ABC):
-    def __init__(
-        self,
-        generator_processor: Optional[BaseGeneratorProcessor] = None,
-        generator: Optional[BaseGenerator] = None,
-        scorer: Optional[BaseScorer] = None,
-        *args,
-        **kwargs
-    ) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_processor = generator_processor
-        self.generator = generator
-        self.scorer = scorer
 
     @abstractmethod
     async def run(self, *args, **kwargs) -> EvalResult:

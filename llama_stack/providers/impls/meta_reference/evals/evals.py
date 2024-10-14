@@ -71,6 +71,10 @@ class MetaReferenceEvalsImpl(Evals):
         dataset_config: EvaluateDatasetConfig,
         eval_scoring_config: EvaluateScoringConfig,
     ) -> EvaluateResponse:
+        cprint("run_scorer")
+
+        # main logic, we need to convert the datset into List[ScorerInputSample]
+
         return EvaluateResponse(
             eval_result={},
         )

@@ -28,8 +28,8 @@ class RandomScorer(BaseScorer[ScorerInputSample]):
 
 class AccuracyScorer(BaseScorer[ScorerInputSample]):
     def score_sample(self, scorer_input_sample: ScorerInputSample) -> SingleEvalResult:
-        extracted_answer = scorer_input_sample.generation_output.transformed_generation
-        expected_answer = scorer_input_sample.expected_output
+        extracted_answer = scorer_input_sample.generated_answer
+        expected_answer = scorer_input_sample.expected_answer
 
         accuracy = (
             1.0 if extracted_answer and extracted_answer == expected_answer else 0.0

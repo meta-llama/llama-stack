@@ -7,5 +7,4 @@ from llama_stack.apis.datasets import *  # noqa: F403
 from ..registry import Registry
 
 
-class DatasetRegistry(Registry[BaseDataset]):
-    _REGISTRY: Dict[str, BaseDataset] = {}
+DatasetRegistry = Registry[BaseDataset]()

@@ -153,35 +153,9 @@ class MMLUProcessor(
                 break
 
         return ScorerInputSample(
+            generated_answer=extracted_answer,
+            expected_answer=dataset_sample.data["Answer"],
             generation_output=PostprocessedGeneration(
                 completion_message=response_text,
-                transformed_generation=extracted_answer,
             ),
-            expected_output=dataset_sample.data["Answer"],
         )
-
-    # def score_sample(self, sample: ProcessedDictSample) -> SingleEvalResult:
-    #     postprocessed_output = sample.postprocessed["postprocessed"]
-    #     expected_answer = sample.data["Answer"]
-
-    #     extracted_answer = None
-    #     for answer_regex in MULTILINGUAL_ANSWER_REGEXES:
-    #         regex = MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(answer_regex)
-    #         match = re.search(regex, postprocessed_output)
-    #         if match:
-    #             extracted_answer = normalize_extracted_answer(match.group(1))
-    #             break
-
-    #     score = 1.0 if extracted_answer and extracted_answer == expected_answer else 0.0
-
-    #     return SingleEvalResult(
-    #         score_data={
-    #             "score": score,
-    #         },
-    #     )
-
-    # def aggregate_results(self, eval_results: List[SingleEvalResult]) -> EvalResult:
-    #     print("aggregate_results", eval_results)
-    #     sum_score = sum([result.score_data["score"] for result in eval_results])
-
-    #     return EvalResult(metrics={"score": str(sum_score / len(eval_results))})
