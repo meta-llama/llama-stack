@@ -28,5 +28,11 @@ class Registry(Generic[TRegistry]):
         return Registry._REGISTRY[name]
 
     @staticmethod
+    def delete(name: str) -> None:
+        if name not in Registry._REGISTRY:
+            raise ValueError(f"Dataset {name} not found.")
+        del Registry._REGISTRY[name]
+
+    @staticmethod
     def reset() -> None:
         Registry._REGISTRY = {}

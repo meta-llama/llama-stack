@@ -115,6 +115,27 @@ DatasetDef = Annotated[
 ]
 
 
+class DatasetsResponseStatus(Enum):
+    success = "success"
+    fail = "fail"
+
+
+@json_schema_type
+class CreateDatasetResponse(BaseModel):
+    status: DatasetsResponseStatus = Field(
+        description="Return status of the dataset creation",
+    )
+    msg: Optional[str] = None
+
+
+@json_schema_type
+class DeleteDatasetResponse(BaseModel):
+    status: DatasetsResponseStatus = Field(
+        description="Return status of the dataset creation",
+    )
+    msg: Optional[str] = None
+
+
 class BaseDataset(ABC, Generic[TDatasetSample]):
     def __init__(self) -> None:
         self.type: str = self.__class__.__name__
@@ -146,16 +167,19 @@ class Datasets(Protocol):
     async def create_dataset(
         self,
         dataset_def: DatasetDef,
-    ) -> None: ...
+    ) -> CreateDatasetResponse: ...
 
-    @webmethod(route="/datasets/get")
+    @webmethod(route="/datasets/get", method="GET")
     async def get_dataset(
         self,
         dataset_identifier: str,
-    ) -> DatasetDef: ...
+    ) -> Optional[DatasetDef]: ...
 
     @webmethod(route="/datasets/delete")
     async def delete_dataset(
         self,
         dataset_identifier: str,
-    ) -> None: ...
+    ) -> DeleteDatasetResponse: ...
+
+    @webmethod(route="/datasets/list", method="GET")
+    async def list_datasets(self) -> List[DatasetDef]: ...

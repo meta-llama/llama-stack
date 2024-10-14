@@ -4,10 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# from llama_stack.apis.datasets import *
-# from llama_stack.distribution.registry.datasets import DatasetRegistry  # noqa: F403
-# from ..registry import Registry
-# from .dataset_wrappers import CustomDataset, HuggingfaceDataset
+from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.distribution.registry.datasets import DatasetRegistry
+from llama_stack.distribution.registry.datasets.dataset_wrappers import (
+    CustomDataset,
+    HuggingfaceDataset,
+)
 
 
 class DatasetRegistryImpl(Datasets):
@@ -27,14 +29,55 @@ class DatasetRegistryImpl(Datasets):
     async def create_dataset(
         self,
         dataset_def: DatasetDef,
-    ) -> None:
-        print(f"Creating dataset {dataset.identifier}")
+    ) -> CreateDatasetResponse:
+        if dataset_def.type == DatasetType.huggingface.value:
+            dataset_cls = HuggingfaceDataset(dataset_def)
+        else:
+            dataset_cls = CustomDataset(dataset_def)
+
+        try:
+            DatasetRegistry.register(
+                dataset_def.identifier,
+                dataset_cls,
+            )
+        except ValueError as e:
+            return CreateDatasetResponse(
+                status=DatasetsResponseStatus.fail,
+                msg=str(e),
+            )
+
+        return CreateDatasetResponse(
+            status=DatasetsResponseStatus.success,
+            msg=f"Dataset '{dataset_def.identifier}' registered",
+        )
 
     async def get_dataset(
         self,
         dataset_identifier: str,
-    ) -> DatasetDef:
-        pass
+    ) -> Optional[DatasetDef]:
+        try:
+            dataset_ref = DatasetRegistry.get(dataset_identifier).config
+        except ValueError as e:
+            return None
 
-    async def delete_dataset(self, dataset_identifier: str) -> None:
-        pass
+        return dataset_ref
+
+    async def delete_dataset(self, dataset_identifier: str) -> DeleteDatasetResponse:
+        try:
+            DatasetRegistry.delete(dataset_identifier)
+        except ValueError as e:
+            return DeleteDatasetResponse(
+                status=DatasetsResponseStatus.fail,
+                msg=str(e),
+            )
+
+        return DeleteDatasetResponse(
+            status=DatasetsResponseStatus.success,
+            msg=f"Dataset '{dataset_identifier}' deleted",
+        )
+
+    async def list_datasets(self) -> List[DatasetDef]:
+        return [
+            DatasetRegistry.get(dataset_identifier).config
+            for dataset_identifier in DatasetRegistry.names()
+        ]
