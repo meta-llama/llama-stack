@@ -235,47 +235,6 @@ class BaseTask(ABC):
         raise NotImplementedError()
 
 
-# class BaseTask(ABC, Generic[TDatasetSample, TProcessedSample]):
-#     """
-#     A task represents a single evaluation benchmark, including it's dataset, preprocessing, postprocessing and scoring methods.
-#     Base class for all evaluation tasks. Each task needs to implement the following methods:
-#     - F1: preprocess_sample(self)
-#     - F2: postprocess_sample(self)
-#     - F3: score_sample(self)
-#     """
-
-#     def __init__(self, *args, **kwargs) -> None:
-#         super().__init__(*args, **kwargs)
-#         self._name = self.__class__.__name__
-
-#     @abstractmethod
-#     def preprocess_sample(self, sample: TDatasetSample) -> TProcessedSample:
-#         raise NotImplementedError()
-
-#     @abstractmethod
-#     def postprocess_sample(self, sample: TProcessedSample) -> TProcessedSample:
-#         raise NotImplementedError()
-
-#     @abstractmethod
-#     def score_sample(self, sample: TProcessedSample) -> SingleEvalResult:
-#         raise NotImplementedError()
-
-#     @abstractmethod
-#     def aggregate_results(self, eval_results: List[SingleEvalResult]) -> EvalResult:
-#         raise NotImplementedError()
-
-#     def preprocess(
-#         self, dataset: BaseDataset[TProcessedSample]
-#     ) -> List[TProcessedSample]:
-#         return [self.preprocess_sample(sample) for sample in dataset]
-
-#     def postprocess(self, generation: List[TProcessedSample]) -> List[TProcessedSample]:
-#         return [self.postprocess_sample(sample) for sample in generation]
-
-#     def score(self, postprocessed: List[TProcessedSample]) -> List[SingleEvalResult]:
-#         return [self.score_sample(sample) for sample in postprocessed]
-
-
 class Evals(Protocol):
 
     @webmethod(route="/evals/run_eval_task")
