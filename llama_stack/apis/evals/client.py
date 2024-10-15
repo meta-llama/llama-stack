@@ -136,6 +136,9 @@ async def run_main(host: str, port: int, eval_dataset_path: str = ""):
         dataset_def=CustomDatasetDef(
             identifier="rag-evals",
             url=data_url_from_file(eval_dataset_path),
+            rename_columns_map={
+                "query": "input_query",
+            },
         )
     )
     cprint(response, "cyan")
@@ -150,6 +153,9 @@ async def run_main(host: str, port: int, eval_dataset_path: str = ""):
         eval_scoring_config=EvaluateScoringConfig(
             scorer_config_list=[
                 EvaluateSingleScorerConfig(scorer_name="accuracy"),
+                EvaluateSingleScorerConfig(
+                    scorer_name="braintrust::answer-correctness"
+                ),
             ]
         ),
     )

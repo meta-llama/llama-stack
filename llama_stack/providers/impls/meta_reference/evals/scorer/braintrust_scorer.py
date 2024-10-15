@@ -14,11 +14,11 @@ from autoevals.ragas import *  # noqa: F403
 class BraintrustFactualityScorer(BaseScorer[ScorerInputSample]):
     def score_sample(self, scorer_input_sample: ScorerInputSample) -> SingleEvalResult:
         input_query = scorer_input_sample.input_query
-        extracted_answer = scorer_input_sample.generated_answer
+        generated_answer = scorer_input_sample.generated_answer
         expected_answer = scorer_input_sample.expected_answer
 
         evaluator = Factuality()
-        result = evaluator(output, expected, input=input_query)
+        result = evaluator(generated_answer, expected_answer, input=input_query)
         factuality = result.score
         return SingleEvalResult(score_data={"factuality": factuality})
 
@@ -37,11 +37,11 @@ class BraintrustFactualityScorer(BaseScorer[ScorerInputSample]):
 class BraintrustAnswerCorrectnessScorer(BaseScorer[ScorerInputSample]):
     def score_sample(self, scorer_input_sample: ScorerInputSample) -> SingleEvalResult:
         input_query = scorer_input_sample.input_query
-        extracted_answer = scorer_input_sample.generated_answer
+        generated_answer = scorer_input_sample.generated_answer
         expected_answer = scorer_input_sample.expected_answer
 
         evaluator = AnswerCorrectness()
-        result = evaluator(output, expected, input=input_query)
+        result = evaluator(generated_answer, expected_answer, input=input_query)
         correctness = result.score
         return SingleEvalResult(score_data={"answer_correctness": correctness})
 

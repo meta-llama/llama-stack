@@ -70,6 +70,9 @@ class CustomDataset(BaseDataset[DictSample]):
             df = df.sample(n=n_samples)
 
         self.dataset = Dataset.from_pandas(df)
+        if self.config.rename_columns_map:
+            for k, v in self.config.rename_columns_map.items():
+                self.dataset = self.dataset.rename_column(k, v)
 
 
 class HuggingfaceDataset(BaseDataset[DictSample]):

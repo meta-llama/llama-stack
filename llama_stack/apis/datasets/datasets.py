@@ -103,6 +103,7 @@ class HuggingfaceDatasetDef(BaseModel):
     )
     rename_columns_map: Optional[Dict[str, str]] = Field(
         description="A map of column names to rename to fit the schema of eval dataset for scoring",
+        default=None,
     )
     kwargs: Dict[str, Any] = Field(
         description="Any additional arguments to get Huggingface (e.g. split, trust_remote_code)",
@@ -118,6 +119,10 @@ class CustomDatasetDef(BaseModel):
     )
     url: str = Field(
         description="The URL to the dataset",
+    )
+    rename_columns_map: Optional[Dict[str, str]] = Field(
+        description="A map of column names to rename to fit the schema of eval dataset for scoring",
+        default=None,
     )
 
 
