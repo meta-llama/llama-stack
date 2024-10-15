@@ -6,7 +6,6 @@
 
 import os
 from copy import deepcopy
-from dataclasses import dataclass
 from functools import partial
 from typing import Generator, List, Optional
 
@@ -15,7 +14,7 @@ from llama_models.llama3.api.datatypes import Message, ToolPromptFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 
-from .config import MetaReferenceImplConfig
+from .config import MetaReferenceInferenceConfig
 from .generation import Llama, model_checkpoint_dir
 from .parallel_utils import InferenceArgs, ModelParallelProcessGroup
 
@@ -36,7 +35,7 @@ class ModelRunner:
         )
 
 
-def init_model_cb(config: MetaReferenceImplConfig):
+def init_model_cb(config: MetaReferenceInferenceConfig):
     llama = Llama.build(config)
     return ModelRunner(llama)
 
@@ -52,7 +51,7 @@ class LlamaModelParallelGenerator:
     clear at the callsite why we need to use a context manager.
     """
 
-    def __init__(self, config: MetaReferenceImplConfig):
+    def __init__(self, config: MetaReferenceInferenceConfig):
         self.config = config
         self.model = resolve_model(self.config.model)
         # this is a hack because Agent's loop uses this to tokenize and check if input is too long
