@@ -73,10 +73,13 @@ class ScorerInputSample(DatasetSample):
     A dataset is required to have the following columns to be used for scoring:
     - generated_answer: str
     - expected_answer: Union[str, List[str]]
+    - (optional) input_query: str
+    - (optional) generation_output: PostprocessedGeneration
     """
 
     generated_answer: str
     expected_answer: Union[str, List[str]]
+    input_query: Optional[str] = None
     generation_output: Optional[PostprocessedGeneration] = None
 
 

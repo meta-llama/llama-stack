@@ -6,14 +6,18 @@
 # TODO: make these import config based
 from llama_stack.apis.evals import *  # noqa: F403
 from llama_stack.providers.impls.meta_reference.evals.scorer.basic_scorers import *  # noqa: F403
+from llama_stack.providers.impls.meta_reference.evals.scorer.braintrust_scorer import *  # noqa: F403
 
 from ..registry import Registry
 
+# TODO: make these import config based
 ScorerRegistry = Registry[BaseScorer]()
 
 SCORER_REGISTRY = {
     "accuracy": AccuracyScorer,
     "random": RandomScorer,
+    "braintrust::factuality": BrainTrustFactualityScorer,
+    "braintrust::answer-correctness": BraintrustAnswerCorrectnessScorer,
 }
 
 for k, v in SCORER_REGISTRY.items():
