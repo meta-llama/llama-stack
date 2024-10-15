@@ -315,14 +315,6 @@ components:
       - photogen
       - code_interpreter
       type: string
-    CancelEvaluationJobRequest:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      type: object
     CancelTrainingJobRequest:
       additionalProperties: false
       properties:
@@ -572,13 +564,45 @@ components:
     CreateDatasetRequest:
       additionalProperties: false
       properties:
-        dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-        uuid:
+        dataset_def:
+          oneOf:
+          - $ref: '#/components/schemas/HuggingfaceDatasetDef'
+          - $ref: '#/components/schemas/CustomDatasetDef'
+      required:
+      - dataset_def
+      type: object
+    CreateDatasetResponse:
+      additionalProperties: false
+      properties:
+        msg:
+          type: string
+        status:
+          enum:
+          - success
+          - fail
           type: string
       required:
-      - uuid
-      - dataset
+      - status
+      type: object
+    CustomDatasetDef:
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+        rename_columns_map:
+          additionalProperties:
+            type: string
+          type: object
+        type:
+          const: custom
+          default: custom
+          type: string
+        url:
+          type: string
+      required:
+      - type
+      - identifier
+      - url
       type: object
     DPOAlignmentConfig:
       additionalProperties: false
@@ -619,10 +643,23 @@ components:
     DeleteDatasetRequest:
       additionalProperties: false
       properties:
-        dataset_uuid:
+        dataset_identifier:
           type: string
       required:
-      - dataset_uuid
+      - dataset_identifier
+      type: object
+    DeleteDatasetResponse:
+      additionalProperties: false
+      properties:
+        msg:
+          type: string
+        status:
+          enum:
+          - success
+          - fail
+          type: string
+      required:
+      - status
       type: object
     DialogGenerations:
       additionalProperties: false
@@ -701,78 +738,147 @@ components:
       required:
       - embeddings
       type: object
-    EvaluateQuestionAnsweringRequest:
+    EvalResult:
       additionalProperties: false
       properties:
         metrics:
-          items:
-            enum:
-            - em
-            - f1
-            type: string
-          type: array
+          additionalProperties:
+            type: number
+          type: object
       required:
       - metrics
+      title: Aggregated final evaluation result.
       type: object
-    EvaluateSummarizationRequest:
+    EvaluateDatasetConfig:
       additionalProperties: false
       properties:
-        metrics:
+        dataset_identifier:
+          type: string
+        kwargs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        row_limit:
+          type: integer
+      required:
+      - dataset_identifier
+      type: object
+    EvaluateJudgeScoringConfig:
+      type: object
+    EvaluateModelGenerationConfig:
+      additionalProperties: false
+      properties:
+        kwargs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        model:
+          type: string
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
+      required:
+      - model
+      - sampling_params
+      type: object
+    EvaluatePostprocessConfig:
+      additionalProperties: false
+      properties:
+        kwargs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+      type: object
+    EvaluatePreprocessConfig:
+      additionalProperties: false
+      properties:
+        kwargs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+      type: object
+    EvaluateProcessorConfig:
+      additionalProperties: false
+      properties:
+        postprocess_config:
+          $ref: '#/components/schemas/EvaluatePostprocessConfig'
+        preprocess_config:
+          $ref: '#/components/schemas/EvaluatePreprocessConfig'
+        processor_identifier:
+          type: string
+      required:
+      - processor_identifier
+      type: object
+    EvaluateResponse:
+      additionalProperties: false
+      properties:
+        eval_result:
+          $ref: '#/components/schemas/EvalResult'
+        formatted_report:
+          type: string
+      required:
+      - eval_result
+      title: Scores for evaluation.
+      type: object
+    EvaluateScoringConfig:
+      additionalProperties: false
+      properties:
+        scorer_config_list:
           items:
-            enum:
-            - rouge
-            - bleu
-            type: string
+            $ref: '#/components/schemas/EvaluateSingleScorerConfig'
           type: array
       required:
-      - metrics
+      - scorer_config_list
       type: object
-    EvaluateTextGenerationRequest:
+    EvaluateSingleScorerConfig:
       additionalProperties: false
       properties:
-        metrics:
-          items:
-            enum:
-            - perplexity
-            - rouge
-            - bleu
-            type: string
-          type: array
-      required:
-      - metrics
-      type: object
-    EvaluationJob:
-      additionalProperties: false
-      properties:
-        job_uuid:
+        llm_judge_config:
+          $ref: '#/components/schemas/LLMJudgeConfig'
+        scorer_name:
           type: string
       required:
-      - job_uuid
+      - scorer_name
       type: object
-    EvaluationJobArtifactsResponse:
+    EvaluateTaskConfig:
       additionalProperties: false
       properties:
-        job_uuid:
-          type: string
+        dataset_config:
+          $ref: '#/components/schemas/EvaluateDatasetConfig'
+        generation_config:
+          $ref: '#/components/schemas/EvaluateModelGenerationConfig'
+        processor_config:
+          $ref: '#/components/schemas/EvaluateProcessorConfig'
+        scoring_config:
+          $ref: '#/components/schemas/EvaluateScoringConfig'
       required:
-      - job_uuid
-      title: Artifacts of a evaluation job.
-      type: object
-    EvaluationJobLogStream:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      type: object
-    EvaluationJobStatusResponse:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
+      - dataset_config
+      - processor_config
+      - generation_config
+      - scoring_config
       type: object
     FinetuningAlgorithm:
       enum:
@@ -844,6 +950,39 @@ components:
           type: string
       required:
       - status
+      type: object
+    HuggingfaceDatasetDef:
+      additionalProperties: false
+      properties:
+        dataset_name:
+          type: string
+        dataset_path:
+          type: string
+        identifier:
+          type: string
+        kwargs:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        rename_columns_map:
+          additionalProperties:
+            type: string
+          type: object
+        type:
+          const: huggingface
+          default: huggingface
+          type: string
+      required:
+      - type
+      - identifier
+      - dataset_path
+      - kwargs
       type: object
     ImageMedia:
       additionalProperties: false
@@ -935,6 +1074,20 @@ components:
       - identifier
       - provider_id
       - type
+      type: object
+    LLMJudgeConfig:
+      additionalProperties: false
+      properties:
+        judge_model_generation_config:
+          $ref: '#/components/schemas/EvaluateModelGenerationConfig'
+        judge_processor_config:
+          $ref: '#/components/schemas/EvaluateProcessorConfig'
+        judge_scoring_config:
+          $ref: '#/components/schemas/EvaluateJudgeScoringConfig'
+      required:
+      - judge_processor_config
+      - judge_model_generation_config
+      - judge_scoring_config
       type: object
     LogEventRequest:
       additionalProperties: false
@@ -1628,6 +1781,32 @@ components:
       - route
       - method
       - provider_types
+      type: object
+    RunEvalTaskRequest:
+      additionalProperties: false
+      properties:
+        dataset:
+          type: string
+        eval_task_config:
+          $ref: '#/components/schemas/EvaluateTaskConfig'
+        model:
+          type: string
+        task:
+          type: string
+      required:
+      - model
+      - task
+      type: object
+    RunScorerRequest:
+      additionalProperties: false
+      properties:
+        dataset_config:
+          $ref: '#/components/schemas/EvaluateDatasetConfig'
+        eval_scoring_config:
+          $ref: '#/components/schemas/EvaluateScoringConfig'
+      required:
+      - dataset_config
+      - eval_scoring_config
       type: object
     RunShieldRequest:
       additionalProperties: false
@@ -2507,7 +2686,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-09 21:10:09.073430"
+    \ draft and subject to change.\n                Generated at 2024-10-15 00:44:26.278642"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2693,7 +2872,7 @@ paths:
       responses:
         '200':
           content:
-            application/json:
+            text/event-stream:
               schema:
                 $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
           description: OK
@@ -2796,6 +2975,10 @@ paths:
         required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDatasetResponse'
           description: OK
       tags:
       - Datasets
@@ -2817,6 +3000,10 @@ paths:
         required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDatasetResponse'
           description: OK
       tags:
       - Datasets
@@ -2824,7 +3011,7 @@ paths:
     get:
       parameters:
       - in: query
-        name: dataset_uuid
+        name: dataset_identifier
         required: true
         schema:
           type: string
@@ -2840,104 +3027,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainEvalDataset'
+                oneOf:
+                - oneOf:
+                  - $ref: '#/components/schemas/HuggingfaceDatasetDef'
+                  - $ref: '#/components/schemas/CustomDatasetDef'
+                - type: 'null'
           description: OK
       tags:
       - Datasets
-  /evaluate/job/artifacts:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobArtifactsResponse'
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/job/cancel:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CancelEvaluationJobRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/job/logs:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobLogStream'
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/job/status:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobStatusResponse'
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/jobs:
+  /datasets/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2952,11 +3050,13 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/EvaluationJob'
+                oneOf:
+                - $ref: '#/components/schemas/HuggingfaceDatasetDef'
+                - $ref: '#/components/schemas/CustomDatasetDef'
           description: OK
       tags:
-      - Evaluations
-  /evaluate/question_answering/:
+      - Datasets
+  /evals/run_eval_task:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2970,18 +3070,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateQuestionAnsweringRequest'
+              $ref: '#/components/schemas/RunEvalTaskRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJob'
+                $ref: '#/components/schemas/EvaluateResponse'
           description: OK
       tags:
-      - Evaluations
-  /evaluate/summarization/:
+      - Evals
+  /evals/run_scorer:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2995,42 +3095,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateSummarizationRequest'
+              $ref: '#/components/schemas/RunScorerRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJob'
+                $ref: '#/components/schemas/EvaluateResponse'
           description: OK
       tags:
-      - Evaluations
-  /evaluate/text_generation/:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EvaluateTextGenerationRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJob'
-          description: OK
-      tags:
-      - Evaluations
+      - Evals
   /health:
     get:
       parameters:
@@ -3712,20 +3787,20 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: RewardScoring
+- name: Models
+- name: BatchInference
+- name: Inspect
+- name: Evals
+- name: Safety
+- name: Shields
+- name: Telemetry
+- name: Agents
 - name: Memory
 - name: SyntheticDataGeneration
-- name: Models
-- name: Safety
-- name: BatchInference
-- name: Agents
-- name: MemoryBanks
-- name: Shields
-- name: Datasets
-- name: Evaluations
-- name: Inspect
 - name: PostTraining
-- name: Telemetry
+- name: Datasets
+- name: MemoryBanks
+- name: RewardScoring
 - name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
@@ -3782,9 +3857,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/CancelEvaluationJobRequest"
-    />
-  name: CancelEvaluationJobRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
     />
   name: CancelTrainingJobRequest
@@ -3919,17 +3991,18 @@ tags:
   name: Turn
 - description: <SchemaDefinition schemaRef="#/components/schemas/ViolationLevel" />
   name: ViolationLevel
-- description: 'Dataset to be used for training or evaluating language models.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDataset" />'
-  name: TrainEvalDataset
-- description: <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDatasetColumnType"
+- description: <SchemaDefinition schemaRef="#/components/schemas/CustomDatasetDef"
     />
-  name: TrainEvalDatasetColumnType
+  name: CustomDatasetDef
+- description: <SchemaDefinition schemaRef="#/components/schemas/HuggingfaceDatasetDef"
+    />
+  name: HuggingfaceDatasetDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequest"
     />
   name: CreateDatasetRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetResponse"
+    />
+  name: CreateDatasetResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
     />
   name: DeleteAgentsRequest
@@ -3939,23 +4012,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDatasetRequest"
     />
   name: DeleteDatasetRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDatasetResponse"
+    />
+  name: DeleteDatasetResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsResponse"
     />
   name: EmbeddingsResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
-    />
-  name: EvaluateQuestionAnsweringRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJob" />
-  name: EvaluationJob
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
-    />
-  name: EvaluateSummarizationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
-    />
-  name: EvaluateTextGenerationRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetAgentsSessionRequest"
     />
   name: GetAgentsSessionRequest
@@ -3979,18 +4044,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
   name: AgentStepResponse
-- description: 'Artifacts of a evaluation job.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobArtifactsResponse"
-    />'
-  name: EvaluationJobArtifactsResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobLogStream"
-    />
-  name: EvaluationJobLogStream
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
-    />
-  name: EvaluationJobStatusResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/ModelDefWithProvider"
     />
   name: ModelDefWithProvider
@@ -4067,6 +4120,14 @@ tags:
   name: OptimizerConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/RLHFAlgorithm" />
   name: RLHFAlgorithm
+- description: 'Dataset to be used for training or evaluating language models.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDataset" />'
+  name: TrainEvalDataset
+- description: <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDatasetColumnType"
+    />
+  name: TrainEvalDatasetColumnType
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
   name: TrainingConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/PreferenceOptimizeRequest"
@@ -4104,6 +4165,51 @@ tags:
   name: ScoredDialogGenerations
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
   name: ScoredMessage
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateDatasetConfig"
+    />
+  name: EvaluateDatasetConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateJudgeScoringConfig"
+    />
+  name: EvaluateJudgeScoringConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateModelGenerationConfig"
+    />
+  name: EvaluateModelGenerationConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluatePostprocessConfig"
+    />
+  name: EvaluatePostprocessConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluatePreprocessConfig"
+    />
+  name: EvaluatePreprocessConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateProcessorConfig"
+    />
+  name: EvaluateProcessorConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateScoringConfig"
+    />
+  name: EvaluateScoringConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateSingleScorerConfig"
+    />
+  name: EvaluateSingleScorerConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTaskConfig"
+    />
+  name: EvaluateTaskConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/LLMJudgeConfig" />
+  name: LLMJudgeConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunEvalTaskRequest"
+    />
+  name: RunEvalTaskRequest
+- description: 'Aggregated final evaluation result.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/EvalResult" />'
+  name: EvalResult
+- description: 'Scores for evaluation.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/EvaluateResponse" />'
+  name: EvaluateResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/RunScorerRequest"
+    />
+  name: RunScorerRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
     />
   name: RunShieldRequest
@@ -4141,7 +4247,7 @@ x-tagGroups:
   - Agents
   - BatchInference
   - Datasets
-  - Evaluations
+  - Evals
   - Inference
   - Inspect
   - Memory
@@ -4172,7 +4278,6 @@ x-tagGroups:
   - BatchCompletionRequest
   - BatchCompletionResponse
   - BuiltinTool
-  - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
   - ChatCompletionRequest
   - ChatCompletionResponse
@@ -4189,31 +4294,40 @@ x-tagGroups:
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
   - CreateDatasetRequest
+  - CreateDatasetResponse
+  - CustomDatasetDef
   - DPOAlignmentConfig
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
   - DeleteDatasetRequest
+  - DeleteDatasetResponse
   - DialogGenerations
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
-  - EvaluateQuestionAnsweringRequest
-  - EvaluateSummarizationRequest
-  - EvaluateTextGenerationRequest
-  - EvaluationJob
-  - EvaluationJobArtifactsResponse
-  - EvaluationJobLogStream
-  - EvaluationJobStatusResponse
+  - EvalResult
+  - EvaluateDatasetConfig
+  - EvaluateJudgeScoringConfig
+  - EvaluateModelGenerationConfig
+  - EvaluatePostprocessConfig
+  - EvaluatePreprocessConfig
+  - EvaluateProcessorConfig
+  - EvaluateResponse
+  - EvaluateScoringConfig
+  - EvaluateSingleScorerConfig
+  - EvaluateTaskConfig
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
   - GraphMemoryBankDef
   - HealthInfo
+  - HuggingfaceDatasetDef
   - ImageMedia
   - InferenceStep
   - InsertDocumentsRequest
   - KeyValueMemoryBankDef
   - KeywordMemoryBankDef
+  - LLMJudgeConfig
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
@@ -4243,6 +4357,8 @@ x-tagGroups:
   - RewardScoreRequest
   - RewardScoringResponse
   - RouteInfo
+  - RunEvalTaskRequest
+  - RunScorerRequest
   - RunShieldRequest
   - RunShieldResponse
   - SafetyViolation

@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-09 21:10:09.073430"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-15 00:44:26.278642"
     },
     "servers": [
         {
@@ -102,39 +102,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/BatchCompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/job/cancel": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CancelEvaluationJobRequest"
                             }
                         }
                     },
@@ -355,7 +322,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/json": {
+                            "text/event-stream": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
                                 }
@@ -393,7 +360,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateDatasetResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -492,7 +466,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeleteDatasetResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -554,126 +535,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/EmbeddingsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/question_answering/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/summarization/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateSummarizationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/text_generation/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateTextGenerationRequest"
                             }
                         }
                     },
@@ -845,7 +706,21 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TrainEvalDataset"
+                                    "oneOf": [
+                                        {
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/HuggingfaceDatasetDef"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/CustomDatasetDef"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -856,157 +731,13 @@
                 ],
                 "parameters": [
                     {
-                        "name": "dataset_uuid",
+                        "name": "dataset_identifier",
                         "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/job/artifacts": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJobArtifactsResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/job/logs": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJobLogStream"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/job/status": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJobStatusResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/jobs": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
                     {
                         "name": "X-LlamaStack-ProviderData",
                         "in": "header",
@@ -1410,6 +1141,43 @@
                     },
                     "required": true
                 }
+            }
+        },
+        "/datasets/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/HuggingfaceDatasetDef"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/CustomDatasetDef"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/memory_banks/list": {
@@ -1829,6 +1597,86 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RewardScoreRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/evals/run_eval_task": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Evals"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunEvalTaskRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/evals/run_scorer": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Evals"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunScorerRequest"
                             }
                         }
                     },
@@ -2569,18 +2417,6 @@
                 "additionalProperties": false,
                 "required": [
                     "completion_message_batch"
-                ]
-            },
-            "CancelEvaluationJobRequest": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
                 ]
             },
             "CancelTrainingJobRequest": {
@@ -4090,19 +3926,58 @@
                     "error"
                 ]
             },
-            "TrainEvalDataset": {
+            "CustomDatasetDef": {
                 "type": "object",
                 "properties": {
-                    "columns": {
+                    "type": {
+                        "type": "string",
+                        "const": "custom",
+                        "default": "custom"
+                    },
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "rename_columns_map": {
                         "type": "object",
                         "additionalProperties": {
-                            "$ref": "#/components/schemas/TrainEvalDatasetColumnType"
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "identifier",
+                    "url"
+                ]
+            },
+            "HuggingfaceDatasetDef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "huggingface",
+                        "default": "huggingface"
+                    },
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "dataset_path": {
+                        "type": "string"
+                    },
+                    "dataset_name": {
+                        "type": "string"
+                    },
+                    "rename_columns_map": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
                         }
                     },
-                    "content_url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "metadata": {
+                    "kwargs": {
                         "type": "object",
                         "additionalProperties": {
                             "oneOf": [
@@ -4130,35 +4005,48 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "columns",
-                    "content_url"
-                ],
-                "title": "Dataset to be used for training or evaluating language models."
-            },
-            "TrainEvalDatasetColumnType": {
-                "type": "string",
-                "enum": [
-                    "dialog",
-                    "text",
-                    "media",
-                    "number",
-                    "json"
+                    "type",
+                    "identifier",
+                    "dataset_path",
+                    "kwargs"
                 ]
             },
             "CreateDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "uuid": {
-                        "type": "string"
-                    },
-                    "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
+                    "dataset_def": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/HuggingfaceDatasetDef"
+                            },
+                            {
+                                "$ref": "#/components/schemas/CustomDatasetDef"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "uuid",
-                    "dataset"
+                    "dataset_def"
+                ]
+            },
+            "CreateDatasetResponse": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "success",
+                            "fail"
+                        ]
+                    },
+                    "msg": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "status"
                 ]
             },
             "DeleteAgentsRequest": {
@@ -4192,13 +4080,32 @@
             "DeleteDatasetRequest": {
                 "type": "object",
                 "properties": {
-                    "dataset_uuid": {
+                    "dataset_identifier": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "dataset_uuid"
+                    "dataset_identifier"
+                ]
+            },
+            "DeleteDatasetResponse": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "success",
+                            "fail"
+                        ]
+                    },
+                    "msg": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "status"
                 ]
             },
             "EmbeddingsRequest": {
@@ -4256,76 +4163,6 @@
                 "additionalProperties": false,
                 "required": [
                     "embeddings"
-                ]
-            },
-            "EvaluateQuestionAnsweringRequest": {
-                "type": "object",
-                "properties": {
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "em",
-                                "f1"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "metrics"
-                ]
-            },
-            "EvaluationJob": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ]
-            },
-            "EvaluateSummarizationRequest": {
-                "type": "object",
-                "properties": {
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "rouge",
-                                "bleu"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "metrics"
-                ]
-            },
-            "EvaluateTextGenerationRequest": {
-                "type": "object",
-                "properties": {
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "perplexity",
-                                "rouge",
-                                "bleu"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "metrics"
                 ]
             },
             "GetAgentsSessionRequest": {
@@ -4511,43 +4348,6 @@
                 "additionalProperties": false,
                 "required": [
                     "step"
-                ]
-            },
-            "EvaluationJobArtifactsResponse": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ],
-                "title": "Artifacts of a evaluation job."
-            },
-            "EvaluationJobLogStream": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ]
-            },
-            "EvaluationJobStatusResponse": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
                 ]
             },
             "ModelDefWithProvider": {
@@ -5265,6 +5065,61 @@
                     "dpo"
                 ]
             },
+            "TrainEvalDataset": {
+                "type": "object",
+                "properties": {
+                    "columns": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/TrainEvalDatasetColumnType"
+                        }
+                    },
+                    "content_url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "columns",
+                    "content_url"
+                ],
+                "title": "Dataset to be used for training or evaluating language models."
+            },
+            "TrainEvalDatasetColumnType": {
+                "type": "string",
+                "enum": [
+                    "dialog",
+                    "text",
+                    "media",
+                    "number",
+                    "json"
+                ]
+            },
             "TrainingConfig": {
                 "type": "object",
                 "properties": {
@@ -5709,6 +5564,314 @@
                     "score"
                 ]
             },
+            "EvaluateDatasetConfig": {
+                "type": "object",
+                "properties": {
+                    "dataset_identifier": {
+                        "type": "string"
+                    },
+                    "row_limit": {
+                        "type": "integer"
+                    },
+                    "kwargs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_identifier"
+                ]
+            },
+            "EvaluateJudgeScoringConfig": {
+                "type": "object"
+            },
+            "EvaluateModelGenerationConfig": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "kwargs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "sampling_params"
+                ]
+            },
+            "EvaluatePostprocessConfig": {
+                "type": "object",
+                "properties": {
+                    "kwargs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "EvaluatePreprocessConfig": {
+                "type": "object",
+                "properties": {
+                    "kwargs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "EvaluateProcessorConfig": {
+                "type": "object",
+                "properties": {
+                    "processor_identifier": {
+                        "type": "string"
+                    },
+                    "preprocess_config": {
+                        "$ref": "#/components/schemas/EvaluatePreprocessConfig"
+                    },
+                    "postprocess_config": {
+                        "$ref": "#/components/schemas/EvaluatePostprocessConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "processor_identifier"
+                ]
+            },
+            "EvaluateScoringConfig": {
+                "type": "object",
+                "properties": {
+                    "scorer_config_list": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EvaluateSingleScorerConfig"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "scorer_config_list"
+                ]
+            },
+            "EvaluateSingleScorerConfig": {
+                "type": "object",
+                "properties": {
+                    "scorer_name": {
+                        "type": "string"
+                    },
+                    "llm_judge_config": {
+                        "$ref": "#/components/schemas/LLMJudgeConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "scorer_name"
+                ]
+            },
+            "EvaluateTaskConfig": {
+                "type": "object",
+                "properties": {
+                    "dataset_config": {
+                        "$ref": "#/components/schemas/EvaluateDatasetConfig"
+                    },
+                    "processor_config": {
+                        "$ref": "#/components/schemas/EvaluateProcessorConfig"
+                    },
+                    "generation_config": {
+                        "$ref": "#/components/schemas/EvaluateModelGenerationConfig"
+                    },
+                    "scoring_config": {
+                        "$ref": "#/components/schemas/EvaluateScoringConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_config",
+                    "processor_config",
+                    "generation_config",
+                    "scoring_config"
+                ]
+            },
+            "LLMJudgeConfig": {
+                "type": "object",
+                "properties": {
+                    "judge_processor_config": {
+                        "$ref": "#/components/schemas/EvaluateProcessorConfig"
+                    },
+                    "judge_model_generation_config": {
+                        "$ref": "#/components/schemas/EvaluateModelGenerationConfig"
+                    },
+                    "judge_scoring_config": {
+                        "$ref": "#/components/schemas/EvaluateJudgeScoringConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "judge_processor_config",
+                    "judge_model_generation_config",
+                    "judge_scoring_config"
+                ]
+            },
+            "RunEvalTaskRequest": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    },
+                    "task": {
+                        "type": "string"
+                    },
+                    "dataset": {
+                        "type": "string"
+                    },
+                    "eval_task_config": {
+                        "$ref": "#/components/schemas/EvaluateTaskConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model",
+                    "task"
+                ]
+            },
+            "EvalResult": {
+                "type": "object",
+                "properties": {
+                    "metrics": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "metrics"
+                ],
+                "title": "Aggregated final evaluation result."
+            },
+            "EvaluateResponse": {
+                "type": "object",
+                "properties": {
+                    "eval_result": {
+                        "$ref": "#/components/schemas/EvalResult"
+                    },
+                    "formatted_report": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "eval_result"
+                ],
+                "title": "Scores for evaluation."
+            },
+            "RunScorerRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_config": {
+                        "$ref": "#/components/schemas/EvaluateDatasetConfig"
+                    },
+                    "eval_scoring_config": {
+                        "$ref": "#/components/schemas/EvaluateScoringConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_config",
+                    "eval_scoring_config"
+                ]
+            },
             "RunShieldRequest": {
                 "type": "object",
                 "properties": {
@@ -6075,7 +6238,28 @@
     ],
     "tags": [
         {
-            "name": "RewardScoring"
+            "name": "Models"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "Evals"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Agents"
         },
         {
             "name": "Memory"
@@ -6084,37 +6268,16 @@
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Models"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Shields"
+            "name": "PostTraining"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "Evaluations"
+            "name": "MemoryBanks"
         },
         {
-            "name": "Inspect"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Telemetry"
+            "name": "RewardScoring"
         },
         {
             "name": "Inference"
@@ -6194,10 +6357,6 @@
         {
             "name": "BatchCompletionResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionResponse\" />"
-        },
-        {
-            "name": "CancelEvaluationJobRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CancelEvaluationJobRequest\" />"
         },
         {
             "name": "CancelTrainingJobRequest",
@@ -6368,16 +6527,20 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
         },
         {
-            "name": "TrainEvalDataset",
-            "description": "Dataset to be used for training or evaluating language models.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDataset\" />"
+            "name": "CustomDatasetDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CustomDatasetDef\" />"
         },
         {
-            "name": "TrainEvalDatasetColumnType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDatasetColumnType\" />"
+            "name": "HuggingfaceDatasetDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HuggingfaceDatasetDef\" />"
         },
         {
             "name": "CreateDatasetRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetRequest\" />"
+        },
+        {
+            "name": "CreateDatasetResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetResponse\" />"
         },
         {
             "name": "DeleteAgentsRequest",
@@ -6392,28 +6555,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDatasetRequest\" />"
         },
         {
+            "name": "DeleteDatasetResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDatasetResponse\" />"
+        },
+        {
             "name": "EmbeddingsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsRequest\" />"
         },
         {
             "name": "EmbeddingsResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsResponse\" />"
-        },
-        {
-            "name": "EvaluateQuestionAnsweringRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateQuestionAnsweringRequest\" />"
-        },
-        {
-            "name": "EvaluationJob",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJob\" />"
-        },
-        {
-            "name": "EvaluateSummarizationRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSummarizationRequest\" />"
-        },
-        {
-            "name": "EvaluateTextGenerationRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
         },
         {
             "name": "GetAgentsSessionRequest",
@@ -6442,18 +6593,6 @@
         {
             "name": "AgentStepResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentStepResponse\" />"
-        },
-        {
-            "name": "EvaluationJobArtifactsResponse",
-            "description": "Artifacts of a evaluation job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobArtifactsResponse\" />"
-        },
-        {
-            "name": "EvaluationJobLogStream",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobLogStream\" />"
-        },
-        {
-            "name": "EvaluationJobStatusResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
         },
         {
             "name": "ModelDefWithProvider",
@@ -6556,6 +6695,14 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RLHFAlgorithm\" />"
         },
         {
+            "name": "TrainEvalDataset",
+            "description": "Dataset to be used for training or evaluating language models.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDataset\" />"
+        },
+        {
+            "name": "TrainEvalDatasetColumnType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDatasetColumnType\" />"
+        },
+        {
             "name": "TrainingConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainingConfig\" />"
         },
@@ -6604,6 +6751,62 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
         },
         {
+            "name": "EvaluateDatasetConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateDatasetConfig\" />"
+        },
+        {
+            "name": "EvaluateJudgeScoringConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateJudgeScoringConfig\" />"
+        },
+        {
+            "name": "EvaluateModelGenerationConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateModelGenerationConfig\" />"
+        },
+        {
+            "name": "EvaluatePostprocessConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluatePostprocessConfig\" />"
+        },
+        {
+            "name": "EvaluatePreprocessConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluatePreprocessConfig\" />"
+        },
+        {
+            "name": "EvaluateProcessorConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateProcessorConfig\" />"
+        },
+        {
+            "name": "EvaluateScoringConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateScoringConfig\" />"
+        },
+        {
+            "name": "EvaluateSingleScorerConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSingleScorerConfig\" />"
+        },
+        {
+            "name": "EvaluateTaskConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTaskConfig\" />"
+        },
+        {
+            "name": "LLMJudgeConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LLMJudgeConfig\" />"
+        },
+        {
+            "name": "RunEvalTaskRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunEvalTaskRequest\" />"
+        },
+        {
+            "name": "EvalResult",
+            "description": "Aggregated final evaluation result.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvalResult\" />"
+        },
+        {
+            "name": "EvaluateResponse",
+            "description": "Scores for evaluation.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateResponse\" />"
+        },
+        {
+            "name": "RunScorerRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunScorerRequest\" />"
+        },
+        {
             "name": "RunShieldRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldRequest\" />"
         },
@@ -6647,7 +6850,7 @@
                 "Agents",
                 "BatchInference",
                 "Datasets",
-                "Evaluations",
+                "Evals",
                 "Inference",
                 "Inspect",
                 "Memory",
@@ -6681,7 +6884,6 @@
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
                 "BuiltinTool",
-                "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
@@ -6698,31 +6900,40 @@
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
                 "CreateDatasetRequest",
+                "CreateDatasetResponse",
+                "CustomDatasetDef",
                 "DPOAlignmentConfig",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
                 "DeleteDatasetRequest",
+                "DeleteDatasetResponse",
                 "DialogGenerations",
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
-                "EvaluateQuestionAnsweringRequest",
-                "EvaluateSummarizationRequest",
-                "EvaluateTextGenerationRequest",
-                "EvaluationJob",
-                "EvaluationJobArtifactsResponse",
-                "EvaluationJobLogStream",
-                "EvaluationJobStatusResponse",
+                "EvalResult",
+                "EvaluateDatasetConfig",
+                "EvaluateJudgeScoringConfig",
+                "EvaluateModelGenerationConfig",
+                "EvaluatePostprocessConfig",
+                "EvaluatePreprocessConfig",
+                "EvaluateProcessorConfig",
+                "EvaluateResponse",
+                "EvaluateScoringConfig",
+                "EvaluateSingleScorerConfig",
+                "EvaluateTaskConfig",
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
                 "GraphMemoryBankDef",
                 "HealthInfo",
+                "HuggingfaceDatasetDef",
                 "ImageMedia",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "KeyValueMemoryBankDef",
                 "KeywordMemoryBankDef",
+                "LLMJudgeConfig",
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
@@ -6752,6 +6963,8 @@
                 "RewardScoreRequest",
                 "RewardScoringResponse",
                 "RouteInfo",
+                "RunEvalTaskRequest",
+                "RunScorerRequest",
                 "RunShieldRequest",
                 "RunShieldResponse",
                 "SafetyViolation",

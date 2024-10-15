@@ -16,6 +16,26 @@ from typing_extensions import Annotated
 
 
 @json_schema_type
+class TrainEvalDatasetColumnType(Enum):
+    dialog = "dialog"
+    text = "text"
+    media = "media"
+    number = "number"
+    json = "json"
+
+
+@json_schema_type
+class TrainEvalDataset(BaseModel):
+    """Dataset to be used for training or evaluating language models."""
+
+    # TODO(ashwin): figure out if we need to add an enum for a "dataset type"
+
+    columns: Dict[str, TrainEvalDatasetColumnType]
+    content_url: URL
+    metadata: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
 class GenerationInput(BaseModel):
     messages: List[Message]
 
