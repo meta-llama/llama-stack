@@ -33,11 +33,15 @@ class RunScoringTask(BaseTask):
         for x in dataset:
             expected_answer = x.data["expected_answer"]
             generated_answer = x.data["generated_answer"]
+            input_query = None
+            if "input_query" in x.data:
+                input_query = x.data["input_query"]
 
             scorer_inputs.append(
                 ScorerInputSample(
                     expected_answer=expected_answer,
                     generated_answer=generated_answer,
+                    input_query=input_query,
                 )
             )
 
@@ -74,7 +78,6 @@ class RunScoringTask(BaseTask):
         )
 
         scorer_results = scorer.score(postprocessed)
-        cprint(scorer_results, "magenta")
         eval_result = scorer.aggregate_results(scorer_results)
 
         return eval_result

@@ -16,7 +16,7 @@ ScorerRegistry = Registry[BaseScorer]()
 SCORER_REGISTRY = {
     "accuracy": AccuracyScorer,
     "random": RandomScorer,
-    "braintrust::factuality": BrainTrustFactualityScorer,
+    "braintrust::factuality": BraintrustFactualityScorer,
     "braintrust::answer-correctness": BraintrustAnswerCorrectnessScorer,
 }
 

@@ -118,7 +118,7 @@ async def run_main(host: str, port: int):
     response = await client.run_scorer(
         dataset_config=EvaluateDatasetConfig(
             dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-            # row_limit=10,
+            row_limit=10,
         ),
         eval_scoring_config=EvaluateScoringConfig(
             scorer_config_list=[

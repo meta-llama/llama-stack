@@ -20,6 +20,8 @@ def available_providers() -> List[ProviderSpec]:
                 "pandas",
                 "scikit-learn",
                 "datasets",
+                "numpy",
+                "autoevals",
             ],
             module="llama_stack.providers.impls.meta_reference.evals",
             config_class="llama_stack.providers.impls.meta_reference.evals.MetaReferenceEvalsImplConfig",
