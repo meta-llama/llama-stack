@@ -48,7 +48,9 @@ class MetaReferenceEvalsImpl(Evals):
         cprint(f"run_scorer: on {dataset_config} with {eval_scoring_config}", "green")
 
         run_task = RunScoringTask()
-        eval_result = await run_task.run(dataset_config, eval_scoring_config)
+        eval_result = await run_task.run(
+            dataset_config, eval_scoring_config, self.inference_api
+        )
 
         return EvaluateResponse(
             eval_result=eval_result,

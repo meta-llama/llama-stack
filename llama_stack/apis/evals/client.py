@@ -93,7 +93,7 @@ async def run_main(host: str, port: int, eval_dataset_path: str = ""):
     )
     cprint(f"datasets/create: {response}", "cyan")
 
-    # # 2. run evals on the registered dataset
+    # 2. run evals on the registered dataset
     eval_task_config = EvaluateTaskConfig(
         dataset_config=EvaluateDatasetConfig(
             dataset_identifier="mmlu-simple-eval-en",
@@ -151,9 +151,21 @@ async def run_main(host: str, port: int, eval_dataset_path: str = ""):
         ),
         eval_scoring_config=EvaluateScoringConfig(
             scorer_config_list=[
-                EvaluateSingleScorerConfig(scorer_name="accuracy"),
+                # EvaluateSingleScorerConfig(scorer_name="accuracy"),
+                # EvaluateSingleScorerConfig(
+                #     scorer_name="braintrust::answer-correctness"
+                # ),
                 EvaluateSingleScorerConfig(
-                    scorer_name="braintrust::answer-correctness"
+                    scorer_name="llamastack-llm-judge",
+                    llm_judge_config=LLMJudgeConfig(
+                        judge_processor_config=EvaluateProcessorConfig(
+                            processor_identifier="judge",
+                        ),
+                        judge_model_generation_config=EvaluateModelGenerationConfig(
+                            model="Llama3.1-8B-Instruct",
+                        ),
+                        judge_scoring_config=EvaluateJudgeScoringConfig(),
+                    ),
                 ),
             ]
         ),

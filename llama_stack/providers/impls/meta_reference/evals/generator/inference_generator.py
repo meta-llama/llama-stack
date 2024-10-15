@@ -30,7 +30,6 @@ class InferenceGenerator(BaseGenerator[PreprocessedSample, GenerationResponseSam
     ) -> List[GenerationResponseSample]:
         generation_outputs = []
         for sample in preprocessed_dataset:
-            print("generation: ", sample)
             response = await self.inference_api.chat_completion(
                 model=self.model,
                 messages=sample.generation_input.messages,

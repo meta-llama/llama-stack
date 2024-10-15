@@ -7,6 +7,7 @@
 from llama_stack.apis.evals import *  # noqa: F403
 from llama_stack.providers.impls.meta_reference.evals.scorer.basic_scorers import *  # noqa: F403
 from llama_stack.providers.impls.meta_reference.evals.scorer.braintrust_scorer import *  # noqa: F403
+from llama_stack.providers.impls.meta_reference.evals.scorer.llm_judge_scorer import *  # noqa: F403
 
 from ..registry import Registry
 
@@ -16,6 +17,7 @@ ScorerRegistry = Registry[BaseScorer]()
 SCORER_REGISTRY = {
     "accuracy": AccuracyScorer,
     "random": RandomScorer,
+    "llamastack-llm-judge": LlamaStackLLMJudgeScorer,
     "braintrust::factuality": BraintrustFactualityScorer,
     "braintrust::answer-correctness": BraintrustAnswerCorrectnessScorer,
 }

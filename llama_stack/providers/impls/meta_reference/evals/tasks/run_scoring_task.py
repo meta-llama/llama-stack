@@ -50,6 +50,7 @@ class RunScoringTask(BaseTask):
         self,
         dataset_config: EvaluateDatasetConfig,
         eval_scoring_config: EvaluateScoringConfig,
+        inference_api: Inference,
         *args,
         **kwargs,
     ) -> EvalResult:
@@ -69,7 +70,15 @@ class RunScoringTask(BaseTask):
         scorer_list = []
         for s_conf in scorer_config_list:
             scorer = ScorerRegistry.get(s_conf.scorer_name)
-            scorer_list.append(scorer())
+            if s_conf.llm_judge_config:
+                scorer_list.append(
+                    scorer(
+                        llm_judge_config=s_conf.llm_judge_config,
+                        inference_api=inference_api,
+                    )
+                )
+            else:
+                scorer_list.append(scorer())
 
         scorer = AggregateScorer(
             scorers=scorer_list,

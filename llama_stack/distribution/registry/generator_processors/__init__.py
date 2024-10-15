@@ -13,6 +13,7 @@ GeneratorProcessorRegistry = Registry[BaseGeneratorProcessor]()
 
 PROCESSOR_REGISTRY = {
     "mmlu": MMLUProcessor,
+    "judge": JudgeProcessor,
 }
 
 for k, v in PROCESSOR_REGISTRY.items():
