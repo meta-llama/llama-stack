@@ -138,7 +138,7 @@ class Llama:
             else:
                 model = Transformer(model_args)
             model.load_state_dict(state_dict, strict=False)
-            model = convert_to_quantized_model(model, config)
+            model = convert_to_quantized_model(model, config, ckpt_dir)
         else:
             if torch.cuda.is_bf16_supported():
                 torch.set_default_tensor_type(torch.cuda.BFloat16Tensor)
@@ -228,8 +228,7 @@ class Llama:
                 ignore_index=pad_id,
             )
 
-        stop_tokens = torch.tensor(self.tokenizer.stop_tokens)
-
+        stop_tokens = torch.tensor(self.tokenizer.stop_tokens, device="cuda")
         for cur_pos in range(min_prompt_len, total_len):
             if is_vision:
                 position_ids = torch.arange(

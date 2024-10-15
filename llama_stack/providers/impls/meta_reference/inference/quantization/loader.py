@@ -13,9 +13,10 @@ from typing import Optional
 import torch
 
 from fairscale.nn.model_parallel.mappings import reduce_from_model_parallel_region
-
 from llama_models.datatypes import CheckpointQuantizationFormat
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
+
+from llama_models.sku_list import resolve_model
 from termcolor import cprint
 from torch import Tensor
 
@@ -39,6 +40,7 @@ def swiglu_wrapper(
 def convert_to_quantized_model(
     model: Transformer,
     config: MetaReferenceQuantizedInferenceConfig,
+    checkpoint_dir: str,
     fp8_activation_scale_ub: Optional[float] = 1200.0,
 ) -> Transformer:
     if config.quantization.type == QuantizationType.bf16.value:
@@ -49,12 +51,14 @@ def convert_to_quantized_model(
 
     from .fp8_impls import Fp8ScaledWeights, load_fp8, quantize_fp8
 
-    checkpoint = config.checkpoint_config.checkpoint
+    llama_model = resolve_model(config.model)
+    assert llama_model is not None, f"Model {config.model} not found"
+
     # Move weights to GPU with quantization
-    if checkpoint.quantization_format == CheckpointQuantizationFormat.fp8_mixed.value:
+    if llama_model.quantization_format == CheckpointQuantizationFormat.fp8_mixed.value:
         cprint("Loading fp8 scales...", "yellow")
         fp8_scales_path = os.path.join(
-            checkpoint.checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt"
+            checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt"
         )
         assert os.path.isfile(
             fp8_scales_path
