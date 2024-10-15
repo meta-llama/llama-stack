@@ -3,7 +3,7 @@
 This folder contains scripts to enable starting a distribution using `docker compose`.
 
 
-#### TGI Inference Adapter
+#### Example: TGI Inference Adapter
 ```
 $ cd llama_stack/distribution/docker/tgi
 $ ls
@@ -20,4 +20,9 @@ INFO:     Started server process [1]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
+```
+
+To kill the server
+```
+docker compose down
 ```
