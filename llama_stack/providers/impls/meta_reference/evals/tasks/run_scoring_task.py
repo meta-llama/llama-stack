@@ -11,7 +11,6 @@ from llama_stack.providers.impls.meta_reference.evals.scorer.basic_scorers impor
 
 from llama_stack.apis.evals import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
-from termcolor import cprint
 
 
 class RunScoringTask(BaseTask):
@@ -62,9 +61,8 @@ class RunScoringTask(BaseTask):
         dataset.load(n_samples=dataset_config.row_limit)
         print(f"Running on {len(dataset)} samples")
 
-        # transform dataset into
+        # transform dataset into List[ScorerInputSample]
         postprocessed = self.transform_score_input_sample(dataset)
-        cprint(postprocessed, "blue")
 
         # F3 - scorer
         scorer_config_list = eval_scoring_config.scorer_config_list

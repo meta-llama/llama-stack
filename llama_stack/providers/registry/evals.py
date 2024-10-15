@@ -22,6 +22,7 @@ def available_providers() -> List[ProviderSpec]:
                 "datasets",
                 "numpy",
                 "autoevals",
+                "openpyxl",
             ],
             module="llama_stack.providers.impls.meta_reference.evals",
             config_class="llama_stack.providers.impls.meta_reference.evals.MetaReferenceEvalsImplConfig",

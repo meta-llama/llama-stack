@@ -12,7 +12,26 @@ import httpx
 from termcolor import cprint
 
 from .evals import *  # noqa: F403
+import base64
+import mimetypes
+import os
+
 from ..datasets.client import DatasetsClient
+
+
+def data_url_from_file(file_path: str) -> str:
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    with open(file_path, "rb") as file:
+        file_content = file.read()
+
+    base64_content = base64.b64encode(file_content).decode("utf-8")
+    mime_type, _ = mimetypes.guess_type(file_path)
+
+    data_url = f"data:{mime_type};base64,{base64_content}"
+
+    return data_url
 
 
 class EvaluationClient(Evals):
@@ -70,9 +89,8 @@ class EvaluationClient(Evals):
             return EvaluateResponse(**response.json())
 
 
-async def run_main(host: str, port: int):
+async def run_main(host: str, port: int, eval_dataset_path: str = ""):
     client = EvaluationClient(f"http://{host}:{port}")
-
     dataset_client = DatasetsClient(f"http://{host}:{port}")
 
     # Full Eval Task
@@ -114,10 +132,19 @@ async def run_main(host: str, port: int):
     )
     cprint(response, "cyan")
 
+    response = await dataset_client.create_dataset(
+        dataset_def=CustomDatasetDef(
+            identifier="rag-evals",
+            url=data_url_from_file(eval_dataset_path),
+        )
+    )
+    cprint(response, "cyan")
+
     # 2. run evals on the registered dataset
     response = await client.run_scorer(
         dataset_config=EvaluateDatasetConfig(
-            dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
+            dataset_identifier="rag-evals",
+            # dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
             row_limit=10,
         ),
         eval_scoring_config=EvaluateScoringConfig(
@@ -141,8 +168,8 @@ async def run_main(host: str, port: int):
     # )
 
 
-def main(host: str, port: int):
-    asyncio.run(run_main(host, port))
+def main(host: str, port: int, eval_dataset_path: str = ""):
+    asyncio.run(run_main(host, port, eval_dataset_path))
 
 
 if __name__ == "__main__":
