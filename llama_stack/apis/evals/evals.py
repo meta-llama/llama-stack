@@ -50,13 +50,6 @@ class EvaluationJobStatusResponse(BaseModel):
 
 
 @json_schema_type
-class EvaluationJobArtifactsResponse(BaseModel):
-    """Artifacts of a evaluation job."""
-
-    job_uuid: str
-
-
-@json_schema_type
 class EvaluationJobCreateResponse(BaseModel):
     """Response to create a evaluation job."""
 
@@ -267,8 +260,3 @@ class Evals(Protocol):
 
     # @webmethod(route="/evals/job/cancel")
     # def cancel_evaluation_job(self, job_uuid: str) -> None: ...
-
-    # @webmethod(route="/evals/job/artifacts")
-    # def get_evaluation_job_artifacts(
-    #     self, job_uuid: str
-    # ) -> EvaluationJobArtifactsResponse: ...

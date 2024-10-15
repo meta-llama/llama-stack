@@ -99,7 +99,6 @@ async def run_main(host: str, port: int):
     #     cprint(f"Response: {response}", "green")
 
     # Scoring Task
-
     # 1. register huggingface dataset
     response = await dataset_client.create_dataset(
         dataset_def=HuggingfaceDatasetDef(
@@ -119,7 +118,7 @@ async def run_main(host: str, port: int):
     response = await client.run_scorer(
         dataset_config=EvaluateDatasetConfig(
             dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-            row_limit=10,
+            # row_limit=10,
         ),
         eval_scoring_config=EvaluateScoringConfig(
             scorer_config_list=[
@@ -128,7 +127,8 @@ async def run_main(host: str, port: int):
         ),
     )
 
-    cprint(response, "green")
+    for k, v in response.eval_result.metrics.items():
+        cprint(f"{k}: {v}", "green")
 
     # Eleuther Eval Task
     # response = await client.run_evals(
