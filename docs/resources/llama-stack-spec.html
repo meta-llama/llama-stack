@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-15 00:44:26.278642"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-15 10:15:15.195382"
     },
     "servers": [
         {
@@ -5805,23 +5805,13 @@
             "RunEvalTaskRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
-                        "type": "string"
-                    },
-                    "task": {
-                        "type": "string"
-                    },
-                    "dataset": {
-                        "type": "string"
-                    },
                     "eval_task_config": {
                         "$ref": "#/components/schemas/EvaluateTaskConfig"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
-                    "task"
+                    "eval_task_config"
                 ]
             },
             "EvalResult": {
@@ -6238,49 +6228,49 @@
     ],
     "tags": [
         {
-            "name": "Models"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Inspect"
-        },
-        {
-            "name": "Evals"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "SyntheticDataGeneration"
+            "name": "Inference"
         },
         {
             "name": "PostTraining"
         },
         {
-            "name": "Datasets"
+            "name": "Agents"
         },
         {
             "name": "MemoryBanks"
         },
         {
+            "name": "Inspect"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Evals"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
             "name": "RewardScoring"
         },
         {
-            "name": "Inference"
+            "name": "Datasets"
+        },
+        {
+            "name": "Memory"
         },
         {
             "name": "BuiltinTool",

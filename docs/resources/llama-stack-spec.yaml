@@ -1785,17 +1785,10 @@ components:
     RunEvalTaskRequest:
       additionalProperties: false
       properties:
-        dataset:
-          type: string
         eval_task_config:
           $ref: '#/components/schemas/EvaluateTaskConfig'
-        model:
-          type: string
-        task:
-          type: string
       required:
-      - model
-      - task
+      - eval_task_config
       type: object
     RunScorerRequest:
       additionalProperties: false
@@ -2686,7 +2679,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-15 00:44:26.278642"
+    \ draft and subject to change.\n                Generated at 2024-10-15 10:15:15.195382"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3787,21 +3780,21 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Models
-- name: BatchInference
-- name: Inspect
-- name: Evals
-- name: Safety
-- name: Shields
-- name: Telemetry
-- name: Agents
-- name: Memory
-- name: SyntheticDataGeneration
-- name: PostTraining
-- name: Datasets
-- name: MemoryBanks
-- name: RewardScoring
 - name: Inference
+- name: PostTraining
+- name: Agents
+- name: MemoryBanks
+- name: Inspect
+- name: Models
+- name: Safety
+- name: Evals
+- name: BatchInference
+- name: Shields
+- name: SyntheticDataGeneration
+- name: Telemetry
+- name: RewardScoring
+- name: Datasets
+- name: Memory
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"

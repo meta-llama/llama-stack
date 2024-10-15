@@ -119,52 +119,48 @@ async def run_main(host: str, port: int, eval_dataset_path: str = ""):
         cprint(f"{k}: {v}", "green")
 
     # Scoring Task
-    # # 1. register huggingface dataset
-    # response = await dataset_client.create_dataset(
-    #     dataset_def=HuggingfaceDatasetDef(
-    #         identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-    #         dataset_path="meta-llama/Llama-3.1-8B-Instruct-evals",
-    #         dataset_name="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-    #         rename_columns_map={
-    #             "output_parsed_answer": "generated_answer",
-    #             "input_correct_responses": "expected_answer",
-    #         },
-    #         kwargs={"split": "latest"},
-    #     )
-    # )
-    # cprint(response, "cyan")
+    # 1. register huggingface dataset
+    response = await dataset_client.create_dataset(
+        dataset_def=HuggingfaceDatasetDef(
+            identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
+            dataset_path="meta-llama/Llama-3.1-8B-Instruct-evals",
+            dataset_name="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
+            rename_columns_map={
+                "output_parsed_answer": "generated_answer",
+                "input_correct_responses": "expected_answer",
+            },
+            kwargs={"split": "latest"},
+        )
+    )
+    cprint(response, "cyan")
 
-    # # register custom dataset from file path
-    # response = await dataset_client.create_dataset(
-    #     dataset_def=CustomDatasetDef(
-    #         identifier="rag-evals",
-    #         url=data_url_from_file(eval_dataset_path),
-    #         rename_columns_map={
-    #             "query": "input_query",
-    #         },
-    #     )
-    # )
-    # cprint(response, "cyan")
+    # register custom dataset from file path
+    response = await dataset_client.create_dataset(
+        dataset_def=CustomDatasetDef(
+            identifier="rag-evals",
+            url=data_url_from_file(eval_dataset_path),
+        )
+    )
+    cprint(response, "cyan")
 
-    # # 2. run evals on the registered dataset
-    # response = await client.run_scorer(
-    #     dataset_config=EvaluateDatasetConfig(
-    #         dataset_identifier="rag-evals",
-    #         # dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-    #         row_limit=10,
-    #     ),
-    #     eval_scoring_config=EvaluateScoringConfig(
-    #         scorer_config_list=[
-    #             EvaluateSingleScorerConfig(scorer_name="accuracy"),
-    #             EvaluateSingleScorerConfig(
-    #                 scorer_name="braintrust::answer-correctness"
-    #             ),
-    #         ]
-    #     ),
-    # )
+    # 2. run evals on the registered dataset
+    response = await client.run_scorer(
+        dataset_config=EvaluateDatasetConfig(
+            dataset_identifier="rag-evals",
+            row_limit=10,
+        ),
+        eval_scoring_config=EvaluateScoringConfig(
+            scorer_config_list=[
+                EvaluateSingleScorerConfig(scorer_name="accuracy"),
+                EvaluateSingleScorerConfig(
+                    scorer_name="braintrust::answer-correctness"
+                ),
+            ]
+        ),
+    )
 
-    # for k, v in response.eval_result.metrics.items():
-    #     cprint(f"{k}: {v}", "green")
+    for k, v in response.eval_result.metrics.items():
+        cprint(f"{k}: {v}", "green")
 
 
 def main(host: str, port: int, eval_dataset_path: str = ""):

@@ -67,7 +67,7 @@ class CustomDataset(BaseDataset[DictSample]):
             raise ValueError(f"Unsupported file type: {self.config.url}")
 
         if n_samples is not None:
-            df = df.sample(n=n_samples)
+            df = df.sample(n=min(n_samples, len(df)))
 
         self.dataset = Dataset.from_pandas(df)
         if self.config.rename_columns_map:
