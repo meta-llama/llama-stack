@@ -92,8 +92,14 @@ class HuggingfaceDatasetDef(BaseModel):
     identifier: str = Field(
         description="A unique name for the dataset",
     )
-    dataset_name: str = Field(
-        description="The name of the dataset into HF (e.g. hellawag)",
+    dataset_path: str = Field(
+        description="The name of the dataset into HF (e.g. meta-llama/Llama-3.1-8B-Instruct-evals)",
+    )
+    dataset_name: Optional[str] = Field(
+        description="The name of the dataset into HF (e.g. Llama-3.1-8B-Instruct-evals__ifeval__strict__details)",
+    )
+    rename_columns_map: Optional[Dict[str, str]] = Field(
+        description="A map of column names to rename to fit the schema of eval dataset for scoring",
     )
     kwargs: Dict[str, Any] = Field(
         description="Any additional arguments to get Huggingface (e.g. split, trust_remote_code)",

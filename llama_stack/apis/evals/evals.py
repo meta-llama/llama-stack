@@ -66,7 +66,7 @@ class EvaluationJobCreateResponse(BaseModel):
 @json_schema_type
 class EvaluateDatasetConfig(BaseModel):
     # identifier to previously registered dataset via DatasetDef
-    dataset_name: str
+    dataset_identifier: str
     # limit number of rows to evaluate
     row_limit: Optional[int] = None
     kwargs: Optional[Dict[str, Any]] = None

@@ -13,6 +13,7 @@ from llama_stack.apis.datasets import *  # noqa: F403
 
 from .config import MetaReferenceEvalsImplConfig
 from .tasks.run_eval_task import RunEvalTask
+from .tasks.run_scoring_task import RunScoringTask
 
 
 class MetaReferenceEvalsImpl(Evals):
@@ -44,7 +45,7 @@ class MetaReferenceEvalsImpl(Evals):
             # construct eval task config from inputs
             eval_task_config = EvaluateTaskConfig(
                 dataset_config=EvaluateDatasetConfig(
-                    dataset_name=dataset,
+                    dataset_identifier=dataset,
                     row_limit=3,
                 ),
                 processor_config=EvaluateProcessorConfig(
@@ -76,8 +77,10 @@ class MetaReferenceEvalsImpl(Evals):
     ) -> EvaluateResponse:
         cprint("run_scorer")
 
-        # main logic, we need to convert the datset into List[ScorerInputSample]
+        run_task = RunScoringTask()
+        eval_result = await run_task.run(dataset_config, eval_scoring_config)
 
         return EvaluateResponse(
-            eval_result={},
+            eval_result=eval_result,
+            formatted_report=json.dumps(eval_result.json(), indent=4),
         )

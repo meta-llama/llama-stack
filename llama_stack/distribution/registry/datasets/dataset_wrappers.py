@@ -72,7 +72,18 @@ class HuggingfaceDataset(BaseDataset[DictSample]):
             self.load()
         return len(self.dataset)
 
-    def load(self):
+    def load(self, n_samples: Optional[int] = None):
         if self.dataset:
             return
-        self.dataset = load_dataset(self.config.dataset_name, **self.config.kwargs)
+
+        if self.config.dataset_name:
+            self.config.kwargs["name"] = self.config.dataset_name
+
+        self.dataset = load_dataset(self.config.dataset_path, **self.config.kwargs)
+
+        if n_samples:
+            self.dataset = self.dataset.select(range(n_samples))
+
+        if self.config.rename_columns_map:
+            for k, v in self.config.rename_columns_map.items():
+                self.dataset = self.dataset.rename_column(k, v)

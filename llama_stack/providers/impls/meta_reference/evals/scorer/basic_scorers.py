@@ -31,9 +31,14 @@ class AccuracyScorer(BaseScorer[ScorerInputSample]):
         extracted_answer = scorer_input_sample.generated_answer
         expected_answer = scorer_input_sample.expected_answer
 
-        accuracy = (
-            1.0 if extracted_answer and extracted_answer == expected_answer else 0.0
-        )
+        if isinstance(expected_answer, list):
+            accuracy = (
+                1.0 if extracted_answer and extracted_answer in expected_answer else 0.0
+            )
+        else:
+            accuracy = (
+                1.0 if extracted_answer and extracted_answer == expected_answer else 0.0
+            )
 
         return SingleEvalResult(score_data={"accuracy": accuracy})
 
