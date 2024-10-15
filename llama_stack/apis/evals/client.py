@@ -46,23 +46,13 @@ class EvaluationClient(Evals):
 
     async def run_evals(
         self,
-        model: str,
-        task: str,
-        dataset: Optional[str] = None,
-        eval_task_config: Optional[EvaluateTaskConfig] = None,
+        eval_task_config: EvaluateTaskConfig,
     ) -> EvaluateResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/evals/run_eval_task",
                 json={
-                    "model": model,
-                    "task": task,
-                    "dataset": dataset,
-                    "eval_task_config": (
-                        json.loads(eval_task_config.json())
-                        if eval_task_config
-                        else None
-                    ),
+                    "eval_task_config": json.loads(eval_task_config.json()),
                 },
                 headers={"Content-Type": "application/json"},
                 timeout=3600,
@@ -94,84 +84,87 @@ async def run_main(host: str, port: int, eval_dataset_path: str = ""):
     dataset_client = DatasetsClient(f"http://{host}:{port}")
 
     # Full Eval Task
-
-    # # 1. register custom dataset
-    # response = await dataset_client.create_dataset(
-    #     dataset_def=CustomDatasetDef(
-    #         identifier="mmlu-simple-eval-en",
-    #         url="https://openaipublic.blob.core.windows.net/simple-evals/mmlu.csv",
-    #     ),
-    # )
-    # cprint(f"datasets/create: {response}", "cyan")
-
-    # # 2. run evals on the registered dataset
-    # response = await client.run_evals(
-    #     model="Llama3.1-8B-Instruct",
-    #     dataset="mmlu-simple-eval-en",
-    #     task="mmlu",
-    # )
-
-    # if response.formatted_report:
-    #     cprint(response.formatted_report, "green")
-    # else:
-    #     cprint(f"Response: {response}", "green")
-
-    # Scoring Task
-    # 1. register huggingface dataset
-    response = await dataset_client.create_dataset(
-        dataset_def=HuggingfaceDatasetDef(
-            identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-            dataset_path="meta-llama/Llama-3.1-8B-Instruct-evals",
-            dataset_name="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-            rename_columns_map={
-                "output_parsed_answer": "generated_answer",
-                "input_correct_responses": "expected_answer",
-            },
-            kwargs={"split": "latest"},
-        )
-    )
-    cprint(response, "cyan")
-
+    # 1. register custom dataset
     response = await dataset_client.create_dataset(
         dataset_def=CustomDatasetDef(
-            identifier="rag-evals",
-            url=data_url_from_file(eval_dataset_path),
-            rename_columns_map={
-                "query": "input_query",
-            },
-        )
-    )
-    cprint(response, "cyan")
-
-    # 2. run evals on the registered dataset
-    response = await client.run_scorer(
-        dataset_config=EvaluateDatasetConfig(
-            dataset_identifier="rag-evals",
-            # dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
-            row_limit=10,
+            identifier="mmlu-simple-eval-en",
+            url="https://openaipublic.blob.core.windows.net/simple-evals/mmlu.csv",
         ),
-        eval_scoring_config=EvaluateScoringConfig(
+    )
+    cprint(f"datasets/create: {response}", "cyan")
+
+    # # 2. run evals on the registered dataset
+    eval_task_config = EvaluateTaskConfig(
+        dataset_config=EvaluateDatasetConfig(
+            dataset_identifier="mmlu-simple-eval-en",
+            row_limit=3,
+        ),
+        processor_config=EvaluateProcessorConfig(
+            processor_identifier="mmlu",
+        ),
+        generation_config=EvaluateModelGenerationConfig(
+            model="Llama3.1-8B-Instruct",
+        ),
+        scoring_config=EvaluateScoringConfig(
             scorer_config_list=[
                 EvaluateSingleScorerConfig(scorer_name="accuracy"),
-                EvaluateSingleScorerConfig(
-                    scorer_name="braintrust::answer-correctness"
-                ),
+                EvaluateSingleScorerConfig(scorer_name="random"),
             ]
         ),
     )
-
+    response = await client.run_evals(
+        eval_task_config=eval_task_config,
+    )
     for k, v in response.eval_result.metrics.items():
         cprint(f"{k}: {v}", "green")
 
-    # Eleuther Eval Task
-    # response = await client.run_evals(
-    #     model="Llama3.1-8B-Instruct",
-    #     # task="meta_mmlu_pro_instruct",
-    #     task="meta_ifeval",
-    #     eval_task_config=EvaluateTaskConfig(
-    #         n_samples=2,
+    # Scoring Task
+    # # 1. register huggingface dataset
+    # response = await dataset_client.create_dataset(
+    #     dataset_def=HuggingfaceDatasetDef(
+    #         identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
+    #         dataset_path="meta-llama/Llama-3.1-8B-Instruct-evals",
+    #         dataset_name="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
+    #         rename_columns_map={
+    #             "output_parsed_answer": "generated_answer",
+    #             "input_correct_responses": "expected_answer",
+    #         },
+    #         kwargs={"split": "latest"},
+    #     )
+    # )
+    # cprint(response, "cyan")
+
+    # # register custom dataset from file path
+    # response = await dataset_client.create_dataset(
+    #     dataset_def=CustomDatasetDef(
+    #         identifier="rag-evals",
+    #         url=data_url_from_file(eval_dataset_path),
+    #         rename_columns_map={
+    #             "query": "input_query",
+    #         },
+    #     )
+    # )
+    # cprint(response, "cyan")
+
+    # # 2. run evals on the registered dataset
+    # response = await client.run_scorer(
+    #     dataset_config=EvaluateDatasetConfig(
+    #         dataset_identifier="rag-evals",
+    #         # dataset_identifier="Llama-3.1-8B-Instruct-evals__mmlu_pro__details",
+    #         row_limit=10,
+    #     ),
+    #     eval_scoring_config=EvaluateScoringConfig(
+    #         scorer_config_list=[
+    #             EvaluateSingleScorerConfig(scorer_name="accuracy"),
+    #             EvaluateSingleScorerConfig(
+    #                 scorer_name="braintrust::answer-correctness"
+    #             ),
+    #         ]
     #     ),
     # )
+
+    # for k, v in response.eval_result.metrics.items():
+    #     cprint(f"{k}: {v}", "green")
 
 
 def main(host: str, port: int, eval_dataset_path: str = ""):

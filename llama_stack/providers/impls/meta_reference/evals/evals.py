@@ -28,39 +28,9 @@ class MetaReferenceEvalsImpl(Evals):
 
     async def run_eval_task(
         self,
-        model: str,
-        task: str,
-        dataset: Optional[str] = None,
-        eval_task_config: Optional[EvaluateTaskConfig] = None,
+        eval_task_config: EvaluateTaskConfig,
     ) -> EvaluateResponse:
-        cprint(
-            f"model={model}, dataset={dataset}, task={task}, eval_task_config={eval_task_config}",
-            "red",
-        )
-
-        if not dataset:
-            raise ValueError("dataset must be specified for mete-reference evals")
-
-        if not eval_task_config:
-            # construct eval task config from inputs
-            eval_task_config = EvaluateTaskConfig(
-                dataset_config=EvaluateDatasetConfig(
-                    dataset_identifier=dataset,
-                    row_limit=3,
-                ),
-                processor_config=EvaluateProcessorConfig(
-                    processor_identifier="mmlu",
-                ),
-                generation_config=EvaluateModelGenerationConfig(
-                    model=model,
-                ),
-                scoring_config=EvaluateScoringConfig(
-                    scorer_config_list=[
-                        EvaluateSingleScorerConfig(scorer_name="accuracy"),
-                        EvaluateSingleScorerConfig(scorer_name="random"),
-                    ]
-                ),
-            )
+        cprint(f"run_eval_task: on {eval_task_config}", "green")
 
         run_task = RunEvalTask()
         eval_result = await run_task.run(eval_task_config, self.inference_api)
@@ -75,7 +45,7 @@ class MetaReferenceEvalsImpl(Evals):
         dataset_config: EvaluateDatasetConfig,
         eval_scoring_config: EvaluateScoringConfig,
     ) -> EvaluateResponse:
-        cprint("run_scorer")
+        cprint(f"run_scorer: on {dataset_config} with {eval_scoring_config}", "green")
 
         run_task = RunScoringTask()
         eval_result = await run_task.run(dataset_config, eval_scoring_config)

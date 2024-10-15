@@ -228,10 +228,7 @@ class Evals(Protocol):
     @webmethod(route="/evals/run_eval_task")
     async def run_eval_task(
         self,
-        model: str,
-        task: str,
-        dataset: Optional[str] = None,
-        eval_task_config: Optional[EvaluateTaskConfig] = None,
+        eval_task_config: EvaluateTaskConfig,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/evals/run_scorer")
