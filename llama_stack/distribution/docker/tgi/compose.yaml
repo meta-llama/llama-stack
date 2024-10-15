@@ -1,0 +1,55 @@
+services:
+  text-generation-inference:
+    image: ghcr.io/huggingface/text-generation-inference:latest
+    network_mode: "host"
+    volumes:
+      - $HOME/.cache/huggingface:/data
+    ports:
+      - "5009:5009"
+    devices:
+      - nvidia.com/gpu=all
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - HF_HOME=/data
+      - HF_DATASETS_CACHE=/data
+      - HF_MODULES_CACHE=/data
+      - HF_HUB_CACHE=/data
+    command: ["--dtype", "bfloat16", "--usage-stats", "on", "--sharded", "false", "--model-id", "meta-llama/Llama-3.1-8B-Instruct", "--port", "5009", "--cuda-memory-fraction", "0.3"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            # that's the closest analogue to --gpus; provide
+            # an integer amount of devices or 'all'
+            count: 1
+            # Devices are reserved using a list of capabilities, making
+            # capabilities the only required field. A device MUST
+            # satisfy all the requested capabilities for a successful
+            # reservation.
+            capabilities: [gpu]
+    runtime: nvidia
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://text-generation-inference:5009/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  llamastack-local-cpu:
+    depends_on:
+      text-generation-inference:
+        condition: service_healthy
+    image: llamastack-local-cpu
+    network_mode: "host"
+    volumes:
+      - ~/.llama:/root/.llama
+      # Link to TGI run.yaml file
+      - ./tgi-run.yaml:/root/llamastack-run-tgi.yaml
+    ports:
+      - "5000:5000"
+    # Hack: wait for TGI server to start before starting docker
+    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-tgi.yaml"
+    restart_policy:
+      condition: on-failure
+      delay: 3s
+      max_attempts: 5
+      window: 60s
