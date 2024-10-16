@@ -52,6 +52,10 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
     async def list_models(self) -> List[ModelDef]:
         repo = self.model_id
+        # tmp hack to support Dell
+        if repo not in self.huggingface_repo_to_llama_model_id:
+            repo = "meta-llama/Llama-3.1-8B-Instruct"
+
         identifier = self.huggingface_repo_to_llama_model_id[repo]
         return [
             ModelDef(

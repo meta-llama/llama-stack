@@ -10,6 +10,8 @@ distribution_spec:
     - remote::fireworks
     safety: meta-reference
     agents: meta-reference
-    memory: meta-reference
+    memory:
+    - remote::chromadb
+    - meta-reference
     telemetry: meta-reference
 image_type: docker
