@@ -13,10 +13,11 @@ apis:
 - safety
 providers:
   inference:
-  - provider_id: remote::tgi
-    provider_type: remote::tgi
+  - provider_id: remote::dell-tgi
+    provider_type: remote::dell-tgi
     config:
       url: http://127.0.0.1:5009
+      hf_model_name: meta-llama/Llama-3.1-8B-Instruct
   safety:
   - provider_id: meta-reference
     provider_type: meta-reference

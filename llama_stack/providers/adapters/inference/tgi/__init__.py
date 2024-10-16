@@ -6,15 +6,32 @@
 
 from typing import Union
 
-from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
-from .tgi import InferenceAPIAdapter, InferenceEndpointAdapter, TGIAdapter
+from .config import (
+    DellTGIImplConfig,
+    InferenceAPIImplConfig,
+    InferenceEndpointImplConfig,
+    TGIImplConfig,
+)
+from .tgi import (
+    DellTGIAdapter,
+    InferenceAPIAdapter,
+    InferenceEndpointAdapter,
+    TGIAdapter,
+)
 
 
 async def get_adapter_impl(
-    config: Union[InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig],
+    config: Union[
+        InferenceAPIImplConfig,
+        InferenceEndpointImplConfig,
+        TGIImplConfig,
+        DellTGIImplConfig,
+    ],
     _deps,
 ):
-    if isinstance(config, TGIImplConfig):
+    if isinstance(config, DellTGIImplConfig):
+        impl = DellTGIAdapter()
+    elif isinstance(config, TGIImplConfig):
         impl = TGIAdapter()
     elif isinstance(config, InferenceAPIImplConfig):
         impl = InferenceAPIAdapter()
