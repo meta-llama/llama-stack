@@ -1,16 +1,16 @@
 version: '2'
-built_at: '2024-10-08T17:42:33.690666'
-image_name: local-gpu
-docker_image: local-gpu
-conda_env: null
+built_at: '2024-10-08T17:40:45.325529'
+image_name: local
+docker_image: null
+conda_env: local
 apis:
-- memory
-- inference
-- agents
 - shields
-- safety
+- agents
 - models
+- memory
 - memory_banks
+- inference
+- safety
 providers:
   inference:
   - provider_id: meta-reference
@@ -25,8 +25,13 @@ providers:
   - provider_id: meta-reference
     provider_type: meta-reference
     config:
-      llama_guard_shield: null
-      prompt_guard_shield: null
+      llama_guard_shield:
+        model: Llama-Guard-3-1B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
   memory:
   - provider_id: meta-reference
     provider_type: meta-reference
@@ -38,7 +43,7 @@ providers:
       persistence_store:
         namespace: null
         type: sqlite
-        db_path: ~/.llama/runtime/kvstore.db
+        db_path: /home/xiyan/.llama/runtime/kvstore.db
   telemetry:
   - provider_id: meta-reference
     provider_type: meta-reference
