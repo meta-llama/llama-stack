@@ -152,27 +152,29 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         parser.error("Please provide a model id")
         return
 
-    prompt_guard = prompt_guard_model_sku()
-    if args.model_id == prompt_guard.model_id:
-        model = prompt_guard
-        info = prompt_guard_download_info()
-    else:
-        model = resolve_model(args.model_id)
-        if model is None:
-            parser.error(f"Model {args.model_id} not found")
-            return
-        info = llama_meta_net_info(model)
+    # Check if model_id is a comma-separated list
+    model_ids = [model_id.strip() for model_id in args.model_id.split(",")]
 
-    if args.source == "huggingface":
-        _hf_download(model, args.hf_token, args.ignore_patterns, parser)
-    else:
-        meta_url = args.meta_url
-        if not meta_url:
-            meta_url = input(
-                "Please provide the signed URL you received via email after visiting https://www.llama.com/llama-downloads/ (e.g., https://llama3-1.llamameta.net/*?Policy...): "
+    prompt_guard = prompt_guard_model_sku()
+    for model_id in model_ids:
+        if model_id == prompt_guard.model_id:
+            model = prompt_guard
+            info = prompt_guard_download_info()
+        else:
+            model = resolve_model(model_id)
+            if model is None:
+                parser.error(f"Model {model_id} not found")
+                continue
+            info = llama_meta_net_info(model)
+
+        if args.source == "huggingface":
+            _hf_download(model, args.hf_token, args.ignore_patterns, parser)
+        else:
+            meta_url = args.meta_url or input(
+                f"Please provide the signed URL for model {model_id} you received via email after visiting https://www.llama.com/llama-downloads/ (e.g., https://llama3-1.llamameta.net/*?Policy...): "
             )
-            assert meta_url is not None and "llamameta.net" in meta_url
-        _meta_download(model, meta_url, info)
+            assert "llamameta.net" in meta_url
+            _meta_download(model, meta_url, info)
 
 
 class ModelEntry(BaseModel):
