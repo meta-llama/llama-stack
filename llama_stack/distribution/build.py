@@ -35,7 +35,6 @@ class ImageType(Enum):
     docker = "docker"
     conda = "conda"
 
-
 class Dependencies(BaseModel):
     pip_packages: List[str]
     docker_image: Optional[str] = None
@@ -91,10 +90,12 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         script = pkg_resources.resource_filename(
             "llama_stack", "distribution/build_container.sh"
         )
+        
         args = [
             script,
             build_config.name,
             package_deps.docker_image,
+            build_config.platform, 
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(deps),
@@ -107,8 +108,9 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             script,
             build_config.name,
             str(build_file_path),
-            " ".join(deps),
+            " ".join(deps)
         ]
+        
 
     if special_deps:
         args.append("#".join(special_deps))
