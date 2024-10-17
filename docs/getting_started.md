@@ -1,45 +1,9 @@
-# llama-stack
+# Getting Started with Llama Stack
 
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
-[![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
-
-This repository contains the specifications and implementations of the APIs which are part of the Llama Stack.
-
-The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to invoking AI agents in production. Beyond definition, we're developing open-source versions and partnering with cloud providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
-
-The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
-
-
-## APIs
-
-The Llama Stack consists of the following set of APIs:
-
-- Inference
-- Safety
-- Memory
-- Agentic System
-- Evaluation
-- Post Training
-- Synthetic Data Generation
-- Reward Scoring
-
-Each of the APIs themselves is a collection of REST endpoints.
-
-## API Providers
-
-A Provider is what makes the API real -- they provide the actual implementation backing the API.
-
-As an example, for Inference, we could have the implementation be backed by open source libraries like `[ torch | vLLM | TensorRT ]` as possible options.
-
-A provider can also be just a pointer to a remote REST service -- for example, cloud providers or dedicated inference providers could serve these APIs.
-
-
-## Llama Stack Distribution
-
-A Distribution is where APIs and Providers are assembled together to provide a consistent whole to the end application developer. You can mix-and-match providers -- some could be backed by local code and some could be remote. As a hobbyist, you can serve a small model locally, but can choose a cloud provider for a large model. Regardless, the higher level APIs your app needs to work with don't need to change at all. You can even imagine moving across the server / mobile-device boundary as well always using the same uniform set of APIs for developing Generative AI applications.
-
+This guide will walk you though the steps to get started on end-to-end flow for LlamaStack. This guide mainly focuses on getting started with building a LlamaStack distribution, and starting up a LlamaStack server.
 
 ## Installation
+The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
 You can install this repository as a [package](https://pypi.org/project/llama-stack/) with `pip install llama-stack`
 
@@ -57,17 +21,14 @@ cd llama-stack
 $CONDA_PREFIX/bin/pip install -e .
 ```
 
-# Getting Started
+For what you can do with the Llama CLI, please refer to [CLI Reference](./cli_reference.md).
 
-The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
-
-This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
-
-You may also checkout this [notebook](https://github.com/meta-llama/llama-stack/blob/main/docs/getting_started.ipynb) for trying out out demo scripts.
+## Starting the Llama Stack Server
 
 ## Quick Cheatsheet
+This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
 
-#### Via docker
+#### Starting up server via docker
 ```
 docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local-gpu
 ```
@@ -75,8 +36,12 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local
 > [!NOTE]
 > `~/.llama` should be the path containing downloaded weights of Llama models.
 
+> [!TIP]
+> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI). You can checkout [these scripts](../llama_stack/distribution/docker/README.md) to help you get started.
 
-#### Via conda
+#### Build->Configure->Run via conda
+You may also build a LlamaStack distribution from scratch, configure it, and start running the distribution. This is useful for developing on LlamaStack.
+
 **`llama stack build`**
 - You'll be prompted to enter build information interactively.
 ```
@@ -444,5 +409,8 @@ Similarly you can test safety (if you configured llama-guard and/or prompt-guard
 ```
 python -m llama_stack.apis.safety.client localhost 5000
 ```
+
+
+Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
 
 You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.

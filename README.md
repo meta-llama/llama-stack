@@ -90,9 +90,9 @@ The `llama` CLI makes it easy to work with the Llama Stack set of tools. Please 
 * [CLI reference](docs/cli_reference.md)
     * Guide using `llama` CLI to work with Llama models (download, study prompts), and building/starting a Llama Stack distribution.
 * [Getting Started](docs/getting_started.md)
-    * Guide to build and run a Llama Stack server.
+    * Guide to start a Llama Stack server.
+    * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
 * [Contributing](CONTRIBUTING.md)
-
 
 ## Llama Stack Client SDK
 
@@ -104,3 +104,5 @@ The `llama` CLI makes it easy to work with the Llama Stack set of tools. Please 
 | Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) |
 
 Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
+
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
