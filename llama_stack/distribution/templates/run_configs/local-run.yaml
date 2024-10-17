@@ -1,29 +1,37 @@
 version: '2'
-built_at: '2024-10-08T17:42:07.505267'
-image_name: local-cpu
-docker_image: local-cpu
-conda_env: null
+built_at: '2024-10-08T17:40:45.325529'
+image_name: local
+docker_image: null
+conda_env: local
 apis:
+- shields
 - agents
-- inference
 - models
 - memory
-- safety
-- shields
 - memory_banks
+- inference
+- safety
 providers:
   inference:
-  - provider_id: remote::ollama
-    provider_type: remote::ollama
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config:
-      host: localhost
-      port: 6000
+      model: Llama3.1-8B-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
   safety:
   - provider_id: meta-reference
     provider_type: meta-reference
     config:
-      llama_guard_shield: null
-      prompt_guard_shield: null
+      llama_guard_shield:
+        model: Llama-Guard-3-1B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
   memory:
   - provider_id: meta-reference
     provider_type: meta-reference

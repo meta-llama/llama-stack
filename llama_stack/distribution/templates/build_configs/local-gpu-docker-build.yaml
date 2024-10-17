@@ -1,11 +1,10 @@
 name: local-gpu
 distribution_spec:
-  description: local meta reference
-  docker_image: null
+  description: Use code from `llama_stack` itself to serve all llama stack APIs
   providers:
     inference: meta-reference
+    memory: meta-reference
     safety: meta-reference
     agents: meta-reference
-    memory: meta-reference
     telemetry: meta-reference
 image_type: docker
