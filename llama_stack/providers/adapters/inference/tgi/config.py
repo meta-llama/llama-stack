@@ -41,3 +41,17 @@ class InferenceAPIImplConfig(BaseModel):
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
+
+
+@json_schema_type
+class DellTGIImplConfig(BaseModel):
+    url: str = Field(
+        description="The URL for the Dell TGI endpoint (e.g. 'http://localhost:8080')",
+    )
+    hf_model_name: str = Field(
+        description="The model ID of the model on the Hugging Face Hub (e.g. 'meta-llama/Meta-Llama-3.1-70B-Instruct')",
+    )
+    api_token: Optional[str] = Field(
+        default=None,
+        description="A bearer token if your TGI endpoint is protected.",
+    )
