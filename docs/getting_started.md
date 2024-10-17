@@ -69,7 +69,7 @@ You may also checkout this [notebook](https://github.com/meta-llama/llama-stack/
 
 #### Via docker
 ```
-docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack-local-gpu
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llamastack-local-gpu
 ```
 
 > [!NOTE]
