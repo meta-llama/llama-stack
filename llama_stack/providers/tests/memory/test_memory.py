@@ -90,6 +90,30 @@ async def test_banks_list(memory_settings):
 
 
 @pytest.mark.asyncio
+async def test_banks_register(memory_settings):
+    # NOTE: this needs you to ensure that you are starting from a clean state
+    # but so far we don't have an unregister API unfortunately, so be careful
+    banks_impl = memory_settings["memory_banks_impl"]
+    bank = VectorMemoryBankDef(
+        identifier="test_bank_no_provider",
+        embedding_model="all-MiniLM-L6-v2",
+        chunk_size_in_tokens=512,
+        overlap_size_in_tokens=64,
+    )
+
+    await banks_impl.register_memory_bank(bank)
+    response = await banks_impl.list_memory_banks()
+    assert isinstance(response, list)
+    assert len(response) == 1
+
+    # register same memory bank with same id again will fail
+    await banks_impl.register_memory_bank(bank)
+    response = await banks_impl.list_memory_banks()
+    assert isinstance(response, list)
+    assert len(response) == 1
+
+
+@pytest.mark.asyncio
 async def test_query_documents(memory_settings, sample_documents):
     memory_impl = memory_settings["memory_impl"]
     banks_impl = memory_settings["memory_banks_impl"]
