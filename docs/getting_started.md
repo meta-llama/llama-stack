@@ -1,6 +1,6 @@
 # Getting Started with Llama Stack
 
-This guide will walk you though the steps to get started on end-to-end flow for LlamaStack. This guide mainly focuses on getting started with building a LlamaStack distribution, and starting up a LlamaStack server.
+This guide will walk you though the steps to get started on end-to-end flow for LlamaStack. This guide mainly focuses on getting started with building a LlamaStack distribution, and starting up a LlamaStack server. Please see our [documentations](../README.md) on what you can do with Llama Stack, and [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) on examples apps built with Llama Stack.
 
 ## Installation
 The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
