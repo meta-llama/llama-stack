@@ -132,7 +132,7 @@ class BuildConfig(BaseModel):
     name: str
     platform: str = Field(
         default=LLAMA_STACK_DEFAULT_PLATFORM,
-        description="The platform to build for (cpu | gpu)",
+        description="The platform for docker image, defaults to linux/arm64",
     )
     distribution_spec: DistributionSpec = Field(
         description="The distribution spec to build including API providers. "
