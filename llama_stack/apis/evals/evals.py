@@ -4,32 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
-from typing import List, Protocol
+from abc import ABC, abstractmethod
+from typing import Dict, Generic, List, Optional, Protocol
 
 from llama_models.schema_utils import webmethod
-
 from pydantic import BaseModel
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.dataset import *  # noqa: F403
-from llama_stack.apis.common.training_types import *  # noqa: F403
-
-
-class TextGenerationMetric(Enum):
-    perplexity = "perplexity"
-    rouge = "rouge"
-    bleu = "bleu"
-
-
-class QuestionAnsweringMetric(Enum):
-    em = "em"
-    f1 = "f1"
-
-
-class SummarizationMetric(Enum):
-    rouge = "rouge"
-    bleu = "bleu"
+from llama_stack.apis.datasets import *  # noqa: F403
 
 
 class EvaluationJob(BaseModel):
@@ -40,83 +22,238 @@ class EvaluationJobLogStream(BaseModel):
     job_uuid: str
 
 
-class EvaluateTaskRequestCommon(BaseModel):
-    job_uuid: str
-    dataset: TrainEvalDataset
+@json_schema_type
+class EvalResult(BaseModel):
+    """Aggregated final evaluation result."""
 
-    checkpoint: Checkpoint
-
-    # generation params
-    sampling_params: SamplingParams = SamplingParams()
+    metrics: Dict[str, float]
 
 
 @json_schema_type
-class EvaluateTextGenerationRequest(EvaluateTaskRequestCommon):
-    """Request to evaluate text generation."""
+class SingleEvalResult(BaseModel):
+    """Single evaluation result. Contains a scorer name, and corresponding metrics from scorer."""
 
-    metrics: List[TextGenerationMetric]
-
-
-@json_schema_type
-class EvaluateQuestionAnsweringRequest(EvaluateTaskRequestCommon):
-    """Request to evaluate question answering."""
-
-    metrics: List[QuestionAnsweringMetric]
+    score_data: Dict[str, float]
 
 
 @json_schema_type
-class EvaluateSummarizationRequest(EvaluateTaskRequestCommon):
-    """Request to evaluate summarization."""
+class EvaluateResponse(BaseModel):
+    """Scores for evaluation."""
 
-    metrics: List[SummarizationMetric]
+    eval_result: EvalResult
+    formatted_report: Optional[str] = None
 
 
+@json_schema_type
 class EvaluationJobStatusResponse(BaseModel):
     job_uuid: str
 
 
 @json_schema_type
-class EvaluationJobArtifactsResponse(BaseModel):
-    """Artifacts of a evaluation job."""
+class EvaluationJobCreateResponse(BaseModel):
+    """Response to create a evaluation job."""
 
     job_uuid: str
 
 
-class Evaluations(Protocol):
-    @webmethod(route="/evaluate/text_generation/")
-    def evaluate_text_generation(
+@json_schema_type
+class EvaluateDatasetConfig(BaseModel):
+    # identifier to previously registered dataset via DatasetDef
+    dataset_identifier: str
+    # limit number of rows to evaluate
+    row_limit: Optional[int] = None
+    kwargs: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class EvaluatePreprocessConfig(BaseModel):
+    kwargs: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class EvaluateModelGenerationConfig(BaseModel):
+    model: str
+    sampling_params: SamplingParams = SamplingParams()
+    kwargs: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class EvaluatePostprocessConfig(BaseModel):
+    kwargs: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class EvaluateProcessorConfig(BaseModel):
+    processor_identifier: str
+    preprocess_config: Optional[EvaluatePreprocessConfig] = None
+    postprocess_config: Optional[EvaluatePostprocessConfig] = None
+
+
+@json_schema_type
+class EvaluateJudgeScoringConfig(BaseModel): ...
+
+
+@json_schema_type
+class LLMJudgeConfig(BaseModel):
+    judge_processor_config: EvaluateProcessorConfig
+    judge_model_generation_config: EvaluateModelGenerationConfig
+    judge_scoring_config: EvaluateJudgeScoringConfig
+
+
+@json_schema_type
+class EvaluateSingleScorerConfig(BaseModel):
+    scorer_name: str
+    llm_judge_config: Optional[LLMJudgeConfig] = None
+
+
+@json_schema_type
+class EvaluateScoringConfig(BaseModel):
+    # list of scorer (metrics) names to use
+    scorer_config_list: List[EvaluateSingleScorerConfig]
+
+
+@json_schema_type
+class EvaluateTaskConfig(BaseModel):
+    dataset_config: EvaluateDatasetConfig
+    processor_config: EvaluateProcessorConfig
+    generation_config: EvaluateModelGenerationConfig
+    scoring_config: EvaluateScoringConfig
+
+
+class BaseGeneratorProcessor(
+    ABC,
+    Generic[
+        TDatasetSample,
+        TPreprocessedSample,
+        TGenerationResponseSample,
+        TScorerInputSample,
+    ],
+):
+    """
+    Base class for all generator processors. Each processor needs to implement the following methods:
+    - F1: preprocess_sample(self, dataset)
+    - F2: postprocess_sample(self)
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return self.__class__.__name__
+
+    def preprocess(
+        self, dataset: BaseDataset[TDatasetSample]
+    ) -> List[TPreprocessedSample]:
+        return [self.preprocess_sample(sample) for sample in dataset]
+
+    def postprocess(
         self,
-        metrics: List[TextGenerationMetric],
-    ) -> EvaluationJob: ...
+        generation: List[TGenerationResponseSample],
+        dataset: BaseDataset[TDatasetSample],
+    ) -> List[TScorerInputSample]:
+        return [
+            self.postprocess_sample(generation_sample, dataset_sample)
+            for generation_sample, dataset_sample in zip(generation, dataset)
+        ]
 
-    @webmethod(route="/evaluate/question_answering/")
-    def evaluate_question_answering(
+    @abstractmethod
+    def preprocess_sample(self, sample: TDatasetSample) -> TPreprocessedSample:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def postprocess_sample(
         self,
-        metrics: List[QuestionAnsweringMetric],
-    ) -> EvaluationJob: ...
+        generation_sample: TGenerationResponseSample,
+        dataset_sample: TDatasetSample,
+    ) -> TScorerInputSample:
+        raise NotImplementedError()
 
-    @webmethod(route="/evaluate/summarization/")
-    def evaluate_summarization(
+
+class BaseGenerator(ABC, Generic[TPreprocessedSample, TGenerationResponseSample]):
+    """
+    Base class for all generators. Each generator needs to implement the following methods:
+    - generate(self, preprocessed_dataset)
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return self.__class__.__name__
+
+    @abstractmethod
+    async def generate(
+        self, preprocessed_dataset: List[TPreprocessedSample]
+    ) -> List[TGenerationResponseSample]:
+        raise NotImplementedError()
+
+
+class BaseScorer(ABC, Generic[TScorerInputSample]):
+    """
+    Base class for all scorers. Each scorer needs to implement the following methods:
+    - score_sample(self, scorer_input_sample)
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return self.__class__.__name__
+
+    @abstractmethod
+    def score_sample(self, scorer_input_sample: TScorerInputSample) -> SingleEvalResult:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def aggregate_results(self, eval_results: List[SingleEvalResult]) -> EvalResult:
+        raise NotImplementedError()
+
+    def score(
+        self, prepared_eval_dataset: List[TScorerInputSample]
+    ) -> List[SingleEvalResult]:
+        return [self.score_sample(sample) for sample in prepared_eval_dataset]
+
+
+class BaseTask(ABC):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    @abstractmethod
+    async def run(self, *args, **kwargs) -> EvalResult:
+        raise NotImplementedError()
+
+
+class Evals(Protocol):
+
+    @webmethod(route="/evals/run_eval_task")
+    async def run_eval_task(
         self,
-        metrics: List[SummarizationMetric],
-    ) -> EvaluationJob: ...
+        eval_task_config: EvaluateTaskConfig,
+    ) -> EvaluateResponse: ...
 
-    @webmethod(route="/evaluate/jobs")
-    def get_evaluation_jobs(self) -> List[EvaluationJob]: ...
+    @webmethod(route="/evals/run_scorer")
+    async def run_scorer(
+        self,
+        dataset_config: EvaluateDatasetConfig,
+        eval_scoring_config: EvaluateScoringConfig,
+    ) -> EvaluateResponse: ...
 
-    @webmethod(route="/evaluate/job/status")
-    def get_evaluation_job_status(
-        self, job_uuid: str
-    ) -> EvaluationJobStatusResponse: ...
+    # @webmethod(route="/evals/jobs")
+    # def get_evaluation_jobs(self) -> List[EvaluationJob]: ...
 
-    # sends SSE stream of logs
-    @webmethod(route="/evaluate/job/logs")
-    def get_evaluation_job_logstream(self, job_uuid: str) -> EvaluationJobLogStream: ...
+    # @webmethod(route="/evals/job/create")
+    # async def create_evaluation_job(
+    #     self, model: str, dataset: str, task: str
+    # ) -> EvaluationJob: ...
 
-    @webmethod(route="/evaluate/job/cancel")
-    def cancel_evaluation_job(self, job_uuid: str) -> None: ...
+    # @webmethod(route="/evals/job/status")
+    # def get_evaluation_job_status(
+    #     self, job_uuid: str
+    # ) -> EvaluationJobStatusResponse: ...
 
-    @webmethod(route="/evaluate/job/artifacts")
-    def get_evaluation_job_artifacts(
-        self, job_uuid: str
-    ) -> EvaluationJobArtifactsResponse: ...
+    # # sends SSE stream of logs
+    # @webmethod(route="/evals/job/logs")
+    # def get_evaluation_job_logstream(self, job_uuid: str) -> EvaluationJobLogStream: ...
+
+    # @webmethod(route="/evals/job/cancel")
+    # def cancel_evaluation_job(self, job_uuid: str) -> None: ...

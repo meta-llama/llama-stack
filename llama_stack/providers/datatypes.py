@@ -32,6 +32,9 @@ class Api(Enum):
     # built-in API
     inspect = "inspect"
 
+    evals = "evals"
+    datasets = "datasets"
+
 
 class ModelsProtocolPrivate(Protocol):
     async def list_models(self) -> List[ModelDef]: ...

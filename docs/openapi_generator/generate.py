@@ -33,7 +33,7 @@ schema_utils.json_schema_type = json_schema_type
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.dataset import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.evals import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.batch_inference import *  # noqa: F403
@@ -61,7 +61,7 @@ class LlamaStack(
     Telemetry,
     PostTraining,
     Memory,
-    Evaluations,
+    Evals,
     Models,
     Shields,
     Inspect,
