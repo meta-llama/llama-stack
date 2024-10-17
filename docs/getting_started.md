@@ -29,15 +29,31 @@ For what you can do with the Llama CLI, please refer to [CLI Reference](./cli_re
 This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
 
 #### Starting up server via docker
+
+We provide 2 pre-built Docker image of Llama Stack distribution, which can be found in the following links.
+- [llamastack-local-gpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-gpu/general)
+  - This is a packaged version with our local meta-reference implementations, where you will be running inference locally with downloaded Llama model checkpoints.
+- [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general)
+   - This is a lite version with remote inference where you can hook up to your favourite remote inference framework (e.g. ollama, fireworks, together, tgi) for running inference without GPU.
+
+> [!NOTE]
+> For GPU inference, you need to set these environment variables for specifying local directory containing your model checkpoints, and enable GPU inference to start running docker container.
 ```
-docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llamastack-local-gpu
+export LLAMA_CHECKPOINT_DIR=~/.llama
 ```
 
 > [!NOTE]
 > `~/.llama` should be the path containing downloaded weights of Llama models.
 
+
+To download and start running a pre-built docker container, you may use the following commands:
+
+```
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llamastack-local-gpu
+```
+
 > [!TIP]
-> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI). You can checkout [these scripts](../llama_stack/distribution/docker/README.md) to help you get started.
+> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../llama_stack/distribution/docker/README.md) to help you get started.
 
 #### Build->Configure->Run via conda
 You may also build a LlamaStack distribution from scratch, configure it, and start running the distribution. This is useful for developing on LlamaStack.
