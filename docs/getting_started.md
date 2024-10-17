@@ -23,10 +23,7 @@ $CONDA_PREFIX/bin/pip install -e .
 
 For what you can do with the Llama CLI, please refer to [CLI Reference](./cli_reference.md).
 
-## Starting the Llama Stack Server
-
-## Quick Cheatsheet
-This guides allows you to quickly get started with building and running a Llama Stack server in < 5 minutes!
+## Quick Starting Llama Stack Server
 
 #### Starting up server via docker
 
@@ -55,7 +52,7 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llama
 > [!TIP]
 > Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../llama_stack/distribution/docker/README.md) to help you get started.
 
-#### Build->Configure->Run via conda
+#### Build->Configure->Run Llama Stack server via conda
 You may also build a LlamaStack distribution from scratch, configure it, and start running the distribution. This is useful for developing on LlamaStack.
 
 **`llama stack build`**
@@ -163,6 +160,7 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
+## Building a Distribution
 
 ## Step 1. Build
 In the following steps, imagine we'll be working with a `Meta-Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
