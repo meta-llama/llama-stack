@@ -31,11 +31,11 @@ services:
     network_mode: "host"
     volumes:
       - ~/.llama:/root/.llama
-      # Link to TGI run.yaml file
+      # Link to ollama run.yaml file
       - ./ollama-run.yaml:/root/llamastack-run-ollama.yaml
     ports:
       - "5000:5000"
-    # Hack: wait for TGI server to start before starting docker
+    # Hack: wait for ollama server to start before starting docker
     entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-ollama.yaml"
     restart_policy:
       condition: on-failure
