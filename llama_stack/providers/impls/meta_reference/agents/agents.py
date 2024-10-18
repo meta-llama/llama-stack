@@ -155,7 +155,7 @@ class MetaReferenceAgentsImpl(Agents):
         return turn
 
     async def get_agents_step(
-        self, agent_id: str, turn_id: str, session_id: str, step_id: str
+        self, agent_id: str, session_id: str, turn_id: str, step_id: str
     ) -> AgentStepResponse:
         turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
         try:
