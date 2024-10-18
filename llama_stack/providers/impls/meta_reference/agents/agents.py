@@ -160,21 +160,22 @@ class MetaReferenceAgentsImpl(Agents):
                 f"Could not JSON decode session for {agent_id} and {session_id}"
             ) from e
         turns = []
-        for turn_id in turn_ids:
-            turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
-            try:
-                turn = json.loads(turn)
-            except json.JSONDecodeError as e:
-                raise ValueError(
-                    f"Could not JSON decode session for {agent_id} and {session_id}"
-                ) from e
-            try:
-                turn = Turn(**turn)
-            except Exception as e:
-                raise ValueError(
-                    f"Could not validate(?) Turns for {turn_id}"
-                ) from e
-            turns.append(turn)
+        if turn_ids:
+            for turn_id in turn_ids:
+                turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
+                try:
+                    turn = json.loads(turn)
+                except json.JSONDecodeError as e:
+                    raise ValueError(
+                        f"Could not JSON decode session for {agent_id} and {session_id}"
+                    ) from e
+                try:
+                    turn = Turn(**turn)
+                except Exception as e:
+                    raise ValueError(
+                        f"Could not validate(?) Turns for {turn_id}"
+                    ) from e
+                turns.append(turn)
         return Session(
             session_name=session.session_name,
             session_id=session_id,
