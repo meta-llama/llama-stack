@@ -18,6 +18,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import MetaReferenceInferenceConfig
+from .generation import Llama
 from .model_parallel import LlamaModelParallelGenerator
 
 # there's a single model parallel process running serving the model. for now,
@@ -36,8 +37,11 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def initialize(self) -> None:
         print(f"Loading model `{self.model.descriptor()}`")
-        self.generator = LlamaModelParallelGenerator(self.config)
-        self.generator.start()
+        if self.config.use_elastic_agent:
+            self.generator = LlamaModelParallelGenerator(self.config)
+            self.generator.start()
+        else:
+            self.generator = Llama.build(self.config)
 
     async def register_model(self, model: ModelDef) -> None:
         raise ValueError("Dynamic model registration is not supported")
@@ -51,7 +55,8 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         ]
 
     async def shutdown(self) -> None:
-        self.generator.stop()
+        if self.config.use_elastic_agent:
+            self.generator.stop()
 
     def completion(
         self,
@@ -99,8 +104,9 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
                 f"Model mismatch: {request.model} != {self.model.descriptor()}"
             )
 
-        if SEMAPHORE.locked():
-            raise RuntimeError("Only one concurrent request is supported")
+        if self.config.use_elastic_agent:
+            if SEMAPHORE.locked():
+                raise RuntimeError("Only one concurrent request is supported")
 
         if request.stream:
             return self._stream_chat_completion(request)
@@ -110,7 +116,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        async with SEMAPHORE:
+        def impl():
             messages = chat_completion_request_to_messages(request)
 
             tokens = []
@@ -154,10 +160,16 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
                 logprobs=logprobs if request.logprobs else None,
             )
 
+        if self.config.use_elastic_agent:
+            async with SEMAPHORE:
+                return impl()
+        else:
+            return impl()
+
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        async with SEMAPHORE:
+        def impl():
             messages = chat_completion_request_to_messages(request)
 
             yield ChatCompletionResponseStreamChunk(
@@ -271,6 +283,14 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
                     stop_reason=stop_reason,
                 )
             )
+
+        if self.config.use_elastic_agent:
+            async with SEMAPHORE:
+                for x in impl():
+                    yield x
+        else:
+            for x in impl():
+                yield x
 
     async def embeddings(
         self,

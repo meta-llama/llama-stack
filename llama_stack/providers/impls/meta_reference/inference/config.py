@@ -17,12 +17,17 @@ from llama_stack.providers.utils.inference import supported_inference_models
 
 class MetaReferenceInferenceConfig(BaseModel):
     model: str = Field(
-        default="Llama3.1-8B-Instruct",
+        default="Llama3.2-3B-Instruct",
         description="Model descriptor from `llama model list`",
     )
     torch_seed: Optional[int] = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
+
+    # when this is False, we assume that the distributed process group is setup by someone
+    # outside of this code (e.g., when run inside `torchrun`). that is useful for clients
+    # (including our testing code) who might be using llama-stack as a library.
+    use_elastic_agent: bool = True
 
     @field_validator("model")
     @classmethod
