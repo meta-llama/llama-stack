@@ -424,7 +424,7 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             with tracing.span("inference"):
-                async for chunk in self.inference_api.chat_completion(
+                async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
                     tools=self._get_tools(),

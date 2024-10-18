@@ -146,7 +146,7 @@ async def test_chat_completion_streaming(inference_settings, sample_messages):
     inference_impl = inference_settings["impl"]
     response = [
         r
-        async for r in inference_impl.chat_completion(
+        async for r in await inference_impl.chat_completion(
             messages=sample_messages,
             stream=True,
             **inference_settings["common_params"],
@@ -217,7 +217,7 @@ async def test_chat_completion_with_tool_calling_streaming(
 
     response = [
         r
-        async for r in inference_impl.chat_completion(
+        async for r in await inference_impl.chat_completion(
             messages=messages,
             tools=[sample_tool_definition],
             stream=True,

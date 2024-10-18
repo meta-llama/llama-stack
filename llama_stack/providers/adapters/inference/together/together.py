@@ -64,7 +64,7 @@ class TogetherInferenceAdapter(
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -101,7 +101,7 @@ class TogetherInferenceAdapter(
         if stream:
             return self._stream_chat_completion(request, client)
         else:
-            return self._nonstream_chat_completion(request, client)
+            return await self._nonstream_chat_completion(request, client)
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest, client: Together

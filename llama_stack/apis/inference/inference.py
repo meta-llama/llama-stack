@@ -181,10 +181,8 @@ class ModelStore(Protocol):
 class Inference(Protocol):
     model_store: ModelStore
 
-    # This method is not `async def` because it can result in either an
-    # `AsyncGenerator` or a `CompletionResponse` depending on the value of `stream`.
     @webmethod(route="/inference/completion")
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -196,7 +194,7 @@ class Inference(Protocol):
     # This method is not `async def` because it can result in either an
     # `AsyncGenerator` or a `ChatCompletionResponse` depending on the value of `stream`.
     @webmethod(route="/inference/chat_completion")
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],

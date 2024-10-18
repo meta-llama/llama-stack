@@ -4,6 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+# Copyright (c) Meta Platforms, IAny, nc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 import json
 import multiprocessing
 import os
@@ -11,10 +17,9 @@ import tempfile
 import time
 import uuid
 from enum import Enum
-from typing import Callable, Generator, List, Literal, Optional, Union
+from typing import Callable, Generator, Literal, Optional, Union
 
 import torch
-
 import zmq
 
 from fairscale.nn.model_parallel.initialize import (
@@ -23,23 +28,14 @@ from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_src_rank,
 )
 
-from llama_models.llama3.api.datatypes import Message, ToolPromptFormat
-
 from pydantic import BaseModel, Field
 
 from torch.distributed.launcher.api import elastic_launch, LaunchConfig
 from typing_extensions import Annotated
 
+from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
+
 from .generation import TokenResult
-
-
-class InferenceArgs(BaseModel):
-    messages: List[Message]
-    temperature: float
-    top_p: float
-    max_gen_len: int
-    logprobs: bool
-    tool_prompt_format: ToolPromptFormat
 
 
 class ProcessingMessageName(str, Enum):
@@ -80,7 +76,7 @@ class TaskRequest(BaseModel):
     type: Literal[ProcessingMessageName.task_request] = (
         ProcessingMessageName.task_request
     )
-    task: InferenceArgs
+    task: Union[CompletionRequest, ChatCompletionRequest]
 
 
 class TaskResponse(BaseModel):
@@ -349,11 +345,13 @@ class ModelParallelProcessGroup:
             self.process.join()
         self.started = False
 
-    def run_inference(self, inference_args: InferenceArgs) -> Generator:
+    def run_inference(
+        self, req: Union[CompletionRequest, ChatCompletionRequest]
+    ) -> Generator:
         assert not self.running, "inference already running"
 
         self.running = True
-        self.request_socket.send(encode_msg(TaskRequest(task=inference_args)))
+        self.request_socket.send(encode_msg(TaskRequest(task=req)))
         try:
             while True:
                 obj_json = self.request_socket.recv()

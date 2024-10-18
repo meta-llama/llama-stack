@@ -47,7 +47,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     async def shutdown(self) -> None:
         self.client.close()
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -283,7 +283,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
             )
         return tool_config
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
