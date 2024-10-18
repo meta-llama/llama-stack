@@ -26,7 +26,8 @@ services:
             capabilities: [gpu]
     runtime: nvidia
   llamastack-local-cpu:
-    depends_on: ollama
+    depends_on:
+    - ollama
     image: llamastack/llamastack-local-cpu
     network_mode: "host"
     volumes:
@@ -37,10 +38,11 @@ services:
       - "5000:5000"
     # Hack: wait for ollama server to start before starting docker
     entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-ollama.yaml"
-    restart_policy:
-      condition: on-failure
-      delay: 3s
-      max_attempts: 5
-      window: 60s
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
 volumes:
   ollama:
