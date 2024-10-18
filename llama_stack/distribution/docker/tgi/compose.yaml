@@ -38,7 +38,7 @@ services:
     depends_on:
       text-generation-inference:
         condition: service_healthy
-    image: llamastack-local-cpu
+    image: llamastack/llamastack-local-cpu
     network_mode: "host"
     volumes:
       - ~/.llama:/root/.llama
