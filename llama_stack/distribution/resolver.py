@@ -55,7 +55,7 @@ class ProviderWithSpec(Provider):
 
 
 # TODO: this code is not very straightforward to follow and needs one more round of refactoring
-async def resolve_impls_with_routing(run_config: StackRunConfig) -> Dict[Api, Any]:
+async def resolve_impls(run_config: StackRunConfig) -> Dict[Api, Any]:
     """
     Does two things:
     - flatmaps, sorts and resolves the providers in dependency order
