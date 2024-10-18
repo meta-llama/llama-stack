@@ -29,6 +29,10 @@ class MetaReferenceInferenceConfig(BaseModel):
     # (including our testing code) who might be using llama-stack as a library.
     create_distributed_process_group: bool = True
 
+    # By default, the implementation will look at ~/.llama/checkpoints/<model> but you
+    # can override by specifying the directory explicitly
+    checkpoint_dir: Optional[str] = None
+
     @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:
