@@ -174,8 +174,7 @@ class MetaReferenceAgentsImpl(Agents):
         for step in steps:
             if step.step_id == step_id:
                 return AgentStepResponse(step=step)
-        raise ValueError("Provided step_id could not be found")
-
+        raise ValueError(f"Provided step_id {step_id} could not be found")
 
     async def get_agents_session(
         self,
@@ -219,6 +218,7 @@ class MetaReferenceAgentsImpl(Agents):
             await self.persistence_store.delete(f"session:{agent_id}:{session_id}")
         except:
             raise ValueError("Session Key Not Found")
+
     async def delete_agents(self, agent_id: str) -> None:
         try:
             await self.persistence_store.delete(f"agent:{agent_id}")
