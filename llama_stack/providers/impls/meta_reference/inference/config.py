@@ -27,7 +27,7 @@ class MetaReferenceInferenceConfig(BaseModel):
     # when this is False, we assume that the distributed process group is setup by someone
     # outside of this code (e.g., when run inside `torchrun`). that is useful for clients
     # (including our testing code) who might be using llama-stack as a library.
-    use_elastic_agent: bool = True
+    create_distributed_process_group: bool = True
 
     @field_validator("model")
     @classmethod

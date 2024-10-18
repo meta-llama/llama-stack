@@ -37,7 +37,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def initialize(self) -> None:
         print(f"Loading model `{self.model.descriptor()}`")
-        if self.config.use_elastic_agent:
+        if self.config.create_distributed_process_group:
             self.generator = LlamaModelParallelGenerator(self.config)
             self.generator.start()
         else:
@@ -55,7 +55,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         ]
 
     async def shutdown(self) -> None:
-        if self.config.use_elastic_agent:
+        if self.config.create_distributed_process_group:
             self.generator.stop()
 
     def completion(
@@ -104,7 +104,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
                 f"Model mismatch: {request.model} != {self.model.descriptor()}"
             )
 
-        if self.config.use_elastic_agent:
+        if self.config.create_distributed_process_group:
             if SEMAPHORE.locked():
                 raise RuntimeError("Only one concurrent request is supported")
 
@@ -160,7 +160,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
                 logprobs=logprobs if request.logprobs else None,
             )
 
-        if self.config.use_elastic_agent:
+        if self.config.create_distributed_process_group:
             async with SEMAPHORE:
                 return impl()
         else:
@@ -284,7 +284,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
                 )
             )
 
-        if self.config.use_elastic_agent:
+        if self.config.create_distributed_process_group:
             async with SEMAPHORE:
                 for x in impl():
                     yield x
