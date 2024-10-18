@@ -3,7 +3,7 @@
 The scripts in these folders help you spin up a Llama Stack distribution with Ollama Inference provider.
 
 > [!NOTE]
-> This assumes you have access to GPU to start a Ollama server with access to your GPU. Please see Ollama CPU Distribution if you wish connect to a hosted Ollama endpoint.
+> This assumes you have access to GPU to start a Ollama server with access to your GPU. Please see Ollama CPU Distribution if you wish to run Ollama on CPU.
 
 ### Getting Started
 
