@@ -92,6 +92,21 @@ async def run_main(host: str, port: int, stream: bool):
     response = await client.list_memory_banks()
     cprint(f"list_memory_banks response={response}", "green")
 
+    # register memory bank for the first time
+    response = await client.register_memory_bank(
+        VectorMemoryBankDef(
+            identifier="test_bank2",
+            embedding_model="all-MiniLM-L6-v2",
+            chunk_size_in_tokens=512,
+            overlap_size_in_tokens=64,
+        )
+    )
+    cprint(f"register_memory_bank response={response}", "blue")
+
+    # list again after registering
+    response = await client.list_memory_banks()
+    cprint(f"list_memory_banks response={response}", "green")
+
 
 def main(host: str, port: int, stream: bool = True):
     asyncio.run(run_main(host, port, stream))

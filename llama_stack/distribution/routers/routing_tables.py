@@ -110,9 +110,15 @@ class CommonRoutingTableImpl(RoutingTable):
     async def register_object(self, obj: RoutableObjectWithProvider):
         entries = self.registry.get(obj.identifier, [])
         for entry in entries:
-            if entry.provider_id == obj.provider_id:
-                print(f"`{obj.identifier}` already registered with `{obj.provider_id}`")
+            if entry.provider_id == obj.provider_id or not obj.provider_id:
+                print(
+                    f"`{obj.identifier}` already registered with `{entry.provider_id}`"
+                )
                 return
+
+        # if provider_id is not specified, we'll pick an arbitrary one from existing entries
+        if not obj.provider_id and len(self.impls_by_provider_id) > 0:
+            obj.provider_id = list(self.impls_by_provider_id.keys())[0]
 
         if obj.provider_id not in self.impls_by_provider_id:
             raise ValueError(f"Provider `{obj.provider_id}` not found")
