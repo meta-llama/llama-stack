@@ -40,13 +40,22 @@ docker compose down
 ### Start the Distribution (Single Node CPU)
 
 > [!NOTE]
-> This assumes you have an hosted endpoint
+> This assumes you have an hosted endpoint compatible with TGI server.
 
 ```
 $ cd llama-stack/distribution/tgi/cpu
 $ ls
 compose.yaml  run.yaml
 $ docker compose up
+```
+
+Replace <ENTER_YOUR_TGI_HOSTED_ENDPOINT> in `run.yaml` file with your TGI endpoint.
+```
+inference:
+  - provider_id: tgi0
+    provider_type: remote::tgi
+    config:
+      url: <ENTER_YOUR_TGI_HOSTED_ENDPOINT>
 ```
 
 ### (Alternative) TGI server + llama stack run (Single Node GPU)
