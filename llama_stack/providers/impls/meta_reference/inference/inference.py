@@ -95,7 +95,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         def impl():
             stop_reason = None
 
-            for token_result in self.generator.chat_completion(request):
+            for token_result in self.generator.completion(request):
                 if token_result.text == "<|eot_id|>":
                     stop_reason = StopReason.end_of_turn
                     text = ""

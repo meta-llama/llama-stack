@@ -159,7 +159,10 @@ async def test_completion(inference_settings):
         )
     ]
 
-    print(chunks)
+    assert all(isinstance(chunk, CompletionResponseStreamChunk) for chunk in chunks)
+    assert len(chunks) == 51
+    last = chunks[-1]
+    assert last.stop_reason == StopReason.out_of_tokens
 
 
 @pytest.mark.asyncio
