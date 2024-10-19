@@ -13,7 +13,7 @@ from functools import lru_cache
 from pathlib import Path
 
 TEMPLATES_PATH = (
-    Path(os.path.relpath(__file__)).parent.parent.parent / "distribution" / "templates"
+    Path(os.path.relpath(__file__)).parent.parent.parent.parent / "distributions"
 )
 
 

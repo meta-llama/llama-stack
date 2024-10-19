@@ -1,8 +1,8 @@
-name: distribution-meta-reference-gpu
+name: distribution-tgi
 distribution_spec:
-  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  description: Use TGI for running LLM inference
   providers:
-    inference: meta-reference
+    inference: remote::tgi
     memory:
     - meta-reference
     - remote::chromadb
@@ -10,4 +10,4 @@ distribution_spec:
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference
-image_type: docker
+image_type: conda
