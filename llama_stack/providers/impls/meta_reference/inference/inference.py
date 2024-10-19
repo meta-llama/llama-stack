@@ -13,9 +13,6 @@ from llama_models.sku_list import resolve_model
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.datatypes import ModelDef, ModelsProtocolPrivate
-from llama_stack.providers.utils.inference.prompt_adapter import (
-    chat_completion_request_to_messages,
-)
 
 from .config import MetaReferenceInferenceConfig
 from .generation import Llama
@@ -58,7 +55,18 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         if self.config.create_distributed_process_group:
             self.generator.stop()
 
-    def completion(
+    def check_model(self, request) -> None:
+        model = resolve_model(request.model)
+        if model is None:
+            raise RuntimeError(
+                f"Unknown model: {request.model}, Run `llama model list`"
+            )
+        elif model.descriptor() != self.model.descriptor():
+            raise RuntimeError(
+                f"Model mismatch: {request.model} != {self.model.descriptor()}"
+            )
+
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -66,9 +74,114 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
-        raise NotImplementedError()
+        if logprobs:
+            assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
 
-    def chat_completion(
+        request = CompletionRequest(
+            model=model,
+            content=content,
+            sampling_params=sampling_params,
+            stream=stream,
+            logprobs=logprobs,
+        )
+        self.check_model(request)
+
+        if request.stream:
+            return self._stream_completion(request)
+        else:
+            return await self._nonstream_completion(request)
+
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        def impl():
+            stop_reason = None
+
+            for token_result in self.generator.completion(request):
+                if token_result.text == "<|eot_id|>":
+                    stop_reason = StopReason.end_of_turn
+                    text = ""
+                elif token_result.text == "<|eom_id|>":
+                    stop_reason = StopReason.end_of_message
+                    text = ""
+                else:
+                    text = token_result.text
+
+                logprobs = None
+                if stop_reason is None:
+                    if request.logprobs:
+                        assert len(token_result.logprobs) == 1
+
+                        logprobs = [
+                            TokenLogProbs(
+                                logprobs_by_token={
+                                    token_result.text: token_result.logprobs[0]
+                                }
+                            )
+                        ]
+
+                yield CompletionResponseStreamChunk(
+                    delta=text,
+                    stop_reason=stop_reason,
+                    logprobs=logprobs if request.logprobs else None,
+                )
+
+            if stop_reason is None:
+                yield CompletionResponseStreamChunk(
+                    delta="",
+                    stop_reason=StopReason.out_of_tokens,
+                )
+
+        if self.config.create_distributed_process_group:
+            async with SEMAPHORE:
+                for x in impl():
+                    yield x
+        else:
+            for x in impl():
+                yield x
+
+    async def _nonstream_completion(
+        self, request: CompletionRequest
+    ) -> CompletionResponse:
+        def impl():
+            tokens = []
+            logprobs = []
+            stop_reason = None
+
+            tokenizer = self.generator.formatter.tokenizer
+            for token_result in self.generator.completion(request):
+                tokens.append(token_result.token)
+
+                if token_result.token in tokenizer.stop_tokens:
+                    # not quite right semantically
+                    stop_reason = StopReason.end_of_turn
+
+                if request.logprobs:
+                    assert len(token_result.logprobs) == 1
+
+                    logprobs.append(
+                        TokenLogProbs(
+                            logprobs_by_token={
+                                token_result.text: token_result.logprobs[0]
+                            }
+                        )
+                    )
+
+            if stop_reason is None:
+                stop_reason = StopReason.out_of_tokens
+
+            content = self.generator.formatter.tokenizer.decode(tokens)
+            return CompletionResponse(
+                content=content,
+                stop_reason=stop_reason,
+                logprobs=logprobs if request.logprobs else None,
+            )
+
+        if self.config.create_distributed_process_group:
+            async with SEMAPHORE:
+                return impl()
+        else:
+            return impl()
+
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -93,16 +206,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             stream=stream,
             logprobs=logprobs,
         )
-
-        model = resolve_model(request.model)
-        if model is None:
-            raise RuntimeError(
-                f"Unknown model: {request.model}, Run `llama model list`"
-            )
-        elif model.descriptor() != self.model.descriptor():
-            raise RuntimeError(
-                f"Model mismatch: {request.model} != {self.model.descriptor()}"
-            )
+        self.check_model(request)
 
         if self.config.create_distributed_process_group:
             if SEMAPHORE.locked():
@@ -111,26 +215,17 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         if request.stream:
             return self._stream_chat_completion(request)
         else:
-            return self._nonstream_chat_completion(request)
+            return await self._nonstream_chat_completion(request)
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
         def impl():
-            messages = chat_completion_request_to_messages(request)
-
             tokens = []
             logprobs = []
             stop_reason = None
 
-            for token_result in self.generator.chat_completion(
-                messages=messages,
-                temperature=request.sampling_params.temperature,
-                top_p=request.sampling_params.top_p,
-                max_gen_len=request.sampling_params.max_tokens,
-                logprobs=request.logprobs,
-                tool_prompt_format=request.tool_prompt_format,
-            ):
+            for token_result in self.generator.chat_completion(request):
                 tokens.append(token_result.token)
 
                 if token_result.text == "<|eot_id|>":
@@ -170,8 +265,6 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
         def impl():
-            messages = chat_completion_request_to_messages(request)
-
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.start,
@@ -184,14 +277,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             stop_reason = None
             ipython = False
 
-            for token_result in self.generator.chat_completion(
-                messages=messages,
-                temperature=request.sampling_params.temperature,
-                top_p=request.sampling_params.top_p,
-                max_gen_len=request.sampling_params.max_tokens,
-                logprobs=request.logprobs,
-                tool_prompt_format=request.tool_prompt_format,
-            ):
+            for token_result in self.generator.chat_completion(request):
                 tokens.append(token_result.token)
 
                 if not ipython and token_result.text.startswith("<|python_tag|>"):

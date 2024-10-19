@@ -42,10 +42,10 @@ class InferenceClient(Inference):
     async def shutdown(self) -> None:
         pass
 
-    def completion(self, request: CompletionRequest) -> AsyncGenerator:
+    async def completion(self, request: CompletionRequest) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -139,7 +139,8 @@ async def run_main(
     else:
         logprobs_config = None
 
-    iterator = client.chat_completion(
+    assert stream, "Non streaming not supported here"
+    iterator = await client.chat_completion(
         model=model,
         messages=[message],
         stream=stream,

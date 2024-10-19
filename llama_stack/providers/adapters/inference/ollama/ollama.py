@@ -84,7 +84,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         return ret
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -94,7 +94,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -118,7 +118,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if stream:
             return self._stream_chat_completion(request)
         else:
-            return self._nonstream_chat_completion(request)
+            return await self._nonstream_chat_completion(request)
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
