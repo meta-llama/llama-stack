@@ -134,7 +134,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
         if self.engine:
             self.engine.shutdown_background_loop()
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -152,7 +152,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
             logprobs=logprobs,
         )
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: list[Message],
@@ -189,7 +189,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
         if stream:
             return self._stream_chat_completion(request, results_generator)
         else:
-            return self._nonstream_chat_completion(request, results_generator)
+            return await self._nonstream_chat_completion(request, results_generator)
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest, results_generator: AsyncGenerator

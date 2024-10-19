@@ -7,16 +7,17 @@
 import os
 from copy import deepcopy
 from functools import partial
-from typing import Generator, List, Optional
+from typing import Any, Generator
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Message, ToolPromptFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 
+from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
+
 from .config import MetaReferenceInferenceConfig
 from .generation import Llama, model_checkpoint_dir
-from .parallel_utils import InferenceArgs, ModelParallelProcessGroup
+from .parallel_utils import ModelParallelProcessGroup
 
 
 class ModelRunner:
@@ -24,15 +25,13 @@ class ModelRunner:
         self.llama = llama
 
     # the `task` object is the same that is sent to `ModelParallelProcessGroup.run_inference()`
-    def __call__(self, task: InferenceArgs):
-        return self.llama.chat_completion(
-            task.messages,
-            task.temperature,
-            task.top_p,
-            task.max_gen_len,
-            task.logprobs,
-            task.tool_prompt_format,
-        )
+    def __call__(self, req: Any):
+        if isinstance(req, ChatCompletionRequest):
+            return self.llama.chat_completion(req)
+        elif isinstance(req, CompletionRequest):
+            return self.llama.completion(req)
+        else:
+            raise ValueError(f"Unexpected task type {type(req)}")
 
 
 def init_model_cb(config: MetaReferenceInferenceConfig):
@@ -77,23 +76,18 @@ class LlamaModelParallelGenerator:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.group.stop()
 
+    def completion(
+        self,
+        request: CompletionRequest,
+    ) -> Generator:
+        req_obj = deepcopy(request)
+        gen = self.group.run_inference(req_obj)
+        yield from gen
+
     def chat_completion(
         self,
-        messages: List[Message],
-        temperature: float = 0.6,
-        top_p: float = 0.9,
-        max_gen_len: Optional[int] = None,
-        logprobs: bool = False,
-        tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
+        request: ChatCompletionRequest,
     ) -> Generator:
-        req_obj = InferenceArgs(
-            messages=deepcopy(messages),
-            temperature=temperature,
-            top_p=top_p,
-            max_gen_len=max_gen_len,
-            logprobs=logprobs or False,
-            tool_prompt_format=tool_prompt_format,
-        )
-
+        req_obj = deepcopy(request)
         gen = self.group.run_inference(req_obj)
         yield from gen

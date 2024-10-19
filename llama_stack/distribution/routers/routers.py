@@ -70,7 +70,7 @@ class InferenceRouter(Inference):
     async def register_model(self, model: ModelDef) -> None:
         await self.routing_table.register_model(model)
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -93,11 +93,11 @@ class InferenceRouter(Inference):
         )
         provider = self.routing_table.get_provider_impl(model)
         if stream:
-            return (chunk async for chunk in provider.chat_completion(**params))
+            return (chunk async for chunk in await provider.chat_completion(**params))
         else:
-            return provider.chat_completion(**params)
+            return await provider.chat_completion(**params)
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -114,9 +114,9 @@ class InferenceRouter(Inference):
             logprobs=logprobs,
         )
         if stream:
-            return (chunk async for chunk in provider.completion(**params))
+            return (chunk async for chunk in await provider.completion(**params))
         else:
-            return provider.completion(**params)
+            return await provider.completion(**params)
 
     async def embeddings(
         self,

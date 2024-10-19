@@ -501,14 +501,17 @@ components:
     CompletionResponse:
       additionalProperties: false
       properties:
-        completion_message:
-          $ref: '#/components/schemas/CompletionMessage'
+        content:
+          type: string
         logprobs:
           items:
             $ref: '#/components/schemas/TokenLogProbs'
           type: array
+        stop_reason:
+          $ref: '#/components/schemas/StopReason'
       required:
-      - completion_message
+      - content
+      - stop_reason
       title: Completion response.
       type: object
     CompletionResponseStreamChunk:
@@ -2507,7 +2510,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-10 15:29:56.831109"
+    \ draft and subject to change.\n                Generated at 2024-10-18 20:48:17.730988"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3712,21 +3715,21 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Evaluations
-- name: Inspect
-- name: RewardScoring
-- name: Datasets
 - name: Models
-- name: Telemetry
-- name: PostTraining
-- name: SyntheticDataGeneration
-- name: BatchInference
-- name: Inference
-- name: Agents
-- name: Memory
-- name: Safety
-- name: Shields
+- name: RewardScoring
 - name: MemoryBanks
+- name: Shields
+- name: SyntheticDataGeneration
+- name: Inference
+- name: Inspect
+- name: BatchInference
+- name: Memory
+- name: Datasets
+- name: Agents
+- name: PostTraining
+- name: Telemetry
+- name: Safety
+- name: Evaluations
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"

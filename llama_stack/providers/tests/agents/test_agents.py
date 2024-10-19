@@ -116,7 +116,7 @@ async def test_create_agent_turn(agents_settings, sample_messages):
     )
 
     turn_response = [
-        chunk async for chunk in agents_impl.create_agent_turn(**turn_request)
+        chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
     ]
 
     assert len(turn_response) > 0
@@ -204,7 +204,7 @@ async def test_rag_agent_as_attachments(
     )
 
     turn_response = [
-        chunk async for chunk in agents_impl.create_agent_turn(**turn_request)
+        chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
     ]
 
     assert len(turn_response) > 0
@@ -218,7 +218,7 @@ async def test_rag_agent_as_attachments(
     )
 
     turn_response = [
-        chunk async for chunk in agents_impl.create_agent_turn(**turn_request)
+        chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
     ]
 
     assert len(turn_response) > 0
@@ -270,7 +270,7 @@ async def test_create_agent_turn_with_brave_search(
     )
 
     turn_response = [
-        chunk async for chunk in agents_impl.create_agent_turn(**turn_request)
+        chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
     ]
 
     assert len(turn_response) > 0

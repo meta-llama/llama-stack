@@ -184,7 +184,7 @@ class LlamaGuardShield(ShieldBase):
 
         # TODO: llama-stack inference protocol has issues with non-streaming inference code
         content = ""
-        async for chunk in self.inference_api.chat_completion(
+        async for chunk in await self.inference_api.chat_completion(
             model=self.model,
             messages=[shield_input_message],
             stream=True,
