@@ -127,6 +127,42 @@ async def test_model_list(inference_settings):
 
 
 @pytest.mark.asyncio
+async def test_completion(inference_settings):
+    inference_impl = inference_settings["impl"]
+    params = inference_settings["common_params"]
+
+    provider = inference_impl.routing_table.get_provider_impl(params["model"])
+    if provider.__provider_id__ != "meta-reference":
+        pytest.skip("Other inference providers don't support completion() yet")
+
+    response = await inference_impl.completion(
+        content="Roses are red,",
+        stream=False,
+        model=params["model"],
+        sampling_params=SamplingParams(
+            max_tokens=50,
+        ),
+    )
+
+    assert isinstance(response, CompletionResponse)
+    assert "violets are blue" in response.content
+
+    chunks = [
+        r
+        async for r in await inference_impl.completion(
+            content="Roses are red,",
+            stream=True,
+            model=params["model"],
+            sampling_params=SamplingParams(
+                max_tokens=50,
+            ),
+        )
+    ]
+
+    print(chunks)
+
+
+@pytest.mark.asyncio
 async def test_chat_completion_non_streaming(inference_settings, sample_messages):
     inference_impl = inference_settings["impl"]
     response = await inference_impl.chat_completion(

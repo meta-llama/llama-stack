@@ -86,6 +86,101 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         )
         self.check_model(request)
 
+        if request.stream:
+            return self._stream_completion(request)
+        else:
+            return await self._nonstream_completion(request)
+
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        def impl():
+            stop_reason = None
+
+            for token_result in self.generator.chat_completion(request):
+                if token_result.text == "<|eot_id|>":
+                    stop_reason = StopReason.end_of_turn
+                    text = ""
+                elif token_result.text == "<|eom_id|>":
+                    stop_reason = StopReason.end_of_message
+                    text = ""
+                else:
+                    text = token_result.text
+
+                logprobs = None
+                if stop_reason is None:
+                    if request.logprobs:
+                        assert len(token_result.logprobs) == 1
+
+                        logprobs = [
+                            TokenLogProbs(
+                                logprobs_by_token={
+                                    token_result.text: token_result.logprobs[0]
+                                }
+                            )
+                        ]
+
+                yield CompletionResponseStreamChunk(
+                    delta=text,
+                    stop_reason=stop_reason,
+                    logprobs=logprobs if request.logprobs else None,
+                )
+
+            if stop_reason is None:
+                yield CompletionResponseStreamChunk(
+                    delta="",
+                    stop_reason=StopReason.out_of_tokens,
+                )
+
+        if self.config.create_distributed_process_group:
+            async with SEMAPHORE:
+                for x in impl():
+                    yield x
+        else:
+            for x in impl():
+                yield x
+
+    async def _nonstream_completion(
+        self, request: CompletionRequest
+    ) -> CompletionResponse:
+        def impl():
+            tokens = []
+            logprobs = []
+            stop_reason = None
+
+            tokenizer = self.generator.formatter.tokenizer
+            for token_result in self.generator.completion(request):
+                tokens.append(token_result.token)
+
+                if token_result.token in tokenizer.stop_tokens:
+                    # not quite right semantically
+                    stop_reason = StopReason.end_of_turn
+
+                if request.logprobs:
+                    assert len(token_result.logprobs) == 1
+
+                    logprobs.append(
+                        TokenLogProbs(
+                            logprobs_by_token={
+                                token_result.text: token_result.logprobs[0]
+                            }
+                        )
+                    )
+
+            if stop_reason is None:
+                stop_reason = StopReason.out_of_tokens
+
+            content = self.generator.formatter.tokenizer.decode(tokens)
+            return CompletionResponse(
+                content=content,
+                stop_reason=stop_reason,
+                logprobs=logprobs if request.logprobs else None,
+            )
+
+        if self.config.create_distributed_process_group:
+            async with SEMAPHORE:
+                return impl()
+        else:
+            return impl()
+
     async def chat_completion(
         self,
         model: str,

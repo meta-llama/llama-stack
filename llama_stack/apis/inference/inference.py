@@ -88,7 +88,8 @@ class CompletionRequest(BaseModel):
 class CompletionResponse(BaseModel):
     """Completion response."""
 
-    completion_message: CompletionMessage
+    content: str
+    stop_reason: StopReason
     logprobs: Optional[List[TokenLogProbs]] = None
 
 
@@ -113,7 +114,7 @@ class BatchCompletionRequest(BaseModel):
 class BatchCompletionResponse(BaseModel):
     """Batch completion response."""
 
-    completion_message_batch: List[CompletionMessage]
+    batch: List[CompletionResponse]
 
 
 @json_schema_type
@@ -165,7 +166,7 @@ class BatchChatCompletionRequest(BaseModel):
 
 @json_schema_type
 class BatchChatCompletionResponse(BaseModel):
-    completion_message_batch: List[CompletionMessage]
+    batch: List[ChatCompletionResponse]
 
 
 @json_schema_type

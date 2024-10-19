@@ -301,6 +301,7 @@ class Llama:
         request: CompletionRequest,
     ) -> Generator:
         sampling_params = request.sampling_params
+        max_gen_len = sampling_params.max_tokens
         if (
             max_gen_len is None
             or max_gen_len == 0
@@ -315,6 +316,7 @@ class Llama:
             temperature=sampling_params.temperature,
             top_p=sampling_params.top_p,
             logprobs=bool(request.logprobs),
+            include_stop_token=True,
             echo=False,
         )
 
