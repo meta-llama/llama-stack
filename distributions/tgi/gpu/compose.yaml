@@ -34,7 +34,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
-  llamastack-local-cpu:
+  llamastack:
     depends_on:
       text-generation-inference:
         condition: service_healthy
@@ -43,11 +43,11 @@ services:
     volumes:
       - ~/.llama:/root/.llama
       # Link to TGI run.yaml file
-      - ./tgi-run.yaml:/root/llamastack-run-tgi.yaml
+      - ./run.yaml:/root/my-run.yaml
     ports:
       - "5000:5000"
     # Hack: wait for TGI server to start before starting docker
-    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-tgi.yaml"
+    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/my-run.yaml"
     restart_policy:
       condition: on-failure
       delay: 3s
