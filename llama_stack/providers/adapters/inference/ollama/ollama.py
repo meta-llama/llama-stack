@@ -33,7 +33,8 @@ OLLAMA_SUPPORTED_MODELS = {
     "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
     "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
     "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
-    "Llama-Guard-3-8B": "xe/llamaguard3:latest",
+    "Llama-Guard-3-8B": "llama-guard3:8b",
+    "Llama-Guard-3-1B": "llama-guard3:1b",
 }
 
 
