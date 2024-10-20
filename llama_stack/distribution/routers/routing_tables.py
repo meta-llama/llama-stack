@@ -87,8 +87,21 @@ class CommonRoutingTableImpl(RoutingTable):
     def get_provider_impl(
         self, routing_key: str, provider_id: Optional[str] = None
     ) -> Any:
+        def apiname_object():
+            if isinstance(self, ModelsRoutingTable):
+                return ("Inference", "model")
+            elif isinstance(self, ShieldsRoutingTable):
+                return ("Safety", "shield")
+            elif isinstance(self, MemoryBanksRoutingTable):
+                return ("Memory", "memory_bank")
+            else:
+                raise ValueError("Unknown routing table type")
+
         if routing_key not in self.registry:
-            raise ValueError(f"`{routing_key}` not registered")
+            apiname, objname = apiname_object()
+            raise ValueError(
+                f"`{routing_key}` not registered. Make sure there is an {apiname} provider serving this {objname}."
+            )
 
         objs = self.registry[routing_key]
         for obj in objs:
