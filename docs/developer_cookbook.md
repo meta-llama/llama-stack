@@ -35,7 +35,7 @@ Based on your developer needs, below are references to guides to help you get st
   - Please see our [Building Distribution](./building_distro.md) guide for assembling your own Llama Stack distribution with your choice of API providers.
 
 ### Adding a New API Provider
-* Developer Need: I want to
+* Developer Need: I want to add a new API provider to Llama Stack.
 * Effort: 3hr
 * Guide
   - Please see our [Adding a New API Provider](./new_api_provider.md) guide for adding a new API provider.
