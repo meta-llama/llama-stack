@@ -41,8 +41,8 @@ async def agents_settings():
     )
 
     return {
-        "impl": impls[Api.agents],
-        "memory_impl": impls[Api.memory],
+        "impl": impls['impls'][Api.agents],
+        "memory_impl": impls['impls'][Api.memory],
         "common_params": {
             "model": "Llama3.1-8B-Instruct",
             "instructions": "You are a helpful assistant.",

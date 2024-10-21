@@ -46,7 +46,7 @@ async def resolve_impls_for_test(api: Api, deps: List[Api] = None):
                 {"X-LlamaStack-ProviderData": json.dumps(provider_data)}
             )
 
-    return impls
+    return {"impls": impls, "persistence": config_dict['providers']['agents'][0]['config']['persistence_store']}
 
 
 def read_providers(api: Api, config_dict: Dict[str, Any]) -> Dict[str, Any]:

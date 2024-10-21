@@ -71,8 +71,8 @@ async def inference_settings(request):
     )
 
     return {
-        "impl": impls[Api.inference],
-        "models_impl": impls[Api.models],
+        "impl": impls['impls'][Api.inference],
+        "models_impl": impls['impls'][Api.models],
         "common_params": {
             "model": model,
             "tool_choice": ToolChoice.auto,
