@@ -54,6 +54,17 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="cerebras",
+                pip_packages=[
+                    "cerebras_cloud_sdk",
+                ],
+                module="llama_stack.providers.adapters.inference.cerebras",
+                config_class="llama_stack.providers.adapters.inference.cerebras.CerebrasImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="ollama",
                 pip_packages=["ollama"],
                 config_class="llama_stack.providers.adapters.inference.ollama.OllamaImplConfig",
