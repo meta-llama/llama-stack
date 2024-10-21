@@ -1,10 +1,10 @@
-name: remote-vllm
+name: local-vllm
 distribution_spec:
-  description: Use remote vLLM for running LLM inference
+  description: Like local, but use vLLM for running LLM inference
   providers:
-    inference: remote::vllm
+    inference: vllm
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference
-image_type: docker
+image_type: conda
