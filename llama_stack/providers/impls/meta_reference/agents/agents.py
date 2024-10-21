@@ -138,13 +138,43 @@ class MetaReferenceAgentsImpl(Agents):
         async for event in agent.create_and_execute_turn(request):
             yield event
 
-    async def get_agents_turn(self, agent_id: str, turn_id: str) -> Turn:
-        raise NotImplementedError()
+    async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
+        turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
+        try:
+            turn = json.loads(turn)
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"Could not JSON decode turn for {turn_id}"
+            ) from e
+        try:
+            turn = Turn(**turn)
+        except Exception as e:
+            raise ValueError(
+                f"Could not validate(?) Turns for {turn_id}"
+            ) from e
+        return turn
 
     async def get_agents_step(
-        self, agent_id: str, turn_id: str, step_id: str
+        self, agent_id: str, session_id: str, turn_id: str, step_id: str
     ) -> AgentStepResponse:
-        raise NotImplementedError()
+        turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
+        try:
+            turn = json.loads(turn)
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"Could not JSON decode turn for {turn_id}"
+            ) from e
+        try:
+            turn = Turn(**turn)
+        except Exception as e:
+            raise ValueError(
+                f"Could not validate(?) Turns for {turn_id}"
+            ) from e
+        steps = turn.steps
+        for step in steps:
+            if step.step_id == step_id:
+                return AgentStepResponse(step=step)
+        raise ValueError(f"Provided step_id {step_id} could not be found")
 
     async def get_agents_session(
         self,
@@ -152,10 +182,45 @@ class MetaReferenceAgentsImpl(Agents):
         session_id: str,
         turn_ids: Optional[List[str]] = None,
     ) -> Session:
-        raise NotImplementedError()
+        session = await self.persistence_store.get(f"session:{agent_id}:{session_id}")
+        try:
+            session = Session(**json.loads(session))
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"Could not JSON decode session for {agent_id} and {session_id}"
+            ) from e
+        turns = []
+        if turn_ids:
+            for turn_id in turn_ids:
+                turn = await self.persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
+                try:
+                    turn = json.loads(turn)
+                except json.JSONDecodeError as e:
+                    raise ValueError(
+                        f"Could not JSON decode session for {agent_id} and {session_id}"
+                    ) from e
+                try:
+                    turn = Turn(**turn)
+                except Exception as e:
+                    raise ValueError(
+                        f"Could not validate(?) Turns for {turn_id}"
+                    ) from e
+                turns.append(turn)
+        return Session(
+            session_name=session.session_name,
+            session_id=session_id,
+            turns=turns if turns else [],
+            started_at=session.started_at
+        )
 
     async def delete_agents_session(self, agent_id: str, session_id: str) -> None:
-        raise NotImplementedError()
+        try:
+            await self.persistence_store.delete(f"session:{agent_id}:{session_id}")
+        except:
+            raise ValueError("Session Key Not Found")
 
     async def delete_agents(self, agent_id: str) -> None:
-        raise NotImplementedError()
+        try:
+            await self.persistence_store.delete(f"agent:{agent_id}")
+        except:
+            raise ValueError("Agent Key not found")
