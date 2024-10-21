@@ -49,7 +49,7 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llama
 ```
 
 > [!TIP]
-> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../llama_stack/distribution/docker/README.md) to help you get started.
+> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../distributions/) to help you get started.
 
 #### Build->Configure->Run Llama Stack server via conda
 You may also build a LlamaStack distribution from scratch, configure it, and start running the distribution. This is useful for developing on LlamaStack.
