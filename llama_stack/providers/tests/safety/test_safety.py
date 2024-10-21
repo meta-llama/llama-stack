@@ -36,8 +36,8 @@ async def safety_settings():
     impls = await resolve_impls_for_test(Api.safety, deps=[Api.inference])
 
     return {
-        "impl": impls['impls'][Api.safety],
-        "shields_impl": impls['impls'][Api.shields],
+        "impl": impls[Api.safety],
+        "shields_impl": impls[Api.shields],
     }
 
 

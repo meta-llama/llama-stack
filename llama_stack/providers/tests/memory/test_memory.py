@@ -36,8 +36,8 @@ async def memory_settings():
         Api.memory,
     )
     return {
-        "memory_impl": impls['impls'][Api.memory],
-        "memory_banks_impl": impls['impls'][Api.memory_banks],
+        "memory_impl": impls[Api.memory],
+        "memory_banks_impl": impls[Api.memory_banks],
     }
 
 
