@@ -14,8 +14,7 @@ from llama_stack.providers.tests.resolver import resolve_impls_for_test
 from llama_stack.providers.datatypes import *  # noqa: F403
 
 from dotenv import load_dotenv
-from llama_stack.providers.impls.meta_reference.agents.config import MetaReferenceAgentsImplConfig
-from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
+from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
 # How to run this test:
 #
@@ -42,9 +41,8 @@ async def agents_settings():
     )
 
     return {
-        "impl": impls['impls'][Api.agents],
-        "memory_impl": impls['impls'][Api.memory],
-        "persistence": impls['persistence'],
+        "impl": impls[Api.agents],
+        "memory_impl": impls[Api.memory],
         "common_params": {
             "model": "Llama3.1-8B-Instruct",
             "instructions": "You are a helpful assistant.",
@@ -130,7 +128,7 @@ async def test_get_agent_turns_and_steps(agents_settings, sample_messages):
 
     final_event = turn_response[-1].event.payload
     turn_id = final_event.turn.turn_id
-    persistence_store = await kvstore_impl(agents_settings['persistence'])
+    persistence_store = await kvstore_impl(SqliteKVStoreConfig())
     turn = await persistence_store.get(f"session:{agent_id}:{session_id}:{turn_id}")
     response = await agents_impl.get_agents_turn(agent_id, session_id, turn_id)
 
