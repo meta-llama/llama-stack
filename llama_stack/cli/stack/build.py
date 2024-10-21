@@ -77,6 +77,11 @@ class StackBuild(Subcommand):
             help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
             choices=["conda", "docker"],
         )
+        self.parser.add_argument(
+            "--platform",
+            type=str,
+            help="Platform to use for the build. Required when using docker as image type, defaults to host if no platform is specified",
+        )
 
     def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
         if os.getenv("CONDA_PREFIX", ""):
@@ -205,6 +210,8 @@ class StackBuild(Subcommand):
                 build_config.name = args.name
                 if args.image_type:
                     build_config.image_type = args.image_type
+                if args.platform:  # Add platform to build_config if provided
+                    build_config.platform = args.platform
                 self._run_stack_build_command_from_build_config(build_config)
 
             return
@@ -287,6 +294,8 @@ class StackBuild(Subcommand):
             build_config = BuildConfig(
                 name=name, image_type=image_type, distribution_spec=distribution_spec
             )
+            if args.platform:  # Add platform to build_config if provided
+                build_config.platform = args.platform
             self._run_stack_build_command_from_build_config(build_config)
             return
 
