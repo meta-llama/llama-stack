@@ -1,6 +1,6 @@
 # Developer Guide: Adding a New API Provider
 
-This guide contains references to walk you through
+This guide contains references to walk you through adding a new API provider. 
 
 ### Adding a new API provider
 1. First, decide which API your provider falls into (e.g. Inference, Safety, Agents, Memory).
