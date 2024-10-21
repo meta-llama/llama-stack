@@ -11,10 +11,10 @@ This guide contains references to walk you through
 4. Test your code!
 
 ### Testing your newly added API providers
-1. Start Llama Stack server with your
-2. Test with sending a client request to the server.
+1. Start Llama Stack server with your distribution including your API provider. 
+2. Test with sending a client request to the server. You may find more complex client scripts [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repo. Note down which scripts works and do not work with your distribution. 
 3. Add tests for your newly added provider. See [tests/](../tests/) for example unit tests.
 4. Test the supported functionalities for your provider using our providers tests infra. See [llama_stack/providers/tests/<api>/test_<api>](../llama_stack/providers/tests/inference/test_inference.py).
 
 ### Submit your PR
-After you have fully tested your newly added API provider, submit a PR with the attached test plan, and we will help you verify the necessary requirements.
+After you have fully tested your newly added API provider, submit a PR with the attached test plan. 
