@@ -38,4 +38,4 @@ Based on your developer needs, below are references to guides to help you get st
 * Developer Need: I want to
 * Effort: 3hr
 * Guide
-  - Please see our [Adding a New API Provider](./)
+  - Please see our [Adding a New API Provider](./new_api_provider.md) guide for adding a new API provider.
