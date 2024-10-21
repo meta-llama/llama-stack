@@ -1,6 +1,6 @@
 # Developer Guide: Adding a New API Provider
 
-This guide contains references to walk you through adding a new API provider. 
+This guide contains references to walk you through adding a new API provider.
 
 ### Adding a new API provider
 1. First, decide which API your provider falls into (e.g. Inference, Safety, Agents, Memory).
@@ -11,10 +11,14 @@ This guide contains references to walk you through adding a new API provider.
 4. Test your code!
 
 ### Testing your newly added API providers
-1. Start Llama Stack server with your distribution including your API provider. 
-2. Test with sending a client request to the server. You may find more complex client scripts [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repo. Note down which scripts works and do not work with your distribution. 
-3. Add tests for your newly added provider. See [tests/](../tests/) for example unit tests.
-4. Test the supported functionalities for your provider using our providers tests infra. See [llama_stack/providers/tests/<api>/test_<api>](../llama_stack/providers/tests/inference/test_inference.py).
+
+1. Start with an _integration test_ for your provider. That means we will instantiate the real provider, pass it real configuration and if it is a remote service, we will actually hit the remote service. We **strongly** discourage mocking for these tests at the provider level. Llama Stack is first and foremost about integration so we need to make sure stuff works end-to-end. See [llama_stack/providers/tests/<api>/test_<api>](../llama_stack/providers/tests/inference/test_inference.py) for an example.
+
+2. In addition, if you want to unit test functionality within your provider, feel free to do so. You can find some tests in `tests/` but they aren't well supported so far.
+
+3. Test with a client-server Llama Stack setup. (a) Start a Llama Stack server with your own distribution which includes the new provider. (b) Send a client request to the server. See `llama_stack/apis/<api>/client.py` for how this is done. These client scripts can serve as lightweight tests.
+
+You can find more complex client scripts [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) repo. Note down which scripts works and do not work with your distribution.
 
 ### Submit your PR
-After you have fully tested your newly added API provider, submit a PR with the attached test plan. 
+After you have fully tested your newly added API provider, submit a PR with the attached test plan. You must have a Test Plan in the summary section of your PR.
