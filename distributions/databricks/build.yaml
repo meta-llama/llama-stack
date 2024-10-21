@@ -1,8 +1,8 @@
-name: local-fireworks
+name: databricks
 distribution_spec:
-  description: Use Fireworks.ai for running LLM inference
+  description: Use Databricks for running LLM inference
   providers:
-    inference: remote::fireworks
+    inference: remote::databricks
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

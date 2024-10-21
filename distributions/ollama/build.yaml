@@ -1,9 +1,12 @@
-name: local-ollama
+name: distribution-ollama
 distribution_spec:
-  description: Like local, but use ollama for running LLM inference
+  description: Use ollama for running LLM inference
   providers:
     inference: remote::ollama
-    memory: meta-reference
+    memory:
+    - meta-reference
+    - remote::chromadb
+    - remote::pgvector
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference

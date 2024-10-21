@@ -1,10 +1,10 @@
-name: local-bedrock-conda-example
+name: together
 distribution_spec:
-  description: Use Amazon Bedrock APIs.
+  description: Use Together.ai for running LLM inference
   providers:
-    inference: remote::bedrock
+    inference: remote::together
     memory: meta-reference
-    safety: meta-reference
+    safety: remote::together
     agents: meta-reference
     telemetry: meta-reference
 image_type: conda

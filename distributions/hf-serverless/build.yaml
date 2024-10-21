@@ -1,4 +1,4 @@
-name: local-hf-serverless
+name: hf-serverless
 distribution_spec:
   description: "Like local, but use Hugging Face Inference API (serverless) for running LLM inference.\nSee https://hf.co/docs/api-inference."
   providers:

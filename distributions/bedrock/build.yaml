@@ -1,8 +1,8 @@
-name: local-tgi
+name: bedrock
 distribution_spec:
-  description: Like local, but use a TGI server for running LLM inference.
+  description: Use Amazon Bedrock APIs.
   providers:
-    inference: remote::tgi
+    inference: remote::bedrock
     memory: meta-reference
     safety: meta-reference
     agents: meta-reference

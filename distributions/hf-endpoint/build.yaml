@@ -1,4 +1,4 @@
-name: local-hf-endpoint
+name: hf-endpoint
 distribution_spec:
   description: "Like local, but use Hugging Face Inference Endpoints for running LLM inference.\nSee https://hf.co/docs/api-endpoints."
   providers:
