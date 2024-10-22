@@ -140,6 +140,15 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.inference.databricks.DatabricksImplConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="nvidia",
+                pip_packages=[],  # TODO(mf): need to specify httpx if it's already a llama-stack dep?
+                module="llama_stack.providers.adapters.inference.nvidia",
+                config_class="llama_stack.providers.adapters.inference.nvidia.NVIDIAConfig",
+            ),
+        ),
         InlineProviderSpec(
             api=Api.inference,
             provider_type="vllm",
