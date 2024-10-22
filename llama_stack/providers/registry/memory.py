@@ -75,4 +75,13 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.memory.sample.SampleConfig",
             ),
         ),
+        remote_provider_spec(
+            Api.memory,
+            AdapterSpec(
+                adapter_type="qdrant",
+                pip_packages=EMBEDDING_DEPS + ["qdrant-client"],
+                module="llama_stack.providers.adapters.memory.qdrant",
+                config_class="llama_stack.providers.adapters.memory.qdrant.QdrantConfig",
+            ),
+        ),
     ]

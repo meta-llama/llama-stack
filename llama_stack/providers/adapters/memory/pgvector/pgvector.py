@@ -91,7 +91,9 @@ class PGVectorIndex(EmbeddingIndex):
         )
         execute_values(self.cursor, query, values, template="(%s, %s, %s::vector)")
 
-    async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float
+    ) -> QueryDocumentsResponse:
         self.cursor.execute(
             f"""
         SELECT document, embedding <-> %s::vector AS distance

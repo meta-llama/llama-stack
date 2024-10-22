@@ -15,6 +15,11 @@ providers:
   - provider_id: test-weaviate
     provider_type: remote::weaviate
     config: {}
+  - provider_id: test-qdrant
+    provider_type: remote::qdrant
+    config:
+      host: localhost
+      port: 6333
 # if a provider needs private keys from the client, they use the
 # "get_request_provider_data" function (see distribution/request_headers.py)
 # this is a place to provide such data.
