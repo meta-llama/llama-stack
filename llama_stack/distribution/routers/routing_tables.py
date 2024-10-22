@@ -217,7 +217,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
 
     async def get_dataset(
         self, dataset_identifier: str
-    ) -> Optional[ModelDefWithProvider]:
+    ) -> Optional[DatasetDefWithProvider]:
         return self.get_object_by_identifier(identifier)
 
     async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:

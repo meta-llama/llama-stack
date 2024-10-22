@@ -90,7 +90,7 @@ class PandasDataframeDataset(BaseDataset):
         self.df = df
 
 
-class MetaReferenceDatasetioImpl(DatasetIO, DatasetsProtocolPrivate):
+class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     def __init__(self, config: MetaReferenceDatasetIOConfig) -> None:
         self.config = config
         # local registry for keeping track of datasets within the provider

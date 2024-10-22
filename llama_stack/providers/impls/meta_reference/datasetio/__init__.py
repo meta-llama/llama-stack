@@ -11,8 +11,8 @@ async def get_provider_impl(
     config: MetaReferenceDatasetIOConfig,
     _deps,
 ):
-    from .datasetio import MetaReferenceDatasetioImpl
+    from .datasetio import MetaReferenceDatasetIOImpl
 
-    impl = MetaReferenceDatasetioImpl(config)
+    impl = MetaReferenceDatasetIOImpl(config)
     await impl.initialize()
     return impl
