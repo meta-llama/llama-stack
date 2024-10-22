@@ -33,7 +33,7 @@ services:
     volumes:
       - ~/.llama:/root/.llama
       # Link to ollama run.yaml file
-      - ./ollama-run.yaml:/root/llamastack-run-ollama.yaml
+      - ./run.yaml:/root/llamastack-run-ollama.yaml
     ports:
       - "5000:5000"
     # Hack: wait for ollama server to start before starting docker
