@@ -85,11 +85,24 @@ async def inference_settings(request):
     }
 
 
+from pydantic import BaseModel
+
+
+class AnswerFormat(BaseModel):
+    first_name: str
+    last_name: str
+    year_of_birth: int
+    num_seasons_in_nba: int
+
+
 @pytest.fixture
 def sample_messages():
+    question = "Please give me information about Michael Jordan. You MUST answer using the following json schema: "
+    question_with_schema = f"{question}{AnswerFormat.schema_json()}"
     return [
         SystemMessage(content="You are a helpful assistant."),
-        UserMessage(content="What's the weather like today?"),
+        # UserMessage(content="What's the weather like today?"),
+        UserMessage(content=question_with_schema),
     ]
 
 
@@ -177,6 +190,7 @@ async def test_chat_completion_non_streaming(inference_settings, sample_messages
         **inference_settings["common_params"],
     )
 
+    print(response)
     assert isinstance(response, ChatCompletionResponse)
     assert response.completion_message.role == "assistant"
     assert isinstance(response.completion_message.content, str)
