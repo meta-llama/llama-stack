@@ -23,9 +23,12 @@ from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionResponse,
     process_chat_completion_response,
     process_chat_completion_stream_response,
+    process_completion_response,
+    process_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
+    completion_request_to_prompt,
 )
 
 OLLAMA_SUPPORTED_MODELS = {
@@ -33,7 +36,8 @@ OLLAMA_SUPPORTED_MODELS = {
     "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
     "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
     "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
-    "Llama-Guard-3-8B": "xe/llamaguard3:latest",
+    "Llama-Guard-3-8B": "llama-guard3:8b",
+    "Llama-Guard-3-1B": "llama-guard3:1b",
 }
 
 
@@ -84,7 +88,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         return ret
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -92,9 +96,66 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        raise NotImplementedError()
+        request = CompletionRequest(
+            model=model,
+            content=content,
+            sampling_params=sampling_params,
+            stream=stream,
+            logprobs=logprobs,
+        )
+        if stream:
+            return self._stream_completion(request)
+        else:
+            return await self._nonstream_completion(request)
 
-    def chat_completion(
+    def _get_params_for_completion(self, request: CompletionRequest) -> dict:
+        sampling_options = get_sampling_options(request)
+        # This is needed since the Ollama API expects num_predict to be set
+        # for early truncation instead of max_tokens.
+        if sampling_options["max_tokens"] is not None:
+            sampling_options["num_predict"] = sampling_options["max_tokens"]
+        return {
+            "model": OLLAMA_SUPPORTED_MODELS[request.model],
+            "prompt": completion_request_to_prompt(request, self.formatter),
+            "options": sampling_options,
+            "raw": True,
+            "stream": request.stream,
+        }
+
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        params = self._get_params_for_completion(request)
+
+        async def _generate_and_convert_to_openai_compat():
+            s = await self.client.generate(**params)
+            async for chunk in s:
+                choice = OpenAICompatCompletionChoice(
+                    finish_reason=chunk["done_reason"] if chunk["done"] else None,
+                    text=chunk["response"],
+                )
+                yield OpenAICompatCompletionResponse(
+                    choices=[choice],
+                )
+
+        stream = _generate_and_convert_to_openai_compat()
+        async for chunk in process_completion_stream_response(stream, self.formatter):
+            yield chunk
+
+    async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        params = self._get_params_for_completion(request)
+        r = await self.client.generate(**params)
+        assert isinstance(r, dict)
+
+        choice = OpenAICompatCompletionChoice(
+            finish_reason=r["done_reason"] if r["done"] else None,
+            text=r["response"],
+        )
+        response = OpenAICompatCompletionResponse(
+            choices=[choice],
+        )
+
+        return process_completion_response(response, self.formatter)
+
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -118,7 +179,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if stream:
             return self._stream_chat_completion(request)
         else:
-            return self._nonstream_chat_completion(request)
+            return await self._nonstream_chat_completion(request)
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
@@ -143,7 +204,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(request, response, self.formatter)
+        return process_chat_completion_response(response, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
@@ -163,7 +224,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         stream = _generate_and_convert_to_openai_compat()
         async for chunk in process_chat_completion_stream_response(
-            request, stream, self.formatter
+            stream, self.formatter
         ):
             yield chunk
 

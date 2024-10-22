@@ -1,0 +1,42 @@
+version: '2'
+built_at: '2024-10-08T17:40:45.325529'
+image_name: local
+docker_image: null
+conda_env: local
+apis:
+- shields
+- agents
+- models
+- memory
+- memory_banks
+- inference
+- safety
+providers:
+  inference:
+  - provider_id: together0
+    provider_type: remote::together
+    config:
+      url: https://api.together.xyz/v1
+  safety:
+  - provider_id: together0
+    provider_type: remote::together
+    config:
+      url: https://api.together.xyz/v1
+  memory:
+  - provider_id: meta0
+    provider_type: remote::weaviate
+    config:
+      weaviate_api_key: <ENTER_WEAVIATE_API_KEY>
+      weaviate_cluster_url: <ENTER_WEAVIATE_CLUSTER_URL>
+  agents:
+  - provider_id: meta0
+    provider_type: meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/kvstore.db
+  telemetry:
+  - provider_id: meta0
+    provider_type: meta-reference
+    config: {}

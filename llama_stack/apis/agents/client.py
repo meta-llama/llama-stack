@@ -67,14 +67,14 @@ class AgentsClient(Agents):
             response.raise_for_status()
             return AgentSessionCreateResponse(**response.json())
 
-    def create_agent_turn(
+    async def create_agent_turn(
         self,
         request: AgentTurnCreateRequest,
     ) -> AsyncGenerator:
         if request.stream:
             return self._stream_agent_turn(request)
         else:
-            return self._nonstream_agent_turn(request)
+            return await self._nonstream_agent_turn(request)
 
     async def _stream_agent_turn(
         self, request: AgentTurnCreateRequest
@@ -126,7 +126,7 @@ async def _run_agent(
 
     for content in user_prompts:
         cprint(f"User> {content}", color="white", attrs=["bold"])
-        iterator = api.create_agent_turn(
+        iterator = await api.create_agent_turn(
             AgentTurnCreateRequest(
                 agent_id=create_response.agent_id,
                 session_id=session_response.session_id,

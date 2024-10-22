@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import itertools
+import os
 
 import pytest
 import pytest_asyncio
@@ -50,14 +51,17 @@ def get_expected_stop_reason(model: str):
     return StopReason.end_of_message if "Llama3.1" in model else StopReason.end_of_turn
 
 
+if "MODEL_IDS" not in os.environ:
+    MODEL_IDS = [Llama_8B, Llama_3B]
+else:
+    MODEL_IDS = os.environ["MODEL_IDS"].split(",")
+
+
 # This is going to create multiple Stack impls without tearing down the previous one
 # Fix that!
 @pytest_asyncio.fixture(
     scope="session",
-    params=[
-        {"model": Llama_8B},
-        {"model": Llama_3B},
-    ],
+    params=[{"model": m} for m in MODEL_IDS],
     ids=lambda d: d["model"],
 )
 async def inference_settings(request):
@@ -123,6 +127,48 @@ async def test_model_list(inference_settings):
 
 
 @pytest.mark.asyncio
+async def test_completion(inference_settings):
+    inference_impl = inference_settings["impl"]
+    params = inference_settings["common_params"]
+
+    provider = inference_impl.routing_table.get_provider_impl(params["model"])
+    if provider.__provider_spec__.provider_type not in (
+        "meta-reference",
+        "remote::ollama",
+    ):
+        pytest.skip("Other inference providers don't support completion() yet")
+
+    response = await inference_impl.completion(
+        content="Roses are red,",
+        stream=False,
+        model=params["model"],
+        sampling_params=SamplingParams(
+            max_tokens=50,
+        ),
+    )
+
+    assert isinstance(response, CompletionResponse)
+    assert "violets are blue" in response.content
+
+    chunks = [
+        r
+        async for r in await inference_impl.completion(
+            content="Roses are red,",
+            stream=True,
+            model=params["model"],
+            sampling_params=SamplingParams(
+                max_tokens=50,
+            ),
+        )
+    ]
+
+    assert all(isinstance(chunk, CompletionResponseStreamChunk) for chunk in chunks)
+    assert len(chunks) == 51
+    last = chunks[-1]
+    assert last.stop_reason == StopReason.out_of_tokens
+
+
+@pytest.mark.asyncio
 async def test_chat_completion_non_streaming(inference_settings, sample_messages):
     inference_impl = inference_settings["impl"]
     response = await inference_impl.chat_completion(
@@ -142,7 +188,7 @@ async def test_chat_completion_streaming(inference_settings, sample_messages):
     inference_impl = inference_settings["impl"]
     response = [
         r
-        async for r in inference_impl.chat_completion(
+        async for r in await inference_impl.chat_completion(
             messages=sample_messages,
             stream=True,
             **inference_settings["common_params"],
@@ -213,7 +259,7 @@ async def test_chat_completion_with_tool_calling_streaming(
 
     response = [
         r
-        async for r in inference_impl.chat_completion(
+        async for r in await inference_impl.chat_completion(
             messages=messages,
             tools=[sample_tool_definition],
             stream=True,

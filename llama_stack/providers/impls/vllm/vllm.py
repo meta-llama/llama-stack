@@ -134,7 +134,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
         if self.engine:
             self.engine.shutdown_background_loop()
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -152,7 +152,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
             logprobs=logprobs,
         )
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: list[Message],
@@ -189,7 +189,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
         if stream:
             return self._stream_chat_completion(request, results_generator)
         else:
-            return self._nonstream_chat_completion(request, results_generator)
+            return await self._nonstream_chat_completion(request, results_generator)
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest, results_generator: AsyncGenerator
@@ -207,7 +207,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(request, response, self.formatter)
+        return process_chat_completion_response(response, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, results_generator: AsyncGenerator
@@ -229,7 +229,7 @@ class VLLMInferenceImpl(ModelRegistryHelper, Inference):
 
         stream = _generate_and_convert_to_openai_compat()
         async for chunk in process_chat_completion_stream_response(
-            request, stream, self.formatter
+            stream, self.formatter
         ):
             yield chunk
 

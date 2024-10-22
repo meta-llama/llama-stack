@@ -170,7 +170,7 @@ class LlamaGuardShield(ShieldBase):
         for i in range(1, len(messages)):
             if messages[i].role == messages[i - 1].role:
                 raise ValueError(
-                    f"Messages must alternate between user and assistant. Message {i} has the same role as message {i-1}"
+                    f"Messages must alternate between user and assistant. Message {i} has the same role as message {i - 1}"
                 )
         return messages
 
@@ -184,7 +184,7 @@ class LlamaGuardShield(ShieldBase):
 
         # TODO: llama-stack inference protocol has issues with non-streaming inference code
         content = ""
-        async for chunk in self.inference_api.chat_completion(
+        async for chunk in await self.inference_api.chat_completion(
             model=self.model,
             messages=[shield_input_message],
             stream=True,

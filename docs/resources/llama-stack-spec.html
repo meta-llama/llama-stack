@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-10 15:29:56.831109"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-18 20:48:17.730988"
     },
     "servers": [
         {
@@ -2830,8 +2830,11 @@
             "CompletionResponse": {
                 "type": "object",
                 "properties": {
-                    "completion_message": {
-                        "$ref": "#/components/schemas/CompletionMessage"
+                    "content": {
+                        "type": "string"
+                    },
+                    "stop_reason": {
+                        "$ref": "#/components/schemas/StopReason"
                     },
                     "logprobs": {
                         "type": "array",
@@ -2842,7 +2845,8 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "completion_message"
+                    "content",
+                    "stop_reason"
                 ],
                 "title": "Completion response."
             },
@@ -6075,49 +6079,49 @@
     ],
     "tags": [
         {
-            "name": "Evaluations"
-        },
-        {
-            "name": "Inspect"
+            "name": "Models"
         },
         {
             "name": "RewardScoring"
         },
         {
-            "name": "Datasets"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "Safety"
+            "name": "MemoryBanks"
         },
         {
             "name": "Shields"
         },
         {
-            "name": "MemoryBanks"
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Evaluations"
         },
         {
             "name": "BuiltinTool",

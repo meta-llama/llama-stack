@@ -66,7 +66,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -76,7 +76,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     ) -> AsyncGenerator:
         raise NotImplementedError()
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -101,7 +101,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         if stream:
             return self._stream_chat_completion(request)
         else:
-            return self._nonstream_chat_completion(request)
+            return await self._nonstream_chat_completion(request)
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
@@ -116,7 +116,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
-        return process_chat_completion_response(request, response, self.formatter)
+        return process_chat_completion_response(response, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
@@ -135,7 +135,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
         stream = _generate_and_convert_to_openai_compat()
         async for chunk in process_chat_completion_stream_response(
-            request, stream, self.formatter
+            stream, self.formatter
         ):
             yield chunk
 

@@ -105,7 +105,7 @@ class MetaReferenceAgentsImpl(Agents):
             session_id=session_id,
         )
 
-    def create_agent_turn(
+    async def create_agent_turn(
         self,
         agent_id: str,
         session_id: str,

@@ -23,11 +23,6 @@ from fairscale.nn.model_parallel.initialize import (
 )
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.api.chat_format import ChatFormat, ModelInput
-from llama_models.llama3.api.datatypes import (
-    InterleavedTextMedia,
-    Message,
-    ToolPromptFormat,
-)
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.llama3.reference_impl.model import Transformer
 from llama_models.llama3.reference_impl.multimodal.model import (
@@ -38,7 +33,11 @@ from llama_models.sku_list import resolve_model
 from pydantic import BaseModel
 from termcolor import cprint
 
+from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    chat_completion_request_to_messages,
+)
 
 from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
 
@@ -98,7 +97,10 @@ class Llama:
             sys.stdout = open(os.devnull, "w")
 
         start_time = time.time()
-        ckpt_dir = model_checkpoint_dir(model)
+        if config.checkpoint_dir:
+            ckpt_dir = config.checkpoint_dir
+        else:
+            ckpt_dir = model_checkpoint_dir(model)
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
@@ -119,9 +121,7 @@ class Llama:
             **params,
         )
 
-        tokenizer_path = os.path.join(ckpt_dir, "tokenizer.model")
-        tokenizer = Tokenizer(model_path=tokenizer_path)
-
+        tokenizer = Tokenizer.get_instance()
         assert (
             model_args.vocab_size == tokenizer.n_words
         ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
@@ -138,7 +138,7 @@ class Llama:
             else:
                 model = Transformer(model_args)
             model.load_state_dict(state_dict, strict=False)
-            model = convert_to_quantized_model(model, config)
+            model = convert_to_quantized_model(model, config, ckpt_dir)
         else:
             if torch.cuda.is_bf16_supported():
                 torch.set_default_tensor_type(torch.cuda.BFloat16Tensor)
@@ -170,14 +170,16 @@ class Llama:
         logprobs: bool = False,
         echo: bool = False,
         include_stop_token: bool = False,
+        print_input_tokens: bool = False,
     ) -> Generator:
         params = self.model.params
 
-        # input_tokens = [
-        #     self.formatter.vision_token if t == 128256 else t
-        #     for t in model_input.tokens
-        # ]
-        # cprint("Input to model -> " + self.tokenizer.decode(input_tokens), "red")
+        if print_input_tokens:
+            input_tokens = [
+                self.formatter.vision_token if t == 128256 else t
+                for t in model_input.tokens
+            ]
+            cprint("Input to model -> " + self.tokenizer.decode(input_tokens), "red")
         prompt_tokens = [model_input.tokens]
 
         bsz = 1
@@ -228,8 +230,7 @@ class Llama:
                 ignore_index=pad_id,
             )
 
-        stop_tokens = torch.tensor(self.tokenizer.stop_tokens)
-
+        stop_tokens = torch.tensor(self.tokenizer.stop_tokens, device="cuda")
         for cur_pos in range(min_prompt_len, total_len):
             if is_vision:
                 position_ids = torch.arange(
@@ -295,15 +296,12 @@ class Llama:
             if all(eos_reached):
                 break
 
-    def text_completion(
+    def completion(
         self,
-        content: InterleavedTextMedia,
-        temperature: float = 0.6,
-        top_p: float = 0.9,
-        max_gen_len: Optional[int] = None,
-        logprobs: bool = False,
-        echo: bool = False,
+        request: CompletionRequest,
     ) -> Generator:
+        sampling_params = request.sampling_params
+        max_gen_len = sampling_params.max_tokens
         if (
             max_gen_len is None
             or max_gen_len == 0
@@ -311,26 +309,25 @@ class Llama:
         ):
             max_gen_len = self.model.params.max_seq_len - 1
 
-        model_input = self.formatter.encode_content(content)
-
+        model_input = self.formatter.encode_content(request.content)
         yield from self.generate(
             model_input=model_input,
             max_gen_len=max_gen_len,
-            temperature=temperature,
-            top_p=top_p,
-            logprobs=logprobs,
-            echo=echo,
+            temperature=sampling_params.temperature,
+            top_p=sampling_params.top_p,
+            logprobs=bool(request.logprobs),
+            include_stop_token=True,
+            echo=False,
         )
 
     def chat_completion(
         self,
-        messages: List[Message],
-        temperature: float = 0.6,
-        top_p: float = 0.9,
-        max_gen_len: Optional[int] = None,
-        logprobs: bool = False,
-        tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
+        request: ChatCompletionRequest,
     ) -> Generator:
+        messages = chat_completion_request_to_messages(request)
+
+        sampling_params = request.sampling_params
+        max_gen_len = sampling_params.max_tokens
         if (
             max_gen_len is None
             or max_gen_len == 0
@@ -341,12 +338,12 @@ class Llama:
         yield from self.generate(
             model_input=self.formatter.encode_dialog_prompt(
                 messages,
-                tool_prompt_format,
+                request.tool_prompt_format,
             ),
             max_gen_len=max_gen_len,
-            temperature=temperature,
-            top_p=top_p,
-            logprobs=logprobs,
+            temperature=sampling_params.temperature,
+            top_p=sampling_params.top_p,
+            logprobs=bool(request.logprobs),
             include_stop_token=True,
         )
 

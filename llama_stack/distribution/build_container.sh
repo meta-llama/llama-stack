@@ -15,7 +15,7 @@ special_pip_deps="$6"
 set -euo pipefail
 
 build_name="$1"
-image_name="llamastack-$build_name"
+image_name="distribution-$build_name"
 docker_base=$2
 build_file_path=$3
 host_build_dir=$4

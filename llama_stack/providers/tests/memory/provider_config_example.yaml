@@ -2,8 +2,8 @@ providers:
   - provider_id: test-faiss
     provider_type: meta-reference
     config: {}
-  - provider_id: test-chroma
-    provider_type: remote::chroma
+  - provider_id: test-chromadb
+    provider_type: remote::chromadb
     config:
       host: localhost
       port: 6001

@@ -7,6 +7,7 @@
 from .config import DatabricksImplConfig
 from .databricks import DatabricksInferenceAdapter
 
+
 async def get_adapter_impl(config: DatabricksImplConfig, _deps):
     assert isinstance(
         config, DatabricksImplConfig

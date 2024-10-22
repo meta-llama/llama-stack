@@ -92,9 +92,16 @@ The `llama` CLI makes it easy to work with the Llama Stack set of tools. Please 
 * [CLI reference](docs/cli_reference.md)
     * Guide using `llama` CLI to work with Llama models (download, study prompts), and building/starting a Llama Stack distribution.
 * [Getting Started](docs/getting_started.md)
-    * Guide to build and run a Llama Stack server.
+    * Quick guide to start a Llama Stack server.
+    * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
+* [Building a Llama Stack Distribution](docs/building_distro.md)
+    * Guide to build a Llama Stack distribution
+* [Distributions](./distributions/)
+    * References to start Llama Stack distributions backed with different API providers.
+* [Developer Cookbook](./docs/developer_cookbook.md)
+    * References to guides to help you get started based on your developer needs.
 * [Contributing](CONTRIBUTING.md)
-
+    * [Adding a new API Provider](./docs/new_api_provider.md) to walk-through how to add a new API provider.
 
 ## Llama Stack Client SDK
 
@@ -106,3 +113,5 @@ The `llama` CLI makes it easy to work with the Llama Stack set of tools. Please 
 | Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) |
 
 Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
+
+You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
