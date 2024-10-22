@@ -1,0 +1,18 @@
+services:
+  llamastack:
+    image: llamastack/distribution-fireworks
+    network_mode: "host"
+    volumes:
+      - ~/.llama:/root/.llama
+      # Link to ollama run.yaml file
+      - ./run.yaml:/root/llamastack-run-fireworks.yaml
+    ports:
+      - "5000:5000"
+    # Hack: wait for ollama server to start before starting docker
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-fireworks.yaml"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s

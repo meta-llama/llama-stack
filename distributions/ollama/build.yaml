@@ -1,4 +1,4 @@
-name: distribution-ollama
+name: ollama
 distribution_spec:
   description: Use ollama for running LLM inference
   providers:
@@ -10,4 +10,4 @@ distribution_spec:
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference
-image_type: conda
+image_type: docker
