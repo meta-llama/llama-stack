@@ -23,13 +23,14 @@ compose.yaml  run.yaml
 $ docker compose up
 ```
 
-Replace <ENTER_YOUR_TGI_HOSTED_ENDPOINT> in `run.yaml` file with your TGI endpoint.
+Make sure in you `run.yaml` file, you inference provider is pointing to the correct Together URL server endpoint. E.g.
 ```
 inference:
-  - provider_id: tgi0
-    provider_type: remote::tgi
+  - provider_id: together
+    provider_type: remote::together
     config:
-      url: <ENTER_YOUR_TGI_HOSTED_ENDPOINT>
+      url: https://api.together.xyz/v1
+      api_key: <optional api key>
 ```
 
 ### (Alternative) TGI server + llama stack run (Single Node GPU)
