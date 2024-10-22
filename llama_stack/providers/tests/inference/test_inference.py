@@ -132,7 +132,10 @@ async def test_completion(inference_settings):
     params = inference_settings["common_params"]
 
     provider = inference_impl.routing_table.get_provider_impl(params["model"])
-    if provider.__provider_id__ != "meta-reference":
+    if provider.__provider_spec__.provider_type not in (
+        "meta-reference",
+        "remote::ollama",
+    ):
         pytest.skip("Other inference providers don't support completion() yet")
 
     response = await inference_impl.completion(

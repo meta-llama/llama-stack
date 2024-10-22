@@ -4,6 +4,10 @@ providers:
     config:
       host: localhost
       port: 11434
+  - provider_id: meta-reference
+    provider_type: meta-reference
+    config:
+      model: Llama3.2-1B-Instruct
   - provider_id: test-tgi
     provider_type: remote::tgi
     config:
