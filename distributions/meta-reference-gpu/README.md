@@ -11,13 +11,8 @@ The `llamastack/distribution-meta-reference-gpu` distribution consists of the fo
 ### Start the Distribution (Single Node GPU)
 
 > [!NOTE]
-> This assumes you have access to GPU to start a TGI server with access to your GPU.
+> This assumes you have access to GPU to start a local server with access to your GPU.
 
-> [!NOTE]
-> For GPU inference, you need to set these environment variables for specifying local directory containing your model checkpoints, and enable GPU inference to start running docker container.
-```
-export LLAMA_CHECKPOINT_DIR=~/.llama
-```
 
 > [!NOTE]
 > `~/.llama` should be the path containing downloaded weights of Llama models.
@@ -26,8 +21,8 @@ export LLAMA_CHECKPOINT_DIR=~/.llama
 To download and start running a pre-built docker container, you may use the following commands:
 
 ```
-docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llamastack-local-gpu
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
 ```
 
 ### Alternative (Build and start distribution locally via conda)
-- You may checkout the [Getting Started](../../docs/getting_started.md) for more details on starting up a meta-reference distribution.
+- You may checkout the [Getting Started](../../docs/getting_started.md) for more details on building locally via conda and starting up a meta-reference distribution.

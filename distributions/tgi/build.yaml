@@ -1,4 +1,4 @@
-name: distribution-tgi
+name: tgi
 distribution_spec:
   description: Use TGI for running LLM inference
   providers:
@@ -10,4 +10,4 @@ distribution_spec:
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference
-image_type: conda
+image_type: docker
