@@ -75,17 +75,19 @@ class ChatCompletionResponseEvent(BaseModel):
 
 
 class ResponseFormatType(Enum):
-    json = "json"
+    json_schema = "json_schema"
     grammar = "grammar"
 
 
 class JsonResponseFormat(BaseModel):
-    type: Literal[ResponseFormat.json.value] = ResponseFormat.json.value
+    type: Literal[ResponseFormatType.json_schema.value] = (
+        ResponseFormatType.json_schema.value
+    )
     schema: Dict[str, Any]
 
 
 class GrammarResponseFormat(BaseModel):
-    type: Literal[ResponseFormat.grammar.value] = ResponseFormat.grammar.value
+    type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
     bnf: Dict[str, Any]
 
 

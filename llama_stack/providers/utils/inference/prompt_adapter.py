@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import json
 from typing import Tuple
 
 from llama_models.llama3.api.chat_format import ChatFormat
@@ -77,13 +78,13 @@ def chat_completion_request_to_messages(
         messages = request.messages
 
     if fmt := request.response_format:
-        if fmt.type == ResponseFormatType.json:
+        if fmt.type == ResponseFormatType.json_schema.value:
             messages.append(
                 UserMessage(
-                    content=f"Please response in JSON format with the schema: {json.dumps(fmt.schema)}"
+                    content=f"Please respond in JSON format with the schema: {json.dumps(fmt.schema)}"
                 )
             )
-        elif fmt.type == ResponseFormatType.grammar:
+        elif fmt.type == ResponseFormatType.grammar.value:
             raise NotImplementedError("Grammar response format not supported yet")
         else:
             raise ValueError(f"Unknown response format {fmt.type}")
