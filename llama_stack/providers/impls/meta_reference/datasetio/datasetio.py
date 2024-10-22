@@ -10,10 +10,35 @@ import pandas
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.datasetio import *  # noqa: F403
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.dataset_utils import BaseDataset, DatasetInfo
 
 from .config import MetaReferenceDatasetIOConfig
+
+
+class BaseDataset(ABC):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    @abstractmethod
+    def __len__(self) -> int:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __getitem__(self, idx):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def load(self):
+        raise NotImplementedError()
+
+
+@dataclass
+class DatasetInfo:
+    dataset_def: DatasetDef
+    dataset_impl: BaseDataset
 
 
 class PandasDataframeDataset(BaseDataset):
