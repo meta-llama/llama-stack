@@ -19,13 +19,4 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.impls.meta_reference.datasetio.MetaReferenceDatasetIOConfig",
             api_dependencies=[],
         ),
-        remote_provider_spec(
-            api=Api.datasetio,
-            adapter=AdapterSpec(
-                adapter_type="sample",
-                pip_packages=[],
-                module="llama_stack.providers.adapters.datasetio.sample",
-                config_class="llama_stack.providers.adapters.datasetio.sample.SampleConfig",
-            ),
-        ),
     ]

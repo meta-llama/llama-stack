@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from llama_stack.apis.datasetio import *  # noqa: F403
 
 
 class BaseDataset(ABC):
@@ -21,3 +23,9 @@ class BaseDataset(ABC):
     @abstractmethod
     def load(self):
         raise NotImplementedError()
+
+
+@dataclass
+class DatasetInfo:
+    dataset_def: DatasetDef
+    dataset_impl: BaseDataset

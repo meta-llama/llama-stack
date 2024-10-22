@@ -10,32 +10,21 @@ import pandas
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.datasetio import *  # noqa: F403
-from dataclasses import dataclass
-
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.dataset_utils import BaseDataset
+from llama_stack.providers.utils.datasetio.dataset_utils import BaseDataset, DatasetInfo
 
 from .config import MetaReferenceDatasetIOConfig
 
 
-@dataclass
-class DatasetInfo:
-    dataset_def: DatasetDef
-    dataset_impl: BaseDataset
-    next_page_token: Optional[int] = None
-
-
-class CustomDataset(BaseDataset):
+class PandasDataframeDataset(BaseDataset):
     def __init__(self, dataset_def: DatasetDef, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.dataset_def = dataset_def
-        # TODO: validate dataset_def against schema
         self.df = None
-        self.load()
 
     def __len__(self) -> int:
         if self.df is None:
-            self.load()
+            raise ValueError("Dataset not loaded. Please call .load() first")
         return len(self.df)
 
     def __getitem__(self, idx):
@@ -91,10 +80,11 @@ class MetaReferenceDatasetioImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset_def: DatasetDef,
     ) -> None:
+        dataset_impl = PandasDataframeDataset(dataset_def)
+        dataset_impl.load()
         self.dataset_infos[dataset_def.identifier] = DatasetInfo(
             dataset_def=dataset_def,
-            dataset_impl=CustomDataset(dataset_def),
-            next_page_token=0,
+            dataset_impl=dataset_impl,
         )
 
     async def list_datasets(self) -> List[DatasetDef]:
@@ -104,23 +94,24 @@ class MetaReferenceDatasetioImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset_id: str,
         rows_in_page: int,
-        page_token: Optional[int] = None,
+        page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult:
         dataset_info = self.dataset_infos.get(dataset_id)
         if page_token is None:
-            dataset_info.next_page_token = 0
+            next_page_token = 0
+        else:
+            next_page_token = int(page_token)
 
         if rows_in_page == -1:
-            rows = dataset_info.dataset_impl[dataset_info.next_page_token :]
+            rows = dataset_info.dataset_impl[next_page_token:]
 
-        start = dataset_info.next_page_token
+        start = next_page_token
         end = min(start + rows_in_page, len(dataset_info.dataset_impl))
         rows = dataset_info.dataset_impl[start:end]
-        dataset_info.next_page_token = end
 
         return PaginatedRowsResult(
             rows=rows,
             total_count=len(rows),
-            next_page_token=dataset_info.next_page_token,
+            next_page_token=str(end),
         )

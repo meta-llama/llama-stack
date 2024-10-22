@@ -95,7 +95,7 @@ async def test_get_rows_paginated(datasetio_settings):
 
     assert isinstance(response.rows, list)
     assert len(response.rows) == 3
-    assert response.next_page_token == 3
+    assert response.next_page_token == "3"
 
     # iterate over all rows
     response = await datasetio_impl.get_rows_paginated(
@@ -106,4 +106,4 @@ async def test_get_rows_paginated(datasetio_settings):
 
     assert isinstance(response.rows, list)
     assert len(response.rows) == 10
-    assert response.next_page_token == 13
+    assert response.next_page_token == "13"

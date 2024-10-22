@@ -222,7 +222,3 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
 
     async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
         await self.register_object(dataset_def)
-
-    async def delete_dataset(self, dataset_identifier: str) -> None:
-        # TODO: pass through for now
-        return

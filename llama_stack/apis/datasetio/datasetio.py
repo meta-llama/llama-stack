@@ -17,7 +17,7 @@ class PaginatedRowsResult(BaseModel):
     # the rows obey the DatasetSchema for the given dataset
     rows: List[Dict[str, Any]]
     total_count: int
-    next_page_token: Optional[int] = None
+    next_page_token: Optional[str] = None
 
 
 class DatasetStore(Protocol):
@@ -34,6 +34,6 @@ class DatasetIO(Protocol):
         self,
         dataset_id: str,
         rows_in_page: int,
-        page_token: Optional[int] = None,
+        page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult: ...

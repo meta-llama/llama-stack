@@ -50,11 +50,5 @@ class Datasets(Protocol):
         dataset_identifier: str,
     ) -> Optional[DatasetDefWithProvider]: ...
 
-    @webmethod(route="/datasets/delete")
-    async def delete_dataset(
-        self,
-        dataset_identifier: str,
-    ) -> None: ...
-
     @webmethod(route="/datasets/list", method="GET")
     async def list_datasets(self) -> List[DatasetDefWithProvider]: ...
