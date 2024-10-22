@@ -14,3 +14,4 @@ Package.resolved
 *.pte
 *.ipynb_checkpoints*
 .idea
+_build
