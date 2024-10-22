@@ -4,13 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
 from llama_models.llama3.api.datatypes import URL
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.common.type_system import ParamType
 
@@ -25,7 +25,7 @@ class DatasetDef(BaseModel):
     identifier: str = Field(
         description="A unique name for the dataset",
     )
-    schema: DatasetSchema = Field(
+    dataset_schema: DatasetSchema = Field(
         description="The schema definition for this dataset",
     )
     url: URL
