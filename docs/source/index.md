@@ -6,6 +6,8 @@ The Llama Stack defines and standardizes the building blocks needed to bring gen
 
 The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
 
+![Llama Stack](../_static/llama-stack.png)
+
 ## APIs
 
 The Llama Stack consists of the following set of APIs:
@@ -36,4 +38,3 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 cli_reference.md
 getting_started.md
 ```
-
