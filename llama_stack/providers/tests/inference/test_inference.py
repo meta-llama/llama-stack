@@ -194,6 +194,7 @@ async def test_structured_output(inference_settings):
     if provider.__provider_spec__.provider_type not in (
         "meta-reference",
         "remote::fireworks",
+        "remote::tgi",
     ):
         pytest.skip("Other inference providers don't support structured output yet")
 
