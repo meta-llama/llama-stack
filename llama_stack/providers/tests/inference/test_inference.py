@@ -97,12 +97,12 @@ class AnswerFormat(BaseModel):
 
 @pytest.fixture
 def sample_messages():
-    question = "Please give me information about Michael Jordan. You MUST answer using the following json schema: "
-    question_with_schema = f"{question}{AnswerFormat.schema_json()}"
+    question = "Please give me information about Michael Jordan."
+    # question_with_schema = f"{question}{AnswerFormat.schema_json()}"
     return [
         SystemMessage(content="You are a helpful assistant."),
         # UserMessage(content="What's the weather like today?"),
-        UserMessage(content=question_with_schema),
+        UserMessage(content=question),
     ]
 
 
@@ -183,10 +183,15 @@ async def test_completion(inference_settings):
 
 @pytest.mark.asyncio
 async def test_chat_completion_non_streaming(inference_settings, sample_messages):
+    print(AnswerFormat.schema_json())
+    print(AnswerFormat.schema())
     inference_impl = inference_settings["impl"]
     response = await inference_impl.chat_completion(
         messages=sample_messages,
         stream=False,
+        response_format=JsonResponseFormat(
+            schema=AnswerFormat.schema(),
+        ),
         **inference_settings["common_params"],
     )
 

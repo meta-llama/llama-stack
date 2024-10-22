@@ -26,6 +26,7 @@ class MockInferenceAPI:
         model: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
+        response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
