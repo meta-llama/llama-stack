@@ -75,6 +75,7 @@ class InferenceRouter(Inference):
         model: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
+        response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
@@ -88,6 +89,7 @@ class InferenceRouter(Inference):
             tools=tools or [],
             tool_choice=tool_choice,
             tool_prompt_format=tool_prompt_format,
+            response_format=response_format,
             stream=stream,
             logprobs=logprobs,
         )
@@ -102,6 +104,7 @@ class InferenceRouter(Inference):
         model: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
@@ -110,6 +113,7 @@ class InferenceRouter(Inference):
             model=model,
             content=content,
             sampling_params=sampling_params,
+            response_format=response_format,
             stream=stream,
             logprobs=logprobs,
         )

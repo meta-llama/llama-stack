@@ -10,6 +10,8 @@ import os
 import pytest
 import pytest_asyncio
 
+from pydantic import BaseModel, ValidationError
+
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 
@@ -181,6 +183,63 @@ async def test_chat_completion_non_streaming(inference_settings, sample_messages
     assert response.completion_message.role == "assistant"
     assert isinstance(response.completion_message.content, str)
     assert len(response.completion_message.content) > 0
+
+
+@pytest.mark.asyncio
+async def test_structured_output(inference_settings):
+    inference_impl = inference_settings["impl"]
+    params = inference_settings["common_params"]
+
+    provider = inference_impl.routing_table.get_provider_impl(params["model"])
+    if provider.__provider_spec__.provider_type not in (
+        "meta-reference",
+        "remote::fireworks",
+        "remote::tgi",
+    ):
+        pytest.skip("Other inference providers don't support structured output yet")
+
+    class AnswerFormat(BaseModel):
+        first_name: str
+        last_name: str
+        year_of_birth: int
+        num_seasons_in_nba: int
+
+    response = await inference_impl.chat_completion(
+        messages=[
+            SystemMessage(content="You are a helpful assistant."),
+            UserMessage(content="Please give me information about Michael Jordan."),
+        ],
+        stream=False,
+        response_format=JsonResponseFormat(
+            schema=AnswerFormat.model_json_schema(),
+        ),
+        **inference_settings["common_params"],
+    )
+
+    assert isinstance(response, ChatCompletionResponse)
+    assert response.completion_message.role == "assistant"
+    assert isinstance(response.completion_message.content, str)
+
+    answer = AnswerFormat.parse_raw(response.completion_message.content)
+    assert answer.first_name == "Michael"
+    assert answer.last_name == "Jordan"
+    assert answer.year_of_birth == 1963
+    assert answer.num_seasons_in_nba == 15
+
+    response = await inference_impl.chat_completion(
+        messages=[
+            SystemMessage(content="You are a helpful assistant."),
+            UserMessage(content="Please give me information about Michael Jordan."),
+        ],
+        stream=False,
+        **inference_settings["common_params"],
+    )
+
+    assert isinstance(response, ChatCompletionResponse)
+    assert isinstance(response.completion_message.content, str)
+
+    with pytest.raises(ValidationError):
+        AnswerFormat.parse_raw(response.completion_message.content)
 
 
 @pytest.mark.asyncio

@@ -8,11 +8,12 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import json
+import math
 import os
 import sys
 import time
 from pathlib import Path
-from typing import Generator, List, Optional, Union
+from typing import Generator, List, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
@@ -34,6 +35,9 @@ from pydantic import BaseModel
 from termcolor import cprint
 
 from llama_stack.apis.inference import *  # noqa: F403
+
+from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
+
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
@@ -67,7 +71,7 @@ class Llama:
     def build(
         config: Union[
             MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
-        ]
+        ],
     ):
         """
         Build a Llama instance by initializing and loading a model checkpoint.
@@ -171,6 +175,7 @@ class Llama:
         echo: bool = False,
         include_stop_token: bool = False,
         print_input_tokens: bool = False,
+        logits_processor: Optional["LogitsProcessor"] = None,
     ) -> Generator:
         params = self.model.params
 
@@ -246,6 +251,9 @@ class Llama:
             else:
                 logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
 
+            if logits_processor is not None:
+                logits = logits_processor.process_logits(tokens[:, :cur_pos], logits)
+
             if temperature > 0:
                 probs = torch.softmax(logits[:, -1] / temperature, dim=-1)
                 next_token = sample_top_p(probs, top_p)
@@ -317,7 +325,11 @@ class Llama:
             top_p=sampling_params.top_p,
             logprobs=bool(request.logprobs),
             include_stop_token=True,
-            echo=False,
+            logits_processor=get_logits_processor(
+                self.tokenizer,
+                self.args.vocab_size,
+                request.response_format,
+            ),
         )
 
     def chat_completion(
@@ -345,6 +357,11 @@ class Llama:
             top_p=sampling_params.top_p,
             logprobs=bool(request.logprobs),
             include_stop_token=True,
+            logits_processor=get_logits_processor(
+                self.tokenizer,
+                self.args.vocab_size,
+                request.response_format,
+            ),
         )
 
 
@@ -371,3 +388,64 @@ def sample_top_p(probs, p):
     next_token = torch.multinomial(probs_sort, num_samples=1)
     next_token = torch.gather(probs_idx, -1, next_token)
     return next_token
+
+
+class LogitsProcessor:
+    def __init__(self, token_enforcer: TokenEnforcer):
+        self.token_enforcer = token_enforcer
+        self.mask: Optional[torch.Tensor] = None
+
+    def process_logits(
+        self, tokens: torch.Tensor, scores: torch.Tensor
+    ) -> torch.Tensor:
+        token_sequence = tokens[0, :].tolist()
+        allowed_tokens = self.token_enforcer.get_allowed_tokens(token_sequence)
+
+        if self.mask is not None:
+            self.mask.fill_(-math.inf)
+        else:
+            self.mask = torch.full_like(scores, -math.inf)
+
+        self.mask[:, :, allowed_tokens] = 0
+        scores = scores + self.mask
+        return scores
+
+
+def get_logits_processor(
+    tokenizer: Tokenizer,
+    vocab_size: int,
+    response_format: Optional[ResponseFormat],
+) -> Optional["LogitsProcessor"]:
+    if response_format is None:
+        return None
+
+    if response_format.type != ResponseFormatType.json_schema.value:
+        raise ValueError(f"Unsupported response format type {response_format.type}")
+
+    parser = JsonSchemaParser(response_format.schema)
+    data = TokenEnforcerTokenizerData(
+        _build_regular_tokens_list(tokenizer, vocab_size),
+        tokenizer.decode,
+        tokenizer.stop_tokens,
+    )
+    token_enforcer = TokenEnforcer(data, parser)
+    return LogitsProcessor(token_enforcer)
+
+
+def _build_regular_tokens_list(
+    tokenizer: Tokenizer, vocab_size: int
+) -> List[Tuple[int, str, bool]]:
+    token_0 = tokenizer.encode("0", bos=False, eos=False)[-1]
+    regular_tokens = []
+
+    special_token_ids = set(tokenizer.special_tokens.values())
+    for token_idx in range(vocab_size):
+        if token_idx in special_token_ids:
+            continue
+
+        # We prepend token 0 and skip the first letter of the result to get a space if the token is a start word.
+        decoded_after_0 = tokenizer.decode([token_0, token_idx])[1:]
+        decoded_regular = tokenizer.decode([token_idx])
+        is_word_start_token = len(decoded_after_0) > len(decoded_regular)
+        regular_tokens.append((token_idx, decoded_after_0, is_word_start_token))
+    return regular_tokens

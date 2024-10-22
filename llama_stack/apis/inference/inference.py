@@ -74,11 +74,35 @@ class ChatCompletionResponseEvent(BaseModel):
     stop_reason: Optional[StopReason] = None
 
 
+class ResponseFormatType(Enum):
+    json_schema = "json_schema"
+    grammar = "grammar"
+
+
+class JsonResponseFormat(BaseModel):
+    type: Literal[ResponseFormatType.json_schema.value] = (
+        ResponseFormatType.json_schema.value
+    )
+    schema: Dict[str, Any]
+
+
+class GrammarResponseFormat(BaseModel):
+    type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
+    bnf: Dict[str, Any]
+
+
+ResponseFormat = Annotated[
+    Union[JsonResponseFormat, GrammarResponseFormat],
+    Field(discriminator="type"),
+]
+
+
 @json_schema_type
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedTextMedia
     sampling_params: Optional[SamplingParams] = SamplingParams()
+    response_format: Optional[ResponseFormat] = None
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -107,6 +131,7 @@ class BatchCompletionRequest(BaseModel):
     model: str
     content_batch: List[InterleavedTextMedia]
     sampling_params: Optional[SamplingParams] = SamplingParams()
+    response_format: Optional[ResponseFormat] = None
     logprobs: Optional[LogProbConfig] = None
 
 
@@ -129,6 +154,7 @@ class ChatCompletionRequest(BaseModel):
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
+    response_format: Optional[ResponseFormat] = None
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -188,6 +214,7 @@ class Inference(Protocol):
         model: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
@@ -204,6 +231,7 @@ class Inference(Protocol):
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...

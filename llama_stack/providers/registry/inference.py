@@ -9,36 +9,36 @@ from typing import List
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
+META_REFERENCE_DEPS = [
+    "accelerate",
+    "blobfile",
+    "fairscale",
+    "torch",
+    "torchvision",
+    "transformers",
+    "zmq",
+    "lm-format-enforcer",
+]
+
+
 def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.inference,
             provider_type="meta-reference",
-            pip_packages=[
-                "accelerate",
-                "blobfile",
-                "fairscale",
-                "torch",
-                "torchvision",
-                "transformers",
-                "zmq",
-            ],
+            pip_packages=META_REFERENCE_DEPS,
             module="llama_stack.providers.impls.meta_reference.inference",
             config_class="llama_stack.providers.impls.meta_reference.inference.MetaReferenceInferenceConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,
             provider_type="meta-reference-quantized",
-            pip_packages=[
-                "accelerate",
-                "blobfile",
-                "fairscale",
-                "fbgemm-gpu==0.8.0",
-                "torch",
-                "torchvision",
-                "transformers",
-                "zmq",
-            ],
+            pip_packages=(
+                META_REFERENCE_DEPS
+                + [
+                    "fbgemm-gpu==0.8.0",
+                ]
+            ),
             module="llama_stack.providers.impls.meta_reference.inference",
             config_class="llama_stack.providers.impls.meta_reference.inference.MetaReferenceQuantizedInferenceConfig",
         ),
