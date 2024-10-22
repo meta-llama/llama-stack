@@ -140,7 +140,9 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float
+    ) -> QueryDocumentsResponse:
         raise NotImplementedError()
 
 
@@ -177,6 +179,7 @@ class BankWithIndex:
         if params is None:
             params = {}
         k = params.get("max_chunks", 3)
+        score_threshold = params.get("score_threshold", 0.0)
 
         def _process(c) -> str:
             if isinstance(c, str):
@@ -191,4 +194,4 @@ class BankWithIndex:
 
         model = get_embedding_model(self.bank.embedding_model)
         query_vector = model.encode([query_str])[0].astype(np.float32)
-        return await self.index.query(query_vector, k)
+        return await self.index.query(query_vector, k, score_threshold)

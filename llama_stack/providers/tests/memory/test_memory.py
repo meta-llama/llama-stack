@@ -142,14 +142,13 @@ async def test_query_documents(memory_settings, sample_documents):
     assert_valid_response(response4)
     assert len(response4.chunks) <= 2
 
-    # Score threshold is not implemented in vector memory banks
     # Test case 5: Query with threshold on similarity score
-    # query5 = "quantum computing"  # Not directly related to any document
-    # params5 = {"score_threshold": 0.5}
-    # response5 = await memory_impl.query_documents("test_bank", query5, params5)
-    # assert_valid_response(response5)
-    # print("The scores are:", response5.scores)
-    # assert all(score >= 0.5 for score in response5.scores)
+    query5 = "quantum computing"  # Not directly related to any document
+    params5 = {"score_threshold": 0.2}
+    response5 = await memory_impl.query_documents("test_bank", query5, params5)
+    assert_valid_response(response5)
+    print("The scores are:", response5.scores)
+    assert all(score >= 0.2 for score in response5.scores)
 
 
 def assert_valid_response(response: QueryDocumentsResponse):

@@ -68,13 +68,16 @@ class QdrantIndex(EmbeddingIndex):
 
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
-    async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float
+    ) -> QueryDocumentsResponse:
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
                 query=embedding.tolist(),
                 limit=k,
                 with_payload=True,
+                score_threshold=score_threshold,
             )
         ).points
 

@@ -38,7 +38,9 @@ class ChromaIndex(EmbeddingIndex):
             ids=[f"{c.document_id}:chunk-{i}" for i, c in enumerate(chunks)],
         )
 
-    async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float
+    ) -> QueryDocumentsResponse:
         results = await self.collection.query(
             query_embeddings=[embedding.tolist()],
             n_results=k,
