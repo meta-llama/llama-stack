@@ -11,6 +11,7 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
@@ -190,3 +191,23 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
         self, memory_bank: MemoryBankDefWithProvider
     ) -> None:
         await self.register_object(memory_bank)
+
+
+class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
+    async def list_datasets(self) -> List[DatasetDefWithProvider]:
+        objects = []
+        for objs in self.registry.values():
+            objects.extend(objs)
+        return objects
+
+    async def get_dataset(
+        self, dataset_identifier: str
+    ) -> Optional[ModelDefWithProvider]:
+        return self.get_object_by_identifier(identifier)
+
+    async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
+        await self.register_object(dataset_def)
+
+    async def delete_dataset(self, dataset_identifier: str) -> None:
+        # TODO: pass through for now
+        return

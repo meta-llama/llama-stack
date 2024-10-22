@@ -35,6 +35,10 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             routing_table_api=Api.memory_banks,
             router_api=Api.memory,
         ),
+        AutoRoutedApiInfo(
+            routing_table_api=Api.datasets,
+            router_api=Api.datasetio,
+        ),
     ]
 
 
