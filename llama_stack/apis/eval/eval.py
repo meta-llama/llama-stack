@@ -11,6 +11,9 @@ from typing_extensions import Annotated
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.schema_utils import json_schema_type, webmethod
 from llama_stack.apis.scoring_functions import *  # noqa: F403
+from llama_stack.apis.agents import AgentConfig
+from llama_stack.apis.common.job_types import Job
+from llama_stack.apis.scoring import *  # noqa: F403
 
 
 @json_schema_type
@@ -30,11 +33,6 @@ class AgentCandidate(BaseModel):
 EvalCandidate = Annotated[
     Union[ModelCandidate, AgentCandidate], Field(discriminator="type")
 ]
-
-
-@json_schema_type
-class Job(BaseModel):
-    job_id: str
 
 
 @json_schema_type

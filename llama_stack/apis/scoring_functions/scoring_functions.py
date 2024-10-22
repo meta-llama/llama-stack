@@ -22,6 +22,7 @@ from typing_extensions import Annotated
 from llama_stack.apis.common.type_system import ParamType
 
 
+@json_schema_type
 class Parameter(BaseModel):
     name: str
     type: ParamType
@@ -32,6 +33,7 @@ class Parameter(BaseModel):
 # with standard metrics so they can be rolled up?
 
 
+@json_schema_type
 class CommonDef(BaseModel):
     name: str
     description: Optional[str] = None
@@ -39,8 +41,11 @@ class CommonDef(BaseModel):
         default_factory=dict,
         description="Any additional metadata for this definition",
     )
+    # Hack: same with memory_banks for union defs
+    provider_id: str = ""
 
 
+@json_schema_type
 class DeterministicFunctionDef(CommonDef):
     type: Literal["deterministic"] = "deterministic"
     parameters: List[Parameter] = Field(
@@ -52,6 +57,7 @@ class DeterministicFunctionDef(CommonDef):
     # We can optionally add information here to support packaging of code, etc.
 
 
+@json_schema_type
 class LLMJudgeFunctionDef(CommonDef):
     type: Literal["judge"] = "judge"
     model: str = Field(
@@ -63,12 +69,7 @@ ScoringFunctionDef = Annotated[
     Union[DeterministicFunctionDef, LLMJudgeFunctionDef], Field(discriminator="type")
 ]
 
-
-@json_schema_type
-class ScoringFunctionDefWithProvider(ScoringFunctionDef):
-    provider_id: str = Field(
-        description="The provider ID for this scoring function",
-    )
+ScoringFunctionDefWithProvider = ScoringFunctionDef
 
 
 @runtime_checkable

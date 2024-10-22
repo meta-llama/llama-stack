@@ -16,16 +16,11 @@ from llama_stack.apis.common.type_system import ParamType
 
 
 @json_schema_type
-class DatasetSchema(BaseModel):
-    columns: Dict[str, ParamType]
-
-
-@json_schema_type
 class DatasetDef(BaseModel):
     identifier: str = Field(
         description="A unique name for the dataset",
     )
-    dataset_schema: DatasetSchema = Field(
+    columns_schema: Dict[str, ParamType] = Field(
         description="The schema definition for this dataset",
     )
     url: URL
