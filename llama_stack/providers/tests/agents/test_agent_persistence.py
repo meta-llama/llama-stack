@@ -4,8 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import os
-
 import pytest
 import pytest_asyncio
 
@@ -14,6 +12,7 @@ from llama_stack.providers.tests.resolver import resolve_impls_for_test
 from llama_stack.providers.datatypes import *  # noqa: F403
 
 from dotenv import load_dotenv
+
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
 # How to run this test:
@@ -34,6 +33,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfi
 
 load_dotenv()
 
+
 @pytest_asyncio.fixture(scope="session")
 async def agents_settings():
     impls = await resolve_impls_for_test(
@@ -49,11 +49,13 @@ async def agents_settings():
         },
     }
 
+
 @pytest.fixture
 def sample_messages():
     return [
         UserMessage(content="What's the weather like today?"),
     ]
+
 
 @pytest.mark.asyncio
 async def test_delete_agents_and_sessions(agents_settings, sample_messages):
@@ -78,7 +80,7 @@ async def test_delete_agents_and_sessions(agents_settings, sample_messages):
         agent_id, "Test Session"
     )
     session_id = session_create_response.session_id
-    persistence_store = await kvstore_impl(agents_settings['persistence'])
+    persistence_store = await kvstore_impl(agents_settings["persistence"])
 
     await agents_impl.delete_agents_session(agent_id, session_id)
     session_response = await persistence_store.get(f"session:{agent_id}:{session_id}")
@@ -138,7 +140,9 @@ async def test_get_agent_turns_and_steps(agents_settings, sample_messages):
 
     steps = final_event.turn.steps
     step_id = steps[0].step_id
-    step_response = await agents_impl.get_agents_step(agent_id, session_id, turn_id, step_id)
+    step_response = await agents_impl.get_agents_step(
+        agent_id, session_id, turn_id, step_id
+    )
 
     assert isinstance(step_response.step, Step)
     assert step_response.step == steps[0]
