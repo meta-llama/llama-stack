@@ -45,6 +45,17 @@ inference:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
+      api_key: <optional api key>
+```
+
+Together distribution comes with weaviate as Memory provider. We also need to configure the remote weaviate API key and URL in `run.yaml` to get memory API.
+```
+memory:
+  - provider_id: meta0
+    provider_type: remote::weaviate
+    config:
+      weaviate_api_key: <ENTER_WEAVIATE_API_KEY>
+      weaviate_cluster_url: <ENTER_WEAVIATE_CLUSTER_URL>
 ```
 
 **Via Conda**
