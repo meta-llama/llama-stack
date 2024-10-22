@@ -14,10 +14,11 @@ from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
-
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
@@ -30,18 +31,21 @@ RoutableObject = Union[
     ModelDef,
     ShieldDef,
     MemoryBankDef,
+    DatasetDef,
 ]
 
 RoutableObjectWithProvider = Union[
     ModelDefWithProvider,
     ShieldDefWithProvider,
     MemoryBankDefWithProvider,
+    DatasetDefWithProvider,
 ]
 
 RoutedProtocol = Union[
     Inference,
     Safety,
     Memory,
+    DatasetIO,
 ]
 
 

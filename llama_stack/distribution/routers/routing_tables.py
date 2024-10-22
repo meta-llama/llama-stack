@@ -11,6 +11,7 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
@@ -27,6 +28,10 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> None:
         await p.register_shield(obj)
     elif api == Api.memory:
         await p.register_memory_bank(obj)
+    elif api == Api.datasetio:
+        await p.register_dataset(obj)
+    else:
+        raise ValueError(f"Unknown API {api} for registering object with provider")
 
 
 Registry = Dict[str, List[RoutableObjectWithProvider]]
@@ -79,6 +84,16 @@ class CommonRoutingTableImpl(RoutingTable):
                     m.provider_id = pid
 
                 add_objects(memory_banks)
+
+            elif api == Api.datasetio:
+                p.dataset_store = self
+                datasets = await p.list_datasets()
+
+                # do in-memory updates due to pesky Annotated unions
+                for d in datasets:
+                    d.provider_id = pid
+
+                add_objects(datasets)
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
@@ -137,6 +152,7 @@ class CommonRoutingTableImpl(RoutingTable):
             raise ValueError(f"Provider `{obj.provider_id}` not found")
 
         p = self.impls_by_provider_id[obj.provider_id]
+
         await register_object_with_provider(obj, p)
 
         if obj.identifier not in self.registry:
@@ -190,3 +206,19 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
         self, memory_bank: MemoryBankDefWithProvider
     ) -> None:
         await self.register_object(memory_bank)
+
+
+class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
+    async def list_datasets(self) -> List[DatasetDefWithProvider]:
+        objects = []
+        for objs in self.registry.values():
+            objects.extend(objs)
+        return objects
+
+    async def get_dataset(
+        self, dataset_identifier: str
+    ) -> Optional[DatasetDefWithProvider]:
+        return self.get_object_by_identifier(identifier)
+
+    async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
+        await self.register_object(dataset_def)
