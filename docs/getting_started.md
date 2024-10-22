@@ -169,7 +169,7 @@ conda activate <env>  # any environment containing the llama-stack pip package w
 python -m llama_stack.apis.inference.client localhost 5000
 ```
 
-This will run the chat completion client and query the distribution’s /inference/chat_completion API.
+This will run the chat completion client and query the distribution’s `/inference/chat_completion` API.
 
 Here is an example output:
 ```
@@ -179,6 +179,29 @@ Assistant> Here's a 2-sentence poem about the moon:
 The moon glows softly in the midnight sky,
 A beacon of wonder, as it passes by.
 ```
+
+You may also send a POST request to the server:
+```
+curl http://localhost:5000/inference/chat_completion \
+-H "Content-Type: application/json" \
+-d '{
+	"model": "Llama3.1-8B-Instruct",
+	"messages": [
+		{"role": "system", "content": "You are a helpful assistant."},
+		{"role": "user", "content": "Write me a 2 sentence poem about the moon"}
+	],
+	"sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
+}'
+
+Output:
+{'completion_message': {'role': 'assistant',
+  'content': 'The moon glows softly in the midnight sky, \nA beacon of wonder, as it catches the eye.',
+  'stop_reason': 'out_of_tokens',
+  'tool_calls': []},
+ 'logprobs': null}
+
+```
+
 
 Similarly you can test safety (if you configured llama-guard and/or prompt-guard shields) by:
 
