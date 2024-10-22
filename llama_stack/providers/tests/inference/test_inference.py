@@ -10,7 +10,7 @@ import os
 import pytest
 import pytest_asyncio
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
@@ -191,7 +191,10 @@ async def test_structured_output(inference_settings):
     params = inference_settings["common_params"]
 
     provider = inference_impl.routing_table.get_provider_impl(params["model"])
-    if provider.__provider_id__ != "meta-reference":
+    if provider.__provider_spec__.provider_type not in (
+        "meta-reference",
+        "remote::fireworks",
+    ):
         pytest.skip("Other inference providers don't support structured output yet")
 
     class AnswerFormat(BaseModel):
@@ -207,7 +210,7 @@ async def test_structured_output(inference_settings):
         ],
         stream=False,
         response_format=JsonResponseFormat(
-            schema=AnswerFormat.schema(),
+            schema=AnswerFormat.model_json_schema(),
         ),
         **inference_settings["common_params"],
     )
@@ -221,6 +224,21 @@ async def test_structured_output(inference_settings):
     assert answer.last_name == "Jordan"
     assert answer.year_of_birth == 1963
     assert answer.num_seasons_in_nba == 15
+
+    response = await inference_impl.chat_completion(
+        messages=[
+            SystemMessage(content="You are a helpful assistant."),
+            UserMessage(content="Please give me information about Michael Jordan."),
+        ],
+        stream=False,
+        **inference_settings["common_params"],
+    )
+
+    assert isinstance(response, ChatCompletionResponse)
+    assert isinstance(response.completion_message.content, str)
+
+    with pytest.raises(ValidationError):
+        AnswerFormat.parse_raw(response.completion_message.content)
 
 
 @pytest.mark.asyncio
