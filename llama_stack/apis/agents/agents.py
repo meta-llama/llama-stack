@@ -438,14 +438,12 @@ class Agents(Protocol):
 
     @webmethod(route="/agents/turn/get")
     async def get_agents_turn(
-        self,
-        agent_id: str,
-        turn_id: str,
+        self, agent_id: str, session_id: str, turn_id: str
     ) -> Turn: ...
 
     @webmethod(route="/agents/step/get")
     async def get_agents_step(
-        self, agent_id: str, turn_id: str, step_id: str
+        self, agent_id: str, session_id: str, turn_id: str, step_id: str
     ) -> AgentStepResponse: ...
 
     @webmethod(route="/agents/session/create")
