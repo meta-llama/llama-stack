@@ -10,3 +10,4 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 |      Ollama      	|       llamastack/distribution-ollama       	|       [Guide](./ollama/)       	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	|
 |        TGI       	|         llamastack/distribution-tgi        	|       [Guide](./tgi/)       	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	|
 |        Together       	|         llamastack/distribution-together        	|       [Guide](./together/)       	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	|
+|        Fireworks       	|         llamastack/distribution-fireworks        	|       [Guide](./fireworks/)       	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	|
