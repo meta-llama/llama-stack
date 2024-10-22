@@ -23,6 +23,13 @@ from llama_models.sku_list import resolve_model
 from llama_stack.providers.utils.inference import supported_inference_models
 
 
+def completion_request_to_prompt(
+    request: CompletionRequest, formatter: ChatFormat
+) -> str:
+    model_input = formatter.encode_content(request.content)
+    return formatter.tokenizer.decode(model_input.tokens)
+
+
 def chat_completion_request_to_prompt(
     request: ChatCompletionRequest, formatter: ChatFormat
 ) -> str:
