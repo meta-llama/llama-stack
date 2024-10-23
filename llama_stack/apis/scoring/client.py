@@ -113,7 +113,7 @@ async def run_main(host: str, port: int):
         input_rows=response.rows,
         scoring_functions=["equality"],
     )
-    cprint(f"scoring response={response}", "blue")
+    cprint(f"score response={response}", "blue")
 
     # test scoring batch using datasetio api
     scoring_client = ScoringClient(f"http://{host}:{port}")
@@ -121,7 +121,7 @@ async def run_main(host: str, port: int):
         dataset_id="test-dataset",
         scoring_functions=["equality"],
     )
-    cprint(f"scoring response={response}", "blue")
+    cprint(f"score_batch response={response}", "cyan")
 
 
 def main(host: str, port: int):

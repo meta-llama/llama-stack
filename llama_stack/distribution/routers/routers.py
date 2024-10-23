@@ -209,9 +209,12 @@ class ScoringRouter(Scoring):
         pass
 
     async def score_batch(
-        self, dataset_id: str, scoring_functions: List[str]
+        self,
+        dataset_id: str,
+        scoring_functions: List[str],
+        save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
-        print("Score Batch!")
+        res = {}
         for fn_identifier in scoring_functions:
             score_response = await self.routing_table.get_provider_impl(
                 fn_identifier
@@ -219,7 +222,14 @@ class ScoringRouter(Scoring):
                 dataset_id=dataset_id,
                 scoring_functions=[fn_identifier],
             )
-            print(score_response)
+            res.update(score_response.results)
+
+        if save_results_dataset:
+            raise NotImplementedError("Save results dataset not implemented yet")
+
+        return ScoreBatchResponse(
+            results=res,
+        )
 
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
