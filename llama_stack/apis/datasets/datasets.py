@@ -20,7 +20,7 @@ class DatasetDef(BaseModel):
     identifier: str = Field(
         description="A unique name for the dataset",
     )
-    columns_schema: Dict[str, ParamType] = Field(
+    dataset_schema: Dict[str, ParamType] = Field(
         description="The schema definition for this dataset",
     )
     url: URL

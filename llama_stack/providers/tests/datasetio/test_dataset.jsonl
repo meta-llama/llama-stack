@@ -1,0 +1,5 @@
+{"input_query": "What is the capital of France?", "generated_answer": "London", "expected_answer": "Paris"}
+{"input_query": "Who is the CEO of Meta?", "generated_answer": "Mark Zuckerberg", "expected_answer": "Mark Zuckerberg"}
+{"input_query": "What is the largest planet in our solar system?", "generated_answer": "Jupiter", "expected_answer": "Jupiter"}
+{"input_query": "What is the smallest country in the world?", "generated_answer": "China", "expected_answer": "Vatican City"}
+{"input_query": "What is the currency of Japan?", "generated_answer": "Yen", "expected_answer": "Yen"}
