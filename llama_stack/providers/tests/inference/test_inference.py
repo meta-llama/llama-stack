@@ -195,6 +195,7 @@ async def test_structured_output(inference_settings):
         "meta-reference",
         "remote::fireworks",
         "remote::tgi",
+        "remote::together",
     ):
         pytest.skip("Other inference providers don't support structured output yet")
 
