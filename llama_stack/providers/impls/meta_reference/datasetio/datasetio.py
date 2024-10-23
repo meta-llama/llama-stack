@@ -62,10 +62,15 @@ class PandasDataframeDataset(BaseDataset):
         if self.df is None:
             self.load()
 
-        print(self.dataset_def.dataset_schema)
-        # get columns names
-        # columns = self.df[self.dataset_def.dataset_schema.keys()]
-        print(self.df.columns)
+        assert self.df is not None, "Dataset loading failed. Please check logs."
+
+        self.df = self.df[self.dataset_def.dataset_schema.keys()]
+
+        # check all columns in dataset schema are present
+        assert len(self.df.columns) == len(self.dataset_def.dataset_schema)
+
+        # check all types match
+        print(self.df.dtypes)
 
     def load(self) -> None:
         if self.df is not None:
