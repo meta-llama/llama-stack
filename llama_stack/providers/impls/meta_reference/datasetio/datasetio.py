@@ -10,8 +10,10 @@ import pandas
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.datasetio import *  # noqa: F403
+import base64
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from urllib.parse import unquote
 
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import parse_data_url
@@ -53,6 +55,7 @@ class PandasDataframeDataset(BaseDataset):
         return len(self.df)
 
     def __getitem__(self, idx):
+        assert self.df is not None, "Dataset not loaded. Please call .load() first"
         if isinstance(idx, slice):
             return self.df.iloc[idx].to_dict(orient="records")
         else:
