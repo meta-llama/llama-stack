@@ -55,7 +55,6 @@ def data_url_from_file(file_path: str) -> str:
 
     base64_content = base64.b64encode(file_content).decode("utf-8")
     mime_type, _ = mimetypes.guess_type(file_path)
-    print(mime_type)
 
     data_url = f"data:{mime_type};base64,{base64_content}"
 

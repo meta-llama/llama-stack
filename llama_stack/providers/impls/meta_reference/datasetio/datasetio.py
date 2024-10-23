@@ -64,6 +64,7 @@ class PandasDataframeDataset(BaseDataset):
 
         assert self.df is not None, "Dataset loading failed. Please check logs."
 
+        # note that we will drop any columns in dataset that are not in the schema
         self.df = self.df[self.dataset_def.dataset_schema.keys()]
 
         # check all columns in dataset schema are present
