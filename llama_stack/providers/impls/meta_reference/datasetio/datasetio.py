@@ -142,7 +142,7 @@ class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_info = self.dataset_infos.get(dataset_id)
         dataset_info.dataset_impl.load()
 
-        if page_token is None:
+        if page_token is None or not page_token.isnumeric():
             next_page_token = 0
         else:
             next_page_token = int(page_token)
