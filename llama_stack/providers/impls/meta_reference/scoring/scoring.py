@@ -41,7 +41,9 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         ]
 
     async def register_scoring_function(self, function_def: ScoringFunctionDef) -> None:
-        pass
+        raise NotImplementedError(
+            "Dynamically registering scoring functions is not supported"
+        )
 
     async def score_batch(
         self, dataset_id: str, scoring_functions: List[str]
@@ -51,4 +53,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
     ) -> ScoreResponse:
-        print("!!!!score")
+        print(
+            f"scoring input_rows {input_rows} on scoring_functions {scoring_functions}"
+        )
+        return ScoreResponse()

@@ -14,6 +14,7 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 
 
 ScoringResult = Dict[str, Any]
+SingleScoringResult = Dict[str, Any]
 
 
 @json_schema_type
