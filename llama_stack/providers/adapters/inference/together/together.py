@@ -111,7 +111,6 @@ class TogetherInferenceAdapter(
     ) -> ChatCompletionResponse:
         params = self._get_params(request)
         r = client.completions.create(**params)
-        print(r)
         return process_chat_completion_response(r, self.formatter)
 
     async def _stream_chat_completion(
@@ -135,7 +134,7 @@ class TogetherInferenceAdapter(
         options = get_sampling_options(request)
         if fmt := request.response_format:
             if fmt.type == ResponseFormatType.json_schema.value:
-                options["respose_format"] = {
+                options["response_format"] = {
                     "type": "json_object",
                     "schema": fmt.schema,
                 }
