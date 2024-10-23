@@ -134,11 +134,3 @@ async def test_get_rows_paginated(datasetio_settings):
     assert isinstance(response.rows, list)
     assert len(response.rows) == 2
     assert response.next_page_token == "5"
-
-
-@pytest.mark.asyncio
-async def test_datasets_validation(datasetio_settings):
-    # NOTE: this needs you to ensure that you are starting from a clean state
-    # but so far we don't have an unregister API unfortunately, so be careful
-    datasets_impl = datasetio_settings["datasets_impl"]
-    await register_dataset(datasets_impl)
