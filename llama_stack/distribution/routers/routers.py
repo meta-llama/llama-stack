@@ -217,4 +217,14 @@ class ScoringRouter(Scoring):
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
     ) -> ScoreResponse:
-        pass
+        # look up and map each scoring function to its provider impl
+        for fn_identifier in scoring_functions:
+            score_response = await self.routing_table.get_provider_impl(
+                fn_identifier
+            ).score(
+                input_rows=input_rows,
+                scoring_functions=[fn_identifier],
+            )
+            print(
+                f"fn_identifier={fn_identifier}, score_response={score_response}",
+            )

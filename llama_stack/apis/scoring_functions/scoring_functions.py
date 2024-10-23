@@ -34,8 +34,8 @@ class Parameter(BaseModel):
 
 
 @json_schema_type
-class CommonDef(BaseModel):
-    name: str
+class CommonFunctionDef(BaseModel):
+    identifier: str
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
@@ -46,10 +46,11 @@ class CommonDef(BaseModel):
 
 
 @json_schema_type
-class DeterministicFunctionDef(CommonDef):
+class DeterministicFunctionDef(CommonFunctionDef):
     type: Literal["deterministic"] = "deterministic"
     parameters: List[Parameter] = Field(
         description="List of parameters for the deterministic function",
+        default_factory=list,
     )
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
@@ -58,7 +59,7 @@ class DeterministicFunctionDef(CommonDef):
 
 
 @json_schema_type
-class LLMJudgeFunctionDef(CommonDef):
+class LLMJudgeFunctionDef(CommonFunctionDef):
     type: Literal["judge"] = "judge"
     model: str = Field(
         description="The LLM model to use for the judge function",
