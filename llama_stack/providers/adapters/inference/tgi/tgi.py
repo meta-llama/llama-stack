@@ -29,7 +29,6 @@ from llama_stack.providers.utils.inference.openai_compat import (
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_model_input_info,
-    completion_request_to_prompt,
     completion_request_to_prompt_model_input_info,
 )
 
