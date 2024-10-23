@@ -31,6 +31,13 @@ def completion_request_to_prompt(
     return formatter.tokenizer.decode(model_input.tokens)
 
 
+def completion_request_to_prompt_model_input_info(
+    request: CompletionRequest, formatter: ChatFormat
+) -> Tuple[str, int]:
+    model_input = formatter.encode_content(request.content)
+    return (formatter.tokenizer.decode(model_input.tokens), len(model_input.tokens))
+
+
 def chat_completion_request_to_prompt(
     request: ChatCompletionRequest, formatter: ChatFormat
 ) -> str:

@@ -24,9 +24,13 @@ from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionResponse,
     process_chat_completion_response,
     process_chat_completion_stream_response,
+    process_completion_response,
+    process_completion_stream_response,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_model_input_info,
+    completion_request_to_prompt,
+    completion_request_to_prompt_model_input_info,
 )
 
 from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
@@ -75,7 +79,88 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        raise NotImplementedError()
+        request = CompletionRequest(
+            model=model,
+            content=content,
+            sampling_params=sampling_params,
+            stream=stream,
+            logprobs=logprobs,
+        )
+        if stream:
+            return self._stream_completion(request)
+        else:
+            return await self._nonstream_completion(request)
+
+    def _get_params_for_completion(self, request: CompletionRequest) -> dict:
+        prompt, input_tokens = completion_request_to_prompt_model_input_info(
+            request, self.formatter
+        )
+        max_new_tokens = min(
+            request.sampling_params.max_tokens or (self.max_tokens - input_tokens),
+            self.max_tokens - input_tokens - 1,
+        )
+
+        options = get_sampling_options(request)
+        # delete key "max_tokens" from options since its not supported by the API
+        options.pop("max_tokens", None)
+
+        if fmt := request.response_format:
+            if fmt.type == ResponseFormatType.json_schema.value:
+                options["grammar"] = {
+                    "type": "json",
+                    "value": fmt.schema,
+                }
+            elif fmt.type == ResponseFormatType.grammar.value:
+                raise ValueError("Grammar response format not supported yet")
+            else:
+                raise ValueError(f"Unexpected response format: {fmt.type}")
+
+        return dict(
+            prompt=prompt,
+            stream=request.stream,
+            details=True,
+            max_new_tokens=max_new_tokens,
+            stop_sequences=["<|eom_id|>", "<|eot_id|>"],
+            **options,
+        )
+
+    async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        params = self._get_params_for_completion(request)
+
+        async def _generate_and_convert_to_openai_compat():
+            s = await self.client.text_generation(**params)
+            async for chunk in s:
+
+                token_result = chunk.token
+                finish_reason = None
+                if chunk.details:
+                    finish_reason = chunk.details.finish_reason
+
+                choice = OpenAICompatCompletionChoice(
+                    text=token_result.text, finish_reason=finish_reason
+                )
+                yield OpenAICompatCompletionResponse(
+                    choices=[choice],
+                )
+
+        stream = _generate_and_convert_to_openai_compat()
+        async for chunk in process_completion_stream_response(stream, self.formatter):
+            yield chunk
+
+    async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
+        params = self._get_params_for_completion(request)
+        r = await self.client.text_generation(**params)
+
+        choice = OpenAICompatCompletionChoice(
+            finish_reason=r.details.finish_reason,
+            text="".join(t.text for t in r.details.tokens),
+        )
+
+        response = OpenAICompatCompletionResponse(
+            choices=[choice],
+        )
+
+        return process_completion_response(response, self.formatter)
 
     async def chat_completion(
         self,

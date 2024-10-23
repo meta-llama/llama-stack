@@ -95,13 +95,6 @@ async def process_completion_stream_response(
         choice = chunk.choices[0]
         finish_reason = choice.finish_reason
 
-        if finish_reason:
-            if finish_reason in ["stop", "eos", "eos_token"]:
-                stop_reason = StopReason.end_of_turn
-            elif finish_reason == "length":
-                stop_reason = StopReason.out_of_tokens
-            break
-
         text = text_from_choice(choice)
         if text == "<|eot_id|>":
             stop_reason = StopReason.end_of_turn
@@ -115,6 +108,12 @@ async def process_completion_stream_response(
             delta=text,
             stop_reason=stop_reason,
         )
+        if finish_reason:
+            if finish_reason in ["stop", "eos", "eos_token"]:
+                stop_reason = StopReason.end_of_turn
+            elif finish_reason == "length":
+                stop_reason = StopReason.out_of_tokens
+            break
 
     yield CompletionResponseStreamChunk(
         delta="",

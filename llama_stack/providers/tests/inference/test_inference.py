@@ -137,6 +137,7 @@ async def test_completion(inference_settings):
     if provider.__provider_spec__.provider_type not in (
         "meta-reference",
         "remote::ollama",
+        "remote::tgi",
     ):
         pytest.skip("Other inference providers don't support completion() yet")
 
