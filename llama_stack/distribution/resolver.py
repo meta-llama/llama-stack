@@ -130,12 +130,6 @@ async def resolve_impls(run_config: StackRunConfig) -> Dict[Api, Any]:
             )
         }
 
-        if info.router_api.value == "scoring":
-            print("SCORING API")
-
-            # p = all_api_providers[api][provider.provider_type]
-            # p.deps__ = [a.value for a in p.api_dependencies]
-
         providers_with_specs[info.router_api.value] = {
             "__builtin__": ProviderWithSpec(
                 provider_id="__autorouted__",

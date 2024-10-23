@@ -13,7 +13,12 @@ apis:
 - inference
 - datasets
 - datasetio
+- scoring
 providers:
+  scoring:
+  - provider_id: meta0
+    provider_type: meta-reference
+    config: {}
   datasetio:
   - provider_id: meta0
     provider_type: meta-reference
