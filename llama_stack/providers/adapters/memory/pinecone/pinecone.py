@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import json
+import time
 
 from numpy.typing import NDArray
 from pinecone import ServerlessSpec
@@ -34,15 +34,20 @@ class PineconeIndex(EmbeddingIndex):
         for i, chunk in enumerate(chunks):
             data_objects.append(
                 {
-                    "id": f"vec{i+1}",
+                    "id": chunk.document_id,
                     "values": embeddings[i].tolist(),
-                    "metadata": {"chunk": chunk},
+                    "metadata": {
+                        "content": chunk.content,
+                        "token_count": chunk.token_count,
+                        "document_id": chunk.document_id,
+                    },
                 }
             )
 
         # Inserting chunks into a prespecified Weaviate collection
         index = self.client.Index(self.index_name)
         index.upsert(vectors=data_objects)
+        time.sleep(1)
 
     async def query(
         self, embedding: NDArray, k: int, score_threshold: float
@@ -50,16 +55,16 @@ class PineconeIndex(EmbeddingIndex):
         index = self.client.Index(self.index_name)
 
         results = index.query(
-            vector=embedding, top_k=k, include_values=True, include_metadata=True
+            vector=embedding, top_k=k, include_values=False, include_metadata=True
         )
 
         chunks = []
         scores = []
         for doc in results["matches"]:
-            chunk_json = doc["metadata"]["chunk"]
+            chunk_json = doc["metadata"]
+            print(f"chunk_json: {chunk_json}")
             try:
-                chunk_dict = json.loads(chunk_json)
-                chunk = Chunk(**chunk_dict)
+                chunk = Chunk(**chunk_json)
             except Exception:
                 import traceback
 
@@ -130,11 +135,11 @@ class PineconeMemoryAdapter(
         if not self.check_if_index_exists(client, memory_bank.identifier):
             client.create_index(
                 name=memory_bank.identifier,
-                dimension=self.config.dimensions if self.config.dimensions else 1024,
+                dimension=self.config.dimension,
                 metric="cosine",
                 spec=ServerlessSpec(
-                    cloud=self.config.cloud if self.config.cloud else "aws",
-                    region=self.config.region if self.config.region else "us-east-1",
+                    cloud=self.config.cloud,
+                    region=self.config.region,
                 ),
             )
 
@@ -146,7 +151,7 @@ class PineconeMemoryAdapter(
 
     async def list_memory_banks(self) -> List[MemoryBankDef]:
         # TODO: right now the Llama Stack is the source of truth for these banks. That is
-        # not ideal. It should be Weaviate which is the source of truth. Unfortunately,
+        # not ideal. It should be pinecone which is the source of truth. Unfortunately,
         # list() happens at Stack startup when the Pinecone client (credentials) is not
         # yet available. We need to figure out a way to make this work.
         return [i.bank for i in self.cache.values()]

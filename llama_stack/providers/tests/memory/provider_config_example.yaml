@@ -20,10 +20,12 @@ providers:
     config:
       host: localhost
       port: 6333
+  - provider_id: test-pinecone
+    provider_type: remote::pinecone
+    config: {}
 # if a provider needs private keys from the client, they use the
 # "get_request_provider_data" function (see distribution/request_headers.py)
 # this is a place to provide such data.
 provider_data:
-  "test-weaviate":
-    weaviate_api_key: 0xdeadbeefputrealapikeyhere
-    weaviate_cluster_url: http://foobarbaz
+  "test-pinecone":
+    pinecone_api_key:

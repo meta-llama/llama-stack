@@ -12,6 +12,6 @@ class PineconeRequestProviderData(BaseModel):
 
 
 class PineconeConfig(BaseModel):
-    dimensions: int
-    cloud: str
-    region: str
+    dimension: int = 384
+    cloud: str = "aws"
+    region: str = "us-east-1"
