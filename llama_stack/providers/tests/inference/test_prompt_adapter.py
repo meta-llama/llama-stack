@@ -7,8 +7,10 @@
 import unittest
 
 from llama_models.llama3.api import *  # noqa: F403
-from llama_stack.inference.api import *  # noqa: F403
-from llama_stack.inference.prompt_adapter import chat_completion_request_to_messages
+from llama_stack.apis.inference.inference import *  # noqa: F403
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    chat_completion_request_to_messages,
+)
 
 MODEL = "Llama3.1-8B-Instruct"
 
