@@ -36,7 +36,10 @@ class ScoringClient(Scoring):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/scoring/score_batch",
-                params={},
+                json={
+                    "dataset_id": dataset_id,
+                    "scoring_functions": scoring_functions,
+                },
                 headers={"Content-Type": "application/json"},
                 timeout=60,
             )
@@ -44,7 +47,7 @@ class ScoringClient(Scoring):
             if not response.json():
                 return
 
-            return ScoreResponse(**response.json())
+            return ScoreBatchResponse(**response.json())
 
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
@@ -108,6 +111,14 @@ async def run_main(host: str, port: int):
     scoring_client = ScoringClient(f"http://{host}:{port}")
     response = await scoring_client.score(
         input_rows=response.rows,
+        scoring_functions=["equality"],
+    )
+    cprint(f"scoring response={response}", "blue")
+
+    # test scoring batch using datasetio api
+    scoring_client = ScoringClient(f"http://{host}:{port}")
+    response = await scoring_client.score_batch(
+        dataset_id="test-dataset",
         scoring_functions=["equality"],
     )
     cprint(f"scoring response={response}", "blue")

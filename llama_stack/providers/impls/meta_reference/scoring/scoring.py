@@ -10,6 +10,7 @@ from llama_stack.apis.scoring import *  # noqa: F403
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 
 from termcolor import cprint
 
@@ -29,7 +30,10 @@ SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORE
 
 class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     def __init__(
-        self, config: MetaReferenceScoringConfig, datasetio_api: DatasetIO
+        self,
+        config: MetaReferenceScoringConfig,
+        datasetio_api: DatasetIO,
+        datasets_api: Datasets,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
@@ -50,7 +54,15 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score_batch(
         self, dataset_id: str, scoring_functions: List[str]
     ) -> ScoreBatchResponse:
-        print("score_batch")
+        rows_paginated = await self.datasetio_api.get_rows_paginated(
+            dataset_id=dataset_id,
+            rows_in_page=-1,
+        )
+        res = await self.score(
+            input_rows=rows_paginated.rows, scoring_functions=scoring_functions
+        )
+
+        cprint(f"res: {res}", "green")
 
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]

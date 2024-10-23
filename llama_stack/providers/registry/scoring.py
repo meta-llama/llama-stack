@@ -19,6 +19,7 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.impls.meta_reference.scoring.MetaReferenceScoringConfig",
             api_dependencies=[
                 Api.datasetio,
+                Api.datasets,
             ],
         ),
     ]

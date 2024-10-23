@@ -211,8 +211,15 @@ class ScoringRouter(Scoring):
     async def score_batch(
         self, dataset_id: str, scoring_functions: List[str]
     ) -> ScoreBatchResponse:
-        # TODO
-        pass
+        print("Score Batch!")
+        for fn_identifier in scoring_functions:
+            score_response = await self.routing_table.get_provider_impl(
+                fn_identifier
+            ).score_batch(
+                dataset_id=dataset_id,
+                scoring_functions=[fn_identifier],
+            )
+            print(score_response)
 
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
