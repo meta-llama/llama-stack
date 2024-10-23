@@ -35,7 +35,6 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             routing_table_api=Api.memory_banks,
             router_api=Api.memory,
         ),
-        # TODO: re-enable once we have proper checking on builtin routing: Issue #297
         AutoRoutedApiInfo(
             routing_table_api=Api.datasets,
             router_api=Api.datasetio,

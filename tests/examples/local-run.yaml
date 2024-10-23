@@ -13,18 +13,14 @@ apis:
 - safety
 providers:
   inference:
-  - provider_id: tgi0
-    provider_type: remote::tgi
+  - provider_id: meta-reference
+    provider_type: meta-reference
     config:
-      url: http://127.0.0.1:5009
-  # - provider_id: meta-reference
-  #   provider_type: meta-reference
-  #   config:
-  #     model: Llama3.1-8B-Instruct
-  #     quantization: null
-  #     torch_seed: null
-  #     max_seq_len: 4096
-  #     max_batch_size: 1
+      model: Llama3.1-8B-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
   safety:
   - provider_id: meta-reference
     provider_type: meta-reference
