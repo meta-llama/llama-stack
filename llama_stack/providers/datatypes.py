@@ -11,10 +11,9 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetDef
-
 from llama_stack.apis.memory_banks import MemoryBankDef
-
 from llama_stack.apis.models import ModelDef
+from llama_stack.apis.scoring_functions import ScoringFunctionDef
 from llama_stack.apis.shields import ShieldDef
 
 
@@ -25,6 +24,7 @@ class Api(Enum):
     agents = "agents"
     memory = "memory"
     datasetio = "datasetio"
+    scoring = "scoring"
 
     telemetry = "telemetry"
 
@@ -32,6 +32,7 @@ class Api(Enum):
     shields = "shields"
     memory_banks = "memory_banks"
     datasets = "datasets"
+    scoring_functions = "scoring_functions"
 
     # built-in API
     inspect = "inspect"
@@ -59,6 +60,14 @@ class DatasetsProtocolPrivate(Protocol):
     async def list_datasets(self) -> List[DatasetDef]: ...
 
     async def register_datasets(self, dataset_def: DatasetDef) -> None: ...
+
+
+class ScoringFunctionsProtocolPrivate(Protocol):
+    async def list_scoring_functions(self) -> List[ScoringFunctionDef]: ...
+
+    async def register_scoring_function(
+        self, function_def: ScoringFunctionDef
+    ) -> None: ...
 
 
 @json_schema_type

@@ -20,6 +20,8 @@ from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
 from llama_stack.apis.safety import Safety
+from llama_stack.apis.scoring import Scoring
+from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import (
@@ -42,6 +44,8 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.telemetry: Telemetry,
         Api.datasets: Datasets,
         Api.datasetio: DatasetIO,
+        Api.scoring_functions: ScoringFunctions,
+        Api.scoring: Scoring,
     }
 
 
@@ -125,6 +129,12 @@ async def resolve_impls(run_config: StackRunConfig) -> Dict[Api, Any]:
                 ),
             )
         }
+
+        if info.router_api.value == "scoring":
+            print("SCORING API")
+
+            # p = all_api_providers[api][provider.provider_type]
+            # p.deps__ = [a.value for a in p.api_dependencies]
 
         providers_with_specs[info.router_api.value] = {
             "__builtin__": ProviderWithSpec(

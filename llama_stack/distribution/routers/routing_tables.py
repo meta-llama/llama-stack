@@ -218,7 +218,25 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def get_dataset(
         self, dataset_identifier: str
     ) -> Optional[DatasetDefWithProvider]:
-        return self.get_object_by_identifier(identifier)
+        return self.get_object_by_identifier(dataset_identifier)
 
     async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
         await self.register_object(dataset_def)
+
+
+class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
+    async def list_scoring_functions(self) -> List[ScoringFunctionDefWithProvider]:
+        objects = []
+        for objs in self.registry.values():
+            objects.extend(objs)
+        return objects
+
+    async def get_scoring_function(
+        self, name: str
+    ) -> Optional[ScoringFunctionDefWithProvider]:
+        return self.get_object_by_identifier(name)
+
+    async def register_scoring_function(
+        self, function_def: ScoringFunctionDefWithProvider
+    ) -> None:
+        await self.register_object(function_def)

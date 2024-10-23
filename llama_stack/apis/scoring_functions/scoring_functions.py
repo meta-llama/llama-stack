@@ -84,5 +84,5 @@ class ScoringFunctions(Protocol):
 
     @webmethod(route="/scoring_functions/register", method="POST")
     async def register_scoring_function(
-        self, function: ScoringFunctionDefWithProvider
+        self, function_def: ScoringFunctionDefWithProvider
     ) -> None: ...

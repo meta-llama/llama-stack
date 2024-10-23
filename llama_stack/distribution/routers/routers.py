@@ -13,6 +13,7 @@ from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
+from llama_stack.apis.scoring import *  # noqa: F403
 
 
 class MemoryRouter(Memory):
@@ -192,3 +193,28 @@ class DatasetIORouter(DatasetIO):
             page_token=page_token,
             filter_condition=filter_condition,
         )
+
+
+class ScoringRouter(Scoring):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def score_batch(
+        self, dataset_id: str, scoring_functions: List[str]
+    ) -> ScoreBatchResponse:
+        # TODO
+        pass
+
+    async def score(
+        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+    ) -> ScoreResponse:
+        pass
