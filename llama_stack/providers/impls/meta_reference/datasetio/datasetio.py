@@ -69,8 +69,7 @@ class PandasDataframeDataset(BaseDataset):
         # check all columns in dataset schema are present
         assert len(self.df.columns) == len(self.dataset_def.dataset_schema)
 
-        # check all types match
-        print(self.df.dtypes)
+        # TODO: type checking against column types in dataset schema
 
     def load(self) -> None:
         if self.df is not None:

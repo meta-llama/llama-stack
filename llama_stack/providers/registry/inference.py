@@ -36,7 +36,7 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=(
                 META_REFERENCE_DEPS
                 + [
-                    "fbgemm-gpu==1.0.0",
+                    "fbgemm-gpu==0.8.0",
                 ]
             ),
             module="llama_stack.providers.impls.meta_reference.inference",
