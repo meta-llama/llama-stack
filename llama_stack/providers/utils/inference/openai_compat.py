@@ -34,8 +34,6 @@ def get_sampling_options(request: ChatCompletionRequest) -> dict:
     if params := request.sampling_params:
         for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
             if getattr(params, attr):
-                if attr == "max_tokens":
-                    options["num_predict"] = getattr(params, attr)
                 options[attr] = getattr(params, attr)
 
         if params.repetition_penalty is not None and params.repetition_penalty != 1.0:
