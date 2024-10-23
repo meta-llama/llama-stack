@@ -288,6 +288,9 @@ def main(
         apis_to_serve = set(impls.keys())
 
     for inf in builtin_automatically_routed_apis():
+        # if we do not serve the corresponding router API, we should not serve the routing table API
+        if inf.router_api.value not in apis_to_serve:
+            continue
         apis_to_serve.add(inf.routing_table_api.value)
 
     apis_to_serve.add("inspect")
