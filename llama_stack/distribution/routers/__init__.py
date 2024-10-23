@@ -56,12 +56,6 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")
 
-    # api_with_deps = {"scoring"}
-    # if api.value in api_with_deps:
-    #     impl = api_to_routers[api.value](routing_table, _deps)
-    # else:
-    #     impl = api_to_routers[api.value](routing_table)
-
     impl = api_to_routers[api.value](routing_table)
     await impl.initialize()
     return impl
