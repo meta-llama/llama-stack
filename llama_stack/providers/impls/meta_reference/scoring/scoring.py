@@ -14,8 +14,17 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 from termcolor import cprint
 
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
+from llama_stack.providers.impls.meta_reference.scoring.scorer.equality_scorer import (
+    EqualityScorer,
+)
 
 from .config import MetaReferenceScoringConfig
+
+SUPPORTED_SCORERS = [
+    EqualityScorer,
+]
+
+SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORERS}
 
 
 class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
@@ -31,14 +40,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def shutdown(self) -> None: ...
 
     async def list_scoring_functions(self) -> List[ScoringFunctionDef]:
-        return [
-            DeterministicFunctionDef(
-                identifier="equality",
-                description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
-                parameters=[],
-                return_type=NumberType(),
-            )
-        ]
+        return [x.scoring_function_def for x in SUPPORTED_SCORERS]
 
     async def register_scoring_function(self, function_def: ScoringFunctionDef) -> None:
         raise NotImplementedError(
@@ -53,7 +55,13 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
     ) -> ScoreResponse:
-        print(
-            f"scoring input_rows {input_rows} on scoring_functions {scoring_functions}"
+        res = {}
+        for scoring_fn_id in scoring_functions:
+            scorer = SCORER_REGISTRY[scoring_fn_id]()
+            score_results = scorer.score(input_rows)
+            agg_results = scorer.aggregate(score_results)
+            res[scoring_fn_id] = agg_results
+
+        return ScoreResponse(
+            results=res,
         )
-        return ScoreResponse()

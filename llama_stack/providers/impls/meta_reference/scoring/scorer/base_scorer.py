@@ -17,6 +17,8 @@ class BaseScorer(ABC):
     - aggregate(self, scorer_results)
     """
 
+    scoring_function_def: DeterministicFunctionDef
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 

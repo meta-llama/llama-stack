@@ -14,7 +14,6 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 
 
 ScoringResult = Dict[str, Any]
-SingleScoringResult = Dict[str, Any]
 
 
 @json_schema_type
@@ -25,7 +24,7 @@ class ScoreBatchResponse(BaseModel):
 @json_schema_type
 class ScoreResponse(BaseModel):
     # each key in the dict is a scoring function name
-    results: List[Dict[str, ScoringResult]]
+    results: Dict[str, ScoringResult]
 
 
 class ScoringFunctionStore(Protocol):
