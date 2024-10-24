@@ -16,9 +16,9 @@ providers:
   - provider_id: meta0
     provider_type: meta-reference-quantized
     config:
-      model: Llama3.2-3B-Instruct
+      model: Llama3.2-3B-Instruct:int4-qlora-eo8
       quantization:
-        type: fp8
+        type: int4
       torch_seed: null
       max_seq_len: 2048
       max_batch_size: 1
