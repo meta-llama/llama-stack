@@ -3,17 +3,20 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import io
 from typing import List, Optional
 
 import pandas
-
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.datasetio import *  # noqa: F403
+import base64
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from urllib.parse import unquote
 
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.utils.memory.vector_store import parse_data_url
 
 from .config import MetaReferenceDatasetIOConfig
 
@@ -52,10 +55,19 @@ class PandasDataframeDataset(BaseDataset):
         return len(self.df)
 
     def __getitem__(self, idx):
+        assert self.df is not None, "Dataset not loaded. Please call .load() first"
         if isinstance(idx, slice):
             return self.df.iloc[idx].to_dict(orient="records")
         else:
             return self.df.iloc[idx].to_dict()
+
+    def _validate_dataset_schema(self, df) -> pandas.DataFrame:
+        # note that we will drop any columns in dataset that are not in the schema
+        df = df[self.dataset_def.dataset_schema.keys()]
+        # check all columns in dataset schema are present
+        assert len(df.columns) == len(self.dataset_def.dataset_schema)
+        # TODO: type checking against column types in dataset schema
+        return df
 
     def load(self) -> None:
         if self.df is not None:
@@ -87,7 +99,7 @@ class PandasDataframeDataset(BaseDataset):
         else:
             raise ValueError(f"Unsupported file type: {self.dataset_def.url}")
 
-        self.df = df
+        self.df = self._validate_dataset_schema(df)
 
 
 class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
@@ -123,7 +135,10 @@ class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_info = self.dataset_infos.get(dataset_id)
         dataset_info.dataset_impl.load()
 
-        if page_token is None:
+        if page_token and not page_token.isnumeric():
+            raise ValueError("Invalid page_token")
+
+        if page_token is None or len(page_token) == 0:
             next_page_token = 0
         else:
             next_page_token = int(page_token)

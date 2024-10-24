@@ -1,0 +1,6 @@
+input_query,generated_answer,expected_answer
+What is the capital of France?,London,Paris
+Who is the CEO of Meta?,Mark Zuckerberg,Mark Zuckerberg
+What is the largest planet in our solar system?,Jupiter,Jupiter
+What is the smallest country in the world?,China,Vatican City
+What is the currency of Japan?,Yen,Yen

@@ -29,7 +29,7 @@ class DatasetIO(Protocol):
     # keeping for aligning with inference/safety, but this is not used
     dataset_store: DatasetStore
 
-    @webmethod(route="/dataio/get_rows_paginated")
+    @webmethod(route="/datasetio/get_rows_paginated", method="GET")
     async def get_rows_paginated(
         self,
         dataset_id: str,
