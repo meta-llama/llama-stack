@@ -128,10 +128,16 @@ class InferenceRouter(Inference):
         self,
         model: str,
         contents: List[InterleavedTextMedia],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        truncate: Optional[bool] = True,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> EmbeddingsResponse:
         return await self.routing_table.get_provider_impl(model).embeddings(
             model=model,
             contents=contents,
+            sampling_params=sampling_params,
+            truncate=truncate,
+            logprobs=logprobs,
         )
 
 

@@ -196,6 +196,15 @@ class BatchChatCompletionResponse(BaseModel):
 
 
 @json_schema_type
+class EmbeddingRequest(BaseModel):
+    model: str
+    contents: List[InterleavedTextMedia]
+    sampling_params: Optional[SamplingParams] = SamplingParams()
+    truncate: Optional[bool] = True
+    logprobs: Optional[LogProbConfig] = None
+
+
+@json_schema_type
 class EmbeddingsResponse(BaseModel):
     embeddings: List[List[float]]
 
@@ -241,4 +250,7 @@ class Inference(Protocol):
         self,
         model: str,
         contents: List[InterleavedTextMedia],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        truncate: Optional[bool] = True,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> EmbeddingsResponse: ...

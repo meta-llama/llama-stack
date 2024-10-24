@@ -234,5 +234,30 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         self,
         model: str,
         contents: List[InterleavedTextMedia],
+        sampling_params: Optional[SamplingParams] = SamplingParams(),
+        truncate: Optional[bool] = True,
+        logprobs: Optional[LogProbConfig] = None,
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+
+        request = EmbeddingRequest(
+            model=model,
+            contents=contents,
+            sampling_params=sampling_params,
+            truncate=truncate,
+            logprobs=logprobs,
+        )
+        return await self._embeddings(request)
+
+    async def _embeddings(self, request: EmbeddingRequest) -> EmbeddingsResponse:
+        params = self._get_params_for_embeddings(request)
+        r = await self.client.embed(**params)
+        return EmbeddingsResponse(embeddings=r["embeddings"])
+
+    def _get_params_for_embeddings(self, request: EmbeddingRequest) -> dict:
+        sampling_options = get_sampling_options(request)
+        return {
+            "model": OLLAMA_SUPPORTED_MODELS[request.model],
+            "input": request.contents,
+            "options": sampling_options,
+            "truncate": request.truncate,
+        }

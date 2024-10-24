@@ -171,6 +171,27 @@ async def test_completion(inference_settings):
 
 
 @pytest.mark.asyncio
+async def test_embed(inference_settings):
+    inference_impl = inference_settings["impl"]
+    params = inference_settings["common_params"]
+
+    provider = inference_impl.routing_table.get_provider_impl(params["model"])
+    if provider.__provider_spec__.provider_type not in ("remote::ollama",):
+        pytest.skip("Other inference providers don't support completion() yet")
+
+    response = await inference_impl.embeddings(
+        contents=["Roses are red"],
+        model=params["model"],
+        sampling_params=SamplingParams(
+            max_tokens=50,
+        ),
+    )
+
+    assert isinstance(response, EmbeddingsResponse)
+    assert len(response.embeddings) > 0
+
+
+@pytest.mark.asyncio
 async def test_chat_completion_non_streaming(inference_settings, sample_messages):
     inference_impl = inference_settings["impl"]
     response = await inference_impl.chat_completion(
