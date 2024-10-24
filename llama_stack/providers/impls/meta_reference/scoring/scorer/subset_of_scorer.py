@@ -15,13 +15,13 @@ from llama_stack.providers.impls.meta_reference.scoring.scorer.common import (
 )
 
 
-class InclusionScorer(BaseScorer):
+class SubsetOfScorer(BaseScorer):
     """
     A scorer that assigns a score of 1.0 if the expected string is included in the generated string, and 0.0 otherwise.
     """
 
     scoring_function_def = ScoringFunctionDef(
-        identifier="inclusion",
+        identifier="subset_of",
         description="Returns 1.0 if the expected is included in generated, 0.0 otherwise.",
         parameters=[],
         return_type=NumberType(),

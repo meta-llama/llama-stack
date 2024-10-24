@@ -65,7 +65,7 @@ async def test_eval(eval_settings):
             model="Llama3.1-8B-Instruct",
             sampling_params=SamplingParams(),
         ),
-        scoring_functions=["inclusion"],
+        scoring_functions=["subset_of"],
     )
     assert response.job_id == "0"
     job_status = await eval_impl.job_status(response.job_id)
@@ -76,4 +76,4 @@ async def test_eval(eval_settings):
 
     assert eval_response is not None
     assert len(eval_response.generations) == 5
-    assert "inclusion" in eval_response.scores
+    assert "subset_of" in eval_response.scores

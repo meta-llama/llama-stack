@@ -17,15 +17,15 @@ from llama_stack.providers.impls.meta_reference.scoring.scorer.equality_scorer i
     EqualityScorer,
 )
 
-from llama_stack.providers.impls.meta_reference.scoring.scorer.inclusion_scorer import (
-    InclusionScorer,
+from llama_stack.providers.impls.meta_reference.scoring.scorer.subset_of_scorer import (
+    SubsetOfScorer,
 )
 
 from .config import MetaReferenceScoringConfig
 
 SUPPORTED_SCORERS = [
     EqualityScorer,
-    InclusionScorer,
+    SubsetOfScorer,
 ]
 
 SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORERS}
