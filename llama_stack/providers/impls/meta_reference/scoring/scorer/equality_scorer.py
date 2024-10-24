@@ -25,6 +25,11 @@ class EqualityScorer(BaseScorer):
     )
 
     def score_row(self, input_row: Dict[str, Any]) -> ScoringResult:
+        assert "expected_answer" in input_row, "Expected answer not found in input row."
+        assert (
+            "generated_answer" in input_row
+        ), "Generated answer not found in input row."
+
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]
         score = 1.0 if expected_answer == generated_answer else 0.0
