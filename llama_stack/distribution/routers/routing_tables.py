@@ -95,17 +95,15 @@ class CommonRoutingTableImpl(RoutingTable):
                 for d in datasets:
                     d.provider_id = pid
 
-                add_objects(datasets)
-
             elif api == Api.scoring:
                 p.scoring_function_store = self
                 scoring_functions = await p.list_scoring_functions()
-
-                # do in-memory updates due to pesky Annotated unions
-                for s in scoring_functions:
-                    s.provider_id = pid
-
-                add_objects(scoring_functions)
+                add_objects(
+                    [
+                        ScoringFunctionDefWithProvider(**s.dict(), provider_id=pid)
+                        for s in scoring_functions
+                    ]
+                )
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():

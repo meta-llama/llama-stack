@@ -4,20 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import (
-    Any,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Protocol,
-    runtime_checkable,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from llama_stack.apis.common.type_system import ParamType
 
@@ -33,21 +23,19 @@ class Parameter(BaseModel):
 # with standard metrics so they can be rolled up?
 
 
+class LLMAsJudgeContext(BaseModel):
+    judge_model: str
+    prompt_template: Optional[str] = None
+
+
 @json_schema_type
-class CommonFunctionDef(BaseModel):
+class ScoringFunctionDef(BaseModel):
     identifier: str
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this definition",
     )
-    # Hack: same with memory_banks for union defs
-    provider_id: str = ""
-
-
-@json_schema_type
-class DeterministicFunctionDef(CommonFunctionDef):
-    type: Literal["deterministic"] = "deterministic"
     parameters: List[Parameter] = Field(
         description="List of parameters for the deterministic function",
         default_factory=list,
@@ -55,22 +43,15 @@ class DeterministicFunctionDef(CommonFunctionDef):
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
     )
+    context: Optional[LLMAsJudgeContext] = None
     # We can optionally add information here to support packaging of code, etc.
 
 
 @json_schema_type
-class LLMJudgeFunctionDef(CommonFunctionDef):
-    type: Literal["judge"] = "judge"
-    model: str = Field(
-        description="The LLM model to use for the judge function",
+class ScoringFunctionDefWithProvider(ScoringFunctionDef):
+    provider_id: str = Field(
+        description="ID of the provider which serves this dataset",
     )
-
-
-ScoringFunctionDef = Annotated[
-    Union[DeterministicFunctionDef, LLMJudgeFunctionDef], Field(discriminator="type")
-]
-
-ScoringFunctionDefWithProvider = ScoringFunctionDef
 
 
 @runtime_checkable
