@@ -56,8 +56,19 @@ We're working on making LocalInference easier to set up. For now, you'll need t
 
 ## Preparing a model
 
-1. Prepare a `.pte` file [following the executorch docs](https://github.com/pytorch/executorch/blob/main/examples/models/llama2/README.md#step-2-prepare-model)
+1. Prepare a `.pte` file [following the executorch docs](https://github.com/pytorch/executorch/blob/main/examples/models/llama/README.md#step-2-prepare-model)
 2. Bundle the `.pte` and `tokenizer.model` file into your app
+
+We now support models quantized using SpinQuant and QAT-LoRA which offer a significant performance boost (demo app on iPhone 13 Pro):
+
+
+| Llama 3.2 1B | Tokens / Second (total) |  | Time-to-First-Token (sec) |  |
+| :---- | :---- | :---- | :---- | :---- |
+|  | Haiku | Paragraph | Haiku | Paragraph |
+| BF16 | 2.2 | 2.5 | 2.3 | 1.9 |
+| QAT+LoRA | 7.1 | 3.3 | 0.37 | 0.24 |
+| SpinQuant | 10.1 | 5.2 | 0.2 | 0.2 |
+
 
 ## Using LocalInference
 
