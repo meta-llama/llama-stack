@@ -41,6 +41,10 @@ export LLAMA_CHECKPOINT_DIR=~/.llama
 > [!NOTE]
 > `~/.llama` should be the path containing downloaded weights of Llama models.
 
+To download llama models, use
+```
+llama download --model-id Llama3.1-8B-Instruct
+```
 
 To download and start running a pre-built docker container, you may use the following commands:
 
