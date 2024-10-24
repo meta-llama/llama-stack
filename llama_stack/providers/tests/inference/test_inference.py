@@ -185,33 +185,30 @@ async def test_completions_structured_output(inference_settings):
             "Other inference providers don't support structured output in completions yet"
         )
 
-        class Animals(BaseModel):
-            location: str
-            activity: str
-            animals_seen: conint(ge=1, le=5)  # Constrained integer type
-            animals: List[str]
+    class Output(BaseModel):
+        name: str
+        year_born: str
+        year_retired: str
 
-        user_input = "I saw a puppy a cat and a raccoon during my bike ride in the park"
-        response = await inference_impl.completion(
-            content=f"convert to JSON: 'f{user_input}'. please use the following schema: {Animals.schema()}",
-            stream=False,
-            model=params["model"],
-            sampling_params=SamplingParams(
-                max_tokens=50,
-            ),
-            response_format=JsonResponseFormat(
-                schema=Animals.model_json_schema(),
-            ),
-            **inference_settings["common_params"],
-        )
-        assert isinstance(response, CompletionResponse)
-        assert isinstance(response.completion_message.content, str)
+    user_input = "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003."
+    response = await inference_impl.completion(
+        content=f"input: '{user_input}'. the schema for json: {Output.schema()}, the json is: ",
+        stream=False,
+        model=params["model"],
+        sampling_params=SamplingParams(
+            max_tokens=50,
+        ),
+        response_format=JsonResponseFormat(
+            schema=Output.model_json_schema(),
+        ),
+    )
+    assert isinstance(response, CompletionResponse)
+    assert isinstance(response.content, str)
 
-        answer = Animals.parse_raw(response.completion_message.content)
-        assert answer.activity == "bike ride"
-        assert answer.animals == ["puppy", "cat", "raccoon"]
-        assert answer.animals_seen == 3
-        assert answer.location == "park"
+    answer = Output.parse_raw(response.content)
+    assert "Michael Jordan" in answer.name
+    assert answer.year_born == "1963"
+    assert answer.year_retired == "2003"
 
 
 @pytest.mark.asyncio

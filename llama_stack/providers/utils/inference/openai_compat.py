@@ -64,7 +64,18 @@ def process_completion_response(
     response: OpenAICompatCompletionResponse, formatter: ChatFormat
 ) -> CompletionResponse:
     choice = response.choices[0]
-
+    # drop suffix <eot_id> if present and return stop reason as end of turn
+    if choice.text.endswith("<|eot_id|>"):
+        return CompletionResponse(
+            stop_reason=StopReason.end_of_turn,
+            content=choice.text[: -len("<|eot_id|>")],
+        )
+    # drop suffix <eom_id> if present and return stop reason as end of message
+    if choice.text.endswith("<|eom_id|>"):
+        return CompletionResponse(
+            stop_reason=StopReason.end_of_message,
+            content=choice.text[: -len("<|eom_id|>")],
+        )
     return CompletionResponse(
         stop_reason=get_stop_reason(choice.finish_reason),
         content=choice.text,

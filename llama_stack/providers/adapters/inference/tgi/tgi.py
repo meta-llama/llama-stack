@@ -82,6 +82,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             model=model,
             content=content,
             sampling_params=sampling_params,
+            response_format=response_format,
             stream=stream,
             logprobs=logprobs,
         )
