@@ -47,7 +47,9 @@ class FaissIndex(EmbeddingIndex):
 
         self.index.add(np.array(embeddings).astype(np.float32))
 
-    async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float
+    ) -> QueryDocumentsResponse:
         distances, indices = self.index.search(
             embedding.reshape(1, -1).astype(np.float32), k
         )
