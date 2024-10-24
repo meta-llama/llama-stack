@@ -18,4 +18,3 @@ class Job(BaseModel):
 class JobStatus(Enum):
     completed = "completed"
     in_progress = "in_progress"
-    not_found = "not_found"

@@ -73,6 +73,8 @@ class MetaReferenceEvalImpl(Eval):
             scoring_functions=scoring_functions,
         )
 
+        # TODO: currently needs to wait for generation before returning
+        # need job scheduler queue (ray/celery) w/ jobs api
         job_id = str(len(self.jobs))
         self.jobs[job_id] = res
         return Job(job_id=job_id)
@@ -99,6 +101,7 @@ class MetaReferenceEvalImpl(Eval):
             response = await self.inference_api.chat_completion(
                 model=candidate.model,
                 messages=messages,
+                sampling_params=candidate.sampling_params,
             )
             generations.append(
                 {"generated_answer": response.completion_message.content}
@@ -116,18 +119,16 @@ class MetaReferenceEvalImpl(Eval):
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, job_id: str) -> JobStatus:
+    async def job_status(self, job_id: str) -> Optional[JobStatus]:
         if job_id in self.jobs:
             return JobStatus.completed
-        else:
-            return JobStatus.not_found
 
     async def job_cancel(self, job_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
-    async def job_result(self, job_id: str) -> None:
+    async def job_result(self, job_id: str) -> EvaluateResponse:
         status = await self.job_status(job_id)
-        if status != JobStatus.completed:
+        if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 
         return self.jobs[job_id]

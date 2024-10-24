@@ -70,7 +70,7 @@ async def test_eval(eval_settings):
     assert response.job_id == "0"
     job_status = await eval_impl.job_status(response.job_id)
 
-    assert job_status.value == "completed"
+    assert job_status and job_status.value == "completed"
 
     eval_response = await eval_impl.job_result(response.job_id)
 
