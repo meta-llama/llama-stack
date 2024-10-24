@@ -25,6 +25,7 @@ class LogProbConfig(BaseModel):
 class QuantizationType(Enum):
     bf16 = "bf16"
     fp8 = "fp8"
+    int4 = "int4"
 
 
 @json_schema_type
@@ -37,8 +38,14 @@ class Bf16QuantizationConfig(BaseModel):
     type: Literal[QuantizationType.bf16.value] = QuantizationType.bf16.value
 
 
+@json_schema_type
+class Int4QuantizationConfig(BaseModel):
+    type: Literal[QuantizationType.int4.value] = QuantizationType.int4.value
+    scheme: Optional[str] = None
+
+
 QuantizationConfig = Annotated[
-    Union[Bf16QuantizationConfig, Fp8QuantizationConfig],
+    Union[Bf16QuantizationConfig, Fp8QuantizationConfig, Int4QuantizationConfig],
     Field(discriminator="type"),
 ]
 
@@ -219,8 +226,6 @@ class Inference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
 
-    # This method is not `async def` because it can result in either an
-    # `AsyncGenerator` or a `ChatCompletionResponse` depending on the value of `stream`.
     @webmethod(route="/inference/chat_completion")
     async def chat_completion(
         self,

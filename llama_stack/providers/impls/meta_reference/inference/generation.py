@@ -30,7 +30,6 @@ from llama_models.llama3.reference_impl.multimodal.model import (
     CrossAttentionTransformer,
 )
 from llama_models.sku_list import resolve_model
-
 from pydantic import BaseModel
 from termcolor import cprint
 
@@ -43,7 +42,12 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
 )
 
-from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
+from .config import (
+    Fp8QuantizationConfig,
+    Int4QuantizationConfig,
+    MetaReferenceInferenceConfig,
+    MetaReferenceQuantizedInferenceConfig,
+)
 
 
 def model_checkpoint_dir(model) -> str:
@@ -131,18 +135,34 @@ class Llama:
         ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
 
         if isinstance(config, MetaReferenceQuantizedInferenceConfig):
-            from .quantization.loader import convert_to_quantized_model
 
-            # load on CPU in bf16 so that fp8 conversion does not find an
-            # unexpected (fp32, e.g.) datatype
-            torch.set_default_tensor_type(torch.BFloat16Tensor)
-            if model_args.vision_chunk_size > 0:
-                model = CrossAttentionTransformer(model_args)
-                model.setup_cache(model_args.max_batch_size, torch.bfloat16)
-            else:
+            if isinstance(config.quantization, Fp8QuantizationConfig):
+                from .quantization.loader import convert_to_fp8_quantized_model
+
+                # load on CPU in bf16 so that fp8 conversion does not find an
+                # unexpected (fp32, e.g.) datatype
+                torch.set_default_tensor_type(torch.BFloat16Tensor)
+                if model_args.vision_chunk_size > 0:
+                    model = CrossAttentionTransformer(model_args)
+                    model.setup_cache(model_args.max_batch_size, torch.bfloat16)
+                else:
+                    model = Transformer(model_args)
+                model.load_state_dict(state_dict, strict=False)
+                model = convert_to_fp8_quantized_model(model, config, ckpt_dir)
+            elif isinstance(config.quantization, Int4QuantizationConfig):
+                from .quantization.loader import convert_to_int4_quantized_model
+
+                assert (
+                    config.quantization.scheme is not None
+                ), "Please specify a quantization scheme."
+
                 model = Transformer(model_args)
-            model.load_state_dict(state_dict, strict=False)
-            model = convert_to_quantized_model(model, config, ckpt_dir)
+                model = convert_to_int4_quantized_model(model, model_args, config)
+                model.load_state_dict(state_dict, strict=True)
+            else:
+                raise NotImplementedError(
+                    "Currently int4 and fp8 are the only supported quantization methods."
+                )
         else:
             if torch.cuda.is_bf16_supported():
                 torch.set_default_tensor_type(torch.cuda.BFloat16Tensor)

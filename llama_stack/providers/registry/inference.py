@@ -37,6 +37,7 @@ def available_providers() -> List[ProviderSpec]:
                 META_REFERENCE_DEPS
                 + [
                     "fbgemm-gpu",
+                    "torchao==0.5.0",
                 ]
             ),
             module="llama_stack.providers.impls.meta_reference.inference",
