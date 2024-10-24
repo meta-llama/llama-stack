@@ -41,7 +41,7 @@ class Bf16QuantizationConfig(BaseModel):
 @json_schema_type
 class Int4QuantizationConfig(BaseModel):
     type: Literal[QuantizationType.int4.value] = QuantizationType.int4.value
-    scheme: Optional[str] = None
+    scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
 
 
 QuantizationConfig = Annotated[
