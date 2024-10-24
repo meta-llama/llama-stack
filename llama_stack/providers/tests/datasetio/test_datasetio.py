@@ -62,17 +62,22 @@ def data_url_from_file(file_path: str) -> str:
 
 
 async def register_dataset(
-    datasets_impl: Datasets, include_generated_answer=True, dataset_id="test_dataset"
+    datasets_impl: Datasets, for_generation=False, dataset_id="test_dataset"
 ):
     test_file = Path(os.path.abspath(__file__)).parent / "test_dataset.csv"
     test_url = data_url_from_file(str(test_file))
 
-    dataset_schema = {
-        "expected_answer": StringType(),
-        "input_query": StringType(),
-    }
-    if include_generated_answer:
-        dataset_schema["generated_answer"] = StringType()
+    if for_generation:
+        dataset_schema = {
+            "expected_answer": StringType(),
+            "chat_completion_input": ChatCompletionInputType(),
+        }
+    else:
+        dataset_schema = {
+            "expected_answer": StringType(),
+            "input_query": StringType(),
+            "generated_answer": StringType(),
+        }
 
     dataset = DatasetDefWithProvider(
         identifier=dataset_id,

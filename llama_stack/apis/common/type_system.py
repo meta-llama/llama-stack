@@ -46,6 +46,21 @@ class CustomType(BaseModel):
     validator_class: str
 
 
+class ChatCompletionInputType(BaseModel):
+    # expects List[Message] for messages
+    type: Literal["chat_completion_input"] = "chat_completion_input"
+
+
+class CompletionInputType(BaseModel):
+    # expects InterleavedTextMedia for content
+    type: Literal["completion_input"] = "completion_input"
+
+
+class AgentTurnInputType(BaseModel):
+    # expects List[Message] for messages (may also include attachments?)
+    type: Literal["agent_turn_input"] = "agent_turn_input"
+
+
 ParamType = Annotated[
     Union[
         StringType,
@@ -56,6 +71,9 @@ ParamType = Annotated[
         JsonType,
         UnionType,
         CustomType,
+        ChatCompletionInputType,
+        CompletionInputType,
+        AgentTurnInputType,
     ],
     Field(discriminator="type"),
 ]

@@ -51,7 +51,7 @@ async def test_eval(eval_settings):
     datasets_impl = eval_settings["datasets_impl"]
     await register_dataset(
         datasets_impl,
-        include_generated_answer=False,
+        for_generation=True,
         dataset_id="test_dataset_for_eval",
     )
 
