@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
+
 from typing import AsyncGenerator, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
@@ -44,13 +46,54 @@ def get_sampling_options(request: ChatCompletionRequest) -> dict:
 
 def text_from_choice(choice) -> str:
     if hasattr(choice, "delta") and choice.delta:
-        return choice.delta.content
+        return choice.delta.content or ""
 
-    return choice.text
+    if hasattr(choice, "message") and choice.message:
+        return choice.message.content or ""
+
+    if hasattr(choice, "text"):
+        return choice.text or ""
+
+    return ""
 
 
-def get_stop_reason(finish_reason: str) -> StopReason:
-    if finish_reason in ["stop", "eos"]:
+def tool_calls_from_choice(choice) -> List[ToolCall]:
+    tool_calls = []
+
+    if choice.message and choice.message.tool_calls:
+        for tool_call in choice.message.tool_calls:
+            tool_calls.append(
+                ToolCall(
+                    call_id=tool_call.id,
+                    tool_name=tool_call.function.name,
+                    arguments=json.loads(tool_call.function.arguments),
+                )
+            )
+
+    return tool_calls
+
+
+def tool_call_deltas_from_choice(choice) -> List[ToolCallDelta]:
+    tool_call_deltas = []
+
+    if choice.delta and choice.delta.tool_calls:
+        for tool_call in choice.delta.tool_calls:
+            tool_call_deltas.append(
+                ToolCallDelta(
+                    content=ToolCall(
+                        call_id=tool_call.id,
+                        tool_name=tool_call.function.name,
+                        arguments=json.loads(tool_call.function.arguments),
+                    ),
+                    parse_status=ToolCallParseStatus.in_progress,
+                )
+            )
+
+    return tool_call_deltas
+
+
+def get_stop_reason(finish_reason: str) -> StopReason:  
+    if finish_reason in ["stop", "eos", "tool_calls"]:
         return StopReason.end_of_turn
     elif finish_reason == "eom":
         return StopReason.end_of_message
@@ -79,6 +122,10 @@ def process_chat_completion_response(
     completion_message = formatter.decode_assistant_message_from_content(
         text_from_choice(choice), get_stop_reason(choice.finish_reason)
     )
+
+    # According to the OpenAI spec, tool calls are embedded as a field in the response object.
+    completion_message.tool_calls += tool_calls_from_choice(choice)
+
     return ChatCompletionResponse(
         completion_message=completion_message,
         logprobs=None,
@@ -141,7 +188,12 @@ async def process_chat_completion_stream_response(
         finish_reason = choice.finish_reason
 
         if finish_reason:
-            if stop_reason is None and finish_reason in ["stop", "eos", "eos_token"]:
+            if stop_reason is None and finish_reason in [
+                "stop",
+                "eos",
+                "eos_token",
+                "tool_calls",
+            ]:
                 stop_reason = StopReason.end_of_turn
             elif stop_reason is None and finish_reason == "length":
                 stop_reason = StopReason.out_of_tokens
@@ -172,8 +224,18 @@ async def process_chat_completion_stream_response(
             text = ""
             continue
 
-        if ipython:
-            buffer += text
+        buffer += text
+        if tool_call_deltas := tool_call_deltas_from_choice(choice):
+            for delta in tool_call_deltas:
+                yield ChatCompletionResponseStreamChunk(
+                    event=ChatCompletionResponseEvent(
+                        event_type=ChatCompletionResponseEventType.progress,
+                        delta=delta,
+                        stop_reason=stop_reason,
+                    )
+                )
+
+        elif ipython:
             delta = ToolCallDelta(
                 content=text,
                 parse_status=ToolCallParseStatus.in_progress,
@@ -187,7 +249,6 @@ async def process_chat_completion_stream_response(
                 )
             )
         else:
-            buffer += text
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
@@ -198,6 +259,7 @@ async def process_chat_completion_stream_response(
 
     # parse tool calls and report errors
     message = formatter.decode_assistant_message_from_content(buffer, stop_reason)
+
     parsed_tool_calls = len(message.tool_calls) > 0
     if ipython and not parsed_tool_calls:
         yield ChatCompletionResponseStreamChunk(
