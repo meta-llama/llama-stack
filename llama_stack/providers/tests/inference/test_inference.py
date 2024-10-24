@@ -206,7 +206,7 @@ async def test_completions_structured_output(inference_settings):
     assert isinstance(response.content, str)
 
     answer = Output.parse_raw(response.content)
-    assert "Michael Jordan" in answer.name
+    assert answer.name == "Michael Jordan"
     assert answer.year_born == "1963"
     assert answer.year_retired == "2003"
 
