@@ -84,4 +84,14 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.adapters.memory.qdrant.QdrantConfig",
             ),
         ),
+        remote_provider_spec(
+            Api.memory,
+            AdapterSpec(
+                adapter_type="pinecone",
+                pip_packages=EMBEDDING_DEPS + ["pinecone"],
+                module="llama_stack.providers.adapters.memory.pinecone",
+                config_class="llama_stack.providers.adapters.memory.pinecone.PineconeConfig",
+                provider_data_validator="llama_stack.providers.adapters.memory.pinecone.PineconeRequestProviderData",
+            ),
+        ),
     ]
