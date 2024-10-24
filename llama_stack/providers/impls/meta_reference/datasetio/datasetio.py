@@ -138,7 +138,7 @@ class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         if page_token and not page_token.isnumeric():
             raise ValueError("Invalid page_token")
 
-        if page_token is None:
+        if page_token is None or len(page_token) == 0:
             next_page_token = 0
         else:
             next_page_token = int(page_token)
