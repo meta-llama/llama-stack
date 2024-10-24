@@ -116,7 +116,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
         if prompt.startswith("<|begin_of_text|>"):
             prompt = prompt[len("<|begin_of_text|>") :]
 
-        options = get_sampling_options(request)
+        options = get_sampling_options(request.sampling_params)
         options.setdefault("max_tokens", 512)
 
         if fmt := request.response_format:

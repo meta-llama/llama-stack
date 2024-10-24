@@ -29,9 +29,9 @@ class OpenAICompatCompletionResponse(BaseModel):
     choices: List[OpenAICompatCompletionChoice]
 
 
-def get_sampling_options(request: ChatCompletionRequest) -> dict:
+def get_sampling_options(params: SamplingParams) -> dict:
     options = {}
-    if params := request.sampling_params:
+    if params:
         for attr in {"temperature", "top_p", "top_k", "max_tokens"}:
             if getattr(params, attr):
                 options[attr] = getattr(params, attr)

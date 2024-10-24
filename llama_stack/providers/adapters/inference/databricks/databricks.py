@@ -116,7 +116,7 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
             "model": self.map_to_provider_model(request.model),
             "prompt": chat_completion_request_to_prompt(request, self.formatter),
             "stream": request.stream,
-            **get_sampling_options(request),
+            **get_sampling_options(request.sampling_params),
         }
 
     async def embeddings(

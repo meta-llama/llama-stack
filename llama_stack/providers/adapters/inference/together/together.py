@@ -131,7 +131,7 @@ class TogetherInferenceAdapter(
             yield chunk
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
-        options = get_sampling_options(request)
+        options = get_sampling_options(request.sampling_params)
         if fmt := request.response_format:
             if fmt.type == ResponseFormatType.json_schema.value:
                 options["response_format"] = {
