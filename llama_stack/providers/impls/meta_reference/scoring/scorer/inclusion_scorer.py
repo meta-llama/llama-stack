@@ -17,7 +17,7 @@ class InclusionScorer(BaseScorer):
     A scorer that assigns a score of 1.0 if the expected string is included in the generated string, and 0.0 otherwise.
     """
 
-    scoring_function_def = DeterministicFunctionDef(
+    scoring_function_def = ScoringFunctionDef(
         identifier="inclusion",
         description="Returns 1.0 if the expected is included in generated, 0.0 otherwise.",
         parameters=[],
