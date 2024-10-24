@@ -59,11 +59,11 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         for required_column in ["generated_answer", "expected_answer", "input_query"]:
             if required_column not in dataset_def.dataset_schema:
                 raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column. Please make sure '{required_column}' column is in the dataset."
+                    f"Dataset {dataset_id} does not have a '{required_column}' column."
                 )
             if dataset_def.dataset_schema[required_column].type != "string":
                 raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'. Please make sure '{required_column}' column is of type 'string'."
+                    f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'."
                 )
 
     async def score_batch(
@@ -73,12 +73,12 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
-        rows_paginated = await self.datasetio_api.get_rows_paginated(
+        all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=-1,
         )
         res = await self.score(
-            input_rows=rows_paginated.rows, scoring_functions=scoring_functions
+            input_rows=all_rows.rows, scoring_functions=scoring_functions
         )
         if save_results_dataset:
             # TODO: persist and register dataset on to server for reading
@@ -94,6 +94,8 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     ) -> ScoreResponse:
         res = {}
         for scoring_fn_id in scoring_functions:
+            if scoring_fn_id not in SCORER_REGISTRY:
+                raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scorer = SCORER_REGISTRY[scoring_fn_id]()
             score_results = scorer.score(input_rows)
             agg_results = scorer.aggregate(score_results)
