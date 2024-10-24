@@ -13,7 +13,15 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 
 
-ScoringResult = Dict[str, Any]
+# mapping of metric to value
+ScoringResultRow = Dict[str, Any]
+
+
+@json_schema_type
+class ScoringResult(BaseModel):
+    score_rows: List[ScoringResultRow]
+    # aggregated metrics to value
+    aggregated_results: Dict[str, Any]
 
 
 @json_schema_type
