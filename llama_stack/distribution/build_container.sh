@@ -97,7 +97,7 @@ if [ -n "$pip_dependencies" ]; then
 fi
 
 if [ -n "$special_pip_deps" ]; then
-  IFS='#' read -ra parts <<< "$special_pip_deps"
+  IFS='#' read -ra parts <<<"$special_pip_deps"
   for part in "${parts[@]}"; do
     add_to_docker "RUN pip install $part"
   done
@@ -127,7 +127,7 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
   mounts="$mounts -v $(readlink -f $LLAMA_MODELS_DIR):$models_mount"
 fi
 
-if command -v selinuxenabled &> /dev/null && selinuxenabled; then
+if command -v selinuxenabled &>/dev/null && selinuxenabled; then
   # Disable SELinux labels -- we don't want to relabel the llama-stack source dir
   DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
 fi
@@ -139,4 +139,4 @@ $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REP
 rm -rf $REPO_CONFIGS_DIR
 set +x
 
-echo "Success! You can run it with: $DOCKER_BINARY $DOCKER_OPTS run -p 5000:5000 $image_name"
+echo "Success!"

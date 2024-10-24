@@ -13,6 +13,7 @@ xcuserdata/
 Package.resolved
 *.pte
 *.ipynb_checkpoints*
+.idea
 .venv/
 .idea
 _build
