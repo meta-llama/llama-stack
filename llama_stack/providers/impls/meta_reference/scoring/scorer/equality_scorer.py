@@ -17,7 +17,7 @@ class EqualityScorer(BaseScorer):
     A scorer that assigns a score of 1.0 if the input string matches the target string, and 0.0 otherwise.
     """
 
-    scoring_function_def = DeterministicFunctionDef(
+    scoring_function_def = ScoringFunctionDef(
         identifier="equality",
         description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
         parameters=[],
