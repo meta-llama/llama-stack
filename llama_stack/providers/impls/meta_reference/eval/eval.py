@@ -96,6 +96,11 @@ class MetaReferenceEvalImpl(Eval):
             )
         generations = []
         for x in input_rows:
+            if "completion_input" in x:
+                raise NotImplementedError(
+                    "Evaluation with completion API has not been implemented"
+                )
+
             input_messages = eval(str(x["chat_completion_input"]))
             input_messages = [UserMessage(**x) for x in input_messages]
             messages = []
