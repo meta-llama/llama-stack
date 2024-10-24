@@ -61,18 +61,12 @@ class PandasDataframeDataset(BaseDataset):
         else:
             return self.df.iloc[idx].to_dict()
 
-    def validate_dataset_schema(self) -> None:
-        if self.df is None:
-            self.load()
-
-        assert self.df is not None, "Dataset loading failed. Please check logs."
-
+    def _validate_dataset_schema(self) -> None:
+        assert self.df is not None, "Dataset not loaded. Please call .load() first"
         # note that we will drop any columns in dataset that are not in the schema
         self.df = self.df[self.dataset_def.dataset_schema.keys()]
-
         # check all columns in dataset schema are present
         assert len(self.df.columns) == len(self.dataset_def.dataset_schema)
-
         # TODO: type checking against column types in dataset schema
 
     def load(self) -> None:
@@ -106,6 +100,7 @@ class PandasDataframeDataset(BaseDataset):
             raise ValueError(f"Unsupported file type: {self.dataset_def.url}")
 
         self.df = df
+        self._validate_dataset_schema()
 
 
 class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
@@ -123,7 +118,6 @@ class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_def: DatasetDef,
     ) -> None:
         dataset_impl = PandasDataframeDataset(dataset_def)
-        dataset_impl.validate_dataset_schema()
         self.dataset_infos[dataset_def.identifier] = DatasetInfo(
             dataset_def=dataset_def,
             dataset_impl=dataset_impl,
