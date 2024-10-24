@@ -103,7 +103,10 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             scorer = SCORER_REGISTRY[scoring_fn_id]()
             score_results = scorer.score(input_rows)
             agg_results = scorer.aggregate(score_results)
-            res[scoring_fn_id] = agg_results
+            res[scoring_fn_id] = ScoringResult(
+                score_rows=score_results,
+                aggregated_results=agg_results,
+            )
 
         return ScoreResponse(
             results=res,

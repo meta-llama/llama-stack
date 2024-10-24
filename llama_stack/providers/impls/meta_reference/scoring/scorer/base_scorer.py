@@ -26,12 +26,12 @@ class BaseScorer(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def score_row(self, input_row: Dict[str, Any]) -> ScoringResult:
+    def score_row(self, input_row: Dict[str, Any]) -> ScoringResultRow:
         raise NotImplementedError()
 
     @abstractmethod
-    def aggregate(self, scoring_results: List[ScoringResult]) -> ScoringResult:
+    def aggregate(self, scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
         raise NotImplementedError()
 
-    def score(self, input_rows: List[Dict[str, Any]]) -> List[ScoringResult]:
+    def score(self, input_rows: List[Dict[str, Any]]) -> List[ScoringResultRow]:
         return [self.score_row(input_row) for input_row in input_rows]

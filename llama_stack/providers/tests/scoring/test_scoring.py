@@ -66,3 +66,4 @@ async def test_scoring_score(scoring_settings):
     )
 
     assert len(response.results) == 1
+    assert "equality" in response.results
