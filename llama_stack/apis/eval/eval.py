@@ -12,7 +12,7 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.schema_utils import json_schema_type, webmethod
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.agents import AgentConfig
-from llama_stack.apis.common.job_types import Job
+from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.scoring import *  # noqa: F403
 
 
@@ -40,7 +40,7 @@ class EvaluateResponse(BaseModel):
     generations: List[Dict[str, Any]]
 
     # each key in the dict is a scoring function name
-    scores: List[Dict[str, ScoringResult]]
+    scores: Dict[str, ScoringResult]
 
 
 class Eval(Protocol):
@@ -61,10 +61,10 @@ class Eval(Protocol):
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/job/status", method="GET")
-    async def job_status(self, job_id: str) -> None: ...
+    async def job_status(self, job_id: str) -> JobStatus: ...
 
     @webmethod(route="/eval/job/cancel", method="POST")
     async def job_cancel(self, job_id: str) -> None: ...
 
     @webmethod(route="/eval/job/result", method="GET")
-    async def job_result(self, job_id: str) -> None: ...
+    async def job_result(self, job_id: str) -> EvaluateResponse: ...

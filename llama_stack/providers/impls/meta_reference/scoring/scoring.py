@@ -16,11 +16,15 @@ from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 from llama_stack.providers.impls.meta_reference.scoring.scorer.equality_scorer import (
     EqualityScorer,
 )
+from llama_stack.providers.impls.meta_reference.scoring.scorer.inclusion_scorer import (
+    InclusionScorer,
+)
 
 from .config import MetaReferenceScoringConfig
 
 SUPPORTED_SCORERS = [
     EqualityScorer,
+    InclusionScorer,
 ]
 
 SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORERS}

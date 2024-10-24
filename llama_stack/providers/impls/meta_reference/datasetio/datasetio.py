@@ -143,11 +143,12 @@ class MetaReferenceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         else:
             next_page_token = int(page_token)
 
-        if rows_in_page == -1:
-            rows = dataset_info.dataset_impl[next_page_token:]
-
         start = next_page_token
-        end = min(start + rows_in_page, len(dataset_info.dataset_impl))
+        if rows_in_page == -1:
+            end = len(dataset_info.dataset_impl)
+        else:
+            end = min(start + rows_in_page, len(dataset_info.dataset_impl))
+
         rows = dataset_info.dataset_impl[start:end]
 
         return PaginatedRowsResult(

@@ -25,6 +25,7 @@ class Api(Enum):
     memory = "memory"
     datasetio = "datasetio"
     scoring = "scoring"
+    eval = "eval"
 
     telemetry = "telemetry"
 
