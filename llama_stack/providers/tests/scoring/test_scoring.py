@@ -10,6 +10,7 @@ from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
+from llama_stack.providers.tests.datasetio.test_datasetio import register_dataset
 from llama_stack.providers.tests.resolver import resolve_impls_for_test
 
 # How to run this test:
@@ -36,14 +37,32 @@ async def scoring_settings():
     return {
         "scoring_impl": impls[Api.scoring],
         "scoring_functions_impl": impls[Api.scoring_functions],
+        "datasets_impl": impls[Api.datasets],
     }
 
 
 @pytest.mark.asyncio
 async def test_scoring_functions_list(scoring_settings):
-    # NOTE: this needs you to ensure that you are starting from a clean state
-    # but so far we don't have an unregister API unfortunately, so be careful
     scoring_functions_impl = scoring_settings["scoring_functions_impl"]
-    response = await scoring_functions_impl.list_scoring_functions()
-    assert isinstance(response, list)
-    assert len(response) == 0
+    scoring_functions = await scoring_functions_impl.list_scoring_functions()
+    assert isinstance(scoring_functions, list)
+    assert len(scoring_functions) > 0
+    function_ids = [f.identifier for f in scoring_functions]
+    assert "equality" in function_ids
+
+
+@pytest.mark.asyncio
+async def test_scoring_score(scoring_settings):
+    scoring_impl = scoring_settings["scoring_impl"]
+    datasets_impl = scoring_settings["datasets_impl"]
+    await register_dataset(datasets_impl)
+
+    response = await datasets_impl.list_datasets()
+    assert len(response) == 1
+
+    response = await scoring_impl.score_batch(
+        dataset_id=response[0].identifier,
+        scoring_functions=["equality"],
+    )
+
+    assert len(response.results) == 1

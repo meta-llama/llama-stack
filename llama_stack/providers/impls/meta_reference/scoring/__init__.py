@@ -14,7 +14,6 @@ async def get_provider_impl(
     config: MetaReferenceScoringConfig,
     deps: Dict[Api, ProviderSpec],
 ):
-    print("get_provider_impl", deps)
     from .scoring import MetaReferenceScoringImpl
 
     impl = MetaReferenceScoringImpl(config, deps[Api.datasetio], deps[Api.datasets])

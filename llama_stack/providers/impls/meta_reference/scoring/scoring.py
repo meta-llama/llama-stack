@@ -12,8 +12,6 @@ from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 
-from termcolor import cprint
-
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 from llama_stack.providers.impls.meta_reference.scoring.scorer.equality_scorer import (
     EqualityScorer,
@@ -38,7 +36,6 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
-        cprint(f"!!! MetaReferenceScoringImpl init {config} {datasets_api}", "red")
 
     async def initialize(self) -> None: ...
 
