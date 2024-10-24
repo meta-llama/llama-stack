@@ -10,6 +10,9 @@ from llama_stack.providers.impls.meta_reference.scoring.scorer.base_scorer impor
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
+from llama_stack.providers.impls.meta_reference.scoring.scorer.common import (
+    aggregate_accuracy,
+)
 
 
 class InclusionScorer(BaseScorer):
@@ -38,12 +41,4 @@ class InclusionScorer(BaseScorer):
         }
 
     def aggregate(self, scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
-        assert len(scoring_results) > 0, "Empty scoring results provided."
-        num_correct = sum(result["score"] for result in scoring_results)
-        avg_score = num_correct / len(scoring_results)
-
-        return {
-            "accuracy": avg_score,
-            "num_correct": num_correct,
-            "num_total": len(scoring_results),
-        }
+        return aggregate_accuracy(scoring_results)
