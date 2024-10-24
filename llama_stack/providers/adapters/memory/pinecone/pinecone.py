@@ -62,7 +62,6 @@ class PineconeIndex(EmbeddingIndex):
         scores = []
         for doc in results["matches"]:
             chunk_json = doc["metadata"]
-            print(f"chunk_json: {chunk_json}")
             try:
                 chunk = Chunk(**chunk_json)
             except Exception:
