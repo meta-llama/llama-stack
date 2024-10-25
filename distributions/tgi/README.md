@@ -88,7 +88,7 @@ inference:
 **Via Conda**
 
 ```bash
-llama stack build --config ./build.yaml
+llama stack build --template tgi --image-type conda
 # -- start a TGI server endpoint
 llama stack run ./gpu/run.yaml
 ```

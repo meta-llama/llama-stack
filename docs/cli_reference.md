@@ -279,11 +279,11 @@ llama stack build --list-templates
 You may then pick a template to build your distribution with providers fitted to your liking.
 
 ```
-llama stack build --template local-tgi --name my-tgi-stack
+llama stack build --template local-tgi --name my-tgi-stack --image-type conda
 ```
 
 ```
-$ llama stack build --template local-tgi --name my-tgi-stack
+$ llama stack build --template local-tgi --name my-tgi-stack --image-type conda
 ...
 ...
 Build spec configuration saved at ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml
@@ -293,10 +293,10 @@ You may now run `llama stack configure my-tgi-stack` or `llama stack configure ~
 #### Building from config file
 - In addition to templates, you may customize the build to your liking through editing config files and build from config files with the following command.
 
-- The config file will be of contents like the ones in `llama_stack/distributions/templates/`.
+- The config file will be of contents like the ones in `llama_stack/templates/`.
 
 ```
-$ cat llama_stack/distribution/templates/local-ollama-build.yaml
+$ cat build.yaml
 
 name: local-ollama
 distribution_spec:
@@ -311,7 +311,7 @@ image_type: conda
 ```
 
 ```
-llama stack build --config llama_stack/distribution/templates/local-ollama-build.yaml
+llama stack build --config build.yaml
 ```
 
 #### How to build distribution with Docker image
