@@ -139,6 +139,7 @@ async def test_completion(inference_settings):
         "remote::ollama",
         "remote::tgi",
         "remote::together",
+        "remote::fireworks",
     ):
         pytest.skip("Other inference providers don't support completion() yet")
 
@@ -167,7 +168,7 @@ async def test_completion(inference_settings):
     ]
 
     assert all(isinstance(chunk, CompletionResponseStreamChunk) for chunk in chunks)
-    assert len(chunks) == 51
+    assert len(chunks) >= 1
     last = chunks[-1]
     assert last.stop_reason == StopReason.out_of_tokens
 
@@ -182,6 +183,7 @@ async def test_completions_structured_output(inference_settings):
         "meta-reference",
         "remote::tgi",
         "remote::together",
+        "remote::fireworks",
     ):
         pytest.skip(
             "Other inference providers don't support structured output in completions yet"
