@@ -13,17 +13,22 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
-from llama_stack.providers.impls.meta_reference.scoring.scorer.equality_scorer import (
-    EqualityScorer,
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.equality_scoring_fn import (
+    EqualityScoringFn,
+)
+
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.subset_of_scoring_fn import (
+    SubsetOfScoringFn,
 )
 
 from .config import MetaReferenceScoringConfig
 
-SUPPORTED_SCORERS = [
-    EqualityScorer,
+SUPPORTED_SCORING_FNS = [
+    EqualityScoringFn,
+    SubsetOfScoringFn,
 ]
 
-SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORERS}
+SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORING_FNS}
 
 
 class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
@@ -41,10 +46,10 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
     async def shutdown(self) -> None: ...
 
-    async def list_scoring_functions(self) -> List[ScoringFunctionDef]:
-        return [x.scoring_function_def for x in SUPPORTED_SCORERS]
+    async def list_scoring_functions(self) -> List[ScoringFnDef]:
+        return [x.scoring_function_def for x in SUPPORTED_SCORING_FNS]
 
-    async def register_scoring_function(self, function_def: ScoringFunctionDef) -> None:
+    async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
         raise NotImplementedError(
             "Dynamically registering scoring functions is not supported"
         )
@@ -96,9 +101,9 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         for scoring_fn_id in scoring_functions:
             if scoring_fn_id not in SCORER_REGISTRY:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
-            scorer = SCORER_REGISTRY[scoring_fn_id]()
-            score_results = scorer.score(input_rows)
-            agg_results = scorer.aggregate(score_results)
+            scoring_fn = SCORER_REGISTRY[scoring_fn_id]()
+            score_results = scoring_fn.score(input_rows)
+            agg_results = scoring_fn.aggregate(score_results)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,

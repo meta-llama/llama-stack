@@ -1,6 +1,19 @@
 components:
   responses: {}
   schemas:
+    AgentCandidate:
+      additionalProperties: false
+      properties:
+        config:
+          $ref: '#/components/schemas/AgentConfig'
+        type:
+          const: agent
+          default: agent
+          type: string
+      required:
+      - type
+      - config
+      type: object
     AgentConfig:
       additionalProperties: false
       properties:
@@ -315,14 +328,6 @@ components:
       - photogen
       - code_interpreter
       type: string
-    CancelEvaluationJobRequest:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      type: object
     CancelTrainingJobRequest:
       additionalProperties: false
       properties:
@@ -351,6 +356,48 @@ components:
           type: array
         model:
           type: string
+        response_format:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              schema:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              type:
+                const: json_schema
+                default: json_schema
+                type: string
+            required:
+            - type
+            - schema
+            type: object
+          - additionalProperties: false
+            properties:
+              bnf:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              type:
+                const: grammar
+                default: grammar
+                type: string
+            required:
+            - type
+            - bnf
+            type: object
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -490,6 +537,48 @@ components:
           type: object
         model:
           type: string
+        response_format:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              schema:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              type:
+                const: json_schema
+                default: json_schema
+                type: string
+            required:
+            - type
+            - schema
+            type: object
+          - additionalProperties: false
+            properties:
+              bnf:
+                additionalProperties:
+                  oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+                type: object
+              type:
+                const: grammar
+                default: grammar
+                type: string
+            required:
+            - type
+            - bnf
+            type: object
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -572,17 +661,6 @@ components:
       - session_id
       - messages
       type: object
-    CreateDatasetRequest:
-      additionalProperties: false
-      properties:
-        dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
-        uuid:
-          type: string
-      required:
-      - uuid
-      - dataset
-      type: object
     DPOAlignmentConfig:
       additionalProperties: false
       properties:
@@ -599,6 +677,138 @@ components:
       - reward_clip
       - epsilon
       - gamma
+      type: object
+    DatasetDefWithProvider:
+      additionalProperties: false
+      properties:
+        dataset_schema:
+          additionalProperties:
+            oneOf:
+            - additionalProperties: false
+              properties:
+                type:
+                  const: string
+                  default: string
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: number
+                  default: number
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: boolean
+                  default: boolean
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: array
+                  default: array
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: object
+                  default: object
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: json
+                  default: json
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: union
+                  default: union
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: custom
+                  default: custom
+                  type: string
+                validator_class:
+                  type: string
+              required:
+              - type
+              - validator_class
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: chat_completion_input
+                  default: chat_completion_input
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: completion_input
+                  default: completion_input
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: agent_turn_input
+                  default: agent_turn_input
+                  type: string
+              required:
+              - type
+              type: object
+          type: object
+        identifier:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        url:
+          $ref: '#/components/schemas/URL'
+      required:
+      - identifier
+      - dataset_schema
+      - url
+      - metadata
+      - provider_id
       type: object
     DeleteAgentsRequest:
       additionalProperties: false
@@ -618,37 +828,6 @@ components:
       required:
       - agent_id
       - session_id
-      type: object
-    DeleteDatasetRequest:
-      additionalProperties: false
-      properties:
-        dataset_uuid:
-          type: string
-      required:
-      - dataset_uuid
-      type: object
-    DialogGenerations:
-      additionalProperties: false
-      properties:
-        dialog:
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
-          type: array
-        sampled_generations:
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
-          type: array
-      required:
-      - dialog
-      - sampled_generations
       type: object
     DoraFinetuningConfig:
       additionalProperties: false
@@ -704,78 +883,74 @@ components:
       required:
       - embeddings
       type: object
-    EvaluateQuestionAnsweringRequest:
+    EvaluateBatchRequest:
       additionalProperties: false
       properties:
-        metrics:
+        candidate:
+          oneOf:
+          - $ref: '#/components/schemas/ModelCandidate'
+          - $ref: '#/components/schemas/AgentCandidate'
+        dataset_id:
+          type: string
+        scoring_functions:
           items:
-            enum:
-            - em
-            - f1
             type: string
           type: array
       required:
-      - metrics
+      - dataset_id
+      - candidate
+      - scoring_functions
       type: object
-    EvaluateSummarizationRequest:
+    EvaluateRequest:
       additionalProperties: false
       properties:
-        metrics:
+        candidate:
+          oneOf:
+          - $ref: '#/components/schemas/ModelCandidate'
+          - $ref: '#/components/schemas/AgentCandidate'
+        input_rows:
           items:
-            enum:
-            - rouge
-            - bleu
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type: array
+        scoring_functions:
+          items:
             type: string
           type: array
       required:
-      - metrics
+      - input_rows
+      - candidate
+      - scoring_functions
       type: object
-    EvaluateTextGenerationRequest:
+    EvaluateResponse:
       additionalProperties: false
       properties:
-        metrics:
+        generations:
           items:
-            enum:
-            - perplexity
-            - rouge
-            - bleu
-            type: string
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
           type: array
+        scores:
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          type: object
       required:
-      - metrics
-      type: object
-    EvaluationJob:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      type: object
-    EvaluationJobArtifactsResponse:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      title: Artifacts of a evaluation job.
-      type: object
-    EvaluationJobLogStream:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
-      type: object
-    EvaluationJobStatusResponse:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-      required:
-      - job_uuid
+      - generations
+      - scores
       type: object
     FinetuningAlgorithm:
       enum:
@@ -905,6 +1080,27 @@ components:
       - bank_id
       - documents
       type: object
+    Job:
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+      required:
+      - job_id
+      type: object
+    JobCancelRequest:
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+      required:
+      - job_id
+      type: object
+    JobStatus:
+      enum:
+      - completed
+      - in_progress
+      type: string
     KeyValueMemoryBankDef:
       additionalProperties: false
       properties:
@@ -1220,6 +1416,24 @@ components:
       - value
       - unit
       type: object
+    ModelCandidate:
+      additionalProperties: false
+      properties:
+        model:
+          type: string
+        sampling_params:
+          $ref: '#/components/schemas/SamplingParams'
+        system_message:
+          $ref: '#/components/schemas/SystemMessage'
+        type:
+          const: model
+          default: model
+          type: string
+      required:
+      - type
+      - model
+      - sampling_params
+      type: object
     ModelDefWithProvider:
       additionalProperties: false
       properties:
@@ -1265,6 +1479,144 @@ components:
       - lr
       - lr_min
       - weight_decay
+      type: object
+    PaginatedRowsResult:
+      additionalProperties: false
+      properties:
+        next_page_token:
+          type: string
+        rows:
+          items:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type: array
+        total_count:
+          type: integer
+      required:
+      - rows
+      - total_count
+      type: object
+    Parameter:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        type:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              type:
+                const: string
+                default: string
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: number
+                default: number
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: boolean
+                default: boolean
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: array
+                default: array
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: object
+                default: object
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: json
+                default: json
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: union
+                default: union
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: custom
+                default: custom
+                type: string
+              validator_class:
+                type: string
+            required:
+            - type
+            - validator_class
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: chat_completion_input
+                default: chat_completion_input
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: completion_input
+                default: completion_input
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: agent_turn_input
+                default: agent_turn_input
+                type: string
+            required:
+            - type
+            type: object
+      required:
+      - name
+      - type
       type: object
     PhotogenToolDefinition:
       additionalProperties: false
@@ -1373,7 +1725,7 @@ components:
         algorithm_config:
           $ref: '#/components/schemas/DPOAlignmentConfig'
         dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
+          type: string
         finetuned_model:
           $ref: '#/components/schemas/URL'
         hyperparam_search_config:
@@ -1403,7 +1755,7 @@ components:
         training_config:
           $ref: '#/components/schemas/TrainingConfig'
         validation_dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
+          type: string
       required:
       - job_uuid
       - finetuned_model
@@ -1515,6 +1867,14 @@ components:
       enum:
       - dpo
       type: string
+    RegisterDatasetRequest:
+      additionalProperties: false
+      properties:
+        dataset_def:
+          $ref: '#/components/schemas/DatasetDefWithProvider'
+      required:
+      - dataset_def
+      type: object
     RegisterMemoryBankRequest:
       additionalProperties: false
       properties:
@@ -1534,6 +1894,14 @@ components:
           $ref: '#/components/schemas/ModelDefWithProvider'
       required:
       - model
+      type: object
+    RegisterScoringFunctionRequest:
+      additionalProperties: false
+      properties:
+        function_def:
+          $ref: '#/components/schemas/ScoringFunctionDefWithProvider'
+      required:
+      - function_def
       type: object
     RegisterShieldRequest:
       additionalProperties: false
@@ -1591,31 +1959,6 @@ components:
       - PUT
       - DELETE
       type: string
-    RewardScoreRequest:
-      additionalProperties: false
-      properties:
-        dialog_generations:
-          items:
-            $ref: '#/components/schemas/DialogGenerations'
-          type: array
-        model:
-          type: string
-      required:
-      - dialog_generations
-      - model
-      type: object
-    RewardScoringResponse:
-      additionalProperties: false
-      properties:
-        scored_generations:
-          items:
-            $ref: '#/components/schemas/ScoredDialogGenerations'
-          type: array
-      required:
-      - scored_generations
-      title: Response from the reward scoring. Batch of (prompt, response, score)
-        tuples that pass the threshold.
-      type: object
     RouteInfo:
       additionalProperties: false
       properties:
@@ -1717,39 +2060,239 @@ components:
       - top_p
       - top_k
       type: string
-    ScoredDialogGenerations:
+    ScoreBatchRequest:
       additionalProperties: false
       properties:
-        dialog:
+        dataset_id:
+          type: string
+        save_results_dataset:
+          type: boolean
+        scoring_functions:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
-          type: array
-        scored_generations:
-          items:
-            $ref: '#/components/schemas/ScoredMessage'
+            type: string
           type: array
       required:
-      - dialog
-      - scored_generations
+      - dataset_id
+      - scoring_functions
+      - save_results_dataset
       type: object
-    ScoredMessage:
+    ScoreBatchResponse:
       additionalProperties: false
       properties:
-        message:
-          oneOf:
-          - $ref: '#/components/schemas/UserMessage'
-          - $ref: '#/components/schemas/SystemMessage'
-          - $ref: '#/components/schemas/ToolResponseMessage'
-          - $ref: '#/components/schemas/CompletionMessage'
-        score:
-          type: number
+        dataset_id:
+          type: string
+        results:
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          type: object
       required:
-      - message
-      - score
+      - results
+      type: object
+    ScoreRequest:
+      additionalProperties: false
+      properties:
+        input_rows:
+          items:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type: array
+        scoring_functions:
+          items:
+            type: string
+          type: array
+      required:
+      - input_rows
+      - scoring_functions
+      type: object
+    ScoreResponse:
+      additionalProperties: false
+      properties:
+        results:
+          additionalProperties:
+            $ref: '#/components/schemas/ScoringResult'
+          type: object
+      required:
+      - results
+      type: object
+    ScoringFunctionDefWithProvider:
+      additionalProperties: false
+      properties:
+        context:
+          additionalProperties: false
+          properties:
+            judge_model:
+              type: string
+            prompt_template:
+              type: string
+          required:
+          - judge_model
+          type: object
+        description:
+          type: string
+        identifier:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        parameters:
+          items:
+            $ref: '#/components/schemas/Parameter'
+          type: array
+        provider_id:
+          type: string
+        return_type:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              type:
+                const: string
+                default: string
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: number
+                default: number
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: boolean
+                default: boolean
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: array
+                default: array
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: object
+                default: object
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: json
+                default: json
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: union
+                default: union
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: custom
+                default: custom
+                type: string
+              validator_class:
+                type: string
+            required:
+            - type
+            - validator_class
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: chat_completion_input
+                default: chat_completion_input
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: completion_input
+                default: completion_input
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: agent_turn_input
+                default: agent_turn_input
+                type: string
+            required:
+            - type
+            type: object
+      required:
+      - identifier
+      - metadata
+      - parameters
+      - return_type
+      - provider_id
+      type: object
+    ScoringResult:
+      additionalProperties: false
+      properties:
+        aggregated_results:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        score_rows:
+          items:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type: array
+      required:
+      - score_rows
+      - aggregated_results
       type: object
     SearchToolDefinition:
       additionalProperties: false
@@ -1942,7 +2485,7 @@ components:
           - $ref: '#/components/schemas/QLoraFinetuningConfig'
           - $ref: '#/components/schemas/DoraFinetuningConfig'
         dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
+          type: string
         hyperparam_search_config:
           additionalProperties:
             oneOf:
@@ -1972,7 +2515,7 @@ components:
         training_config:
           $ref: '#/components/schemas/TrainingConfig'
         validation_dataset:
-          $ref: '#/components/schemas/TrainEvalDataset'
+          type: string
       required:
       - job_uuid
       - model
@@ -2027,7 +2570,15 @@ components:
           type: object
         synthetic_data:
           items:
-            $ref: '#/components/schemas/ScoredDialogGenerations'
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
           type: array
       required:
       - synthetic_data
@@ -2282,38 +2833,6 @@ components:
       - root_span_id
       - start_time
       type: object
-    TrainEvalDataset:
-      additionalProperties: false
-      properties:
-        columns:
-          additionalProperties:
-            $ref: '#/components/schemas/TrainEvalDatasetColumnType'
-          type: object
-        content_url:
-          $ref: '#/components/schemas/URL'
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-      required:
-      - columns
-      - content_url
-      title: Dataset to be used for training or evaluating language models.
-      type: object
-    TrainEvalDatasetColumnType:
-      enum:
-      - dialog
-      - text
-      - media
-      - number
-      - json
-      type: string
     TrainingConfig:
       additionalProperties: false
       properties:
@@ -2510,7 +3029,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-18 20:48:17.730988"
+    \ draft and subject to change.\n                Generated at 2024-10-24 17:40:59.576117"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -2652,6 +3171,11 @@ paths:
         schema:
           type: string
       - in: query
+        name: session_id
+        required: true
+        schema:
+          type: string
+      - in: query
         name: turn_id
         required: true
         schema:
@@ -2707,6 +3231,11 @@ paths:
       parameters:
       - in: query
         name: agent_id
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: session_id
         required: true
         schema:
           type: string
@@ -2781,9 +3310,29 @@ paths:
           description: OK
       tags:
       - BatchInference
-  /datasets/create:
-    post:
+  /datasetio/get_rows_paginated:
+    get:
       parameters:
+      - in: query
+        name: dataset_id
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: rows_in_page
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: page_token
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: filter_condition
+        required: false
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -2791,43 +3340,20 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateDatasetRequest'
-        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRowsResult'
           description: OK
       tags:
-      - Datasets
-  /datasets/delete:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteDatasetRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Datasets
+      - DatasetIO
   /datasets/get:
     get:
       parameters:
       - in: query
-        name: dataset_uuid
+        name: dataset_identifier
         required: true
         schema:
           type: string
@@ -2843,104 +3369,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainEvalDataset'
+                oneOf:
+                - $ref: '#/components/schemas/DatasetDefWithProvider'
+                - type: 'null'
           description: OK
       tags:
       - Datasets
-  /evaluate/job/artifacts:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobArtifactsResponse'
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/job/cancel:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CancelEvaluationJobRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/job/logs:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobLogStream'
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/job/status:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobStatusResponse'
-          description: OK
-      tags:
-      - Evaluations
-  /evaluate/jobs:
+  /datasets/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2955,11 +3390,11 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/EvaluationJob'
+                $ref: '#/components/schemas/DatasetDefWithProvider'
           description: OK
       tags:
-      - Evaluations
-  /evaluate/question_answering/:
+      - Datasets
+  /datasets/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2973,18 +3408,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateQuestionAnsweringRequest'
+              $ref: '#/components/schemas/RegisterDatasetRequest'
         required: true
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJob'
           description: OK
       tags:
-      - Evaluations
-  /evaluate/summarization/:
+      - Datasets
+  /eval/evaluate:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -2998,18 +3429,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateSummarizationRequest'
+              $ref: '#/components/schemas/EvaluateRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJob'
+                $ref: '#/components/schemas/EvaluateResponse'
           description: OK
       tags:
-      - Evaluations
-  /evaluate/text_generation/:
+      - Eval
+  /eval/evaluate_batch:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3023,17 +3454,88 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvaluateTextGenerationRequest'
+              $ref: '#/components/schemas/EvaluateBatchRequest'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJob'
+                $ref: '#/components/schemas/Job'
           description: OK
       tags:
-      - Evaluations
+      - Eval
+  /eval/job/cancel:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCancelRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Eval
+  /eval/job/result:
+    get:
+      parameters:
+      - in: query
+        name: job_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+          description: OK
+      tags:
+      - Eval
+  /eval/job/status:
+    get:
+      parameters:
+      - in: query
+        name: job_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/JobStatus'
+                - type: 'null'
+          description: OK
+      tags:
+      - Eval
   /health:
     get:
       parameters:
@@ -3501,31 +4003,6 @@ paths:
           description: OK
       tags:
       - Inspect
-  /reward_scoring/score:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RewardScoreRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RewardScoringResponse'
-          description: OK
-      tags:
-      - RewardScoring
   /routes/list:
     get:
       parameters:
@@ -3574,6 +4051,122 @@ paths:
           description: OK
       tags:
       - Safety
+  /scoring/score:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+          description: OK
+      tags:
+      - Scoring
+  /scoring/score_batch:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreBatchRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreBatchResponse'
+          description: OK
+      tags:
+      - Scoring
+  /scoring_functions/get:
+    get:
+      parameters:
+      - in: query
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/ScoringFunctionDefWithProvider'
+                - type: 'null'
+          description: OK
+      tags:
+      - ScoringFunctions
+  /scoring_functions/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ScoringFunctionDefWithProvider'
+          description: OK
+      tags:
+      - ScoringFunctions
+  /scoring_functions/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterScoringFunctionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - ScoringFunctions
   /shields/get:
     get:
       parameters:
@@ -3715,21 +4308,23 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Models
-- name: RewardScoring
-- name: MemoryBanks
-- name: Shields
+- name: Eval
+- name: ScoringFunctions
 - name: SyntheticDataGeneration
-- name: Inference
 - name: Inspect
-- name: BatchInference
-- name: Memory
-- name: Datasets
-- name: Agents
 - name: PostTraining
-- name: Telemetry
+- name: Models
 - name: Safety
-- name: Evaluations
+- name: MemoryBanks
+- name: DatasetIO
+- name: Memory
+- name: Scoring
+- name: Shields
+- name: Datasets
+- name: Inference
+- name: Telemetry
+- name: BatchInference
+- name: Agents
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -3785,9 +4380,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/CancelEvaluationJobRequest"
-    />
-  name: CancelEvaluationJobRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
     />
   name: CancelTrainingJobRequest
@@ -3922,43 +4514,35 @@ tags:
   name: Turn
 - description: <SchemaDefinition schemaRef="#/components/schemas/ViolationLevel" />
   name: ViolationLevel
-- description: 'Dataset to be used for training or evaluating language models.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDataset" />'
-  name: TrainEvalDataset
-- description: <SchemaDefinition schemaRef="#/components/schemas/TrainEvalDatasetColumnType"
-    />
-  name: TrainEvalDatasetColumnType
-- description: <SchemaDefinition schemaRef="#/components/schemas/CreateDatasetRequest"
-    />
-  name: CreateDatasetRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
     />
   name: DeleteAgentsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
   name: DeleteAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteDatasetRequest"
-    />
-  name: DeleteDatasetRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsResponse"
     />
   name: EmbeddingsResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateQuestionAnsweringRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentCandidate" />
+  name: AgentCandidate
+- description: <SchemaDefinition schemaRef="#/components/schemas/ModelCandidate" />
+  name: ModelCandidate
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateRequest"
     />
-  name: EvaluateQuestionAnsweringRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJob" />
-  name: EvaluationJob
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateSummarizationRequest"
+  name: EvaluateRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateResponse"
     />
-  name: EvaluateSummarizationRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateTextGenerationRequest"
+  name: EvaluateResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringResult" />
+  name: ScoringResult
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateBatchRequest"
     />
-  name: EvaluateTextGenerationRequest
+  name: EvaluateBatchRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/Job" />
+  name: Job
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetAgentsSessionRequest"
     />
   name: GetAgentsSessionRequest
@@ -3982,21 +4566,20 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
   name: AgentStepResponse
-- description: 'Artifacts of a evaluation job.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobArtifactsResponse"
-    />'
-  name: EvaluationJobArtifactsResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobLogStream"
+- description: <SchemaDefinition schemaRef="#/components/schemas/DatasetDefWithProvider"
     />
-  name: EvaluationJobLogStream
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvaluationJobStatusResponse"
-    />
-  name: EvaluationJobStatusResponse
+  name: DatasetDefWithProvider
 - description: <SchemaDefinition schemaRef="#/components/schemas/ModelDefWithProvider"
     />
   name: ModelDefWithProvider
+- description: <SchemaDefinition schemaRef="#/components/schemas/PaginatedRowsResult"
+    />
+  name: PaginatedRowsResult
+- description: <SchemaDefinition schemaRef="#/components/schemas/Parameter" />
+  name: Parameter
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFunctionDefWithProvider"
+    />
+  name: ScoringFunctionDefWithProvider
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefWithProvider"
     />
   name: ShieldDefWithProvider
@@ -4038,6 +4621,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/InsertDocumentsRequest"
     />
   name: InsertDocumentsRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/JobCancelRequest"
+    />
+  name: JobCancelRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/JobStatus" />
+  name: JobStatus
 - description: <SchemaDefinition schemaRef="#/components/schemas/ProviderInfo" />
   name: ProviderInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/RouteInfo" />
@@ -4081,38 +4669,37 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsResponse"
     />
   name: QueryDocumentsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterDatasetRequest"
+    />
+  name: RegisterDatasetRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterMemoryBankRequest"
     />
   name: RegisterMemoryBankRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterModelRequest"
     />
   name: RegisterModelRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterScoringFunctionRequest"
+    />
+  name: RegisterScoringFunctionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterShieldRequest"
     />
   name: RegisterShieldRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DialogGenerations"
-    />
-  name: DialogGenerations
-- description: <SchemaDefinition schemaRef="#/components/schemas/RewardScoreRequest"
-    />
-  name: RewardScoreRequest
-- description: 'Response from the reward scoring. Batch of (prompt, response, score)
-    tuples that pass the threshold.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/RewardScoringResponse" />'
-  name: RewardScoringResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/ScoredDialogGenerations"
-    />
-  name: ScoredDialogGenerations
-- description: <SchemaDefinition schemaRef="#/components/schemas/ScoredMessage" />
-  name: ScoredMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldRequest"
     />
   name: RunShieldRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RunShieldResponse"
     />
   name: RunShieldResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoreRequest" />
+  name: ScoreRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoreResponse" />
+  name: ScoreResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoreBatchRequest"
+    />
+  name: ScoreBatchRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoreBatchResponse"
+    />
+  name: ScoreBatchResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
     />
   name: DoraFinetuningConfig
@@ -4143,21 +4730,24 @@ x-tagGroups:
   tags:
   - Agents
   - BatchInference
+  - DatasetIO
   - Datasets
-  - Evaluations
+  - Eval
   - Inference
   - Inspect
   - Memory
   - MemoryBanks
   - Models
   - PostTraining
-  - RewardScoring
   - Safety
+  - Scoring
+  - ScoringFunctions
   - Shields
   - SyntheticDataGeneration
   - Telemetry
 - name: Types
   tags:
+  - AgentCandidate
   - AgentConfig
   - AgentCreateResponse
   - AgentSessionCreateResponse
@@ -4175,7 +4765,6 @@ x-tagGroups:
   - BatchCompletionRequest
   - BatchCompletionResponse
   - BuiltinTool
-  - CancelEvaluationJobRequest
   - CancelTrainingJobRequest
   - ChatCompletionRequest
   - ChatCompletionResponse
@@ -4191,22 +4780,16 @@ x-tagGroups:
   - CreateAgentRequest
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
-  - CreateDatasetRequest
   - DPOAlignmentConfig
+  - DatasetDefWithProvider
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
-  - DeleteDatasetRequest
-  - DialogGenerations
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
-  - EvaluateQuestionAnsweringRequest
-  - EvaluateSummarizationRequest
-  - EvaluateTextGenerationRequest
-  - EvaluationJob
-  - EvaluationJobArtifactsResponse
-  - EvaluationJobLogStream
-  - EvaluationJobStatusResponse
+  - EvaluateBatchRequest
+  - EvaluateRequest
+  - EvaluateResponse
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
@@ -4215,6 +4798,9 @@ x-tagGroups:
   - ImageMedia
   - InferenceStep
   - InsertDocumentsRequest
+  - Job
+  - JobCancelRequest
+  - JobStatus
   - KeyValueMemoryBankDef
   - KeywordMemoryBankDef
   - LogEventRequest
@@ -4224,8 +4810,11 @@ x-tagGroups:
   - MemoryRetrievalStep
   - MemoryToolDefinition
   - MetricEvent
+  - ModelCandidate
   - ModelDefWithProvider
   - OptimizerConfig
+  - PaginatedRowsResult
+  - Parameter
   - PhotogenToolDefinition
   - PostTrainingJob
   - PostTrainingJobArtifactsResponse
@@ -4238,21 +4827,25 @@ x-tagGroups:
   - QueryDocumentsRequest
   - QueryDocumentsResponse
   - RLHFAlgorithm
+  - RegisterDatasetRequest
   - RegisterMemoryBankRequest
   - RegisterModelRequest
+  - RegisterScoringFunctionRequest
   - RegisterShieldRequest
   - RestAPIExecutionConfig
   - RestAPIMethod
-  - RewardScoreRequest
-  - RewardScoringResponse
   - RouteInfo
   - RunShieldRequest
   - RunShieldResponse
   - SafetyViolation
   - SamplingParams
   - SamplingStrategy
-  - ScoredDialogGenerations
-  - ScoredMessage
+  - ScoreBatchRequest
+  - ScoreBatchResponse
+  - ScoreRequest
+  - ScoreResponse
+  - ScoringFunctionDefWithProvider
+  - ScoringResult
   - SearchToolDefinition
   - Session
   - ShieldCallStep
@@ -4278,8 +4871,6 @@ x-tagGroups:
   - ToolResponse
   - ToolResponseMessage
   - Trace
-  - TrainEvalDataset
-  - TrainEvalDatasetColumnType
   - TrainingConfig
   - Turn
   - URL

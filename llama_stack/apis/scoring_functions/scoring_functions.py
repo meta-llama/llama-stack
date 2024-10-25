@@ -29,7 +29,7 @@ class LLMAsJudgeContext(BaseModel):
 
 
 @json_schema_type
-class ScoringFunctionDef(BaseModel):
+class ScoringFnDef(BaseModel):
     identifier: str
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(
@@ -48,7 +48,7 @@ class ScoringFunctionDef(BaseModel):
 
 
 @json_schema_type
-class ScoringFunctionDefWithProvider(ScoringFunctionDef):
+class ScoringFnDefWithProvider(ScoringFnDef):
     provider_id: str = Field(
         description="ID of the provider which serves this dataset",
     )
@@ -57,14 +57,14 @@ class ScoringFunctionDefWithProvider(ScoringFunctionDef):
 @runtime_checkable
 class ScoringFunctions(Protocol):
     @webmethod(route="/scoring_functions/list", method="GET")
-    async def list_scoring_functions(self) -> List[ScoringFunctionDefWithProvider]: ...
+    async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]: ...
 
     @webmethod(route="/scoring_functions/get", method="GET")
     async def get_scoring_function(
         self, name: str
-    ) -> Optional[ScoringFunctionDefWithProvider]: ...
+    ) -> Optional[ScoringFnDefWithProvider]: ...
 
     @webmethod(route="/scoring_functions/register", method="POST")
     async def register_scoring_function(
-        self, function_def: ScoringFunctionDefWithProvider
+        self, function_def: ScoringFnDefWithProvider
     ) -> None: ...

@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-18 20:48:17.730988"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-24 17:40:59.576117"
     },
     "servers": [
         {
@@ -102,39 +102,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/BatchCompletionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/job/cancel": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CancelEvaluationJobRequest"
                             }
                         }
                     },
@@ -389,39 +356,6 @@
                 }
             }
         },
-        "/datasets/create": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Datasets"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CreateDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/agents/delete": {
             "post": {
                 "responses": {
@@ -488,39 +422,6 @@
                 }
             }
         },
-        "/datasets/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Datasets"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/inference/embeddings": {
             "post": {
                 "responses": {
@@ -561,7 +462,7 @@
                 }
             }
         },
-        "/evaluate/question_answering/": {
+        "/eval/evaluate": {
             "post": {
                 "responses": {
                     "200": {
@@ -569,14 +470,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
+                                    "$ref": "#/components/schemas/EvaluateResponse"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "Evaluations"
+                    "Eval"
                 ],
                 "parameters": [
                     {
@@ -593,7 +494,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/EvaluateQuestionAnsweringRequest"
+                                "$ref": "#/components/schemas/EvaluateRequest"
                             }
                         }
                     },
@@ -601,7 +502,7 @@
                 }
             }
         },
-        "/evaluate/summarization/": {
+        "/eval/evaluate_batch": {
             "post": {
                 "responses": {
                     "200": {
@@ -609,14 +510,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
+                                    "$ref": "#/components/schemas/Job"
                                 }
                             }
                         }
                     }
                 },
                 "tags": [
-                    "Evaluations"
+                    "Eval"
                 ],
                 "parameters": [
                     {
@@ -633,47 +534,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/EvaluateSummarizationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/evaluate/text_generation/": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateTextGenerationRequest"
+                                "$ref": "#/components/schemas/EvaluateBatchRequest"
                             }
                         }
                     },
@@ -764,6 +625,14 @@
                         }
                     },
                     {
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "turn_id",
                         "in": "query",
                         "required": true,
@@ -818,6 +687,14 @@
                         }
                     },
                     {
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "turn_id",
                         "in": "query",
                         "required": true,
@@ -845,7 +722,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TrainEvalDataset"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/DatasetDefWithProvider"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -856,157 +740,13 @@
                 ],
                 "parameters": [
                     {
-                        "name": "dataset_uuid",
+                        "name": "dataset_identifier",
                         "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/job/artifacts": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJobArtifactsResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/job/logs": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJobLogStream"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/job/status": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJobStatusResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/evaluate/jobs": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EvaluationJob"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Evaluations"
-                ],
-                "parameters": [
                     {
                         "name": "X-LlamaStack-ProviderData",
                         "in": "header",
@@ -1104,6 +844,113 @@
                 "parameters": [
                     {
                         "name": "identifier",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/datasetio/get_rows_paginated": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedRowsResult"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "rows_in_page",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_token",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter_condition",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/scoring_functions/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ScoringFunctionDefWithProvider"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ScoringFunctions"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1412,6 +1259,152 @@
                 }
             }
         },
+        "/eval/job/cancel": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/JobCancelRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/eval/job/result": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvaluateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/eval/job/status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/JobStatus"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/datasets/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DatasetDefWithProvider"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/memory_banks/list": {
             "get": {
                 "responses": {
@@ -1540,6 +1533,36 @@
                 },
                 "tags": [
                     "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/scoring_functions/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoringFunctionDefWithProvider"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ScoringFunctions"
                 ],
                 "parameters": [
                     {
@@ -1697,6 +1720,39 @@
                 }
             }
         },
+        "/datasets/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_banks/register": {
             "post": {
                 "responses": {
@@ -1763,6 +1819,39 @@
                 }
             }
         },
+        "/scoring_functions/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ScoringFunctions"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterScoringFunctionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/shields/register": {
             "post": {
                 "responses": {
@@ -1789,46 +1878,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RegisterShieldRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/reward_scoring/score": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RewardScoringResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "RewardScoring"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RewardScoreRequest"
                             }
                         }
                     },
@@ -1869,6 +1918,86 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RunShieldRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/scoring/score": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoreResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ScoreRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/scoring/score_batch": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScoreBatchResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Scoring"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ScoreBatchRequest"
                             }
                         }
                     },
@@ -2571,18 +2700,6 @@
                     "completion_message_batch"
                 ]
             },
-            "CancelEvaluationJobRequest": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ]
-            },
             "CancelTrainingJobRequest": {
                 "type": "object",
                 "properties": {
@@ -2634,6 +2751,90 @@
                     },
                     "tool_prompt_format": {
                         "$ref": "#/components/schemas/ToolPromptFormat"
+                    },
+                    "response_format": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "json_schema",
+                                        "default": "json_schema"
+                                    },
+                                    "schema": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "boolean"
+                                                },
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array"
+                                                },
+                                                {
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "schema"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "grammar",
+                                        "default": "grammar"
+                                    },
+                                    "bnf": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "boolean"
+                                                },
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array"
+                                                },
+                                                {
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "bnf"
+                                ]
+                            }
+                        ]
                     },
                     "stream": {
                         "type": "boolean"
@@ -2806,6 +3007,90 @@
                     },
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "response_format": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "json_schema",
+                                        "default": "json_schema"
+                                    },
+                                    "schema": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "boolean"
+                                                },
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array"
+                                                },
+                                                {
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "schema"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "grammar",
+                                        "default": "grammar"
+                                    },
+                                    "bnf": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "boolean"
+                                                },
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array"
+                                                },
+                                                {
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "bnf"
+                                ]
+                            }
+                        ]
                     },
                     "stream": {
                         "type": "boolean"
@@ -4094,77 +4379,6 @@
                     "error"
                 ]
             },
-            "TrainEvalDataset": {
-                "type": "object",
-                "properties": {
-                    "columns": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/TrainEvalDatasetColumnType"
-                        }
-                    },
-                    "content_url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "columns",
-                    "content_url"
-                ],
-                "title": "Dataset to be used for training or evaluating language models."
-            },
-            "TrainEvalDatasetColumnType": {
-                "type": "string",
-                "enum": [
-                    "dialog",
-                    "text",
-                    "media",
-                    "number",
-                    "json"
-                ]
-            },
-            "CreateDatasetRequest": {
-                "type": "object",
-                "properties": {
-                    "uuid": {
-                        "type": "string"
-                    },
-                    "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "uuid",
-                    "dataset"
-                ]
-            },
             "DeleteAgentsRequest": {
                 "type": "object",
                 "properties": {
@@ -4191,18 +4405,6 @@
                 "required": [
                     "agent_id",
                     "session_id"
-                ]
-            },
-            "DeleteDatasetRequest": {
-                "type": "object",
-                "properties": {
-                    "dataset_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dataset_uuid"
                 ]
             },
             "EmbeddingsRequest": {
@@ -4262,74 +4464,251 @@
                     "embeddings"
                 ]
             },
-            "EvaluateQuestionAnsweringRequest": {
+            "AgentCandidate": {
                 "type": "object",
                 "properties": {
-                    "metrics": {
+                    "type": {
+                        "type": "string",
+                        "const": "agent",
+                        "default": "agent"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/AgentConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "config"
+                ]
+            },
+            "ModelCandidate": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "sampling_params": {
+                        "$ref": "#/components/schemas/SamplingParams"
+                    },
+                    "system_message": {
+                        "$ref": "#/components/schemas/SystemMessage"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "model",
+                    "sampling_params"
+                ]
+            },
+            "EvaluateRequest": {
+                "type": "object",
+                "properties": {
+                    "input_rows": {
                         "type": "array",
                         "items": {
-                            "type": "string",
-                            "enum": [
-                                "em",
-                                "f1"
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "candidate": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ModelCandidate"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentCandidate"
+                            }
+                        ]
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "input_rows",
+                    "candidate",
+                    "scoring_functions"
+                ]
+            },
+            "EvaluateResponse": {
+                "type": "object",
+                "properties": {
+                    "generations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "scores": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "generations",
+                    "scores"
+                ]
+            },
+            "ScoringResult": {
+                "type": "object",
+                "properties": {
+                    "score_rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "aggregated_results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
                             ]
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "metrics"
+                    "score_rows",
+                    "aggregated_results"
                 ]
             },
-            "EvaluationJob": {
+            "EvaluateBatchRequest": {
                 "type": "object",
                 "properties": {
-                    "job_uuid": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "candidate": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ModelCandidate"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentCandidate"
+                            }
+                        ]
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "candidate",
+                    "scoring_functions"
+                ]
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "job_uuid"
-                ]
-            },
-            "EvaluateSummarizationRequest": {
-                "type": "object",
-                "properties": {
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "rouge",
-                                "bleu"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "metrics"
-                ]
-            },
-            "EvaluateTextGenerationRequest": {
-                "type": "object",
-                "properties": {
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "perplexity",
-                                "rouge",
-                                "bleu"
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "metrics"
+                    "job_id"
                 ]
             },
             "GetAgentsSessionRequest": {
@@ -4517,41 +4896,216 @@
                     "step"
                 ]
             },
-            "EvaluationJobArtifactsResponse": {
+            "DatasetDefWithProvider": {
                 "type": "object",
                 "properties": {
-                    "job_uuid": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "dataset_schema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "string",
+                                            "default": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "number",
+                                            "default": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "boolean",
+                                            "default": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "array",
+                                            "default": "array"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "object",
+                                            "default": "object"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "json",
+                                            "default": "json"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "union",
+                                            "default": "union"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "custom",
+                                            "default": "custom"
+                                        },
+                                        "validator_class": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type",
+                                        "validator_class"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "chat_completion_input",
+                                            "default": "chat_completion_input"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "completion_input",
+                                            "default": "completion_input"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "agent_turn_input",
+                                            "default": "agent_turn_input"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "type"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "provider_id": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "job_uuid"
-                ],
-                "title": "Artifacts of a evaluation job."
-            },
-            "EvaluationJobLogStream": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
-                ]
-            },
-            "EvaluationJobStatusResponse": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid"
+                    "identifier",
+                    "dataset_schema",
+                    "url",
+                    "metadata",
+                    "provider_id"
                 ]
             },
             "ModelDefWithProvider": {
@@ -4597,6 +5151,458 @@
                     "identifier",
                     "llama_model",
                     "metadata",
+                    "provider_id"
+                ]
+            },
+            "PaginatedRowsResult": {
+                "type": "object",
+                "properties": {
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "total_count": {
+                        "type": "integer"
+                    },
+                    "next_page_token": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "rows",
+                    "total_count"
+                ]
+            },
+            "Parameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "string",
+                                        "default": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "number",
+                                        "default": "number"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "boolean",
+                                        "default": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "array",
+                                        "default": "array"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "object",
+                                        "default": "object"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "json",
+                                        "default": "json"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "union",
+                                        "default": "union"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "custom",
+                                        "default": "custom"
+                                    },
+                                    "validator_class": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "validator_class"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "chat_completion_input",
+                                        "default": "chat_completion_input"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "completion_input",
+                                        "default": "completion_input"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "agent_turn_input",
+                                        "default": "agent_turn_input"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "type"
+                ]
+            },
+            "ScoringFunctionDefWithProvider": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Parameter"
+                        }
+                    },
+                    "return_type": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "string",
+                                        "default": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "number",
+                                        "default": "number"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "boolean",
+                                        "default": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "array",
+                                        "default": "array"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "object",
+                                        "default": "object"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "json",
+                                        "default": "json"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "union",
+                                        "default": "union"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "custom",
+                                        "default": "custom"
+                                    },
+                                    "validator_class": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type",
+                                    "validator_class"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "chat_completion_input",
+                                        "default": "chat_completion_input"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "completion_input",
+                                        "default": "completion_input"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "agent_turn_input",
+                                        "default": "agent_turn_input"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        ]
+                    },
+                    "context": {
+                        "type": "object",
+                        "properties": {
+                            "judge_model": {
+                                "type": "string"
+                            },
+                            "prompt_template": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "judge_model"
+                        ]
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "metadata",
+                    "parameters",
+                    "return_type",
                     "provider_id"
                 ]
             },
@@ -4896,6 +5902,25 @@
                 "required": [
                     "bank_id",
                     "documents"
+                ]
+            },
+            "JobCancelRequest": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_id"
+                ]
+            },
+            "JobStatus": {
+                "type": "string",
+                "enum": [
+                    "completed",
+                    "in_progress"
                 ]
             },
             "ProviderInfo": {
@@ -5315,10 +6340,10 @@
                         "$ref": "#/components/schemas/URL"
                     },
                     "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
+                        "type": "string"
                     },
                     "validation_dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
+                        "type": "string"
                     },
                     "algorithm": {
                         "$ref": "#/components/schemas/RLHFAlgorithm"
@@ -5517,6 +6542,18 @@
                     "scores"
                 ]
             },
+            "RegisterDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_def": {
+                        "$ref": "#/components/schemas/DatasetDefWithProvider"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_def"
+                ]
+            },
             "RegisterMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -5554,6 +6591,18 @@
                     "model"
                 ]
             },
+            "RegisterScoringFunctionRequest": {
+                "type": "object",
+                "properties": {
+                    "function_def": {
+                        "$ref": "#/components/schemas/ScoringFunctionDefWithProvider"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "function_def"
+                ]
+            },
             "RegisterShieldRequest": {
                 "type": "object",
                 "properties": {
@@ -5564,153 +6613,6 @@
                 "additionalProperties": false,
                 "required": [
                     "shield"
-                ]
-            },
-            "DialogGenerations": {
-                "type": "object",
-                "properties": {
-                    "dialog": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "sampled_generations": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dialog",
-                    "sampled_generations"
-                ]
-            },
-            "RewardScoreRequest": {
-                "type": "object",
-                "properties": {
-                    "dialog_generations": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/DialogGenerations"
-                        }
-                    },
-                    "model": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dialog_generations",
-                    "model"
-                ]
-            },
-            "RewardScoringResponse": {
-                "type": "object",
-                "properties": {
-                    "scored_generations": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ScoredDialogGenerations"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "scored_generations"
-                ],
-                "title": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold."
-            },
-            "ScoredDialogGenerations": {
-                "type": "object",
-                "properties": {
-                    "dialog": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
-                        }
-                    },
-                    "scored_generations": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ScoredMessage"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dialog",
-                    "scored_generations"
-                ]
-            },
-            "ScoredMessage": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/UserMessage"
-                            },
-                            {
-                                "$ref": "#/components/schemas/SystemMessage"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ToolResponseMessage"
-                            },
-                            {
-                                "$ref": "#/components/schemas/CompletionMessage"
-                            }
-                        ]
-                    },
-                    "score": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "message",
-                    "score"
                 ]
             },
             "RunShieldRequest": {
@@ -5779,6 +6681,106 @@
                     }
                 },
                 "additionalProperties": false
+            },
+            "ScoreRequest": {
+                "type": "object",
+                "properties": {
+                    "input_rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "input_rows",
+                    "scoring_functions"
+                ]
+            },
+            "ScoreResponse": {
+                "type": "object",
+                "properties": {
+                    "results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "results"
+                ]
+            },
+            "ScoreBatchRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "save_results_dataset": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "scoring_functions",
+                    "save_results_dataset"
+                ]
+            },
+            "ScoreBatchResponse": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "results": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ScoringResult"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "results"
+                ]
             },
             "DoraFinetuningConfig": {
                 "type": "object",
@@ -5892,10 +6894,10 @@
                         "type": "string"
                     },
                     "dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
+                        "type": "string"
                     },
                     "validation_dataset": {
-                        "$ref": "#/components/schemas/TrainEvalDataset"
+                        "type": "string"
                     },
                     "algorithm": {
                         "$ref": "#/components/schemas/FinetuningAlgorithm"
@@ -6034,7 +7036,29 @@
                     "synthetic_data": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ScoredDialogGenerations"
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
                         }
                     },
                     "statistics": {
@@ -6079,49 +7103,55 @@
     ],
     "tags": [
         {
-            "name": "Models"
+            "name": "Eval"
         },
         {
-            "name": "RewardScoring"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Shields"
+            "name": "ScoringFunctions"
         },
         {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Inference"
-        },
-        {
             "name": "Inspect"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
-            "name": "Agents"
         },
         {
             "name": "PostTraining"
         },
         {
-            "name": "Telemetry"
+            "name": "Models"
         },
         {
             "name": "Safety"
         },
         {
-            "name": "Evaluations"
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Agents"
         },
         {
             "name": "BuiltinTool",
@@ -6198,10 +7228,6 @@
         {
             "name": "BatchCompletionResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionResponse\" />"
-        },
-        {
-            "name": "CancelEvaluationJobRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CancelEvaluationJobRequest\" />"
         },
         {
             "name": "CancelTrainingJobRequest",
@@ -6372,28 +7398,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
         },
         {
-            "name": "TrainEvalDataset",
-            "description": "Dataset to be used for training or evaluating language models.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDataset\" />"
-        },
-        {
-            "name": "TrainEvalDatasetColumnType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TrainEvalDatasetColumnType\" />"
-        },
-        {
-            "name": "CreateDatasetRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateDatasetRequest\" />"
-        },
-        {
             "name": "DeleteAgentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsRequest\" />"
         },
         {
             "name": "DeleteAgentsSessionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
-        },
-        {
-            "name": "DeleteDatasetRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteDatasetRequest\" />"
         },
         {
             "name": "EmbeddingsRequest",
@@ -6404,20 +7414,32 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EmbeddingsResponse\" />"
         },
         {
-            "name": "EvaluateQuestionAnsweringRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateQuestionAnsweringRequest\" />"
+            "name": "AgentCandidate",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentCandidate\" />"
         },
         {
-            "name": "EvaluationJob",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJob\" />"
+            "name": "ModelCandidate",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelCandidate\" />"
         },
         {
-            "name": "EvaluateSummarizationRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateSummarizationRequest\" />"
+            "name": "EvaluateRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRequest\" />"
         },
         {
-            "name": "EvaluateTextGenerationRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateTextGenerationRequest\" />"
+            "name": "EvaluateResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateResponse\" />"
+        },
+        {
+            "name": "ScoringResult",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringResult\" />"
+        },
+        {
+            "name": "EvaluateBatchRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateBatchRequest\" />"
+        },
+        {
+            "name": "Job",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Job\" />"
         },
         {
             "name": "GetAgentsSessionRequest",
@@ -6448,20 +7470,24 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentStepResponse\" />"
         },
         {
-            "name": "EvaluationJobArtifactsResponse",
-            "description": "Artifacts of a evaluation job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobArtifactsResponse\" />"
-        },
-        {
-            "name": "EvaluationJobLogStream",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobLogStream\" />"
-        },
-        {
-            "name": "EvaluationJobStatusResponse",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluationJobStatusResponse\" />"
+            "name": "DatasetDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DatasetDefWithProvider\" />"
         },
         {
             "name": "ModelDefWithProvider",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDefWithProvider\" />"
+        },
+        {
+            "name": "PaginatedRowsResult",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PaginatedRowsResult\" />"
+        },
+        {
+            "name": "Parameter",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Parameter\" />"
+        },
+        {
+            "name": "ScoringFunctionDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFunctionDefWithProvider\" />"
         },
         {
             "name": "ShieldDefWithProvider",
@@ -6506,6 +7532,14 @@
         {
             "name": "InsertDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InsertDocumentsRequest\" />"
+        },
+        {
+            "name": "JobCancelRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobCancelRequest\" />"
+        },
+        {
+            "name": "JobStatus",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobStatus\" />"
         },
         {
             "name": "ProviderInfo",
@@ -6576,6 +7610,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
         },
         {
+            "name": "RegisterDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterDatasetRequest\" />"
+        },
+        {
             "name": "RegisterMemoryBankRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterMemoryBankRequest\" />"
         },
@@ -6584,28 +7622,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterModelRequest\" />"
         },
         {
+            "name": "RegisterScoringFunctionRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterScoringFunctionRequest\" />"
+        },
+        {
             "name": "RegisterShieldRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterShieldRequest\" />"
-        },
-        {
-            "name": "DialogGenerations",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DialogGenerations\" />"
-        },
-        {
-            "name": "RewardScoreRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoreRequest\" />"
-        },
-        {
-            "name": "RewardScoringResponse",
-            "description": "Response from the reward scoring. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RewardScoringResponse\" />"
-        },
-        {
-            "name": "ScoredDialogGenerations",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredDialogGenerations\" />"
-        },
-        {
-            "name": "ScoredMessage",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoredMessage\" />"
         },
         {
             "name": "RunShieldRequest",
@@ -6614,6 +7636,22 @@
         {
             "name": "RunShieldResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunShieldResponse\" />"
+        },
+        {
+            "name": "ScoreRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoreRequest\" />"
+        },
+        {
+            "name": "ScoreResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoreResponse\" />"
+        },
+        {
+            "name": "ScoreBatchRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoreBatchRequest\" />"
+        },
+        {
+            "name": "ScoreBatchResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoreBatchResponse\" />"
         },
         {
             "name": "DoraFinetuningConfig",
@@ -6650,16 +7688,18 @@
             "tags": [
                 "Agents",
                 "BatchInference",
+                "DatasetIO",
                 "Datasets",
-                "Evaluations",
+                "Eval",
                 "Inference",
                 "Inspect",
                 "Memory",
                 "MemoryBanks",
                 "Models",
                 "PostTraining",
-                "RewardScoring",
                 "Safety",
+                "Scoring",
+                "ScoringFunctions",
                 "Shields",
                 "SyntheticDataGeneration",
                 "Telemetry"
@@ -6668,6 +7708,7 @@
         {
             "name": "Types",
             "tags": [
+                "AgentCandidate",
                 "AgentConfig",
                 "AgentCreateResponse",
                 "AgentSessionCreateResponse",
@@ -6685,7 +7726,6 @@
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
                 "BuiltinTool",
-                "CancelEvaluationJobRequest",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
                 "ChatCompletionResponse",
@@ -6701,22 +7741,16 @@
                 "CreateAgentRequest",
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
-                "CreateDatasetRequest",
                 "DPOAlignmentConfig",
+                "DatasetDefWithProvider",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
-                "DeleteDatasetRequest",
-                "DialogGenerations",
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
-                "EvaluateQuestionAnsweringRequest",
-                "EvaluateSummarizationRequest",
-                "EvaluateTextGenerationRequest",
-                "EvaluationJob",
-                "EvaluationJobArtifactsResponse",
-                "EvaluationJobLogStream",
-                "EvaluationJobStatusResponse",
+                "EvaluateBatchRequest",
+                "EvaluateRequest",
+                "EvaluateResponse",
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
@@ -6725,6 +7759,9 @@
                 "ImageMedia",
                 "InferenceStep",
                 "InsertDocumentsRequest",
+                "Job",
+                "JobCancelRequest",
+                "JobStatus",
                 "KeyValueMemoryBankDef",
                 "KeywordMemoryBankDef",
                 "LogEventRequest",
@@ -6734,8 +7771,11 @@
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",
+                "ModelCandidate",
                 "ModelDefWithProvider",
                 "OptimizerConfig",
+                "PaginatedRowsResult",
+                "Parameter",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
@@ -6748,21 +7788,25 @@
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "RLHFAlgorithm",
+                "RegisterDatasetRequest",
                 "RegisterMemoryBankRequest",
                 "RegisterModelRequest",
+                "RegisterScoringFunctionRequest",
                 "RegisterShieldRequest",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
-                "RewardScoreRequest",
-                "RewardScoringResponse",
                 "RouteInfo",
                 "RunShieldRequest",
                 "RunShieldResponse",
                 "SafetyViolation",
                 "SamplingParams",
                 "SamplingStrategy",
-                "ScoredDialogGenerations",
-                "ScoredMessage",
+                "ScoreBatchRequest",
+                "ScoreBatchResponse",
+                "ScoreRequest",
+                "ScoreResponse",
+                "ScoringFunctionDefWithProvider",
+                "ScoringResult",
                 "SearchToolDefinition",
                 "Session",
                 "ShieldCallStep",
@@ -6788,8 +7832,6 @@
                 "ToolResponse",
                 "ToolResponseMessage",
                 "Trace",
-                "TrainEvalDataset",
-                "TrainEvalDatasetColumnType",
                 "TrainingConfig",
                 "Turn",
                 "URL",

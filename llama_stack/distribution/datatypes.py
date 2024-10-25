@@ -34,7 +34,7 @@ RoutableObject = Union[
     ShieldDef,
     MemoryBankDef,
     DatasetDef,
-    ScoringFunctionDef,
+    ScoringFnDef,
 ]
 
 RoutableObjectWithProvider = Union[
@@ -42,7 +42,7 @@ RoutableObjectWithProvider = Union[
     ShieldDefWithProvider,
     MemoryBankDefWithProvider,
     DatasetDefWithProvider,
-    ScoringFunctionDefWithProvider,
+    ScoringFnDefWithProvider,
 ]
 
 RoutedProtocol = Union[

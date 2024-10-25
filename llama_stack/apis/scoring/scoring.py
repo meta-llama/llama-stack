@@ -37,7 +37,7 @@ class ScoreResponse(BaseModel):
 
 
 class ScoringFunctionStore(Protocol):
-    def get_scoring_function(self, name: str) -> ScoringFunctionDefWithProvider: ...
+    def get_scoring_function(self, name: str) -> ScoringFnDefWithProvider: ...
 
 
 @runtime_checkable
