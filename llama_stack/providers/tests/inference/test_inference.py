@@ -138,11 +138,12 @@ async def test_completion(inference_settings):
         "meta-reference",
         "remote::ollama",
         "remote::tgi",
+        "remote::together",
     ):
         pytest.skip("Other inference providers don't support completion() yet")
 
     response = await inference_impl.completion(
-        content="Roses are red,",
+        content="Micheael Jordan is born in ",
         stream=False,
         model=params["model"],
         sampling_params=SamplingParams(
@@ -151,7 +152,7 @@ async def test_completion(inference_settings):
     )
 
     assert isinstance(response, CompletionResponse)
-    assert "violets are blue" in response.content
+    assert "1963" in response.content
 
     chunks = [
         r
@@ -180,6 +181,7 @@ async def test_completions_structured_output(inference_settings):
     if provider.__provider_spec__.provider_type not in (
         "meta-reference",
         "remote::tgi",
+        "remote::together",
     ):
         pytest.skip(
             "Other inference providers don't support structured output in completions yet"
