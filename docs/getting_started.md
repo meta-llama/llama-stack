@@ -54,7 +54,8 @@ You have two ways to start up Llama stack server:
 	To download and start running a pre-built docker container, you may use the following commands:
 
 	```
-	docker run -it -p 5000:5000 -v ~/.llama:/root/.llama --gpus=all llamastack/llamastack-local-gpu
+        $ cd llama-stack/distributions/meta-reference-gpu
+	$ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
 	```
 
 	> [!TIP]
