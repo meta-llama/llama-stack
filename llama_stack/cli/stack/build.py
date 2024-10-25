@@ -12,9 +12,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-TEMPLATES_PATH = (
-    Path(os.path.relpath(__file__)).parent.parent.parent.parent / "distributions"
-)
+TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
 
 
 @lru_cache()
@@ -26,7 +24,6 @@ def available_templates_specs() -> List[BuildConfig]:
         with open(p, "r") as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs.append(build_config)
-
     return template_specs
 
 
