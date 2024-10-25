@@ -107,8 +107,8 @@ class PostTrainingSFTRequest(BaseModel):
     job_uuid: str
 
     model: str
-    dataset: str
-    validation_dataset: str
+    dataset_id: str
+    validation_dataset_id: str
 
     algorithm: FinetuningAlgorithm
     algorithm_config: Union[
@@ -131,8 +131,8 @@ class PostTrainingRLHFRequest(BaseModel):
 
     finetuned_model: URL
 
-    dataset: str
-    validation_dataset: str
+    dataset_id: str
+    validation_dataset_id: str
 
     algorithm: RLHFAlgorithm
     algorithm_config: Union[DPOAlignmentConfig]
@@ -181,8 +181,8 @@ class PostTraining(Protocol):
         self,
         job_uuid: str,
         model: str,
-        dataset: str,
-        validation_dataset: str,
+        dataset_id: str,
+        validation_dataset_id: str,
         algorithm: FinetuningAlgorithm,
         algorithm_config: Union[
             LoraFinetuningConfig, QLoraFinetuningConfig, DoraFinetuningConfig
@@ -198,8 +198,8 @@ class PostTraining(Protocol):
         self,
         job_uuid: str,
         finetuned_model: URL,
-        dataset: str,
-        validation_dataset: str,
+        dataset_id: str,
+        validation_dataset_id: str,
         algorithm: RLHFAlgorithm,
         algorithm_config: Union[DPOAlignmentConfig],
         optimizer_config: OptimizerConfig,

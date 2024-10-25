@@ -38,11 +38,6 @@ class UnionType(BaseModel):
     type: Literal["union"] = "union"
 
 
-class CustomType(BaseModel):
-    type: Literal["custom"] = "custom"
-    validator_class: str
-
-
 class ChatCompletionInputType(BaseModel):
     # expects List[Message] for messages
     type: Literal["chat_completion_input"] = "chat_completion_input"
@@ -74,3 +69,16 @@ ParamType = Annotated[
     ],
     Field(discriminator="type"),
 ]
+
+# TODO: recursive definition of ParamType in these containers
+# will cause infinite recursion in OpenAPI generation script
+# since we are going with ChatCompletionInputType and CompletionInputType
+# we don't need to worry about ArrayType/ObjectType/UnionType for now
+# ArrayType.model_rebuild()
+# ObjectType.model_rebuild()
+# UnionType.model_rebuild()
+
+
+# class CustomType(BaseModel):
+#     type: Literal["custom"] = "custom"
+#     validator_class: str
