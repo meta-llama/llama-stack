@@ -1,0 +1,13 @@
+name: meta-reference-quantized-gpu
+distribution_spec:
+  docker_image: pytorch/pytorch:2.5.0-cuda12.4-cudnn9-runtime
+  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  providers:
+    inference: meta-reference-quantized
+    memory:
+    - meta-reference
+    - remote::chromadb
+    - remote::pgvector
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference

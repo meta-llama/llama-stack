@@ -1,0 +1,9 @@
+name: hf-serverless
+distribution_spec:
+  description: "Like local, but use Hugging Face Inference API (serverless) for running LLM inference.\nSee https://hf.co/docs/api-inference."
+  providers:
+    inference: remote::hf::serverless
+    memory: meta-reference
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference

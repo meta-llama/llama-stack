@@ -1,0 +1,12 @@
+name: ollama
+distribution_spec:
+  description: Use ollama for running LLM inference
+  providers:
+    inference: remote::ollama
+    memory:
+    - meta-reference
+    - remote::chromadb
+    - remote::pgvector
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference

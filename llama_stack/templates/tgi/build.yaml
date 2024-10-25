@@ -1,0 +1,12 @@
+name: tgi
+distribution_spec:
+  description: Use TGI for running LLM inference
+  providers:
+    inference: remote::tgi
+    memory:
+    - meta-reference
+    - remote::chromadb
+    - remote::pgvector
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference

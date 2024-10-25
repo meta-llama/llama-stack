@@ -49,7 +49,7 @@ inference:
 **Via Conda**
 
 ```bash
-llama stack build --config ./build.yaml
+llama stack build --template fireworks --image-type conda
 # -- modify run.yaml to a valid Fireworks server endpoint
 llama stack run ./run.yaml
 ```
