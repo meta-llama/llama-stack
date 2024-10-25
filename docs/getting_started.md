@@ -35,31 +35,31 @@ You have two ways to start up Llama stack server:
 
 1. **Starting up server via docker**:
 
-	We provide pre-built Docker image of Llama Stack distribution, which can be found in the following links in the [distributions](../distributions/) folder.
+We provide pre-built Docker image of Llama Stack distribution, which can be found in the following links in the [distributions](../distributions/) folder.
 
-	> [!NOTE]
-	> For GPU inference, you need to set these environment variables for specifying local directory containing your model checkpoints, and enable GPU inference to start running docker container.
-	```
-	export LLAMA_CHECKPOINT_DIR=~/.llama
-	```
+> [!NOTE]
+> For GPU inference, you need to set these environment variables for specifying local directory containing your model checkpoints, and enable GPU inference to start running docker container.
+```
+export LLAMA_CHECKPOINT_DIR=~/.llama
+```
 
-	> [!NOTE]
-	> `~/.llama` should be the path containing downloaded weights of Llama models.
+> [!NOTE]
+> `~/.llama` should be the path containing downloaded weights of Llama models.
 
-	To download llama models, use
-	```
-	llama download --model-id Llama3.1-8B-Instruct
-	```
+To download llama models, use
+```
+llama download --model-id Llama3.1-8B-Instruct
+```
 
-	To download and start running a pre-built docker container, you may use the following commands:
+To download and start running a pre-built docker container, you may use the following commands:
 
-	```
-        $ cd llama-stack/distributions/meta-reference-gpu
-	$ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
-	```
+```
+cd llama-stack/distributions/meta-reference-gpu
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
+```
 
-	> [!TIP]
-	> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../distributions/) to help you get started.
+> [!TIP]
+> Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../distributions/) to help you get started.
 
 
 2. **Build->Configure->Run Llama Stack server via conda**:
