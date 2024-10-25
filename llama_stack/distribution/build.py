@@ -8,17 +8,18 @@ from enum import Enum
 from typing import List, Optional
 
 import pkg_resources
-
-from llama_stack.distribution.utils.exec import run_with_pty
 from pydantic import BaseModel
 
 from termcolor import cprint
 
+from llama_stack.distribution.utils.exec import run_with_pty
+
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
 
-from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 from llama_stack.distribution.distribution import get_provider_registry
+
+from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
 
 # These are the dependencies needed by the distribution server.
