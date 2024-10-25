@@ -29,7 +29,7 @@ if [ $# -lt 3 ]; then
 fi
 
 build_name="$1"
-docker_image="llamastack-$build_name"
+docker_image="distribution-$build_name"
 shift
 
 yaml_config="$1"

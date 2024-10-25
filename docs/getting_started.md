@@ -35,11 +35,7 @@ You have two ways to start up Llama stack server:
 
 1. **Starting up server via docker**:
 
-	We provide 2 pre-built Docker image of Llama Stack distribution, which can be found in the following links.
-	- [llamastack-local-gpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-gpu/general)
-	- This is a packaged version with our local meta-reference implementations, where you will be running inference locally with downloaded Llama model checkpoints.
-	- [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general)
-	- This is a lite version with remote inference where you can hook up to your favourite remote inference framework (e.g. ollama, fireworks, together, tgi) for running inference without GPU.
+	We provide pre-built Docker image of Llama Stack distribution, which can be found in the following links in the [distributions](../distributions/) folder.
 
 	> [!NOTE]
 	> For GPU inference, you need to set these environment variables for specifying local directory containing your model checkpoints, and enable GPU inference to start running docker container.

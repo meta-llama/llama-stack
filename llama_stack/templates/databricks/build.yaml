@@ -1,0 +1,9 @@
+name: databricks
+distribution_spec:
+  description: Use Databricks for running LLM inference
+  providers:
+    inference: remote::databricks
+    memory: meta-reference
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference

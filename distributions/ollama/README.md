@@ -86,6 +86,6 @@ inference:
 **Via Conda**
 
 ```
-llama stack build --config ./build.yaml
+llama stack build --template ollama --image-type conda
 llama stack run ./gpu/run.yaml
 ```

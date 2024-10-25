@@ -169,7 +169,7 @@ class MetaReferenceAgentsImpl(Agents):
         turn_ids: Optional[List[str]] = None,
     ) -> Session:
         session = await self.persistence_store.get(f"session:{agent_id}:{session_id}")
-        session = Session(**json.loads(session))
+        session = Session(**json.loads(session), turns=[])
         turns = []
         if turn_ids:
             for turn_id in turn_ids:

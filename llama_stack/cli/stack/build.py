@@ -12,9 +12,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-TEMPLATES_PATH = (
-    Path(os.path.relpath(__file__)).parent.parent.parent.parent / "distributions"
-)
+TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
 
 
 @lru_cache()
@@ -26,7 +24,6 @@ def available_templates_specs() -> List[BuildConfig]:
         with open(p, "r") as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs.append(build_config)
-
     return template_specs
 
 
@@ -78,111 +75,16 @@ class StackBuild(Subcommand):
             choices=["conda", "docker"],
         )
 
-    def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
-        if os.getenv("CONDA_PREFIX", ""):
-            conda_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.name}"
-            )
-        else:
-            cprint(
-                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
-                color="green",
-            )
-            conda_dir = (
-                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.name}"
-            )
-        build_config_file = Path(conda_dir) / f"{args.name}-build.yaml"
-        if build_config_file.exists():
-            return build_config_file
-
-        return None
-
-    def _run_stack_build_command_from_build_config(
-        self, build_config: BuildConfig
-    ) -> None:
-        import json
-        import os
-
-        import yaml
-
-        from llama_stack.distribution.build import build_image, ImageType
-        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.distribution.utils.serialize import EnumEncoder
-        from termcolor import cprint
-
-        # save build.yaml spec for building same distribution again
-        if build_config.image_type == ImageType.docker.value:
-            # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
-            llama_stack_path = Path(
-                os.path.abspath(__file__)
-            ).parent.parent.parent.parent
-            build_dir = llama_stack_path / "tmp/configs/"
-        else:
-            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
-
-        os.makedirs(build_dir, exist_ok=True)
-        build_file_path = build_dir / f"{build_config.name}-build.yaml"
-
-        with open(build_file_path, "w") as f:
-            to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
-            f.write(yaml.dump(to_write, sort_keys=False))
-
-        return_code = build_image(build_config, build_file_path)
-        if return_code != 0:
-            return
-
-        configure_name = (
-            build_config.name
-            if build_config.image_type == "conda"
-            else (f"llamastack-{build_config.name}")
-        )
-        if build_config.image_type == "conda":
-            cprint(
-                f"You can now run `llama stack configure {configure_name}`",
-                color="green",
-            )
-        else:
-            cprint(
-                f"You can now run `llama stack run {build_config.name}`",
-                color="green",
-            )
-
-    def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
-        import json
-
-        from llama_stack.cli.table import print_table
-
-        # eventually, this should query a registry at llama.meta.com/llamastack/distributions
-        headers = [
-            "Template Name",
-            "Providers",
-            "Description",
-        ]
-
-        rows = []
-        for spec in available_templates_specs():
-            rows.append(
-                [
-                    spec.name,
-                    json.dumps(spec.distribution_spec.providers, indent=2),
-                    spec.distribution_spec.description,
-                ]
-            )
-        print_table(
-            rows,
-            headers,
-            separate_rows=True,
-        )
-
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import textwrap
 
         import yaml
-        from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
         from prompt_toolkit.completion import WordCompleter
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
+
+        from llama_stack.distribution.distribution import get_provider_registry
 
         if args.list_templates:
             self._run_template_list_cmd(args)
@@ -194,19 +96,22 @@ class StackBuild(Subcommand):
                     "You must specify a name for the build using --name when using a template"
                 )
                 return
-            build_path = TEMPLATES_PATH / f"{args.template}-build.yaml"
-            if not build_path.exists():
-                self.parser.error(
-                    f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
-                )
-                return
-            with open(build_path, "r") as f:
-                build_config = BuildConfig(**yaml.safe_load(f))
-                build_config.name = args.name
-                if args.image_type:
-                    build_config.image_type = args.image_type
-                self._run_stack_build_command_from_build_config(build_config)
+            available_templates = available_templates_specs()
+            for build_config in available_templates:
+                if build_config.name == args.template:
+                    build_config.name = args.name
+                    if args.image_type:
+                        build_config.image_type = args.image_type
+                    else:
+                        self.parser.error(
+                            f"Please specify a image-type (docker | conda) for {args.template}"
+                        )
+                    self._run_stack_build_command_from_build_config(build_config)
+                    return
 
+            self.parser.error(
+                f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
+            )
             return
 
         # try to see if we can find a pre-existing build config file through name
@@ -297,3 +202,99 @@ class StackBuild(Subcommand):
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
             self._run_stack_build_command_from_build_config(build_config)
+
+    def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
+        if os.getenv("CONDA_PREFIX", ""):
+            conda_dir = (
+                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.name}"
+            )
+        else:
+            cprint(
+                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
+                color="green",
+            )
+            conda_dir = (
+                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.name}"
+            )
+        build_config_file = Path(conda_dir) / f"{args.name}-build.yaml"
+        if build_config_file.exists():
+            return build_config_file
+
+        return None
+
+    def _run_stack_build_command_from_build_config(
+        self, build_config: BuildConfig
+    ) -> None:
+        import json
+        import os
+
+        import yaml
+        from termcolor import cprint
+
+        from llama_stack.distribution.build import build_image, ImageType
+        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+        from llama_stack.distribution.utils.serialize import EnumEncoder
+
+        # save build.yaml spec for building same distribution again
+        if build_config.image_type == ImageType.docker.value:
+            # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
+            llama_stack_path = Path(
+                os.path.abspath(__file__)
+            ).parent.parent.parent.parent
+            build_dir = llama_stack_path / "tmp/configs/"
+        else:
+            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
+
+        os.makedirs(build_dir, exist_ok=True)
+        build_file_path = build_dir / f"{build_config.name}-build.yaml"
+
+        with open(build_file_path, "w") as f:
+            to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
+            f.write(yaml.dump(to_write, sort_keys=False))
+
+        return_code = build_image(build_config, build_file_path)
+        if return_code != 0:
+            return
+
+        configure_name = (
+            build_config.name
+            if build_config.image_type == "conda"
+            else (f"llamastack-{build_config.name}")
+        )
+        if build_config.image_type == "conda":
+            cprint(
+                f"You can now run `llama stack configure {configure_name}`",
+                color="green",
+            )
+        else:
+            cprint(
+                f"You can now edit your run.yaml file and run `docker run -it -p 5000:5000 {build_config.name}`. See full command in llama-stack/distributions/",
+                color="green",
+            )
+
+    def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
+        import json
+
+        from llama_stack.cli.table import print_table
+
+        # eventually, this should query a registry at llama.meta.com/llamastack/distributions
+        headers = [
+            "Template Name",
+            "Providers",
+            "Description",
+        ]
+
+        rows = []
+        for spec in available_templates_specs():
+            rows.append(
+                [
+                    spec.name,
+                    json.dumps(spec.distribution_spec.providers, indent=2),
+                    spec.distribution_spec.description,
+                ]
+            )
+        print_table(
+            rows,
+            headers,
+            separate_rows=True,
+        )
