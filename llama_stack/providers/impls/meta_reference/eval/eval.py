@@ -18,6 +18,7 @@ from .config import MetaReferenceEvalConfig
 
 
 class ColumnName(Enum):
+    input_query = "input_query"
     expected_answer = "expected_answer"
     chat_completion_input = "chat_completion_input"
     completion_input = "completion_input"
@@ -53,10 +54,12 @@ class MetaReferenceEvalImpl(Eval):
 
         expected_schemas = [
             {
+                ColumnName.input_query.value: StringType(),
                 ColumnName.expected_answer.value: StringType(),
                 ColumnName.chat_completion_input.value: ChatCompletionInputType(),
             },
             {
+                ColumnName.input_query.value: StringType(),
                 ColumnName.expected_answer.value: StringType(),
                 ColumnName.completion_input.value: CompletionInputType(),
             },

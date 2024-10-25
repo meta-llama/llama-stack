@@ -16,3 +16,7 @@ providers:
       provider_type: remote::tgi
       config:
         url: http://127.0.0.1:5009
+    - provider_id: test-tgi-2
+      provider_type: remote::tgi
+      config:
+        url: http://127.0.0.1:5010

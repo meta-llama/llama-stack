@@ -70,6 +70,7 @@ async def register_dataset(
     if for_generation:
         dataset_schema = {
             "expected_answer": StringType(),
+            "input_query": StringType(),
             "chat_completion_input": ChatCompletionInputType(),
         }
     else:

@@ -97,7 +97,6 @@ class InferenceRouter(Inference):
             logprobs=logprobs,
         )
         provider = self.routing_table.get_provider_impl(model)
-
         if stream:
             return (chunk async for chunk in await provider.chat_completion(**params))
         else:
