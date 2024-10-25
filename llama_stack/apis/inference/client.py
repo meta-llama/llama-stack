@@ -172,7 +172,7 @@ async def run_mm_main(
         ],
     )
     cprint(f"User>{message.content}", "green")
-    iterator = client.chat_completion(
+    iterator = await client.chat_completion(
         model=model,
         messages=[message],
         stream=stream,

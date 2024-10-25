@@ -337,7 +337,8 @@ def main(
     import uvicorn
 
     # FYI this does not do hot-reloads
-    listen_host = "::" if not disable_ipv6 else "0.0.0.0"
+
+    listen_host = ["::", "0.0.0.0"] if not disable_ipv6 else "0.0.0.0"
     print(f"Listening on {listen_host}:{port}")
     uvicorn.run(app, host=listen_host, port=port)
 

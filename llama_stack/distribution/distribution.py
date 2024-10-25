@@ -39,6 +39,10 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             routing_table_api=Api.datasets,
             router_api=Api.datasetio,
         ),
+        AutoRoutedApiInfo(
+            routing_table_api=Api.scoring_functions,
+            router_api=Api.scoring,
+        ),
     ]
 
 

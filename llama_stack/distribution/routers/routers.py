@@ -13,6 +13,7 @@ from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
+from llama_stack.apis.scoring import *  # noqa: F403
 
 
 class MemoryRouter(Memory):
@@ -198,3 +199,56 @@ class DatasetIORouter(DatasetIO):
             page_token=page_token,
             filter_condition=filter_condition,
         )
+
+
+class ScoringRouter(Scoring):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def score_batch(
+        self,
+        dataset_id: str,
+        scoring_functions: List[str],
+        save_results_dataset: bool = False,
+    ) -> ScoreBatchResponse:
+        res = {}
+        for fn_identifier in scoring_functions:
+            score_response = await self.routing_table.get_provider_impl(
+                fn_identifier
+            ).score_batch(
+                dataset_id=dataset_id,
+                scoring_functions=[fn_identifier],
+            )
+            res.update(score_response.results)
+
+        if save_results_dataset:
+            raise NotImplementedError("Save results dataset not implemented yet")
+
+        return ScoreBatchResponse(
+            results=res,
+        )
+
+    async def score(
+        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+    ) -> ScoreResponse:
+        res = {}
+        # look up and map each scoring function to its provider impl
+        for fn_identifier in scoring_functions:
+            score_response = await self.routing_table.get_provider_impl(
+                fn_identifier
+            ).score(
+                input_rows=input_rows,
+                scoring_functions=[fn_identifier],
+            )
+            res.update(score_response.results)
+
+        return ScoreResponse(results=res)

@@ -1,0 +1,9 @@
+providers:
+  datasetio:
+  - provider_id: test-meta
+    provider_type: meta-reference
+    config: {}
+  scoring:
+    - provider_id: test-meta
+      provider_type: meta-reference
+      config: {}

@@ -137,6 +137,7 @@ async def test_completion(inference_settings):
     if provider.__provider_spec__.provider_type not in (
         "meta-reference",
         "remote::ollama",
+        "remote::tgi",
     ):
         pytest.skip("Other inference providers don't support completion() yet")
 
@@ -171,25 +172,43 @@ async def test_completion(inference_settings):
 
 
 @pytest.mark.asyncio
-async def test_embed(inference_settings):
+async def test_completions_structured_output(inference_settings):
     inference_impl = inference_settings["impl"]
     params = inference_settings["common_params"]
 
     provider = inference_impl.routing_table.get_provider_impl(params["model"])
-    if provider.__provider_spec__.provider_type not in ("remote::ollama",):
-        pytest.skip("Other inference providers don't support completion() yet")
+    if provider.__provider_spec__.provider_type not in (
+        "meta-reference",
+        "remote::tgi",
+    ):
+        pytest.skip(
+            "Other inference providers don't support structured output in completions yet"
+        )
 
-    response = await inference_impl.embeddings(
-        contents=["Roses are red"],
+    class Output(BaseModel):
+        name: str
+        year_born: str
+        year_retired: str
+
+    user_input = "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003."
+    response = await inference_impl.completion(
+        content=f"input: '{user_input}'. the schema for json: {Output.schema()}, the json is: ",
+        stream=False,
         model=params["model"],
         sampling_params=SamplingParams(
             max_tokens=50,
         ),
+        response_format=JsonResponseFormat(
+            schema=Output.model_json_schema(),
+        ),
     )
+    assert isinstance(response, CompletionResponse)
+    assert isinstance(response.content, str)
 
-    assert isinstance(response, EmbeddingsResponse)
-    assert len(response.embeddings) > 0
-
+    answer = Output.parse_raw(response.content)
+    assert answer.name == "Michael Jordan"
+    assert answer.year_born == "1963"
+    assert answer.year_retired == "2003"
 
 @pytest.mark.asyncio
 async def test_chat_completion_non_streaming(inference_settings, sample_messages):
@@ -382,3 +401,23 @@ async def test_chat_completion_with_tool_calling_streaming(
     assert call.tool_name == "get_weather"
     assert "location" in call.arguments
     assert "San Francisco" in call.arguments["location"]
+    
+@pytest.mark.asyncio
+async def test_embed(inference_settings):
+    inference_impl = inference_settings["impl"]
+    params = inference_settings["common_params"]
+
+    provider = inference_impl.routing_table.get_provider_impl(params["model"])
+    if provider.__provider_spec__.provider_type not in ("remote::ollama",):
+        pytest.skip("Other inference providers don't support completion() yet")
+
+    response = await inference_impl.embeddings(
+        contents=["Roses are red"],
+        model=params["model"],
+        sampling_params=SamplingParams(
+            max_tokens=50,
+        ),
+    )
+
+    assert isinstance(response, EmbeddingsResponse)
+    assert len(response.embeddings) > 0
