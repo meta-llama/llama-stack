@@ -14,7 +14,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.dataset import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.common.training_types import *  # noqa: F403
 
 
@@ -107,8 +107,8 @@ class PostTrainingSFTRequest(BaseModel):
     job_uuid: str
 
     model: str
-    dataset: TrainEvalDataset
-    validation_dataset: TrainEvalDataset
+    dataset: str
+    validation_dataset: str
 
     algorithm: FinetuningAlgorithm
     algorithm_config: Union[
@@ -131,8 +131,8 @@ class PostTrainingRLHFRequest(BaseModel):
 
     finetuned_model: URL
 
-    dataset: TrainEvalDataset
-    validation_dataset: TrainEvalDataset
+    dataset: str
+    validation_dataset: str
 
     algorithm: RLHFAlgorithm
     algorithm_config: Union[DPOAlignmentConfig]
@@ -181,8 +181,8 @@ class PostTraining(Protocol):
         self,
         job_uuid: str,
         model: str,
-        dataset: TrainEvalDataset,
-        validation_dataset: TrainEvalDataset,
+        dataset: str,
+        validation_dataset: str,
         algorithm: FinetuningAlgorithm,
         algorithm_config: Union[
             LoraFinetuningConfig, QLoraFinetuningConfig, DoraFinetuningConfig
@@ -198,8 +198,8 @@ class PostTraining(Protocol):
         self,
         job_uuid: str,
         finetuned_model: URL,
-        dataset: TrainEvalDataset,
-        validation_dataset: TrainEvalDataset,
+        dataset: str,
+        validation_dataset: str,
         algorithm: RLHFAlgorithm,
         algorithm_config: Union[DPOAlignmentConfig],
         optimizer_config: OptimizerConfig,

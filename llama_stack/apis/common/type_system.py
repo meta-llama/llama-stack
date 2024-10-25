@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Literal, Union
+from typing import Literal, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -24,12 +24,10 @@ class BooleanType(BaseModel):
 
 class ArrayType(BaseModel):
     type: Literal["array"] = "array"
-    items: "ParamType"
 
 
 class ObjectType(BaseModel):
     type: Literal["object"] = "object"
-    properties: Dict[str, "ParamType"] = Field(default_factory=dict)
 
 
 class JsonType(BaseModel):
@@ -38,7 +36,6 @@ class JsonType(BaseModel):
 
 class UnionType(BaseModel):
     type: Literal["union"] = "union"
-    options: List["ParamType"] = Field(default_factory=list)
 
 
 class CustomType(BaseModel):
@@ -77,7 +74,3 @@ ParamType = Annotated[
     ],
     Field(discriminator="type"),
 ]
-
-ArrayType.model_rebuild()
-ObjectType.model_rebuild()
-UnionType.model_rebuild()
