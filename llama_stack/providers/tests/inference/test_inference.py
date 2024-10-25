@@ -138,6 +138,7 @@ async def test_completion(inference_settings):
         "meta-reference",
         "remote::ollama",
         "remote::tgi",
+        "remote::together",
     ):
         pytest.skip("Other inference providers don't support completion() yet")
 
