@@ -11,4 +11,3 @@ distribution_spec:
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference
-image_type: docker

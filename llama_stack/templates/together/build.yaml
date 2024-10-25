@@ -7,4 +7,3 @@ distribution_spec:
     safety: remote::together
     agents: meta-reference
     telemetry: meta-reference
-image_type: docker
