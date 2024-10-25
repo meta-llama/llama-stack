@@ -65,23 +65,30 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 |  Dell-TGI | [Local TGI + Chroma](https://hub.docker.com/repository/docker/llamastack/llamastack-local-tgi-chroma/general)  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 
+
 ## Installation
 
-You can install this repository as a [package](https://pypi.org/project/llama-stack/) with `pip install llama-stack`
+You have two ways to install this repository:
 
-If you want to install from source:
+1. **Install as a package**:
+   You can install the repository directly from [PyPI](https://pypi.org/project/llama-stack/) by running the following command:
+   ```bash
+   pip install llama-stack
+   ```
 
-```bash
-mkdir -p ~/local
-cd ~/local
-git clone git@github.com:meta-llama/llama-stack.git
+2. **Install from source**:
+   If you prefer to install from the source code, follow these steps:
+   ```bash
+    mkdir -p ~/local
+    cd ~/local
+    git clone git@github.com:meta-llama/llama-stack.git
 
-conda create -n stack python=3.10
-conda activate stack
+    conda create -n stack python=3.10
+    conda activate stack
 
-cd llama-stack
-$CONDA_PREFIX/bin/pip install -e .
-```
+    cd llama-stack
+    $CONDA_PREFIX/bin/pip install -e .
+   ```
 
 ## Documentations
 

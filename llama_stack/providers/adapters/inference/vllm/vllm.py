@@ -143,7 +143,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             "model": VLLM_SUPPORTED_MODELS[request.model],
             "prompt": chat_completion_request_to_prompt(request, self.formatter),
             "stream": request.stream,
-            **get_sampling_options(request),
+            **get_sampling_options(request.sampling_params),
         }
 
     async def embeddings(
