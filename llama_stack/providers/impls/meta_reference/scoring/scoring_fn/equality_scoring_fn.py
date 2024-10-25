@@ -10,8 +10,10 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.base_scoring_
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
+
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
     aggregate_accuracy,
+    FN_DEFS_PATH,
 )
 
 
@@ -20,12 +22,9 @@ class EqualityScoringFn(BaseScoringFn):
     A scoring_fn that assigns a score of 1.0 if the input string matches the target string, and 0.0 otherwise.
     """
 
-    scoring_function_def = ScoringFnDef(
-        identifier="equality",
-        description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
-        parameters=[],
-        return_type=NumberType(),
-    )
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.defs_paths = [FN_DEFS_PATH / "equality.json"]
 
     async def score_row(
         self,

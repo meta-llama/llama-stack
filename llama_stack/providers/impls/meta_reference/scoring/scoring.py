@@ -11,10 +11,14 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
-
+from llama_stack.apis.inference.inference import Inference
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.equality_scoring_fn import (
     EqualityScoringFn,
+)
+
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.llm_as_judge_scoring_fn import (
+    LlmAsJudgeScoringFn,
 )
 
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.subset_of_scoring_fn import (
@@ -23,12 +27,9 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.subset_of_sco
 
 from .config import MetaReferenceScoringConfig
 
-SUPPORTED_SCORING_FNS = [
-    EqualityScoringFn,
-    SubsetOfScoringFn,
-]
+FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn]
 
-SCORER_REGISTRY = {x.scoring_function_def.identifier: x for x in SUPPORTED_SCORING_FNS}
+LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 
 
 class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
@@ -37,17 +38,34 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         config: MetaReferenceScoringConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
+        inference_api: Inference,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
+        self.inference_api = inference_api
+        self.scoring_fn_id_impls = {}
 
-    async def initialize(self) -> None: ...
+    async def initialize(self) -> None:
+        for x in FIXED_FNS:
+            impl = x()
+            await impl.initialize()
+            for fn_defs in impl.get_supported_scoring_fn_defs():
+                self.scoring_fn_id_impls[fn_defs.identifier] = impl
+        for x in LLM_JUDGE_FNS:
+            impl = x(inference_api=self.inference_api)
+            await impl.initialize()
+            for fn_defs in impl.get_supported_scoring_fn_defs():
+                self.scoring_fn_id_impls[fn_defs.identifier] = impl
 
     async def shutdown(self) -> None: ...
 
     async def list_scoring_functions(self) -> List[ScoringFnDef]:
-        return [x.scoring_function_def for x in SUPPORTED_SCORING_FNS]
+        return [
+            fn_defs
+            for impl in self.scoring_fn_id_impls.values()
+            for fn_defs in impl.get_supported_scoring_fn_defs()
+        ]
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
         raise NotImplementedError(
@@ -99,9 +117,9 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     ) -> ScoreResponse:
         res = {}
         for scoring_fn_id in scoring_functions:
-            if scoring_fn_id not in SCORER_REGISTRY:
+            if scoring_fn_id not in self.scoring_fn_id_impls:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
-            scoring_fn = SCORER_REGISTRY[scoring_fn_id]()
+            scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
             score_results = await scoring_fn.score(input_rows, scoring_fn_id)
             agg_results = await scoring_fn.aggregate(score_results)
             res[scoring_fn_id] = ScoringResult(

@@ -50,7 +50,9 @@ async def test_scoring_functions_list(scoring_settings):
     assert isinstance(scoring_functions, list)
     assert len(scoring_functions) > 0
     function_ids = [f.identifier for f in scoring_functions]
-    assert "equality" in function_ids
+    assert "meta-reference::equality" in function_ids
+    assert "meta-reference::subset_of" in function_ids
+    assert "meta-reference::llm_as_judge_8b_correctness" in function_ids
 
 
 @pytest.mark.asyncio
@@ -64,9 +66,15 @@ async def test_scoring_score(scoring_settings):
 
     response = await scoring_impl.score_batch(
         dataset_id=response[0].identifier,
-        scoring_functions=["equality", "subset_of"],
+        scoring_functions=[
+            "meta-reference::equality",
+            "meta-reference::subset_of",
+            "meta-reference::llm_as_judge_8b_correctness",
+        ],
     )
 
-    assert len(response.results) == 2
-    assert "equality" in response.results
-    assert "subset_of" in response.results
+    print(response)
+    assert len(response.results) == 3
+    assert "meta-reference::equality" in response.results
+    assert "meta-reference::subset_of" in response.results
+    assert "meta-reference::llm_as_judge_8b_correctness" in response.results

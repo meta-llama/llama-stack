@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
+import json
 
 
 class BaseScoringFn(ABC):
@@ -17,13 +18,29 @@ class BaseScoringFn(ABC):
     - aggregate(self, scoring_fn_results)
     """
 
-    scoring_function_def: ScoringFnDef
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.supported_fn_defs_registry = {}
+        self.defs_paths = []
 
     def __str__(self) -> str:
         return self.__class__.__name__
+
+    async def initialize(self) -> None:
+        for f in self.defs_paths:
+            with open(f, "r") as f:
+                scoring_fn_def = ScoringFnDef(**json.load(f))
+                self.register_scoring_fn_def(scoring_fn_def)
+
+    def get_supported_scoring_fn_defs(self) -> List[ScoringFnDef]:
+        return [x for x in self.supported_fn_defs_registry.values()]
+
+    def register_scoring_fn_def(self, scoring_fn_def: ScoringFnDef) -> None:
+        if scoring_fn_def.identifier in self.supported_fn_defs_registry:
+            raise ValueError(
+                f"Scoring function def with identifier {scoring_fn_def.identifier} already exists."
+            )
+        self.supported_fn_defs_registry[scoring_fn_def.identifier] = scoring_fn_def
 
     @abstractmethod
     async def score_row(

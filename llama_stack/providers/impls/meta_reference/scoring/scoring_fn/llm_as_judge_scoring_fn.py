@@ -3,31 +3,19 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
+from llama_stack.apis.inference.inference import Inference
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.base_scoring_fn import (
     BaseScoringFn,
 )
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
-    aggregate_accuracy,
-)
+import re
 
-JUDGE_PROMPT = """
-You will be given a question, a expected_answer, and a system_answer.
-Your task is to provide a 'total rating' scoring how well the system_answer answers compared with ground truth in expected_answer in terms of factual correctness to the question.
-Give your answer as a integer on a scale of 0 to 5, where 0 means that the system_answer is not correct at all compared with expected_answer, and 5 means that the answer completely and correctly answers the question.
-Provide your feedback as follows:
-Feedback:::
-Total rating: (your rating, as a int between 0 and 5)
-Now here are the question, expected_answer, system_answer.
-Question: {question}
-Expected Answer: {expected_answer}
-System Answer: {answer}
-Feedback:::
-Total rating:
-"""
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
+    aggregate_average,
+    FN_DEFS_PATH,
+)
 
 
 class LlmAsJudgeScoringFn(BaseScoringFn):
@@ -35,27 +23,62 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
     A scoring_fn that assigns
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.scoring_fn_def_registry = {}
+    def __init__(self, inference_api: Inference, *arg, **kwargs) -> None:
+        super().__init__(*arg, **kwargs)
+        self.inference_api = inference_api
+        self.defs_paths = [FN_DEFS_PATH / "llm_as_judge_8b_correctness.json"]
 
-    def register_scoring_def(self, scoring_fn_def: ScoringFnDef) -> None:
-        self.scoring_function_def_registry[scoring_fn_def.identifier] = scoring_fn_def
-
-    async def score_row(self, input_row: Dict[str, Any]) -> ScoringResultRow:
-        assert "expected_answer" in input_row, "Expected answer not found in input row."
+    async def score_row(
+        self,
+        input_row: Dict[str, Any],
+        scoring_fn_identifier: Optional[str] = None,
+    ) -> ScoringResultRow:
         assert (
-            "generated_answer" in input_row
-        ), "Generated answer not found in input row."
+            scoring_fn_identifier is not None
+        ), "Scoring function identifier not found."
+        fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
+        assert (
+            fn_def.context is not None and fn_def.context.prompt_template is not None
+        ), "LLM Judge prompt_template not found."
 
+        input_query = input_row["input_query"]
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]
-        score = 1.0 if expected_answer == generated_answer else 0.0
+
+        judge_input_msg = fn_def.context.prompt_template.format(
+            input_query=input_query,
+            expected_answer=expected_answer,
+            generated_answer=generated_answer,
+        )
+
+        judge_response = await self.inference_api.chat_completion(
+            model=fn_def.context.judge_model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": judge_input_msg,
+                }
+            ],
+        )
+        content = judge_response.completion_message.content
+        rating_regexs = [
+            r"Total rating: (\d+)",
+            r"rating: (\d+)",
+            r"Rating: (\d+)",
+        ]
+        judge_rating = None
+        for regex in rating_regexs:
+            match = re.search(regex, content)
+            if match:
+                judge_rating = int(match.group(1))
+                break
+
         return {
-            "score": score,
+            "score": judge_rating,
+            "judge_feedback": content,
         }
 
     async def aggregate(
         self, scoring_results: List[ScoringResultRow]
     ) -> Dict[str, Any]:
-        return aggregate_accuracy(scoring_results)
+        return aggregate_average(scoring_results)

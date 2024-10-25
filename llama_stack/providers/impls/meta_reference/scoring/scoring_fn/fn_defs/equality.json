@@ -1,0 +1,10 @@
+{
+    "identifier": "meta-reference::equality",
+    "description": "Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
+    "metadata": {},
+    "parameters": [],
+    "return_type": {
+        "type": "number"
+    },
+    "context": null
+}

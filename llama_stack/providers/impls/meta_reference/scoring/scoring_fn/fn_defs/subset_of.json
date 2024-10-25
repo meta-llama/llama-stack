@@ -1,0 +1,10 @@
+{
+    "identifier": "meta-reference::subset_of",
+    "description": "Returns 1.0 if the expected is included in generated, 0.0 otherwise.",
+    "metadata": {},
+    "parameters": [],
+    "return_type": {
+        "type": "number"
+    },
+    "context": null
+}
