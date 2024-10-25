@@ -96,19 +96,22 @@ class StackBuild(Subcommand):
                     "You must specify a name for the build using --name when using a template"
                 )
                 return
-            build_path = TEMPLATES_PATH / f"{args.template}-build.yaml"
-            if not build_path.exists():
-                self.parser.error(
-                    f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
-                )
-                return
-            with open(build_path, "r") as f:
-                build_config = BuildConfig(**yaml.safe_load(f))
-                build_config.name = args.name
-                if args.image_type:
-                    build_config.image_type = args.image_type
-                self._run_stack_build_command_from_build_config(build_config)
+            available_templates = available_templates_specs()
+            for build_config in available_templates:
+                if build_config.name == args.template:
+                    build_config.name = args.name
+                    if args.image_type:
+                        build_config.image_type = args.image_type
+                    else:
+                        self.parser.error(
+                            f"Please specify a image-type (docker | conda) for {args.template}"
+                        )
+                    self._run_stack_build_command_from_build_config(build_config)
+                    return
 
+            self.parser.error(
+                f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
+            )
             return
 
         # try to see if we can find a pre-existing build config file through name
