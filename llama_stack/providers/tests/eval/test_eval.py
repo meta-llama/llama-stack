@@ -62,7 +62,7 @@ async def test_eval(eval_settings):
     response = await eval_impl.evaluate_batch(
         dataset_id=response[0].identifier,
         candidate=ModelCandidate(
-            model="Llama3.1-8B-Instruct",
+            model="Llama3.2-1B-Instruct",
             sampling_params=SamplingParams(),
         ),
         scoring_functions=["subset_of"],
