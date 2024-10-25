@@ -62,7 +62,6 @@ ParamType = Annotated[
         ObjectType,
         JsonType,
         UnionType,
-        CustomType,
         ChatCompletionInputType,
         CompletionInputType,
         AgentTurnInputType,
