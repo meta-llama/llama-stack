@@ -4,25 +4,25 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.providers.impls.meta_reference.scoring.scorer.base_scorer import (
-    BaseScorer,
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.base_scoring_fn import (
+    BaseScoringFn,
 )
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.providers.impls.meta_reference.scoring.scorer.common import (
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
     aggregate_accuracy,
 )
 
 
-class EqualityScorer(BaseScorer):
+class SubsetOfScoringFn(BaseScoringFn):
     """
-    A scorer that assigns a score of 1.0 if the input string matches the target string, and 0.0 otherwise.
+    A scoring_fn that assigns a score of 1.0 if the expected string is included in the generated string, and 0.0 otherwise.
     """
 
-    scoring_function_def = ScoringFunctionDef(
-        identifier="equality",
-        description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
+    scoring_function_def = ScoringFnDef(
+        identifier="subset_of",
+        description="Returns 1.0 if the expected is included in generated, 0.0 otherwise.",
         parameters=[],
         return_type=NumberType(),
     )
@@ -35,7 +35,7 @@ class EqualityScorer(BaseScorer):
 
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]
-        score = 1.0 if expected_answer == generated_answer else 0.0
+        score = 1.0 if expected_answer in generated_answer else 0.0
         return {
             "score": score,
         }

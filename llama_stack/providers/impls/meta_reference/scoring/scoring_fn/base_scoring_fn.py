@@ -9,15 +9,15 @@ from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 
 
-class BaseScorer(ABC):
+class BaseScoringFn(ABC):
     """
-    Base interface class for all meta-reference scorers.
-    Each scorer needs to implement the following methods:
+    Base interface class for all meta-reference scoring_fns.
+    Each scoring_fn needs to implement the following methods:
     - score_row(self, row)
-    - aggregate(self, scorer_results)
+    - aggregate(self, scoring_fn_results)
     """
 
-    scoring_function_def: ScoringFunctionDef
+    scoring_function_def: ScoringFnDef
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
