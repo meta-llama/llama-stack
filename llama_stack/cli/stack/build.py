@@ -82,11 +82,12 @@ class StackBuild(Subcommand):
         import textwrap
 
         import yaml
-        from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
         from prompt_toolkit.completion import WordCompleter
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
+
+        from llama_stack.distribution.distribution import get_provider_registry
 
         if args.list_templates:
             self._run_template_list_cmd(args)
@@ -201,6 +202,7 @@ class StackBuild(Subcommand):
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
             self._run_stack_build_command_from_build_config(build_config)
+
     def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
         if os.getenv("CONDA_PREFIX", ""):
             conda_dir = (
@@ -227,11 +229,11 @@ class StackBuild(Subcommand):
         import os
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import build_image, ImageType
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.serialize import EnumEncoder
-        from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
         if build_config.image_type == ImageType.docker.value:
@@ -266,7 +268,7 @@ class StackBuild(Subcommand):
             )
         else:
             cprint(
-                f"You can now run `llama stack run {build_config.name}`",
+                f"You can now edit your run.yaml file and run `docker run -it -p 5000:5000 {build_config.name}`. See full command in llama-stack/distributions/",
                 color="green",
             )
 
@@ -296,4 +298,3 @@ class StackBuild(Subcommand):
             headers,
             separate_rows=True,
         )
-
