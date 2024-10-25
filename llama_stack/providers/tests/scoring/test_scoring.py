@@ -33,7 +33,9 @@ from llama_stack.providers.tests.resolver import resolve_impls_for_test
 
 @pytest_asyncio.fixture(scope="session")
 async def scoring_settings():
-    impls = await resolve_impls_for_test(Api.scoring, deps=[Api.datasetio])
+    impls = await resolve_impls_for_test(
+        Api.scoring, deps=[Api.datasetio, Api.inference]
+    )
     return {
         "scoring_impl": impls[Api.scoring],
         "scoring_functions_impl": impls[Api.scoring_functions],
@@ -62,8 +64,9 @@ async def test_scoring_score(scoring_settings):
 
     response = await scoring_impl.score_batch(
         dataset_id=response[0].identifier,
-        scoring_functions=["equality"],
+        scoring_functions=["equality", "subset_of"],
     )
 
-    assert len(response.results) == 1
+    assert len(response.results) == 2
     assert "equality" in response.results
+    assert "subset_of" in response.results

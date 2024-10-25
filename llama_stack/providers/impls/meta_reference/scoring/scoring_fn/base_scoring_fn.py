@@ -26,12 +26,23 @@ class BaseScoringFn(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def score_row(self, input_row: Dict[str, Any]) -> ScoringResultRow:
+    async def score_row(
+        self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
+    ) -> ScoringResultRow:
         raise NotImplementedError()
 
     @abstractmethod
-    def aggregate(self, scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
+    async def aggregate(
+        self, scoring_results: List[ScoringResultRow]
+    ) -> Dict[str, Any]:
         raise NotImplementedError()
 
-    def score(self, input_rows: List[Dict[str, Any]]) -> List[ScoringResultRow]:
-        return [self.score_row(input_row) for input_row in input_rows]
+    async def score(
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_fn_identifier: Optional[str] = None,
+    ) -> List[ScoringResultRow]:
+        return [
+            await self.score_row(input_row, scoring_fn_identifier)
+            for input_row in input_rows
+        ]

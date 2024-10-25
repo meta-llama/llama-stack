@@ -102,8 +102,8 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             if scoring_fn_id not in SCORER_REGISTRY:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scoring_fn = SCORER_REGISTRY[scoring_fn_id]()
-            score_results = scoring_fn.score(input_rows)
-            agg_results = scoring_fn.aggregate(score_results)
+            score_results = await scoring_fn.score(input_rows, scoring_fn_id)
+            agg_results = await scoring_fn.aggregate(score_results)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,
