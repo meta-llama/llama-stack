@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.datasets import DatasetDef
 from llama_stack.apis.memory_banks import MemoryBankDef
 from llama_stack.apis.models import ModelDef
-from llama_stack.apis.scoring_functions import ScoringFunctionDef
+from llama_stack.apis.scoring_functions import ScoringFnDef
 from llama_stack.apis.shields import ShieldDef
 
 
@@ -64,11 +64,9 @@ class DatasetsProtocolPrivate(Protocol):
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
-    async def list_scoring_functions(self) -> List[ScoringFunctionDef]: ...
+    async def list_scoring_functions(self) -> List[ScoringFnDef]: ...
 
-    async def register_scoring_function(
-        self, function_def: ScoringFunctionDef
-    ) -> None: ...
+    async def register_scoring_function(self, function_def: ScoringFnDef) -> None: ...
 
 
 @json_schema_type

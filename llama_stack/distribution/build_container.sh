@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
@@ -33,9 +39,6 @@ DOCKER_OPTS=${DOCKER_OPTS:-}
 REPO_CONFIGS_DIR="$REPO_DIR/tmp/configs"
 
 TEMP_DIR=$(mktemp -d)
-
-llama stack configure $build_file_path
-cp $host_build_dir/$build_name-run.yaml $REPO_CONFIGS_DIR
 
 add_to_docker() {
   local input
@@ -113,7 +116,6 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 EOF
 
 add_to_docker "ADD tmp/configs/$(basename "$build_file_path") ./llamastack-build.yaml"
-add_to_docker "ADD tmp/configs/$build_name-run.yaml ./llamastack-run.yaml"
 
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile

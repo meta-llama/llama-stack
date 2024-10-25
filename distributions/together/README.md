@@ -62,7 +62,7 @@ memory:
 **Via Conda**
 
 ```bash
-llama stack build --config ./build.yaml
+llama stack build --template together --image-type conda
 # -- modify run.yaml to a valid Together server endpoint
 llama stack run ./run.yaml
 ```

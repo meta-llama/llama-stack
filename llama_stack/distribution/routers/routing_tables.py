@@ -100,7 +100,7 @@ class CommonRoutingTableImpl(RoutingTable):
                 scoring_functions = await p.list_scoring_functions()
                 add_objects(
                     [
-                        ScoringFunctionDefWithProvider(**s.dict(), provider_id=pid)
+                        ScoringFnDefWithProvider(**s.dict(), provider_id=pid)
                         for s in scoring_functions
                     ]
                 )
@@ -239,7 +239,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
 
 
 class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
-    async def list_scoring_functions(self) -> List[ScoringFunctionDefWithProvider]:
+    async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]:
         objects = []
         for objs in self.registry.values():
             objects.extend(objs)
@@ -247,10 +247,10 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
 
     async def get_scoring_function(
         self, name: str
-    ) -> Optional[ScoringFunctionDefWithProvider]:
+    ) -> Optional[ScoringFnDefWithProvider]:
         return self.get_object_by_identifier(name)
 
     async def register_scoring_function(
-        self, function_def: ScoringFunctionDefWithProvider
+        self, function_def: ScoringFnDefWithProvider
     ) -> None:
         await self.register_object(function_def)
