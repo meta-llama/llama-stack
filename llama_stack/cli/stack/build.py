@@ -16,6 +16,12 @@ TEMPLATES_PATH = (
     Path(os.path.relpath(__file__)).parent.parent.parent.parent / "distributions"
 )
 
+# build.yaml templates exist in the llama-stack/distributions while wheel installs llama-stack/llama_stack
+# we copied the distributions folder to llama-stack/llama_stack/cli/distributions for wheel builds,
+# so we need to check both locations
+if not TEMPLATES_PATH.exists():
+    TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent / "distributions"
+
 
 @lru_cache()
 def available_templates_specs() -> List[BuildConfig]:

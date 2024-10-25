@@ -29,7 +29,11 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/meta-llama/llama-stack",
-    packages=find_packages(),
+    # workaround to include distributions/*/build.yaml files in the package
+    # https://stackoverflow.com/questions/62550952/including-package-data-python-from-top-level-when-package-is-in-subdirectory
+    packages=find_packages() + ["llama_stack.cli.distributions"],
+    package_dir={"llama_stack.cli.distributions": "distributions"},
+    package_data={"llama_stack.cli.distributions": ["distributions/*/build.yaml"]},
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
