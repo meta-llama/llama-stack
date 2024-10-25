@@ -15,12 +15,23 @@ class VLLMConfig(BaseModel):
     """Configuration for the vLLM inference provider."""
 
     model: str = Field(
-        default="Llama3.1-8B-Instruct",
+        default="Llama3.2-3B-Instruct",
         description="Model descriptor from `llama model list`",
     )
     tensor_parallel_size: int = Field(
         default=1,
         description="Number of tensor parallel replicas (number of GPUs to use).",
+    )
+    max_tokens: int = Field(
+        default=4096,
+        description="Maximum number of tokens to generate.",
+    )
+    enforce_eager: bool = Field(
+        default=False,
+        description="Whether to use eager mode for inference (otherwise cuda graphs are used).",
+    )
+    gpu_memory_utilization: float = Field(
+        default=0.3,
     )
 
     @field_validator("model")
