@@ -14,7 +14,12 @@ apis:
 - datasets
 - datasetio
 - scoring
+- eval
 providers:
+  eval:
+  - provider_id: meta0
+    provider_type: meta-reference
+    config: {}
   scoring:
   - provider_id: meta0
     provider_type: meta-reference
