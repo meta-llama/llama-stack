@@ -37,8 +37,12 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
             scoring_fn_identifier is not None
         ), "Scoring function identifier not found."
         fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
+        assert fn_def.context is not None, f"LLMAsJudgeContext not found for {fn_def}."
         assert (
-            fn_def.context is not None and fn_def.context.prompt_template is not None
+            fn_def.context.prompt_template is not None
+        ), "LLM Judge prompt_template not found."
+        assert (
+            fn_def.context.judge_score_regex is not None
         ), "LLM Judge prompt_template not found."
 
         input_query = input_row["input_query"]
@@ -61,11 +65,8 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
             ],
         )
         content = judge_response.completion_message.content
-        rating_regexs = [
-            r"Total rating: (\d+)",
-            r"rating: (\d+)",
-            r"Rating: (\d+)",
-        ]
+        rating_regexs = fn_def.context.judge_score_regex
+
         judge_rating = None
         for regex in rating_regexs:
             match = re.search(regex, content)
