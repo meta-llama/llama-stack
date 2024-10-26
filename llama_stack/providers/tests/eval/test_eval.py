@@ -77,7 +77,6 @@ async def test_eval(eval_settings):
 
     eval_response = await eval_impl.job_result(response.job_id)
 
-    print(eval_response)
     assert eval_response is not None
     assert len(eval_response.generations) == 5
     assert "meta-reference::subset_of" in eval_response.scores

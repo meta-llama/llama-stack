@@ -57,6 +57,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             await impl.initialize()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
+                self.llm_as_judge_fn = impl
 
     async def shutdown(self) -> None: ...
 
@@ -68,9 +69,8 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         ]
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
-        raise NotImplementedError(
-            "Dynamically registering scoring functions is not supported"
-        )
+        self.llm_as_judge_fn.register_scoring_fn_def(function_def)
+        self.scoring_fn_id_impls[function_def.identifier] = self.llm_as_judge_fn
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)

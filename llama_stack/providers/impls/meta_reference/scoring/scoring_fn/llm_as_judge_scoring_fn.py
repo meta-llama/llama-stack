@@ -43,7 +43,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         ), "LLM Judge prompt_template not found."
         assert (
             fn_def.context.judge_score_regex is not None
-        ), "LLM Judge prompt_template not found."
+        ), "LLM Judge judge_score_regex not found."
 
         input_query = input_row["input_query"]
         expected_answer = input_row["expected_answer"]
