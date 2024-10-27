@@ -14,7 +14,7 @@ The `llamastack/distribution-` distribution consists of the following provider c
 > This assumes you have an hosted endpoint at Fireworks with API Key.
 
 ```
-$ cd llama-stack/distribution/fireworks
+$ cd distributions/fireworks
 $ ls
 compose.yaml  run.yaml
 $ docker compose up

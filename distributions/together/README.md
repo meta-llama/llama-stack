@@ -17,7 +17,7 @@ The `llamastack/distribution-together` distribution consists of the following pr
 > This assumes you have an hosted endpoint at Together with API Key.
 
 ```
-$ cd llama-stack/distribution/together
+$ cd distributions/together
 $ ls
 compose.yaml  run.yaml
 $ docker compose up

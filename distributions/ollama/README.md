@@ -13,7 +13,7 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 > This assumes you have access to GPU to start a Ollama server with access to your GPU.
 
 ```
-$ cd llama-stack/distribution/ollama/gpu
+$ cd distributions/ollama/gpu
 $ ls
 compose.yaml  run.yaml
 $ docker compose up
@@ -44,7 +44,7 @@ docker compose down
 > This will start an ollama server with CPU only, please see [Ollama Documentations](https://github.com/ollama/ollama) for serving models on CPU only.
 
 ```
-$ cd llama-stack/distribution/ollama/cpu
+$ cd distributions/ollama/cpu
 $ ls
 compose.yaml  run.yaml
 $ docker compose up
