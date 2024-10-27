@@ -82,7 +82,7 @@ async def register_dataset(
 
     dataset = DatasetDefWithProvider(
         identifier=dataset_id,
-        provider_id=os.environ["PROVIDER_ID"],
+        provider_id=os.environ["PROVIDER_ID"] or os.environ["DATASETIO_PROVIDER_ID"],
         url=URL(
             uri=test_url,
         ),

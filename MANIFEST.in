@@ -2,4 +2,4 @@ include requirements.txt
 include llama_stack/distribution/*.sh
 include llama_stack/cli/scripts/*.sh
 include llama_stack/templates/*/build.yaml
-include llama_stack/providers/impls/meta_reference/scoring/scoring_fn/fn_defs/*.json
+include llama_stack/providers/impls/*/scoring/scoring_fn/fn_defs/*.json

@@ -1,0 +1,10 @@
+{
+    "identifier": "braintrust::factuality",
+    "description": "Test whether an output is factual, compared to an original (`expected`) value. ",
+    "metadata": {},
+    "parameters": [],
+    "return_type": {
+        "type": "number"
+    },
+    "context": null
+}
