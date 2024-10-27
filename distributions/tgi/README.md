@@ -15,7 +15,7 @@ The `llamastack/distribution-tgi` distribution consists of the following provide
 
 
 ```
-$ cd llama_stack/distribution/docker/tgi
+$ cd distributions/tgi/gpu
 $ ls
 compose.yaml  tgi-run.yaml
 $ docker compose up
@@ -43,7 +43,7 @@ docker compose down
 > This assumes you have an hosted endpoint compatible with TGI server.
 
 ```
-$ cd llama-stack/distribution/tgi/cpu
+$ cd distributions/tgi/cpu
 $ ls
 compose.yaml  run.yaml
 $ docker compose up
