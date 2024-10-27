@@ -23,4 +23,15 @@ def available_providers() -> List[ProviderSpec]:
                 Api.inference,
             ],
         ),
+        InlineProviderSpec(
+            api=Api.scoring,
+            provider_type="braintrust",
+            pip_packages=[],
+            module="llama_stack.providers.impls.braintrust.scoring",
+            config_class="llama_stack.providers.impls.braintrust.scoring.BraintrustScoringConfig",
+            api_dependencies=[
+                Api.datasetio,
+                Api.datasets,
+            ],
+        ),
     ]
