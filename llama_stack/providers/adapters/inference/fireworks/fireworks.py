@@ -37,6 +37,8 @@ FIREWORKS_SUPPORTED_MODELS = {
     "Llama3.1-405B-Instruct": "fireworks/llama-v3p1-405b-instruct",
     "Llama3.2-1B-Instruct": "fireworks/llama-v3p2-1b-instruct",
     "Llama3.2-3B-Instruct": "fireworks/llama-v3p2-3b-instruct",
+    "Llama3.2-11B-Vision-Instruct": "llama-v3p2-11b-vision-instruct",
+    "Llama3.2-90B-Vision-Instruct": "llama-v3p2-90b-vision-instruct",
 }
 
 
