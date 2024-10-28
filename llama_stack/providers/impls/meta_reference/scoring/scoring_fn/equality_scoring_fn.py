@@ -13,7 +13,10 @@ from llama_stack.apis.common.type_system import *  # noqa: F403
 
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
     aggregate_accuracy,
-    FN_DEFS_PATH,
+)
+
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.equality import (
+    equality_fn_def,
 )
 
 
@@ -24,7 +27,9 @@ class EqualityScoringFn(BaseScoringFn):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.defs_paths = [FN_DEFS_PATH / "equality.json"]
+        self.supported_fn_defs_registry = {
+            equality_fn_def.identifier: equality_fn_def,
+        }
 
     async def score_row(
         self,
