@@ -49,16 +49,7 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             answer_correctness_fn_def.identifier: answer_correctness_fn_def,
         }
 
-        # self.braintrust_scoring_fn_impl = None
-        # self.supported_fn_ids = {}
-
     async def initialize(self) -> None: ...
-
-    # self.braintrust_scoring_fn_impl = BraintrustScoringFn()
-    # self.supported_fn_ids = {
-    #     x.identifier
-    #     for x in self.braintrust_scoring_fn_impl.get_supported_scoring_fn_defs()
-    # }
 
     async def shutdown(self) -> None: ...
 
@@ -132,10 +123,6 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
     ) -> ScoreResponse:
-        # assert (
-        #     self.braintrust_scoring_fn_impl is not None
-        # ), "braintrust_scoring_fn_impl is not initialized, need to call initialize for provider. "
-
         res = {}
         for scoring_fn_id in scoring_functions:
             if scoring_fn_id not in self.supported_fn_defs_registry:
