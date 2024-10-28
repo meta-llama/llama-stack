@@ -49,12 +49,10 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def initialize(self) -> None:
         for x in FIXED_FNS:
             impl = x()
-            await impl.initialize()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
         for x in LLM_JUDGE_FNS:
             impl = x(inference_api=self.inference_api)
-            await impl.initialize()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
                 self.llm_as_judge_fn = impl

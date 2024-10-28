@@ -24,8 +24,6 @@ class BaseScoringFn(ABC):
     def __str__(self) -> str:
         return self.__class__.__name__
 
-    async def initialize(self) -> None: ...
-
     def get_supported_scoring_fn_defs(self) -> List[ScoringFnDef]:
         return [x for x in self.supported_fn_defs_registry.values()]
 
