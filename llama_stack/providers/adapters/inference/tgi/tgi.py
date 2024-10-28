@@ -109,7 +109,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             if fmt.type == ResponseFormatType.json_schema.value:
                 options["grammar"] = {
                     "type": "json",
-                    "value": fmt.schema,
+                    "value": fmt.json_schema,
                 }
             elif fmt.type == ResponseFormatType.grammar.value:
                 raise ValueError("Grammar response format not supported yet")

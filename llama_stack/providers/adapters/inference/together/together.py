@@ -121,7 +121,7 @@ class TogetherInferenceAdapter(
             if fmt.type == ResponseFormatType.json_schema.value:
                 options["response_format"] = {
                     "type": "json_object",
-                    "schema": fmt.schema,
+                    "schema": fmt.json_schema,
                 }
             elif fmt.type == ResponseFormatType.grammar.value:
                 raise NotImplementedError("Grammar response format not supported yet")

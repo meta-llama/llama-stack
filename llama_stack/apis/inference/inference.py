@@ -86,11 +86,11 @@ class ResponseFormatType(Enum):
     grammar = "grammar"
 
 
-class JsonResponseFormat(BaseModel):
+class JsonSchemaResponseFormat(BaseModel):
     type: Literal[ResponseFormatType.json_schema.value] = (
         ResponseFormatType.json_schema.value
     )
-    schema: Dict[str, Any]
+    json_schema: Dict[str, Any]
 
 
 class GrammarResponseFormat(BaseModel):
@@ -99,7 +99,7 @@ class GrammarResponseFormat(BaseModel):
 
 
 ResponseFormat = Annotated[
-    Union[JsonResponseFormat, GrammarResponseFormat],
+    Union[JsonSchemaResponseFormat, GrammarResponseFormat],
     Field(discriminator="type"),
 ]
 

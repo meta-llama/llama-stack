@@ -163,7 +163,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
             if fmt.type == ResponseFormatType.json_schema.value:
                 options["response_format"] = {
                     "type": "json_object",
-                    "schema": fmt.schema,
+                    "schema": fmt.json_schema,
                 }
             elif fmt.type == ResponseFormatType.grammar.value:
                 options["response_format"] = {
