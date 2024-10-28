@@ -26,7 +26,10 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.distribution import (
+    builtin_automatically_routed_apis,
+    get_provider_registry,
+)
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -276,7 +279,7 @@ def main(
 
     app = FastAPI()
 
-    impls = asyncio.run(resolve_impls(config))
+    impls = asyncio.run(resolve_impls(config, get_provider_registry()))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
