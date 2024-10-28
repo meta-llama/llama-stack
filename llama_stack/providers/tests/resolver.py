@@ -13,6 +13,7 @@ import yaml
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
+from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
 
@@ -36,7 +37,7 @@ async def resolve_impls_for_test(api: Api, deps: List[Api] = None):
         providers=chosen,
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
-    impls = await resolve_impls(run_config)
+    impls = await resolve_impls(run_config, get_provider_registry())
 
     if "provider_data" in config_dict:
         provider_id = chosen[api.value][0].provider_id
