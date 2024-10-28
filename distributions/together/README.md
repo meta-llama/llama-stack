@@ -33,7 +33,7 @@ inference:
       api_key: <optional api key>
 ```
 
-### (Alternative) TGI server + llama stack run (Single Node GPU)
+### (Alternative) llama stack run (Single Node CPU)
 
 ```
 docker run --network host -it -p 5000:5000 -v ./run.yaml:/root/my-run.yaml --gpus=all llamastack/distribution-together --yaml_config /root/my-run.yaml
@@ -52,7 +52,7 @@ inference:
 Together distribution comes with weaviate as Memory provider. We also need to configure the remote weaviate API key and URL in `run.yaml` to get memory API.
 ```
 memory:
-  - provider_id: meta0
+  - provider_id: weaviate0
     provider_type: remote::weaviate
     config:
       weaviate_api_key: <ENTER_WEAVIATE_API_KEY>
