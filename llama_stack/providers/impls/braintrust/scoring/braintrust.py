@@ -33,7 +33,6 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
     async def initialize(self) -> None:
         self.braintrust_scoring_fn_impl = BraintrustScoringFn()
-        await self.braintrust_scoring_fn_impl.initialize()
         self.supported_fn_ids = {
             x.identifier
             for x in self.braintrust_scoring_fn_impl.get_supported_scoring_fn_defs()
@@ -45,7 +44,16 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         assert (
             self.braintrust_scoring_fn_impl is not None
         ), "braintrust_scoring_fn_impl is not initialized, need to call initialize for provider. "
-        return self.braintrust_scoring_fn_impl.get_supported_scoring_fn_defs()
+        scoring_fn_defs_list = (
+            self.braintrust_scoring_fn_impl.get_supported_scoring_fn_defs()
+        )
+
+        for f in scoring_fn_defs_list:
+            assert f.identifier.startswith(
+                "braintrust"
+            ), "All braintrust scoring fn must have identifier prefixed with 'braintrust'! "
+
+        return scoring_fn_defs_list
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
         raise NotImplementedError(
