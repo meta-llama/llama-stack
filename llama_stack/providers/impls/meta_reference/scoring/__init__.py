@@ -16,6 +16,8 @@ async def get_provider_impl(
 ):
     from .scoring import MetaReferenceScoringImpl
 
-    impl = MetaReferenceScoringImpl(config, deps[Api.datasetio], deps[Api.datasets])
+    impl = MetaReferenceScoringImpl(
+        config, deps[Api.datasetio], deps[Api.datasets], deps[Api.inference]
+    )
     await impl.initialize()
     return impl

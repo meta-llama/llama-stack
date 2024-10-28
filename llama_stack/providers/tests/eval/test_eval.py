@@ -65,7 +65,10 @@ async def test_eval(eval_settings):
             model="Llama3.2-1B-Instruct",
             sampling_params=SamplingParams(),
         ),
-        scoring_functions=["subset_of"],
+        scoring_functions=[
+            "meta-reference::subset_of",
+            "meta-reference::llm_as_judge_8b_correctness",
+        ],
     )
     assert response.job_id == "0"
     job_status = await eval_impl.job_status(response.job_id)
@@ -76,4 +79,5 @@ async def test_eval(eval_settings):
 
     assert eval_response is not None
     assert len(eval_response.generations) == 5
-    assert "subset_of" in eval_response.scores
+    assert "meta-reference::subset_of" in eval_response.scores
+    assert "meta-reference::llm_as_judge_8b_correctness" in eval_response.scores

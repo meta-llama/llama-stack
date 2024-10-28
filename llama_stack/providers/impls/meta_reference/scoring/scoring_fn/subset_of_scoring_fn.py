@@ -14,25 +14,27 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import
     aggregate_accuracy,
 )
 
+from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.subset_of import (
+    subset_of,
+)
+
 
 class SubsetOfScoringFn(BaseScoringFn):
     """
     A scoring_fn that assigns a score of 1.0 if the expected string is included in the generated string, and 0.0 otherwise.
     """
 
-    scoring_function_def = ScoringFnDef(
-        identifier="subset_of",
-        description="Returns 1.0 if the expected is included in generated, 0.0 otherwise.",
-        parameters=[],
-        return_type=NumberType(),
-    )
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.supported_fn_defs_registry = {
+            subset_of.identifier: subset_of,
+        }
 
-    def score_row(self, input_row: Dict[str, Any]) -> ScoringResultRow:
-        assert "expected_answer" in input_row, "Expected answer not found in input row."
-        assert (
-            "generated_answer" in input_row
-        ), "Generated answer not found in input row."
-
+    async def score_row(
+        self,
+        input_row: Dict[str, Any],
+        scoring_fn_identifier: Optional[str] = "subset_of",
+    ) -> ScoringResultRow:
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]
         score = 1.0 if expected_answer in generated_answer else 0.0
@@ -40,5 +42,7 @@ class SubsetOfScoringFn(BaseScoringFn):
             "score": score,
         }
 
-    def aggregate(self, scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
+    async def aggregate(
+        self, scoring_results: List[ScoringResultRow]
+    ) -> Dict[str, Any]:
         return aggregate_accuracy(scoring_results)

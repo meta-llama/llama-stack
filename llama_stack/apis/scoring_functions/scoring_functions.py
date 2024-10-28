@@ -26,6 +26,10 @@ class Parameter(BaseModel):
 class LLMAsJudgeContext(BaseModel):
     judge_model: str
     prompt_template: Optional[str] = None
+    judge_score_regex: Optional[List[str]] = Field(
+        description="Regex to extract the score from the judge response",
+        default=None,
+    )
 
 
 @json_schema_type

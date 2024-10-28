@@ -7,3 +7,8 @@ providers:
     - provider_id: test-meta
       provider_type: meta-reference
       config: {}
+  inference:
+    - provider_id: tgi0
+      provider_type: remote::tgi
+      config:
+        url: http://127.0.0.1:5009

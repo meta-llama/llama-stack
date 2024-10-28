@@ -20,6 +20,7 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,
+                Api.inference,
             ],
         ),
     ]
