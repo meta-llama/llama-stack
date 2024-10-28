@@ -20,6 +20,12 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from autoevals.llm import Factuality
 from autoevals.ragas import AnswerCorrectness
+from llama_stack.providers.impls.braintrust.scoring.scoring_fn.fn_defs.answer_correctness import (
+    answer_correctness_fn_def,
+)
+from llama_stack.providers.impls.braintrust.scoring.scoring_fn.fn_defs.factuality import (
+    factuality_fn_def,
+)
 
 
 BRAINTRUST_FN_DEFS_PATH = Path(__file__).parent / "fn_defs"
@@ -36,9 +42,10 @@ class BraintrustScoringFn(BaseScoringFn):
             "braintrust::factuality": Factuality(),
             "braintrust::answer-correctness": AnswerCorrectness(),
         }
-        self.defs_paths = [
-            str(x) for x in sorted(BRAINTRUST_FN_DEFS_PATH.glob("*.json"))
-        ]
+        self.supported_fn_defs_registry = {
+            factuality_fn_def.identifier: factuality_fn_def,
+            answer_correctness_fn_def.identifier: answer_correctness_fn_def,
+        }
 
     async def score_row(
         self,
