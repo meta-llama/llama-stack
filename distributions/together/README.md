@@ -33,7 +33,7 @@ inference:
       api_key: <optional api key>
 ```
 
-### (Alternative) TGI server + llama stack run (Single Node GPU)
+### (Alternative) llama stack run (Single Node CPU)
 
 ```
 docker run --network host -it -p 5000:5000 -v ./run.yaml:/root/my-run.yaml --gpus=all llamastack/distribution-together --yaml_config /root/my-run.yaml
