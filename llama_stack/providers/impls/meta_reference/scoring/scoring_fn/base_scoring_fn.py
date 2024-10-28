@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
-import json
 
 
 class BaseScoringFn(ABC):
@@ -21,16 +20,11 @@ class BaseScoringFn(ABC):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.supported_fn_defs_registry = {}
-        self.defs_paths = []
 
     def __str__(self) -> str:
         return self.__class__.__name__
 
-    async def initialize(self) -> None:
-        for f in self.defs_paths:
-            with open(f, "r") as f:
-                scoring_fn_def = ScoringFnDef(**json.load(f))
-                self.register_scoring_fn_def(scoring_fn_def)
+    async def initialize(self) -> None: ...
 
     def get_supported_scoring_fn_defs(self) -> List[ScoringFnDef]:
         return [x for x in self.supported_fn_defs_registry.values()]
