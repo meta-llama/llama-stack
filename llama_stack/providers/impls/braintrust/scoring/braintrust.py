@@ -104,8 +104,6 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             if scoring_fn_id not in self.supported_fn_ids:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
 
-            # scoring_impl = self.scoring_fn_id_impls[scoring_fn_id]
-            # scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
             score_results = await self.braintrust_scoring_fn_impl.score(
                 input_rows, scoring_fn_id
             )

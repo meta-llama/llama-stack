@@ -147,8 +147,6 @@ async def test_scoring_score(scoring_settings, provider_scoring_functions):
         scoring_functions=list(provider_scoring_functions[provider_type]),
     )
 
-    print("RESPONSE", response)
-
     assert len(response.results) == len(provider_scoring_functions[provider_type])
     for x in provider_scoring_functions[provider_type]:
         assert x in response.results
