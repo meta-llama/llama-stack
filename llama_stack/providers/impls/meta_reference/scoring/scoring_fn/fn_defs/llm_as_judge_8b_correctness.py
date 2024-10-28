@@ -22,7 +22,8 @@ System Answer: {generated_answer}
 Feedback:::
 Total rating:
 """
-llm_as_judge_8b_correctness_fn_def = ScoringFnDef(
+
+llm_as_judge_8b_correctness = ScoringFnDef(
     identifier="meta-reference::llm_as_judge_8b_correctness",
     description="Llm As Judge Scoring Function",
     parameters=[],

@@ -16,7 +16,7 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import
     aggregate_average,
 )
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.llm_as_judge_8b_correctness import (
-    llm_as_judge_8b_correctness_fn_def,
+    llm_as_judge_8b_correctness,
 )
 
 
@@ -29,7 +29,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         super().__init__(*arg, **kwargs)
         self.inference_api = inference_api
         self.supported_fn_defs_registry = {
-            llm_as_judge_8b_correctness_fn_def.identifier: llm_as_judge_8b_correctness_fn_def,
+            llm_as_judge_8b_correctness.identifier: llm_as_judge_8b_correctness,
         }
 
     async def score_row(

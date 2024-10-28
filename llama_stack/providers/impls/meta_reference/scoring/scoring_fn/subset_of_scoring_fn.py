@@ -15,7 +15,7 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import
 )
 
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.subset_of import (
-    subset_of_fn_def,
+    subset_of,
 )
 
 
@@ -27,7 +27,7 @@ class SubsetOfScoringFn(BaseScoringFn):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.supported_fn_defs_registry = {
-            subset_of_fn_def.identifier: subset_of_fn_def,
+            subset_of.identifier: subset_of,
         }
 
     async def score_row(

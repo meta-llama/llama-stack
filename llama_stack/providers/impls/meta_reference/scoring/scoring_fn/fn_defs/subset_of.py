@@ -8,7 +8,7 @@ from llama_stack.apis.common.type_system import NumberType
 from llama_stack.apis.scoring_functions import ScoringFnDef
 
 
-subset_of_fn_def = ScoringFnDef(
+subset_of = ScoringFnDef(
     identifier="meta-reference::subset_of",
     description="Returns 1.0 if the expected is included in generated, 0.0 otherwise.",
     parameters=[],

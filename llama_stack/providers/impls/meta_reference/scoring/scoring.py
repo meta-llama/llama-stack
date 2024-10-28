@@ -61,9 +61,9 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
     async def list_scoring_functions(self) -> List[ScoringFnDef]:
         return [
-            fn_defs
+            fn_def
             for impl in self.scoring_fn_id_impls.values()
-            for fn_defs in impl.get_supported_scoring_fn_defs()
+            for fn_def in impl.get_supported_scoring_fn_defs()
         ]
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
