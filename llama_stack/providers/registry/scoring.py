@@ -26,7 +26,7 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.scoring,
             provider_type="braintrust",
-            pip_packages=[],
+            pip_packages=["autoevals", "openai"],
             module="llama_stack.providers.impls.braintrust.scoring",
             config_class="llama_stack.providers.impls.braintrust.scoring.BraintrustScoringConfig",
             api_dependencies=[
