@@ -52,7 +52,7 @@ inference:
 Together distribution comes with weaviate as Memory provider. We also need to configure the remote weaviate API key and URL in `run.yaml` to get memory API.
 ```
 memory:
-  - provider_id: meta0
+  - provider_id: weaviate0
     provider_type: remote::weaviate
     config:
       weaviate_api_key: <ENTER_WEAVIATE_API_KEY>
