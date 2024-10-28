@@ -11,11 +11,11 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
-from autoevals.llm import Factuality
-from autoevals.ragas import AnswerCorrectness
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
 from .config import BraintrustScoringConfig
+
+from .scoring_fn.braintrust_scoring_fn import BraintrustScoringFn
 
 
 class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
@@ -28,36 +28,29 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
-        self.scoring_fn_id_impls = {}
+        self.braintrust_scoring_fn_impl = None
+        self.supported_fn_ids = {}
 
     async def initialize(self) -> None:
-        self.scoring_fn_id_impls = {
-            "braintrust::factuality": Factuality(),
-            "braintrust::answer-correctness": AnswerCorrectness(),
+        self.braintrust_scoring_fn_impl = BraintrustScoringFn()
+        await self.braintrust_scoring_fn_impl.initialize()
+        self.supported_fn_ids = {
+            x.identifier
+            for x in self.braintrust_scoring_fn_impl.get_supported_scoring_fn_defs()
         }
 
     async def shutdown(self) -> None: ...
 
     async def list_scoring_functions(self) -> List[ScoringFnDef]:
-        return [
-            ScoringFnDef(
-                identifier="braintrust::factuality",
-                description="Test whether an output is factual, compared to an original (`expected`) value.",
-                parameters=[],
-                return_type=NumberType(),
-            ),
-            ScoringFnDef(
-                identifier="braintrust::answer-correctness",
-                description="Test whether an output is factual, compared to an original (`expected`) value.",
-                parameters=[],
-                return_type=NumberType(),
-            ),
-        ]
+        assert (
+            self.braintrust_scoring_fn_impl is not None
+        ), "braintrust_scoring_fn_impl is not initialized, need to call initialize for provider. "
+        return self.braintrust_scoring_fn_impl.get_supported_scoring_fn_defs()
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
-        # self.llm_as_judge_fn.register_scoring_fn_def(function_def)
-        # self.scoring_fn_id_impls[function_def.identifier] = self.llm_as_judge_fn
-        return None
+        raise NotImplementedError(
+            "Registering scoring function not allowed for braintrust provider"
+        )
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -82,19 +75,18 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         scoring_functions: List[str],
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
-        print("score_batch")
         await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
-        # all_rows = await self.datasetio_api.get_rows_paginated(
-        #     dataset_id=dataset_id,
-        #     rows_in_page=-1,
-        # )
-        # res = await self.score(
-        #     input_rows=all_rows.rows, scoring_functions=scoring_functions
-        # )
-        # if save_results_dataset:
-        #     # TODO: persist and register dataset on to server for reading
-        #     # self.datasets_api.register_dataset()
-        #     raise NotImplementedError("Save results dataset not implemented yet")
+        all_rows = await self.datasetio_api.get_rows_paginated(
+            dataset_id=dataset_id,
+            rows_in_page=-1,
+        )
+        res = await self.score(
+            input_rows=all_rows.rows, scoring_functions=scoring_functions
+        )
+        if save_results_dataset:
+            # TODO: persist and register dataset on to server for reading
+            # self.datasets_api.register_dataset()
+            raise NotImplementedError("Save results dataset not implemented yet")
 
         return ScoreBatchResponse(
             results=res.results,
@@ -103,19 +95,25 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
     ) -> ScoreResponse:
+        assert (
+            self.braintrust_scoring_fn_impl is not None
+        ), "braintrust_scoring_fn_impl is not initialized, need to call initialize for provider. "
+
         res = {}
-        print("score")
         for scoring_fn_id in scoring_functions:
-            if scoring_fn_id not in self.scoring_fn_id_impls:
+            if scoring_fn_id not in self.supported_fn_ids:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
 
+            # scoring_impl = self.scoring_fn_id_impls[scoring_fn_id]
             # scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
-            # score_results = await scoring_fn.score(input_rows, scoring_fn_id)
-            # agg_results = await scoring_fn.aggregate(score_results)
-            # res[scoring_fn_id] = ScoringResult(
-            #     score_rows=score_results,
-            #     aggregated_results=agg_results,
-            # )
+            score_results = await self.braintrust_scoring_fn_impl.score(
+                input_rows, scoring_fn_id
+            )
+            agg_results = await self.braintrust_scoring_fn_impl.aggregate(score_results)
+            res[scoring_fn_id] = ScoringResult(
+                score_rows=score_results,
+                aggregated_results=agg_results,
+            )
 
         return ScoreResponse(
             results=res,

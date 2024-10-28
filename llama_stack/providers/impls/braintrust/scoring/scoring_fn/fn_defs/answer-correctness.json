@@ -1,5 +1,5 @@
 {
-    "identifier": "braintrust::factuality",
+    "identifier": "braintrust::answer-correctness",
     "description": "Test whether an output is factual, compared to an original (`expected`) value. One of Braintrust LLM basd scorer https://github.com/braintrustdata/autoevals/blob/main/py/autoevals/llm.py",
     "metadata": {},
     "parameters": [],

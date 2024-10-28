@@ -141,15 +141,13 @@ async def test_scoring_score(scoring_settings, provider_scoring_functions):
     function_ids = [f.identifier for f in scoring_functions]
     provider = scoring_impl.routing_table.get_provider_impl(function_ids[0])
     provider_type = provider.__provider_spec__.provider_type
-    if provider_type not in ("meta-reference"):
-        pytest.skip(
-            "Other scoring providers don't support registering scoring functions."
-        )
 
     response = await scoring_impl.score_batch(
         dataset_id=response[0].identifier,
         scoring_functions=list(provider_scoring_functions[provider_type]),
     )
+
+    print("RESPONSE", response)
 
     assert len(response.results) == len(provider_scoring_functions[provider_type])
     for x in provider_scoring_functions[provider_type]:
