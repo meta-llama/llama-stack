@@ -8,7 +8,7 @@ The `llamastack/distribution-together` distribution consists of the following pr
 
 | **API**         	| **Inference** 	| **Agents**     	| **Memory**                                       	| **Safety**     	| **Telemetry**  	|
 |-----------------	|---------------	|----------------	|--------------------------------------------------	|----------------	|----------------	|
-| **Provider(s)** 	| remote::together   	| meta-reference 	| remote::weaviate 	| meta-reference 	| meta-reference 	|
+| **Provider(s)** 	| remote::together   	| meta-reference 	| meta-reference, remote::weaviate 	| meta-reference 	| meta-reference 	|
 
 
 ### Start the Distribution (Single Node CPU)
@@ -47,16 +47,6 @@ inference:
     config:
       url: https://api.together.xyz/v1
       api_key: <optional api key>
-```
-
-Together distribution comes with weaviate as Memory provider. We also need to configure the remote weaviate API key and URL in `run.yaml` to get memory API.
-```
-memory:
-  - provider_id: weaviate0
-    provider_type: remote::weaviate
-    config:
-      weaviate_api_key: <ENTER_WEAVIATE_API_KEY>
-      weaviate_cluster_url: <ENTER_WEAVIATE_CLUSTER_URL>
 ```
 
 **Via Conda**
