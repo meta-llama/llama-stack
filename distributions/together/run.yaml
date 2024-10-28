@@ -25,9 +25,7 @@ providers:
   memory:
   - provider_id: meta0
     provider_type: remote::weaviate
-    config:
-      weaviate_api_key: <ENTER_WEAVIATE_API_KEY>
-      weaviate_cluster_url: <ENTER_WEAVIATE_CLUSTER_URL>
+    config: {}
   agents:
   - provider_id: meta0
     provider_type: meta-reference

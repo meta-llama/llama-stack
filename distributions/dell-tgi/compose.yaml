@@ -1,6 +1,6 @@
 services:
   text-generation-inference:
-    image: ghcr.io/huggingface/text-generation-inference:latest
+    image: registry.dell.huggingface.co/enterprise-dell-inference-meta-llama-meta-llama-3.1-8b-instruct
     network_mode: "host"
     volumes:
       - $HOME/.cache/huggingface:/data
@@ -9,12 +9,12 @@ services:
     devices:
       - nvidia.com/gpu=all
     environment:
-      - CUDA_VISIBLE_DEVICES=0
-      - HF_HOME=/data
-      - HF_DATASETS_CACHE=/data
-      - HF_MODULES_CACHE=/data
-      - HF_HUB_CACHE=/data
-    command: ["--dtype", "bfloat16", "--usage-stats", "on", "--sharded", "false", "--model-id", "meta-llama/Llama-3.1-8B-Instruct", "--port", "5009", "--cuda-memory-fraction", "0.3"]
+      - CUDA_VISIBLE_DEVICES=0,1,2,3,4
+      - NUM_SHARD=4
+      - MAX_BATCH_PREFILL_TOKENS=32768
+      - MAX_INPUT_TOKENS=8000
+      - MAX_TOTAL_TOKENS=8192
+    command: []
     deploy:
       resources:
         reservations:
@@ -22,18 +22,13 @@ services:
           - driver: nvidia
             # that's the closest analogue to --gpus; provide
             # an integer amount of devices or 'all'
-            count: 1
+            count: all
             # Devices are reserved using a list of capabilities, making
             # capabilities the only required field. A device MUST
             # satisfy all the requested capabilities for a successful
             # reservation.
             capabilities: [gpu]
     runtime: nvidia
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://text-generation-inference:5009/health"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
   llamastack:
     depends_on:
       text-generation-inference:

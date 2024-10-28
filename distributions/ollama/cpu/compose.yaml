@@ -10,7 +10,7 @@ services:
   llamastack:
     depends_on:
     - ollama
-    image: llamastack/llamastack-local-cpu
+    image: llamastack/distribution-ollama
     network_mode: "host"
     volumes:
       - ~/.llama:/root/.llama

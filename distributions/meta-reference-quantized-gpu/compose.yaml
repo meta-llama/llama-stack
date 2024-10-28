@@ -1,11 +1,12 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
+  llamastack:
+    image: llamastack/distribution-meta-reference-quantized-gpu
     network_mode: "host"
     volumes:
-      - ollama:/root/.ollama # this solution synchronizes with the docker volume and loads the model rocket fast
+      - ~/.llama:/root/.llama
+      - ./run.yaml:/root/my-run.yaml
     ports:
-      - "11434:11434"
+      - "5000:5000"
     devices:
       - nvidia.com/gpu=all
     environment:
@@ -25,24 +26,10 @@ services:
             # reservation.
             capabilities: [gpu]
     runtime: nvidia
-  llamastack:
-    depends_on:
-    - ollama
-    image: llamastack/distribution-ollama
-    network_mode: "host"
-    volumes:
-      - ~/.llama:/root/.llama
-      # Link to ollama run.yaml file
-      - ./run.yaml:/root/llamastack-run-ollama.yaml
-    ports:
-      - "5000:5000"
-    # Hack: wait for ollama server to start before starting docker
-    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-ollama.yaml"
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/my-run.yaml"
     deploy:
       restart_policy:
         condition: on-failure
         delay: 3s
         max_attempts: 5
         window: 60s
-volumes:
-  ollama:
