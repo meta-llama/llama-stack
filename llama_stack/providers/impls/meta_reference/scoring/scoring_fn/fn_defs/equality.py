@@ -8,7 +8,7 @@ from llama_stack.apis.common.type_system import NumberType
 from llama_stack.apis.scoring_functions import ScoringFnDef
 
 
-equality_fn_def = ScoringFnDef(
+equality = ScoringFnDef(
     identifier="meta-reference::equality",
     description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
     parameters=[],

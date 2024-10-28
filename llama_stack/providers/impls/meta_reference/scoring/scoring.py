@@ -49,12 +49,10 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def initialize(self) -> None:
         for x in FIXED_FNS:
             impl = x()
-            await impl.initialize()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
         for x in LLM_JUDGE_FNS:
             impl = x(inference_api=self.inference_api)
-            await impl.initialize()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
                 self.llm_as_judge_fn = impl
@@ -62,11 +60,18 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def shutdown(self) -> None: ...
 
     async def list_scoring_functions(self) -> List[ScoringFnDef]:
-        return [
-            fn_defs
+        scoring_fn_defs_list = [
+            fn_def
             for impl in self.scoring_fn_id_impls.values()
-            for fn_defs in impl.get_supported_scoring_fn_defs()
+            for fn_def in impl.get_supported_scoring_fn_defs()
         ]
+
+        for f in scoring_fn_defs_list:
+            assert f.identifier.startswith(
+                "meta-reference"
+            ), "All meta-reference scoring fn must have identifier prefixed with 'meta-reference'! "
+
+        return scoring_fn_defs_list
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
         self.llm_as_judge_fn.register_scoring_fn_def(function_def)

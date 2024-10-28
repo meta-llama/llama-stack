@@ -16,7 +16,7 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import
 )
 
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.equality import (
-    equality_fn_def,
+    equality,
 )
 
 
@@ -28,7 +28,7 @@ class EqualityScoringFn(BaseScoringFn):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.supported_fn_defs_registry = {
-            equality_fn_def.identifier: equality_fn_def,
+            equality.identifier: equality,
         }
 
     async def score_row(
