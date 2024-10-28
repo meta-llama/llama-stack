@@ -40,9 +40,7 @@ class ScoringFnDef(BaseModel):
         description="List of parameters for the deterministic function",
         default_factory=list,
     )
-    return_type: ParamType = Field(
-        description="The return type of the deterministic function",
-    )
+    return_type: ParamType
     context: Optional[LLMAsJudgeContext] = None
     # We can optionally add information here to support packaging of code, etc.
 
