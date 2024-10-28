@@ -50,7 +50,7 @@ compose.yaml  run.yaml
 $ docker compose up
 ```
 
-### (Alternative) ollama run + llama stack Run
+### (Alternative) ollama run + llama stack run
 
 If you wish to separately spin up a Ollama server, and connect with Llama Stack, you may use the following commands.
 
@@ -71,7 +71,7 @@ ollama run <model_id>
 
 **Via Docker**
 ```
-docker run --network host -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./gpu/run.yaml:/root/llamastack-run-ollama.yaml --gpus=all distribution-ollama --yaml_config /root/llamastack-run-ollama.yaml
+docker run --network host -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./gpu/run.yaml:/root/llamastack-run-ollama.yaml --gpus=all llamastack/distribution-ollama --yaml_config /root/llamastack-run-ollama.yaml
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Ollama endpoint. E.g.

@@ -1,4 +1,4 @@
-# TGI Distribution
+# Dell-TGI Distribution
 
 The `llamastack/distribution-tgi` distribution consists of the following provider configurations.
 
@@ -8,16 +8,18 @@ The `llamastack/distribution-tgi` distribution consists of the following provide
 | **Provider(s)** 	| remote::tgi   	| meta-reference 	| meta-reference, remote::pgvector, remote::chroma 	| meta-reference 	| meta-reference 	|
 
 
+The only difference vs. the `tgi` distribution is that it runs the Dell-TGI server for inference.
+
+
 ### Start the Distribution (Single Node GPU)
 
 > [!NOTE]
 > This assumes you have access to GPU to start a TGI server with access to your GPU.
 
-
 ```
-$ cd distributions/tgi/gpu
+$ cd distributions/dell-tgi/
 $ ls
-compose.yaml  tgi-run.yaml
+compose.yaml  README.md  run.yaml
 $ docker compose up
 ```
 
@@ -37,36 +39,16 @@ To kill the server
 docker compose down
 ```
 
-### Start the Distribution (Single Node CPU)
+### (Alternative) Dell-TGI server + llama stack run (Single Node GPU)
 
-> [!NOTE]
-> This assumes you have an hosted endpoint compatible with TGI server.
-
+#### Start Dell-TGI server locally
 ```
-$ cd distributions/tgi/cpu
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
-```
-
-Replace <ENTER_YOUR_TGI_HOSTED_ENDPOINT> in `run.yaml` file with your TGI endpoint.
-```
-inference:
-  - provider_id: tgi0
-    provider_type: remote::tgi
-    config:
-      url: <ENTER_YOUR_TGI_HOSTED_ENDPOINT>
-```
-
-### (Alternative) TGI server + llama stack run (Single Node GPU)
-
-If you wish to separately spin up a TGI server, and connect with Llama Stack, you may use the following commands.
-
-#### (optional) Start TGI server locally
-- Please check the [TGI Getting Started Guide](https://github.com/huggingface/text-generation-inference?tab=readme-ov-file#get-started) to get a TGI endpoint.
-
-```
-docker run --rm -it -v $HOME/.cache/huggingface:/data -p 5009:5009 --gpus all ghcr.io/huggingface/text-generation-inference:latest --dtype bfloat16 --usage-stats on --sharded false --model-id meta-llama/Llama-3.1-8B-Instruct --port 5009
+docker run -it --shm-size 1g -p 80:80 --gpus 4 \
+-e NUM_SHARD=4
+-e MAX_BATCH_PREFILL_TOKENS=32768 \
+-e MAX_INPUT_TOKENS=8000 \
+-e MAX_TOTAL_TOKENS=8192 \
+registry.dell.huggingface.co/enterprise-dell-inference-meta-llama-meta-llama-3.1-8b-instruct
 ```
 
 
@@ -83,12 +65,4 @@ inference:
     provider_type: remote::tgi
     config:
       url: http://127.0.0.1:5009
-```
-
-**Via Conda**
-
-```bash
-llama stack build --template tgi --image-type conda
-# -- start a TGI server endpoint
-llama stack run ./gpu/run.yaml
 ```
