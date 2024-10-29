@@ -240,31 +240,24 @@ This server is running a Llama model locally.
 
 ## Step 4. Test with Client
 Once the server is setup, we can test it with a client to see the example outputs.
-```
-cd /path/to/llama-stack
-conda activate <env>  # any environment containing the llama-stack pip package will work
-
-python -m llama_stack.apis.inference.client localhost 5000
-```
-
-This will run the chat completion client and query the distribution’s /inference/chat_completion API.
-
-Here is an example output:
-```
-User>hello world, write me a 2 sentence poem about the moon
-Assistant> Here's a 2-sentence poem about the moon:
-
-The moon glows softly in the midnight sky,
-A beacon of wonder, as it passes by.
-```
-
-Similarly you can test safety (if you configured llama-guard and/or prompt-guard shields) by:
 
 ```
-python -m llama_stack.apis.safety.client localhost 5000
+curl http://localhost:5000/inference/chat_completion \
+-H "Content-Type: application/json" \
+-d '{
+    "model": "Llama3.1-8B-Instruct",
+    "messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Write me a 2 sentence poem about the moon"}
+    ],
+    "sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
+}'
+
+Output:
+{'completion_message': {'role': 'assistant',
+  'content': 'The moon glows softly in the midnight sky, \nA beacon of wonder, as it catches the eye.',
+  'stop_reason': 'out_of_tokens',
+  'tool_calls': []},
+ 'logprobs': null}
+
 ```
-
-
-Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
-
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.

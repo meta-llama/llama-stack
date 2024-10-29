@@ -92,6 +92,19 @@ llama stack run ./gpu/run.yaml
 
 ### Model Serving
 
+#### Downloading model via Ollama
+
+You can use ollama for managing model downloads.
+
+```
+ollama pull llama3.1:8b-instruct-fp16
+ollama pull llama3.1:70b-instruct-fp16
+```
+
+> [!NOTE]
+> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/adapters/inference/ollama/ollama.py) for the supported Ollama models.
+
+
 To serve a new model with `ollama`
 ```
 ollama run <model_name>

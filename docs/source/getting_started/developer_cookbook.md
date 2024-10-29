@@ -19,7 +19,7 @@ Based on your developer needs, below are references to guides to help you get st
 * Developer need: I want a Llama Stack distribution with a remote provider.
 * Effort: 10min
 * Guide
-  - Please see our [Distributions Guide](../distributions/) on starting up distributions with remote providers.
+  - Please see our [Distributions Guide](../../../distributions/) on starting up distributions with remote providers.
 
 
 ### On-Device (iOS) Llama Stack
