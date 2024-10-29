@@ -84,3 +84,19 @@ memory:
 ```
 
 3. Run `docker compose up` with the updated `run.yaml` file.
+
+### Serving a new model
+You may change the `config.model` in `run.yaml` to update the model currently being served by the distribution. Make sure you have the model checkpoint downloaded in your `~/.llama`.
+```
+inference:
+  - provider_id: meta0
+    provider_type: meta-reference
+    config:
+      model: Llama3.2-11B-Vision-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
+```
+
+Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
