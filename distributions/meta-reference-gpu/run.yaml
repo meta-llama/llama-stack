@@ -36,6 +36,15 @@ providers:
   - provider_id: meta0
     provider_type: meta-reference
     config: {}
+  # Uncomment to use pgvector
+  # - provider_id: pgvector
+  #   provider_type: remote::pgvector
+  #   config:
+  #     host: 127.0.0.1
+  #     port: 5432
+  #     db: postgres
+  #     user: postgres
+  #     password: mysecretpassword
   agents:
   - provider_id: meta0
     provider_type: meta-reference
