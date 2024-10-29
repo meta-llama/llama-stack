@@ -39,7 +39,7 @@ There are two ways to start a Llama Stack:
 
 Both of these provide options to run model inference using our reference implementations, Ollama, TGI, vLLM or even remote providers like Fireworks, Together, Bedrock, etc.
 
-1. **Starting up server via docker**:
+### Docker
 
 We provide pre-built Docker image of Llama Stack distribution, which can be found in the following links in the [distributions](../distributions/) folder.
 
@@ -68,9 +68,9 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 > Pro Tip: We may use `docker compose up` for starting up a distribution with remote providers (e.g. TGI) using [llamastack-local-cpu](https://hub.docker.com/repository/docker/llamastack/llamastack-local-cpu/general). You can checkout [these scripts](../distributions/) to help you get started.
 
 
-2. **Build->Configure->Run Llama Stack server via conda**:
+### Conda
 
-	You may also build a LlamaStack distribution from scratch, configure it, and start running the distribution. This is useful for developing on LlamaStack.
+	You can use this method to build a Llama Stack distribution from scratch. This is useful when you intend to hack on the Llama Stack server codebase (or just want to understand.)
 
 	**`llama stack build`**
 	- You'll be prompted to enter build information interactively.
