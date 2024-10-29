@@ -9,4 +9,5 @@ meta-reference-gpu
 ollama
 tgi
 together
+fireworks
 ```
