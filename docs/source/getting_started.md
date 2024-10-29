@@ -86,7 +86,6 @@ llama stack configure <name>
 ```
 $ llama stack configure my-local-stack
 
-Could not find my-local-stack. Trying conda build name instead...
 Configuring API `inference`...
 === Configuring provider `meta-reference` for API inference...
 Enter value for model (default: Llama3.1-8B-Instruct) (required):
@@ -235,9 +234,9 @@ You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/e
 - The config file will be of contents like the ones in `llama_stack/distributions/templates/`.
 
 ```
-$ cat llama_stack/distribution/templates/local-ollama-build.yaml
+$ cat llama_stack/templates/ollama/build.yaml
 
-name: local-ollama
+name: ollama
 distribution_spec:
   description: Like local, but use ollama for running LLM inference
   providers:

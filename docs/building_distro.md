@@ -58,11 +58,11 @@ llama stack build --list-templates
 You may then pick a template to build your distribution with providers fitted to your liking.
 
 ```
-llama stack build --template tgi --name tgi
+llama stack build --template tgi
 ```
 
 ```
-$ llama stack build --template tgi --name tgi
+$ llama stack build --template tgi
 ...
 ...
 Build spec configuration saved at ~/.conda/envs/llamastack-tgi/tgi-build.yaml
@@ -77,7 +77,7 @@ You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/e
 ```
 $ cat llama_stack/templates/ollama/build.yaml
 
-name: local-ollama
+name: ollama
 distribution_spec:
   description: Like local, but use ollama for running LLM inference
   providers:

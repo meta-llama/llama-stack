@@ -298,7 +298,7 @@ You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/e
 ```
 $ cat build.yaml
 
-name: local-ollama
+name: ollama
 distribution_spec:
   description: Like local, but use ollama for running LLM inference
   providers:

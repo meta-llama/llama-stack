@@ -296,9 +296,9 @@ You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/e
 - The config file will be of contents like the ones in `llama_stack/distributions/templates/`.
 
 ```
-$ cat llama_stack/distribution/templates/local-ollama-build.yaml
+$ cat llama_stack/templates/ollama/build.yaml
 
-name: local-ollama
+name: ollama
 distribution_spec:
   description: Like local, but use ollama for running LLM inference
   providers:
@@ -311,7 +311,7 @@ image_type: conda
 ```
 
 ```
-llama stack build --config llama_stack/distribution/templates/local-ollama-build.yaml
+llama stack build --config llama_stack/templates/ollama/build.yaml
 ```
 
 #### How to build distribution with Docker image
