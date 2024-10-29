@@ -1,11 +1,14 @@
 # Getting Started with Llama Stack
 
-This guide will walk you though the steps to get started on end-to-end flow for LlamaStack. This guide mainly focuses on getting started with building a LlamaStack distribution, and starting up a LlamaStack server. Please see our [documentations](../README.md) on what you can do with Llama Stack, and [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main) on examples apps built with Llama Stack.
+At the end of the guide, you will have learnt how to:
+- get a Llama Stack server up and running
+- get a agent (with tool-calling, vector stores) which works with the above server
+
+To see more example apps built using Llama Stack, see [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main).
 
 ## Installation
-The `llama` CLI tool helps you setup and use the Llama toolchain & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
-You have two ways to install this repository:
+You have two ways to install Llama Stack:
 
 1. **Install as a package**:
    You can install the repository directly from [PyPI](https://pypi.org/project/llama-stack/) by running the following command:
@@ -20,14 +23,12 @@ You have two ways to install this repository:
     cd ~/local
     git clone git@github.com:meta-llama/llama-stack.git
 
-    conda create -n stack python=3.10
-    conda activate stack
+    conda create -n myenv python=3.10
+    conda activate myenv
 
     cd llama-stack
     $CONDA_PREFIX/bin/pip install -e .
-   ```
 
-For what you can do with the Llama CLI, please refer to [CLI Reference](./cli_reference.md).
 
 ## Starting Up Llama Stack Server
 
