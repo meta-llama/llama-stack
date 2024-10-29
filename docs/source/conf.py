@@ -20,8 +20,12 @@ author = "Meta"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ["myst_parser", "sphinx_rtd_theme"]
+import sphinx_pdj_theme
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_pdj_theme"
+html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]
+
+# html_theme = "sphinx_rtd_theme"
 # html_theme = "pytorch_sphinx_theme"
 # html_theme_path = ["../pytorch_sphinx_theme"]
 
@@ -49,7 +53,7 @@ myst_enable_extensions = [
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "alabaster"
+# html_theme = "alabaster"
 html_theme_options = {
     "canonical_url": "https://github.com/meta-llama/llama-stack",
 }
