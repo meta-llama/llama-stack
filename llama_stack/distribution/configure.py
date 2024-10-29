@@ -99,6 +99,13 @@ def configure_api_providers(
             cprint(f"Configuring API `{api_str}`...", "green", attrs=["bold"])
             updated_providers = []
             for i, provider_type in enumerate(plist):
+                if i >= 1:
+                    others = ", ".join(plist[i:])
+                    print(
+                        f"Not configuring other providers ({others}) interactively. Please edit the resulting YAML directly.\n"
+                    )
+                    break
+
                 print(f"> Configuring provider `({provider_type})`")
                 updated_providers.append(
                     configure_single_provider(

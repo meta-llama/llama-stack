@@ -55,18 +55,11 @@ class StackConfigure(Subcommand):
         docker_image = None
 
         build_config_file = Path(args.config)
-
         if build_config_file.exists():
             with open(build_config_file, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
                 self._configure_llama_distribution(build_config, args.output_dir)
             return
-
-        # if we get here, we need to try to find the conda build config file
-        cprint(
-            f"Could not find {build_config_file}. Trying conda build name instead...",
-            color="green",
-        )
 
         conda_dir = (
             Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.config}"
@@ -80,19 +73,14 @@ class StackConfigure(Subcommand):
                 break
 
         build_config_file = Path(conda_dir) / f"{args.config}-build.yaml"
-
         if build_config_file.exists():
             with open(build_config_file, "r") as f:
                 build_config = BuildConfig(**yaml.safe_load(f))
 
+            cprint(f"Using {build_config_file}...", "green")
             self._configure_llama_distribution(build_config, args.output_dir)
             return
 
-        # if we get here, we need to try to find the docker image
-        cprint(
-            f"Could not find {build_config_file}. Trying docker image name instead...",
-            color="green",
-        )
         docker_image = args.config
         builds_dir = BUILDS_BASE_DIR / ImageType.docker.value
         if args.output_dir:
@@ -105,15 +93,10 @@ class StackConfigure(Subcommand):
         script_args = [script, docker_image, str(builds_dir)]
 
         return_code = run_with_pty(script_args)
-
-        # we have regenerated the build config file with script, now check if it exists
         if return_code != 0:
             self.parser.error(
                 f"Failed to configure container {docker_image} with return code {return_code}. Please run `llama stack build` first. "
             )
-            return
-
-        return
 
     def _configure_llama_distribution(
         self,

@@ -63,16 +63,11 @@ class StackBuild(Subcommand):
         )
 
         self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the Llama Stack build to override from template config. This name will be used as paths to store configuration files, build conda environments/docker images. If not specified, will use the name from the template config. ",
-        )
-
-        self.parser.add_argument(
             "--image-type",
             type=str,
             help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
             choices=["conda", "docker"],
+            default="conda",
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
@@ -91,15 +86,9 @@ class StackBuild(Subcommand):
             return
 
         if args.template:
-            if not args.name:
-                self.parser.error(
-                    "You must specify a name for the build using --name when using a template"
-                )
-                return
             available_templates = available_templates_specs()
             for build_config in available_templates:
                 if build_config.name == args.template:
-                    build_config.name = args.name
                     if args.image_type:
                         build_config.image_type = args.image_type
                     else:
@@ -114,30 +103,14 @@ class StackBuild(Subcommand):
             )
             return
 
-        # try to see if we can find a pre-existing build config file through name
-        if args.name:
-            maybe_build_config = self._get_build_config_from_name(args)
-            if maybe_build_config:
-                cprint(
-                    f"Building from existing build config for {args.name} in {str(maybe_build_config)}...",
-                    "green",
-                )
-                with open(maybe_build_config, "r") as f:
-                    build_config = BuildConfig(**yaml.safe_load(f))
-                    self._run_stack_build_command_from_build_config(build_config)
-                    return
-
         if not args.config and not args.template:
-            if not args.name:
-                name = prompt(
-                    "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
-                    validator=Validator.from_callable(
-                        lambda x: len(x) > 0,
-                        error_message="Name cannot be empty, please enter a name",
-                    ),
-                )
-            else:
-                name = args.name
+            name = prompt(
+                "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
+                validator=Validator.from_callable(
+                    lambda x: len(x) > 0,
+                    error_message="Name cannot be empty, please enter a name",
+                ),
+            )
 
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
@@ -202,25 +175,6 @@ class StackBuild(Subcommand):
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
             self._run_stack_build_command_from_build_config(build_config)
-
-    def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
-        if os.getenv("CONDA_PREFIX", ""):
-            conda_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.name}"
-            )
-        else:
-            cprint(
-                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
-                color="green",
-            )
-            conda_dir = (
-                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.name}"
-            )
-        build_config_file = Path(conda_dir) / f"{args.name}-build.yaml"
-        if build_config_file.exists():
-            return build_config_file
-
-        return None
 
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
