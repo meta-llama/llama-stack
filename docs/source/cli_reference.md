@@ -2,12 +2,12 @@
 
 The `llama` CLI tool helps you setup and use the Llama Stack & agentic systems. It should be available on your path after installing the `llama-stack` package.
 
-## Subcommands
+### Subcommands
 1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
 2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this in Step 3 below.
+3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](cli_reference.md#step-3-building-and-configuring-llama-stack-distributions).
 
-## Sample Usage
+### Sample Usage
 
 ```
 llama --help
@@ -94,7 +94,7 @@ You should see a table like this:
 
 To download models, you can use the llama download command.
 
-### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
+#### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
 
 Here is an example download command to get the 3B-Instruct/11B-Vision-Instruct model. You will need META_URL which can be obtained from [here](https://llama.meta.com/docs/getting_the_models/meta/)
 
@@ -112,7 +112,7 @@ llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
 llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 ```
 
-### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
+#### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
 
@@ -129,7 +129,7 @@ llama download --source huggingface --model-id Prompt-Guard-86M --ignore-pattern
 
 > **Tip:** Default for `llama download` is to run with `--ignore-patterns *.safetensors` since we use the `.pth` files in the `original` folder. For Llama Guard and Prompt Guard, however, we need safetensors. Hence, please run with `--ignore-patterns original` so that safetensors are downloaded and `.pth` files are ignored.
 
-### Downloading via Ollama
+#### Downloading via Ollama
 
 If you're already using ollama, we also have a supported Llama Stack distribution `local-ollama` and you can continue to use ollama for managing model downloads.
 
@@ -215,7 +215,7 @@ You can even run `llama model prompt-format` see all of the templates and their 
 ```
 llama model prompt-format -m Llama3.2-3B-Instruct
 ```
-![alt text](https://github.com/meta-llama/llama-stack/docs/resources/prompt-format.png)
+![alt text](resources/prompt-format.png)
 
 
 
@@ -229,8 +229,8 @@ You will be shown a Markdown formatted description of the model interface and ho
 - Please see our [Getting Started](getting_started.md) guide for more details on how to build and start a Llama Stack distribution.
 
 ### Step 3.1 Build
-In the following steps, imagine we'll be working with a `Llama3.1-8B-Instruct` model. We will name our build `8b-instruct` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
-- `name`: the name for our distribution (e.g. `8b-instruct`)
+In the following steps, imagine we'll be working with a `Llama3.1-8B-Instruct` model. We will name our build `tgi` to help us remember the config. We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
+- `name`: the name for our distribution (e.g. `tgi`)
 - `image_type`: our build image type (`conda | docker`)
 - `distribution_spec`: our distribution specs for specifying API providers
   - `description`: a short description of the configurations for the distribution
@@ -274,16 +274,16 @@ The following command will allow you to see the available templates and their co
 llama stack build --list-templates
 ```
 
-![alt text](https://github.com/meta-llama/llama-stack/docs/resources/list-templates.png)
+![alt text](resources/list-templates.png)
 
 You may then pick a template to build your distribution with providers fitted to your liking.
 
 ```
-llama stack build --template tgi
+llama stack build --template tgi --image-type conda
 ```
 
 ```
-$ llama stack build --template tgi
+$ llama stack build --template tgi --image-type conda
 ...
 ...
 Build spec configuration saved at ~/.conda/envs/llamastack-tgi/tgi-build.yaml
@@ -293,10 +293,10 @@ You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/e
 #### Building from config file
 - In addition to templates, you may customize the build to your liking through editing config files and build from config files with the following command.
 
-- The config file will be of contents like the ones in `llama_stack/distributions/templates/`.
+- The config file will be of contents like the ones in `llama_stack/templates/`.
 
 ```
-$ cat llama_stack/templates/ollama/build.yaml
+$ cat build.yaml
 
 name: ollama
 distribution_spec:
@@ -311,7 +311,7 @@ image_type: conda
 ```
 
 ```
-llama stack build --config llama_stack/templates/ollama/build.yaml
+llama stack build --config build.yaml
 ```
 
 #### How to build distribution with Docker image
@@ -319,7 +319,7 @@ llama stack build --config llama_stack/templates/ollama/build.yaml
 To build a docker image, you may start off from a template and use the `--image-type docker` flag to specify `docker` as the build image type.
 
 ```
-llama stack build --template local --image-type docker
+llama stack build --template tgi --image-type docker
 ```
 
 Alternatively, you may use a config file and set `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build <name>-build.yaml`. The `<name>-build.yaml` will be of contents like:
@@ -354,7 +354,7 @@ Build spec configuration saved at ~/.llama/distributions/docker/docker-local-bui
 ### Step 3.2 Configure
 After our distribution is built (either in form of docker or conda environment), we will run the following command to
 ```
-llama stack configure [ <docker-image-name> | <path/to/name.build.yaml>]
+llama stack configure [ <docker-image-name> | <path/to/name-build.yaml>]
 ```
 - For `conda` environments: <path/to/name.build.yaml> would be the generated build spec saved from Step 1.
 - For `docker` images downloaded from Dockerhub, you could also use <docker-image-name> as the argument.
@@ -390,10 +390,10 @@ Enter value for wolfram_api_key (optional):
 
 Configuring API: telemetry (console)
 
-YAML configuration has been written to ~/.llama/builds/conda/tgi-run.yaml
+YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yaml
 ```
 
-After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/tgi-run.yaml` with the following contents. You may edit this file to change the settings.
+After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may edit this file to change the settings.
 
 As you can see, we did basic configuration above and configured:
 - inference to run on model `Llama3.1-8B-Instruct` (obtained from `llama model list`)
@@ -415,7 +415,7 @@ llama stack run ~/.llama/builds/conda/tgi-run.yaml
 You should see the Llama Stack server start and print the APIs that it is supporting
 
 ```
-$ llama stack run ~/.llama/builds/conda/tgi-run.yaml
+$ llama stack run ~/.llama/builds/local/conda/tgi-run.yaml
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
