@@ -1,6 +1,7 @@
 # Getting Started with Llama Stack
 
 ```{toctree}
+:hidden:
 :maxdepth: 2
 
 distributions/index
@@ -34,23 +35,23 @@ Running inference of the underlying Llama model is one of the most critical requ
 - **Do you have access to a machine with powerful GPUs?**
 If so, we suggest:
   - `distribution-meta-reference-gpu`:
-    - [Docker]()
-    - [Conda]()
+    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/meta-reference-gpu.html#docker-start-the-distribution)
+    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/meta-reference-gpu.html#docker-start-the-distribution)
   - `distribution-tgi`:
-    - [Docker]()
-    - [Conda]()
+    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html#docker-start-the-distribution-single-node-gpu)
+    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html#conda-tgi-server-llama-stack-run)
 
 - **Are you running on a "regular" desktop machine?**
 If so, we suggest:
   - `distribution-ollama`:
-    - [Docker]()
-    - [Conda]()
+    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ollama.html#docker-start-a-distribution-single-node-gpu)
+    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ollama.html#conda-ollama-run-llama-stack-run)
 
 - **Do you have access to a remote inference provider like Fireworks, Togther, etc.?** If so, we suggest:
-  - `distribution-fireworks`:
-    - [Docker]()
-    - [Conda]()
   - `distribution-together`:
+    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html#docker-start-the-distribution-single-node-cpu)
+    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html#conda-llama-stack-run-single-node-cpu)
+  - `distribution-fireworks`:
     - [Docker]()
     - [Conda]()
 
