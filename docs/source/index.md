@@ -60,4 +60,5 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 getting_started/index
 cli_reference/index
 api_providers/index
+distribution_dev/index
 ```
