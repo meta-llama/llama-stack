@@ -56,7 +56,9 @@ If so, we suggest:
     - [Conda]()
 
 
-## Testing with client
+## Build Your Llama Stack App
+
+### chat_completion sanity test
 Once the server is setup, we can test it with a client to see the example outputs by . This will run the chat completion client and query the distribution’s `/inference/chat_completion` API. Send a POST request to the server:
 
 ```
@@ -80,6 +82,28 @@ Output:
 
 ```
 
-Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
+### Run Agent App
 
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
+To run an agent app, check out examples demo scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo. To run a simple agent app:
+
+```
+git clone git@github.com:meta-llama/llama-stack-apps.git
+cd llama-stack-apps
+pip install -r requirements.txt
+
+python -m examples.agents.client <host> <port>
+```
+
+You will see outputs of the form --
+```
+User> I am planning a trip to Switzerland, what are the top 3 places to visit?
+inference> Switzerland is a beautiful country with a rich history, stunning landscapes, and vibrant culture. Here are three must-visit places to add to your itinerary:
+...
+
+User> What is so special about #1?
+inference> Jungfraujoch, also known as the "Top of Europe," is a unique and special place for several reasons:
+...
+
+User> What other countries should I consider to club?
+inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
+```
