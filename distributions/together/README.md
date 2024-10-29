@@ -56,3 +56,26 @@ llama stack build --template together --image-type conda
 # -- modify run.yaml to a valid Together server endpoint
 llama stack run ./run.yaml
 ```
+
+### Model Serving
+
+Use `llama-stack-client models list` to check the available models served by together.
+
+```
+$ llama-stack-client models list
++------------------------------+------------------------------+---------------+------------+
+| identifier                   | llama_model                  | provider_id   | metadata   |
++==============================+==============================+===============+============+
+| Llama3.1-8B-Instruct         | Llama3.1-8B-Instruct         | together0     | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.1-70B-Instruct        | Llama3.1-70B-Instruct        | together0     | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.1-405B-Instruct       | Llama3.1-405B-Instruct       | together0     | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-3B-Instruct         | Llama3.2-3B-Instruct         | together0     | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-11B-Vision-Instruct | Llama3.2-11B-Vision-Instruct | together0     | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-90B-Vision-Instruct | Llama3.2-90B-Vision-Instruct | together0     | {}         |
++------------------------------+------------------------------+---------------+------------+
+```

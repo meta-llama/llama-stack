@@ -89,3 +89,28 @@ inference:
 llama stack build --template ollama --image-type conda
 llama stack run ./gpu/run.yaml
 ```
+
+### Model Serving
+
+To serve a new model with `ollama`
+```
+ollama run <model_name>
+```
+
+To make sure that the model is being served correctly, run `ollama ps` to get a list of models being served by ollama.
+```
+$ ollama ps
+
+NAME                         ID              SIZE     PROCESSOR    UNTIL
+llama3.1:8b-instruct-fp16    4aacac419454    17 GB    100% GPU     4 minutes from now
+```
+
+To verify that the model served by ollama is correctly connected to Llama Stack server
+```
+$ llama-stack-client models list
++----------------------+----------------------+---------------+-----------------------------------------------+
+| identifier           | llama_model          | provider_id   | metadata                                      |
++======================+======================+===============+===============================================+
+| Llama3.1-8B-Instruct | Llama3.1-8B-Instruct | ollama0       | {'ollama_model': 'llama3.1:8b-instruct-fp16'} |
++----------------------+----------------------+---------------+-----------------------------------------------+
+```

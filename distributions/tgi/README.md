@@ -92,3 +92,26 @@ llama stack build --template tgi --image-type conda
 # -- start a TGI server endpoint
 llama stack run ./gpu/run.yaml
 ```
+
+### Model Serving
+To serve a new model with `tgi`, change the docker command flag `--model-id <model-to-serve>`.
+
+This can be done by edit the `command` args in `compose.yaml`. E.g. Replace "Llama-3.2-1B-Instruct" with the model you want to serve.
+
+```
+command: ["--dtype", "bfloat16", "--usage-stats", "on", "--sharded", "false", "--model-id", "meta-llama/Llama-3.2-1B-Instruct", "--port", "5009", "--cuda-memory-fraction", "0.3"]
+```
+
+or by changing the docker run command's `--model-id` flag
+```
+docker run --rm -it -v $HOME/.cache/huggingface:/data -p 5009:5009 --gpus all ghcr.io/huggingface/text-generation-inference:latest --dtype bfloat16 --usage-stats on --sharded false --model-id meta-llama/Llama-3.2-1B-Instruct --port 5009
+```
+
+In `run.yaml`, make sure you point the correct server endpoint to the TGI server endpoint serving your model.
+```
+inference:
+  - provider_id: tgi0
+    provider_type: remote::tgi
+    config:
+      url: http://127.0.0.1:5009
+```

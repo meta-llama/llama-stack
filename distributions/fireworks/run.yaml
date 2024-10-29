@@ -17,6 +17,7 @@ providers:
     provider_type: remote::fireworks
     config:
       url: https://api.fireworks.ai/inference
+      # api_key: <ENTER_YOUR_API_KEY>
   safety:
   - provider_id: meta0
     provider_type: meta-reference
@@ -32,6 +33,10 @@ providers:
   - provider_id: meta0
     provider_type: meta-reference
     config: {}
+  # Uncomment to use weaviate memory provider
+  # - provider_id: weaviate0
+  #   provider_type: remote::weaviate
+  #   config: {}
   agents:
   - provider_id: meta0
     provider_type: meta-reference
