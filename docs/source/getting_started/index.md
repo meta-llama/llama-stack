@@ -1,5 +1,16 @@
 # Getting Started with Llama Stack
 
+```{toctree}
+:maxdepth: 2
+
+distributions/index
+```
+
+```{toctree}
+:hidden:
+developer_cookbook
+```
+
 At the end of the guide, you will have learnt how to:
 - get a Llama Stack server up and running
 - get a agent (with tool-calling, vector stores) which works with the above server
@@ -8,11 +19,6 @@ To see more example apps built using Llama Stack, see [llama-stack-apps](https:/
 
 ## Starting Up Llama Stack Server
 
-```{toctree}
-:maxdepth: 2
-
-distributions/index
-```
 ### Decide Your Build Type
 There are two ways to start a Llama Stack:
 
@@ -76,11 +82,3 @@ Output:
 Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
 
 You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
-
-
-```{toctree}
-:hidden:
-:maxdepth: 1
-
-developer_cookbook
-```
