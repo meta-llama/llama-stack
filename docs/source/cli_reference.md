@@ -279,15 +279,15 @@ llama stack build --list-templates
 You may then pick a template to build your distribution with providers fitted to your liking.
 
 ```
-llama stack build --template local-tgi --name my-tgi-stack
+llama stack build --template tgi
 ```
 
 ```
-$ llama stack build --template local-tgi --name my-tgi-stack
+$ llama stack build --template tgi
 ...
 ...
-Build spec configuration saved at ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml
-You may now run `llama stack configure my-tgi-stack` or `llama stack configure ~/.conda/envs/llamastack-my-tgi-stack/my-tgi-stack-build.yaml`
+Build spec configuration saved at ~/.conda/envs/llamastack-tgi/tgi-build.yaml
+You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/envs/llamastack-tgi/tgi-build.yaml`
 ```
 
 #### Building from config file
@@ -319,7 +319,7 @@ llama stack build --config llama_stack/distribution/templates/local-ollama-build
 To build a docker image, you may start off from a template and use the `--image-type docker` flag to specify `docker` as the build image type.
 
 ```
-llama stack build --template local --image-type docker --name docker-0
+llama stack build --template local --image-type docker
 ```
 
 Alternatively, you may use a config file and set `image_type` to `docker` in our `<name>-build.yaml` file, and run `llama stack build <name>-build.yaml`. The `<name>-build.yaml` will be of contents like:
@@ -354,14 +354,14 @@ Build spec configuration saved at ~/.llama/distributions/docker/docker-local-bui
 ### Step 3.2 Configure
 After our distribution is built (either in form of docker or conda environment), we will run the following command to
 ```
-llama stack configure [ <name> | <docker-image-name> | <path/to/name.build.yaml>]
+llama stack configure [ <docker-image-name> | <path/to/name.build.yaml>]
 ```
 - For `conda` environments: <path/to/name.build.yaml> would be the generated build spec saved from Step 1.
 - For `docker` images downloaded from Dockerhub, you could also use <docker-image-name> as the argument.
    - Run `docker images` to check list of available images on your machine.
 
 ```
-$ llama stack configure ~/.llama/distributions/conda/8b-instruct-build.yaml
+$ llama stack configure ~/.llama/distributions/conda/tgi-build.yaml
 
 Configuring API: inference (meta-reference)
 Enter value for model (existing: Llama3.1-8B-Instruct) (required):
@@ -390,10 +390,10 @@ Enter value for wolfram_api_key (optional):
 
 Configuring API: telemetry (console)
 
-YAML configuration has been written to ~/.llama/builds/conda/8b-instruct-run.yaml
+YAML configuration has been written to ~/.llama/builds/conda/tgi-run.yaml
 ```
 
-After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/8b-instruct-run.yaml` with the following contents. You may edit this file to change the settings.
+After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/tgi-run.yaml` with the following contents. You may edit this file to change the settings.
 
 As you can see, we did basic configuration above and configured:
 - inference to run on model `Llama3.1-8B-Instruct` (obtained from `llama model list`)
@@ -409,13 +409,13 @@ Note that all configurations as well as models are stored in `~/.llama`
 Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
 
 ```
-llama stack run ~/.llama/builds/conda/8b-instruct-run.yaml
+llama stack run ~/.llama/builds/conda/tgi-run.yaml
 ```
 
 You should see the Llama Stack server start and print the APIs that it is supporting
 
 ```
-$ llama stack run ~/.llama/builds/local/conda/8b-instruct.yaml
+$ llama stack run ~/.llama/builds/conda/tgi-run.yaml
 
 > initializing model parallel with size 1
 > initializing ddp with size 1
@@ -446,7 +446,7 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
 > [!NOTE]
-> Configuration is in `~/.llama/builds/local/conda/8b-instruct-run.yaml`. Feel free to increase `max_seq_len`.
+> Configuration is in `~/.llama/builds/local/conda/tgi-run.yaml`. Feel free to increase `max_seq_len`.
 
 > [!IMPORTANT]
 > The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
