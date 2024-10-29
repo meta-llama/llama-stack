@@ -6,4 +6,7 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 :maxdepth: 1
 
 meta-reference-gpu
+ollama
+tgi
+together
 ```
