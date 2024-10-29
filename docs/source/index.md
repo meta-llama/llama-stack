@@ -1,6 +1,6 @@
-# llama-stack documentation
+# Llama Stack
 
-Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. It empowers developers building agentic applications by giving them options to operate in various environments (on-prem, cloud, single-node, on-device) while relying on a standard API interface and the same DevEx that is certified by Meta.
+Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. It empowers developers building agentic applications by giving them options to operate in various environments (on-prem, cloud, single-node, on-device) while relying on a standard API interface and the same Developer Experience that is certified by Meta.
 
 The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to building and running AI agents in production. Beyond definition, we are building providers for the Llama Stack APIs. These were developing open-source versions and partnering with providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
 
@@ -10,17 +10,22 @@ The Stack APIs are rapidly improving, but still very much work in progress and w
 
 ## APIs
 
-The Llama Stack consists of the following set of APIs:
+The set of APIs in Llama Stack can be roughly split into two broad categories:
 
-- Inference
-- Safety
-- Memory
-- Agentic System
-- Evaluation
-- Post Training
-- Synthetic Data Generation
-- Reward Scoring
-Each of the APIs themselves is a collection of REST endpoints.
+- APIs focused on Application development
+  - Inference
+  - Safety
+  - Memory
+  - Agentic System
+  - Evaluation
+
+- APIs focused on Model development
+  - Evaluation
+  - Post Training
+  - Synthetic Data Generation
+  - Reward Scoring
+
+Each API is a collection of REST endpoints.
 
 ## API Providers
 
