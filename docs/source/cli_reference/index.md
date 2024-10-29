@@ -154,16 +154,15 @@ llama download --source huggingface --model-id Prompt-Guard-86M --ignore-pattern
 > **Tip:** Default for `llama download` is to run with `--ignore-patterns *.safetensors` since we use the `.pth` files in the `original` folder. For Llama Guard and Prompt Guard, however, we need safetensors. Hence, please run with `--ignore-patterns original` so that safetensors are downloaded and `.pth` files are ignored.
 
 
-## Step 2: Understand the models
+## Understand the models
 The `llama model` command helps you explore the model’s interface.
 
-### 2.1 Subcommands
 1. `download`: Download the model from different sources. (meta, huggingface)
 2. `list`: Lists all the models available for download with hardware requirements to deploy the models.
 3. `prompt-format`: Show llama model message formats.
 4. `describe`: Describes all the properties of the model.
 
-### 2.2 Sample Usage
+### Sample Usage
 
 `llama model <subcommand> <options>`
 
@@ -186,7 +185,7 @@ You can use the describe command to know more about a model:
 ```
 llama model describe -m Llama3.2-3B-Instruct
 ```
-### 2.3 Describe
+### Describe
 
 <pre style="font-family: monospace;">
 +-----------------------------+----------------------------------+
@@ -221,7 +220,7 @@ llama model describe -m Llama3.2-3B-Instruct
 |                             | }                                |
 +-----------------------------+----------------------------------+
 </pre>
-### 2.4 Prompt Format
+### Prompt Format
 You can even run `llama model prompt-format` see all of the templates and their tokens:
 
 ```
