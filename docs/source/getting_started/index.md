@@ -61,8 +61,8 @@ If so, we suggest:
 ### chat_completion sanity test
 Once the server is setup, we can test it with a client to see the example outputs by . This will run the chat completion client and query the distribution’s `/inference/chat_completion` API. Send a POST request to the server:
 
-```
-curl http://localhost:5000/inference/chat_completion \
+```bash
+$ curl http://localhost:5000/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
     "model": "Llama3.1-8B-Instruct",
@@ -86,12 +86,12 @@ Output:
 
 To run an agent app, check out examples demo scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo. To run a simple agent app:
 
-```
-git clone git@github.com:meta-llama/llama-stack-apps.git
-cd llama-stack-apps
-pip install -r requirements.txt
+```bash
+$ git clone git@github.com:meta-llama/llama-stack-apps.git
+$ cd llama-stack-apps
+$ pip install -r requirements.txt
 
-python -m examples.agents.client <host> <port>
+$ python -m examples.agents.client <host> <port>
 ```
 
 You will see outputs of the form --

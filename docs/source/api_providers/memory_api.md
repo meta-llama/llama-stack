@@ -6,7 +6,7 @@ This guide gives you references to switch between different memory API providers
 1. Start running the pgvector server:
 
 ```
-docker run --network host --name mypostgres -it -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres pgvector/pgvector:pg16
+$ docker run --network host --name mypostgres -it -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres pgvector/pgvector:pg16
 ```
 
 2. Edit the `run.yaml` file to point to the pgvector server.
