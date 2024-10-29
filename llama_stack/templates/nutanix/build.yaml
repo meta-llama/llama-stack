@@ -1,0 +1,9 @@
+name: nutanix
+distribution_spec:
+  description: Use Nutanix AI Endpoint for running LLM inference
+  providers:
+    inference: remote::nutanix
+    memory: meta-reference
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference

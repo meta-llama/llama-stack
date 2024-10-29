@@ -88,6 +88,7 @@ Additionally, we have designed every element of the Stack such that APIs as well
 | Chroma | Single Node |  |  | :heavy_check_mark: |  |  |
 | PG Vector | Single Node |  |  | :heavy_check_mark: |  |  |
 | PyTorch ExecuTorch | On-device iOS | :heavy_check_mark:  | :heavy_check_mark:  |  |  |
+|  Nutanix AI  |  Hosted  |  | :heavy_check_mark:  |  |    |   |
 
 ### Distributions
 
