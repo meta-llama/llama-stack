@@ -7,7 +7,8 @@ As an example, for Inference, we could have the implementation be backed by open
 A provider can also be just a pointer to a remote REST service -- for example, cloud providers or dedicated inference providers could serve these APIs.
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 1
 
 new_api_provider
+memory_api
 ```
