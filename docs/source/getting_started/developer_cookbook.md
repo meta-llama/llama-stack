@@ -13,13 +13,13 @@ Based on your developer needs, below are references to guides to help you get st
 * Developer Need: I want to start a local Llama Stack server with my GPU using meta-reference implementations.
 * Effort: 5min
 * Guide:
-  - Please see our [Getting Started Guide](./getting_started.md) on starting up a meta-reference Llama Stack server.
+  - Please see our [meta-reference-gpu](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/meta-reference-gpu.html) on starting up a meta-reference Llama Stack server.
 
 ### Llama Stack Server with Remote Providers
 * Developer need: I want a Llama Stack distribution with a remote provider.
 * Effort: 10min
 * Guide
-  - Please see our [Distributions Guide](../../../distributions/) on starting up distributions with remote providers.
+  - Please see our [Distributions Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/index.html) on starting up distributions with remote providers.
 
 
 ### On-Device (iOS) Llama Stack
@@ -38,4 +38,4 @@ Based on your developer needs, below are references to guides to help you get st
 * Developer Need: I want to add a new API provider to Llama Stack.
 * Effort: 3hr
 * Guide
-  - Please see our [Adding a New API Provider](./new_api_provider.md) guide for adding a new API provider.
+  - Please see our [Adding a New API Provider](https://llama-stack.readthedocs.io/en/latest/api_providers/new_api_provider.html) guide for adding a new API provider.

@@ -52,8 +52,8 @@ If so, we suggest:
     - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html#docker-start-the-distribution-single-node-cpu)
     - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html#conda-llama-stack-run-single-node-cpu)
   - `distribution-fireworks`:
-    - [Docker]()
-    - [Conda]()
+    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html)
+    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html#conda-llama-stack-run-single-node-cpu)
 
 
 ## Build Your Llama Stack App

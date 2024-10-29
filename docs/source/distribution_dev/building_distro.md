@@ -1,4 +1,6 @@
-# Building a Llama Stack Distribution
+# Developer Guide: Assemble a Llama Stack Distribution
+
+> NOTE: This doc is out-of-date.
 
 This guide will walk you through the steps to get started with building a Llama Stack distributiom from scratch with your choice of API providers. Please see the [Getting Started Guide](./getting_started.md) if you just want the basic steps to start a Llama Stack distribution.
 
@@ -237,27 +239,3 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 > You might need to use the flag `--disable-ipv6` to  Disable IPv6 support
 
 This server is running a Llama model locally.
-
-## Step 4. Test with Client
-Once the server is setup, we can test it with a client to see the example outputs.
-
-```
-curl http://localhost:5000/inference/chat_completion \
--H "Content-Type: application/json" \
--d '{
-    "model": "Llama3.1-8B-Instruct",
-    "messages": [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Write me a 2 sentence poem about the moon"}
-    ],
-    "sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
-}'
-
-Output:
-{'completion_message': {'role': 'assistant',
-  'content': 'The moon glows softly in the midnight sky, \nA beacon of wonder, as it catches the eye.',
-  'stop_reason': 'out_of_tokens',
-  'tool_calls': []},
- 'logprobs': null}
-
-```
