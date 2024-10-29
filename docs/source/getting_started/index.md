@@ -73,7 +73,6 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 
 
 ```{toctree}
-:hidden:
 :maxdepth: 2
 
 developer_cookbook

@@ -55,7 +55,7 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 
 ```{toctree}
 :hidden:
-:maxdepth: 2
+:maxdepth: 3
 
 getting_started/index
 cli_reference/index
