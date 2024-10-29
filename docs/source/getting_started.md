@@ -32,7 +32,12 @@ You have two ways to install Llama Stack:
 
 ## Starting Up Llama Stack Server
 
-You have two ways to start up Llama stack server:
+There are two ways to start a Llama Stack:
+
+- **Docker**: we provide a number of pre-built Docker containers allowing you to get started instantly. If you are focused on application development, we recommend this option.
+- **Conda**: the `llama` CLI provides a simple set of commands to build, configure and run a Llama Stack server containing the exact combination of providers you wish. We have provided various templates to make getting started easier.
+
+Both of these provide options to run model inference using our reference implementations, Ollama, TGI, vLLM or even remote providers like Fireworks, Together, Bedrock, etc.
 
 1. **Starting up server via docker**:
 
