@@ -41,6 +41,17 @@ Both of these provide options to run model inference using our reference impleme
 
 ### Docker
 
+Running inference of the underlying Llama model is one of the most critical requirements. Depending on what hardware you have available, you have various options:
+
+**Do you have access to a machine with powerful GPUs?**
+If so, we suggest...
+
+**Are you running on a "regular" desktop machine?**
+In that case, we suggest ollama
+
+**Do you have access to a remote inference provider like Fireworks, Togther, etc.?**
+...
+
 We provide pre-built Docker image of Llama Stack distribution, which can be found in the following links in the [distributions](../distributions/) folder.
 
 > [!NOTE]
