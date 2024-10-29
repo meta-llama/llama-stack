@@ -41,10 +41,11 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 
 ```{toctree}
 :hidden:
-:maxdepth: 2
-cli_reference.md
-getting_started.md
+:maxdepth: 1
 
-./getting_started/getting_started_conda.md
-./getting_started/getting_started_docker.md
+cli_reference
+getting_started
+
+getting_started/getting_started_conda
+getting_started/getting_started_docker
 ```
