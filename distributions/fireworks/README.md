@@ -43,7 +43,7 @@ inference:
     provider_type: remote::fireworks
     config:
       url: https://api.fireworks.ai/inference
-      api_key: <optional api key>
+      api_key: <enter your api key>
 ```
 
 **Via Conda**
