@@ -16,17 +16,13 @@ from llama_stack.apis.datasets import *  # noqa: F403
 from autoevals.llm import Factuality
 from autoevals.ragas import AnswerCorrectness
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
-from llama_stack.providers.impls.braintrust.scoring.scoring_fn.fn_defs.answer_correctness import (
-    answer_correctness_fn_def,
-)
-from llama_stack.providers.impls.braintrust.scoring.scoring_fn.fn_defs.factuality import (
-    factuality_fn_def,
-)
 from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
     aggregate_average,
 )
 
 from .config import BraintrustScoringConfig
+from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
+from .scoring_fn.fn_defs.factuality import factuality_fn_def
 
 
 class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
