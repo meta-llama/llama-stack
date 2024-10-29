@@ -1,4 +1,4 @@
-# Getting Started with Llama Stack
+# Getting Started
 
 ```{toctree}
 :hidden:

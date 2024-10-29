@@ -1,6 +1,6 @@
 # Memory API Providers
 
-### Start Distribution With pgvector/chromadb Memory Provider
+This guide gives you references to switch between different memory API providers.
 
 ##### pgvector
 1. Start running the pgvector server:

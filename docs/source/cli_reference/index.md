@@ -1,4 +1,4 @@
-# Llama CLI Reference
+# CLI Reference
 
 The `llama` CLI tool helps you setup and use the Llama Stack. It should be available on your path after installing the `llama-stack` package.
 
