@@ -8,7 +8,12 @@ To see more example apps built using Llama Stack, see [llama-stack-apps](https:/
 
 ## Starting Up Llama Stack Server
 
-### Decide your
+```{toctree}
+:maxdepth: 2
+
+distributions/index
+```
+### Decide Your Build Type
 There are two ways to start a Llama Stack:
 
 - **Docker**: we provide a number of pre-built Docker containers allowing you to get started instantly. If you are focused on application development, we recommend this option.
@@ -43,6 +48,7 @@ If so, we suggest:
     - [Docker]()
     - [Conda]()
 
+
 ## Testing with client
 Once the server is setup, we can test it with a client to see the example outputs by . This will run the chat completion client and query the distribution’s `/inference/chat_completion` API. Send a POST request to the server:
 
@@ -73,8 +79,8 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 
 
 ```{toctree}
-:maxdepth: 2
+:hidden:
+:maxdepth: 1
 
 developer_cookbook
-distributions/index
 ```
