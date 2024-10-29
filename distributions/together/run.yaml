@@ -17,7 +17,6 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: 4985b03e627419b2964d34b8519ac6c4319f094d1ffb4f45514b4eb87e5427a2
   safety:
   - provider_id: together0
     provider_type: remote::together
