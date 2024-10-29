@@ -23,6 +23,7 @@ extensions = ["myst_parser", "sphinx_rtd_theme"]
 
 html_theme = "sphinx_rtd_theme"
 html_theme = "pytorch_sphinx_theme"
+html_theme_path = ["../pytorch_sphinx_theme"]
 
 
 templates_path = ["_templates"]
