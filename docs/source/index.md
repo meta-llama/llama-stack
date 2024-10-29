@@ -46,6 +46,6 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 cli_reference
 getting_started
 
-getting_started/getting_started_conda
-getting_started/getting_started_docker
+getting_started/conda
+getting_started/docker
 ```
