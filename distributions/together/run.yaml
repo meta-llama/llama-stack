@@ -17,11 +17,18 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
+      # api_key: <ENTER_YOUR_API_KEY>
   safety:
-  - provider_id: together0
-    provider_type: remote::together
+  - provider_id: meta0
+    provider_type: meta-reference
     config:
-      url: https://api.together.xyz/v1
+      llama_guard_shield:
+        model: Llama-Guard-3-1B
+        excluded_categories: []
+        disable_input_check: false
+        disable_output_check: false
+      prompt_guard_shield:
+        model: Prompt-Guard-86M
   memory:
   - provider_id: meta0
     provider_type: remote::weaviate
