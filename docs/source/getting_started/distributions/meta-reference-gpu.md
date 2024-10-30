@@ -8,8 +8,8 @@ The `llamastack/distribution-meta-reference-gpu` distribution consists of the fo
 | **Provider(s)** 	| meta-reference  	| meta-reference 	| meta-reference, remote::pgvector, remote::chroma 	| meta-reference 	| meta-reference 	|
 
 
-### Prerequisite
-Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide]() here to download the models.
+### Step 0. Prerequisite - Downloading Models
+Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
 
 ```
 $ ls ~/.llama/checkpoints
@@ -17,8 +17,9 @@ Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3
 Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
 ```
 
-### Docker: Start the Distribution
+### Step 1. Start the Distribution
 
+#### (Option 1) Start with Docker
 ```
 $ cd distributions/meta-reference-gpu && docker compose up
 ```
@@ -37,9 +38,9 @@ This will download and start running a pre-built docker container. Alternatively
 docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
 ```
 
-### Conda: Start the Distribution
+#### (Option 2) Start with Conda
 
-1. Install the `llama` CLI. See [CLI Reference]()
+1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
 
 2. Build the `meta-reference-gpu` distribution
 
@@ -53,7 +54,7 @@ $ cd distributions/meta-reference-gpu
 $ llama stack run ./run.yaml
 ```
 
-### Serving a new model
+### (Optional) Serving a new model
 You may change the `config.model` in `run.yaml` to update the model currently being served by the distribution. Make sure you have the model checkpoint downloaded in your `~/.llama`.
 ```
 inference:

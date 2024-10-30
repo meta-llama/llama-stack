@@ -1,15 +1,18 @@
 # Fireworks Distribution
 
-The `llamastack/distribution-` distribution consists of the following provider configurations.
+The `llamastack/distribution-fireworks` distribution consists of the following provider configurations.
 
 
 | **API**         	| **Inference** 	| **Agents**     	| **Memory**                                       	| **Safety**     	| **Telemetry**  	|
 |-----------------	|---------------	|----------------	|--------------------------------------------------	|----------------	|----------------	|
 | **Provider(s)** 	| remote::fireworks   	| meta-reference 	| meta-reference 	| meta-reference 	| meta-reference 	|
 
+### Step 0. Prerequisite
+- Make sure you have access to a fireworks API Key. You can get one by visiting [fireworks.ai](https://fireworks.ai/)
 
-### Docker: Start the Distribution (Single Node CPU)
+### Step 1. Start the Distribution (Single Node CPU)
 
+#### (Option 1) Start Distribution Via Conda
 > [!NOTE]
 > This assumes you have an hosted endpoint at Fireworks with API Key.
 
@@ -26,13 +29,11 @@ inference:
   - provider_id: fireworks
     provider_type: remote::fireworks
     config:
-      url: https://api.fireworks.ai/inferenc
+      url: https://api.fireworks.ai/inference
       api_key: <optional api key>
 ```
 
-### Conda: llama stack run (Single Node CPU)
-
-**Via Conda**
+#### (Option 2) Start Distribution Via Conda
 
 ```bash
 llama stack build --template fireworks --image-type conda
@@ -41,7 +42,7 @@ llama stack run ./run.yaml
 ```
 
 
-### Model Serving
+### (Optional) Model Serving
 
 Use `llama-stack-client models list` to chekc the available models served by Fireworks.
 ```

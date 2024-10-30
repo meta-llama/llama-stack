@@ -18,7 +18,7 @@ At the end of the guide, you will have learnt how to:
 
 To see more example apps built using Llama Stack, see [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main).
 
-## Starting Up Llama Stack Server
+## Step 1. Starting Up Llama Stack Server
 
 ### Decide Your Build Type
 There are two ways to start a Llama Stack:
@@ -30,116 +30,47 @@ Both of these provide options to run model inference using our reference impleme
 
 ### Decide Your Inference Provider
 
-Running inference of the underlying Llama model is one of the most critical requirements. Depending on what hardware you have available, you have various options:
+Running inference of the underlying Llama model is one of the most critical requirements. Depending on what hardware you have available, you have various options. Note that each option have different necessary prerequisites.
 
 - **Do you have access to a machine with powerful GPUs?**
 If so, we suggest:
-  - `distribution-meta-reference-gpu`:
-    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/meta-reference-gpu.html#docker-start-the-distribution)
-    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/meta-reference-gpu.html#docker-start-the-distribution)
-  - `distribution-tgi`:
-    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html#docker-start-the-distribution-single-node-gpu)
-    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html#conda-tgi-server-llama-stack-run)
+  - [`distribution-meta-reference-gpu`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/meta-reference-gpu.html)
+  - [`distribution-tgi`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html)
 
 - **Are you running on a "regular" desktop machine?**
 If so, we suggest:
-  - `distribution-ollama`:
-    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ollama.html#docker-start-a-distribution-single-node-gpu)
-    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ollama.html#conda-ollama-run-llama-stack-run)
+  - [`distribution-ollama`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ollama.html)
 
 - **Do you have access to a remote inference provider like Fireworks, Togther, etc.?** If so, we suggest:
-  - `distribution-together`:
-    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html#docker-start-the-distribution-single-node-cpu)
-    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html#conda-llama-stack-run-single-node-cpu)
-  - `distribution-fireworks`:
-    - [Docker](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html)
-    - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html#conda-llama-stack-run-single-node-cpu)
+  - [`distribution-together`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html)
+  - [`distribution-fireworks`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html)
 
 
 ### Quick Start Commands
 
-#### Single-Node GPU
+The following quick starts commands. Please visit each distribution page on detailed setup.
 
-**Docker**
-````{tab-set-code}
+##### 0. Prerequisite
+::::{tab-set}
 
-```{code-block} meta-reference-gpu
-$ cd distributions/meta-reference-gpu && docker compose up
+:::{tab-item} meta-reference-gpu
+**Downloading Models**
+Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
+
 ```
-
-```{code-block} tgi
-$ cd distributions/tgi && docker compose up
+$ ls ~/.llama/checkpoints
+Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3.2-90B-Vision-Instruct  Llama-Guard-3-8B
+Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
 ```
+:::
 
-````
-**Conda**
+:::{tab-item} tgi
+Single-Node GPU
+:::
 
-````{tab-set-code}
+::::
 
-```{code-block} meta-reference-gpu
-$ llama stack build --template meta-reference-gpu --image-type conda
-$ cd distributions/meta-reference-gpu && llama stack run ./run.yaml
-```
-
-```{code-block} tgi
-$ llama stack build --template tgi --image-type conda
-$ cd distributions/tgi && llama stack run ./run.yaml
-```
-
-````
-
-#### Single-Node CPU
-**Docker**
-````{tab-set-code}
-
-```{code-block} ollama
-$ cd distributions/ollama/cpu && docker compose up
-```
-
-````
-
-**Conda**
-````{tab-set-code}
-
-```{code-block} ollama
-$ llama stack build --template ollama --image-type conda
-$ cd distributions/ollama && llama stack run ./run.yaml
-```
-
-````
-
-#### Single-Node CPU + Hosted Endpoint
-
-**Docker**
-````{tab-set-code}
-
-```{code-block} together
-$ cd distributions/together && docker compose up
-```
-
-```{code-block} fireworks
-$ cd distributions/fireworks && docker compose up
-```
-
-````
-
-**Conda**
-````{tab-set-code}
-
-```{code-block} together
-$ llama stack build --template together --image-type conda
-$ cd distributions/together && llama stack run ./run.yaml
-```
-
-```{code-block} fireworks
-$ llama stack build --template fireworks --image-type conda
-$ cd distributions/fireworks && llama stack run ./run.yaml
-```
-
-````
-
-
-## Build Your Llama Stack App
+## Step 2. Build Your Llama Stack App
 
 ### chat_completion sanity test
 Once the server is setup, we can test it with a client to see the example outputs by . This will run the chat completion client and query the distribution’s `/inference/chat_completion` API. Send a POST request to the server:
