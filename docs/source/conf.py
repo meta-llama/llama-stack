@@ -29,6 +29,7 @@ extensions = [
 myst_enable_extensions = ["colon_fence"]
 
 html_theme = "sphinx_rtd_theme"
+html_style = "css/custom.css"
 
 # html_theme = "sphinx_pdj_theme"
 # html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]
@@ -79,7 +80,3 @@ html_theme_options = {
 
 html_static_path = ["../_static"]
 html_logo = "../_static/llama-stack-logo.png"
-
-html_css_files = [
-    "custom.css",
-]
