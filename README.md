@@ -6,6 +6,8 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
 
+[**Get Started**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html)
+
 This repository contains the Llama Stack API specifications as well as API Providers and Llama Stack Distributions.
 
 The Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. These blocks span the entire development lifecycle: from model training and fine-tuning, through product evaluation, to building and running AI agents in production. Beyond definition, we are building providers for the Llama Stack APIs. These were developing open-source versions and partnering with providers, ensuring developers can assemble AI solutions using consistent, interlocking pieces across platforms. The ultimate goal is to accelerate innovation in the AI space.
@@ -92,19 +94,13 @@ You have two ways to install this repository:
 
 ## Documentations
 
-The `llama` CLI makes it easy to work with the Llama Stack set of tools. Please find the following docs for details.
+Please checkout our [Docs](https://llama-stack.readthedocs.io/en/latest/index.html) page for more details.
 
-* [CLI reference](docs/cli_reference.md)
+* [CLI reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
     * Guide using `llama` CLI to work with Llama models (download, study prompts), and building/starting a Llama Stack distribution.
-* [Getting Started](docs/getting_started.md)
+* [Getting Started](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html)
     * Quick guide to start a Llama Stack server.
     * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
-* [Building a Llama Stack Distribution](docs/building_distro.md)
-    * Guide to build a Llama Stack distribution
-* [Distributions](./distributions/)
-    * References to start Llama Stack distributions backed with different API providers.
-* [Developer Cookbook](./docs/developer_cookbook.md)
-    * References to guides to help you get started based on your developer needs.
 * [Contributing](CONTRIBUTING.md)
     * [Adding a new API Provider](./docs/new_api_provider.md) to walk-through how to add a new API provider.
 

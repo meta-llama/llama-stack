@@ -79,7 +79,7 @@ Access to Single-Node CPU with Together hosted endpoint via API_KEY from [togeth
 :::
 
 :::{tab-item} fireworks
-Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [together.ai](https://fireworks.ai/).
+Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [fireworks.ai](https://fireworks.ai/).
 :::
 
 ::::
