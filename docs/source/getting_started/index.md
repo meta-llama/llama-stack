@@ -58,60 +58,87 @@ If so, we suggest:
 
 ### Quick Start Commands
 
-#### Docker
+#### Single-Node GPU (Local Inference)
+
+##### Docker
 ````{tab-set-code}
 
-```{code-block} distribution-meta-reference-gpu
+```{code-block} meta-reference-gpu
 $ cd distributions/meta-reference-gpu && docker compose up
 ```
 
-```{code-block} distribution-tgi
+```{code-block} tgi
 $ cd distributions/tgi && docker compose up
 ```
 
-```{code-block} distribution-ollama
-$ cd distributions/ollama && docker compose up
+````
+##### Conda
+
+````{tab-set-code}
+
+```{code-block} meta-reference-gpu
+$ llama stack build --template meta-reference-gpu --image-type conda
+$ cd distributions/meta-reference-gpu && llama stack run ./run.yaml
 ```
 
-```{code-block} distribution-together
+```{code-block} tgi
+$ llama stack build --template tgi --image-type conda
+$ cd distributions/tgi && llama stack run ./run.yaml
+```
+
+````
+
+#### Single-Node CPU/GPU (Local Inference)
+##### Docker
+````{tab-set-code}
+
+```{code-block} ollama
+$ cd distributions/ollama/cpu && docker compose up
+```
+
+````
+
+##### Conda
+````{tab-set-code}
+
+```{code-block} ollama
+$ llama stack build --template ollama --image-type conda
+$ cd distributions/ollama && llama stack run ./run.yaml
+```
+
+````
+
+#### Single-Node CPU (Remote Inference)
+
+##### Docker
+
+````{tab-set-code}
+
+```{code-block} together
 $ cd distributions/together && docker compose up
 ```
 
-```{code-block} distribution-fireworks
+```{code-block} fireworks
 $ cd distributions/fireworks && docker compose up
 ```
 
 ````
 
-#### Conda
+##### Conda
 ````{tab-set-code}
 
-```{code-block} distribution-meta-reference-gpu
-$ llama stack build --template meta-reference-gpu --image-type conda
-$ cd distributions/meta-reference-gpu && llama stack run ./run.yaml
-```
-
-```{code-block} distribution-tgi
-$ llama stack build --template tgi --image-type conda
-$ cd distributions/tgi && llama stack run ./run.yaml
-```
-
-```{code-block} distribution-ollama
-$ llama stack build --template ollama --image-type conda
-$ cd distributions/ollama && llama stack run ./run.yaml
-```
-
-```{code-block} distribution-together
+```{code-block} together
 $ llama stack build --template together --image-type conda
 $ cd distributions/together && llama stack run ./run.yaml
 ```
 
-```{code-block} distribution-fireworks
+```{code-block} fireworks
 $ llama stack build --template fireworks --image-type conda
 $ cd distributions/fireworks && llama stack run ./run.yaml
 ```
 
 ````
+
 
 ## Build Your Llama Stack App
 
