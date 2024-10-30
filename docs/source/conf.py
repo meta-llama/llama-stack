@@ -79,3 +79,7 @@ html_theme_options = {
 
 html_static_path = ["../_static"]
 html_logo = "../_static/llama-stack-logo.png"
+
+html_css_files = [
+    "custom.css",
+]
