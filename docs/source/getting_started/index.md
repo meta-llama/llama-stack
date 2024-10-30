@@ -59,7 +59,7 @@ If so, we suggest:
 ### Quick Start Commands
 
 #### Docker
-````{tab-set-code}
+````{tab-set-code} sd-width-auto
 
 ```{code-block} distribution-meta-reference-gpu
 $ cd distributions/meta-reference-gpu && docker compose up
@@ -84,7 +84,7 @@ $ cd distributions/fireworks && docker compose up
 ````
 
 #### Conda
-````{tab-set-code}
+````{tab-set-code} sd-width-auto
 
 ```{code-block} distribution-meta-reference-gpu
 $ llama stack build --template meta-reference-gpu --image-type conda
