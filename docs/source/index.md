@@ -6,7 +6,7 @@ The Llama Stack defines and standardizes the building blocks needed to bring gen
 
 The Stack APIs are rapidly improving, but still very much work in progress and we invite feedback as well as direct contributions.
 
-![Llama Stack](../_static/llama-stack.png)
+<center><img src="../_static/llama-stack.png" style="width: 400px;"></center>
 
 ## APIs
 
