@@ -24,7 +24,9 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
+    "sphinx_design",
 ]
+myst_enable_extensions = ["colon_fence"]
 
 html_theme = "sphinx_rtd_theme"
 
