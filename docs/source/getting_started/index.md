@@ -84,7 +84,8 @@ $ cd distributions/fireworks && docker compose up
 ````
 
 #### Conda
-````{tab-set-code} sd-width-25 sd-fs-1
+````{tab-set-code}
+:class-set: sd-fs-1 sd-d-flex-row
 
 ```{code-block} distribution-meta-reference-gpu
 $ llama stack build --template meta-reference-gpu --image-type conda
