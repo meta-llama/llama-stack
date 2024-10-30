@@ -56,6 +56,63 @@ If so, we suggest:
     - [Conda](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html#conda-llama-stack-run-single-node-cpu)
 
 
+### Quick Start Commands
+
+#### Docker
+````{tab-set-code}
+
+```{code-block} distribution-meta-reference-gpu
+$ cd distributions/meta-reference-gpu && docker compose up
+```
+
+```{code-block} distribution-tgi
+$ cd distributions/tgi && docker compose up
+```
+
+```{code-block} distribution-ollama
+$ cd distributions/ollama && docker compose up
+```
+
+```{code-block} distribution-together
+$ cd distributions/together && docker compose up
+```
+
+```{code-block} distribution-fireworks
+$ cd distributions/fireworks && docker compose up
+```
+
+````
+
+#### Conda
+````{tab-set-code}
+
+```{code-block} distribution-meta-reference-gpu
+$ llama stack build --template meta-reference-gpu --image-type conda
+$ cd distributions/meta-reference-gpu && llama stack run ./run.yaml
+```
+
+```{code-block} distribution-tgi
+$ llama stack build --template tgi --image-type conda
+$ cd distributions/tgi && llama stack run ./run.yaml
+```
+
+```{code-block} distribution-ollama
+$ llama stack build --template ollama --image-type conda
+$ cd distributions/ollama && llama stack run ./run.yaml
+```
+
+```{code-block} distribution-together
+$ llama stack build --template together --image-type conda
+$ cd distributions/together && llama stack run ./run.yaml
+```
+
+```{code-block} distribution-fireworks
+$ llama stack build --template fireworks --image-type conda
+$ cd distributions/fireworks && llama stack run ./run.yaml
+```
+
+````
+
 ## Build Your Llama Stack App
 
 ### chat_completion sanity test
@@ -107,15 +164,3 @@ inference> Jungfraujoch, also known as the "Top of Europe," is a unique and spec
 User> What other countries should I consider to club?
 inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
 ```
-
-````{tab-set-code}
-
-```{code-block} python
-a = 2
-```
-
-```{code-block} javascript
-a = 1;
-```
-
-````
