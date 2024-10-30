@@ -108,14 +108,14 @@ User> What other countries should I consider to club?
 inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
 ```
 
-```{tab-set}
+````{tab-set-code}
 
-```{tab-item} Label1
-Content 1
+```{code-block} python
+a = 2
 ```
 
-```{tab-item} Label2
-Content 2
+```{code-block} javascript
+a = 1;
 ```
 
-```
+````
