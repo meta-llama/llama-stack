@@ -6,7 +6,15 @@
 
 from enum import Enum
 
-from typing import List, Literal, Optional, Protocol, runtime_checkable, Union
+from typing import (
+    AsyncIterator,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -224,7 +232,7 @@ class Inference(Protocol):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
+    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
     @webmethod(route="/inference/chat_completion")
     async def chat_completion(
@@ -239,7 +247,9 @@ class Inference(Protocol):
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
+    ) -> Union[
+        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
+    ]: ...
 
     @webmethod(route="/inference/embeddings")
     async def embeddings(

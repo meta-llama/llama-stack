@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import (
     Any,
+    AsyncIterator,
     Dict,
     List,
     Literal,
@@ -434,7 +435,7 @@ class Agents(Protocol):
         ],
         attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
-    ) -> AgentTurnResponseStreamChunk: ...
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(route="/agents/turn/get")
     async def get_agents_turn(
