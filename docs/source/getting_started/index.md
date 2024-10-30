@@ -107,3 +107,16 @@ inference> Jungfraujoch, also known as the "Top of Europe," is a unique and spec
 User> What other countries should I consider to club?
 inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
 ```
+
+```{tabs}
+```{tab} Python
+```python
+def hello():
+    print("Hello!")
+```
+```{tab} Javascript
+```javascript
+function hello() {
+  console.log("Hello!");
+}
+```

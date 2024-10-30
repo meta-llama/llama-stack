@@ -5,3 +5,4 @@ linkify
 sphinx-rtd-theme>=1.0.0
 sphinx-pdj-theme
 sphinx-copybutton
+sphinx-tabs
