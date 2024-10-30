@@ -120,6 +120,7 @@ docker compose down
 ::::
 
 **Via Conda**
+
 ::::{tab-set}
 
 :::{tab-item} meta-reference-gpu
@@ -150,7 +151,62 @@ llama stack run ./gpu/run.yaml
 
 
 ##### 1.2 (Optional) Serving Model
+::::{tab-set}
 
+:::{tab-item} meta-reference-gpu
+You may change the `config.model` in `run.yaml` to update the model currently being served by the distribution. Make sure you have the model checkpoint downloaded in your `~/.llama`.
+```
+inference:
+  - provider_id: meta0
+    provider_type: meta-reference
+    config:
+      model: Llama3.2-11B-Vision-Instruct
+      quantization: null
+      torch_seed: null
+      max_seq_len: 4096
+      max_batch_size: 1
+```
+
+Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
+:::
+
+:::{tab-item} ollama
+You can use ollama for managing model downloads.
+
+```
+ollama pull llama3.1:8b-instruct-fp16
+ollama pull llama3.1:70b-instruct-fp16
+```
+
+> [!NOTE]
+> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/adapters/inference/ollama/ollama.py) for the supported Ollama models.
+
+
+To serve a new model with `ollama`
+```
+ollama run <model_name>
+```
+
+To make sure that the model is being served correctly, run `ollama ps` to get a list of models being served by ollama.
+```
+$ ollama ps
+
+NAME                         ID              SIZE     PROCESSOR    UNTIL
+llama3.1:8b-instruct-fp16    4aacac419454    17 GB    100% GPU     4 minutes from now
+```
+
+To verify that the model served by ollama is correctly connected to Llama Stack server
+```
+$ llama-stack-client models list
++----------------------+----------------------+---------------+-----------------------------------------------+
+| identifier           | llama_model          | provider_id   | metadata                                      |
++======================+======================+===============+===============================================+
+| Llama3.1-8B-Instruct | Llama3.1-8B-Instruct | ollama0       | {'ollama_model': 'llama3.1:8b-instruct-fp16'} |
++----------------------+----------------------+---------------+-----------------------------------------------+
+```
+:::
+
+::::
 
 
 ## Step 2. Build Your Llama Stack App
