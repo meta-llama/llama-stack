@@ -108,14 +108,14 @@ User> What other countries should I consider to club?
 inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
 ```
 
-::::{tab-set}
+```{tab-set}
 
-:::{tab-item} Label1
+```{tab-item} Label1
 Content 1
-:::
+```
 
-:::{tab-item} Label2
+```{tab-item} Label2
 Content 2
-:::
+```
 
-::::
+```
