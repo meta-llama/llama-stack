@@ -50,11 +50,11 @@ If so, we suggest:
 
 The following quick starts commands. Please visit each distribution page on detailed setup.
 
-##### 0. Prerequisite
+##### 1.0 Prerequisite
 ::::{tab-set}
 
 :::{tab-item} meta-reference-gpu
-**Downloading Models**
+##### Downloading Models
 Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
 
 ```
@@ -65,10 +65,93 @@ Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-
 :::
 
 :::{tab-item} tgi
-Single-Node GPU
+This assumes you have access to GPU to start a TGI server with access to your GPU.
 :::
 
 ::::
+
+##### 1.1. Start the distribution
+
+**Via Docker**
+::::{tab-set}
+
+:::{tab-item} meta-reference-gpu
+```
+$ cd distributions/meta-reference-gpu && docker compose up
+```
+
+> [!NOTE]
+> This assumes you have access to GPU to start a local server with access to your GPU.
+
+
+> [!NOTE]
+> `~/.llama` should be the path containing downloaded weights of Llama models.
+
+
+This will download and start running a pre-built docker container. Alternatively, you may use the following commands:
+
+```
+docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
+```
+:::
+
+:::{tab-item} tgi
+```
+$ cd distributions/tgi/gpu && docker compose up
+```
+
+The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should be able to see the following outputs --
+```
+[text-generation-inference] | 2024-10-15T18:56:33.810397Z  INFO text_generation_router::server: router/src/server.rs:1813: Using config Some(Llama)
+[text-generation-inference] | 2024-10-15T18:56:33.810448Z  WARN text_generation_router::server: router/src/server.rs:1960: Invalid hostname, defaulting to 0.0.0.0
+[text-generation-inference] | 2024-10-15T18:56:33.864143Z  INFO text_generation_router::server: router/src/server.rs:2353: Connected
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
+```
+
+To kill the server
+```
+docker compose down
+```
+:::
+
+::::
+
+**Via Conda**
+::::{tab-set}
+
+:::{tab-item} meta-reference-gpu
+1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
+
+2. Build the `meta-reference-gpu` distribution
+
+```
+$ llama stack build --template meta-reference-gpu --image-type conda
+```
+
+3. Start running distribution
+```
+$ cd distributions/meta-reference-gpu
+$ llama stack run ./run.yaml
+```
+:::
+
+:::{tab-item} tgi
+```bash
+llama stack build --template tgi --image-type conda
+# -- start a TGI server endpoint
+llama stack run ./gpu/run.yaml
+```
+:::
+
+::::
+
+
+##### 1.2 (Optional) Serving Model
+
+
 
 ## Step 2. Build Your Llama Stack App
 
