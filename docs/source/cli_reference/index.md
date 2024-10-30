@@ -60,7 +60,7 @@ llama model list
 
 You should see a table like this:
 
-<pre style="font-family: monospace;">
+```
 +----------------------------------+------------------------------------------+----------------+
 | Model Descriptor                 | Hugging Face Repo                        | Context Length |
 +----------------------------------+------------------------------------------+----------------+
@@ -114,7 +114,7 @@ You should see a table like this:
 +----------------------------------+------------------------------------------+----------------+
 | Llama-Guard-2-8B                 | meta-llama/Llama-Guard-2-8B              | 4K             |
 +----------------------------------+------------------------------------------+----------------+
-</pre>
+```
 
 To download models, you can use the llama download command.
 
