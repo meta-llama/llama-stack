@@ -9,7 +9,7 @@ The Stack APIs are rapidly improving, but still very much work in progress and w
 
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
-:width: 400px
+:width: 600px
 :align: center
 ```
 
