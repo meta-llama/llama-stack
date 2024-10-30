@@ -1,6 +1,8 @@
 ## Agentic API 101
 
-This document talks about the Agentic APIs in Llama Stack. Starting Llama 3.1 you can build agentic applications capable of:
+This document talks about the Agentic APIs in Llama Stack.
+
+Starting Llama 3.1 you can build agentic applications capable of:
 
 - breaking a task down and performing multi-step reasoning.
 - using tools to perform some actions
@@ -8,7 +10,47 @@ This document talks about the Agentic APIs in Llama Stack. Starting Llama 3.1 yo
   - zero-shot: the model can learn to call tools using previously unseen, in-context tool definitions
 - providing system level safety protections using models like Llama Guard.
 
-With Llama Stack, we now support the Agentic components to build a Agentic System based on our Agentic APIs.
+An agentic app requires a few components:
+- ability to run inference on the underlying Llama series of models
+- ability to run safety checks using the Llama Guard series of models
+- ability to execute tools, including a code execution environment, and loop using the model's multi-step reasoning process
+
+All of these components are now offered by a single Llama Stack Distribution. Llama Stack defines and standardizes these components and many others that are needed to make building Generative AI applications smoother. Various implementations of these APIs are then assembled together via a **Llama Stack Distribution**.
+
+### Run Agent example
+
+To run an agent app, check out examples demo scripts with client SDKs to talk with the Llama Stack server in our llama-stack-apps repo. With the server running, to run a simple agent app:
+
+```bash
+git clone git@github.com:meta-llama/llama-stack-apps.git
+cd llama-stack-apps
+pip install -r requirements.txt
+
+python -m examples.agents.client <host> <port>
+```
+
+You will see outputs like this:
+
+```bash
+User> I am planning a trip to Switzerland, what are the top 3 places to visit?
+inference> Switzerland is a beautiful country with a rich history, stunning landscapes, and vibrant culture. Here are three must-visit places to add to your itinerary:
+...
+
+User> What is so special about #1?
+inference> Jungfraujoch, also known as the "Top of Europe," is a unique and special place for several reasons:
+...
+
+User> What other countries should I consider to club?
+inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
+```
+
+
+
+
+
+
+## Readme for llama-stack-app:
+
 
 ### Agentic System Concept
 
@@ -34,6 +76,8 @@ The sequence diagram that details the steps is [here](https://github.com/meta-ll
   * /memory_bank - a memory bank allows for the agentic system to perform retrieval augmented generation
 
 
+
+
 ### How to build your own agent
 
 Agents Protocol is defined in [agents.py](../llama_stack/apis/agents/agents.py). Your agent class must have the following functions:
@@ -46,68 +90,10 @@ Agents Protocol is defined in [agents.py](../llama_stack/apis/agents/agents.py).
 
 **get_agents_step(agent_id, session_id, turn_id, step_id)**:
 
-**create_agent_session(agent_id, session_id)**
+**create_agent_session(agent_id, session_id)**:
 
-**get_agents_session(agent_id, session_id, turn_id)**
+**get_agents_session(agent_id, session_id, turn_id)**:
 
-**delete_agents_session(agent_id, session_id)**
+**delete_agents_session(agent_id, session_id)**:
 
-**delete_agents(agent_id, session_id)**
-
-
-@runtime_checkable
-class Agents(Protocol):
-    @webmethod(route="/agents/create")
-    async def create_agent(
-        self,
-        agent_config: AgentConfig,
-    ) -> AgentCreateResponse: ...
-
-    @webmethod(route="/agents/turn/create")
-    async def create_agent_turn(
-        self,
-        agent_id: str,
-        session_id: str,
-        messages: List[
-            Union[
-                UserMessage,
-                ToolResponseMessage,
-            ]
-        ],
-        attachments: Optional[List[Attachment]] = None,
-        stream: Optional[bool] = False,
-    ) -> AgentTurnResponseStreamChunk: ...
-
-    @webmethod(route="/agents/turn/get")
-    async def get_agents_turn(
-        self, agent_id: str, session_id: str, turn_id: str
-    ) -> Turn: ...
-
-    @webmethod(route="/agents/step/get")
-    async def get_agents_step(
-        self, agent_id: str, session_id: str, turn_id: str, step_id: str
-    ) -> AgentStepResponse: ...
-
-    @webmethod(route="/agents/session/create")
-    async def create_agent_session(
-        self,
-        agent_id: str,
-        session_name: str,
-    ) -> AgentSessionCreateResponse: ...
-
-    @webmethod(route="/agents/session/get")
-    async def get_agents_session(
-        self,
-        agent_id: str,
-        session_id: str,
-        turn_ids: Optional[List[str]] = None,
-    ) -> Session: ...
-
-    @webmethod(route="/agents/session/delete")
-    async def delete_agents_session(self, agent_id: str, session_id: str) -> None: ...
-
-    @webmethod(route="/agents/delete")
-    async def delete_agents(
-        self,
-        agent_id: str,
-    ) -> None: ...
+**delete_agents(agent_id, session_id)**:
