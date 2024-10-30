@@ -3,3 +3,7 @@
 .wy-nav-content {
     max-width: 90%;
 }
+
+.wy-side-nav-search, .wy-nav-top {
+    background: #c3c9d4;
+}

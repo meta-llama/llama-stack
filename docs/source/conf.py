@@ -75,7 +75,7 @@ source_suffix = {
 # html_theme = "alabaster"
 html_theme_options = {
     "canonical_url": "https://github.com/meta-llama/llama-stack",
-    "style_nav_header_background": "white",
+    # "style_nav_header_background": "#c3c9d4",
 }
 
 html_static_path = ["../_static"]
