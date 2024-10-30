@@ -12,15 +12,12 @@ The `llamastack/distribution-fireworks` distribution consists of the following p
 
 ### Step 1. Start the Distribution (Single Node CPU)
 
-#### (Option 1) Start Distribution Via Conda
+#### (Option 1) Start Distribution Via Docker
 > [!NOTE]
 > This assumes you have an hosted endpoint at Fireworks with API Key.
 
 ```
-$ cd distributions/fireworks
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
+$ cd distributions/fireworks && docker compose up
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
@@ -44,7 +41,7 @@ llama stack run ./run.yaml
 
 ### (Optional) Model Serving
 
-Use `llama-stack-client models list` to chekc the available models served by Fireworks.
+Use `llama-stack-client models list` to check the available models served by Fireworks.
 ```
 $ llama-stack-client models list
 +------------------------------+------------------------------+---------------+------------+

@@ -17,10 +17,7 @@ The `llamastack/distribution-together` distribution consists of the following pr
 > This assumes you have an hosted endpoint at Together with API Key.
 
 ```
-$ cd distributions/together
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
+$ cd distributions/together && docker compose up
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Together URL server endpoint. E.g.
