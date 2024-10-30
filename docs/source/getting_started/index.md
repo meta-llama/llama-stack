@@ -58,9 +58,9 @@ If so, we suggest:
 
 ### Quick Start Commands
 
-#### Single-Node GPU (Local Inference)
+#### Single-Node GPU
 
-##### Docker
+**Docker**
 ````{tab-set-code}
 
 ```{code-block} meta-reference-gpu
@@ -72,7 +72,7 @@ $ cd distributions/tgi && docker compose up
 ```
 
 ````
-##### Conda
+**Conda**
 
 ````{tab-set-code}
 
@@ -88,8 +88,8 @@ $ cd distributions/tgi && llama stack run ./run.yaml
 
 ````
 
-#### Single-Node CPU/GPU (Local Inference)
-##### Docker
+#### Single-Node CPU
+**Docker**
 ````{tab-set-code}
 
 ```{code-block} ollama
@@ -98,7 +98,7 @@ $ cd distributions/ollama/cpu && docker compose up
 
 ````
 
-##### Conda
+**Conda**
 ````{tab-set-code}
 
 ```{code-block} ollama
@@ -108,10 +108,9 @@ $ cd distributions/ollama && llama stack run ./run.yaml
 
 ````
 
-#### Single-Node CPU (Remote Inference)
+#### Single-Node CPU + Hosted Endpoint
 
-##### Docker
-
+**Docker**
 ````{tab-set-code}
 
 ```{code-block} together
@@ -124,7 +123,7 @@ $ cd distributions/fireworks && docker compose up
 
 ````
 
-##### Conda
+**Conda**
 ````{tab-set-code}
 
 ```{code-block} together
