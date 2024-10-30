@@ -112,11 +112,12 @@ inference> Considering your interest in Switzerland, here are some neighboring c
 ```{tab} Python
 ```python
 def hello():
-    print("Hello!")
+    print("Hello, World!")
 ```
-```{tab} Javascript
+```{tab} JavaScript
 ```javascript
 function hello() {
-  console.log("Hello!");
+  console.log("Hello, World!");
 }
+```
 ```
