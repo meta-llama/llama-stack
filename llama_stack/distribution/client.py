@@ -36,7 +36,13 @@ def extract_async_iterator_type(type_hint):
     return None
 
 
+_CLIENT_CLASSES = {}
+
+
 def create_api_client_class(protocol) -> Type:
+    if protocol in _CLIENT_CLASSES:
+        return _CLIENT_CLASSES[protocol]
+
     class APIClient:
         def __init__(self, base_url: str):
             self.base_url = base_url.rstrip("/")
@@ -124,7 +130,6 @@ def create_api_client_class(protocol) -> Type:
             else:
                 data.update(convert(kwargs))
 
-            print(f"{data=}")
             return dict(
                 method=webmethod.method or "POST",
                 url=url,
@@ -148,6 +153,7 @@ def create_api_client_class(protocol) -> Type:
 
     # Name the class after the protocol
     APIClient.__name__ = f"{protocol.__name__}Client"
+    _CLIENT_CLASSES[protocol] = APIClient
     return APIClient
 
 
