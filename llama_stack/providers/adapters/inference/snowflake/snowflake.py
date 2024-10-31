@@ -134,7 +134,6 @@ class SnowflakeInferenceAdapter(
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = self._get_params_for_completion(request)
 
-        # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
             s = self._get_cortex_client().post(**params)
             for chunk in s:
@@ -211,7 +210,6 @@ class SnowflakeInferenceAdapter(
     ) -> AsyncGenerator:
         params = self._get_params(request)
 
-        # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
             async with self._get_cortex_async_client() as client:
                 async with client.stream("POST", **params) as response:
