@@ -406,6 +406,8 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
 
 @json_schema_type
 class AgentTurnResponseStreamChunk(BaseModel):
+    """streamed agent turn completion response."""
+
     event: AgentTurnResponseEvent
 
 

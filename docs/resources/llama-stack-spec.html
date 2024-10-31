@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-31 10:35:38.305313"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
     },
     "servers": [
         {
@@ -320,11 +320,18 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "A single turn in an interaction with an Agentic System.",
+                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Turn"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Turn"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -3832,6 +3839,215 @@
                     "messages"
                 ]
             },
+            "AgentTurnResponseEvent": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AgentTurnResponseStepStartPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentTurnResponseStepProgressPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentTurnResponseStepCompletePayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentTurnResponseTurnStartPayload"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentTurnResponseTurnCompletePayload"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "payload"
+                ],
+                "title": "Streamed agent execution response."
+            },
+            "AgentTurnResponseStepCompletePayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "step_complete",
+                        "default": "step_complete"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ]
+                    },
+                    "step_details": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/InferenceStep"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolExecutionStep"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ShieldCallStep"
+                            },
+                            {
+                                "$ref": "#/components/schemas/MemoryRetrievalStep"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "step_type",
+                    "step_details"
+                ]
+            },
+            "AgentTurnResponseStepProgressPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "step_progress",
+                        "default": "step_progress"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ]
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "model_response_text_delta": {
+                        "type": "string"
+                    },
+                    "tool_call_delta": {
+                        "$ref": "#/components/schemas/ToolCallDelta"
+                    },
+                    "tool_response_text_delta": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "step_type",
+                    "step_id"
+                ]
+            },
+            "AgentTurnResponseStepStartPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "step_start",
+                        "default": "step_start"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "enum": [
+                            "inference",
+                            "tool_execution",
+                            "shield_call",
+                            "memory_retrieval"
+                        ]
+                    },
+                    "step_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "step_type",
+                    "step_id"
+                ]
+            },
+            "AgentTurnResponseStreamChunk": {
+                "type": "object",
+                "properties": {
+                    "event": {
+                        "$ref": "#/components/schemas/AgentTurnResponseEvent"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event"
+                ],
+                "title": "streamed agent turn completion response."
+            },
+            "AgentTurnResponseTurnCompletePayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "turn_complete",
+                        "default": "turn_complete"
+                    },
+                    "turn": {
+                        "$ref": "#/components/schemas/Turn"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "turn"
+                ]
+            },
+            "AgentTurnResponseTurnStartPayload": {
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "const": "turn_start",
+                        "default": "turn_start"
+                    },
+                    "turn_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "event_type",
+                    "turn_id"
+                ]
+            },
             "InferenceStep": {
                 "type": "object",
                 "properties": {
@@ -6847,55 +7063,55 @@
     ],
     "tags": [
         {
-            "name": "Safety"
-        },
-        {
-            "name": "Scoring"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Eval"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "Datasets"
-        },
-        {
             "name": "Memory"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "ScoringFunctions"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Inspect"
-        },
-        {
-            "name": "MemoryBanks"
         },
         {
             "name": "Inference"
         },
         {
+            "name": "Eval"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
             "name": "Agents"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "ScoringFunctions"
+        },
+        {
+            "name": "Safety"
         },
         {
             "name": "BuiltinTool",
@@ -7080,6 +7296,34 @@
         {
             "name": "CreateAgentTurnRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentTurnRequest\" />"
+        },
+        {
+            "name": "AgentTurnResponseEvent",
+            "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
+        },
+        {
+            "name": "AgentTurnResponseStepCompletePayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStepCompletePayload\" />"
+        },
+        {
+            "name": "AgentTurnResponseStepProgressPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStepProgressPayload\" />"
+        },
+        {
+            "name": "AgentTurnResponseStepStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStepStartPayload\" />"
+        },
+        {
+            "name": "AgentTurnResponseStreamChunk",
+            "description": "streamed agent turn completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStreamChunk\" />"
+        },
+        {
+            "name": "AgentTurnResponseTurnCompletePayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseTurnCompletePayload\" />"
+        },
+        {
+            "name": "AgentTurnResponseTurnStartPayload",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseTurnStartPayload\" />"
         },
         {
             "name": "InferenceStep",
@@ -7429,6 +7673,13 @@
                 "AgentCreateResponse",
                 "AgentSessionCreateResponse",
                 "AgentStepResponse",
+                "AgentTurnResponseEvent",
+                "AgentTurnResponseStepCompletePayload",
+                "AgentTurnResponseStepProgressPayload",
+                "AgentTurnResponseStepStartPayload",
+                "AgentTurnResponseStreamChunk",
+                "AgentTurnResponseTurnCompletePayload",
+                "AgentTurnResponseTurnStartPayload",
                 "Attachment",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",

@@ -86,6 +86,138 @@ components:
       required:
       - step
       type: object
+    AgentTurnResponseEvent:
+      additionalProperties: false
+      properties:
+        payload:
+          oneOf:
+          - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
+          - $ref: '#/components/schemas/AgentTurnResponseStepProgressPayload'
+          - $ref: '#/components/schemas/AgentTurnResponseStepCompletePayload'
+          - $ref: '#/components/schemas/AgentTurnResponseTurnStartPayload'
+          - $ref: '#/components/schemas/AgentTurnResponseTurnCompletePayload'
+      required:
+      - payload
+      title: Streamed agent execution response.
+      type: object
+    AgentTurnResponseStepCompletePayload:
+      additionalProperties: false
+      properties:
+        event_type:
+          const: step_complete
+          default: step_complete
+          type: string
+        step_details:
+          oneOf:
+          - $ref: '#/components/schemas/InferenceStep'
+          - $ref: '#/components/schemas/ToolExecutionStep'
+          - $ref: '#/components/schemas/ShieldCallStep'
+          - $ref: '#/components/schemas/MemoryRetrievalStep'
+        step_type:
+          enum:
+          - inference
+          - tool_execution
+          - shield_call
+          - memory_retrieval
+          type: string
+      required:
+      - event_type
+      - step_type
+      - step_details
+      type: object
+    AgentTurnResponseStepProgressPayload:
+      additionalProperties: false
+      properties:
+        event_type:
+          const: step_progress
+          default: step_progress
+          type: string
+        model_response_text_delta:
+          type: string
+        step_id:
+          type: string
+        step_type:
+          enum:
+          - inference
+          - tool_execution
+          - shield_call
+          - memory_retrieval
+          type: string
+        tool_call_delta:
+          $ref: '#/components/schemas/ToolCallDelta'
+        tool_response_text_delta:
+          type: string
+      required:
+      - event_type
+      - step_type
+      - step_id
+      type: object
+    AgentTurnResponseStepStartPayload:
+      additionalProperties: false
+      properties:
+        event_type:
+          const: step_start
+          default: step_start
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        step_id:
+          type: string
+        step_type:
+          enum:
+          - inference
+          - tool_execution
+          - shield_call
+          - memory_retrieval
+          type: string
+      required:
+      - event_type
+      - step_type
+      - step_id
+      type: object
+    AgentTurnResponseStreamChunk:
+      additionalProperties: false
+      properties:
+        event:
+          $ref: '#/components/schemas/AgentTurnResponseEvent'
+      required:
+      - event
+      title: streamed agent turn completion response.
+      type: object
+    AgentTurnResponseTurnCompletePayload:
+      additionalProperties: false
+      properties:
+        event_type:
+          const: turn_complete
+          default: turn_complete
+          type: string
+        turn:
+          $ref: '#/components/schemas/Turn'
+      required:
+      - event_type
+      - turn
+      type: object
+    AgentTurnResponseTurnStartPayload:
+      additionalProperties: false
+      properties:
+        event_type:
+          const: turn_start
+          default: turn_start
+          type: string
+        turn_id:
+          type: string
+      required:
+      - event_type
+      - turn_id
+      type: object
     Attachment:
       additionalProperties: false
       properties:
@@ -2866,7 +2998,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-31 10:35:38.305313"
+    \ draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3059,8 +3191,11 @@ paths:
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/Turn'
-          description: A single turn in an interaction with an Agentic System.
+                oneOf:
+                - $ref: '#/components/schemas/Turn'
+                - $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+          description: A single turn in an interaction with an Agentic System. **OR**
+            streamed agent turn completion response.
       tags:
       - Agents
   /agents/turn/get:
@@ -4145,23 +4280,23 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Safety
-- name: Scoring
-- name: BatchInference
-- name: DatasetIO
-- name: Models
-- name: Eval
-- name: Telemetry
-- name: Shields
-- name: Datasets
 - name: Memory
-- name: PostTraining
-- name: ScoringFunctions
-- name: SyntheticDataGeneration
-- name: Inspect
-- name: MemoryBanks
 - name: Inference
+- name: Eval
+- name: MemoryBanks
+- name: Models
+- name: BatchInference
+- name: PostTraining
 - name: Agents
+- name: Shields
+- name: Telemetry
+- name: Inspect
+- name: DatasetIO
+- name: SyntheticDataGeneration
+- name: Datasets
+- name: Scoring
+- name: ScoringFunctions
+- name: Safety
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4306,6 +4441,32 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentTurnRequest"
     />
   name: CreateAgentTurnRequest
+- description: 'Streamed agent execution response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseEvent" />'
+  name: AgentTurnResponseEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepCompletePayload"
+    />
+  name: AgentTurnResponseStepCompletePayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepProgressPayload"
+    />
+  name: AgentTurnResponseStepProgressPayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepStartPayload"
+    />
+  name: AgentTurnResponseStepStartPayload
+- description: 'streamed agent turn completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStreamChunk"
+    />'
+  name: AgentTurnResponseStreamChunk
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnCompletePayload"
+    />
+  name: AgentTurnResponseTurnCompletePayload
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnStartPayload"
+    />
+  name: AgentTurnResponseTurnStartPayload
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryRetrievalStep"
@@ -4566,6 +4727,13 @@ x-tagGroups:
   - AgentCreateResponse
   - AgentSessionCreateResponse
   - AgentStepResponse
+  - AgentTurnResponseEvent
+  - AgentTurnResponseStepCompletePayload
+  - AgentTurnResponseStepProgressPayload
+  - AgentTurnResponseStepStartPayload
+  - AgentTurnResponseStreamChunk
+  - AgentTurnResponseTurnCompletePayload
+  - AgentTurnResponseTurnStartPayload
   - Attachment
   - BatchChatCompletionRequest
   - BatchChatCompletionResponse
