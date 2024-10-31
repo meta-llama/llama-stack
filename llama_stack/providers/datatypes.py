@@ -60,7 +60,7 @@ class MemoryBanksProtocolPrivate(Protocol):
 class DatasetsProtocolPrivate(Protocol):
     async def list_datasets(self) -> List[DatasetDef]: ...
 
-    async def register_datasets(self, dataset_def: DatasetDef) -> None: ...
+    async def register_dataset(self, dataset_def: DatasetDef) -> None: ...
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
@@ -171,7 +171,7 @@ as being "Llama Stack compatible"
     def module(self) -> str:
         if self.adapter:
             return self.adapter.module
-        return f"llama_stack.apis.{self.api.value}.client"
+        return "llama_stack.distribution.client"
 
     @property
     def pip_packages(self) -> List[str]:

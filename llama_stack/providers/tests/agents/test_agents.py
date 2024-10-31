@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 #
 # ```bash
 # PROVIDER_ID=<your_provider> \
+#   MODEL_ID=<your_model> \
 #   PROVIDER_CONFIG=provider_config.yaml \
 #   pytest -s llama_stack/providers/tests/agents/test_agents.py \
 #   --tb=short --disable-warnings
@@ -44,7 +45,7 @@ async def agents_settings():
         "impl": impls[Api.agents],
         "memory_impl": impls[Api.memory],
         "common_params": {
-            "model": "Llama3.1-8B-Instruct",
+            "model": os.environ["MODEL_ID"] or "Llama3.1-8B-Instruct",
             "instructions": "You are a helpful assistant.",
         },
     }

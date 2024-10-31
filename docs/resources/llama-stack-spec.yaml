@@ -190,6 +190,7 @@ components:
           $ref: '#/components/schemas/AgentTurnResponseEvent'
       required:
       - event
+      title: streamed agent turn completion response.
       type: object
     AgentTurnResponseTurnCompletePayload:
       additionalProperties: false
@@ -2997,7 +2998,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-30 16:17:03.919702"
+    \ draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3190,8 +3191,11 @@ paths:
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
-          description: OK
+                oneOf:
+                - $ref: '#/components/schemas/Turn'
+                - $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+          description: A single turn in an interaction with an Agentic System. **OR**
+            streamed agent turn completion response.
       tags:
       - Agents
   /agents/turn/get:
@@ -4276,21 +4280,21 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inference
 - name: Memory
-- name: Inspect
-- name: PostTraining
+- name: Inference
+- name: Eval
+- name: MemoryBanks
 - name: Models
-- name: Scoring
-- name: DatasetIO
 - name: BatchInference
+- name: PostTraining
 - name: Agents
 - name: Shields
-- name: MemoryBanks
-- name: Datasets
-- name: SyntheticDataGeneration
-- name: Eval
 - name: Telemetry
+- name: Inspect
+- name: DatasetIO
+- name: SyntheticDataGeneration
+- name: Datasets
+- name: Scoring
 - name: ScoringFunctions
 - name: Safety
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
@@ -4451,8 +4455,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepStartPayload"
     />
   name: AgentTurnResponseStepStartPayload
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStreamChunk"
-    />
+- description: 'streamed agent turn completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStreamChunk"
+    />'
   name: AgentTurnResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnCompletePayload"
     />

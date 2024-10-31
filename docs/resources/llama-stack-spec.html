@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-30 16:17:03.919702"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
     },
     "servers": [
         {
@@ -320,11 +320,18 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Turn"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -4002,7 +4009,8 @@
                 "additionalProperties": false,
                 "required": [
                     "event"
-                ]
+                ],
+                "title": "streamed agent turn completion response."
             },
             "AgentTurnResponseTurnCompletePayload": {
                 "type": "object",
@@ -7055,28 +7063,25 @@
     ],
     "tags": [
         {
-            "name": "Inference"
-        },
-        {
             "name": "Memory"
         },
         {
-            "name": "Inspect"
+            "name": "Inference"
         },
         {
-            "name": "PostTraining"
+            "name": "Eval"
+        },
+        {
+            "name": "MemoryBanks"
         },
         {
             "name": "Models"
         },
         {
-            "name": "Scoring"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
             "name": "BatchInference"
+        },
+        {
+            "name": "PostTraining"
         },
         {
             "name": "Agents"
@@ -7085,19 +7090,22 @@
             "name": "Shields"
         },
         {
-            "name": "MemoryBanks"
+            "name": "Telemetry"
         },
         {
-            "name": "Datasets"
+            "name": "Inspect"
+        },
+        {
+            "name": "DatasetIO"
         },
         {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Eval"
+            "name": "Datasets"
         },
         {
-            "name": "Telemetry"
+            "name": "Scoring"
         },
         {
             "name": "ScoringFunctions"
@@ -7307,7 +7315,7 @@
         },
         {
             "name": "AgentTurnResponseStreamChunk",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStreamChunk\" />"
+            "description": "streamed agent turn completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStreamChunk\" />"
         },
         {
             "name": "AgentTurnResponseTurnCompletePayload",
