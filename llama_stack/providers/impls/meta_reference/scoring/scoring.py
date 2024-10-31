@@ -13,23 +13,20 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.equality_scoring_fn import (
-    EqualityScoringFn,
-)
-
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.llm_as_judge_scoring_fn import (
-    LlmAsJudgeScoringFn,
-)
-
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.subset_of_scoring_fn import (
-    SubsetOfScoringFn,
-)
 
 from .config import MetaReferenceScoringConfig
+from .scoring_fn.answer_parsing_scoring_fn import AnswerParsingScoringFn
+from .scoring_fn.equality_scoring_fn import EqualityScoringFn
+from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
+from .scoring_fn.subset_of_scoring_fn import SubsetOfScoringFn
 
 FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn]
 
-LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
+# Scoring functions with context that can be registered
+REGISTERABLE_SCORING_FNS = {
+    ScoringContextType.llm_as_judge.value: LlmAsJudgeScoringFn,
+    ScoringContextType.answer_parsing.value: AnswerParsingScoringFn,
+}
 
 
 class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
@@ -44,18 +41,24 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
         self.inference_api = inference_api
+        # keep track of scoring function id to impls
         self.scoring_fn_id_impls = {}
+        # registerable scoring fn context to impls
+        self.registerable_scoring_fn_impls = {}
 
     async def initialize(self) -> None:
         for x in FIXED_FNS:
             impl = x()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
-        for x in LLM_JUDGE_FNS:
-            impl = x(inference_api=self.inference_api)
+        for context_type, impl_cls in REGISTERABLE_SCORING_FNS.items():
+            if context_type == ScoringContextType.llm_as_judge.value:
+                impl = impl_cls(inference_api=self.inference_api)
+            else:
+                impl = impl_cls()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
-                self.llm_as_judge_fn = impl
+                self.registerable_scoring_fn_impls[context_type] = impl
 
     async def shutdown(self) -> None: ...
 
@@ -74,8 +77,12 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         return scoring_fn_defs_list
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
-        self.llm_as_judge_fn.register_scoring_fn_def(function_def)
-        self.scoring_fn_id_impls[function_def.identifier] = self.llm_as_judge_fn
+        assert (
+            function_def.context is not None
+        ), "Only ScoringFnDef with context set can be registered"
+        fn_impl = self.registerable_scoring_fn_impls[function_def.context.type]
+        fn_impl.register_scoring_fn_def(function_def)
+        self.scoring_fn_id_impls[function_def.identifier] = fn_impl
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)

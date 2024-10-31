@@ -15,9 +15,7 @@ from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import
     aggregate_accuracy,
 )
 
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.equality import (
-    equality,
-)
+from .fn_defs.equality import equality
 
 
 class EqualityScoringFn(BaseScoringFn):

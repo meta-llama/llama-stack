@@ -26,7 +26,6 @@ Total rating:
 llm_as_judge_8b_correctness = ScoringFnDef(
     identifier="meta-reference::llm_as_judge_8b_correctness",
     description="Llm As Judge Scoring Function",
-    parameters=[],
     return_type=NumberType(),
     context=LLMAsJudgeContext(
         prompt_template=JUDGE_PROMPT,

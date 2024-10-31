@@ -4,7 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -42,7 +51,7 @@ class AnswerParsingContext(BaseModel):
         ScoringContextType.answer_parsing.value
     )
     parsing_regex: Optional[List[str]] = Field(
-        "Regex to extract the answer from generated response",
+        description="Regex to extract the answer from generated response",
         default_factory=list,
     )
 
@@ -67,7 +76,10 @@ class ScoringFnDef(BaseModel):
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
     )
-    context: Optional[ScoringContext] = None
+    context: Optional[ScoringContext] = Field(
+        description="Scoring function context used different answer extraction",
+        default=None,
+    )
     # We can optionally add information here to support packaging of code, etc.
 
 
