@@ -51,6 +51,7 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 |  Meta Reference  |  Single Node | :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |  Fireworks  |  Hosted  | :heavy_check_mark:  | :heavy_check_mark:  |  :heavy_check_mark:  |    |   |
 |  AWS Bedrock  |  Hosted  |    |  :heavy_check_mark:  |    | :heavy_check_mark:  | |
+|  Snowflake  |  Hosted  |    |  :heavy_check_mark:  |    |   |
 |  Together  |  Hosted  |  :heavy_check_mark:  |  :heavy_check_mark:  |   | :heavy_check_mark:  |  |
 |  Ollama  | Single Node   |    |  :heavy_check_mark:  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  :heavy_check_mark:  |    |   |

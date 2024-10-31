@@ -11,11 +11,11 @@ from pydantic import BaseModel, Field
 
 @json_schema_type
 class SnowflakeImplConfig(BaseModel):
-    url: str = Field(
+    account: str = Field(
         default=None,
-        description="The URL for the Snowflake Cortex model serving endpoint",
+        description="The Snowflake Account ID for the Snowflake Cortex model serving endpoint",
     )
-    api_token: str = Field(
+    api_key: str = Field(
         default=None,
         description="The Snowflake Cortex API token",
     )

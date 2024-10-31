@@ -101,7 +101,7 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="snowflake",
-                pip_packages=["python-snowflake-snowpark"],
+                pip_packages=["snowflake"],
                 module="llama_stack.providers.adapters.inference.snowflake",
                 config_class="llama_stack.providers.adapters.inference.snowflake.SnowflakeImplConfig",
             ),
