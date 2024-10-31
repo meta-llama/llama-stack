@@ -100,6 +100,15 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="snowflake",
+                pip_packages=["python-snowflake-snowpark"],
+                module="llama_stack.providers.adapters.inference.snowflake",
+                config_class="llama_stack.providers.adapters.inference.snowflake.SnowflakeImplConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="fireworks",
                 pip_packages=[
                     "fireworks-ai",
