@@ -12,9 +12,9 @@ distributions/index
 developer_cookbook
 ```
 
-At the end of the guide, you will have learnt how to:
+At the end of the guide, you will have learned how to:
 - get a Llama Stack server up and running
-- get a agent (with tool-calling, vector stores) which works with the above server
+- set up an agent (with tool-calling and vector stores) that works with the above server
 
 To see more example apps built using Llama Stack, see [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main).
 
@@ -48,7 +48,7 @@ If so, we suggest:
 
 ### Quick Start Commands
 
-The following quick starts commands. Please visit each distribution page on detailed setup.
+Once you have decided on the inference provider and distribution to use, use the following quick start commands to get started. 
 
 ##### 1.0 Prerequisite
 ::::{tab-set}
@@ -237,7 +237,7 @@ inference:
   - provider_id: ollama0
     provider_type: remote::ollama
     config:
-      url: http://127.0.0.1:14343
+      url: http://127.0.0.1:11434
 ```
 
 ```
@@ -419,10 +419,10 @@ $ llama-stack-client models list
 ::::
 
 
-## Step 2. Build Your Llama Stack App
+## Step 2. Run Llama Stack App
 
-### chat_completion sanity test
-Once the server is setup, we can test it with a client to see the example outputs by . This will run the chat completion client and query the distribution’s `/inference/chat_completion` API. Send a POST request to the server:
+### Chat Completion Test
+Once the server is set up, we can test it with a client to verify it's working correctly. The following command will send a chat completion request to the server's `/inference/chat_completion` API:
 
 ```bash
 $ curl http://localhost:5000/inference/chat_completion \
