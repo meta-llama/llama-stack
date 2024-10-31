@@ -50,6 +50,7 @@ async def provider_scoring_functions():
             "meta-reference::equality",
             "meta-reference::subset_of",
             "meta-reference::llm_as_judge_8b_correctness",
+            "meta-reference::answer_parsing_multiple_choice",
         },
         "braintrust": {
             "braintrust::factuality",
