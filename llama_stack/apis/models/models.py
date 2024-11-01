@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
