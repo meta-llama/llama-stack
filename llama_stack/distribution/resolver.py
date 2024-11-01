@@ -11,7 +11,6 @@ from typing import Any, Dict, List, Set
 from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
-import llama_stack.distribution.store as distribution_store
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
@@ -27,6 +26,7 @@ from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.store import Registry as DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 
@@ -68,7 +68,7 @@ class ProviderWithSpec(Provider):
 async def resolve_impls(
     run_config: StackRunConfig,
     provider_registry: Dict[Api, Dict[str, ProviderSpec]],
-    dist_registry: distribution_store.Registry,
+    dist_registry: DistributionRegistry,
 ) -> Dict[Api, Any]:
     """
     Does two things:
@@ -241,7 +241,7 @@ async def instantiate_provider(
     provider: ProviderWithSpec,
     deps: Dict[str, Any],
     inner_impls: Dict[str, Any],
-    dist_registry: distribution_store.Registry,
+    dist_registry: DistributionRegistry,
 ):
     protocols = api_protocol_map()
     additional_protocols = additional_protocols_map()

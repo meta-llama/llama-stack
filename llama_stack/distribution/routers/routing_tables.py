@@ -13,8 +13,8 @@ from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 
+from llama_stack.distribution.store import Registry as DistributionRegistry
 from llama_stack.distribution.datatypes import *  # noqa: F403
-import llama_stack.distribution.store as distribution_store
 
 
 def get_impl_api(p: Any) -> Api:
@@ -53,7 +53,7 @@ class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
         impls_by_provider_id: Dict[str, RoutedProtocol],
-        dist_registry: distribution_store.Registry,
+        dist_registry: DistributionRegistry,
     ) -> None:
         self.impls_by_provider_id = impls_by_provider_id
         self.dist_registry = dist_registry

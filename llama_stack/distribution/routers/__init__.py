@@ -7,7 +7,8 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
-import llama_stack.distribution.store as distribution_store
+
+from llama_stack.distribution.store import Registry as DistributionRegistry
 
 from .routing_tables import (
     DatasetsRoutingTable,
@@ -22,7 +23,7 @@ async def get_routing_table_impl(
     api: Api,
     impls_by_provider_id: Dict[str, RoutedProtocol],
     _deps,
-    dist_registry: distribution_store.Registry,
+    dist_registry: DistributionRegistry,
 ) -> Any:
     api_to_tables = {
         "memory_banks": MemoryBanksRoutingTable,
