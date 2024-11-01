@@ -133,7 +133,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
             score_results = await scoring_fn.score(input_rows, scoring_fn_id)
-            agg_results = await scoring_fn.aggregate(score_results)
+            agg_results = await scoring_fn.aggregate(score_results, scoring_fn_id)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,
