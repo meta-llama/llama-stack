@@ -3,8 +3,11 @@
 
 This guide provides a streamlined setup to switch between local and cloud clients for text generation with Llama Stack’s `chat_completion` API. This setup enables automatic fallback to a cloud instance if the local client is unavailable.
 
+
 ### Pre-requisite
 Before you begin, please ensure Llama Stack is installed and the distribution are set up by following the [Getting Started Guide](https://llama-stack.readthedocs.io/en/latest/). You will need to run two distribution, a local and a cloud distribution, for this demo to work.
+
+<!--- [TODO: show how to create two distributions] --->
 
 ### Implementation
 
