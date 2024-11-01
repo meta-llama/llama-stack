@@ -2,9 +2,7 @@ import json
 
 from typing import Protocol
 
-from docs.openapi_generator.strong_typing.deserializer import create_deserializer
-
-from docs.openapi_generator.strong_typing.serialization import object_to_json
+import pydantic
 
 from llama_stack.distribution.datatypes import RoutableObjectWithProvider
 
@@ -17,7 +15,6 @@ class Registry(Protocol):
 
 
 KEY_FORMAT = "distributions:registry:{}"
-DESERIALIZER = create_deserializer(RoutableObjectWithProvider)
 
 
 class DiskRegistry(Registry):
@@ -33,20 +30,21 @@ class DiskRegistry(Registry):
         # Parse JSON string into list of objects
         objects_data = json.loads(json_str)
 
-        return [DESERIALIZER.parse(obj_str) for obj_str in objects_data]
+        return [
+            pydantic.parse_obj_as(
+                RoutableObjectWithProvider,
+                obj_str,
+            )
+            for obj_str in objects_data
+        ]
 
     # TODO: make it thread safe using CAS
     async def register(self, obj: RoutableObjectWithProvider) -> None:
-        # Get existing objects for this identifier
         existing_objects = await self.get(obj.identifier)
 
-        # Add new object to list
         existing_objects.append(obj)
 
-        # Convert all objects to JSON strings and store as JSON array
-        objects_json = [
-            object_to_json(existing_object) for existing_object in existing_objects
-        ]
+        objects_json = [obj.model_dump_json() for existing_object in existing_objects]
         await self.kvstore.set(
             KEY_FORMAT.format(obj.identifier), json.dumps(objects_json)
         )

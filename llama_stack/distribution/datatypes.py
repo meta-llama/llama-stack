@@ -37,12 +37,16 @@ RoutableObject = Union[
     ScoringFnDef,
 ]
 
-RoutableObjectWithProvider = Union[
-    ModelDefWithProvider,
-    ShieldDefWithProvider,
-    MemoryBankDefWithProvider,
-    DatasetDefWithProvider,
-    ScoringFnDefWithProvider,
+
+RoutableObjectWithProvider = Annotated[
+    Union[
+        ModelDefWithProvider,
+        ShieldDefWithProvider,
+        MemoryBankDefWithProvider,
+        DatasetDefWithProvider,
+        ScoringFnDefWithProvider,
+    ],
+    Field(discriminator="type"),
 ]
 
 RoutedProtocol = Union[

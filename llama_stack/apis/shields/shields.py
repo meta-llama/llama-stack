@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Dict, List, Optional, Protocol, runtime_checkable
+from typing import Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -34,6 +34,7 @@ class ShieldDef(BaseModel):
 
 @json_schema_type
 class ShieldDefWithProvider(ShieldDef):
+    type: Literal["shield"] = "shield"
     provider_id: str = Field(
         description="The provider ID for this shield type",
     )

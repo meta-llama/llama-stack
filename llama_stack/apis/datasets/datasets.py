@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Optional, Protocol
+from typing import Dict, List, Literal, Optional, Protocol
 
 from llama_models.llama3.api.datatypes import URL
 
@@ -32,6 +32,7 @@ class DatasetDef(BaseModel):
 
 @json_schema_type
 class DatasetDefWithProvider(DatasetDef):
+    type: Literal["dataset"] = "dataset"
     provider_id: str = Field(
         description="ID of the provider which serves this dataset",
     )
