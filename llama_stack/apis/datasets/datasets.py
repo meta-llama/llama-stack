@@ -10,9 +10,9 @@ from llama_models.llama3.api.datatypes import URL
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from llama_stack.apis.common.type_system import ParamType
-
 from pydantic import BaseModel, Field
+
+from llama_stack.apis.common.type_system import ParamType
 
 
 @json_schema_type
