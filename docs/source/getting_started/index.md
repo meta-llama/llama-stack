@@ -323,7 +323,6 @@ inference:
 
 ::::
 
-
 ##### 1.2 (Optional) Update Model Serving Configuration
 ::::{tab-set}
 
@@ -454,6 +453,11 @@ $ llama-stack-client models list
 :::
 
 ::::
+
+
+##### Troubleshooting
+- If you encounter any issues, search through our [GitHub Issues](https://github.com/meta-llama/llama-stack/issues), or file an new issue.
+- Use `--port <PORT>` flag to switch port number. For docker run, update the `-p <PORT>:<PORT>` flag.
 
 
 ## Step 2. Run Llama Stack App
