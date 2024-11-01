@@ -75,7 +75,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             for model in self.client.models.list()
         ]
 
-    def completion(
+    async def completion(
         self,
         model: str,
         content: InterleavedTextMedia,
@@ -86,7 +86,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
         raise NotImplementedError()
 
-    def chat_completion(
+    async def chat_completion(
         self,
         model: str,
         messages: List[Message],
@@ -111,7 +111,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if stream:
             return self._stream_chat_completion(request, self.client)
         else:
-            return self._nonstream_chat_completion(request, self.client)
+            return await self._nonstream_chat_completion(request, self.client)
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest, client: OpenAI
