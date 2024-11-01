@@ -47,6 +47,10 @@ class DiskRegistry(Registry):
     # TODO: make it thread safe using CAS
     async def register(self, obj: RoutableObjectWithProvider) -> None:
         existing_objects = await self.get(obj.identifier)
+        # dont register if the object's providerid already exists
+        for eobj in existing_objects:
+            if eobj.provider_id == obj.provider_id:
+                return
 
         existing_objects.append(obj)
 

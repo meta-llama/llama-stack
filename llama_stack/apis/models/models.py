@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class ModelDef(BaseModel):
     llama_model: str = Field(
         description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
     )
-    metadata: Dict[str, str] = Field(
+    metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this model",
     )

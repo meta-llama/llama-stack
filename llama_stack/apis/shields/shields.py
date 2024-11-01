@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -26,7 +26,7 @@ class ShieldDef(BaseModel):
     type: str = Field(
         description="The type of shield this is; the value is one of the ShieldType enum"
     )
-    params: Dict[str, str] = Field(
+    params: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional parameters needed for this shield",
     )
