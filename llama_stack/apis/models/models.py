@@ -17,7 +17,7 @@ class ModelDef(BaseModel):
     llama_model: str = Field(
         description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
     )
-    metadata: Dict[str, Any] = Field(
+    metadata: Dict[str, str] = Field(
         default_factory=dict,
         description="Any additional metadata for this model",
     )

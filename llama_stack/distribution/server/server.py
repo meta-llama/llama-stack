@@ -22,14 +22,13 @@ import yaml
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 
 from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
     get_provider_registry,
 )
+
+from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -37,10 +36,14 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
-
+import llama_stack.distribution.store as distribution_store
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
 from .endpoints import get_all_api_endpoints
 
@@ -278,6 +281,18 @@ def main(
         config = StackRunConfig(**yaml.safe_load(fp))
 
     app = FastAPI()
+    # instantiate kvstore for storing and retrieving distribution metadata
+    dist_kvstore = asyncio.run(
+        kvstore_impl(
+            SqliteKVStoreConfig(
+                db_path=(
+                    DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
+                ).as_posix()
+            )
+        )
+    )
+
+    distribution_store.REGISTRY = distribution_store.DiskRegistry(dist_kvstore)
 
     impls = asyncio.run(resolve_impls(config, get_provider_registry()))
     if Api.telemetry in impls:

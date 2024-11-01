@@ -10,9 +10,9 @@ from llama_models.llama3.api.datatypes import URL
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import BaseModel, Field
-
 from llama_stack.apis.common.type_system import ParamType
+
+from pydantic import BaseModel, Field
 
 
 @json_schema_type
@@ -24,7 +24,7 @@ class DatasetDef(BaseModel):
         description="The schema definition for this dataset",
     )
     url: URL
-    metadata: Dict[str, Any] = Field(
+    metadata: Dict[str, str] = Field(
         default_factory=dict,
         description="Any additional metadata for this dataset",
     )

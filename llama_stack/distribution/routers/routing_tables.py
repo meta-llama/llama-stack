@@ -14,6 +14,7 @@ from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+import llama_stack.distribution.store as distribution_store
 
 
 def get_impl_api(p: Any) -> Api:
@@ -170,8 +171,7 @@ class CommonRoutingTableImpl(RoutingTable):
         if obj.identifier not in self.registry:
             self.registry[obj.identifier] = []
         self.registry[obj.identifier].append(obj)
-
-        # TODO: persist this to a store
+        await distribution_store.REGISTRY.register(obj)
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):

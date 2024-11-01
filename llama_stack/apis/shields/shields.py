@@ -26,7 +26,7 @@ class ShieldDef(BaseModel):
     type: str = Field(
         description="The type of shield this is; the value is one of the ShieldType enum"
     )
-    params: Dict[str, Any] = Field(
+    params: Dict[str, str] = Field(
         default_factory=dict,
         description="Any additional parameters needed for this shield",
     )
