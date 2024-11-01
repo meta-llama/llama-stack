@@ -33,7 +33,7 @@ class DiskRegistry(Registry):
         return [
             pydantic.parse_obj_as(
                 RoutableObjectWithProvider,
-                obj_str,
+                json.loads(obj_str),
             )
             for obj_str in objects_data
         ]
