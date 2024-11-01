@@ -43,6 +43,11 @@ class LLMAsJudgeContext(BaseModel):
         description="Regex to extract the score from the judge response",
         default=None,
     )
+    # TODO: think about whether to put this as a scoring function context or in separate scorer
+    # and how the LLM as judge defines the response
+    judge_grade_metrics: Optional[Dict[str, str]] = Field(
+        description="Mapping of extracted judge response to score", default=None
+    )
 
 
 @json_schema_type

@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -29,3 +30,13 @@ def aggregate_average(scoring_results: List[ScoringResultRow]) -> Dict[str, Any]
         )
         / len([_ for _ in scoring_results if _["score"] is not None]),
     }
+
+
+def aggregate_count(scoring_results: List[ScoringResultRow]) -> Dict[str, Any]:
+    result = Counter()
+    for x in scoring_results:
+        if x["grade"] is None:
+            result["None"] += 1
+        else:
+            result[x["grade"]] += 1
+    return dict(result)

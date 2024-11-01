@@ -37,6 +37,8 @@ class SubsetOfScoringFn(BaseScoringFn):
         }
 
     async def aggregate(
-        self, scoring_results: List[ScoringResultRow]
+        self,
+        scoring_results: List[ScoringResultRow],
+        scoring_fn_identifier: Optional[str] = None,
     ) -> Dict[str, Any]:
         return aggregate_accuracy(scoring_results)

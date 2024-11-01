@@ -42,7 +42,9 @@ class BaseScoringFn(ABC):
 
     @abstractmethod
     async def aggregate(
-        self, scoring_results: List[ScoringResultRow]
+        self,
+        scoring_results: List[ScoringResultRow],
+        scoring_fn_identifier: Optional[str] = None,
     ) -> Dict[str, Any]:
         raise NotImplementedError()
 
