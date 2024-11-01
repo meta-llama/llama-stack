@@ -94,7 +94,7 @@ You have two ways to install this repository:
 
 ## Documentations
 
-Please checkout our [Docs](https://llama-stack.readthedocs.io/en/latest/index.html) page for more details.
+Please checkout our [Documentations](https://llama-stack.readthedocs.io/en/latest/index.html) page for more details.
 
 * [CLI reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
     * Guide using `llama` CLI to work with Llama models (download, study prompts), and building/starting a Llama Stack distribution.
