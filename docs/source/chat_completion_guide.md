@@ -8,7 +8,7 @@ This document provides instructions on how to use Llama Stack's `chat_completion
 2. [Building Effective Prompts](#building-effective-prompts)
 3. [Conversation Loop](#conversation-loop)
 4. [Conversation History](#conversation-history)
-
+5. 
 
 ## Quickstart
 
@@ -140,6 +140,52 @@ async def chat_loop():
 
 asyncio.run(chat_loop())
 ```
+
+## Streaming Responses with Llama Stack
+
+Llama Stack offers a `stream` parameter in the `chat_completion` function, which allows partial responses to be returned progressively as they are generated. This can enhance user experience by providing immediate feedback without waiting for the entire response to be processed.
+
+### Example: Streaming Responses
+
+The following code demonstrates how to use the `stream` parameter to enable response streaming. When `stream=True`, the `chat_completion` function will yield tokens as they are generated. To display these tokens, this example leverages asynchronous streaming with `EventLogger`.
+
+```python
+import asyncio
+from llama_stack_client import LlamaStackClient
+from llama_stack_client.lib.inference.event_logger import EventLogger
+from llama_stack_client.types import UserMessage
+from termcolor import cprint
+
+async def run_main(stream: bool = True):
+    client = LlamaStackClient(
+        base_url="http://localhost:5000",
+    )
+
+    message = UserMessage(
+        content="hello world, write me a 2 sentence poem about the moon", role="user"
+    )
+    print(f"User>{message.content}", "green")
+
+    response = client.inference.chat_completion(
+        messages=[message],
+        model="Llama3.2-11B-Vision-Instruct",
+        stream=stream,
+    )
+
+    if not stream:
+        cprint(f"> Response: {response}", "cyan")
+    else:
+        async for log in EventLogger().log(response):
+            log.print()
+
+    models_response = client.models.list()
+    print(models_response)
+
+if __name__ == "__main__":
+    asyncio.run(run_main())
+```
+
+
 
 
 ---
