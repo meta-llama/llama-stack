@@ -35,6 +35,7 @@ class DiskRegistry(Registry):
 
         return [DESERIALIZER.parse(obj_str) for obj_str in objects_data]
 
+    # TODO: make it thread safe using CAS
     async def register(self, obj: RoutableObjectWithProvider) -> None:
         # Get existing objects for this identifier
         existing_objects = await self.get(obj.identifier)
