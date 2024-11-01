@@ -169,7 +169,7 @@ The `llama model` command helps you explore the model’s interface.
 ```
 llama model --help
 ```
-<pre style="font-family: monospace;">
+```
 usage: llama model [-h] {download,list,prompt-format,describe} ...
 
 Work with llama models
@@ -179,7 +179,7 @@ options:
 
 model_subcommands:
   {download,list,prompt-format,describe}
-</pre>
+```
 
 You can use the describe command to know more about a model:
 ```
@@ -187,7 +187,7 @@ llama model describe -m Llama3.2-3B-Instruct
 ```
 ### Describe
 
-<pre style="font-family: monospace;">
+```
 +-----------------------------+----------------------------------+
 | Model                       | Llama3.2-3B-Instruct             |
 +-----------------------------+----------------------------------+
@@ -219,14 +219,15 @@ llama model describe -m Llama3.2-3B-Instruct
 |                             |     "top_k": 0                   |
 |                             | }                                |
 +-----------------------------+----------------------------------+
-</pre>
+```
+
 ### Prompt Format
 You can even run `llama model prompt-format` see all of the templates and their tokens:
 
 ```
 llama model prompt-format -m Llama3.2-3B-Instruct
 ```
-![alt text](../resources/prompt-format.png)
+![alt text](../../resources/prompt-format.png)
 
 
 
