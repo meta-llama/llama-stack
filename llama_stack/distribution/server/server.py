@@ -22,6 +22,9 @@ import yaml
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 
 from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
@@ -36,9 +39,6 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
