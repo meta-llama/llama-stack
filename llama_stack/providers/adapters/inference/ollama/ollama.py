@@ -81,7 +81,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                     identifier=llama_model,
                     llama_model=llama_model,
                     metadata={
-                        "ollama_model": str(r["model"]),
+                        "ollama_model": r["model"],
                     },
                 )
             )
