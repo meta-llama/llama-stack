@@ -137,4 +137,4 @@ asyncio.run(get_llama_response())
 
 ---
 
-With these fundamentals, you should be well on your way to leveraging Llama Stack’s text generation capabilities! For more advanced features, refer to the [Llama Stack Documentation](https://llama-stack.readthedocs.io/en/latest/).
+With this fundamental, you should be well on your way to leveraging Llama Stack’s text generation capabilities! For more advanced features, refer to the [Llama Stack Documentation](https://llama-stack.readthedocs.io/en/latest/).
