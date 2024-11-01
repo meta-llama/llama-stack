@@ -30,7 +30,7 @@ Both of these provide options to run model inference using our reference impleme
 
 ### Decide Your Inference Provider
 
-Running inference of the underlying Llama model is one of the most critical requirements. Depending on what hardware you have available, you have various options. Note that each option have different necessary prerequisites.
+Running inference on the underlying Llama model is one of the most critical requirements. Depending on what hardware you have available, you have various options. Note that each option have different necessary prerequisites.
 
 - **Do you have access to a machine with powerful GPUs?**
 If so, we suggest:
@@ -41,7 +41,7 @@ If so, we suggest:
 If so, we suggest:
   - [`distribution-ollama`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ollama.html)
 
-- **Do you have access to a remote inference provider like Fireworks, Togther, etc.?** If so, we suggest:
+- **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
   - [`distribution-together`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/together.html)
   - [`distribution-fireworks`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/fireworks.html)
 
@@ -63,7 +63,7 @@ $ git clone git@github.com:meta-llama/llama-stack.git
 Access to Single-Node GPU to start a local server.
 
 ##### Downloading Models
-Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
+Please make sure you have Llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
 
 ```
 $ ls ~/.llama/checkpoints
@@ -105,7 +105,7 @@ Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [firew
 $ cd llama-stack/distributions/meta-reference-gpu && docker compose up
 ```
 
-This will download and start running a pre-built docker container. Alternatively, you may use the following commands:
+This will download and start running a pre-built Docker container. Alternatively, you may use the following commands:
 
 ```
 docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
@@ -117,7 +117,7 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 $ cd llama-stack/distributions/tgi/gpu && docker compose up
 ```
 
-The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should be able to see the following outputs --
+The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should see the following outputs --
 ```
 [text-generation-inference] | 2024-10-15T18:56:33.810397Z  INFO text_generation_router::server: router/src/server.rs:1813: Using config Some(Llama)
 [text-generation-inference] | 2024-10-15T18:56:33.810448Z  WARN text_generation_router::server: router/src/server.rs:1960: Invalid hostname, defaulting to 0.0.0.0
@@ -165,7 +165,7 @@ docker compose down
 $ cd llama-stack/distributions/fireworks && docker compose up
 ```
 
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
+Make sure your `run.yaml` file has the inference provider pointing to the correct Fireworks URL server endpoint. E.g.
 ```
 inference:
   - provider_id: fireworks
@@ -181,7 +181,7 @@ inference:
 $ cd distributions/together && docker compose up
 ```
 
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Together URL server endpoint. E.g.
+Make sure your `run.yaml` file has the inference provider pointing to the correct Together URL server endpoint. E.g.
 ```
 inference:
   - provider_id: together
@@ -226,7 +226,7 @@ llama stack build --template tgi --image-type conda
 
 3. Start a TGI server endpoint
 
-4. Make sure in you `run.yaml` file, you `conda_env` is pointing to the conda environment and inference provider is pointing to the correct TGI server endpoint. E.g.
+4. Make sure in your `run.yaml` file, your `conda_env` is pointing to the conda environment and inference provider is pointing to the correct TGI server endpoint. E.g.
 ```
 conda_env: llamastack-tgi
 ...
@@ -262,7 +262,7 @@ ollama run <model_id>
 
 #### Start Llama Stack server pointing to Ollama server
 
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Ollama endpoint. E.g.
+Make sure your `run.yaml` file has the inference provider pointing to the correct Ollama endpoint. E.g.
 ```
 conda_env: llamastack-ollama
 ...
@@ -288,7 +288,7 @@ llama stack build --template fireworks --image-type conda
 llama stack run ./run.yaml
 ```
 
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
+Make sure your `run.yaml` file has the inference provider pointing to the correct Fireworks URL server endpoint. E.g.
 ```
 conda_env: llamastack-fireworks
 ...
@@ -308,7 +308,8 @@ llama stack build --template together --image-type conda
 # -- modify run.yaml to a valid Together server endpoint
 llama stack run ./run.yaml
 ```
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Together URL server endpoint. E.g.
+
+Make sure your `run.yaml` file has the inference provider pointing to the correct Together URL server endpoint. E.g.
 ```
 conda_env: llamastack-together
 ...
@@ -357,7 +358,7 @@ or by changing the docker run command's `--model-id` flag
 docker run --rm -it -v $HOME/.cache/huggingface:/data -p 5009:5009 --gpus all ghcr.io/huggingface/text-generation-inference:latest --dtype bfloat16 --usage-stats on --sharded false --model-id meta-llama/Llama-3.2-1B-Instruct --port 5009
 ```
 
-In `run.yaml`, make sure you point the correct server endpoint to the TGI server endpoint serving your model.
+Make sure your `run.yaml` file has the inference provider pointing to the TGI server endpoint serving your model.
 ```
 inference:
   - provider_id: tgi0
@@ -457,7 +458,7 @@ $ llama-stack-client models list
 
 ##### Troubleshooting
 - If you encounter any issues, search through our [GitHub Issues](https://github.com/meta-llama/llama-stack/issues), or file an new issue.
-- Use `--port <PORT>` flag to switch port number. For docker run, update the `-p <PORT>:<PORT>` flag.
+- Use `--port <PORT>` flag to use a different port number. For docker run, update the `-p <PORT>:<PORT>` flag.
 
 
 ## Step 2. Run Llama Stack App
