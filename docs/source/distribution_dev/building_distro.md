@@ -1,6 +1,6 @@
 # Developer Guide: Assemble a Llama Stack Distribution
 
-> NOTE: This doc is out-of-date.
+> NOTE: This doc may be out-of-date.
 
 This guide will walk you through the steps to get started with building a Llama Stack distributiom from scratch with your choice of API providers. Please see the [Getting Started Guide](./getting_started.md) if you just want the basic steps to start a Llama Stack distribution.
 
@@ -55,7 +55,7 @@ The following command will allow you to see the available templates and their co
 llama stack build --list-templates
 ```
 
-![alt text](resources/list-templates.png)
+![alt text](../../resources/list-templates.png)
 
 You may then pick a template to build your distribution with providers fitted to your liking.
 

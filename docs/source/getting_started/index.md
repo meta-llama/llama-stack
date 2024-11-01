@@ -48,12 +48,20 @@ If so, we suggest:
 
 ### Quick Start Commands
 
-Once you have decided on the inference provider and distribution to use, use the following quick start commands to get started. 
+Once you have decided on the inference provider and distribution to use, use the following quick start commands to get started.
 
 ##### 1.0 Prerequisite
+
+```
+$ git clone git@github.com:meta-llama/llama-stack.git
+```
+
 ::::{tab-set}
 
 :::{tab-item} meta-reference-gpu
+##### System Requirements
+Access to Single-Node GPU to start a local server.
+
 ##### Downloading Models
 Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
 
@@ -63,22 +71,25 @@ Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3
 Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
 ```
 
-> This assumes you have access to GPU to start a local server with access to your GPU.
 :::
 
 :::{tab-item} tgi
-Access to GPU to start a TGI server with access to your GPU.
+##### System Requirements
+Access to Single-Node GPU to start a TGI server.
 :::
 
 :::{tab-item} ollama
-Access to Single-Node CPU able to run ollama.
+##### System Requirements
+Access to Single-Node CPU/GPU able to run ollama.
 :::
 
 :::{tab-item} together
+##### System Requirements
 Access to Single-Node CPU with Together hosted endpoint via API_KEY from [together.ai](https://api.together.xyz/signin).
 :::
 
 :::{tab-item} fireworks
+##### System Requirements
 Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [fireworks.ai](https://fireworks.ai/).
 :::
 
@@ -86,12 +97,12 @@ Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [firew
 
 ##### 1.1. Start the distribution
 
-**Via Docker**
+**(Option 1) Via Docker**
 ::::{tab-set}
 
 :::{tab-item} meta-reference-gpu
 ```
-$ cd distributions/meta-reference-gpu && docker compose up
+$ cd llama-stack/distributions/meta-reference-gpu && docker compose up
 ```
 
 This will download and start running a pre-built docker container. Alternatively, you may use the following commands:
@@ -103,7 +114,7 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 
 :::{tab-item} tgi
 ```
-$ cd distributions/tgi/gpu && docker compose up
+$ cd llama-stack/distributions/tgi/gpu && docker compose up
 ```
 
 The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should be able to see the following outputs --
@@ -126,7 +137,7 @@ docker compose down
 
 :::{tab-item} ollama
 ```
-$ cd distributions/ollama/cpu && docker compose up
+$ cd llama-stack/distributions/ollama/cpu && docker compose up
 ```
 
 You will see outputs similar to following ---
@@ -151,7 +162,7 @@ docker compose down
 
 :::{tab-item} fireworks
 ```
-$ cd distributions/fireworks && docker compose up
+$ cd llama-stack/distributions/fireworks && docker compose up
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
@@ -184,7 +195,7 @@ inference:
 
 ::::
 
-**Via Conda**
+**(Option 2) Via Conda**
 
 ::::{tab-set}
 
@@ -199,15 +210,35 @@ $ llama stack build --template meta-reference-gpu --image-type conda
 
 3. Start running distribution
 ```
-$ cd distributions/meta-reference-gpu
+$ cd llama-stack/distributions/meta-reference-gpu
 $ llama stack run ./run.yaml
 ```
 :::
 
 :::{tab-item} tgi
+1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
+
+2. Build the `tgi` distribution
+
 ```bash
 llama stack build --template tgi --image-type conda
-# -- start a TGI server endpoint
+```
+
+3. Start a TGI server endpoint
+
+4. Make sure in you `run.yaml` file, you `conda_env` is pointing to the conda environment and inference provider is pointing to the correct TGI server endpoint. E.g.
+```
+conda_env: llamastack-tgi
+...
+inference:
+  - provider_id: tgi0
+    provider_type: remote::tgi
+    config:
+      url: http://127.0.0.1:5009
+```
+
+5. Start Llama Stack server
+```bash
 llama stack run ./gpu/run.yaml
 ```
 :::
@@ -233,6 +264,8 @@ ollama run <model_id>
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Ollama endpoint. E.g.
 ```
+conda_env: llamastack-ollama
+...
 inference:
   - provider_id: ollama0
     provider_type: remote::ollama
@@ -257,6 +290,8 @@ llama stack run ./run.yaml
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
 ```
+conda_env: llamastack-fireworks
+...
 inference:
   - provider_id: fireworks
     provider_type: remote::fireworks
@@ -275,6 +310,8 @@ llama stack run ./run.yaml
 ```
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Together URL server endpoint. E.g.
 ```
+conda_env: llamastack-together
+...
 inference:
   - provider_id: together
     provider_type: remote::together
@@ -287,7 +324,7 @@ inference:
 ::::
 
 
-##### 1.2 (Optional) Serving Model
+##### 1.2 (Optional) Update Model Serving Configuration
 ::::{tab-set}
 
 :::{tab-item} meta-reference-gpu
