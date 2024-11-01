@@ -55,7 +55,123 @@ The following command will allow you to see the available templates and their co
 llama stack build --list-templates
 ```
 
-![alt text](../../resources/list-templates.png)
+```
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| Template Name                | Providers                                  | Description                                                                      |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| bedrock                      | {                                          | Use Amazon Bedrock APIs.                                                         |
+|                              |   "inference": "remote::bedrock",          |                                                                                  |
+|                              |   "memory": "meta-reference",              |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| databricks                   | {                                          | Use Databricks for running LLM inference                                         |
+|                              |   "inference": "remote::databricks",       |                                                                                  |
+|                              |   "memory": "meta-reference",              |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| fireworks                    | {                                          | Use Fireworks.ai for running LLM inference                                       |
+|                              |   "inference": "remote::fireworks",        |                                                                                  |
+|                              |   "memory": [                              |                                                                                  |
+|                              |     "meta-reference",                      |                                                                                  |
+|                              |     "remote::weaviate",                    |                                                                                  |
+|                              |     "remote::chromadb",                    |                                                                                  |
+|                              |     "remote::pgvector"                     |                                                                                  |
+|                              |   ],                                       |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| hf-endpoint                  | {                                          | Like local, but use Hugging Face Inference Endpoints for running LLM inference.  |
+|                              |   "inference": "remote::hf::endpoint",     | See https://hf.co/docs/api-endpoints.                                            |
+|                              |   "memory": "meta-reference",              |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| hf-serverless                | {                                          | Like local, but use Hugging Face Inference API (serverless) for running LLM      |
+|                              |   "inference": "remote::hf::serverless",   | inference.                                                                       |
+|                              |   "memory": "meta-reference",              | See https://hf.co/docs/api-inference.                                            |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| meta-reference-gpu           | {                                          | Use code from `llama_stack` itself to serve all llama stack APIs                 |
+|                              |   "inference": "meta-reference",           |                                                                                  |
+|                              |   "memory": [                              |                                                                                  |
+|                              |     "meta-reference",                      |                                                                                  |
+|                              |     "remote::chromadb",                    |                                                                                  |
+|                              |     "remote::pgvector"                     |                                                                                  |
+|                              |   ],                                       |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| meta-reference-quantized-gpu | {                                          | Use code from `llama_stack` itself to serve all llama stack APIs                 |
+|                              |   "inference": "meta-reference-quantized", |                                                                                  |
+|                              |   "memory": [                              |                                                                                  |
+|                              |     "meta-reference",                      |                                                                                  |
+|                              |     "remote::chromadb",                    |                                                                                  |
+|                              |     "remote::pgvector"                     |                                                                                  |
+|                              |   ],                                       |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| ollama                       | {                                          | Use ollama for running LLM inference                                             |
+|                              |   "inference": "remote::ollama",           |                                                                                  |
+|                              |   "memory": [                              |                                                                                  |
+|                              |     "meta-reference",                      |                                                                                  |
+|                              |     "remote::chromadb",                    |                                                                                  |
+|                              |     "remote::pgvector"                     |                                                                                  |
+|                              |   ],                                       |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| tgi                          | {                                          | Use TGI for running LLM inference                                                |
+|                              |   "inference": "remote::tgi",              |                                                                                  |
+|                              |   "memory": [                              |                                                                                  |
+|                              |     "meta-reference",                      |                                                                                  |
+|                              |     "remote::chromadb",                    |                                                                                  |
+|                              |     "remote::pgvector"                     |                                                                                  |
+|                              |   ],                                       |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| together                     | {                                          | Use Together.ai for running LLM inference                                        |
+|                              |   "inference": "remote::together",         |                                                                                  |
+|                              |   "memory": [                              |                                                                                  |
+|                              |     "meta-reference",                      |                                                                                  |
+|                              |     "remote::weaviate"                     |                                                                                  |
+|                              |   ],                                       |                                                                                  |
+|                              |   "safety": "remote::together",            |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| vllm                         | {                                          | Like local, but use vLLM for running LLM inference                               |
+|                              |   "inference": "vllm",                     |                                                                                  |
+|                              |   "memory": "meta-reference",              |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+```
 
 You may then pick a template to build your distribution with providers fitted to your liking.
 
