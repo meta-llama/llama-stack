@@ -36,7 +36,8 @@ You have two ways to install Llama Stack:
 ```
 llama --help
 ```
-<pre style="font-family: monospace;">
+
+```
 usage: llama [-h] {download,model,stack} ...
 
 Welcome to the Llama CLI
@@ -46,7 +47,7 @@ options:
 
 subcommands:
   {download,model,stack}
-</pre>
+```
 
 ## Downloading models
 
