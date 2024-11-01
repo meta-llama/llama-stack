@@ -102,7 +102,7 @@ Please checkout our [Documentations](https://llama-stack.readthedocs.io/en/lates
     * Quick guide to start a Llama Stack server.
     * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
 * [Contributing](CONTRIBUTING.md)
-    * [Adding a new API Provider](./docs/new_api_provider.md) to walk-through how to add a new API provider.
+    * [Adding a new API Provider](https://llama-stack.readthedocs.io/en/latest/api_providers/new_api_provider.html) to walk-through how to add a new API provider.
 
 ## Llama Stack Client SDK
 
