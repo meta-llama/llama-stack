@@ -8,7 +8,8 @@ This document provides instructions on how to use Llama Stack's `chat_completion
 2. [Building Effective Prompts](#building-effective-prompts)
 3. [Conversation Loop](#conversation-loop)
 4. [Conversation History](#conversation-history)
-5. 
+5. [Streaming Responses](#streaming-responses)
+
 
 ## Quickstart
 
@@ -141,7 +142,7 @@ async def chat_loop():
 asyncio.run(chat_loop())
 ```
 
-## Streaming Responses with Llama Stack
+## Streaming Responses
 
 Llama Stack offers a `stream` parameter in the `chat_completion` function, which allows partial responses to be returned progressively as they are generated. This can enhance user experience by providing immediate feedback without waiting for the entire response to be processed.
 
@@ -184,8 +185,6 @@ async def run_main(stream: bool = True):
 if __name__ == "__main__":
     asyncio.run(run_main())
 ```
-
-
 
 
 ---
