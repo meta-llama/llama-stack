@@ -5,6 +5,12 @@ We offer both remote and on-device use of Llama Stack in Swift via two component
 1. [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift/)
 2. [LocalInferenceImpl](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/impls/ios/inference)
 
+```{image} ../../_static/remote_or_local.gif
+:alt: Seamlessly switching between local, on-device inference and remote hosted inference
+:width: 412px
+:align: center
+```
+
 ## Remote Only
 
 If you don't want to run inference on-device, then you can connect to any hosted Llama Stack distribution with #1.
