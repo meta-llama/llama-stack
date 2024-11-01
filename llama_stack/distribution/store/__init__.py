@@ -5,5 +5,3 @@
 # the root directory of this source tree.
 
 from .registry import DiskRegistry, Registry
-
-REGISTRY: Registry = None

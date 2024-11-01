@@ -53,8 +53,10 @@ class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
         impls_by_provider_id: Dict[str, RoutedProtocol],
+        dist_registry: distribution_store.Registry,
     ) -> None:
         self.impls_by_provider_id = impls_by_provider_id
+        self.dist_registry = dist_registry
 
     async def initialize(self) -> None:
         self.registry: Registry = {}
@@ -171,7 +173,7 @@ class CommonRoutingTableImpl(RoutingTable):
         if obj.identifier not in self.registry:
             self.registry[obj.identifier] = []
         self.registry[obj.identifier].append(obj)
-        await distribution_store.REGISTRY.register(obj)
+        await self.dist_registry.register(obj)
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):

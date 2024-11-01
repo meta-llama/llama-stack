@@ -22,9 +22,6 @@ import yaml
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, ValidationError
-from termcolor import cprint
-from typing_extensions import Annotated
 
 from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
@@ -39,6 +36,9 @@ from llama_stack.providers.utils.telemetry.tracing import (
     SpanStatus,
     start_trace,
 )
+from pydantic import BaseModel, ValidationError
+from termcolor import cprint
+from typing_extensions import Annotated
 from llama_stack.distribution.datatypes import *  # noqa: F403
 import llama_stack.distribution.store as distribution_store
 from llama_stack.distribution.request_headers import set_request_provider_data
@@ -292,9 +292,9 @@ def main(
         )
     )
 
-    distribution_store.REGISTRY = distribution_store.DiskRegistry(dist_kvstore)
+    dist_registry = distribution_store.DiskRegistry(dist_kvstore)
 
-    impls = asyncio.run(resolve_impls(config, get_provider_registry()))
+    impls = asyncio.run(resolve_impls(config, get_provider_registry(), dist_registry))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
