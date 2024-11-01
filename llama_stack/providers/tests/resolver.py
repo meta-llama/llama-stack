@@ -7,7 +7,7 @@
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -16,6 +16,28 @@ from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
+
+
+async def resolve_impls_for_test_v2(
+    apis: List[Api],
+    providers: Dict[str, Provider],
+    provider_data: Optional[Dict[str, Any]] = None,
+):
+    run_config = dict(
+        built_at=datetime.now(),
+        image_name="test-fixture",
+        apis=apis,
+        providers=providers,
+    )
+    run_config = parse_and_maybe_upgrade_config(run_config)
+    impls = await resolve_impls(run_config, get_provider_registry())
+
+    if provider_data:
+        set_request_provider_data(
+            {"X-LlamaStack-ProviderData": json.dumps(provider_data)}
+        )
+
+    return impls
 
 
 async def resolve_impls_for_test(api: Api, deps: List[Api] = None):
