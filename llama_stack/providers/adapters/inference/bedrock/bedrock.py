@@ -57,7 +57,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         raise NotImplementedError()
- 
+
     @staticmethod
     def _bedrock_stop_reason_to_stop_reason(bedrock_stop_reason: str) -> StopReason:
         if bedrock_stop_reason == "max_tokens":
@@ -352,7 +352,9 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                         delta=ToolCallDelta(
                             content=ToolCall(
                                 tool_name=chunk["contentBlockStart"]["toolUse"]["name"],
-                                call_id=chunk["contentBlockStart"]["toolUse"]["toolUseId"],
+                                call_id=chunk["contentBlockStart"]["toolUse"][
+                                    "toolUseId"
+                                ],
                             ),
                             parse_status=ToolCallParseStatus.started,
                         ),
@@ -364,7 +366,9 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                 else:
                     delta = ToolCallDelta(
                         content=ToolCall(
-                            arguments=chunk["contentBlockDelta"]["delta"]["toolUse"]["input"]
+                            arguments=chunk["contentBlockDelta"]["delta"]["toolUse"][
+                                "input"
+                            ]
                         ),
                         parse_status=ToolCallParseStatus.success,
                     )
@@ -379,8 +383,10 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                 # Ignored
                 pass
             elif "messageStop" in chunk:
-                stop_reason = BedrockInferenceAdapter._bedrock_stop_reason_to_stop_reason(
-                    chunk["messageStop"]["stopReason"]
+                stop_reason = (
+                    BedrockInferenceAdapter._bedrock_stop_reason_to_stop_reason(
+                        chunk["messageStop"]["stopReason"]
+                    )
                 )
 
                 yield ChatCompletionResponseStreamChunk(
