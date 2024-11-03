@@ -88,7 +88,7 @@ inference:
 ```
 
 
-### Model Serving
+### (Optional) Update Model Serving Configuration
 To serve a new model with `tgi`, change the docker command flag `--model-id <model-to-serve>`.
 
 This can be done by edit the `command` args in `compose.yaml`. E.g. Replace "Llama-3.2-1B-Instruct" with the model you want to serve.

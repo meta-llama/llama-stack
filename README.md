@@ -103,6 +103,7 @@ Please checkout our [Documentations](https://llama-stack.readthedocs.io/en/lates
     * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
 * [Contributing](CONTRIBUTING.md)
     * [Adding a new API Provider](https://llama-stack.readthedocs.io/en/latest/api_providers/new_api_provider.html) to walk-through how to add a new API provider.
+* [Release Notes](https://github.com/meta-llama/llama-stack/releases)
 
 ## Llama Stack Client SDK
 

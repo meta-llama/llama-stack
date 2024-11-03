@@ -41,7 +41,7 @@ llama stack build --template together --image-type conda
 llama stack run ./run.yaml
 ```
 
-### Model Serving
+### (Optional) Update Model Serving Configuration
 
 Use `llama-stack-client models list` to check the available models served by together.
 

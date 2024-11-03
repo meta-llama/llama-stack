@@ -90,7 +90,7 @@ inference:
       url: http://127.0.0.1:14343
 ```
 
-### Model Serving
+### (Optional) Update Model Serving Configuration
 
 #### Downloading model via Ollama
 
