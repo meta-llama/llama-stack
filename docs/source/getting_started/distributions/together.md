@@ -20,7 +20,7 @@ The `llamastack/distribution-together` distribution consists of the following pr
 $ cd distributions/together && docker compose up
 ```
 
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Together URL server endpoint. E.g.
+Make sure in your `run.yaml` file, your inference provider is pointing to the correct Together URL server endpoint. E.g.
 ```
 inference:
   - provider_id: together
