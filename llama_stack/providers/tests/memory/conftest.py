@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-from typing import Any, Dict, Tuple
 
 import pytest
 import pytest_asyncio
@@ -16,50 +15,58 @@ from llama_stack.providers.adapters.memory.weaviate import WeaviateConfig
 from llama_stack.providers.impls.meta_reference.memory import FaissImplConfig
 
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from ..conftest import ProviderFixture
 from ..env import get_env_or_fail
 
 
 @pytest.fixture(scope="session")
-def meta_reference() -> Provider:
-    return Provider(
-        provider_id="meta-reference",
-        provider_type="meta-reference",
-        config=FaissImplConfig().model_dump(),
+def meta_reference() -> ProviderFixture:
+    return ProviderFixture(
+        provider=Provider(
+            provider_id="meta-reference",
+            provider_type="meta-reference",
+            config=FaissImplConfig().model_dump(),
+        ),
     )
 
 
 @pytest.fixture(scope="session")
-def pgvector() -> Provider:
-    return Provider(
-        provider_id="pgvector",
-        provider_type="remote::pgvector",
-        config=PGVectorConfig(
-            host=os.getenv("PGVECTOR_HOST", "localhost"),
-            port=os.getenv("PGVECTOR_PORT", 5432),
-            db=get_env_or_fail("PGVECTOR_DB"),
-            user=get_env_or_fail("PGVECTOR_USER"),
-            password=get_env_or_fail("PGVECTOR_PASSWORD"),
-        ).model_dump(),
+def pgvector() -> ProviderFixture:
+    return ProviderFixture(
+        provider=Provider(
+            provider_id="pgvector",
+            provider_type="remote::pgvector",
+            config=PGVectorConfig(
+                host=os.getenv("PGVECTOR_HOST", "localhost"),
+                port=os.getenv("PGVECTOR_PORT", 5432),
+                db=get_env_or_fail("PGVECTOR_DB"),
+                user=get_env_or_fail("PGVECTOR_USER"),
+                password=get_env_or_fail("PGVECTOR_PASSWORD"),
+            ).model_dump(),
+        ),
     )
 
 
 @pytest.fixture(scope="session")
-def weaviate() -> Tuple[Provider, Dict[str, Any]]:
-    provider = Provider(
-        provider_id="weaviate",
-        provider_type="remote::weaviate",
-        config=WeaviateConfig().model_dump(),
-    )
-    return provider, dict(
-        weaviate_api_key=get_env_or_fail("WEAVIATE_API_KEY"),
-        weaviate_cluster_url=get_env_or_fail("WEAVIATE_CLUSTER_URL"),
+def weaviate() -> ProviderFixture:
+    return ProviderFixture(
+        provider=Provider(
+            provider_id="weaviate",
+            provider_type="remote::weaviate",
+            config=WeaviateConfig().model_dump(),
+        ),
+        provider_data=dict(
+            weaviate_api_key=get_env_or_fail("WEAVIATE_API_KEY"),
+            weaviate_cluster_url=get_env_or_fail("WEAVIATE_CLUSTER_URL"),
+        ),
     )
 
+
+MEMORY_FIXTURES = ["meta_reference", "pgvector", "weaviate"]
 
 PROVIDER_PARAMS = [
-    pytest.param("meta_reference", marks=pytest.mark.meta_reference),
-    pytest.param("pgvector", marks=pytest.mark.pgvector),
-    pytest.param("weaviate", marks=pytest.mark.weaviate),
+    pytest.param(fixture_name, marks=getattr(pytest.mark, fixture_name))
+    for fixture_name in MEMORY_FIXTURES
 ]
 
 
@@ -68,29 +75,21 @@ PROVIDER_PARAMS = [
     params=PROVIDER_PARAMS,
 )
 async def stack_impls(request):
-    provider_fixture = request.param
-    provider = request.getfixturevalue(provider_fixture)
-    if isinstance(provider, tuple):
-        provider, provider_data = provider
-    else:
-        provider_data = None
+    fixture_name = request.param
+    fixture = request.getfixturevalue(fixture_name)
 
     impls = await resolve_impls_for_test_v2(
         [Api.memory],
-        {"memory": [provider.model_dump()]},
-        provider_data,
+        {"memory": [fixture.provider.model_dump()]},
+        fixture.provider_data,
     )
 
     return impls[Api.memory], impls[Api.memory_banks]
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "pgvector: marks tests as pgvector specific")
-    config.addinivalue_line(
-        "markers",
-        "meta_reference: marks tests as metaref specific",
-    )
-    config.addinivalue_line(
-        "markers",
-        "weaviate: marks tests as weaviate specific",
-    )
+    for fixture_name in MEMORY_FIXTURES:
+        config.addinivalue_line(
+            "markers",
+            f"{fixture_name}: marks tests as {fixture_name} specific",
+        )

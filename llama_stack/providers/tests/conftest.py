@@ -6,12 +6,25 @@
 
 import os
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
+import pytest
 from dotenv import load_dotenv
+from pydantic import BaseModel
 from termcolor import colored
+
+from llama_stack.distribution.datatypes import Provider
+
+
+class ProviderFixture(BaseModel):
+    provider: Provider
+    provider_data: Optional[Dict[str, Any]] = None
 
 
 def pytest_configure(config):
+    config.option.tbstyle = "short"
+    config.option.disable_warnings = True
+
     """Load environment variables at start of test run"""
     # Load from .env file if it exists
     env_file = Path(__file__).parent / ".env"
@@ -26,10 +39,82 @@ def pytest_configure(config):
 
 
 def pytest_addoption(parser):
+    parser.addoption(
+        "--providers",
+        default="",
+        help=(
+            "Provider configuration in format: api1=provider1,api2=provider2. "
+            "Example: --providers inference=ollama,safety=meta-reference"
+        ),
+    )
     """Add custom command line options"""
     parser.addoption(
         "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
     )
+
+
+def make_provider_id(providers: Dict[str, str]) -> str:
+    return ":".join(f"{api}={provider}" for api, provider in sorted(providers.items()))
+
+
+def get_provider_marks(providers: Dict[str, str]) -> List[Any]:
+    marks = []
+    for provider in providers.values():
+        marks.append(getattr(pytest.mark, provider))
+    return marks
+
+
+def get_provider_fixture_overrides(
+    config, available_fixtures: Dict[str, List[str]]
+) -> Optional[List[pytest.param]]:
+    provider_str = config.getoption("--providers")
+    if not provider_str:
+        return None
+
+    fixture_dict = parse_fixture_string(provider_str, available_fixtures)
+    return [
+        pytest.param(
+            fixture_dict,
+            id=make_provider_id(fixture_dict),
+            marks=get_provider_marks(fixture_dict),
+        )
+    ]
+
+
+def parse_fixture_string(
+    provider_str: str, available_fixtures: Dict[str, List[str]]
+) -> Dict[str, str]:
+    """Parse provider string of format 'api1=provider1,api2=provider2'"""
+    if not provider_str:
+        return {}
+
+    fixtures = {}
+    pairs = provider_str.split(",")
+    for pair in pairs:
+        if "=" not in pair:
+            raise ValueError(
+                f"Invalid provider specification: {pair}. Expected format: api=provider"
+            )
+        api, fixture = pair.split("=")
+        if api not in available_fixtures:
+            raise ValueError(
+                f"Unknown API: {api}. Available APIs: {list(available_fixtures.keys())}"
+            )
+        if fixture not in available_fixtures[api]:
+            raise ValueError(
+                f"Unknown provider '{fixture}' for API '{api}'. "
+                f"Available providers: {list(available_fixtures[api])}"
+            )
+        fixtures[api] = fixture
+
+    # Check that all provided APIs are supported
+    for api in available_fixtures.keys():
+        if api not in fixtures:
+            raise ValueError(
+                f"Missing provider fixture for API '{api}'. Available providers: "
+                f"{list(available_fixtures[api])}"
+            )
+    return fixtures
 
 
 def pytest_itemcollected(item):
@@ -39,3 +124,9 @@ def pytest_itemcollected(item):
     if marks:
         marks = colored(",".join(marks), "yellow")
         item.name = f"{item.name}[{marks}]"
+
+
+pytest_plugins = [
+    "llama_stack.providers.tests.inference.fixtures",
+    "llama_stack.providers.tests.safety.fixtures",
+]
