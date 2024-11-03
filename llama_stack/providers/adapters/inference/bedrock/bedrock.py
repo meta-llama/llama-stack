@@ -295,7 +295,9 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> AsyncGenerator:
+    ) -> Union[
+        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
+    ]:
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
@@ -316,7 +318,6 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        print("non-streaming chat completion")
         params = self._get_params_for_chat_completion(request)
         converse_api_res = self.client.converse(**params)
 
@@ -332,7 +333,6 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        print("streaming chat completion")
         params = self._get_params_for_chat_completion(request)
         converse_stream_api_res = self.client.converse_stream(**params)
         event_stream = converse_stream_api_res["stream"]
