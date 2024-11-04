@@ -9,9 +9,9 @@ To that goal, Llama Stack uses **Prompt Guard** and **Llama Guard 3** to secure 
 
 **Prompt Guard**:
 
-PromptGuard is a classifier model trained on a large corpus of attacks, which is capable of detecting both explicitly malicious prompts (Jailbreaks) as well as prompts that contain injected inputs (Prompt Injections). We suggest a methodology of fine-tuning the model to application-specific data to achieve optimal results.
+Prompt Guard is a classifier model trained on a large corpus of attacks, which is capable of detecting both explicitly malicious prompts (Jailbreaks) as well as prompts that contain injected inputs (Prompt Injections). We suggest a methodology of fine-tuning the model to application-specific data to achieve optimal results.
 
-PromptGuard is a BERT model that outputs only labels; unlike LlamaGuard, it doesn't need a specific prompt structure or configuration. The input is a string that the model labels as safe or unsafe (at two different levels).
+PromptGuard is a BERT model that outputs only labels; unlike Llama Guard, it doesn't need a specific prompt structure or configuration. The input is a string that the model labels as safe or unsafe (at two different levels).
 
 For more detail on PromptGuard, please checkout [PromptGuard model card and prompt formats](https://www.llama.com/docs/model-cards-and-prompt-formats/prompt-guard)
 
