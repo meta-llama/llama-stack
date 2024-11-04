@@ -134,7 +134,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
         stream = _to_async_generator()
         async for chunk in process_chat_completion_stream_response(
-            request, stream, self.formatter
+            stream, self.formatter
         ):
             yield chunk
 
