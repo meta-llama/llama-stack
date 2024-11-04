@@ -157,7 +157,7 @@ async def test_tools(
                                 "type": "function",
                                 "function": {
                                     "name": "magic",
-                                    "arguments": {"input": 3},
+                                    "arguments": '{"input": 3}',
                                 },
                             },
                             {
@@ -165,7 +165,7 @@ async def test_tools(
                                 "type": "function",
                                 "function": {
                                     "name": "magic!",
-                                    "arguments": {"input": 42},
+                                    "arguments": '{"input": 42}',
                                 },
                             },
                         ],

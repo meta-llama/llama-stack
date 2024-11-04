@@ -8,11 +8,15 @@ import itertools
 from typing import Generator, List, Tuple
 
 import pytest
+from llama_models.datatypes import SamplingParams
 
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
     CompletionMessage,
     Inference,
+    # LogProbConfig,
     Message,
     StopReason,
     SystemMessage,
@@ -94,6 +98,70 @@ async def test_chat_completion_messages(
     assert response.completion_message.role == "assistant"
     assert isinstance(response.completion_message.stop_reason, StopReason)
     assert response.completion_message.tool_calls == []
+
+
+async def test_chat_completion_basic(
+    client: Inference,
+    model: str,
+):
+    """
+    Test the chat completion endpoint with basic messages, with and without streaming.
+    """
+    client = await client
+    messages = [
+        UserMessage(content="How are you?"),
+    ]
+
+    response = await client.chat_completion(
+        model=model,
+        messages=messages,
+        stream=False,
+    )
+
+    assert isinstance(response, ChatCompletionResponse)
+    assert isinstance(response.completion_message.content, str)
+    # we're not testing accuracy, so no assertions on the result.completion_message.content
+    assert response.completion_message.role == "assistant"
+    assert isinstance(response.completion_message.stop_reason, StopReason)
+    assert response.completion_message.tool_calls == []
+
+
+async def test_chat_completion_stream_basic(
+    client: Inference,
+    model: str,
+):
+    """
+    Test the chat completion endpoint with basic messages, with and without streaming.
+    """
+    client = await client
+    messages = [
+        UserMessage(content="How are you?"),
+    ]
+
+    response = await client.chat_completion(
+        model=model,
+        messages=messages,
+        stream=True,
+        sampling_params=SamplingParams(max_tokens=5),
+        # logprobs=LogProbConfig(top_k=3),
+    )
+
+    chunks = [chunk async for chunk in response]
+    assert all(isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in chunks)
+    assert all(isinstance(chunk.event.delta, str) for chunk in chunks)
+    assert chunks[0].event.event_type == ChatCompletionResponseEventType.start
+    assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
+    if len(chunks) > 2:
+        assert all(
+            chunk.event.event_type == ChatCompletionResponseEventType.progress
+            for chunk in chunks[1:-1]
+        )
+    # we're not testing accuracy, so no assertions on the result.completion_message.content
+    assert all(
+        chunk.event.stop_reason is None
+        or isinstance(chunk.event.stop_reason, StopReason)
+        for chunk in chunks
+    )
 
 
 async def test_bad_base_url(

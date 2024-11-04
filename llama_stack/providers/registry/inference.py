@@ -144,7 +144,9 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="nvidia",
-                pip_packages=[],  # TODO(mf): need to specify httpx if it's already a llama-stack dep?
+                pip_packages=[
+                    "openai",
+                ],
                 module="llama_stack.providers.adapters.inference.nvidia",
                 config_class="llama_stack.providers.adapters.inference.nvidia.NVIDIAConfig",
             ),
