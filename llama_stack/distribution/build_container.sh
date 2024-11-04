@@ -77,9 +77,9 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
   # Install in editable format. We will mount the source code into the container
   # so that changes will be reflected in the container without having to do a
   # rebuild. This is just for development convenience.
-  add_to_docker "RUN pip install -e $stack_mount"
+  add_to_docker "RUN pip install --no-cache -e $stack_mount"
 else
-  add_to_docker "RUN pip install llama-stack"
+  add_to_docker "RUN pip install --no-cache llama-stack"
 fi
 
 if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -90,19 +90,19 @@ if [ -n "$LLAMA_MODELS_DIR" ]; then
 
   add_to_docker <<EOF
 RUN pip uninstall -y llama-models
-RUN pip install $models_mount
+RUN pip install --no-cache $models_mount
 
 EOF
 fi
 
 if [ -n "$pip_dependencies" ]; then
-  add_to_docker "RUN pip install $pip_dependencies"
+  add_to_docker "RUN pip install --no-cache $pip_dependencies"
 fi
 
 if [ -n "$special_pip_deps" ]; then
   IFS='#' read -ra parts <<<"$special_pip_deps"
   for part in "${parts[@]}"; do
-    add_to_docker "RUN pip install $part"
+    add_to_docker "RUN pip install --no-cache $part"
   done
 fi
 

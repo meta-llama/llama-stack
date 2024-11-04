@@ -315,7 +315,20 @@ def get_endpoint_operations(
                 )
         else:
             event_type = None
-            response_type = return_type
+
+            def process_type(t):
+                if typing.get_origin(t) is collections.abc.AsyncIterator:
+                    # NOTE(ashwin): this is SSE and there is no way to represent it. either we make it a List
+                    # or the item type. I am choosing it to be the latter
+                    args = typing.get_args(t)
+                    return args[0]
+                elif typing.get_origin(t) is typing.Union:
+                    types = [process_type(a) for a in typing.get_args(t)]
+                    return typing._UnionGenericAlias(typing.Union, tuple(types))
+                else:
+                    return t
+
+            response_type = process_type(return_type)
 
         # set HTTP request method based on type of request and presence of payload
         if not request_params:

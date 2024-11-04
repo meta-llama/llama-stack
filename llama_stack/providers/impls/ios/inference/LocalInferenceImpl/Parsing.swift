@@ -81,7 +81,9 @@ func encodeMessage(message: Components.Schemas.ChatCompletionRequest.messagesPay
     switch (m.content) {
     case .case1(let c):
       prompt += _processContent(c)
-    case .case2(let c):
+    case .ImageMedia(let c):
+      prompt += _processContent(c)
+    case .case3(let c):
       prompt += _processContent(c)
     }
   case .CompletionMessage(let m):

@@ -3,7 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-import os
 
 import pytest
 import pytest_asyncio
@@ -73,7 +72,6 @@ async def register_memory_bank(banks_impl: MemoryBanks):
         embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=512,
         overlap_size_in_tokens=64,
-        provider_id=os.environ["PROVIDER_ID"],
     )
 
     await banks_impl.register_memory_bank(bank)

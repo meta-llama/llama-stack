@@ -190,6 +190,7 @@ components:
           $ref: '#/components/schemas/AgentTurnResponseEvent'
       required:
       - event
+      title: streamed agent turn completion response.
       type: object
     AgentTurnResponseTurnCompletePayload:
       additionalProperties: false
@@ -360,7 +361,7 @@ components:
           oneOf:
           - additionalProperties: false
             properties:
-              schema:
+              json_schema:
                 additionalProperties:
                   oneOf:
                   - type: 'null'
@@ -376,7 +377,7 @@ components:
                 type: string
             required:
             - type
-            - schema
+            - json_schema
             type: object
           - additionalProperties: false
             properties:
@@ -541,7 +542,7 @@ components:
           oneOf:
           - additionalProperties: false
             properties:
-              schema:
+              json_schema:
                 additionalProperties:
                   oneOf:
                   - type: 'null'
@@ -557,7 +558,7 @@ components:
                 type: string
             required:
             - type
-            - schema
+            - json_schema
             type: object
           - additionalProperties: false
             properties:
@@ -746,18 +747,6 @@ components:
                   type: string
               required:
               - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: custom
-                  default: custom
-                  type: string
-                validator_class:
-                  type: string
-              required:
-              - type
-              - validator_class
               type: object
             - additionalProperties: false
               properties:
@@ -1578,18 +1567,6 @@ components:
           - additionalProperties: false
             properties:
               type:
-                const: custom
-                default: custom
-                type: string
-              validator_class:
-                type: string
-            required:
-            - type
-            - validator_class
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
                 const: chat_completion_input
                 default: chat_completion_input
                 type: string
@@ -1724,7 +1701,7 @@ components:
           $ref: '#/components/schemas/RLHFAlgorithm'
         algorithm_config:
           $ref: '#/components/schemas/DPOAlignmentConfig'
-        dataset:
+        dataset_id:
           type: string
         finetuned_model:
           $ref: '#/components/schemas/URL'
@@ -1754,13 +1731,13 @@ components:
           $ref: '#/components/schemas/OptimizerConfig'
         training_config:
           $ref: '#/components/schemas/TrainingConfig'
-        validation_dataset:
+        validation_dataset_id:
           type: string
       required:
       - job_uuid
       - finetuned_model
-      - dataset
-      - validation_dataset
+      - dataset_id
+      - validation_dataset_id
       - algorithm
       - algorithm_config
       - optimizer_config
@@ -1899,7 +1876,7 @@ components:
       additionalProperties: false
       properties:
         function_def:
-          $ref: '#/components/schemas/ScoringFunctionDefWithProvider'
+          $ref: '#/components/schemas/ScoringFnDefWithProvider'
       required:
       - function_def
       type: object
@@ -2121,7 +2098,7 @@ components:
       required:
       - results
       type: object
-    ScoringFunctionDefWithProvider:
+    ScoringFnDefWithProvider:
       additionalProperties: false
       properties:
         context:
@@ -2129,6 +2106,10 @@ components:
           properties:
             judge_model:
               type: string
+            judge_score_regex:
+              items:
+                type: string
+              type: array
             prompt_template:
               type: string
           required:
@@ -2218,18 +2199,6 @@ components:
                 type: string
             required:
             - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: custom
-                default: custom
-                type: string
-              validator_class:
-                type: string
-            required:
-            - type
-            - validator_class
             type: object
           - additionalProperties: false
             properties:
@@ -2484,7 +2453,7 @@ components:
           - $ref: '#/components/schemas/LoraFinetuningConfig'
           - $ref: '#/components/schemas/QLoraFinetuningConfig'
           - $ref: '#/components/schemas/DoraFinetuningConfig'
-        dataset:
+        dataset_id:
           type: string
         hyperparam_search_config:
           additionalProperties:
@@ -2514,13 +2483,13 @@ components:
           $ref: '#/components/schemas/OptimizerConfig'
         training_config:
           $ref: '#/components/schemas/TrainingConfig'
-        validation_dataset:
+        validation_dataset_id:
           type: string
       required:
       - job_uuid
       - model
-      - dataset
-      - validation_dataset
+      - dataset_id
+      - validation_dataset_id
       - algorithm
       - algorithm_config
       - optimizer_config
@@ -3029,7 +2998,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-10-24 17:40:59.576117"
+    \ draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3222,8 +3191,11 @@ paths:
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
-          description: OK
+                oneOf:
+                - $ref: '#/components/schemas/Turn'
+                - $ref: '#/components/schemas/AgentTurnResponseStreamChunk'
+          description: A single turn in an interaction with an Agentic System. **OR**
+            streamed agent turn completion response.
       tags:
       - Agents
   /agents/turn/get:
@@ -4122,7 +4094,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ScoringFunctionDefWithProvider'
+                - $ref: '#/components/schemas/ScoringFnDefWithProvider'
                 - type: 'null'
           description: OK
       tags:
@@ -4142,7 +4114,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ScoringFunctionDefWithProvider'
+                $ref: '#/components/schemas/ScoringFnDefWithProvider'
           description: OK
       tags:
       - ScoringFunctions
@@ -4308,23 +4280,23 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Eval
-- name: ScoringFunctions
-- name: SyntheticDataGeneration
-- name: Inspect
-- name: PostTraining
-- name: Models
-- name: Safety
-- name: MemoryBanks
-- name: DatasetIO
 - name: Memory
-- name: Scoring
-- name: Shields
-- name: Datasets
 - name: Inference
-- name: Telemetry
+- name: Eval
+- name: MemoryBanks
+- name: Models
 - name: BatchInference
+- name: PostTraining
 - name: Agents
+- name: Shields
+- name: Telemetry
+- name: Inspect
+- name: DatasetIO
+- name: SyntheticDataGeneration
+- name: Datasets
+- name: Scoring
+- name: ScoringFunctions
+- name: Safety
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4483,8 +4455,11 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStepStartPayload"
     />
   name: AgentTurnResponseStepStartPayload
-- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStreamChunk"
-    />
+- description: 'streamed agent turn completion response.
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseStreamChunk"
+    />'
   name: AgentTurnResponseStreamChunk
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentTurnResponseTurnCompletePayload"
     />
@@ -4577,9 +4552,9 @@ tags:
   name: PaginatedRowsResult
 - description: <SchemaDefinition schemaRef="#/components/schemas/Parameter" />
   name: Parameter
-- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFunctionDefWithProvider"
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFnDefWithProvider"
     />
-  name: ScoringFunctionDefWithProvider
+  name: ScoringFnDefWithProvider
 - description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefWithProvider"
     />
   name: ShieldDefWithProvider
@@ -4844,7 +4819,7 @@ x-tagGroups:
   - ScoreBatchResponse
   - ScoreRequest
   - ScoreResponse
-  - ScoringFunctionDefWithProvider
+  - ScoringFnDefWithProvider
   - ScoringResult
   - SearchToolDefinition
   - Session

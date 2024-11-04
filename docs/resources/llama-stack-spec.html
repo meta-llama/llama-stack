@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-24 17:40:59.576117"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
     },
     "servers": [
         {
@@ -320,11 +320,18 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A single turn in an interaction with an Agentic System. **OR** streamed agent turn completion response.",
                         "content": {
                             "text/event-stream": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Turn"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AgentTurnResponseStreamChunk"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -934,7 +941,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ScoringFunctionDefWithProvider"
+                                            "$ref": "#/components/schemas/ScoringFnDefWithProvider"
                                         },
                                         {
                                             "type": "null"
@@ -1555,7 +1562,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ScoringFunctionDefWithProvider"
+                                    "$ref": "#/components/schemas/ScoringFnDefWithProvider"
                                 }
                             }
                         }
@@ -2762,7 +2769,7 @@
                                         "const": "json_schema",
                                         "default": "json_schema"
                                     },
-                                    "schema": {
+                                    "json_schema": {
                                         "type": "object",
                                         "additionalProperties": {
                                             "oneOf": [
@@ -2791,7 +2798,7 @@
                                 "additionalProperties": false,
                                 "required": [
                                     "type",
-                                    "schema"
+                                    "json_schema"
                                 ]
                             },
                             {
@@ -3018,7 +3025,7 @@
                                         "const": "json_schema",
                                         "default": "json_schema"
                                     },
-                                    "schema": {
+                                    "json_schema": {
                                         "type": "object",
                                         "additionalProperties": {
                                             "oneOf": [
@@ -3047,7 +3054,7 @@
                                 "additionalProperties": false,
                                 "required": [
                                     "type",
-                                    "schema"
+                                    "json_schema"
                                 ]
                             },
                             {
@@ -4002,7 +4009,8 @@
                 "additionalProperties": false,
                 "required": [
                     "event"
-                ]
+                ],
+                "title": "streamed agent turn completion response."
             },
             "AgentTurnResponseTurnCompletePayload": {
                 "type": "object",
@@ -5009,24 +5017,6 @@
                                     "properties": {
                                         "type": {
                                             "type": "string",
-                                            "const": "custom",
-                                            "default": "custom"
-                                        },
-                                        "validator_class": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type",
-                                        "validator_class"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
                                             "const": "chat_completion_input",
                                             "default": "chat_completion_input"
                                         }
@@ -5309,24 +5299,6 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "custom",
-                                        "default": "custom"
-                                    },
-                                    "validator_class": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "validator_class"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
                                         "const": "chat_completion_input",
                                         "default": "chat_completion_input"
                                     }
@@ -5376,7 +5348,7 @@
                     "type"
                 ]
             },
-            "ScoringFunctionDefWithProvider": {
+            "ScoringFnDefWithProvider": {
                 "type": "object",
                 "properties": {
                     "identifier": {
@@ -5521,24 +5493,6 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "const": "custom",
-                                        "default": "custom"
-                                    },
-                                    "validator_class": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "validator_class"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
                                         "const": "chat_completion_input",
                                         "default": "chat_completion_input"
                                     }
@@ -5586,6 +5540,12 @@
                             },
                             "prompt_template": {
                                 "type": "string"
+                            },
+                            "judge_score_regex": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
                             }
                         },
                         "additionalProperties": false,
@@ -6339,10 +6299,10 @@
                     "finetuned_model": {
                         "$ref": "#/components/schemas/URL"
                     },
-                    "dataset": {
+                    "dataset_id": {
                         "type": "string"
                     },
-                    "validation_dataset": {
+                    "validation_dataset_id": {
                         "type": "string"
                     },
                     "algorithm": {
@@ -6412,8 +6372,8 @@
                 "required": [
                     "job_uuid",
                     "finetuned_model",
-                    "dataset",
-                    "validation_dataset",
+                    "dataset_id",
+                    "validation_dataset_id",
                     "algorithm",
                     "algorithm_config",
                     "optimizer_config",
@@ -6595,7 +6555,7 @@
                 "type": "object",
                 "properties": {
                     "function_def": {
-                        "$ref": "#/components/schemas/ScoringFunctionDefWithProvider"
+                        "$ref": "#/components/schemas/ScoringFnDefWithProvider"
                     }
                 },
                 "additionalProperties": false,
@@ -6893,10 +6853,10 @@
                     "model": {
                         "type": "string"
                     },
-                    "dataset": {
+                    "dataset_id": {
                         "type": "string"
                     },
-                    "validation_dataset": {
+                    "validation_dataset_id": {
                         "type": "string"
                     },
                     "algorithm": {
@@ -6976,8 +6936,8 @@
                 "required": [
                     "job_uuid",
                     "model",
-                    "dataset",
-                    "validation_dataset",
+                    "dataset_id",
+                    "validation_dataset_id",
                     "algorithm",
                     "algorithm_config",
                     "optimizer_config",
@@ -7103,55 +7063,55 @@
     ],
     "tags": [
         {
-            "name": "Eval"
-        },
-        {
-            "name": "ScoringFunctions"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
-            "name": "Inspect"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
             "name": "Memory"
-        },
-        {
-            "name": "Scoring"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "Datasets"
         },
         {
             "name": "Inference"
         },
         {
-            "name": "Telemetry"
+            "name": "Eval"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Models"
         },
         {
             "name": "BatchInference"
         },
         {
+            "name": "PostTraining"
+        },
+        {
             "name": "Agents"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Telemetry"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "ScoringFunctions"
+        },
+        {
+            "name": "Safety"
         },
         {
             "name": "BuiltinTool",
@@ -7355,7 +7315,7 @@
         },
         {
             "name": "AgentTurnResponseStreamChunk",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStreamChunk\" />"
+            "description": "streamed agent turn completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseStreamChunk\" />"
         },
         {
             "name": "AgentTurnResponseTurnCompletePayload",
@@ -7486,8 +7446,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Parameter\" />"
         },
         {
-            "name": "ScoringFunctionDefWithProvider",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFunctionDefWithProvider\" />"
+            "name": "ScoringFnDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFnDefWithProvider\" />"
         },
         {
             "name": "ShieldDefWithProvider",
@@ -7805,7 +7765,7 @@
                 "ScoreBatchResponse",
                 "ScoreRequest",
                 "ScoreResponse",
-                "ScoringFunctionDefWithProvider",
+                "ScoringFnDefWithProvider",
                 "ScoringResult",
                 "SearchToolDefinition",
                 "Session",
