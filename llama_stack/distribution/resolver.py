@@ -26,7 +26,7 @@ from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.store import Registry as DistributionRegistry
+from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 

@@ -42,7 +42,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
-from llama_stack.distribution.store import DiskRegistry
+from llama_stack.distribution.store import DiskDistributionRegistry
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
 from .endpoints import get_all_api_endpoints
@@ -282,8 +282,13 @@ def main(
 
     app = FastAPI()
     # instantiate kvstore for storing and retrieving distribution metadata
-    dist_kvstore = asyncio.run(
-        kvstore_impl(
+    if config.distribution_registry_store:
+        dist_kvstore = asyncio.run(
+            kvstore_impl(config.distribution_registry_store)
+        )
+    else:
+        dist_kvstore = asyncio.run(
+            kvstore_impl(
             SqliteKVStoreConfig(
                 db_path=(
                     DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
@@ -292,7 +297,7 @@ def main(
         )
     )
 
-    dist_registry = DiskRegistry(dist_kvstore)
+    dist_registry = DiskDistributionRegistry(dist_kvstore)
 
     impls = asyncio.run(resolve_impls(config, get_provider_registry(), dist_registry))
     if Api.telemetry in impls:

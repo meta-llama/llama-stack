@@ -15,7 +15,7 @@ from llama_stack.distribution.datatypes import RoutableObjectWithProvider
 from llama_stack.providers.utils.kvstore import KVStore
 
 
-class Registry(Protocol):
+class DistributionRegistry(Protocol):
     async def get(self, identifier: str) -> [RoutableObjectWithProvider]: ...
     async def register(self, obj: RoutableObjectWithProvider) -> None: ...
 
@@ -23,7 +23,7 @@ class Registry(Protocol):
 KEY_FORMAT = "distributions:registry:{}"
 
 
-class DiskRegistry(Registry):
+class DiskDistributionRegistry(DistributionRegistry):
     def __init__(self, kvstore: KVStore):
         self.kvstore = kvstore
 
@@ -33,7 +33,6 @@ class DiskRegistry(Registry):
         if not json_str:
             return []
 
-        # Parse JSON string into list of objects
         objects_data = json.loads(json_str)
 
         return [

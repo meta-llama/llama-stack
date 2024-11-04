@@ -19,7 +19,7 @@ async def test_registry():
     # delete the file if it exists
     if os.path.exists(config.db_path):
         os.remove(config.db_path)
-    registry = DiskRegistry(await kvstore_impl(config))
+    registry = DiskDistributionRegistry(await kvstore_impl(config))
     bank = VectorMemoryBankDef(
         identifier="test_bank",
         embedding_model="all-MiniLM-L6-v2",
