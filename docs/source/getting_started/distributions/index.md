@@ -10,6 +10,7 @@ We offer three types of distributions:
 
 ```{toctree}
 :maxdepth: 1
+:hidden:
 
 deployable_distro/index
 hosted_distro/index
