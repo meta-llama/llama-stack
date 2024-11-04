@@ -16,7 +16,12 @@ from llama_stack.providers.utils.kvstore import KVStore
 
 
 class DistributionRegistry(Protocol):
+    
     async def get(self, identifier: str) -> [RoutableObjectWithProvider]: ...
+    # The current data structure allows multiple objects with the same identifier but different providers.
+    # This is not ideal - we should have a single object that can be served by multiple providers,
+    # suggesting a data structure like (obj: Obj, providers: List[str]) rather than List[RoutableObjectWithProvider].
+    # The current approach could lead to inconsistencies if the same logical object has different data across providers.
     async def register(self, obj: RoutableObjectWithProvider) -> None: ...
 
 
