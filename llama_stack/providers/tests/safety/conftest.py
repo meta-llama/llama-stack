@@ -49,6 +49,10 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
+    # We use this method to make sure we have built-in simple combos for safety tests
+    # But a user can also pass in a custom combination via the CLI by doing
+    #  `--providers inference=together,safety=meta_reference`
+
     if "safety_stack" in metafunc.fixturenames:
         # print(f"metafunc.fixturenames: {metafunc.fixturenames}, {metafunc}")
         available_fixtures = {

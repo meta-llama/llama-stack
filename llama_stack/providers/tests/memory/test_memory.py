@@ -8,7 +8,7 @@ import pytest
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
-from .conftest import PROVIDER_PARAMS
+from .fixtures import PROVIDER_PARAMS
 
 # How to run this test:
 #
@@ -55,25 +55,25 @@ async def register_memory_bank(banks_impl: MemoryBanks):
 
 
 @pytest.mark.parametrize(
-    "stack_impls",
+    "memory_stack",
     PROVIDER_PARAMS,
     indirect=True,
 )
 class TestMemory:
     @pytest.mark.asyncio
-    async def test_banks_list(self, stack_impls):
+    async def test_banks_list(self, memory_stack):
         # NOTE: this needs you to ensure that you are starting from a clean state
         # but so far we don't have an unregister API unfortunately, so be careful
-        _, banks_impl = stack_impls
+        _, banks_impl = memory_stack
         response = await banks_impl.list_memory_banks()
         assert isinstance(response, list)
         assert len(response) == 0
 
     @pytest.mark.asyncio
-    async def test_banks_register(self, stack_impls):
+    async def test_banks_register(self, memory_stack):
         # NOTE: this needs you to ensure that you are starting from a clean state
         # but so far we don't have an unregister API unfortunately, so be careful
-        _, banks_impl = stack_impls
+        _, banks_impl = memory_stack
         bank = VectorMemoryBankDef(
             identifier="test_bank_no_provider",
             embedding_model="all-MiniLM-L6-v2",
@@ -93,8 +93,8 @@ class TestMemory:
         assert len(response) == 1
 
     @pytest.mark.asyncio
-    async def test_query_documents(self, stack_impls, sample_documents):
-        memory_impl, banks_impl = stack_impls
+    async def test_query_documents(self, memory_stack, sample_documents):
+        memory_impl, banks_impl = memory_stack
 
         with pytest.raises(ValueError):
             await memory_impl.insert_documents("test_bank", sample_documents)

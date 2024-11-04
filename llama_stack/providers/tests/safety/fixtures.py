@@ -64,6 +64,7 @@ SAFETY_FIXTURES = ["meta_reference", "together"]
 
 @pytest_asyncio.fixture(scope="session")
 async def safety_stack(inference_model, safety_model, request):
+    # We need an inference + safety fixture to test safety
     fixture_dict = request.param
     inference_fixture = request.getfixturevalue(
         f"inference_{fixture_dict['inference']}"
