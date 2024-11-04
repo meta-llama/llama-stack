@@ -45,6 +45,9 @@ def get_sampling_options(params: SamplingParams) -> dict:
 def text_from_choice(choice) -> str:
     if hasattr(choice, "delta") and choice.delta:
         return choice.delta.content
+    
+    if hasattr(choice, "message"):
+        return choice.message.content
 
     return choice.text
 
@@ -158,6 +161,9 @@ async def process_chat_completion_stream_response(
             break
 
         text = text_from_choice(choice)
+        if not text:
+            continue
+
         # check if its a tool call ( aka starts with <|python_tag|> )
         if not ipython and text.startswith("<|python_tag|>"):
             ipython = True
