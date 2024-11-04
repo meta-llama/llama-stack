@@ -64,16 +64,8 @@ def memory_weaviate() -> ProviderFixture:
 
 MEMORY_FIXTURES = ["meta_reference", "pgvector", "weaviate"]
 
-PROVIDER_PARAMS = [
-    pytest.param(fixture_name, marks=getattr(pytest.mark, fixture_name))
-    for fixture_name in MEMORY_FIXTURES
-]
 
-
-@pytest_asyncio.fixture(
-    scope="session",
-    params=PROVIDER_PARAMS,
-)
+@pytest_asyncio.fixture(scope="session")
 async def memory_stack(request):
     fixture_name = request.param
     fixture = request.getfixturevalue(f"memory_{fixture_name}")

@@ -22,19 +22,14 @@ from ..conftest import ProviderFixture
 from ..env import get_env_or_fail
 
 
-MODEL_PARAMS = [
-    pytest.param("Llama3.1-8B-Instruct", marks=pytest.mark.llama_8b, id="llama_8b"),
-    pytest.param("Llama3.2-3B-Instruct", marks=pytest.mark.llama_3b, id="llama_3b"),
-]
-
-
-@pytest.fixture(scope="session", params=MODEL_PARAMS)
+@pytest.fixture(scope="session")
 def inference_model(request):
-    return request.param
+    return request.config.getoption("--inference-model", None) or request.param
 
 
 @pytest.fixture(scope="session")
 def inference_meta_reference(inference_model) -> ProviderFixture:
+    # TODO: make this work with multiple models
     return ProviderFixture(
         provider=Provider(
             provider_id="meta-reference",
@@ -66,7 +61,7 @@ def inference_ollama(inference_model) -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def inference_fireworks(inference_model) -> ProviderFixture:
+def inference_fireworks() -> ProviderFixture:
     return ProviderFixture(
         provider=Provider(
             provider_id="fireworks",
@@ -79,7 +74,7 @@ def inference_fireworks(inference_model) -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def inference_together(inference_model) -> ProviderFixture:
+def inference_together() -> ProviderFixture:
     return ProviderFixture(
         provider=Provider(
             provider_id="together",
@@ -95,7 +90,7 @@ def inference_together(inference_model) -> ProviderFixture:
 INFERENCE_FIXTURES = ["meta_reference", "ollama", "fireworks", "together"]
 
 
-@pytest_asyncio.fixture(scope="session", params=INFERENCE_FIXTURES)
+@pytest_asyncio.fixture(scope="session")
 async def inference_stack(request):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")

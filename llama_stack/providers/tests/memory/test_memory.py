@@ -8,7 +8,6 @@ import pytest
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
-from .fixtures import PROVIDER_PARAMS
 
 # How to run this test:
 #
@@ -54,11 +53,6 @@ async def register_memory_bank(banks_impl: MemoryBanks):
     await banks_impl.register_memory_bank(bank)
 
 
-@pytest.mark.parametrize(
-    "memory_stack",
-    PROVIDER_PARAMS,
-    indirect=True,
-)
 class TestMemory:
     @pytest.mark.asyncio
     async def test_banks_list(self, memory_stack):

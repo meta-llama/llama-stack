@@ -22,7 +22,7 @@ from ..conftest import ProviderFixture
 
 
 @pytest.fixture(scope="session")
-def agents_meta_reference(inference_model, safety_model) -> ProviderFixture:
+def agents_meta_reference() -> ProviderFixture:
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     return ProviderFixture(
         provider=Provider(
@@ -42,12 +42,12 @@ AGENTS_FIXTURES = ["meta_reference"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def agents_stack(inference_model, safety_model, request):
+async def agents_stack(request):
     fixture_dict = request.param
 
     providers = {}
     provider_data = {}
-    for key in ["agents", "inference", "safety", "memory"]:
+    for key in ["inference", "safety", "memory", "agents"]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = [fixture.provider]
         if fixture.provider_data:

@@ -126,8 +126,13 @@ class CommonRoutingTableImpl(RoutingTable):
 
         if routing_key not in self.registry:
             apiname, objname = apiname_object()
+            provider_ids = list(self.impls_by_provider_id.keys())
+            if len(provider_ids) > 1:
+                provider_ids_str = f"any of the providers: {', '.join(provider_ids)}"
+            else:
+                provider_ids_str = f"provider: `{provider_ids[0]}`"
             raise ValueError(
-                f"`{routing_key}` not registered. Make sure there is an {apiname} provider serving this {objname}."
+                f"`{routing_key}` not served by {provider_ids_str}. Make sure there is an {apiname} provider serving this {objname}."
             )
 
         objs = self.registry[routing_key]

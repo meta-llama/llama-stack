@@ -14,7 +14,6 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
-from .fixtures import INFERENCE_FIXTURES, MODEL_PARAMS
 
 # How to run this test:
 #
@@ -70,15 +69,6 @@ def sample_tool_definition():
     )
 
 
-@pytest.mark.parametrize("inference_model", MODEL_PARAMS, indirect=True)
-@pytest.mark.parametrize(
-    "inference_stack",
-    [
-        pytest.param(fixture_name, marks=getattr(pytest.mark, fixture_name))
-        for fixture_name in INFERENCE_FIXTURES
-    ],
-    indirect=True,
-)
 class TestInference:
     @pytest.mark.asyncio
     async def test_model_list(self, inference_model, inference_stack):

@@ -75,12 +75,6 @@ async def create_agent_session(agents_impl, agent_config):
     return agent_id, session_id
 
 
-@pytest.mark.parametrize(
-    "inference_model", [pytest.param("Llama3.1-8B-Instruct", id="")], indirect=True
-)
-@pytest.mark.parametrize(
-    "safety_model", [pytest.param("Llama-Guard-3-8B", id="")], indirect=True
-)
 class TestAgents:
     @pytest.mark.asyncio
     async def test_agent_turns_with_safety(self, agents_stack, common_params):

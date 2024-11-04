@@ -17,14 +17,6 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 #   -m "ollama"
 
 
-@pytest.mark.parametrize(
-    "inference_model", [pytest.param("Llama-Guard-3-1B", id="")], indirect=True
-)
-@pytest.mark.parametrize(
-    "safety_model",
-    [pytest.param("Llama-Guard-3-1B", id="guard_3_1b")],
-    indirect=True,
-)
 class TestSafety:
     @pytest.mark.asyncio
     async def test_shield_list(self, safety_stack):

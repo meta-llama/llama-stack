@@ -20,14 +20,9 @@ from ..conftest import ProviderFixture
 from ..env import get_env_or_fail
 
 
-SAFETY_MODEL_PARAMS = [
-    pytest.param("Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"),
-]
-
-
-@pytest.fixture(scope="session", params=SAFETY_MODEL_PARAMS)
+@pytest.fixture(scope="session")
 def safety_model(request):
-    return request.param
+    return request.config.getoption("--safety-model", None) or request.param
 
 
 @pytest.fixture(scope="session")

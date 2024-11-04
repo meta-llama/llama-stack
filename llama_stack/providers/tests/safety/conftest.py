@@ -48,10 +48,37 @@ def pytest_configure(config):
         )
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--safety-model",
+        action="store",
+        default=None,
+        help="Specify the safety model to use for testing",
+    )
+
+
+SAFETY_MODEL_PARAMS = [
+    pytest.param("Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"),
+]
+
+
 def pytest_generate_tests(metafunc):
     # We use this method to make sure we have built-in simple combos for safety tests
     # But a user can also pass in a custom combination via the CLI by doing
     #  `--providers inference=together,safety=meta_reference`
+
+    if "safety_model" in metafunc.fixturenames:
+        model = metafunc.config.getoption("--safety-model")
+        if model:
+            params = [pytest.param(model, id="")]
+        else:
+            params = SAFETY_MODEL_PARAMS
+        for fixture in ["inference_model", "safety_model"]:
+            metafunc.parametrize(
+                fixture,
+                params,
+                indirect=True,
+            )
 
     if "safety_stack" in metafunc.fixturenames:
         # print(f"metafunc.fixturenames: {metafunc.fixturenames}, {metafunc}")
