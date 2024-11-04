@@ -147,7 +147,6 @@ a default SQLite store will be used.""",
     )
 
 
-
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
     name: str

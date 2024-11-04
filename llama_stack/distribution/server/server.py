@@ -283,19 +283,17 @@ def main(
     app = FastAPI()
     # instantiate kvstore for storing and retrieving distribution metadata
     if config.distribution_registry_store:
-        dist_kvstore = asyncio.run(
-            kvstore_impl(config.distribution_registry_store)
-        )
+        dist_kvstore = asyncio.run(kvstore_impl(config.distribution_registry_store))
     else:
         dist_kvstore = asyncio.run(
             kvstore_impl(
-            SqliteKVStoreConfig(
-                db_path=(
-                    DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
-                ).as_posix()
+                SqliteKVStoreConfig(
+                    db_path=(
+                        DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
+                    ).as_posix()
+                )
             )
         )
-    )
 
     dist_registry = DiskDistributionRegistry(dist_kvstore)
 

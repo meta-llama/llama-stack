@@ -8,7 +8,7 @@ from typing import Any
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
-from llama_stack.distribution.store import  DistributionRegistry
+from llama_stack.distribution.store import DistributionRegistry
 
 from .routing_tables import (
     DatasetsRoutingTable,
