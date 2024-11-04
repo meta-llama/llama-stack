@@ -13,6 +13,6 @@ We offer three types of distributions:
 :hidden:
 
 self_hosted_distro/index
-hosted_distro/index
+remote_hosted_distro/index
 ondevice_distro/index
 ```
