@@ -11,6 +11,11 @@ from llama_stack.apis.safety import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
+# How to run this test:
+#
+# pytest -v -s llama_stack/providers/tests/safety/test_safety.py
+#   -m "ollama"
+
 
 @pytest.mark.parametrize(
     "inference_model", [pytest.param("Llama-Guard-3-1B", id="")], indirect=True

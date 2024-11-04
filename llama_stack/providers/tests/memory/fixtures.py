@@ -20,7 +20,7 @@ from ..env import get_env_or_fail
 
 
 @pytest.fixture(scope="session")
-def meta_reference() -> ProviderFixture:
+def memory_meta_reference() -> ProviderFixture:
     return ProviderFixture(
         provider=Provider(
             provider_id="meta-reference",
@@ -31,7 +31,7 @@ def meta_reference() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def pgvector() -> ProviderFixture:
+def memory_pgvector() -> ProviderFixture:
     return ProviderFixture(
         provider=Provider(
             provider_id="pgvector",
@@ -48,7 +48,7 @@ def pgvector() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def weaviate() -> ProviderFixture:
+def memory_weaviate() -> ProviderFixture:
     return ProviderFixture(
         provider=Provider(
             provider_id="weaviate",
@@ -76,7 +76,7 @@ PROVIDER_PARAMS = [
 )
 async def memory_stack(request):
     fixture_name = request.param
-    fixture = request.getfixturevalue(fixture_name)
+    fixture = request.getfixturevalue(f"memory_{fixture_name}")
 
     impls = await resolve_impls_for_test_v2(
         [Api.memory],

@@ -18,9 +18,8 @@ from .fixtures import INFERENCE_FIXTURES, MODEL_PARAMS
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/inference/test_inference.py
+# pytest -v -s llama_stack/providers/tests/inference/test_inference.py
 #   -m "(fireworks or ollama) and llama_3b"
-#   -v -s --tb=short --disable-warnings
 #   --env FIREWORKS_API_KEY=<your_api_key>
 
 
