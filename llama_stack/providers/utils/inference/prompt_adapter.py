@@ -9,6 +9,8 @@ import io
 import json
 from typing import Tuple
 
+import httpx
+
 from llama_models.llama3.api.chat_format import ChatFormat
 from PIL import Image as PIL_Image
 from termcolor import cprint
@@ -49,7 +51,9 @@ def request_has_media(request: Union[ChatCompletionRequest, CompletionRequest]):
         return content_has_media(request.content)
 
 
-def convert_image_media_to_url(media: ImageMedia) -> str:
+async def convert_image_media_to_url(
+    media: ImageMedia, download: bool = False, include_format: bool = True
+) -> str:
     if isinstance(media.image, PIL_Image.Image):
         if media.image.format == "PNG":
             format = "png"
@@ -63,21 +67,36 @@ def convert_image_media_to_url(media: ImageMedia) -> str:
         bytestream = io.BytesIO()
         media.image.save(bytestream, format=media.image.format)
         bytestream.seek(0)
-        return f"data:image/{format};base64," + base64.b64encode(
-            bytestream.getvalue()
-        ).decode("utf-8")
+        content = bytestream.getvalue()
     else:
-        assert isinstance(media.image, URL)
-        return media.image.uri
+        if not download:
+            return media.image.uri
+        else:
+            assert isinstance(media.image, URL)
+            async with httpx.AsyncClient() as client:
+                r = await client.get(media.image.uri)
+                content = r.content
+                content_type = r.headers.get("content-type")
+                if content_type:
+                    format = content_type.split("/")[-1]
+                else:
+                    format = "png"
+
+    if include_format:
+        return f"data:image/{format};base64," + base64.b64encode(content).decode(
+            "utf-8"
+        )
+    else:
+        return base64.b64encode(content).decode("utf-8")
 
 
-def convert_message_to_dict(message: Message) -> dict:
-    def _convert_content(content) -> dict:
+async def convert_message_to_dict(message: Message) -> dict:
+    async def _convert_content(content) -> dict:
         if isinstance(content, ImageMedia):
             return {
                 "type": "image_url",
                 "image_url": {
-                    "url": convert_image_media_to_url(content),
+                    "url": await convert_image_media_to_url(content),
                 },
             }
         else:
@@ -85,9 +104,9 @@ def convert_message_to_dict(message: Message) -> dict:
             return {"type": "text", "text": content}
 
     if isinstance(message.content, list):
-        content = [_convert_content(c) for c in message.content]
+        content = [await _convert_content(c) for c in message.content]
     else:
-        content = [_convert_content(message.content)]
+        content = [await _convert_content(message.content)]
 
     return {
         "role": message.role,

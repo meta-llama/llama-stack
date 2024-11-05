@@ -84,14 +84,14 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
     async def _nonstream_completion(
         self, request: CompletionRequest, client: Fireworks
     ) -> CompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
         r = await client.completion.acreate(**params)
         return process_completion_response(r, self.formatter)
 
     async def _stream_completion(
         self, request: CompletionRequest, client: Fireworks
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         stream = client.completion.acreate(**params)
         async for chunk in process_completion_stream_response(stream, self.formatter):
@@ -130,7 +130,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest, client: Fireworks
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
         if "messages" in params:
             r = await client.chat.completions.acreate(**params)
         else:
@@ -140,7 +140,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, client: Fireworks
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         if "messages" in params:
             stream = client.chat.completions.acreate(**params)
@@ -152,7 +152,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
         ):
             yield chunk
 
-    def _get_params(
+    async def _get_params(
         self, request: Union[ChatCompletionRequest, CompletionRequest]
     ) -> dict:
         input_dict = {}
@@ -161,7 +161,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    convert_message_to_dict(m) for m in request.messages
+                    await convert_message_to_dict(m) for m in request.messages
                 ]
             else:
                 input_dict["prompt"] = chat_completion_request_to_prompt(

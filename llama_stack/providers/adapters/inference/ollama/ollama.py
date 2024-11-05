@@ -4,8 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import base64
-import io
 from typing import AsyncGenerator
 
 import httpx
@@ -31,6 +29,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    convert_image_media_to_url,
     request_has_media,
 )
 
@@ -282,7 +281,11 @@ async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
         if isinstance(content, ImageMedia):
             return {
                 "role": message.role,
-                "images": [await convert_image_media_to_base64(content)],
+                "images": [
+                    await convert_image_media_to_url(
+                        content, download=True, include_format=False
+                    )
+                ],
             }
         else:
             return {
@@ -294,18 +297,3 @@ async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
         return [await _convert_content(c) for c in message.content]
     else:
         return [await _convert_content(message.content)]
-
-
-async def convert_image_media_to_base64(media: ImageMedia) -> str:
-    if isinstance(media.image, PIL_Image.Image):
-        bytestream = io.BytesIO()
-        media.image.save(bytestream, format=media.image.format)
-        bytestream.seek(0)
-        content = bytestream.getvalue()
-    else:
-        assert isinstance(media.image, URL)
-        async with httpx.AsyncClient() as client:
-            r = await client.get(media.image.uri)
-            content = r.content
-
-    return base64.b64encode(content).decode("utf-8")

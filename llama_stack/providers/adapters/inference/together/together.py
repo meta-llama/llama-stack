@@ -99,12 +99,12 @@ class TogetherInferenceAdapter(
     async def _nonstream_completion(
         self, request: CompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params(request)
         r = self._get_client().completions.create(**params)
         return process_completion_response(r, self.formatter)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
@@ -165,7 +165,7 @@ class TogetherInferenceAdapter(
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
         if "messages" in params:
             r = self._get_client().chat.completions.create(**params)
         else:
@@ -175,7 +175,7 @@ class TogetherInferenceAdapter(
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
@@ -192,7 +192,7 @@ class TogetherInferenceAdapter(
         ):
             yield chunk
 
-    def _get_params(
+    async def _get_params(
         self, request: Union[ChatCompletionRequest, CompletionRequest]
     ) -> dict:
         input_dict = {}
@@ -200,7 +200,7 @@ class TogetherInferenceAdapter(
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    convert_message_to_dict(m) for m in request.messages
+                    await convert_message_to_dict(m) for m in request.messages
                 ]
             else:
                 input_dict["prompt"] = chat_completion_request_to_prompt(

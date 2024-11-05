@@ -14,6 +14,11 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.datatypes import ModelDef, ModelsProtocolPrivate
 
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    convert_image_media_to_url,
+    request_has_media,
+)
+
 from .config import MetaReferenceInferenceConfig
 from .generation import Llama
 from .model_parallel import LlamaModelParallelGenerator
@@ -388,3 +393,30 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
+
+
+async def request_with_localized_media(
+    request: Union[ChatCompletionRequest, CompletionRequest],
+) -> Union[ChatCompletionRequest, CompletionRequest]:
+    if not request_has_media(request):
+        return request
+
+    async def _convert_single_content(content):
+        if isinstance(content, ImageMedia):
+            return await convert_image_media_to_url(content, download=True)
+        else:
+            return content
+
+    async def _convert_content(content):
+        if isinstance(content, list):
+            return [await _convert_single_content(c) for c in content]
+        else:
+            return await _convert_single_content(content)
+
+    if isinstance(request, ChatCompletionRequest):
+        for m in request.messages:
+            m.content = await _convert_content(m.content)
+    else:
+        request.content = await _convert_content(request.content)
+
+    return request
