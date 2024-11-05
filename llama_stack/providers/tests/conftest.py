@@ -14,11 +14,29 @@ from pydantic import BaseModel
 from termcolor import colored
 
 from llama_stack.distribution.datatypes import Provider
+from llama_stack.providers.datatypes import RemoteProviderConfig
+
+from .env import get_env_or_fail
 
 
 class ProviderFixture(BaseModel):
     providers: List[Provider]
     provider_data: Optional[Dict[str, Any]] = None
+
+
+def remote_stack_fixture() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="remote",
+                provider_type="remote",
+                config=RemoteProviderConfig(
+                    host=get_env_or_fail("REMOTE_STACK_HOST"),
+                    port=int(get_env_or_fail("REMOTE_STACK_PORT")),
+                ).model_dump(),
+            )
+        ],
+    )
 
 
 def pytest_configure(config):

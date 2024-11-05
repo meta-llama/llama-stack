@@ -46,11 +46,21 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         id="together",
         marks=pytest.mark.together,
     ),
+    pytest.param(
+        {
+            "inference": "remote",
+            "safety": "remote",
+            "memory": "remote",
+            "agents": "remote",
+        },
+        id="remote",
+        marks=pytest.mark.remote,
+    ),
 ]
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together"]:
+    for mark in ["meta_reference", "ollama", "together", "remote"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",

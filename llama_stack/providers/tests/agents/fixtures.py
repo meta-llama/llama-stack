@@ -18,7 +18,12 @@ from llama_stack.providers.impls.meta_reference.agents import (
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
-from ..conftest import ProviderFixture
+from ..conftest import ProviderFixture, remote_stack_fixture
+
+
+@pytest.fixture(scope="session")
+def agents_remote() -> ProviderFixture:
+    return remote_stack_fixture()
 
 
 @pytest.fixture(scope="session")
@@ -40,7 +45,7 @@ def agents_meta_reference() -> ProviderFixture:
     )
 
 
-AGENTS_FIXTURES = ["meta_reference"]
+AGENTS_FIXTURES = ["meta_reference", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")
