@@ -1,14 +1,5 @@
 # Getting Started
 
-```{toctree}
-:maxdepth: 2
-:hidden:
-
-distributions/self_hosted_distro/index
-distributions/remote_hosted_distro/index
-distributions/ondevice_distro/index
-```
-
 At the end of the guide, you will have learned how to:
 - get a Llama Stack server up and running
 - set up an agent (with tool-calling and vector stores) that works with the above server
@@ -518,4 +509,23 @@ inference> Jungfraujoch, also known as the "Top of Europe," is a unique and spec
 
 User> What other countries should I consider to club?
 inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
+```
+
+## What's Next?
+
+- To see more example apps built using Llama Stack, see [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main).
+
+- To learn more about the different types of distributions we offer, see
+
+1. [Self-Hosted Distribution](./distributions/self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine.
+2. [Remote-Hosted Distribution](./distributions/remote_hosted_distro/index.md): If you want to connect to a remote hosted inference provider.
+3. [On-device Distribution](./distributions/ondevice_distro/index.md): If you want to run Llama Stack inference on your iOS / Android device.
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+distributions/self_hosted_distro/index
+distributions/remote_hosted_distro/index
+distributions/ondevice_distro/index
 ```
