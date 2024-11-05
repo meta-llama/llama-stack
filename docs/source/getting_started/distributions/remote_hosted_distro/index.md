@@ -1,4 +1,4 @@
-# Remote Hosted Distribution
+# Remote-Hosted Distribution
 
 Remote Hosted distributions are distributions connecting to remote hosted services through Llama Stack server. Inference is done through remote providers. These are useful if you have an API key for a remote inference provider like Fireworks, Together, etc.
 
