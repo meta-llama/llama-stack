@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import itertools
 
 import pytest
 
@@ -15,20 +14,14 @@ from llama_stack.apis.inference import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
+from .utils import group_chunks
+
+
 # How to run this test:
 #
 # pytest -v -s llama_stack/providers/tests/inference/test_inference.py
 #   -m "(fireworks or ollama) and llama_3b"
 #   --env FIREWORKS_API_KEY=<your_api_key>
-
-
-def group_chunks(response):
-    return {
-        event_type: list(group)
-        for event_type, group in itertools.groupby(
-            response, key=lambda chunk: chunk.event.event_type
-        )
-    }
 
 
 def get_expected_stop_reason(model: str):
