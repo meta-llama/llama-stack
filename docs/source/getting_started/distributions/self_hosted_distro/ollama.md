@@ -7,7 +7,7 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | **Provider(s)** 	| remote::ollama 	| meta-reference 	| remote::pgvector, remote::chroma 	| remote::ollama 	| meta-reference 	|
 
 
-### Start a Distribution (Single Node GPU)
+### Docker: Start a Distribution (Single Node GPU)
 
 > [!NOTE]
 > This assumes you have access to GPU to start a Ollama server with access to your GPU.
@@ -38,7 +38,7 @@ To kill the server
 docker compose down
 ```
 
-### Start the Distribution (Single Node CPU)
+### Docker: Start the Distribution (Single Node CPU)
 
 > [!NOTE]
 > This will start an ollama server with CPU only, please see [Ollama Documentations](https://github.com/ollama/ollama) for serving models on CPU only.
@@ -50,7 +50,7 @@ compose.yaml  run.yaml
 $ docker compose up
 ```
 
-### (Alternative) ollama run + llama stack run
+### Conda: ollama run + llama stack run
 
 If you wish to separately spin up a Ollama server, and connect with Llama Stack, you may use the following commands.
 
@@ -69,12 +69,19 @@ ollama run <model_id>
 
 #### Start Llama Stack server pointing to Ollama server
 
+**Via Conda**
+
+```
+llama stack build --template ollama --image-type conda
+llama stack run ./gpu/run.yaml
+```
+
 **Via Docker**
 ```
 docker run --network host -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./gpu/run.yaml:/root/llamastack-run-ollama.yaml --gpus=all llamastack/distribution-ollama --yaml_config /root/llamastack-run-ollama.yaml
 ```
 
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Ollama endpoint. E.g.
+Make sure in your `run.yaml` file, your inference provider is pointing to the correct Ollama endpoint. E.g.
 ```
 inference:
   - provider_id: ollama0
@@ -83,14 +90,20 @@ inference:
       url: http://127.0.0.1:14343
 ```
 
-**Via Conda**
+### (Optional) Update Model Serving Configuration
+
+#### Downloading model via Ollama
+
+You can use ollama for managing model downloads.
 
 ```
-llama stack build --template ollama --image-type conda
-llama stack run ./gpu/run.yaml
+ollama pull llama3.1:8b-instruct-fp16
+ollama pull llama3.1:70b-instruct-fp16
 ```
 
-### Model Serving
+> [!NOTE]
+> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/adapters/inference/ollama/ollama.py) for the supported Ollama models.
+
 
 To serve a new model with `ollama`
 ```

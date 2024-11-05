@@ -1,39 +1,23 @@
 # Fireworks Distribution
 
-The `llamastack/distribution-` distribution consists of the following provider configurations.
+The `llamastack/distribution-fireworks` distribution consists of the following provider configurations.
 
 
 | **API**         	| **Inference** 	| **Agents**     	| **Memory**                                       	| **Safety**     	| **Telemetry**  	|
 |-----------------	|---------------	|----------------	|--------------------------------------------------	|----------------	|----------------	|
 | **Provider(s)** 	| remote::fireworks   	| meta-reference 	| meta-reference 	| meta-reference 	| meta-reference 	|
 
+### Step 0. Prerequisite
+- Make sure you have access to a fireworks API Key. You can get one by visiting [fireworks.ai](https://fireworks.ai/)
 
-### Start the Distribution (Single Node CPU)
+### Step 1. Start the Distribution (Single Node CPU)
 
+#### (Option 1) Start Distribution Via Docker
 > [!NOTE]
 > This assumes you have an hosted endpoint at Fireworks with API Key.
 
 ```
-$ cd distributions/fireworks
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
-```
-
-Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
-```
-inference:
-  - provider_id: fireworks
-    provider_type: remote::fireworks
-    config:
-      url: https://api.fireworks.ai/inferenc
-      api_key: <optional api key>
-```
-
-### (Alternative) llama stack run (Single Node CPU)
-
-```
-docker run --network host -it -p 5000:5000 -v ./run.yaml:/root/my-run.yaml --gpus=all llamastack/distribution-fireworks --yaml_config /root/my-run.yaml
+$ cd distributions/fireworks && docker compose up
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct Fireworks URL server endpoint. E.g.
@@ -43,10 +27,10 @@ inference:
     provider_type: remote::fireworks
     config:
       url: https://api.fireworks.ai/inference
-      api_key: <enter your api key>
+      api_key: <optional api key>
 ```
 
-**Via Conda**
+#### (Option 2) Start Distribution Via Conda
 
 ```bash
 llama stack build --template fireworks --image-type conda
@@ -54,9 +38,10 @@ llama stack build --template fireworks --image-type conda
 llama stack run ./run.yaml
 ```
 
-### Model Serving
 
-Use `llama-stack-client models list` to chekc the available models served by Fireworks.
+### (Optional) Model Serving
+
+Use `llama-stack-client models list` to check the available models served by Fireworks.
 ```
 $ llama-stack-client models list
 +------------------------------+------------------------------+---------------+------------+
