@@ -248,7 +248,7 @@ Dockerfile created successfully in /tmp/tmp.viA3a3Rdsg/DockerfileFROM python:3.1
 You can now edit ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml and run `llama stack run ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml`
 ```
 
-After this step is successful, you should be able to find the built docker image and test it with `llama stack run <path/to/run.yaml>`. 
+After this step is successful, you should be able to find the built docker image and test it with `llama stack run <path/to/run.yaml>`.
 
 
 ## Step 2. Run
