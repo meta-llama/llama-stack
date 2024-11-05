@@ -34,6 +34,12 @@ EvalCandidate = Annotated[
     Union[ModelCandidate, AgentCandidate], Field(discriminator="type")
 ]
 
+# @json_schema_type
+# class EvalTaskDef(BaseModel):
+#     dataset_id: str
+#     candidate: EvalCandidate
+#     scoring_functions: List[str]
+
 
 @json_schema_type
 class EvaluateResponse(BaseModel):
@@ -48,7 +54,7 @@ class Eval(Protocol):
     async def evaluate_batch(
         self,
         dataset_id: str,
-        candidate: EvalCandidate,
+        candidate: EvalCandidate,  # type: ignore
         scoring_functions: List[str],
     ) -> Job: ...
 
@@ -56,7 +62,7 @@ class Eval(Protocol):
     async def evaluate(
         self,
         input_rows: List[Dict[str, Any]],
-        candidate: EvalCandidate,
+        candidate: EvalCandidate,  # type: ignore
         scoring_functions: List[str],
     ) -> EvaluateResponse: ...
 
