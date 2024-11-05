@@ -145,7 +145,7 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 class RemoteProviderConfig(BaseModel):
     host: str = "localhost"
-    port: int
+    port: int = 0
 
     @property
     def url(self) -> str:

@@ -12,6 +12,10 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
+from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+
 TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
 
 
@@ -176,6 +180,59 @@ class StackBuild(Subcommand):
                 return
             self._run_stack_build_command_from_build_config(build_config)
 
+    def _generate_run_config(self, build_config: BuildConfig, build_dir: Path) -> None:
+        """
+        Generate a run.yaml template file for user to edit from a build.yaml file
+        """
+        import json
+
+        import yaml
+        from termcolor import cprint
+
+        from llama_stack.distribution.utils.serialize import EnumEncoder
+
+        # TODO: we should make the run.yaml file invisible to users by with ENV variables
+        # but keeping it visible and exposed to users for now
+        # generate a default run.yaml file using the build_config
+        apis = list(build_config.distribution_spec.providers.keys())
+        run_config = StackRunConfig(
+            built_at=datetime.now(),
+            image_name=build_config.name,
+            conda_env=build_config.name,
+            apis=apis,
+            providers={},
+        )
+        # build providers dict
+        provider_registry = get_provider_registry()
+        for api in apis:
+            run_config.providers[api] = []
+            provider_types = build_config.distribution_spec.providers[api]
+            if isinstance(provider_types, str):
+                provider_types = [provider_types]
+
+            for i, provider_type in enumerate(provider_types):
+                print(provider_type)
+                p_spec = Provider(
+                    provider_id=f"{provider_type}-{i}",
+                    provider_type=provider_type,
+                    config={},
+                )
+                config_type = instantiate_class_type(
+                    provider_registry[Api(api)][provider_type].config_class
+                )
+                p_spec.config = config_type()
+                run_config.providers[api].append(p_spec)
+
+        run_config_file = build_dir / f"{build_config.name}-run.yaml"
+        with open(run_config_file, "w") as f:
+            to_write = json.loads(json.dumps(run_config.model_dump(), cls=EnumEncoder))
+            f.write(yaml.dump(to_write, sort_keys=False))
+
+        cprint(
+            f"You can now edit {run_config_file} and run `llama stack run {run_config_file}`",
+            color="green",
+        )
+
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
     ) -> None:
@@ -203,19 +260,16 @@ class StackBuild(Subcommand):
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
 
         with open(build_file_path, "w") as f:
-            to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
+            to_write = json.loads(
+                json.dumps(build_config.model_dump(), cls=EnumEncoder)
+            )
             f.write(yaml.dump(to_write, sort_keys=False))
 
         return_code = build_image(build_config, build_file_path)
         if return_code != 0:
             return
 
-        # TODO: we should make the run.yaml file invisible to users by with ENV variables
-        # but keeping it visiable and exposed to users for now
-        cprint(
-            f"You can now edit run.yaml files in ./llama-stack/distributions/ and run `llama stack run <path/to/run.yaml>`",
-            color="green",
-        )
+        self._generate_run_config(build_config, build_dir)
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
