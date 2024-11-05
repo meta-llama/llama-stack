@@ -219,7 +219,6 @@ class StackBuild(Subcommand):
                 provider_types = [provider_types]
 
             for i, provider_type in enumerate(provider_types):
-                print(provider_type)
                 p_spec = Provider(
                     provider_id=f"{provider_type}-{i}",
                     provider_type=provider_type,
