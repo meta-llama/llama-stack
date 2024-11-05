@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -25,6 +25,7 @@ class ModelDef(BaseModel):
 
 @json_schema_type
 class ModelDefWithProvider(ModelDef):
+    type: Literal["model"] = "model"
     provider_id: str = Field(
         description="The provider ID for this model",
     )

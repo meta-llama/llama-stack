@@ -15,5 +15,5 @@ Package.resolved
 *.ipynb_checkpoints*
 .idea
 .venv/
-.idea
+.vscode
 _build

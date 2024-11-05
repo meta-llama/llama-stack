@@ -25,6 +25,7 @@ from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 # These are the dependencies needed by the distribution server.
 # `llama-stack` is automatically installed by the installation script.
 SERVER_DEPENDENCIES = [
+    "aiosqlite",
     "fastapi",
     "fire",
     "httpx",

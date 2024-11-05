@@ -21,6 +21,7 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
@@ -37,12 +38,16 @@ RoutableObject = Union[
     ScoringFnDef,
 ]
 
-RoutableObjectWithProvider = Union[
-    ModelDefWithProvider,
-    ShieldDefWithProvider,
-    MemoryBankDefWithProvider,
-    DatasetDefWithProvider,
-    ScoringFnDefWithProvider,
+
+RoutableObjectWithProvider = Annotated[
+    Union[
+        ModelDefWithProvider,
+        ShieldDefWithProvider,
+        MemoryBankDefWithProvider,
+        DatasetDefWithProvider,
+        ScoringFnDefWithProvider,
+    ],
+    Field(discriminator="type"),
 ]
 
 RoutedProtocol = Union[
@@ -133,6 +138,12 @@ The list of APIs to serve. If not specified, all APIs specified in the provider_
 One or more providers to use for each API. The same provider_type (e.g., meta-reference)
 can be instantiated multiple times (with different configs) if necessary.
 """,
+    )
+    metadata_store: Optional[KVStoreConfig] = Field(
+        default=None,
+        description="""
+Configuration for the persistence store used by the distribution registry. If not specified,
+a default SQLite store will be used.""",
     )
 
 

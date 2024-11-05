@@ -49,7 +49,7 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
         return [
             ShieldDef(
                 identifier=shield_type,
-                type=shield_type,
+                shield_type=shield_type,
                 params={},
             )
             for shield_type in self.available_shields
@@ -92,14 +92,14 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
         return RunShieldResponse(violation=violation)
 
     def get_shield_impl(self, shield: ShieldDef) -> ShieldBase:
-        if shield.type == ShieldType.llama_guard.value:
+        if shield.shield_type == ShieldType.llama_guard.value:
             cfg = self.config.llama_guard_shield
             return LlamaGuardShield(
                 model=cfg.model,
                 inference_api=self.inference_api,
                 excluded_categories=cfg.excluded_categories,
             )
-        elif shield.type == ShieldType.prompt_guard.value:
+        elif shield.shield_type == ShieldType.prompt_guard.value:
             model_dir = model_local_dir(PROMPT_GUARD_MODEL)
             subtype = shield.params.get("prompt_guard_type", "injection")
             if subtype == "injection":
@@ -109,4 +109,4 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
             else:
                 raise ValueError(f"Unknown prompt guard type: {subtype}")
         else:
-            raise ValueError(f"Unknown shield type: {shield.type}")
+            raise ValueError(f"Unknown shield type: {shield.shield_type}")

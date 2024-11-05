@@ -7,6 +7,9 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+
+from llama_stack.distribution.store import DistributionRegistry
+
 from .routing_tables import (
     DatasetsRoutingTable,
     MemoryBanksRoutingTable,
@@ -20,6 +23,7 @@ async def get_routing_table_impl(
     api: Api,
     impls_by_provider_id: Dict[str, RoutedProtocol],
     _deps,
+    dist_registry: DistributionRegistry,
 ) -> Any:
     api_to_tables = {
         "memory_banks": MemoryBanksRoutingTable,
@@ -32,7 +36,7 @@ async def get_routing_table_impl(
     if api.value not in api_to_tables:
         raise ValueError(f"API {api.value} not found in router map")
 
-    impl = api_to_tables[api.value](impls_by_provider_id)
+    impl = api_to_tables[api.value](impls_by_provider_id, dist_registry)
     await impl.initialize()
     return impl
 

@@ -38,13 +38,14 @@ TOGETHER_SUPPORTED_MODELS = {
     "Llama3.2-3B-Instruct": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
     "Llama3.2-11B-Vision-Instruct": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
     "Llama3.2-90B-Vision-Instruct": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+    "Llama-Guard-3-8B": "meta-llama/Meta-Llama-Guard-3-8B",
+    "Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
 }
 
 
 class TogetherInferenceAdapter(
     ModelRegistryHelper, Inference, NeedsRequestProviderData
 ):
-
     def __init__(self, config: TogetherImplConfig) -> None:
         ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
@@ -150,7 +151,6 @@ class TogetherInferenceAdapter(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
