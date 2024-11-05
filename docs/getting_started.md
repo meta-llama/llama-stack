@@ -70,20 +70,28 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 	- You'll be prompted to enter build information interactively.
 	```
 	llama stack build
+	> Enter a name for your Llama Stack (e.g. my-local-stack): my-local-stack
+	> Enter the image type you want your Llama Stack to be built as (docker or conda): conda
 
-	> Enter an unique name for identifying your Llama Stack build distribution (e.g. my-local-stack): my-local-stack
-	> Enter the image type you want your distribution to be built with (docker or conda): conda
+	Llama Stack is composed of several APIs working together. Let's select
+	the provider types (implementations) you want to use for these APIs.
 
-	Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.
-	> Enter the API provider for the inference API: (default=meta-reference): meta-reference
-	> Enter the API provider for the safety API: (default=meta-reference): meta-reference
-	> Enter the API provider for the agents API: (default=meta-reference): meta-reference
-	> Enter the API provider for the memory API: (default=meta-reference): meta-reference
-	> Enter the API provider for the telemetry API: (default=meta-reference): meta-reference
+	Tip: use <TAB> to see options for the providers.
 
-	> (Optional) Enter a short description for your Llama Stack distribution:
+	> Enter provider for API inference: meta-reference
+	> Enter provider for API safety: meta-reference
+	> Enter provider for API agents: meta-reference
+	> Enter provider for API memory: meta-reference
+	> Enter provider for API datasetio: meta-reference
+	> Enter provider for API scoring: meta-reference
+	> Enter provider for API eval: meta-reference
+	> Enter provider for API telemetry: meta-reference
 
-	Build spec configuration saved at ~/.conda/envs/llamastack-my-local-stack/my-local-stack-build.yaml
+ 	> (Optional) Enter a short description for your Llama Stack:
+	Conda environment 'llamastack-my-local-stack' does not exist. Creating with Python 3.10...
+	...
+
+	Build spec configuration saved at ~/.conda/envsllamastack-my-local-stack/my-local-stack-build.yaml
 	You can now run `llama stack configure my-local-stack`
 	```
 
@@ -97,35 +105,53 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 	```
 	$ llama stack configure my-local-stack
 
+	llama stack configure my-local-stack
+	Using ~/.conda/envsllamastack-my-local-stack/my-local-stack-build.yaml...
+
+	Llama Stack is composed of several APIs working together. For each API served by the Stack,
+	we need to configure the providers (implementations) you want to use for these APIs.
+
 	Configuring API `inference`...
-	=== Configuring provider `meta-reference` for API inference...
-	Enter value for model (default: Llama3.1-8B-Instruct) (required):
-	Do you want to configure quantization? (y/n): n
+	> Configuring provider `(meta-reference)`
+	Enter value for model (default: Llama3.2-3B-Instruct) (required): Llama3.2-3B-Instruct
 	Enter value for torch_seed (optional):
 	Enter value for max_seq_len (default: 4096) (required):
 	Enter value for max_batch_size (default: 1) (required):
+	Enter value for create_distributed_process_group (default: True) (required):
+	Enter value for checkpoint_dir (optional):
 
 	Configuring API `safety`...
-	=== Configuring provider `meta-reference` for API safety...
-	Do you want to configure llama_guard_shield? (y/n): n
-	Do you want to configure prompt_guard_shield? (y/n): n
+	> Configuring provider `(meta-reference)`
+	Do you want to configure llama_guard_shield? (y/n): y
+	Entering sub-configuration for llama_guard_shield:
+	Enter value for model (default: Llama-Guard-3-1B) (required):
+	Enter value for excluded_categories (default: []) (required):
+	Enter value for enable_prompt_guard (default: False) (optional):
 
 	Configuring API `agents`...
-	=== Configuring provider `meta-reference` for API agents...
+	> Configuring provider `(meta-reference)`
 	Enter `type` for persistence_store (options: redis, sqlite, postgres) (default: sqlite):
 
 	Configuring SqliteKVStoreConfig:
 	Enter value for namespace (optional):
-	Enter value for db_path (default: /home/xiyan/.llama/runtime/kvstore.db) (required):
+	Enter value for db_path (default: /home/kaiwu/.llama/runtime/kvstore.db) (required):
 
 	Configuring API `memory`...
-	=== Configuring provider `meta-reference` for API memory...
-	> Please enter the supported memory bank type your provider has for memory: vector
+	> Configuring provider `(meta-reference)`
+
+	Configuring API `datasetio`...
+	> Configuring provider `(meta-reference)`
+
+	Configuring API `scoring`...
+	> Configuring provider `(meta-reference)`
+
+	Configuring API `eval`...
+	> Configuring provider `(meta-reference)`
 
 	Configuring API `telemetry`...
-	=== Configuring provider `meta-reference` for API telemetry...
+	> Configuring provider `(meta-reference)`
 
-	> YAML configuration has been written to ~/.llama/builds/conda/my-local-stack-run.yaml.
+	> YAML configuration has been written to `/home/kaiwu/.llama/builds/conda/my-local-stack-run.yaml`.
 	You can now run `llama stack run my-local-stack --port PORT`
 	```
 
@@ -196,7 +222,7 @@ You may also send a POST request to the server:
 curl http://localhost:5000/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
-	"model": "Llama3.1-8B-Instruct",
+	"model": "Llama3.2-3B-Instruct",
 	"messages": [
 		{"role": "system", "content": "You are a helpful assistant."},
 		{"role": "user", "content": "Write me a 2 sentence poem about the moon"}
