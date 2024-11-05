@@ -183,8 +183,7 @@ llama stack build --template tgi
 $ llama stack build --template tgi
 ...
 ...
-Build spec configuration saved at ~/.conda/envs/llamastack-tgi/tgi-build.yaml
-You may now run `llama stack configure tgi` or `llama stack configure ~/.conda/envs/llamastack-tgi/tgi-build.yaml`
+You can now edit ~/meta-llama/llama-stack/tmp/configs/tgi-run.yaml and run `llama stack run ~/meta-llama/llama-stack/tmp/configs/tgi-run.yaml`
 ```
 
 #### Building from config file
@@ -250,49 +249,6 @@ You can run it with: podman run -p 8000:8000 llamastack-docker-local
 Build spec configuration saved at ~/.llama/distributions/docker/docker-local-build.yaml
 ```
 
-
-## Step 2. Configure
-After our distribution is built (either in form of docker or conda environment), we will run the following command to
-```
-llama stack configure [ <docker-image-name> | <path/to/name.build.yaml>]
-```
-- For `conda` environments: <path/to/name.build.yaml> would be the generated build spec saved from Step 1.
-- For `docker` images downloaded from Dockerhub, you could also use <docker-image-name> as the argument.
-   - Run `docker images` to check list of available images on your machine.
-
-```
-$ llama stack configure tgi
-
-Configuring API: inference (meta-reference)
-Enter value for model (existing: Meta-Llama3.1-8B-Instruct) (required):
-Enter value for quantization (optional):
-Enter value for torch_seed (optional):
-Enter value for max_seq_len (existing: 4096) (required):
-Enter value for max_batch_size (existing: 1) (required):
-
-Configuring API: memory (meta-reference-faiss)
-
-Configuring API: safety (meta-reference)
-Do you want to configure llama_guard_shield? (y/n): y
-Entering sub-configuration for llama_guard_shield:
-Enter value for model (default: Llama-Guard-3-1B) (required):
-Enter value for excluded_categories (default: []) (required):
-Enter value for disable_input_check (default: False) (required):
-Enter value for disable_output_check (default: False) (required):
-Do you want to configure prompt_guard_shield? (y/n): y
-Entering sub-configuration for prompt_guard_shield:
-Enter value for model (default: Prompt-Guard-86M) (required):
-
-Configuring API: agentic_system (meta-reference)
-Enter value for brave_search_api_key (optional):
-Enter value for bing_search_api_key (optional):
-Enter value for wolfram_api_key (optional):
-
-Configuring API: telemetry (console)
-
-YAML configuration has been written to ~/.llama/builds/conda/tgi-run.yaml
-```
-
 After this step is successful, you should be able to find a run configuration spec in `~/.llama/builds/conda/tgi-run.yaml` with the following contents. You may edit this file to change the settings.
 
 As you can see, we did basic configuration above and configured:
@@ -305,8 +261,8 @@ For how these configurations are stored as yaml, checkout the file printed at th
 Note that all configurations as well as models are stored in `~/.llama`
 
 
-## Step 3. Run
-Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack configure` step.
+## Step 2. Run
+Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```
 llama stack run 8b-instruct

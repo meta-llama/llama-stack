@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 class TGIImplConfig(BaseModel):
     url: str = Field(
         description="The URL for the TGI endpoint (e.g. 'http://localhost:8080')",
+        default="http://localhost:8080",
     )
     api_token: Optional[str] = Field(
         default=None,
