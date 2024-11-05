@@ -139,7 +139,7 @@ One or more providers to use for each API. The same provider_type (e.g., meta-re
 can be instantiated multiple times (with different configs) if necessary.
 """,
     )
-    distribution_registry_store: Optional[KVStoreConfig] = Field(
+    metadata_store: Optional[KVStoreConfig] = Field(
         default=None,
         description="""
 Configuration for the persistence store used by the distribution registry. If not specified,

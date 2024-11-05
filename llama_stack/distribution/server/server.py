@@ -282,8 +282,8 @@ def main(
 
     app = FastAPI()
     # instantiate kvstore for storing and retrieving distribution metadata
-    if config.distribution_registry_store:
-        dist_kvstore = asyncio.run(kvstore_impl(config.distribution_registry_store))
+    if config.metadata_store:
+        dist_kvstore = asyncio.run(kvstore_impl(config.metadata_store))
     else:
         dist_kvstore = asyncio.run(
             kvstore_impl(
