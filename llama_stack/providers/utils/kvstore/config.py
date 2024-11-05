@@ -54,8 +54,9 @@ class PostgresKVStoreConfig(CommonConfig):
     password: Optional[str] = None
     table_name: str = "llamastack_kvstore"
 
+    @classmethod
     @field_validator("table_name")
-    def validate_table_name(self, v: str) -> str:
+    def validate_table_name(cls, v):
         # PostgreSQL identifiers rules:
         # - Must start with a letter or underscore
         # - Can contain letters, numbers, and underscores
