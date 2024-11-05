@@ -17,7 +17,6 @@ from ..config import PostgresKVStoreConfig
 class PostgresKVStoreImpl(KVStore):
     def __init__(self, config: PostgresKVStoreConfig):
         self.config = config
-        self.table_name = "kvstore"
         self.conn = None
         self.cursor = None
 
@@ -36,7 +35,7 @@ class PostgresKVStoreImpl(KVStore):
             # Create table if it doesn't exist
             self.cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {self.table_name} (
+                CREATE TABLE IF NOT EXISTS {self.config.table_name} (
                     key TEXT PRIMARY KEY,
                     value TEXT,
                     expiration TIMESTAMP
@@ -60,7 +59,7 @@ class PostgresKVStoreImpl(KVStore):
         key = self._namespaced_key(key)
         self.cursor.execute(
             f"""
-            INSERT INTO {self.table_name} (key, value, expiration)
+            INSERT INTO {self.config.table_name} (key, value, expiration)
             VALUES (%s, %s, %s)
             ON CONFLICT (key) DO UPDATE
             SET value = EXCLUDED.value, expiration = EXCLUDED.expiration
@@ -72,7 +71,7 @@ class PostgresKVStoreImpl(KVStore):
         key = self._namespaced_key(key)
         self.cursor.execute(
             f"""
-            SELECT value FROM {self.table_name}
+            SELECT value FROM {self.config.table_name}
             WHERE key = %s
             AND (expiration IS NULL OR expiration > NOW())
             """,
@@ -84,7 +83,7 @@ class PostgresKVStoreImpl(KVStore):
     async def delete(self, key: str) -> None:
         key = self._namespaced_key(key)
         self.cursor.execute(
-            f"DELETE FROM {self.table_name} WHERE key = %s",
+            f"DELETE FROM {self.config.table_name} WHERE key = %s",
             (key,),
         )
 
@@ -94,7 +93,7 @@ class PostgresKVStoreImpl(KVStore):
 
         self.cursor.execute(
             f"""
-            SELECT value FROM {self.table_name}
+            SELECT value FROM {self.config.table_name}
             WHERE key >= %s AND key < %s
             AND (expiration IS NULL OR expiration > NOW())
             ORDER BY key

@@ -51,6 +51,7 @@ class PostgresKVStoreConfig(CommonConfig):
     db: str = "llamastack"
     user: str
     password: Optional[str] = None
+    table_name: str = "llamastack_kvstore"
 
 
 KVStoreConfig = Annotated[
