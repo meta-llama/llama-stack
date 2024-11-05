@@ -1,15 +1,12 @@
 # Getting Started
 
 ```{toctree}
-:hidden:
 :maxdepth: 2
-
-distributions/index
-```
-
-```{toctree}
 :hidden:
-developer_cookbook
+
+distributions/self_hosted_distro/index
+distributions/remote_hosted_distro/index
+distributions/ondevice_distro/index
 ```
 
 At the end of the guide, you will have learned how to:
@@ -44,6 +41,16 @@ If so, we suggest:
 - **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
   - [`distribution-together`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)
   - [`distribution-fireworks`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)
+
+- **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
+  - [`distribution-together`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)
+  - [`distribution-fireworks`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)
+
+Please see our pages in detail for the types of distributions we offer:
+
+1. [Self-Hosted Distribution](./distributions/self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine.
+2. [Remote-Hosted Distribution](./distributions/remote_hosted_distro/index.md): If you want to connect to a remote hosted inference provider.
+3. [On-device Distribution](./distributions/ondevice_distro/index.md): If you want to run Llama Stack inference on your iOS / Android device.
 
 
 ### Quick Start Commands
