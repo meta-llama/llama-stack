@@ -23,7 +23,7 @@ class ShieldDef(BaseModel):
     identifier: str = Field(
         description="A unique identifier for the shield type",
     )
-    type: str = Field(
+    shield_type: str = Field(
         description="The type of shield this is; the value is one of the ShieldType enum"
     )
     params: Dict[str, Any] = Field(
