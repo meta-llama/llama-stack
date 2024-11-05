@@ -26,6 +26,7 @@ from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 
@@ -65,7 +66,9 @@ class ProviderWithSpec(Provider):
 
 # TODO: this code is not very straightforward to follow and needs one more round of refactoring
 async def resolve_impls(
-    run_config: StackRunConfig, provider_registry: Dict[Api, Dict[str, ProviderSpec]]
+    run_config: StackRunConfig,
+    provider_registry: Dict[Api, Dict[str, ProviderSpec]],
+    dist_registry: DistributionRegistry,
 ) -> Dict[Api, Any]:
     """
     Does two things:
@@ -189,6 +192,7 @@ async def resolve_impls(
             provider,
             deps,
             inner_impls,
+            dist_registry,
         )
         # TODO: ugh slightly redesign this shady looking code
         if "inner-" in api_str:
@@ -237,6 +241,7 @@ async def instantiate_provider(
     provider: ProviderWithSpec,
     deps: Dict[str, Any],
     inner_impls: Dict[str, Any],
+    dist_registry: DistributionRegistry,
 ):
     protocols = api_protocol_map()
     additional_protocols = additional_protocols_map()
@@ -270,7 +275,7 @@ async def instantiate_provider(
         method = "get_routing_table_impl"
 
         config = None
-        args = [provider_spec.api, inner_impls, deps]
+        args = [provider_spec.api, inner_impls, deps, dist_registry]
     else:
         method = "get_provider_impl"
 
