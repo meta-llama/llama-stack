@@ -14,6 +14,8 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.agents import AgentConfig
 from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.scoring import *  # noqa: F403
+from llama_stack.apis.scoring_functions import *  # noqa: F403
+from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 
 @json_schema_type
@@ -34,11 +36,27 @@ EvalCandidate = Annotated[
     Union[ModelCandidate, AgentCandidate], Field(discriminator="type")
 ]
 
-# @json_schema_type
-# class EvalTaskDef(BaseModel):
-#     dataset_id: str
-#     candidate: EvalCandidate
-#     scoring_functions: List[str]
+
+@json_schema_type
+class BenchmarkEvalTaskConfig(BaseModel):
+    type: Literal["benchmark"] = "benchmark"
+    eval_candidate: EvalCandidate  # type: ignore
+
+
+@json_schema_type
+class AppEvalTaskConfig(BaseModel):
+    type: Literal["app"] = "app"
+    eval_candidate: EvalCandidate  # type: ignore
+    scoring_functions_config: Dict[str, ScoringFnConfig] = Field(
+        description="Map between scoring function id and parameters",
+        default_factory=dict,
+    )
+    # we could optinally add any GenEval specific dataset config here
+
+
+EvalTaskConfig = Annotated[
+    Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")
+]
 
 
 @json_schema_type
@@ -50,6 +68,13 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
+    @webmethod(route="/eval/evaluate_batch", method="POST")
+    async def evaluate_task(
+        self,
+        eval_task_def: Union[str, EvalTaskDef],  # type: ignore
+        eval_task_config: EvalTaskConfig,  # type: ignore
+    ) -> Job: ...
+
     @webmethod(route="/eval/evaluate_batch", method="POST")
     async def evaluate_batch(
         self,
