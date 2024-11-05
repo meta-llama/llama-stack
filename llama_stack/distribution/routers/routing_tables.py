@@ -152,7 +152,7 @@ class CommonRoutingTableImpl(RoutingTable):
     async def register_object(self, obj: RoutableObjectWithProvider):
         # Get existing objects from registry
         existing_objects = await self.dist_registry.get(obj.identifier)
-        
+
         # Check for existing registration
         for existing_obj in existing_objects:
             if existing_obj.provider_id == obj.provider_id or not obj.provider_id:

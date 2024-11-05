@@ -5,14 +5,15 @@
 # the root directory of this source tree.
 
 import os
-import asyncio
+
 import pytest
 import pytest_asyncio
-from llama_stack.distribution.store import *
-from llama_stack.apis.memory_banks import VectorMemoryBankDef
+from llama_stack.distribution.store import *  # noqa F403
 from llama_stack.apis.inference import ModelDefWithProvider
+from llama_stack.apis.memory_banks import VectorMemoryBankDef
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
-from llama_stack.distribution.datatypes import *
+from llama_stack.distribution.datatypes import *  # noqa F403
+
 
 @pytest.fixture
 def config():
@@ -21,11 +22,13 @@ def config():
         os.remove(config.db_path)
     return config
 
+
 @pytest_asyncio.fixture
 async def registry(config):
     registry = DiskDistributionRegistry(await kvstore_impl(config))
     await registry.initialize()
     return registry
+
 
 @pytest_asyncio.fixture
 async def cached_registry(config):
@@ -33,23 +36,26 @@ async def cached_registry(config):
     await registry.initialize()
     return registry
 
+
 @pytest.fixture
 def sample_bank():
     return VectorMemoryBankDef(
         identifier="test_bank",
-        embedding_model="all-MiniLM-L6-v2", 
+        embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=512,
         overlap_size_in_tokens=64,
-        provider_id="test-provider"
+        provider_id="test-provider",
     )
+
 
 @pytest.fixture
 def sample_model():
     return ModelDefWithProvider(
         identifier="test_model",
         llama_model="Llama3.2-3B-Instruct",
-        provider_id="test-provider"
+        provider_id="test-provider",
     )
+
 
 @pytest.mark.asyncio
 async def test_registry_initialization(registry):
@@ -57,9 +63,10 @@ async def test_registry_initialization(registry):
     results = await registry.get("nonexistent")
     assert len(results) == 0
 
+
 @pytest.mark.asyncio
 async def test_basic_registration(registry, sample_bank, sample_model):
-    print(f"Registering {sample_bank}") 
+    print(f"Registering {sample_bank}")
     await registry.register(sample_bank)
     print(f"Registering {sample_model}")
     await registry.register(sample_model)
@@ -79,6 +86,7 @@ async def test_basic_registration(registry, sample_bank, sample_model):
     assert result_model.identifier == sample_model.identifier
     assert result_model.llama_model == sample_model.llama_model
     assert result_model.provider_id == sample_model.provider_id
+
 
 @pytest.mark.asyncio
 async def test_cached_registry_initialization(config, sample_bank, sample_model):
@@ -100,6 +108,7 @@ async def test_cached_registry_initialization(config, sample_bank, sample_model)
     assert result_bank.chunk_size_in_tokens == sample_bank.chunk_size_in_tokens
     assert result_bank.overlap_size_in_tokens == sample_bank.overlap_size_in_tokens
     assert result_bank.provider_id == sample_bank.provider_id
+
 
 @pytest.mark.asyncio
 async def test_cached_registry_updates(config):
@@ -131,6 +140,7 @@ async def test_cached_registry_updates(config):
     assert result_bank.identifier == new_bank.identifier
     assert result_bank.provider_id == new_bank.provider_id
 
+
 @pytest.mark.asyncio
 async def test_duplicate_provider_registration(config):
     cached_registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
@@ -153,7 +163,9 @@ async def test_duplicate_provider_registration(config):
         provider_id="baz",  # Same provider_id
     )
     await cached_registry.register(duplicate_bank)
-    
+
     results = await cached_registry.get("test_bank_2")
     assert len(results) == 1  # Still only one result
-    assert results[0].embedding_model == original_bank.embedding_model  # Original values preserved
+    assert (
+        results[0].embedding_model == original_bank.embedding_model
+    )  # Original values preserved

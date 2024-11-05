@@ -5,8 +5,7 @@
 # the root directory of this source tree.
 
 import json
-import asyncio
-from typing import Protocol, Dict, List
+from typing import Dict, List, Protocol
 
 import pydantic
 
@@ -74,11 +73,14 @@ class DiskDistributionRegistry(DistributionRegistry):
 
         existing_objects.append(obj)
 
-        objects_json = [obj.model_dump_json() for obj in existing_objects]  # Fixed variable name
+        objects_json = [
+            obj.model_dump_json() for obj in existing_objects
+        ]  # Fixed variable name
         await self.kvstore.set(
             KEY_FORMAT.format(obj.identifier), json.dumps(objects_json)
         )
         return True
+
 
 class CachedDiskDistributionRegistry(DiskDistributionRegistry):
     def __init__(self, kvstore: KVStore):
@@ -88,9 +90,9 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
     async def initialize(self) -> None:
         start_key = KEY_FORMAT.format("")
         end_key = KEY_FORMAT.format("\xff")
-        
+
         keys = await self.kvstore.range(start_key, end_key)
-        
+
         for key in keys:
             identifier = key.split(":")[-1]
             objects = await super().get(identifier)
@@ -106,28 +108,28 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
     async def get(self, identifier: str) -> List[RoutableObjectWithProvider]:
         if identifier in self.cache:
             return self.cache[identifier]
-        
+
         objects = await super().get(identifier)
         if objects:
             self.cache[identifier] = objects
-            
+
         return objects
 
     async def register(self, obj: RoutableObjectWithProvider) -> bool:
         # First update disk
         success = await super().register(obj)
-        
+
         if success:
             # Then update cache
             if obj.identifier not in self.cache:
                 self.cache[obj.identifier] = []
-                    
+
             # Check if provider already exists in cache
             for cached_obj in self.cache[obj.identifier]:
                 if cached_obj.provider_id == obj.provider_id:
                     return success
-                        
+
             # If not, update cache
             self.cache[obj.identifier].append(obj)
-            
+
         return success
