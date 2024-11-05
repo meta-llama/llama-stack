@@ -14,7 +14,6 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.agents import AgentConfig
 from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 

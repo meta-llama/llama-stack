@@ -3,23 +3,11 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from enum import Enum
-from typing import (
-    Any,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Protocol,
-    runtime_checkable,
-    Union,
-)
+from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from llama_stack.apis.common.type_system import ParamType
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 
 @json_schema_type
