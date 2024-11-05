@@ -17,7 +17,7 @@ from llama_stack.distribution.datatypes import Provider
 
 
 class ProviderFixture(BaseModel):
-    provider: Provider
+    providers: List[Provider]
     provider_data: Optional[Dict[str, Any]] = None
 
 

@@ -19,6 +19,13 @@ from llama_stack.providers.datatypes import *  # noqa: F403
 
 @pytest.fixture
 def common_params(inference_model):
+    # This is not entirely satisfactory. The fixture `inference_model` can correspond to
+    # multiple models when you need to run a safety model in addition to normal agent
+    # inference model. We filter off the safety model by looking for "Llama-Guard"
+    if isinstance(inference_model, list):
+        inference_model = next(m for m in inference_model if "Llama-Guard" not in m)
+        assert inference_model is not None
+
     return dict(
         model=inference_model,
         instructions="You are a helpful assistant.",

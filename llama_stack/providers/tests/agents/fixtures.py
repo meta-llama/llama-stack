@@ -25,16 +25,18 @@ from ..conftest import ProviderFixture
 def agents_meta_reference() -> ProviderFixture:
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     return ProviderFixture(
-        provider=Provider(
-            provider_id="meta-reference",
-            provider_type="meta-reference",
-            config=MetaReferenceAgentsImplConfig(
-                # TODO: make this an in-memory store
-                persistence_store=SqliteKVStoreConfig(
-                    db_path=sqlite_file.name,
-                ),
-            ).model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id="meta-reference",
+                provider_type="meta-reference",
+                config=MetaReferenceAgentsImplConfig(
+                    # TODO: make this an in-memory store
+                    persistence_store=SqliteKVStoreConfig(
+                        db_path=sqlite_file.name,
+                    ),
+                ).model_dump(),
+            )
+        ],
     )
 
 
@@ -49,7 +51,7 @@ async def agents_stack(request):
     provider_data = {}
     for key in ["inference", "safety", "memory", "agents"]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
-        providers[key] = [fixture.provider]
+        providers[key] = fixture.providers
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
 

@@ -81,7 +81,6 @@ def pytest_generate_tests(metafunc):
             )
 
     if "safety_stack" in metafunc.fixturenames:
-        # print(f"metafunc.fixturenames: {metafunc.fixturenames}, {metafunc}")
         available_fixtures = {
             "inference": INFERENCE_FIXTURES,
             "safety": SAFETY_FIXTURES,

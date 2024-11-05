@@ -20,7 +20,7 @@ from llama_stack.distribution.resolver import resolve_impls
 
 async def resolve_impls_for_test_v2(
     apis: List[Api],
-    providers: Dict[str, Provider],
+    providers: Dict[str, List[Provider]],
     provider_data: Optional[Dict[str, Any]] = None,
 ):
     run_config = dict(

@@ -132,7 +132,7 @@ class CommonRoutingTableImpl(RoutingTable):
             else:
                 provider_ids_str = f"provider: `{provider_ids[0]}`"
             raise ValueError(
-                f"`{routing_key}` not served by {provider_ids_str}. Make sure there is an {apiname} provider serving this {objname}."
+                f"{objname.capitalize()} `{routing_key}` not served by {provider_ids_str}. Make sure there is an {apiname} provider serving this {objname}."
             )
 
         objs = self.registry[routing_key]

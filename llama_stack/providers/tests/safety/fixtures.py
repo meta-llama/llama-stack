@@ -22,32 +22,38 @@ from ..env import get_env_or_fail
 
 @pytest.fixture(scope="session")
 def safety_model(request):
-    return request.config.getoption("--safety-model", None) or request.param
+    if hasattr(request, "param"):
+        return request.param
+    return request.config.getoption("--safety-model", None)
 
 
 @pytest.fixture(scope="session")
 def safety_meta_reference(safety_model) -> ProviderFixture:
     return ProviderFixture(
-        provider=Provider(
-            provider_id="meta-reference",
-            provider_type="meta-reference",
-            config=SafetyConfig(
-                llama_guard_shield=LlamaGuardShieldConfig(
-                    model=safety_model,
-                ),
-            ).model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id="meta-reference",
+                provider_type="meta-reference",
+                config=SafetyConfig(
+                    llama_guard_shield=LlamaGuardShieldConfig(
+                        model=safety_model,
+                    ),
+                ).model_dump(),
+            )
+        ],
     )
 
 
 @pytest.fixture(scope="session")
 def safety_together() -> ProviderFixture:
     return ProviderFixture(
-        provider=Provider(
-            provider_id="together",
-            provider_type="remote::together",
-            config=TogetherSafetyConfig().model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id="together",
+                provider_type="remote::together",
+                config=TogetherSafetyConfig().model_dump(),
+            )
+        ],
         provider_data=dict(
             together_api_key=get_env_or_fail("TOGETHER_API_KEY"),
         ),
@@ -67,8 +73,8 @@ async def safety_stack(inference_model, safety_model, request):
     safety_fixture = request.getfixturevalue(f"safety_{fixture_dict['safety']}")
 
     providers = {
-        "inference": [inference_fixture.provider],
-        "safety": [safety_fixture.provider],
+        "inference": inference_fixture.providers,
+        "safety": safety_fixture.providers,
     }
     provider_data = {}
     if inference_fixture.provider_data:

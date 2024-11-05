@@ -73,16 +73,20 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if "inference_model" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "inference_model",
-            [pytest.param(metafunc.config.getoption("--inference-model"), id="")],
-            indirect=True,
-        )
+    safety_model = metafunc.config.getoption("--safety-model")
     if "safety_model" in metafunc.fixturenames:
         metafunc.parametrize(
             "safety_model",
-            [pytest.param(metafunc.config.getoption("--safety-model"), id="")],
+            [pytest.param(safety_model, id="")],
+            indirect=True,
+        )
+    if "inference_model" in metafunc.fixturenames:
+        inference_model = metafunc.config.getoption("--inference-model")
+        models = list(set({inference_model, safety_model}))
+
+        metafunc.parametrize(
+            "inference_model",
+            [pytest.param(models, id="")],
             indirect=True,
         )
     if "agents_stack" in metafunc.fixturenames:

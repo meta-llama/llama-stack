@@ -24,63 +24,80 @@ from ..env import get_env_or_fail
 
 @pytest.fixture(scope="session")
 def inference_model(request):
-    return request.config.getoption("--inference-model", None) or request.param
+    if hasattr(request, "param"):
+        return request.param
+    return request.config.getoption("--inference-model", None)
 
 
 @pytest.fixture(scope="session")
 def inference_meta_reference(inference_model) -> ProviderFixture:
-    # TODO: make this work with multiple models
+    inference_model = (
+        [inference_model] if isinstance(inference_model, str) else inference_model
+    )
+
     return ProviderFixture(
-        provider=Provider(
-            provider_id="meta-reference",
-            provider_type="meta-reference",
-            config=MetaReferenceInferenceConfig(
-                model=inference_model,
-                max_seq_len=512,
-                create_distributed_process_group=False,
-                checkpoint_dir=os.getenv("MODEL_CHECKPOINT_DIR", None),
-            ).model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id=f"meta-reference-{i}",
+                provider_type="meta-reference",
+                config=MetaReferenceInferenceConfig(
+                    model=m,
+                    max_seq_len=4096,
+                    create_distributed_process_group=False,
+                    checkpoint_dir=os.getenv("MODEL_CHECKPOINT_DIR", None),
+                ).model_dump(),
+            )
+            for i, m in enumerate(inference_model)
+        ]
     )
 
 
 @pytest.fixture(scope="session")
 def inference_ollama(inference_model) -> ProviderFixture:
-    if inference_model == "Llama3.1-8B-Instruct":
-        pytest.skip("Ollama only support Llama3.2-3B-Instruct for testing")
+    inference_model = (
+        [inference_model] if isinstance(inference_model, str) else inference_model
+    )
+    if "Llama3.1-8B-Instruct" in inference_model:
+        pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
     return ProviderFixture(
-        provider=Provider(
-            provider_id="ollama",
-            provider_type="remote::ollama",
-            config=OllamaImplConfig(
-                host="localhost", port=os.getenv("OLLAMA_PORT", 11434)
-            ).model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id="ollama",
+                provider_type="remote::ollama",
+                config=OllamaImplConfig(
+                    host="localhost", port=os.getenv("OLLAMA_PORT", 11434)
+                ).model_dump(),
+            )
+        ],
     )
 
 
 @pytest.fixture(scope="session")
 def inference_fireworks() -> ProviderFixture:
     return ProviderFixture(
-        provider=Provider(
-            provider_id="fireworks",
-            provider_type="remote::fireworks",
-            config=FireworksImplConfig(
-                api_key=get_env_or_fail("FIREWORKS_API_KEY"),
-            ).model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id="fireworks",
+                provider_type="remote::fireworks",
+                config=FireworksImplConfig(
+                    api_key=get_env_or_fail("FIREWORKS_API_KEY"),
+                ).model_dump(),
+            )
+        ],
     )
 
 
 @pytest.fixture(scope="session")
 def inference_together() -> ProviderFixture:
     return ProviderFixture(
-        provider=Provider(
-            provider_id="together",
-            provider_type="remote::together",
-            config=TogetherImplConfig().model_dump(),
-        ),
+        providers=[
+            Provider(
+                provider_id="together",
+                provider_type="remote::together",
+                config=TogetherImplConfig().model_dump(),
+            )
+        ],
         provider_data=dict(
             together_api_key=get_env_or_fail("TOGETHER_API_KEY"),
         ),
@@ -96,7 +113,7 @@ async def inference_stack(request):
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
     impls = await resolve_impls_for_test_v2(
         [Api.inference],
-        {"inference": [inference_fixture.provider.model_dump()]},
+        {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
     )
 
