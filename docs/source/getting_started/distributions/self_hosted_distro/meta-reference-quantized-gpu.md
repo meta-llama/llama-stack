@@ -14,8 +14,7 @@ Please make sure you have llama model checkpoints downloaded in `~/.llama` befor
 
 ```
 $ ls ~/.llama/checkpoints
-Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3.2-90B-Vision-Instruct  Llama-Guard-3-8B
-Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
+Llama3.2-3B-Instruct:int4-qlora-eo8
 ```
 
 ### Step 1. Start the Distribution
