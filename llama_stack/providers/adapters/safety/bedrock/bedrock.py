@@ -25,7 +25,8 @@ BEDROCK_SUPPORTED_SHIELDS = [
     ShieldType.generic_content_shield.value,
 ]
 
-def _create_bedrock_client(config: BedrockSafetyConfig, name: str) :
+
+def _create_bedrock_client(config: BedrockSafetyConfig, name: str):
     session_args = {
         k: v
         for k, v in dict(
@@ -50,7 +51,9 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
 
     async def initialize(self) -> None:
         try:
-            self.bedrock_runtime_client = _create_bedrock_client(self.config, "bedrock-runtime")
+            self.bedrock_runtime_client = _create_bedrock_client(
+                self.config, "bedrock-runtime"
+            )
             self.bedrock_client = _create_bedrock_client(self.config, "bedrock")
         except Exception as e:
             raise RuntimeError("Error initializing BedrockSafetyAdapter") from e
@@ -69,11 +72,13 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
             shield_def = ShieldDef(
                 identifier=guardrail["id"],
                 shield_type=ShieldType.generic_content_shield.value,
-                params={"guardrailIdentifier": guardrail["id"], "guardrailVersion": guardrail["version"]},
+                params={
+                    "guardrailIdentifier": guardrail["id"],
+                    "guardrailVersion": guardrail["version"],
+                },
             )
             shields.append(shield_def)
         return shields
-
 
     async def run_shield(
         self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
