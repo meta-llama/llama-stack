@@ -56,7 +56,7 @@ class PostgresKVStoreConfig(CommonConfig):
 
     @classmethod
     @field_validator("table_name")
-    def validate_table_name(cls, v):
+    def validate_table_name(cls, v: str) -> str:
         # PostgreSQL identifiers rules:
         # - Must start with a letter or underscore
         # - Can contain letters, numbers, and underscores
