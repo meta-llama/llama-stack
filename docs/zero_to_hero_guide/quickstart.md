@@ -2,6 +2,8 @@
 
 This guide will walk you through setting up an end-to-end workflow with Llama Stack, enabling you to perform text generation using the `Llama3.2-11B-Vision-Instruct` model. Follow these steps to get started quickly.
 
+If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
+
 ## Table of Contents
 1. [Prerequisite](#prerequisite)
 2. [Installation](#installation)
@@ -18,7 +20,6 @@ This guide will walk you through setting up an end-to-end workflow with Llama St
 Ensure you have the following installed on your system:
 
 - **Conda**: A package, dependency, and environment management tool.
-
 
 ---
 
@@ -52,7 +53,7 @@ llama download --model-id Llama3.2-11B-Vision-Instruct
 
 ### 1. Build the Llama Stack Distribution
 
-We will default into building a `meta-reference-gpu` distribution, however you could read more about the different distriubtion [here](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/index.html).
+We will default into building a `meta-reference-gpu` distribution, however you could read more about the different distriubtion [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider).
 
 ```bash
 llama stack build --template meta-reference-gpu --image-type conda
@@ -156,9 +157,10 @@ With these steps, you should have a functional Llama Stack setup capable of gene
 
 ## Next Steps
 
-- **Explore Other Guides**: Dive deeper into specific topics by following these guides:
+**Explore Other Guides**: Dive deeper into specific topics by following these guides:
+- [Understanding Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider)
 - [Inference 101](00_Inference101.ipynb)
-- [Simple switch between local and cloud model](00_Local_Cloud_Inference101.ipynb)
+- [Local and Cloud Model Toggling 101](00_Local_Cloud_Inference101.ipynb)
 - [Prompt Engineering](01_Prompt_Engineering101.ipynb)
 - [Chat with Image - LlamaStack Vision API](02_Image_Chat101.ipynb)
 - [Tool Calling: How to and Details](03_Tool_Calling101.ipynb)
@@ -167,15 +169,15 @@ With these steps, you should have a functional Llama Stack setup capable of gene
 - [Agents API: Explain Components](06_Agents101.ipynb)
 
 
-- **Explore Client SDKs**: Utilize our client SDKs for various languages to integrate Llama Stack into your applications:
+**Explore Client SDKs**: Utilize our client SDKs for various languages to integrate Llama Stack into your applications:
   - [Python SDK](https://github.com/meta-llama/llama-stack-client-python)
   - [Node SDK](https://github.com/meta-llama/llama-stack-client-node)
   - [Swift SDK](https://github.com/meta-llama/llama-stack-client-swift)
   - [Kotlin SDK](https://github.com/meta-llama/llama-stack-client-kotlin)
 
-- **Advanced Configuration**: Learn how to customize your Llama Stack distribution by referring to the [Building a Llama Stack Distribution](./building_distro.md) guide.
+**Advanced Configuration**: Learn how to customize your Llama Stack distribution by referring to the [Building a Llama Stack Distribution](./building_distro.md) guide.
 
-- **Explore Example Apps**: Check out [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) for example applications built using Llama Stack.
+**Explore Example Apps**: Check out [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) for example applications built using Llama Stack.
 
 
 ---
