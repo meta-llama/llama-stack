@@ -210,21 +210,12 @@ class StackBuild(Subcommand):
         if return_code != 0:
             return
 
-        configure_name = (
-            build_config.name
-            if build_config.image_type == "conda"
-            else (f"llamastack-{build_config.name}")
+        # TODO: we should make the run.yaml file invisible to users by with ENV variables
+        # but keeping it visiable and exposed to users for now
+        cprint(
+            f"You can now edit run.yaml files in ./llama-stack/distributions/ and run `llama stack run <path/to/run.yaml>`",
+            color="green",
         )
-        if build_config.image_type == "conda":
-            cprint(
-                f"You can now run `llama stack configure {configure_name}`",
-                color="green",
-            )
-        else:
-            cprint(
-                f"You can now edit your run.yaml file and run `docker run -it -p 5000:5000 {build_config.name}`. See full command in llama-stack/distributions/",
-                color="green",
-            )
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
