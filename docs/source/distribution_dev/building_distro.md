@@ -5,22 +5,10 @@ This guide will walk you through the steps to get started with building a Llama 
 
 ## Step 1. Build
 
+### Llama Stack Build Options
+
 ```
 llama stack build -h
-
-usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates | --no-list-templates] [--image-type {conda,docker}]
-
-Build a Llama stack container
-
-options:
-  -h, --help            show this help message and exit
-  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack/distribution/example_configs. If this argument is not provided, you will be prompted to enter information interactively
-  --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates
-  --list-templates, --no-list-templates
-                        Show the available templates for building a Llama Stack distribution
-  --image-type {conda,docker}
-                        Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.
-
 ```
 We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `my-stack`)
@@ -32,14 +20,9 @@ We will start build our distribution (in the form of a Conda environment, or Doc
 
 After this step is complete, a file named `<name>-build.yaml` and template file `<name>-run.yaml` will be generated and saved at the output file path specified at the end of the command.
 
+::::{tab-set}
+:::{tab-item} Building from Scratch
 
-You have 3 options for building your distribution:
-1.1 Building from scratch
-1.2. Building from a template
-1.3. Building from a pre-existing build config file
-
-
-### 1.1 Building from scratch
 - For a new user, we could start off with running `llama stack build` which will allow you to a interactively enter wizard where you will be prompted to enter build configurations.
 ```
 llama stack build
@@ -65,8 +48,9 @@ Tip: use <TAB> to see options for the providers.
 
 You can now edit ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-run.yaml`
 ```
+:::
 
-### 1.2 Building from a template
+:::{tab-item} Building from a template
 - To build from alternative API providers, we provide distribution templates for users to get started building a distribution backed by different providers.
 
 The following command will allow you to see the available templates and their corresponding providers.
@@ -204,8 +188,9 @@ $ llama stack build --template tgi
 ...
 You can now edit ~/.llama/distributions/llamastack-tgi/tgi-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-tgi/tgi-run.yaml`
 ```
+:::
 
-### 1.3 Building from a pre-existing build config file
+:::{tab-item} Building from a pre-existing build config file
 - In addition to templates, you may customize the build to your liking through editing config files and build from config files with the following command.
 
 - The config file will be of contents like the ones in `llama_stack/templates/*build.yaml`.
@@ -228,8 +213,9 @@ image_type: conda
 ```
 llama stack build --config llama_stack/templates/ollama/build.yaml
 ```
+:::
 
-### How to build distribution with Docker image
+:::{tab-item} Building Docker
 > [!TIP]
 > Podman is supported as an alternative to Docker. Set `DOCKER_BINARY` to `podman` in your environment to use Podman.
 
@@ -249,6 +235,9 @@ You can now edit ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml and run `l
 ```
 
 After this step is successful, you should be able to find the built docker image and test it with `llama stack run <path/to/run.yaml>`.
+:::
+
+::::
 
 
 ## Step 2. Run
