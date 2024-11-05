@@ -71,7 +71,7 @@ class Eval(Protocol):
     @webmethod(route="/eval/evaluate_batch", method="POST")
     async def evaluate_task(
         self,
-        eval_task_def: Union[str, EvalTaskDef],  # type: ignore
+        eval_task_id: str,
         eval_task_config: EvalTaskConfig,  # type: ignore
     ) -> Job: ...
 
