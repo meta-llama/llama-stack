@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
+import io
 from typing import AsyncGenerator
 
 import httpx
@@ -29,6 +31,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    request_has_media,
 )
 
 OLLAMA_SUPPORTED_MODELS = {
@@ -38,6 +41,7 @@ OLLAMA_SUPPORTED_MODELS = {
     "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
     "Llama-Guard-3-8B": "llama-guard3:8b",
     "Llama-Guard-3-1B": "llama-guard3:1b",
+    "Llama3.2-11B-Vision-Instruct": "x/llama3.2-vision:11b-instruct-fp16",
 }
 
 
@@ -109,22 +113,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             return await self._nonstream_completion(request)
 
-    def _get_params_for_completion(self, request: CompletionRequest) -> dict:
-        sampling_options = get_sampling_options(request.sampling_params)
-        # This is needed since the Ollama API expects num_predict to be set
-        # for early truncation instead of max_tokens.
-        if sampling_options["max_tokens"] is not None:
-            sampling_options["num_predict"] = sampling_options["max_tokens"]
-        return {
-            "model": OLLAMA_SUPPORTED_MODELS[request.model],
-            "prompt": completion_request_to_prompt(request, self.formatter),
-            "options": sampling_options,
-            "raw": True,
-            "stream": request.stream,
-        }
-
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
             s = await self.client.generate(**params)
@@ -142,7 +132,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params(request)
         r = await self.client.generate(**params)
         assert isinstance(r, dict)
 
@@ -183,26 +173,66 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             return await self._nonstream_chat_completion(request)
 
-    def _get_params(self, request: ChatCompletionRequest) -> dict:
+    async def _get_params(
+        self, request: Union[ChatCompletionRequest, CompletionRequest]
+    ) -> dict:
+        sampling_options = get_sampling_options(request.sampling_params)
+        # This is needed since the Ollama API expects num_predict to be set
+        # for early truncation instead of max_tokens.
+        if sampling_options.get("max_tokens") is not None:
+            sampling_options["num_predict"] = sampling_options["max_tokens"]
+
+        input_dict = {}
+        media_present = request_has_media(request)
+        if isinstance(request, ChatCompletionRequest):
+            if media_present:
+                contents = [
+                    await convert_message_to_dict_for_ollama(m)
+                    for m in request.messages
+                ]
+                # flatten the list of lists
+                input_dict["messages"] = [
+                    item for sublist in contents for item in sublist
+                ]
+            else:
+                input_dict["raw"] = True
+                input_dict["prompt"] = chat_completion_request_to_prompt(
+                    request, self.formatter
+                )
+        else:
+            assert (
+                not media_present
+            ), "Ollama does not support media for Completion requests"
+            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+            input_dict["raw"] = True
+
         return {
             "model": OLLAMA_SUPPORTED_MODELS[request.model],
-            "prompt": chat_completion_request_to_prompt(request, self.formatter),
-            "options": get_sampling_options(request.sampling_params),
-            "raw": True,
+            **input_dict,
+            "options": sampling_options,
             "stream": request.stream,
         }
 
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
-        r = await self.client.generate(**params)
+        params = await self._get_params(request)
+        if "messages" in params:
+            r = await self.client.chat(**params)
+        else:
+            r = await self.client.generate(**params)
         assert isinstance(r, dict)
 
-        choice = OpenAICompatCompletionChoice(
-            finish_reason=r["done_reason"] if r["done"] else None,
-            text=r["response"],
-        )
+        if "message" in r:
+            choice = OpenAICompatCompletionChoice(
+                finish_reason=r["done_reason"] if r["done"] else None,
+                text=r["message"]["content"],
+            )
+        else:
+            choice = OpenAICompatCompletionChoice(
+                finish_reason=r["done_reason"] if r["done"] else None,
+                text=r["response"],
+            )
         response = OpenAICompatCompletionResponse(
             choices=[choice],
         )
@@ -211,15 +241,24 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
-            s = await self.client.generate(**params)
+            if "messages" in params:
+                s = await self.client.chat(**params)
+            else:
+                s = await self.client.generate(**params)
             async for chunk in s:
-                choice = OpenAICompatCompletionChoice(
-                    finish_reason=chunk["done_reason"] if chunk["done"] else None,
-                    text=chunk["response"],
-                )
+                if "message" in chunk:
+                    choice = OpenAICompatCompletionChoice(
+                        finish_reason=chunk["done_reason"] if chunk["done"] else None,
+                        text=chunk["message"]["content"],
+                    )
+                else:
+                    choice = OpenAICompatCompletionChoice(
+                        finish_reason=chunk["done_reason"] if chunk["done"] else None,
+                        text=chunk["response"],
+                    )
                 yield OpenAICompatCompletionResponse(
                     choices=[choice],
                 )
@@ -236,3 +275,37 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
+
+
+async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
+    async def _convert_content(content) -> dict:
+        if isinstance(content, ImageMedia):
+            return {
+                "role": message.role,
+                "images": [await convert_image_media_to_base64(content)],
+            }
+        else:
+            return {
+                "role": message.role,
+                "content": content,
+            }
+
+    if isinstance(message.content, list):
+        return [await _convert_content(c) for c in message.content]
+    else:
+        return [await _convert_content(message.content)]
+
+
+async def convert_image_media_to_base64(media: ImageMedia) -> str:
+    if isinstance(media.image, PIL_Image.Image):
+        bytestream = io.BytesIO()
+        media.image.save(bytestream, format=media.image.format)
+        bytestream.seek(0)
+        content = bytestream.getvalue()
+    else:
+        assert isinstance(media.image, URL)
+        async with httpx.AsyncClient() as client:
+            r = await client.get(media.image.uri)
+            content = r.content
+
+    return base64.b64encode(content).decode("utf-8")

@@ -30,11 +30,6 @@ def inference_model(request):
 
 
 @pytest.fixture(scope="session")
-def vision_inference_model():
-    return "Llama3.2-11B-Vision-Instruct"
-
-
-@pytest.fixture(scope="session")
 def inference_remote() -> ProviderFixture:
     return remote_stack_fixture()
 

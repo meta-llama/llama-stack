@@ -143,7 +143,6 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference):
         params = self._get_params(request)
 
         if "messages" in params:
-            print(f"Using chat completion endpoint: {params}")
             stream = client.chat.completions.acreate(**params)
         else:
             stream = client.completion.acreate(**params)

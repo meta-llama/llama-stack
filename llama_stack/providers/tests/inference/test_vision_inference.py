@@ -21,19 +21,20 @@ THIS_DIR = Path(__file__).parent
 class TestVisionModelInference:
     @pytest.mark.asyncio
     async def test_vision_chat_completion_non_streaming(
-        self, vision_inference_model, inference_stack
+        self, inference_model, inference_stack
     ):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(
-            vision_inference_model
-        )
+        provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
             "meta-reference",
             "remote::together",
             "remote::fireworks",
+            "remote::ollama",
         ):
-            pytest.skip("Other inference providers don't support completion() yet")
+            pytest.skip(
+                "Other inference providers don't support vision chat completion() yet"
+            )
 
         images = [
             ImageMedia(image=PIL_Image.open(THIS_DIR / "pasta.jpeg")),
@@ -51,7 +52,7 @@ class TestVisionModelInference:
         ]
         for image, expected_strings in zip(images, expected_strings_to_check):
             response = await inference_impl.chat_completion(
-                model=vision_inference_model,
+                model=inference_model,
                 messages=[
                     SystemMessage(content="You are a helpful assistant."),
                     UserMessage(
@@ -69,19 +70,20 @@ class TestVisionModelInference:
 
     @pytest.mark.asyncio
     async def test_vision_chat_completion_streaming(
-        self, vision_inference_model, inference_stack
+        self, inference_model, inference_stack
     ):
         inference_impl, _ = inference_stack
 
-        provider = inference_impl.routing_table.get_provider_impl(
-            vision_inference_model
-        )
+        provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
             "meta-reference",
             "remote::together",
             "remote::fireworks",
+            "remote::ollama",
         ):
-            pytest.skip("Other inference providers don't support completion() yet")
+            pytest.skip(
+                "Other inference providers don't support vision chat completion() yet"
+            )
 
         images = [
             ImageMedia(
@@ -97,7 +99,7 @@ class TestVisionModelInference:
             response = [
                 r
                 async for r in await inference_impl.chat_completion(
-                    model=vision_inference_model,
+                    model=inference_model,
                     messages=[
                         SystemMessage(content="You are a helpful assistant."),
                         UserMessage(
