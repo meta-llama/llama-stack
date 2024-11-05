@@ -157,16 +157,15 @@ With these steps, you should have a functional Llama Stack setup capable of gene
 ## Next Steps
 
 - **Explore Other Guides**: Dive deeper into specific topics by following these guides:
-  - [Understanding Distributions](#)
-  - [Configure your Distro](#)
-  - [Doing Inference API Call and Fetching a Response from Endpoints](#)
-  - [Creating a Conversation Loop](#)
-  - [Sending Image to the Model](#)
-  - [Tool Calling: How to and Details](#)
-  - [Memory API: Show Simple In-Memory Retrieval](#)
-  - [Agents API: Explain Components](#)
-  - [Using Safety API in Conversation](#)
-  - [Prompt Engineering Guide](#)
+- [Inference 101](00_Inference101.ipynb)
+- [Simple switch between local and cloud model](00_Local_Cloud_Inference101.ipynb)
+- [Prompt Engineering](01_Prompt_Engineering101.ipynb)
+- [Chat with Image - LlamaStack Vision API](02_Image_Chat101.ipynb)
+- [Tool Calling: How to and Details](03_Tool_Calling101.ipynb)
+- [Memory API: Show Simple In-Memory Retrieval](04_Memory101.ipynb)
+- [Using Safety API in Conversation](05_Safety101.ipynb)
+- [Agents API: Explain Components](06_Agents101.ipynb)
+
 
 - **Explore Client SDKs**: Utilize our client SDKs for various languages to integrate Llama Stack into your applications:
   - [Python SDK](https://github.com/meta-llama/llama-stack-client-python)
@@ -180,5 +179,3 @@ With these steps, you should have a functional Llama Stack setup capable of gene
 
 
 ---
-
-
