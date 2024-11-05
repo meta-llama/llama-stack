@@ -78,17 +78,16 @@ class Eval(Protocol):
     @webmethod(route="/eval/evaluate_batch", method="POST")
     async def evaluate_batch(
         self,
-        dataset_id: str,
-        candidate: EvalCandidate,  # type: ignore
-        scoring_functions: List[str],
+        eval_task_def: Union[str, EvalTaskDef],  # type: ignore
+        eval_task_config: EvalTaskConfig,  # type: ignore
     ) -> Job: ...
 
     @webmethod(route="/eval/evaluate", method="POST")
     async def evaluate(
         self,
         input_rows: List[Dict[str, Any]],
-        candidate: EvalCandidate,  # type: ignore
         scoring_functions: List[str],
+        eval_task_config: EvalTaskConfig,  # type: ignore
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/job/status", method="GET")
