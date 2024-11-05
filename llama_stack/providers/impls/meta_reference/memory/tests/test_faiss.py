@@ -29,11 +29,13 @@ def sample_chunks():
             document_id="doc1",
             content="This is the first test chunk",
             metadata={"test": "metadata1"},
+            token_count=7
         ),
         Chunk(
             document_id="doc2",
             content="This is the second test chunk",
             metadata={"test": "metadata2"},
+            token_count=7
         ),
     ]
 
