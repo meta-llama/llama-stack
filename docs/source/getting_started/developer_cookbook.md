@@ -26,7 +26,7 @@ Based on your developer needs, below are references to guides to help you get st
 * Developer Need: I want to use Llama Stack on-Device
 * Effort: 1.5hr
 * Guide:
-  - Please see our [iOS Llama Stack SDK](./ios_setup.md) implementations
+  - Please see our [iOS Llama Stack SDK](./ios_sdk.md) implementations
 
 ### Assemble your own Llama Stack Distribution
 * Developer Need: I want to assemble my own distribution with API providers to my likings

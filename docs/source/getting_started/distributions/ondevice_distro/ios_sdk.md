@@ -1,4 +1,4 @@
-# iOS Setup
+# iOS SDK
 
 We offer both remote and on-device use of Llama Stack in Swift via two components:
 

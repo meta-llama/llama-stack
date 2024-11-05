@@ -5,5 +5,5 @@ On-device distributions are Llama Stack distributions that run locally on your i
 ```{toctree}
 :maxdepth: 1
 
-ios_setup
+ios_sdk
 ```

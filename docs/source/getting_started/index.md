@@ -31,20 +31,20 @@ Running inference on the underlying Llama model is one of the most critical requ
 
 - **Do you have access to a machine with powerful GPUs?**
 If so, we suggest:
-  - [`distribution-meta-reference-gpu`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)
-  - [`distribution-tgi`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html)
+  - [distribution-meta-reference-gpu](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)
+  - [distribution-tgi](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html)
 
 - **Are you running on a "regular" desktop machine?**
 If so, we suggest:
-  - [`distribution-ollama`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)
+  - [distribution-ollama](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)
 
 - **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
-  - [`distribution-together`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)
-  - [`distribution-fireworks`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)
+  - [distribution-together](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)
+  - [distribution-fireworks](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)
 
-- **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
-  - [`distribution-together`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)
-  - [`distribution-fireworks`](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)
+- **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
+  - [iOS](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ondevice_distro/ios_sdk.html)
+  - [Android](https://github.com/meta-llama/llama-stack-client-kotlin) (coming soon)
 
 Please see our pages in detail for the types of distributions we offer:
 
