@@ -92,6 +92,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             logprobs=logprobs,
         )
         self.check_model(request)
+        request = await request_with_localized_media(request)
 
         if request.stream:
             return self._stream_completion(request)
@@ -216,6 +217,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             logprobs=logprobs,
         )
         self.check_model(request)
+        request = await request_with_localized_media(request)
 
         if self.config.create_distributed_process_group:
             if SEMAPHORE.locked():
@@ -403,7 +405,8 @@ async def request_with_localized_media(
 
     async def _convert_single_content(content):
         if isinstance(content, ImageMedia):
-            return await convert_image_media_to_url(content, download=True)
+            url = await convert_image_media_to_url(content, download=True)
+            return ImageMedia(image=URL(uri=url))
         else:
             return content
 
