@@ -1,10 +1,66 @@
-# LocalInference
+# iOS SDK
+
+We offer both remote and on-device use of Llama Stack in Swift via two components:
+
+1. [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift/)
+2. [LocalInferenceImpl](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/impls/ios/inference)
+
+```{image} ../../../../_static/remote_or_local.gif
+:alt: Seamlessly switching between local, on-device inference and remote hosted inference
+:width: 412px
+:align: center
+```
+
+## Remote Only
+
+If you don't want to run inference on-device, then you can connect to any hosted Llama Stack distribution with #1.
+
+1. Add `https://github.com/meta-llama/llama-stack-client-swift/` as a Package Dependency in Xcode
+
+2. Add `LlamaStackClient` as a framework to your app target
+
+3. Call an API:
+
+```swift
+import LlamaStackClient
+
+let agents = RemoteAgents(url: URL(string: "http://localhost:5000")!)
+let request = Components.Schemas.CreateAgentTurnRequest(
+        agent_id: agentId,
+        messages: [
+          .UserMessage(Components.Schemas.UserMessage(
+            content: .case1("Hello Llama!"),
+            role: .user
+          ))
+        ],
+        session_id: self.agenticSystemSessionId,
+        stream: true
+      )
+
+      for try await chunk in try await agents.createTurn(request: request) {
+        let payload = chunk.event.payload
+      // ...
+```
+
+Check out [iOSCalendarAssistant](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/ios_calendar_assistant) for a complete app demo.
+
+## LocalInference
 
 LocalInference provides a local inference implementation powered by [executorch](https://github.com/pytorch/executorch/).
 
 Llama Stack currently supports on-device inference for iOS with Android coming soon. You can run on-device inference on Android today using [executorch](https://github.com/pytorch/executorch/tree/main/examples/demo-apps/android/LlamaDemo), PyTorch’s on-device inference library.
 
-## Installation
+The APIs *work the same as remote* – the only difference is you'll instead use the `LocalAgents` / `LocalInference` classes and pass in a `DispatchQueue`:
+
+```swift
+private let runnerQueue = DispatchQueue(label: "org.llamastack.stacksummary")
+let inference = LocalInference(queue: runnerQueue)
+let agents = LocalAgents(inference: self.inference)
+```
+
+Check out [iOSCalendarAssistantWithLocalInf](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/ios_calendar_assistant) for a complete app demo.
+
+### Installation
 
 We're working on making LocalInference easier to set up. For now, you'll need to import it via `.xcframework`:
 
@@ -54,7 +110,7 @@ We're working on making LocalInference easier to set up. For now, you'll need t
     $(BUILT_PRODUCTS_DIR)/libbackend_mps-simulator-release.a
     ```
 
-## Preparing a model
+### Preparing a model
 
 1. Prepare a `.pte` file [following the executorch docs](https://github.com/pytorch/executorch/blob/main/examples/models/llama/README.md#step-2-prepare-model)
 2. Bundle the `.pte` and `tokenizer.model` file into your app
@@ -70,7 +126,7 @@ We now support models quantized using SpinQuant and QAT-LoRA which offer a signi
 | SpinQuant | 10.1 | 5.2 | 0.2 | 0.2 |
 
 
-## Using LocalInference
+### Using LocalInference
 
 1. Instantiate LocalInference with a DispatchQueue. Optionally, pass it into your agents service:
 
@@ -105,7 +161,7 @@ for await chunk in try await agentsService.initAndCreateTurn(
 ) {
 ```
 
-## Troubleshooting
+### Troubleshooting
 
 If you receive errors like "missing package product" or "invalid checksum", try cleaning the build folder and resetting the Swift package cache:
 
