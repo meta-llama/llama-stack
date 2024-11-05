@@ -109,7 +109,6 @@ class TestAgents:
         turn_response = [
             chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
         ]
-
         assert len(turn_response) > 0
         check_event_types(turn_response)
 

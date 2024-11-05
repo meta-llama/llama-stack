@@ -18,7 +18,7 @@ from llama_stack.providers.impls.meta_reference.inference import (
     MetaReferenceInferenceConfig,
 )
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
-from ..conftest import ProviderFixture
+from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
 
 
@@ -27,6 +27,11 @@ def inference_model(request):
     if hasattr(request, "param"):
         return request.param
     return request.config.getoption("--inference-model", None)
+
+
+@pytest.fixture(scope="session")
+def inference_remote() -> ProviderFixture:
+    return remote_stack_fixture()
 
 
 @pytest.fixture(scope="session")
@@ -104,7 +109,7 @@ def inference_together() -> ProviderFixture:
     )
 
 
-INFERENCE_FIXTURES = ["meta_reference", "ollama", "fireworks", "together"]
+INFERENCE_FIXTURES = ["meta_reference", "ollama", "fireworks", "together", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")

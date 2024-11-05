@@ -178,16 +178,17 @@ class CommonRoutingTableImpl(RoutingTable):
         await register_object_with_provider(obj, p)
         await self.dist_registry.register(obj)
 
+    async def get_all_with_type(self, type: str) -> List[RoutableObjectWithProvider]:
+        objs = await self.dist_registry.get_all()
+        return [obj for obj in objs if obj.type == type]
+
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> List[ModelDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+        return await self.get_all_with_type("model")
 
     async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]:
-        return self.get_object_by_identifier(identifier)
+        return await self.get_object_by_identifier(identifier)
 
     async def register_model(self, model: ModelDefWithProvider) -> None:
         await self.register_object(model)
@@ -195,13 +196,10 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> List[ShieldDef]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+        return await self.get_all_with_type("shield")
 
     async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]:
-        return self.get_object_by_identifier(shield_type)
+        return await self.get_object_by_identifier(shield_type)
 
     async def register_shield(self, shield: ShieldDefWithProvider) -> None:
         await self.register_object(shield)
@@ -209,15 +207,12 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
     async def list_memory_banks(self) -> List[MemoryBankDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+        return await self.get_all_with_type("memory_bank")
 
     async def get_memory_bank(
         self, identifier: str
     ) -> Optional[MemoryBankDefWithProvider]:
-        return self.get_object_by_identifier(identifier)
+        return await self.get_object_by_identifier(identifier)
 
     async def register_memory_bank(
         self, memory_bank: MemoryBankDefWithProvider
@@ -227,15 +222,12 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
 
 class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def list_datasets(self) -> List[DatasetDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+        return await self.get_all_with_type("dataset")
 
     async def get_dataset(
         self, dataset_identifier: str
     ) -> Optional[DatasetDefWithProvider]:
-        return self.get_object_by_identifier(dataset_identifier)
+        return await self.get_object_by_identifier(dataset_identifier)
 
     async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
         await self.register_object(dataset_def)
@@ -243,15 +235,12 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
 
 class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
     async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+        return await self.get_all_with_type("scoring_function")
 
     async def get_scoring_function(
         self, name: str
     ) -> Optional[ScoringFnDefWithProvider]:
-        return self.get_object_by_identifier(name)
+        return await self.get_object_by_identifier(name)
 
     async def register_scoring_function(
         self, function_def: ScoringFnDefWithProvider

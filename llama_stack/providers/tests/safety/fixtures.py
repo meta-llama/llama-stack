@@ -16,8 +16,13 @@ from llama_stack.providers.impls.meta_reference.safety import (
 
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 
-from ..conftest import ProviderFixture
+from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
+
+
+@pytest.fixture(scope="session")
+def safety_remote() -> ProviderFixture:
+    return remote_stack_fixture()
 
 
 @pytest.fixture(scope="session")
@@ -60,7 +65,7 @@ def safety_together() -> ProviderFixture:
     )
 
 
-SAFETY_FIXTURES = ["meta_reference", "together"]
+SAFETY_FIXTURES = ["meta_reference", "together", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")

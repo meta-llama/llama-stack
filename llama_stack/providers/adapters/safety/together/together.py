@@ -37,7 +37,7 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData, ShieldsProtocolPrivat
         return [
             ShieldDef(
                 identifier=ShieldType.llama_guard.value,
-                type=ShieldType.llama_guard.value,
+                shield_type=ShieldType.llama_guard.value,
                 params={},
             )
         ]
