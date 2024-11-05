@@ -1,6 +1,6 @@
 # Self-Hosted Distribution
 
-We offer deployable distributions where you can host your own Llama Stack server using local inference. 
+We offer deployable distributions where you can host your own Llama Stack server using local inference.
 
 | **Distribution** 	|           **Llama Stack Docker**           	| Start This Distribution 	|    **Inference**   	|     **Agents**     	|     **Memory**     	|     **Safety**     	|    **Telemetry**   	|
 |:----------------:	|:------------------------------------------:	|:-----------------------:	|:------------------:	|:------------------:	|:------------------:	|:------------------:	|:------------------:	|

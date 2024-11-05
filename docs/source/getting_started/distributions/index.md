@@ -4,7 +4,7 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 
 We offer three types of distributions:
 
-1. [Deployable Distribution](./self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine. 
+1. [Deployable Distribution](./self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine.
 2. [Hosted Distribution](./remote_hosted_distro/index.md): If you want to connect to a remote hosted inference provider.
 3. [On-device Distribution](./ondevice_distro/index.md): If you want to run Llama Stack inference on your iOS / Android device.
 
