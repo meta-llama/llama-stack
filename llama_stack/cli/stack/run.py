@@ -45,7 +45,6 @@ class StackRun(Subcommand):
 
         import pkg_resources
         import yaml
-        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
@@ -71,11 +70,10 @@ class StackRun(Subcommand):
 
         if not config_file.exists():
             self.parser.error(
-                f"File {str(config_file)} does not exist. Please run `llama stack build` and `llama stack configure <name>` to generate a run.yaml file"
+                f"File {str(config_file)} does not exist. Please run `llama stack build` to generate a run.yaml file"
             )
             return
 
-        cprint(f"Using config `{config_file}`", "green")
         with open(config_file, "r") as f:
             config_dict = yaml.safe_load(config_file.read_text())
             config = parse_and_maybe_upgrade_config(config_dict)

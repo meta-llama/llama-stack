@@ -189,16 +189,24 @@ class StackBuild(Subcommand):
         import yaml
         from termcolor import cprint
 
+        from llama_stack.distribution.build import ImageType
+
         from llama_stack.distribution.utils.serialize import EnumEncoder
 
-        # TODO: we should make the run.yaml file invisible to users by with ENV variables
-        # but keeping it visible and exposed to users for now
-        # generate a default run.yaml file using the build_config
         apis = list(build_config.distribution_spec.providers.keys())
         run_config = StackRunConfig(
             built_at=datetime.now(),
+            docker_image=(
+                build_config.name
+                if build_config.image_type == ImageType.docker.value
+                else None
+            ),
             image_name=build_config.name,
-            conda_env=build_config.name,
+            conda_env=(
+                build_config.name
+                if build_config.image_type == ImageType.conda.value
+                else None
+            ),
             apis=apis,
             providers={},
         )
@@ -223,7 +231,9 @@ class StackBuild(Subcommand):
                 p_spec.config = config_type()
                 run_config.providers[api].append(p_spec)
 
+        os.makedirs(build_dir, exist_ok=True)
         run_config_file = build_dir / f"{build_config.name}-run.yaml"
+
         with open(run_config_file, "w") as f:
             to_write = json.loads(json.dumps(run_config.model_dump(), cls=EnumEncoder))
             f.write(yaml.dump(to_write, sort_keys=False))
@@ -240,7 +250,6 @@ class StackBuild(Subcommand):
         import os
 
         import yaml
-        from termcolor import cprint
 
         from llama_stack.distribution.build import build_image, ImageType
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR

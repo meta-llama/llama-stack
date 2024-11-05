@@ -7,8 +7,6 @@
 import argparse
 
 from llama_stack.cli.subcommand import Subcommand
-from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
-from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
 class StackConfigure(Subcommand):
