@@ -1,7 +1,7 @@
 
-# Llama Stack Text Generation Guide
+# Llama Stack Inference Guide
 
-This document provides instructions on how to use Llama Stack's `chat_completion` function for generating text using the `Llama3.2-11B-Vision-Instruct` model. Before you begin, please ensure Llama Stack is installed and set up by following the [Getting Started Guide](https://llama-stack.readthedocs.io/en/latest/). 
+This document provides instructions on how to use Llama Stack's `chat_completion` function for generating text using the `Llama3.2-11B-Vision-Instruct` model. Before you begin, please ensure Llama Stack is installed and set up by following the [Getting Started Guide](https://llama-stack.readthedocs.io/en/latest/).
 
 ### Table of Contents
 1. [Quickstart](#quickstart)
