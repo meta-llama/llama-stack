@@ -48,7 +48,7 @@ on:
 
 env:
   # Path to model checkpoints within EFS volume
-  CHECKPOINT_DIR: "/data/llama"
+  MODEL_CHECKPOINT_DIR: "/data/llama"
 
   # Path to directory to run tests from
   TESTS_PATH: "${{ github.workspace }}/llama_stack/providers/tests"
@@ -95,13 +95,13 @@ jobs:
         if: inputs.debug == 'true'
         run: |
             echo "========= Content of the EFS mount ============="
-            ls -la ${{ env.CHECKPOINT_DIR }}
+            ls -la ${{ env.MODEL_CHECKPOINT_DIR }}
 
       - name: "Check if models exist in EFS volume"
         id: check_if_models_exist
         run: |
           for model_id in ${MODEL_IDS//,/ }; do
-            model_path="${CHECKPOINT_DIR}/${model_id}"
+            model_path="${MODEL_CHECKPOINT_DIR}/${model_id}"
             if [ ! -d "${model_path}" ]; then
               echo "Model '${model_id}' does not exist in mounted EFS volume, Terminating workflow."
               exit 1
