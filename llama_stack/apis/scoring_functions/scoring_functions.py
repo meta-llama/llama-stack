@@ -33,7 +33,7 @@ class ScoringConfigType(Enum):
 
 @json_schema_type
 class LLMAsJudgeScoringFnConfig(BaseModel):
-    type: Literal[ScoringContextType.llm_as_judge.value] = (  # type: ignore
+    type: Literal[ScoringConfigType.llm_as_judge.value] = (  # type: ignore
         ScoringConfigType.llm_as_judge.value
     )
     judge_model: str
@@ -43,7 +43,7 @@ class LLMAsJudgeScoringFnConfig(BaseModel):
 
 @json_schema_type
 class AnswerParsingScoringFnConfig(BaseModel):
-    type: Literal[ScoringContextType.answer_parsing.value] = (  # type: ignore
+    type: Literal[ScoringConfigType.answer_parsing.value] = (  # type: ignore
         ScoringConfigType.answer_parsing.value
     )
     parsing_regex: Optional[List[str]] = Field(
