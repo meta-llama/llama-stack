@@ -12,6 +12,6 @@ from pydantic import BaseModel, Field
 class PGVectorConfig(BaseModel):
     host: str = Field(default="localhost")
     port: int = Field(default=5432)
-    db: str = Field(default="postgres_db")
-    user: str = Field(default="postgres_user")
-    password: str = Field(default="postgres_password")
+    db: str = Field(default="postgres")
+    user: str = Field(default="postgres")
+    password: str = Field(default="mysecretpassword")
