@@ -15,7 +15,7 @@ from llama_stack.providers.utils.inference.model_registry import ModelRegistryHe
 
 from llama_stack.apis.inference import *  # noqa: F403
 
-from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfig
+from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 

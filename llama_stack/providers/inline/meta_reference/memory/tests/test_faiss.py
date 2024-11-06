@@ -8,9 +8,9 @@ import tempfile
 
 import pytest
 from llama_stack.apis.memory import MemoryBankType, VectorMemoryBankDef
-from llama_stack.providers.impls.meta_reference.memory.config import FaissImplConfig
+from llama_stack.providers.inline.meta_reference.memory.config import FaissImplConfig
 
-from llama_stack.providers.impls.meta_reference.memory.faiss import FaissMemoryImpl
+from llama_stack.providers.inline.meta_reference.memory.faiss import FaissMemoryImpl
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 

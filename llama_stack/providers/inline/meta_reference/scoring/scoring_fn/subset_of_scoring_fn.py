@@ -4,17 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.base_scoring_fn import (
+from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.base_scoring_fn import (
     BaseScoringFn,
 )
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.common import (
+from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.common import (
     aggregate_accuracy,
 )
 
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.fn_defs.subset_of import (
+from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.fn_defs.subset_of import (
     subset_of,
 )
 

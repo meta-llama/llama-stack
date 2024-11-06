@@ -15,8 +15,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.scoring,
             provider_type="meta-reference",
             pip_packages=[],
-            module="llama_stack.providers.impls.meta_reference.scoring",
-            config_class="llama_stack.providers.impls.meta_reference.scoring.MetaReferenceScoringConfig",
+            module="llama_stack.providers.inline.meta_reference.scoring",
+            config_class="llama_stack.providers.inline.meta_reference.scoring.MetaReferenceScoringConfig",
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,
@@ -27,8 +27,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.scoring,
             provider_type="braintrust",
             pip_packages=["autoevals", "openai"],
-            module="llama_stack.providers.impls.braintrust.scoring",
-            config_class="llama_stack.providers.impls.braintrust.scoring.BraintrustScoringConfig",
+            module="llama_stack.providers.inline.braintrust.scoring",
+            config_class="llama_stack.providers.inline.braintrust.scoring.BraintrustScoringConfig",
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,

@@ -16,7 +16,7 @@ from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 
 from llama_stack.apis.memory import *  # noqa: F403
 
-from llama_stack.providers.adapters.memory.qdrant.config import QdrantConfig
+from llama_stack.providers.remote.memory.qdrant.config import QdrantConfig
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,

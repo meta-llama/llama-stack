@@ -11,7 +11,7 @@ import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
 
-from llama_stack.providers.impls.meta_reference.agents import (
+from llama_stack.providers.inline.meta_reference.agents import (
     MetaReferenceAgentsImplConfig,
 )
 

@@ -11,71 +11,57 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.inference.inference import Inference
+
+# from .scoring_fn.braintrust_scoring_fn import BraintrustScoringFn
+from autoevals.llm import Factuality
+from autoevals.ragas import AnswerCorrectness
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.equality_scoring_fn import (
-    EqualityScoringFn,
+from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.common import (
+    aggregate_average,
 )
 
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.llm_as_judge_scoring_fn import (
-    LlmAsJudgeScoringFn,
-)
-
-from llama_stack.providers.impls.meta_reference.scoring.scoring_fn.subset_of_scoring_fn import (
-    SubsetOfScoringFn,
-)
-
-from .config import MetaReferenceScoringConfig
-
-FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn]
-
-LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
+from .config import BraintrustScoringConfig
+from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
+from .scoring_fn.fn_defs.factuality import factuality_fn_def
 
 
-class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
+class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     def __init__(
         self,
-        config: MetaReferenceScoringConfig,
+        config: BraintrustScoringConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
-        inference_api: Inference,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
-        self.inference_api = inference_api
-        self.scoring_fn_id_impls = {}
 
-    async def initialize(self) -> None:
-        for x in FIXED_FNS:
-            impl = x()
-            for fn_defs in impl.get_supported_scoring_fn_defs():
-                self.scoring_fn_id_impls[fn_defs.identifier] = impl
-        for x in LLM_JUDGE_FNS:
-            impl = x(inference_api=self.inference_api)
-            for fn_defs in impl.get_supported_scoring_fn_defs():
-                self.scoring_fn_id_impls[fn_defs.identifier] = impl
-                self.llm_as_judge_fn = impl
+        self.braintrust_evaluators = {
+            "braintrust::factuality": Factuality(),
+            "braintrust::answer-correctness": AnswerCorrectness(),
+        }
+        self.supported_fn_defs_registry = {
+            factuality_fn_def.identifier: factuality_fn_def,
+            answer_correctness_fn_def.identifier: answer_correctness_fn_def,
+        }
+
+    async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
 
     async def list_scoring_functions(self) -> List[ScoringFnDef]:
-        scoring_fn_defs_list = [
-            fn_def
-            for impl in self.scoring_fn_id_impls.values()
-            for fn_def in impl.get_supported_scoring_fn_defs()
-        ]
-
+        scoring_fn_defs_list = [x for x in self.supported_fn_defs_registry.values()]
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith(
-                "meta-reference"
-            ), "All meta-reference scoring fn must have identifier prefixed with 'meta-reference'! "
+                "braintrust"
+            ), "All braintrust scoring fn must have identifier prefixed with 'braintrust'! "
 
         return scoring_fn_defs_list
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
-        self.llm_as_judge_fn.register_scoring_fn_def(function_def)
-        self.scoring_fn_id_impls[function_def.identifier] = self.llm_as_judge_fn
+        raise NotImplementedError(
+            "Registering scoring function not allowed for braintrust provider"
+        )
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -117,16 +103,33 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             results=res.results,
         )
 
+    async def score_row(
+        self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
+    ) -> ScoringResultRow:
+        assert scoring_fn_identifier is not None, "scoring_fn_identifier cannot be None"
+        expected_answer = input_row["expected_answer"]
+        generated_answer = input_row["generated_answer"]
+        input_query = input_row["input_query"]
+        evaluator = self.braintrust_evaluators[scoring_fn_identifier]
+
+        result = evaluator(generated_answer, expected_answer, input=input_query)
+        score = result.score
+        return {"score": score, "metadata": result.metadata}
+
     async def score(
         self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
     ) -> ScoreResponse:
         res = {}
         for scoring_fn_id in scoring_functions:
-            if scoring_fn_id not in self.scoring_fn_id_impls:
+            if scoring_fn_id not in self.supported_fn_defs_registry:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
-            scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
-            score_results = await scoring_fn.score(input_rows, scoring_fn_id)
-            agg_results = await scoring_fn.aggregate(score_results)
+
+            score_results = [
+                await self.score_row(input_row, scoring_fn_id)
+                for input_row in input_rows
+            ]
+
+            agg_results = aggregate_average(score_results)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,

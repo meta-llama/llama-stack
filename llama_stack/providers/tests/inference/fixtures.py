@@ -10,15 +10,16 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-
-from llama_stack.providers.adapters.inference.fireworks import FireworksImplConfig
-from llama_stack.providers.adapters.inference.ollama import OllamaImplConfig
-from llama_stack.providers.adapters.inference.together import TogetherImplConfig
-from llama_stack.providers.adapters.inference.vllm import VLLMInferenceAdapterConfig
-from llama_stack.providers.impls.meta_reference.inference import (
+from llama_stack.providers.inline.meta_reference.inference import (
     MetaReferenceInferenceConfig,
 )
+
+from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
+from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.together import TogetherImplConfig
+from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
 
