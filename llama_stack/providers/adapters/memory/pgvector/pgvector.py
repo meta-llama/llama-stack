@@ -46,8 +46,7 @@ def upsert_models(cur, keys_models: List[Tuple[str, BaseModel]]):
 
 
 def load_models(cur, cls):
-    query = "SELECT key, data FROM metadata_store"
-    cur.execute(query)
+    cur.execute("SELECT key, data FROM metadata_store")
     rows = cur.fetchall()
     return [parse_obj_as(cls, row["data"]) for row in rows]
 
@@ -116,7 +115,6 @@ class PGVectorIndex(EmbeddingIndex):
 
 class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: PGVectorConfig) -> None:
-        print(f"Initializing PGVectorMemoryAdapter -> {config.host}:{config.port}")
         self.config = config
         self.cursor = None
         self.conn = None
@@ -131,7 +129,8 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
                 user=self.config.user,
                 password=self.config.password,
             )
-            self.cursor = self.conn.cursor()
+            self.conn.autocommit = True
+            self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
             version = check_extension_version(self.cursor)
             if version:

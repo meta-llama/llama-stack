@@ -26,6 +26,8 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    convert_message_to_dict,
+    request_has_media,
 )
 
 from .config import TogetherImplConfig
@@ -38,13 +40,14 @@ TOGETHER_SUPPORTED_MODELS = {
     "Llama3.2-3B-Instruct": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
     "Llama3.2-11B-Vision-Instruct": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
     "Llama3.2-90B-Vision-Instruct": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+    "Llama-Guard-3-8B": "meta-llama/Meta-Llama-Guard-3-8B",
+    "Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
 }
 
 
 class TogetherInferenceAdapter(
     ModelRegistryHelper, Inference, NeedsRequestProviderData
 ):
-
     def __init__(self, config: TogetherImplConfig) -> None:
         ModelRegistryHelper.__init__(
             self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
@@ -96,12 +99,12 @@ class TogetherInferenceAdapter(
     async def _nonstream_completion(
         self, request: CompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params(request)
         r = self._get_client().completions.create(**params)
         return process_completion_response(r, self.formatter)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params(request)
 
         # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
@@ -130,14 +133,6 @@ class TogetherInferenceAdapter(
 
         return options
 
-    def _get_params_for_completion(self, request: CompletionRequest) -> dict:
-        return {
-            "model": self.map_to_provider_model(request.model),
-            "prompt": completion_request_to_prompt(request, self.formatter),
-            "stream": request.stream,
-            **self._build_options(request.sampling_params, request.response_format),
-        }
-
     async def chat_completion(
         self,
         model: str,
@@ -150,7 +145,6 @@ class TogetherInferenceAdapter(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-
         request = ChatCompletionRequest(
             model=model,
             messages=messages,
@@ -171,18 +165,24 @@ class TogetherInferenceAdapter(
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
-        r = self._get_client().completions.create(**params)
+        params = await self._get_params(request)
+        if "messages" in params:
+            r = self._get_client().chat.completions.create(**params)
+        else:
+            r = self._get_client().completions.create(**params)
         return process_chat_completion_response(r, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         # if we shift to TogetherAsyncClient, we won't need this wrapper
         async def _to_async_generator():
-            s = self._get_client().completions.create(**params)
+            if "messages" in params:
+                s = self._get_client().chat.completions.create(**params)
+            else:
+                s = self._get_client().completions.create(**params)
             for chunk in s:
                 yield chunk
 
@@ -192,10 +192,29 @@ class TogetherInferenceAdapter(
         ):
             yield chunk
 
-    def _get_params(self, request: ChatCompletionRequest) -> dict:
+    async def _get_params(
+        self, request: Union[ChatCompletionRequest, CompletionRequest]
+    ) -> dict:
+        input_dict = {}
+        media_present = request_has_media(request)
+        if isinstance(request, ChatCompletionRequest):
+            if media_present:
+                input_dict["messages"] = [
+                    await convert_message_to_dict(m) for m in request.messages
+                ]
+            else:
+                input_dict["prompt"] = chat_completion_request_to_prompt(
+                    request, self.formatter
+                )
+        else:
+            assert (
+                not media_present
+            ), "Together does not support media for Completion requests"
+            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+
         return {
             "model": self.map_to_provider_model(request.model),
-            "prompt": chat_completion_request_to_prompt(request, self.formatter),
+            **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.response_format),
         }

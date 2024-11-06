@@ -43,7 +43,9 @@ async def kvstore_impl(config: KVStoreConfig) -> KVStore:
 
         impl = SqliteKVStoreImpl(config)
     elif config.type == KVStoreType.postgres.value:
-        raise NotImplementedError()
+        from .postgres import PostgresKVStoreImpl
+
+        impl = PostgresKVStoreImpl(config)
     else:
         raise ValueError(f"Unknown kvstore type {config.type}")
 
