@@ -57,10 +57,10 @@ env:
   MODEL_IDS: "${{ inputs.model_ids || 'Llama3.2-3B-Instruct' }}"
 
   # ID used for each test's provider config
-  PROVIDER_ID: "${{ inputs.provider_id || 'meta-reference' }}"
+  #PROVIDER_ID: "${{ inputs.provider_id || 'meta-reference' }}"
 
   # Defined dynamically when each test is run below
-  PROVIDER_CONFIG: ""
+  #PROVIDER_CONFIG: ""
 
   # (Unused) API key that can be manually defined for workflow dispatch
   API_KEY: "${{ inputs.api_key || '' }}"
@@ -70,9 +70,6 @@ env:
 
   # Defines the output xml reports generated after a test is run
   REPORTS_GEN: ""
-
-  RANK: 0
-  WORLD_SIZE: 4
 
 jobs:
   execute_workflow:
