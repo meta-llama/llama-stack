@@ -27,7 +27,7 @@ from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 
 from llama_stack.apis.inference import QuantizationType
 
-from llama_stack.providers.impls.meta_reference.inference.config import (
+from llama_stack.providers.inline.meta_reference.inference.config import (
     MetaReferenceQuantizedInferenceConfig,
 )
 
