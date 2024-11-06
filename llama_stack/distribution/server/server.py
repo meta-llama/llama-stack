@@ -209,7 +209,8 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        async for item in await event_gen:
+        event_gen = await event_gen
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
@@ -229,7 +230,6 @@ async def sse_generator(event_gen):
 
 
 def create_dynamic_typed_route(func: Any, method: str):
-
     async def endpoint(request: Request, **kwargs):
         await start_trace(func.__name__)
 
