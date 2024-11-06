@@ -6,7 +6,6 @@
 
 import json
 import logging
-import os
 
 from typing import Any, Dict, List
 
@@ -28,19 +27,12 @@ BEDROCK_SUPPORTED_SHIELDS = [
 
 
 def _create_bedrock_client(config: BedrockSafetyConfig, name: str):
-    # Use environment variables by default, fall back to config values
     session_args = {
-        "aws_access_key_id": os.environ.get(
-            "AWS_ACCESS_KEY_ID", config.aws_access_key_id
-        ),
-        "aws_secret_access_key": os.environ.get(
-            "AWS_SECRET_ACCESS_KEY", config.aws_secret_access_key
-        ),
-        "aws_session_token": os.environ.get(
-            "AWS_SESSION_TOKEN", config.aws_session_token
-        ),
-        "region_name": os.environ.get("AWS_DEFAULT_REGION", config.region_name),
-        "profile_name": os.environ.get("AWS_PROFILE", config.profile_name),
+        "aws_access_key_id": config.aws_access_key_id,
+        "aws_secret_access_key": config.aws_secret_access_key,
+        "aws_session_token": config.aws_session_token,
+        "region_name": config.region_name,
+        "profile_name": config.profile_name,
     }
 
     # Remove None values
