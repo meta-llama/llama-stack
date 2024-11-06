@@ -136,13 +136,11 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
                 metadata = dict(assessment)
 
             return RunShieldResponse(
-                violations=[
-                    SafetyViolation(
-                        user_message=user_message,
-                        violation_level=ViolationLevel.ERROR,
-                        metadata=metadata,
-                    )
-                ]
+                violation=SafetyViolation(
+                    user_message=user_message,
+                    violation_level=ViolationLevel.ERROR,
+                    metadata=metadata,
+                )
             )
 
-        return RunShieldResponse(violations=[])
+        return RunShieldResponse()
