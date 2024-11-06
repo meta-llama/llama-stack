@@ -72,7 +72,10 @@ class ScoringFnDef(BaseModel):
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
     )
-    config: Optional[ScoringFnConfig] = None  # type: ignore
+    config: Optional[ScoringFnConfig] = Field(  # type: ignore
+        description="The configuration for the scoring function for benchmark eval, we could override this for app eval",
+        default=None,
+    )
     # We can optionally add information here to support packaging of code, etc.
 
 
