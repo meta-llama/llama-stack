@@ -48,7 +48,7 @@ on:
 
 env:
   # Path to model checkpoints within EFS volume
-  MODELS_PATH: "/data/llama"
+  CHECKPOINT_DIR: "/data/llama"
 
   # Path to directory to run tests from
   TESTS_PATH: "${{ github.workspace }}/llama_stack/providers/tests"
@@ -92,13 +92,13 @@ jobs:
         if: inputs.debug == 'true'
         run: |
             echo "========= Content of the EFS mount ============="
-            ls -la ${{ env.MODELS_PATH }}
+            ls -la ${{ env.CHECKPOINT_DIR }}
 
       - name: "Check if models exist in EFS volume"
         id: check_if_models_exist
         run: |
           for model_id in ${MODEL_IDS//,/ }; do
-            model_path="${MODELS_PATH}/${model_id}"
+            model_path="${CHECKPOINT_DIR}/${model_id}"
             if [ ! -d "${model_path}" ]; then
               echo "Model '${model_id}' does not exist in mounted EFS volume, Terminating workflow."
               exit 1
@@ -235,9 +235,8 @@ jobs:
                 for file in "$dir"/test_*.py; do
                   test_name=$(basename "$file")
                   new_file="result-${dir_name}-${test_name}.xml"
-                  if PROVIDER_CONFIG=$TESTS_PATH/${dir_name}/provider_config_example.yaml \
-                    torchrun $(which pytest) -s ${TESTS_PATH}/${dir_name}/${test_name} \
-                    --tb=short --disable-warnings --junitxml="${{ github.workspace }}/${new_file}"; then
+                  if pytest -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "meta_reference and llama_3b" \
+                    --junitxml="${{ github.workspace }}/${new_file}"; then
                     echo "Test passed: $test_name"
                   else
                     echo "Test failed: $test_name"
