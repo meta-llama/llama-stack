@@ -40,6 +40,7 @@ class StackConfigure(Subcommand):
         self.parser.error(
             """
             DEPRECATED! llama stack configure has been deprecated.
-            Please use llama stack run --config <path/to/run.yaml> instead. You may find example run.yaml in ./llamas_stack/templates
+            Please use llama stack run --config <path/to/run.yaml> instead.
+            You may find example run.yaml in /distributions folder.
             """
         )

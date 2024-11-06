@@ -14,10 +14,11 @@ from pydantic import BaseModel, Field
 class TGIImplConfig(BaseModel):
     host: str = "localhost"
     port: int = 8080
+    protocol: str = "http"
 
     @property
     def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
+        return f"{self.protocol}://{self.host}:{self.port}"
 
     api_token: Optional[str] = Field(
         default=None,

@@ -70,13 +70,12 @@ class StackRun(Subcommand):
 
         if not config_file.exists():
             self.parser.error(
-                f"File {str(config_file)} does not exist. Please run `llama stack build` to generate a run.yaml file"
+                f"File {str(config_file)} does not exist. Please run `llama stack build` to generate (and optionally edit) a run.yaml file"
             )
             return
 
-        with open(config_file, "r") as f:
-            config_dict = yaml.safe_load(config_file.read_text())
-            config = parse_and_maybe_upgrade_config(config_dict)
+        config_dict = yaml.safe_load(config_file.read_text())
+        config = parse_and_maybe_upgrade_config(config_dict)
 
         if config.docker_image:
             script = pkg_resources.resource_filename(
