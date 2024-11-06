@@ -8,11 +8,11 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.adapters.safety.together import TogetherSafetyConfig
-from llama_stack.providers.impls.meta_reference.safety import (
+from llama_stack.providers.inline.meta_reference.safety import (
     LlamaGuardShieldConfig,
     SafetyConfig,
 )
+from llama_stack.providers.remote.safety.together import TogetherSafetyConfig
 
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 

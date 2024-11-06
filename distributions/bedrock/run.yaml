@@ -1,0 +1,46 @@
+version: '2'
+built_at: '2024-11-01T17:40:45.325529'
+image_name: local
+name: bedrock
+docker_image: null
+conda_env: local
+apis:
+- shields
+- agents
+- models
+- memory
+- memory_banks
+- inference
+- safety
+providers:
+  inference:
+    - provider_id: bedrock0
+      provider_type: remote::bedrock
+      config:
+        aws_access_key_id: <AWS_ACCESS_KEY_ID>
+        aws_secret_access_key: <AWS_SECRET_ACCESS_KEY>
+        aws_session_token: <AWS_SESSION_TOKEN>
+        region_name: <AWS_REGION>
+  memory:
+    - provider_id: meta0
+      provider_type: meta-reference
+      config: {}
+  safety:
+    - provider_id: bedrock0
+      provider_type: remote::bedrock
+      config:
+        aws_access_key_id: <AWS_ACCESS_KEY_ID>
+        aws_secret_access_key: <AWS_SECRET_ACCESS_KEY>
+        aws_session_token: <AWS_SESSION_TOKEN>
+        region_name: <AWS_REGION>
+  agents:
+    - provider_id: meta0
+      provider_type: meta-reference
+      config:
+        persistence_store:
+          type: sqlite
+          db_path: ~/.llama/runtime/kvstore.db
+  telemetry:
+    - provider_id: meta0
+      provider_type: meta-reference
+      config: {}

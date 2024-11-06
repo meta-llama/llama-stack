@@ -19,12 +19,11 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "llama_8b: mark test to run only with the given model"
-    )
-    config.addinivalue_line(
-        "markers", "llama_3b: mark test to run only with the given model"
-    )
+    for model in ["llama_8b", "llama_3b", "llama_vision"]:
+        config.addinivalue_line(
+            "markers", f"{model}: mark test to run only with the given model"
+        )
+
     for fixture_name in INFERENCE_FIXTURES:
         config.addinivalue_line(
             "markers",
@@ -37,6 +36,14 @@ MODEL_PARAMS = [
     pytest.param("Llama3.2-3B-Instruct", marks=pytest.mark.llama_3b, id="llama_3b"),
 ]
 
+VISION_MODEL_PARAMS = [
+    pytest.param(
+        "Llama3.2-11B-Vision-Instruct",
+        marks=pytest.mark.llama_vision,
+        id="llama_vision",
+    ),
+]
+
 
 def pytest_generate_tests(metafunc):
     if "inference_model" in metafunc.fixturenames:
@@ -44,7 +51,11 @@ def pytest_generate_tests(metafunc):
         if model:
             params = [pytest.param(model, id="")]
         else:
-            params = MODEL_PARAMS
+            cls_name = metafunc.cls.__name__
+            if "Vision" in cls_name:
+                params = VISION_MODEL_PARAMS
+            else:
+                params = MODEL_PARAMS
 
         metafunc.parametrize(
             "inference_model",
