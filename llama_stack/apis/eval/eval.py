@@ -51,6 +51,11 @@ class AppEvalTaskConfig(BaseModel):
     # we could optinally add any specific dataset config here
 
 
+EvalTaskConfig = Annotated[
+    Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")
+]
+
+
 @json_schema_type
 class EvaluateResponse(BaseModel):
     generations: List[Dict[str, Any]]
@@ -70,7 +75,7 @@ class Eval(Protocol):
     async def run_eval(
         self,
         eval_task_def: EvalTaskDef,  # type: ignore
-        eval_task_config: AppEvalTaskConfig,  # type: ignore
+        eval_task_config: EvalTaskConfig,  # type: ignore
     ) -> Job: ...
 
     @webmethod(route="/eval/evaluate_rows", method="POST")
