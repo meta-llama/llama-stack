@@ -44,7 +44,7 @@ class BenchmarkEvalTaskConfig(BaseModel):
 @json_schema_type
 class AppEvalTaskConfig(BaseModel):
     eval_candidate: EvalCandidate  # type: ignore
-    scoring_functions_params: Dict[str, ScoringFnParams] = Field(  # type: ignore
+    scoring_params: Dict[str, ScoringFnParams] = Field(  # type: ignore
         description="Map between scoring function id and parameters",
         default_factory=dict,
     )
@@ -68,14 +68,14 @@ class Eval(Protocol):
     async def run_benchmark_eval(
         self,
         benchmark_id: str,
-        eval_task_config: BenchmarkEvalTaskConfig,  # type: ignore
+        eval_task_config: BenchmarkEvalTaskConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/run_eval", method="POST")
     async def run_eval(
         self,
-        eval_task_def: EvalTaskDef,  # type: ignore
-        eval_task_config: EvalTaskConfig,  # type: ignore
+        eval_task_def: EvalTaskDef,
+        eval_task_config: EvalTaskConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/evaluate_rows", method="POST")
