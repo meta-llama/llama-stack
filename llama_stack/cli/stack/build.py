@@ -191,8 +191,6 @@ class StackBuild(Subcommand):
 
         from llama_stack.distribution.build import ImageType
 
-        from llama_stack.distribution.utils.serialize import EnumEncoder
-
         apis = list(build_config.distribution_spec.providers.keys())
         run_config = StackRunConfig(
             built_at=datetime.now(),
@@ -250,7 +248,7 @@ class StackBuild(Subcommand):
 
         import yaml
 
-        from llama_stack.distribution.build import build_image, ImageType
+        from llama_stack.distribution.build import build_image
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 
         # save build.yaml spec for building same distribution again
