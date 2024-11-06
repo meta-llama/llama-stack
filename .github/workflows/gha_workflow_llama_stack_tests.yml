@@ -72,6 +72,7 @@ env:
   REPORTS_GEN: ""
 
   RANK: 0
+  WORLD_SIZE: 4
 
 jobs:
   execute_workflow:
