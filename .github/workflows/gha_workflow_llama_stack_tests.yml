@@ -210,7 +210,8 @@ jobs:
             pytest pytest_asyncio \
             fairscale lm-format-enforcer \
             zmq chardet pypdf \
-            pandas sentence_transformers together
+            pandas sentence_transformers together \
+            aiosqlite
           conda install -q -c pytorch -c nvidia faiss-gpu=1.9.0
 
       - name: "Installing specific manual_dispatch dependencies"
