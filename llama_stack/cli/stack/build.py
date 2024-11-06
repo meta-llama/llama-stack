@@ -234,7 +234,7 @@ class StackBuild(Subcommand):
         run_config_file = build_dir / f"{build_config.name}-run.yaml"
 
         with open(run_config_file, "w") as f:
-            to_write = json.loads(json.dumps(run_config.model_dump(), cls=EnumEncoder))
+            to_write = json.loads(build_config.model_dump_json())
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
@@ -252,25 +252,14 @@ class StackBuild(Subcommand):
 
         from llama_stack.distribution.build import build_image, ImageType
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.distribution.utils.serialize import EnumEncoder
 
         # save build.yaml spec for building same distribution again
-        if build_config.image_type == ImageType.docker.value:
-            # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
-            llama_stack_path = Path(
-                os.path.abspath(__file__)
-            ).parent.parent.parent.parent
-            build_dir = llama_stack_path / "tmp/configs/"
-        else:
-            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
-
+        build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
 
         with open(build_file_path, "w") as f:
-            to_write = json.loads(
-                json.dumps(build_config.model_dump(), cls=EnumEncoder)
-            )
+            to_write = json.loads(build_config.model_dump_json())
             f.write(yaml.dump(to_write, sort_keys=False))
 
         return_code = build_image(build_config, build_file_path)
