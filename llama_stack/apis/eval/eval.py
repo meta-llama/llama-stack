@@ -73,8 +73,8 @@ class Eval(Protocol):
         eval_task_config: AppEvalTaskConfig,  # type: ignore
     ) -> Job: ...
 
-    @webmethod(route="/eval/evaluate", method="POST")
-    async def evaluate(
+    @webmethod(route="/eval/evaluate_rows", method="POST")
+    async def evaluate_rows(
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
