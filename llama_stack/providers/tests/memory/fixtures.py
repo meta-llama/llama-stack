@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import os
+import tempfile
 
 import pytest
 import pytest_asyncio
@@ -15,6 +16,7 @@ from llama_stack.providers.adapters.memory.weaviate import WeaviateConfig
 from llama_stack.providers.impls.meta_reference.memory import FaissImplConfig
 
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
 
@@ -26,12 +28,15 @@ def memory_remote() -> ProviderFixture:
 
 @pytest.fixture(scope="session")
 def memory_meta_reference() -> ProviderFixture:
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     return ProviderFixture(
         providers=[
             Provider(
                 provider_id="meta-reference",
                 provider_type="meta-reference",
-                config=FaissImplConfig().model_dump(),
+                config=FaissImplConfig(
+                    kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
+                ).model_dump(),
             )
         ],
     )
