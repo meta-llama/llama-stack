@@ -59,15 +59,15 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/run_benchmark", method="POST")
-    async def run_benchmark(
+    @webmethod(route="/eval/run_benchmark_eval", method="POST")
+    async def run_benchmark_eval(
         self,
         benchmark_id: str,
         eval_task_config: BenchmarkEvalTaskConfig,  # type: ignore
     ) -> Job: ...
 
-    @webmethod(route="/eval/run_app_eval", method="POST")
-    async def run_app_eval(
+    @webmethod(route="/eval/run_eval", method="POST")
+    async def run_eval(
         self,
         eval_task_def: EvalTaskDef,  # type: ignore
         eval_task_config: AppEvalTaskConfig,  # type: ignore
