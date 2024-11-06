@@ -114,8 +114,6 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 
 EOF
 
-add_to_docker "ADD tmp/configs/$(basename "$build_file_path") ./llamastack-build.yaml"
-
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
