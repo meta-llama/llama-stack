@@ -46,6 +46,9 @@ def text_from_choice(choice) -> str:
     if hasattr(choice, "delta") and choice.delta:
         return choice.delta.content
 
+    if hasattr(choice, "message"):
+        return choice.message.content
+
     return choice.text
 
 
@@ -99,7 +102,6 @@ def process_chat_completion_response(
 async def process_completion_stream_response(
     stream: AsyncGenerator[OpenAICompatCompletionResponse, None], formatter: ChatFormat
 ) -> AsyncGenerator:
-
     stop_reason = None
 
     async for chunk in stream:
@@ -158,6 +160,10 @@ async def process_chat_completion_stream_response(
             break
 
         text = text_from_choice(choice)
+        if not text:
+            # Sometimes you get empty chunks from providers
+            continue
+
         # check if its a tool call ( aka starts with <|python_tag|> )
         if not ipython and text.startswith("<|python_tag|>"):
             ipython = True
