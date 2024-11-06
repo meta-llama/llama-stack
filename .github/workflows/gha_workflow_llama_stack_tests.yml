@@ -71,6 +71,8 @@ env:
   # Defines the output xml reports generated after a test is run
   REPORTS_GEN: ""
 
+  RANK: 0
+
 jobs:
   execute_workflow:
     name: Execute workload on Self-Hosted GPU k8s runner
