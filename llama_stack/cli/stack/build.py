@@ -232,7 +232,7 @@ class StackBuild(Subcommand):
         run_config_file = build_dir / f"{build_config.name}-run.yaml"
 
         with open(run_config_file, "w") as f:
-            to_write = json.loads(build_config.model_dump_json())
+            to_write = json.loads(run_config.model_dump_json())
             f.write(yaml.dump(to_write, sort_keys=False))
 
         cprint(
