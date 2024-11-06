@@ -3,7 +3,7 @@ name: Test deployment
 defaults:
   run:
     shell: bash
-    working-directory: ./scripts
+    working-directory: ./docs
 
 on:
   pull_request:
