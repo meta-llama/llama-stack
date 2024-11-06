@@ -14,6 +14,7 @@ import boto3
 from llama_stack.apis.safety import *  # noqa
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
+from llama_stack.providers.utils.refreshable_boto_session import RefreshableBotoSession
 
 from .config import BedrockSafetyConfig
 
@@ -27,19 +28,27 @@ BEDROCK_SUPPORTED_SHIELDS = [
 
 
 def _create_bedrock_client(config: BedrockSafetyConfig, name: str):
-    session_args = {
-        "aws_access_key_id": config.aws_access_key_id,
-        "aws_secret_access_key": config.aws_secret_access_key,
-        "aws_session_token": config.aws_session_token,
-        "region_name": config.region_name,
-        "profile_name": config.profile_name,
-    }
+    if config.aws_access_key_id and config.aws_secret_access_key:
+        session_args = {
+            "aws_access_key_id": config.aws_access_key_id,
+            "aws_secret_access_key": config.aws_secret_access_key,
+            "aws_session_token": config.aws_session_token,
+            "region_name": config.region_name,
+            "profile_name": config.profile_name,
+        }
+        # Remove None values
+        session_args = {k: v for k, v in session_args.items() if v is not None}
 
-    # Remove None values
-    session_args = {k: v for k, v in session_args.items() if v is not None}
-
-    boto3_session = boto3.session.Session(**session_args)
-    return boto3_session.client(name)
+        boto3_session = boto3.session.Session(**session_args)
+        return boto3_session.client(name)
+    else:
+        return (
+            RefreshableBotoSession(
+                region_name=config.region_name, profile_name=config.profile_name
+            )
+            .refreshable_session()
+            .client(name)
+        )
 
 
 class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):

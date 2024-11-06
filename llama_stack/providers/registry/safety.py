@@ -43,7 +43,7 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.safety,
             adapter=AdapterSpec(
                 adapter_type="bedrock",
-                pip_packages=["boto3"],
+                pip_packages=["boto3", "pytz"],
                 module="llama_stack.providers.adapters.safety.bedrock",
                 config_class="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyConfig",
             ),
