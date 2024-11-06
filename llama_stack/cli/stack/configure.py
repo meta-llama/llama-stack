@@ -41,6 +41,6 @@ class StackConfigure(Subcommand):
             """
             DEPRECATED! llama stack configure has been deprecated.
             Please use llama stack run --config <path/to/run.yaml> instead.
-            You may find example run.yaml in /distributions folder.
+            Please see example run.yaml in /distributions folder.
             """
         )
