@@ -43,11 +43,11 @@ class TogetherSafetyImpl(Safety, NeedsRequestProviderData, ShieldsProtocolPrivat
         ]
 
     async def run_shield(
-        self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
+        self, identifier: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse:
-        shield_def = await self.shield_store.get_shield(shield_type)
+        shield_def = await self.shield_store.get_shield(identifier)
         if not shield_def:
-            raise ValueError(f"Unknown shield {shield_type}")
+            raise ValueError(f"Unknown shield {identifier}")
 
         model = shield_def.params.get("model", "llama_guard")
         if model not in TOGETHER_SHIELD_MODEL_MAP:

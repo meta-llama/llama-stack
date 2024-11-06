@@ -124,7 +124,7 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             adapter=AdapterSpec(
                 adapter_type="bedrock",
-                pip_packages=["boto3", "pytz"],
+                pip_packages=["boto3"],
                 module="llama_stack.providers.adapters.inference.bedrock",
                 config_class="llama_stack.providers.adapters.inference.bedrock.BedrockConfig",
             ),

@@ -56,6 +56,7 @@ def create_bedrock_client(
             "aws_session_token": config.aws_session_token,
             "region_name": config.region_name,
             "profile_name": config.profile_name,
+            "session_ttl": config.session_ttl,
         }
 
         # Remove None values
@@ -66,7 +67,9 @@ def create_bedrock_client(
     else:
         return (
             RefreshableBotoSession(
-                region_name=config.region_name, profile_name=config.profile_name
+                region_name=config.region_name,
+                profile_name=config.profile_name,
+                session_ttl=config.session_ttl,
             )
             .refreshable_session()
             .client(service_name)

@@ -4,11 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
+import datetime
 from time import time
 from uuid import uuid4
 
-import pytz
 from boto3 import Session
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
@@ -90,9 +89,9 @@ class RefreshableBotoSession:
                 "access_key": session_credentials.access_key,
                 "secret_key": session_credentials.secret_key,
                 "token": session_credentials.token,
-                "expiry_time": datetime.fromtimestamp(time() + self.session_ttl)
-                .replace(tzinfo=pytz.utc)
-                .isoformat(),
+                "expiry_time": datetime.datetime.fromtimestamp(
+                    time() + self.session_ttl, datetime.timezone.utc
+                ).isoformat(),
             }
 
         return credentials

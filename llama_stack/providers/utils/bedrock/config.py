@@ -53,3 +53,7 @@ class BedrockBaseConfig(BaseModel):
         description="The time in seconds till a timeout exception is thrown when attempting to read from a connection."
         "The default is 60 seconds.",
     )
+    session_ttl: Optional[int] = Field(
+        default=3600,
+        description="The time in seconds till a session expires. The default is 3600 seconds (1 hour).",
+    )
