@@ -17,7 +17,7 @@ class EvalTaskDef(BaseModel):
     scoring_functions: List[str]
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Metadata for this evaluation task (e.g. from GECO)",
+        description="Metadata for this evaluation task",
     )
 
 
