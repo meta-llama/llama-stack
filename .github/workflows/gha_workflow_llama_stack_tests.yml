@@ -1,0 +1,339 @@
+name: "Run Llama-stack Tests"
+
+on:
+  pull_request_target:
+    types: ["opened"]
+    branches:
+      - 'main'
+    paths:
+      - 'llama_stack/**/*.py'
+      - 'tests/**/*.py'
+
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'GHA Runner Scale Set label to run workflow on.'
+        required: true
+        default: "llama-stack-gha-runner-gpu"
+
+      branch:
+        description: "Branch to checkout"
+        required: true
+        default: "main"
+
+      debug:
+        description: 'Run debugging steps?'
+        required: false
+        default: "true"
+
+      sleep_time:
+        description: '[DEBUG] sleep time for debugging'
+        required: true
+        default: "0"
+
+      model_ids:
+        description: 'Comma separated list of models to test'
+        required: true
+        default: "Llama3.2-3B-Instruct"
+
+      provider_id:
+        description: 'ID of your provider'
+        required: true
+        default: "meta-reference"
+
+      api_key:
+        description: 'Provider API key'
+        required: false
+        default: "---"
+
+env:
+  # Path to model checkpoints within EFS volume
+  MODELS_PATH: "/data/llama"
+
+  # Path to directory to run tests from
+  TESTS_PATH: "${{ github.workspace }}/llama_stack/providers/tests"
+
+  # List of models that are to be tested
+  MODEL_IDS: "${{ inputs.model_ids || 'Llama3.2-3B-Instruct' }}"
+
+  # ID used for each test's provider config
+  PROVIDER_ID: "${{ inputs.provider_id || 'meta-reference' }}"
+
+  # Defined dynamically when each test is run below
+  PROVIDER_CONFIG: ""
+
+  # (Unused) API key that can be manually defined for workflow dispatch
+  API_KEY: "${{ inputs.api_key || '' }}"
+
+  # Defines which directories in TESTS_PATH to exclude from the test loop
+  EXCLUDED_DIRS: "__pycache__"
+
+  # Defines the output xml reports generated after a test is run
+  REPORTS_GEN: ""
+
+jobs:
+  execute_workflow:
+    name: Execute workload on Self-Hosted GPU k8s runner
+    permissions:
+      pull-requests: write
+    defaults:
+      run:
+        shell: bash # default shell to run all steps for a given job.
+    runs-on: ${{ inputs.runner != '' && inputs.runner || 'llama-stack-gha-runner-gpu' }}
+    if: always()
+    steps:
+
+      ##############################
+      #### INITIAL DEBUG CHECKS ####
+      ##############################
+      - name: "[DEBUG] Check content of the EFS mount"
+        id: debug_efs_volume
+        continue-on-error: true
+        if: inputs.debug == 'true'
+        run: |
+            echo "========= Content of the EFS mount ============="
+            ls -la ${{ env.MODELS_PATH }}
+
+      - name: "Check if models exist in EFS volume"
+        id: check_if_models_exist
+        run: |
+          for model_id in ${MODEL_IDS//,/ }; do
+            model_path="${MODELS_PATH}/${model_id}"
+            if [ ! -d "${model_path}" ]; then
+              echo "Model '${model_id}' does not exist in mounted EFS volume, Terminating workflow."
+              exit 1
+            else
+              echo "Content of '${model_id}' model"
+              ls -la "${model_path}"
+            fi
+          done
+
+      - name: "[DEBUG] Get runner container OS information"
+        id: debug_os_info
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+            cat /etc/os-release
+
+      #######################
+      #### CODE CHECKOUT ####
+      #######################
+      - name: "Checkout 'meta-llama/llama-stack' repository"
+        id: checkout_repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: "[DEBUG] Content of the repository after checkout"
+        id: debug_content_after_checkout
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+            ls -la ${GITHUB_WORKSPACE}
+
+      ##########################################################
+      ####              OPTIONAL SLEEP DEBUG                ####
+      #                                                        #
+      # Use to "exec" into the test k8s POD and run tests      #
+      # manually to identify what dependencies are being used. #
+      #                                                        #
+      ##########################################################
+      - name: "[DEBUG] sleep"
+        id: debug_sleep
+        if: ${{ inputs.debug == 'true' && inputs.sleep_time != '' }}
+        run: |
+            sleep ${{ inputs.sleep_time }}
+
+      ############################
+      #### UPDATE SYSTEM PATH ####
+      ############################
+      - name: "[DEBUG] Update path: before"
+        id: path_update_before
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+          echo "System path before update:"
+          echo "PATH=$PATH"
+          echo "GITHUB_PATH=$GITHUB_PATH"
+
+      - name: "Update path: execute"
+        id: path_update_exec
+        run: |
+          # .local/bin is needed for certain libraries installed below to be recognized
+          # when calling their executable to install sub-dependencies
+          mkdir -p ${HOME}/.local/bin
+          echo "${HOME}/.local/bin" >> "$GITHUB_PATH"
+
+      - name: "[DEBUG] Update path: after"
+        id: path_update_after
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+          echo "System path after update:"
+          echo "PATH=$PATH"
+          echo "GITHUB_PATH=$GITHUB_PATH"
+
+      ##################################
+      #### DEPENDENCY INSTALLATIONS ####
+      ##################################
+      - name: "Installing 'apt' required packages"
+        id: install_apt
+        run: |
+          echo "[STEP] Installing 'apt' required packages"
+          sudo apt update -y
+          sudo apt install -y python3 python3-pip npm wget
+
+      - name: "Installing packages with 'curl'"
+        id: install_curl
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: "Installing packages with 'wget'"
+        id: install_wget
+        run: |
+          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+          chmod +x Miniconda3-latest-Linux-x86_64.sh
+          ./Miniconda3-latest-Linux-x86_64.sh -b install -c pytorch -c nvidia faiss-gpu=1.9.0
+          # Add miniconda3 bin to system path
+          echo "${HOME}/miniconda3/bin" >> "$GITHUB_PATH"
+
+      - name: "Installing packages with 'npm'"
+        id: install_npm_generic
+        run: |
+          sudo npm install -g junit-merge
+
+      - name: "Installing 'llama-stack' dependencies"
+        id: install_pip_generic
+        run: |
+          echo "[STEP] Installing 'llama-stack' models"
+          pip install -U pip setuptools
+          pip install -r requirements.txt
+          pip install -e .
+          pip install -U \
+            torch torchvision \
+            pytest pytest_asyncio \
+            fairscale lm-format-enforcer \
+            zmq chardet pypdf \
+            pandas sentence_transformers together
+          conda install -q -c pytorch -c nvidia faiss-gpu=1.9.0
+
+      - name: "Installing specific manual_dispatch dependencies"
+        id: manual_install_pip
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "[STEP] Installing specific dependencies for manual dispatch workflows"
+          # N.A.
+
+      #############################################################
+      #### TESTING TO BE DONE FOR BOTH PRS AND MANUAL DISPATCH ####
+      #############################################################
+      - name: "Manual - Run Tests: Loop"
+        id: manual_run_tests_loop
+        working-directory: "${{ github.workspace }}"
+        run: |
+          pattern=""
+          for dir in llama_stack/providers/tests/*; do
+            if [ -d "$dir" ]; then
+              dir_name=$(basename "$dir")
+              if [[ ! " $EXCLUDED_DIRS " =~ " $dir_name " ]]; then
+                for file in "$dir"/test_*.py; do
+                  test_name=$(basename "$file")
+                  new_file="result-${dir_name}-${test_name}.xml"
+                  if PROVIDER_CONFIG=$TESTS_PATH/${dir_name}/provider_config_example.yaml \
+                    torchrun $(which pytest) -s ${TESTS_PATH}/${dir_name}/${test_name} \
+                    --tb=short --disable-warnings --junitxml="${{ github.workspace }}/${new_file}"; then
+                    echo "Test passed: $test_name"
+                  else
+                    echo "Test failed: $test_name"
+                  fi
+                  pattern+="${new_file} "
+                done
+              fi
+            fi
+          done
+          echo "REPORTS_GEN=$pattern" >> "$GITHUB_ENV"
+
+      - name: "Manual - Test Summary: Merge"
+        id: test_summary_merge
+        if: always()
+        working-directory: "${{ github.workspace }}"
+        run: |
+          echo "Merging the following test result files: ${REPORTS_GEN}"
+          # Defaults to merging them into 'merged-test-results.xml'
+          junit-merge ${{ env.REPORTS_GEN }}
+
+      ############################################
+      #### AUTOMATIC TESTING ON PULL REQUESTS ####
+      ############################################
+
+      #### Run tests ####
+
+      - name: "PR - Run Tests"
+        id: pr_run_tests
+        working-directory: "${{ github.workspace }}"
+        if: github.event_name == 'pull_request_target'
+        run: |
+          echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${GITHUB_WORKSPACE} | path: ${{ github.workspace }}"
+          # (Optional) Add more tests here.
+
+          # Merge test results with 'merged-test-results.xml' from above.
+          # junit-merge <new-test-results> merged-test-results.xml
+
+      #### Create test summary ####
+
+      - name: "PR - Test Summary"
+        id: pr_test_summary_create
+        if: github.event_name == 'pull_request_target'
+        uses: test-summary/action@v2
+        with:
+          paths: "${{ github.workspace }}/merged-test-results.xml"
+          output: test-summary.md
+
+      - name: "PR - Upload Test Summary"
+        id: pr_test_summary_upload
+        if: github.event_name == 'pull_request_target'
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: test-summary.md
+
+      #### Update PR request ####
+
+      - name: "PR - Update comment"
+        id: pr_update_comment
+        if: github.event_name == 'pull_request_target'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: test-summary.md
+
+      ########################
+      #### MANUAL TESTING ####
+      ########################
+
+      #### Run tests ####
+
+      - name: "Manual - Run Tests: Prep"
+        id: manual_run_tests
+        working-directory: "${{ github.workspace }}"
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${GITHUB_WORKSPACE} | path: ${{ github.workspace }}"
+          # (Optional) Add more tests here.
+
+          # Merge test results with 'merged-test-results.xml' from above.
+          # junit-merge <new-test-results> merged-test-results.xml
+
+      #### Create test summary ####
+
+      - name: "Manual - Test Summary"
+        id: manual_test_summary
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: test-summary/action@v2
+        with:
+          paths: "${{ github.workspace }}/merged-test-results.xml"
+
+
+      - name: "Workplace Message - Group"
+        id: workplace_message_group
+        if: always()
+        uses: florianldt/workplace-action@master
+        with:
+          access-token: ${{ secrets.WORKPLACE_ACCESS_TOKEN }}
+          thread-key: ${{ secrets.WORKPLACE_THREAD_KEY }}
+          text: 'This is a test message!'
