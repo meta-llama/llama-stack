@@ -6,9 +6,7 @@
 
 from typing import *  # noqa: F403
 
-import boto3
 from botocore.client import BaseClient
-from botocore.config import Config
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -16,7 +14,9 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 
 from llama_stack.apis.inference import *  # noqa: F403
+
 from llama_stack.providers.adapters.inference.bedrock.config import BedrockConfig
+from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 
 BEDROCK_SUPPORTED_MODELS = {
@@ -34,7 +34,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         )
         self._config = config
 
-        self._client = _create_bedrock_client(config)
+        self._client = create_bedrock_client(config)
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
     @property
@@ -437,43 +437,3 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
-
-
-def _create_bedrock_client(config: BedrockConfig) -> BaseClient:
-    retries_config = {
-        k: v
-        for k, v in dict(
-            total_max_attempts=config.total_max_attempts,
-            mode=config.retry_mode,
-        ).items()
-        if v is not None
-    }
-
-    config_args = {
-        k: v
-        for k, v in dict(
-            region_name=config.region_name,
-            retries=retries_config if retries_config else None,
-            connect_timeout=config.connect_timeout,
-            read_timeout=config.read_timeout,
-        ).items()
-        if v is not None
-    }
-
-    boto3_config = Config(**config_args)
-
-    session_args = {
-        k: v
-        for k, v in dict(
-            aws_access_key_id=config.aws_access_key_id,
-            aws_secret_access_key=config.aws_secret_access_key,
-            aws_session_token=config.aws_session_token,
-            region_name=config.region_name,
-            profile_name=config.profile_name,
-        ).items()
-        if v is not None
-    }
-
-    boto3_session = boto3.session.Session(**session_args)
-
-    return boto3_session.client("bedrock-runtime", config=boto3_config)

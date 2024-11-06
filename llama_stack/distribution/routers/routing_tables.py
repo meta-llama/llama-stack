@@ -204,8 +204,8 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> List[ShieldDef]:
         return await self.get_all_with_type("shield")
 
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]:
-        return await self.get_object_by_identifier(shield_type)
+    async def get_shield(self, identifier: str) -> Optional[ShieldDefWithProvider]:
+        return await self.get_object_by_identifier(identifier)
 
     async def register_shield(self, shield: ShieldDefWithProvider) -> None:
         await self.register_object(shield)
