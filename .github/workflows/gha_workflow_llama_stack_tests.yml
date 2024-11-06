@@ -326,13 +326,3 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "${{ github.workspace }}/merged-test-results.xml"
-
-
-      - name: "Workplace Message - Group"
-        id: workplace_message_group
-        if: always()
-        uses: florianldt/workplace-action@master
-        with:
-          access-token: ${{ secrets.WORKPLACE_ACCESS_TOKEN }}
-          thread-key: ${{ secrets.WORKPLACE_THREAD_KEY }}
-          text: 'This is a test message!'
