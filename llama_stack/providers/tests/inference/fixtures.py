@@ -14,6 +14,7 @@ from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.adapters.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.adapters.inference.ollama import OllamaImplConfig
 from llama_stack.providers.adapters.inference.together import TogetherImplConfig
+from llama_stack.providers.adapters.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.impls.meta_reference.inference import (
     MetaReferenceInferenceConfig,
 )
@@ -79,6 +80,21 @@ def inference_ollama(inference_model) -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
+def inference_vllm_remote() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="remote::vllm",
+                provider_type="remote::vllm",
+                config=VLLMInferenceAdapterConfig(
+                    url=get_env_or_fail("VLLM_URL"),
+                ).model_dump(),
+            )
+        ],
+    )
+
+
+@pytest.fixture(scope="session")
 def inference_fireworks() -> ProviderFixture:
     return ProviderFixture(
         providers=[
@@ -109,7 +125,14 @@ def inference_together() -> ProviderFixture:
     )
 
 
-INFERENCE_FIXTURES = ["meta_reference", "ollama", "fireworks", "together", "remote"]
+INFERENCE_FIXTURES = [
+    "meta_reference",
+    "ollama",
+    "fireworks",
+    "together",
+    "vllm_remote",
+    "remote",
+]
 
 
 @pytest_asyncio.fixture(scope="session")
