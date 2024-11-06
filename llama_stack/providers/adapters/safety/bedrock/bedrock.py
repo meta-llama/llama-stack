@@ -9,12 +9,10 @@ import logging
 
 from typing import Any, Dict, List
 
-import boto3
-
 from llama_stack.apis.safety import *  # noqa
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
-from llama_stack.providers.utils.refreshable_boto_session import RefreshableBotoSession
+from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 from .config import BedrockSafetyConfig
 
@@ -27,30 +25,6 @@ BEDROCK_SUPPORTED_SHIELDS = [
 ]
 
 
-def _create_bedrock_client(config: BedrockSafetyConfig, name: str):
-    if config.aws_access_key_id and config.aws_secret_access_key:
-        session_args = {
-            "aws_access_key_id": config.aws_access_key_id,
-            "aws_secret_access_key": config.aws_secret_access_key,
-            "aws_session_token": config.aws_session_token,
-            "region_name": config.region_name,
-            "profile_name": config.profile_name,
-        }
-        # Remove None values
-        session_args = {k: v for k, v in session_args.items() if v is not None}
-
-        boto3_session = boto3.session.Session(**session_args)
-        return boto3_session.client(name)
-    else:
-        return (
-            RefreshableBotoSession(
-                region_name=config.region_name, profile_name=config.profile_name
-            )
-            .refreshable_session()
-            .client(name)
-        )
-
-
 class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
     def __init__(self, config: BedrockSafetyConfig) -> None:
         self.config = config
@@ -58,10 +32,8 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
 
     async def initialize(self) -> None:
         try:
-            self.bedrock_runtime_client = _create_bedrock_client(
-                self.config, "bedrock-runtime"
-            )
-            self.bedrock_client = _create_bedrock_client(self.config, "bedrock")
+            self.bedrock_runtime_client = create_bedrock_client(self.config)
+            self.bedrock_client = create_bedrock_client(self.config, "bedrock")
         except Exception as e:
             raise RuntimeError("Error initializing BedrockSafetyAdapter") from e
 

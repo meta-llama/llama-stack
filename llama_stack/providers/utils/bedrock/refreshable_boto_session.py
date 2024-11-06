@@ -31,7 +31,7 @@ class RefreshableBotoSession:
         profile_name: str = None,
         sts_arn: str = None,
         session_name: str = None,
-        session_ttl: int = 3000,
+        session_ttl: int = 30000,
     ):
         """
         Initialize `RefreshableBotoSession`
