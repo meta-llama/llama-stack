@@ -28,11 +28,11 @@ from llama_stack.apis.common.type_system import ParamType
 @json_schema_type
 class ScoringConfigType(Enum):
     llm_as_judge = "llm_as_judge"
-    answer_parsing = "answer_parsing"
+    regex_parser = "regex_parser"
 
 
 @json_schema_type
-class LLMAsJudgeScoringFnConfig(BaseModel):
+class LLMAsJudgeScoringFnParams(BaseModel):
     type: Literal[ScoringConfigType.llm_as_judge.value] = (  # type: ignore
         ScoringConfigType.llm_as_judge.value
     )
@@ -42,20 +42,20 @@ class LLMAsJudgeScoringFnConfig(BaseModel):
 
 
 @json_schema_type
-class AnswerParsingScoringFnConfig(BaseModel):
-    type: Literal[ScoringConfigType.answer_parsing.value] = (  # type: ignore
-        ScoringConfigType.answer_parsing.value
+class RegexParserScoringFnParams(BaseModel):
+    type: Literal[ScoringConfigType.regex_parser.value] = (  # type: ignore
+        ScoringConfigType.regex_parser.value
     )
-    parsing_regex: Optional[List[str]] = Field(
+    parsing_regexes: Optional[List[str]] = Field(
         description="Regex to extract the answer from generated response",
         default_factory=list,
     )
 
 
-ScoringFnConfig = Annotated[
+ScoringFnParams = Annotated[
     Union[
-        LLMAsJudgeScoringFnConfig,
-        AnswerParsingScoringFnConfig,
+        LLMAsJudgeScoringFnParams,
+        RegexParserScoringFnParams,
     ],
     Field(discriminator="type"),
 ]
@@ -72,8 +72,8 @@ class ScoringFnDef(BaseModel):
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
     )
-    config: Optional[ScoringFnConfig] = Field(  # type: ignore
-        description="The configuration for the scoring function for benchmark eval, we could override this for app eval",
+    params: Optional[ScoringFnParams] = Field(  # type: ignore
+        description="The parameters for the scoring function for benchmark eval, we could override this for app eval",
         default=None,
     )
     # We can optionally add information here to support packaging of code, etc.

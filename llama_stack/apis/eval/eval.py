@@ -46,7 +46,7 @@ class BenchmarkEvalTaskConfig(BaseModel):
 class AppEvalTaskConfig(BaseModel):
     type: Literal["app"] = "app"
     eval_candidate: EvalCandidate  # type: ignore
-    scoring_functions_config: Dict[str, ScoringFnConfig] = Field(
+    scoring_functions_params: Dict[str, ScoringFnParams] = Field(  # type: ignore
         description="Map between scoring function id and parameters",
         default_factory=dict,
     )
