@@ -6,8 +6,6 @@ distribution_spec:
     memory:
     - meta-reference
     - remote::weaviate
-    - remote::chromadb
-    - remote::pgvector
     safety: meta-reference
     agents: meta-reference
     telemetry: meta-reference

@@ -145,11 +145,12 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 class RemoteProviderConfig(BaseModel):
     host: str = "localhost"
-    port: int
+    port: int = 0
+    protocol: str = "http"
 
     @property
     def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
+        return f"{self.protocol}://{self.host}:{self.port}"
 
 
 @json_schema_type
