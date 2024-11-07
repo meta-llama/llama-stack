@@ -24,8 +24,8 @@ def available_providers() -> List[ProviderSpec]:
                 "transformers",
                 "torch --index-url https://download.pytorch.org/whl/cpu",
             ],
-            module="llama_stack.providers.impls.meta_reference.safety",
-            config_class="llama_stack.providers.impls.meta_reference.safety.SafetyConfig",
+            module="llama_stack.providers.inline.meta_reference.safety",
+            config_class="llama_stack.providers.inline.meta_reference.safety.SafetyConfig",
             api_dependencies=[
                 Api.inference,
             ],
@@ -35,8 +35,8 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="sample",
                 pip_packages=[],
-                module="llama_stack.providers.adapters.safety.sample",
-                config_class="llama_stack.providers.adapters.safety.sample.SampleConfig",
+                module="llama_stack.providers.remote.safety.sample",
+                config_class="llama_stack.providers.remote.safety.sample.SampleConfig",
             ),
         ),
         remote_provider_spec(
@@ -44,20 +44,8 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="bedrock",
                 pip_packages=["boto3"],
-                module="llama_stack.providers.adapters.safety.bedrock",
-                config_class="llama_stack.providers.adapters.safety.bedrock.BedrockSafetyConfig",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.safety,
-            adapter=AdapterSpec(
-                adapter_type="together",
-                pip_packages=[
-                    "together",
-                ],
-                module="llama_stack.providers.adapters.safety.together",
-                config_class="llama_stack.providers.adapters.safety.together.TogetherSafetyConfig",
-                provider_data_validator="llama_stack.providers.adapters.safety.together.TogetherProviderDataValidator",
+                module="llama_stack.providers.remote.safety.bedrock",
+                config_class="llama_stack.providers.remote.safety.bedrock.BedrockSafetyConfig",
             ),
         ),
         InlineProviderSpec(
@@ -66,8 +54,8 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[
                 "codeshield",
             ],
-            module="llama_stack.providers.impls.meta_reference.codeshield",
-            config_class="llama_stack.providers.impls.meta_reference.codeshield.CodeShieldConfig",
+            module="llama_stack.providers.inline.meta_reference.codeshield",
+            config_class="llama_stack.providers.inline.meta_reference.codeshield.CodeShieldConfig",
             api_dependencies=[],
         ),
     ]

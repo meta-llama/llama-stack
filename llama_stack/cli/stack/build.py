@@ -12,6 +12,10 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
+from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+
 TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
 
 
@@ -176,6 +180,66 @@ class StackBuild(Subcommand):
                 return
             self._run_stack_build_command_from_build_config(build_config)
 
+    def _generate_run_config(self, build_config: BuildConfig, build_dir: Path) -> None:
+        """
+        Generate a run.yaml template file for user to edit from a build.yaml file
+        """
+        import json
+
+        import yaml
+        from termcolor import cprint
+
+        from llama_stack.distribution.build import ImageType
+
+        apis = list(build_config.distribution_spec.providers.keys())
+        run_config = StackRunConfig(
+            built_at=datetime.now(),
+            docker_image=(
+                build_config.name
+                if build_config.image_type == ImageType.docker.value
+                else None
+            ),
+            image_name=build_config.name,
+            conda_env=(
+                build_config.name
+                if build_config.image_type == ImageType.conda.value
+                else None
+            ),
+            apis=apis,
+            providers={},
+        )
+        # build providers dict
+        provider_registry = get_provider_registry()
+        for api in apis:
+            run_config.providers[api] = []
+            provider_types = build_config.distribution_spec.providers[api]
+            if isinstance(provider_types, str):
+                provider_types = [provider_types]
+
+            for i, provider_type in enumerate(provider_types):
+                p_spec = Provider(
+                    provider_id=f"{provider_type}-{i}",
+                    provider_type=provider_type,
+                    config={},
+                )
+                config_type = instantiate_class_type(
+                    provider_registry[Api(api)][provider_type].config_class
+                )
+                p_spec.config = config_type()
+                run_config.providers[api].append(p_spec)
+
+        os.makedirs(build_dir, exist_ok=True)
+        run_config_file = build_dir / f"{build_config.name}-run.yaml"
+
+        with open(run_config_file, "w") as f:
+            to_write = json.loads(run_config.model_dump_json())
+            f.write(yaml.dump(to_write, sort_keys=False))
+
+        cprint(
+            f"You can now edit {run_config_file} and run `llama stack run {run_config_file}`",
+            color="green",
+        )
+
     def _run_stack_build_command_from_build_config(
         self, build_config: BuildConfig
     ) -> None:
@@ -183,48 +247,24 @@ class StackBuild(Subcommand):
         import os
 
         import yaml
-        from termcolor import cprint
 
-        from llama_stack.distribution.build import build_image, ImageType
+        from llama_stack.distribution.build import build_image
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.distribution.utils.serialize import EnumEncoder
 
         # save build.yaml spec for building same distribution again
-        if build_config.image_type == ImageType.docker.value:
-            # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
-            llama_stack_path = Path(
-                os.path.abspath(__file__)
-            ).parent.parent.parent.parent
-            build_dir = llama_stack_path / "tmp/configs/"
-        else:
-            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
-
+        build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
         os.makedirs(build_dir, exist_ok=True)
         build_file_path = build_dir / f"{build_config.name}-build.yaml"
 
         with open(build_file_path, "w") as f:
-            to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
+            to_write = json.loads(build_config.model_dump_json())
             f.write(yaml.dump(to_write, sort_keys=False))
 
         return_code = build_image(build_config, build_file_path)
         if return_code != 0:
             return
 
-        configure_name = (
-            build_config.name
-            if build_config.image_type == "conda"
-            else (f"llamastack-{build_config.name}")
-        )
-        if build_config.image_type == "conda":
-            cprint(
-                f"You can now run `llama stack configure {configure_name}`",
-                color="green",
-            )
-        else:
-            cprint(
-                f"You can now edit your run.yaml file and run `docker run -it -p 5000:5000 {build_config.name}`. See full command in llama-stack/distributions/",
-                color="green",
-            )
+        self._generate_run_config(build_config, build_dir)
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json

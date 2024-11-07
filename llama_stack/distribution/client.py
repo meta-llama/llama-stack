@@ -83,6 +83,7 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
                 j = response.json()
                 if j is None:
                     return None
+                # print(f"({protocol.__name__}) Returning {j}, type {return_type}")
                 return parse_obj_as(return_type, j)
 
         async def _call_streaming(self, method_name: str, *args, **kwargs) -> Any:
@@ -102,14 +103,15 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
                         if line.startswith("data:"):
                             data = line[len("data: ") :]
                             try:
+                                data = json.loads(data)
                                 if "error" in data:
                                     cprint(data, "red")
                                     continue
 
-                                yield parse_obj_as(return_type, json.loads(data))
+                                yield parse_obj_as(return_type, data)
                             except Exception as e:
-                                print(data)
                                 print(f"Error with parsing or validation: {e}")
+                                print(data)
 
         def httpx_request_params(self, method_name: str, *args, **kwargs) -> dict:
             webmethod, sig = self.routes[method_name]
@@ -141,14 +143,21 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
             else:
                 data.update(convert(kwargs))
 
-            return dict(
+            ret = dict(
                 method=webmethod.method or "POST",
                 url=url,
-                headers={"Content-Type": "application/json"},
-                params=params,
-                json=data,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
                 timeout=30,
             )
+            if params:
+                ret["params"] = params
+            if data:
+                ret["json"] = data
+
+            return ret
 
     # Add protocol methods to the wrapper
     for p in protocols:

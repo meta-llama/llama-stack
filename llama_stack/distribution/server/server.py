@@ -31,6 +31,8 @@ from llama_stack.distribution.distribution import (
     get_provider_registry,
 )
 
+from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
@@ -38,9 +40,10 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
-
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.distribution.store import CachedDiskDistributionRegistry
+from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
 from .endpoints import get_all_api_endpoints
 
@@ -206,7 +209,8 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        async for item in await event_gen:
+        event_gen = await event_gen
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
@@ -226,7 +230,6 @@ async def sse_generator(event_gen):
 
 
 def create_dynamic_typed_route(func: Any, method: str):
-
     async def endpoint(request: Request, **kwargs):
         await start_trace(func.__name__)
 
@@ -278,8 +281,23 @@ def main(
         config = StackRunConfig(**yaml.safe_load(fp))
 
     app = FastAPI()
+    # instantiate kvstore for storing and retrieving distribution metadata
+    if config.metadata_store:
+        dist_kvstore = asyncio.run(kvstore_impl(config.metadata_store))
+    else:
+        dist_kvstore = asyncio.run(
+            kvstore_impl(
+                SqliteKVStoreConfig(
+                    db_path=(
+                        DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
+                    ).as_posix()
+                )
+            )
+        )
 
-    impls = asyncio.run(resolve_impls(config, get_provider_registry()))
+    dist_registry = CachedDiskDistributionRegistry(dist_kvstore)
+
+    impls = asyncio.run(resolve_impls(config, get_provider_registry(), dist_registry))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 

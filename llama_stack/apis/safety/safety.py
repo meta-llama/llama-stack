@@ -39,7 +39,7 @@ class RunShieldResponse(BaseModel):
 
 
 class ShieldStore(Protocol):
-    def get_shield(self, identifier: str) -> ShieldDef: ...
+    async def get_shield(self, identifier: str) -> ShieldDef: ...
 
 
 @runtime_checkable
@@ -48,5 +48,5 @@ class Safety(Protocol):
 
     @webmethod(route="/safety/run_shield")
     async def run_shield(
-        self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
+        self, identifier: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse: ...
