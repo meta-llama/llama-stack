@@ -57,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together", "remote"]:
+    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",
@@ -70,6 +70,18 @@ def pytest_addoption(parser):
         action="store",
         default=None,
         help="Specify the safety model to use for testing",
+    )
+    parser.addoption(
+        "--bedrock-guardrail-id",
+        action="store",
+        default=None,
+        help="Specify the guard rail ID to use for testing bedrock",
+    )
+    parser.addoption(
+        "--bedrock-guardrail-version",
+        action="store",
+        default=None,
+        help="Specify the guard rail version to use for testing bedrock",
     )
 
 
