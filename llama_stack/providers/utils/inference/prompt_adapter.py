@@ -90,13 +90,15 @@ async def convert_image_media_to_url(
         return base64.b64encode(content).decode("utf-8")
 
 
-async def convert_message_to_dict(message: Message) -> dict:
+# TODO: name this function better! this is about OpenAI compatibile image
+# media conversion of the message. this should probably go in openai_compat.py
+async def convert_message_to_dict(message: Message, download: bool = False) -> dict:
     async def _convert_content(content) -> dict:
         if isinstance(content, ImageMedia):
             return {
                 "type": "image_url",
                 "image_url": {
-                    "url": await convert_image_media_to_url(content),
+                    "url": await convert_image_media_to_url(content, download=download),
                 },
             }
         else:

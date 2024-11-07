@@ -20,8 +20,25 @@ THIS_DIR = Path(__file__).parent
 
 class TestVisionModelInference:
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "image, expected_strings",
+        [
+            (
+                ImageMedia(image=PIL_Image.open(THIS_DIR / "pasta.jpeg")),
+                ["spaghetti"],
+            ),
+            (
+                ImageMedia(
+                    image=URL(
+                        uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
+                    )
+                ),
+                ["puppy"],
+            ),
+        ],
+    )
     async def test_vision_chat_completion_non_streaming(
-        self, inference_model, inference_stack
+        self, inference_model, inference_stack, image, expected_strings
     ):
         inference_impl, _ = inference_stack
 
@@ -31,42 +48,27 @@ class TestVisionModelInference:
             "remote::together",
             "remote::fireworks",
             "remote::ollama",
+            "remote::vllm",
         ):
             pytest.skip(
                 "Other inference providers don't support vision chat completion() yet"
             )
 
-        images = [
-            ImageMedia(image=PIL_Image.open(THIS_DIR / "pasta.jpeg")),
-            ImageMedia(
-                image=URL(
-                    uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
-                )
-            ),
-        ]
+        response = await inference_impl.chat_completion(
+            model=inference_model,
+            messages=[
+                UserMessage(content="You are a helpful assistant."),
+                UserMessage(content=[image, "Describe this image in two sentences."]),
+            ],
+            stream=False,
+            sampling_params=SamplingParams(max_tokens=100),
+        )
 
-        # These are a bit hit-and-miss, need to be careful
-        expected_strings_to_check = [
-            ["spaghetti"],
-            ["puppy"],
-        ]
-        for image, expected_strings in zip(images, expected_strings_to_check):
-            response = await inference_impl.chat_completion(
-                model=inference_model,
-                messages=[
-                    SystemMessage(content="You are a helpful assistant."),
-                    UserMessage(
-                        content=[image, "Describe this image in two sentences."]
-                    ),
-                ],
-                stream=False,
-            )
-
-            assert isinstance(response, ChatCompletionResponse)
-            assert response.completion_message.role == "assistant"
-            assert isinstance(response.completion_message.content, str)
-            for expected_string in expected_strings:
-                assert expected_string in response.completion_message.content
+        assert isinstance(response, ChatCompletionResponse)
+        assert response.completion_message.role == "assistant"
+        assert isinstance(response.completion_message.content, str)
+        for expected_string in expected_strings:
+            assert expected_string in response.completion_message.content
 
     @pytest.mark.asyncio
     async def test_vision_chat_completion_streaming(
@@ -80,6 +82,7 @@ class TestVisionModelInference:
             "remote::together",
             "remote::fireworks",
             "remote::ollama",
+            "remote::vllm",
         ):
             pytest.skip(
                 "Other inference providers don't support vision chat completion() yet"
@@ -101,12 +104,13 @@ class TestVisionModelInference:
                 async for r in await inference_impl.chat_completion(
                     model=inference_model,
                     messages=[
-                        SystemMessage(content="You are a helpful assistant."),
+                        UserMessage(content="You are a helpful assistant."),
                         UserMessage(
                             content=[image, "Describe this image in two sentences."]
                         ),
                     ],
                     stream=True,
+                    sampling_params=SamplingParams(max_tokens=100),
                 )
             ]
 

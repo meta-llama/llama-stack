@@ -19,7 +19,7 @@ from .utils import group_chunks
 
 # How to run this test:
 #
-# pytest -v -s llama_stack/providers/tests/inference/test_inference.py
+# pytest -v -s llama_stack/providers/tests/inference/test_text_inference.py
 #   -m "(fireworks or ollama) and llama_3b"
 #   --env FIREWORKS_API_KEY=<your_api_key>
 
