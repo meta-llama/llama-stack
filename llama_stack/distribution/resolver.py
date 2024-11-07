@@ -8,6 +8,8 @@ import inspect
 
 from typing import Any, Dict, List, Set
 
+from termcolor import cprint
+
 from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
@@ -100,6 +102,12 @@ async def resolve_impls(
                 )
 
             p = provider_registry[api][provider.provider_type]
+            if p.deprecation_warning:
+                cprint(
+                    f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
+                    "red",
+                    attrs=["bold"],
+                )
             p.deps__ = [a.value for a in p.api_dependencies]
             spec = ProviderWithSpec(
                 spec=p,

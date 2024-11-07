@@ -7,11 +7,17 @@ from enum import Enum
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from .....apis.common.job_types import Job
-from .....apis.eval.eval import BenchmarkEvalTaskConfig
+from .....apis.eval.eval import (
+    AppEvalTaskConfig,
+    BenchmarkEvalTaskConfig,
+    Eval,
+    EvalTaskConfig,
+    EvaluateResponse,
+    JobStatus,
+)
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
 from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring
@@ -19,6 +25,10 @@ from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
 from .config import MetaReferenceEvalConfig
 
+
+# NOTE: this is the default eval task identifier for app eval
+# it is used to make the router work for all app evals
+# For app eval using other eval providers, the eval task identifier will be different
 DEFAULT_EVAL_TASK_IDENTIFIER = "meta-reference::app_eval"
 
 
@@ -88,21 +98,21 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
                 f"Dataset {dataset_id} does not have a correct input schema in {expected_schemas}"
             )
 
-    async def run_benchmark_eval(
+    async def run_benchmark(
         self,
         benchmark_id: str,
-        eval_task_config: BenchmarkEvalTaskConfig,
+        benchmark_config: BenchmarkEvalTaskConfig,
     ) -> Job:
         raise NotImplementedError("Benchmark eval is not implemented yet")
 
     async def run_eval(
         self,
-        eval_task_def: EvalTaskDef,
-        eval_task_config: EvalTaskConfig,
+        task: EvalTaskDef,
+        task_config: AppEvalTaskConfig,
     ) -> Job:
-        dataset_id = eval_task_def.dataset_id
-        candidate = eval_task_config.eval_candidate
-        scoring_functions = eval_task_def.scoring_functions
+        dataset_id = task.dataset_id
+        candidate = task_config.eval_candidate
+        scoring_functions = task.scoring_functions
 
         await self.validate_eval_input_dataset_schema(dataset_id=dataset_id)
         all_rows = await self.datasetio_api.get_rows_paginated(
@@ -112,7 +122,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         res = await self.evaluate_rows(
             input_rows=all_rows.rows,
             scoring_functions=scoring_functions,
-            eval_task_config=eval_task_config,
+            task_config=task_config,
         )
 
         # TODO: currently needs to wait for generation before returning
@@ -125,9 +135,10 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        eval_task_config: EvalTaskConfig,
+        task_config: EvalTaskConfig,
+        eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse:
-        candidate = eval_task_config.eval_candidate
+        candidate = task_config.eval_candidate
         if candidate.type == "agent":
             raise NotImplementedError(
                 "Evaluation with generation has not been implemented for agents"
@@ -179,23 +190,33 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             for input_r, generated_r in zip(input_rows, generations)
         ]
 
+        if task_config.type == "app" and task_config.scoring_params is not None:
+            scoring_functions_dict = {
+                scoring_fn_id: task_config.scoring_params.get(scoring_fn_id, None)
+                for scoring_fn_id in scoring_functions
+            }
+        else:
+            scoring_functions_dict = {
+                scoring_fn_id: None for scoring_fn_id in scoring_functions
+            }
+
         score_response = await self.scoring_api.score(
-            input_rows=score_input_rows, scoring_functions=scoring_functions
+            input_rows=score_input_rows, scoring_functions=scoring_functions_dict
         )
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, job_id: str) -> Optional[JobStatus]:
+    async def job_status(self, job_id: str, eval_task_id: str) -> Optional[JobStatus]:
         if job_id in self.jobs:
             return JobStatus.completed
 
         return None
 
-    async def job_cancel(self, job_id: str) -> None:
+    async def job_cancel(self, job_id: str, eval_task_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
-    async def job_result(self, job_id: str) -> EvaluateResponse:
-        status = await self.job_status(job_id)
+    async def job_result(self, job_id: str, eval_task_id: str) -> EvaluateResponse:
+        status = await self.job_status(job_id, eval_task_id)
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 

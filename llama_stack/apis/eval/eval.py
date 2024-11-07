@@ -38,14 +38,16 @@ EvalCandidate = Annotated[
 
 @json_schema_type
 class BenchmarkEvalTaskConfig(BaseModel):
-    eval_candidate: EvalCandidate  # type: ignore
+    type: Literal["benchmark"] = "benchmark"
+    eval_candidate: EvalCandidate
 
 
 @json_schema_type
 class AppEvalTaskConfig(BaseModel):
-    eval_candidate: EvalCandidate  # type: ignore
-    scoring_params: Dict[str, ScoringFnParams] = Field(  # type: ignore
-        description="Map between scoring function id and parameters",
+    type: Literal["app"] = "app"
+    eval_candidate: EvalCandidate
+    scoring_params: Dict[str, ScoringFnParams] = Field(
+        description="Map between scoring function id and parameters for each scoring function you want to run",
         default_factory=dict,
     )
     # we could optinally add any specific dataset config here
@@ -64,18 +66,18 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/run_benchmark_eval", method="POST")
-    async def run_benchmark_eval(
+    @webmethod(route="/eval/run_benchmark", method="POST")
+    async def run_benchmark(
         self,
         benchmark_id: str,
-        eval_task_config: BenchmarkEvalTaskConfig,
+        benchmark_config: BenchmarkEvalTaskConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/run_eval", method="POST")
     async def run_eval(
         self,
-        eval_task_def: EvalTaskDef,
-        eval_task_config: EvalTaskConfig,
+        task: EvalTaskDef,
+        task_config: AppEvalTaskConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/evaluate_rows", method="POST")
@@ -83,14 +85,17 @@ class Eval(Protocol):
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        eval_task_config: EvalTaskConfig,  # type: ignore
+        task_config: EvalTaskConfig,
+        eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/job/status", method="GET")
-    async def job_status(self, job_id: str) -> Optional[JobStatus]: ...
+    async def job_status(
+        self, job_id: str, eval_task_id: str
+    ) -> Optional[JobStatus]: ...
 
     @webmethod(route="/eval/job/cancel", method="POST")
-    async def job_cancel(self, job_id: str) -> None: ...
+    async def job_cancel(self, job_id: str, eval_task_id: str) -> None: ...
 
     @webmethod(route="/eval/job/result", method="GET")
-    async def job_result(self, job_id: str) -> EvaluateResponse: ...
+    async def job_result(self, job_id: str, eval_task_id: str) -> EvaluateResponse: ...
