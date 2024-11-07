@@ -10,10 +10,10 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.adapters.inference.bedrock import BedrockConfig
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
+from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
@@ -141,19 +141,13 @@ def inference_bedrock() -> ProviderFixture:
 
 
 INFERENCE_FIXTURES = [
-    
     "meta_reference",
-   
     "ollama",
-   
     "fireworks",
-   
     "together",
-   
     "vllm_remote",
     "remote",
     "bedrock",
-,
 ]
 
 
