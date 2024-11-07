@@ -10,7 +10,7 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.meta_reference.inference import (
+from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
 

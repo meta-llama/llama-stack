@@ -36,8 +36,16 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.memory,
             provider_type="meta-reference",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
-            module="llama_stack.providers.inline.meta_reference.memory",
-            config_class="llama_stack.providers.inline.meta_reference.memory.FaissImplConfig",
+            module="llama_stack.providers.inline.memory.faiss",
+            config_class="llama_stack.providers.inline.memory.faiss.FaissImplConfig",
+            deprecation_warning="Please use the `faiss` provider instead.",
+        ),
+        InlineProviderSpec(
+            api=Api.memory,
+            provider_type="faiss",
+            pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
+            module="llama_stack.providers.inline.memory.faiss",
+            config_class="llama_stack.providers.inline.memory.faiss.FaissImplConfig",
         ),
         remote_provider_spec(
             Api.memory,

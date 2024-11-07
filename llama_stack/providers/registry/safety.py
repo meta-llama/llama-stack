@@ -24,8 +24,8 @@ def available_providers() -> List[ProviderSpec]:
                 "transformers",
                 "torch --index-url https://download.pytorch.org/whl/cpu",
             ],
-            module="llama_stack.providers.inline.meta_reference.safety",
-            config_class="llama_stack.providers.inline.meta_reference.safety.SafetyConfig",
+            module="llama_stack.providers.inline.safety.meta_reference",
+            config_class="llama_stack.providers.inline.safety.meta_reference.SafetyConfig",
             api_dependencies=[
                 Api.inference,
             ],
@@ -54,8 +54,8 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[
                 "codeshield",
             ],
-            module="llama_stack.providers.inline.meta_reference.codeshield",
-            config_class="llama_stack.providers.inline.meta_reference.codeshield.CodeShieldConfig",
+            module="llama_stack.providers.inline.safety.meta_reference",
+            config_class="llama_stack.providers.inline.safety.meta_reference.CodeShieldConfig",
             api_dependencies=[],
         ),
     ]

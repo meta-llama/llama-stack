@@ -5,13 +5,13 @@
 # the root directory of this source tree.
 
 from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel
 
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 from llama_stack.providers.utils.kvstore.config import (
     KVStoreConfig,
     SqliteKVStoreConfig,
 )
+from pydantic import BaseModel
 
 
 @json_schema_type
