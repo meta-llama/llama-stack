@@ -28,12 +28,12 @@ from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_src_rank,
 )
 
+from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
+
 from pydantic import BaseModel, Field
 
 from torch.distributed.launcher.api import elastic_launch, LaunchConfig
 from typing_extensions import Annotated
-
-from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
 
 from .generation import TokenResult
 

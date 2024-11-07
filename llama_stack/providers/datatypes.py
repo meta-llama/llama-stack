@@ -82,6 +82,10 @@ class ProviderSpec(BaseModel):
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
+    deprecation_warning: Optional[str] = Field(
+        default=None,
+        description="If this provider is deprecated, specify the warning message here",
+    )
 
     # used internally by the resolver; this is a hack for now
     deps__: List[str] = Field(default_factory=list)

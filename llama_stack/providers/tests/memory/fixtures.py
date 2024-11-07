@@ -11,7 +11,7 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.meta_reference.memory import FaissImplConfig
+from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
 
