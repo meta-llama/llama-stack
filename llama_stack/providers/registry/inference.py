@@ -117,7 +117,7 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.remote.inference.together",
                 config_class="llama_stack.providers.remote.inference.together.TogetherImplConfig",
-                provider_data_validator="llama_stack.providers.remote.safety.together.TogetherProviderDataValidator",
+                provider_data_validator="llama_stack.providers.remote.inference.together.TogetherProviderDataValidator",
             ),
         ),
         remote_provider_spec(
