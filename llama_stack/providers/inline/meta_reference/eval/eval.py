@@ -25,6 +25,10 @@ from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
 from .config import MetaReferenceEvalConfig
 
+
+# NOTE: this is the default eval task identifier for app eval
+# it is used to make the router work for all app evals
+# For app eval using other eval providers, the eval task identifier will be different
 DEFAULT_EVAL_TASK_IDENTIFIER = "meta-reference::app_eval"
 
 
@@ -132,6 +136,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
         eval_task_config: EvalTaskConfig,
+        eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse:
         candidate = eval_task_config.eval_candidate
         if candidate.type == "agent":
@@ -204,16 +209,20 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(self, job_id: str) -> Optional[JobStatus]:
+    async def job_status(
+        self, job_id: str, eval_task_id: Optional[str] = None
+    ) -> Optional[JobStatus]:
         if job_id in self.jobs:
             return JobStatus.completed
 
         return None
 
-    async def job_cancel(self, job_id: str) -> None:
+    async def job_cancel(self, job_id: str, eval_task_id: Optional[str] = None) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
-    async def job_result(self, job_id: str) -> EvaluateResponse:
+    async def job_result(
+        self, job_id: str, eval_task_id: Optional[str] = None
+    ) -> EvaluateResponse:
         status = await self.job_status(job_id)
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")

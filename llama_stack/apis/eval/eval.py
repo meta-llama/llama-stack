@@ -86,13 +86,20 @@ class Eval(Protocol):
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
         eval_task_config: EvalTaskConfig,
+        eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/job/status", method="GET")
-    async def job_status(self, job_id: str) -> Optional[JobStatus]: ...
+    async def job_status(
+        self, job_id: str, eval_task_id: Optional[str] = None
+    ) -> Optional[JobStatus]: ...
 
     @webmethod(route="/eval/job/cancel", method="POST")
-    async def job_cancel(self, job_id: str) -> None: ...
+    async def job_cancel(
+        self, job_id: str, eval_task_id: Optional[str] = None
+    ) -> None: ...
 
     @webmethod(route="/eval/job/result", method="GET")
-    async def job_result(self, job_id: str) -> EvaluateResponse: ...
+    async def job_result(
+        self, job_id: str, eval_task_id: Optional[str] = None
+    ) -> EvaluateResponse: ...
