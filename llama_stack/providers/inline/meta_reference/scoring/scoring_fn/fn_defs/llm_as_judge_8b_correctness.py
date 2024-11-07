@@ -31,6 +31,10 @@ llm_as_judge_8b_correctness = ScoringFnDef(
     params=LLMAsJudgeScoringFnParams(
         prompt_template=JUDGE_PROMPT,
         judge_model="Llama3.1-8B-Instruct",
-        judge_score_regex=[r"Total rating: (\d+)", r"rating: (\d+)", r"Rating: (\d+)"],
+        judge_score_regexes=[
+            r"Total rating: (\d+)",
+            r"rating: (\d+)",
+            r"Rating: (\d+)",
+        ],
     ),
 )

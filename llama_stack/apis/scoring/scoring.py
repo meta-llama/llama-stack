@@ -49,10 +49,14 @@ class Scoring(Protocol):
         self,
         dataset_id: str,
         scoring_functions: List[str],
+        scoring_params: Optional[Dict[str, ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse: ...
 
     @webmethod(route="/scoring/score")
     async def score(
-        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        scoring_params: Optional[Dict[str, ScoringFnParams]] = None,
     ) -> ScoreResponse: ...

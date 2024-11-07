@@ -38,7 +38,10 @@ class LLMAsJudgeScoringFnParams(BaseModel):
     )
     judge_model: str
     prompt_template: Optional[str] = None
-    judge_score_regex: Optional[List[str]] = Field()
+    judge_score_regexes: Optional[List[str]] = Field(
+        description="Regexes to extract the answer from generated response",
+        default_factory=list,
+    )
 
 
 @json_schema_type

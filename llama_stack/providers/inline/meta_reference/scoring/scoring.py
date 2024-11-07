@@ -74,8 +74,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         return scoring_fn_defs_list
 
     async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
-        self.llm_as_judge_fn.register_scoring_fn_def(function_def)
-        self.scoring_fn_id_impls[function_def.identifier] = self.llm_as_judge_fn
+        raise NotImplementedError("Register scoring function not implemented yet")
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -98,6 +97,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self,
         dataset_id: str,
         scoring_functions: List[str],
+        scoring_params: Optional[Dict[str, ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
@@ -106,7 +106,9 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             rows_in_page=-1,
         )
         res = await self.score(
-            input_rows=all_rows.rows, scoring_functions=scoring_functions
+            input_rows=all_rows.rows,
+            scoring_functions=scoring_functions,
+            scoring_params=scoring_params,
         )
         if save_results_dataset:
             # TODO: persist and register dataset on to server for reading
@@ -118,14 +120,22 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         )
 
     async def score(
-        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        scoring_params: Optional[Dict[str, ScoringFnParams]] = None,
     ) -> ScoreResponse:
         res = {}
         for scoring_fn_id in scoring_functions:
             if scoring_fn_id not in self.scoring_fn_id_impls:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
-            score_results = await scoring_fn.score(input_rows, scoring_fn_id)
+            scoring_fn_params = None
+            if scoring_params is not None:
+                scoring_fn_params = scoring_params.get(scoring_fn_id, None)
+            score_results = await scoring_fn.score(
+                input_rows, scoring_fn_id, scoring_fn_params
+            )
             agg_results = await scoring_fn.aggregate(score_results)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
