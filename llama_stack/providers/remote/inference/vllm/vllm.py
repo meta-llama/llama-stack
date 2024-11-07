@@ -22,6 +22,9 @@ from llama_stack.providers.utils.inference.openai_compat import (
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
+    completion_request_to_prompt,
+    convert_message_to_dict,
+    request_has_media,
 )
 
 from .config import VLLMInferenceAdapterConfig
@@ -105,19 +108,25 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest, client: OpenAI
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
-        r = client.completions.create(**params)
+        params = await self._get_params(request)
+        if "messages" in params:
+            r = client.chat.completions.create(**params)
+        else:
+            r = client.completions.create(**params)
         return process_chat_completion_response(r, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest, client: OpenAI
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         # TODO: Can we use client.completions.acreate() or maybe there is another way to directly create an async
         #  generator so this wrapper is not necessary?
         async def _to_async_generator():
-            s = client.completions.create(**params)
+            if "messages" in params:
+                s = client.chat.completions.create(**params)
+            else:
+                s = client.completions.create(**params)
             for chunk in s:
                 yield chunk
 
@@ -127,7 +136,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         ):
             yield chunk
 
-    def _get_params(self, request: ChatCompletionRequest) -> dict:
+    async def _get_params(
+        self, request: Union[ChatCompletionRequest, CompletionRequest]
+    ) -> dict:
         options = get_sampling_options(request.sampling_params)
         if "max_tokens" not in options:
             options["max_tokens"] = self.config.max_tokens
@@ -136,9 +147,28 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         if model is None:
             raise ValueError(f"Unknown model: {request.model}")
 
+        input_dict = {}
+        media_present = request_has_media(request)
+        if isinstance(request, ChatCompletionRequest):
+            if media_present:
+                # vllm does not seem to work well with image urls, so we download the images
+                input_dict["messages"] = [
+                    await convert_message_to_dict(m, download=True)
+                    for m in request.messages
+                ]
+            else:
+                input_dict["prompt"] = chat_completion_request_to_prompt(
+                    request, self.formatter
+                )
+        else:
+            assert (
+                not media_present
+            ), "Together does not support media for Completion requests"
+            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+
         return {
             "model": model.huggingface_repo,
-            "prompt": chat_completion_request_to_prompt(request, self.formatter),
+            **input_dict,
             "stream": request.stream,
             **options,
         }
