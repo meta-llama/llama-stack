@@ -5,16 +5,13 @@
 # the root directory of this source tree.
 from typing import List, Optional
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-
 from llama_stack.apis.datasetio import *  # noqa: F403
 
 from datasets import load_dataset
-
-from llama_stack.apis.common.type_system import StringType
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 
 from .config import HuggingfaceDatasetIOConfig
+from .dataset_defs.llamastack_mmlu import llamastack_mmlu
 
 
 class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
@@ -25,18 +22,8 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def initialize(self) -> None:
         # pre-registered benchmark datasets
-        self.dataset_infos = {
-            "mmlu": DatasetDef(
-                identifier="mmlu",
-                url=URL(uri="https://huggingface.co/datasets/yanxi0830/ls-mmlu"),
-                dataset_schema={
-                    "expected_answer": StringType(),
-                    "input_query": StringType(),
-                    "generated_answer": StringType(),
-                },
-                metadata={"path": "yanxi0830/ls-mmlu", "split": "train"},
-            )
-        }
+        self.pre_registered_datasets = [llamastack_mmlu]
+        self.dataset_infos = {x.identifier: x for x in self.pre_registered_datasets}
 
     async def shutdown(self) -> None: ...
 
