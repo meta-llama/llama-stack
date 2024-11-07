@@ -12,12 +12,10 @@ from llama_stack.providers.inline.meta_reference.safety import (
     LlamaGuardShieldConfig,
     SafetyConfig,
 )
-from llama_stack.providers.remote.safety.together import TogetherSafetyConfig
 
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 
 from ..conftest import ProviderFixture, remote_stack_fixture
-from ..env import get_env_or_fail
 
 
 @pytest.fixture(scope="session")
@@ -49,23 +47,7 @@ def safety_meta_reference(safety_model) -> ProviderFixture:
     )
 
 
-@pytest.fixture(scope="session")
-def safety_together() -> ProviderFixture:
-    return ProviderFixture(
-        providers=[
-            Provider(
-                provider_id="together",
-                provider_type="remote::together",
-                config=TogetherSafetyConfig().model_dump(),
-            )
-        ],
-        provider_data=dict(
-            together_api_key=get_env_or_fail("TOGETHER_API_KEY"),
-        ),
-    )
-
-
-SAFETY_FIXTURES = ["meta_reference", "together", "remote"]
+SAFETY_FIXTURES = ["meta_reference", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")

@@ -76,7 +76,7 @@ llama stack build --list-templates
 |                              |     "meta-reference",                      |                                                                                  |
 |                              |     "remote::weaviate"                     |                                                                                  |
 |                              |   ],                                       |                                                                                  |
-|                              |   "safety": "remote::together",            |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
 |                              |   "agents": "meta-reference",              |                                                                                  |
 |                              |   "telemetry": "meta-reference"            |                                                                                  |
 |                              | }                                          |                                                                                  |
