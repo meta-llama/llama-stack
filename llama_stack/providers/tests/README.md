@@ -28,21 +28,21 @@ We have the following orthogonal parametrizations (pytest "marks") for inference
 
 If you want to run a test with the llama_8b model with fireworks, you can use:
 ```bash
-pytest -s -v llama_stack/providers/tests/inference/test_inference.py \
+pytest -s -v llama_stack/providers/tests/inference/test_text_inference.py \
   -m "fireworks and llama_8b" \
   --env FIREWORKS_API_KEY=<...>
 ```
 
 You can make it more complex to run both llama_8b and llama_3b on Fireworks, but only llama_3b with Ollama:
 ```bash
-pytest -s -v llama_stack/providers/tests/inference/test_inference.py \
+pytest -s -v llama_stack/providers/tests/inference/test_text_inference.py \
   -m "fireworks or (ollama and llama_3b)" \
   --env FIREWORKS_API_KEY=<...>
 ```
 
 Finally, you can override the model completely by doing:
 ```bash
-pytest -s -v llama_stack/providers/tests/inference/test_inference.py \
+pytest -s -v llama_stack/providers/tests/inference/test_text_inference.py \
   -m fireworks \
   --inference-model "Llama3.1-70B-Instruct" \
   --env FIREWORKS_API_KEY=<...>
