@@ -54,3 +54,13 @@ class TestScoring:
         for x in scoring_functions:
             assert x in response.results
             assert len(response.results[x].score_rows) == len(rows.rows)
+
+        # score batch
+        response = await scoring_impl.score_batch(
+            dataset_id="test_dataset",
+            scoring_functions=scoring_functions,
+        )
+        assert len(response.results) == len(scoring_functions)
+        for x in scoring_functions:
+            assert x in response.results
+            assert len(response.results[x].score_rows) == 5
