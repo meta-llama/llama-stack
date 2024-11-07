@@ -12,6 +12,8 @@ from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.eval_tasks import *  # noqa: F403
+
 
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.datatypes import *  # noqa: F403
@@ -40,6 +42,8 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> None:
         await p.register_dataset(obj)
     elif api == Api.scoring:
         await p.register_scoring_function(obj)
+    elif api == Api.eval:
+        await p.register_eval_task(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -103,6 +107,11 @@ class CommonRoutingTableImpl(RoutingTable):
                 scoring_functions = await p.list_scoring_functions()
                 await add_objects(scoring_functions, pid, ScoringFnDefWithProvider)
 
+            elif api == Api.eval:
+                p.eval_task_store = self
+                eval_tasks = await p.list_eval_tasks()
+                await add_objects(eval_tasks, pid, EvalTaskDefWithProvider)
+
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
             await p.shutdown()
@@ -121,6 +130,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("DatasetIO", "dataset")
             elif isinstance(self, ScoringFunctionsRoutingTable):
                 return ("Scoring", "scoring_function")
+            elif isinstance(self, EvalTasksRoutingTable):
+                return ("Eval", "eval_task")
             else:
                 raise ValueError("Unknown routing table type")
 
@@ -246,7 +257,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         await self.register_object(dataset_def)
 
 
-class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
+class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
     async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]:
         return await self.get_all_with_type("scoring_fn")
 
@@ -259,3 +270,14 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
         self, function_def: ScoringFnDefWithProvider
     ) -> None:
         await self.register_object(function_def)
+
+
+class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
+    async def list_eval_tasks(self) -> List[ScoringFnDefWithProvider]:
+        return await self.get_all_with_type("eval_task")
+
+    async def get_eval_task(self, name: str) -> Optional[EvalTaskDefWithProvider]:
+        return await self.get_object_by_identifier(name)
+
+    async def register_eval_task(self, eval_task_def: EvalTaskDefWithProvider) -> None:
+        await self.register_object(eval_task_def)

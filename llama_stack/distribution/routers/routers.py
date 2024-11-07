@@ -14,6 +14,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.scoring import *  # noqa: F403
+from llama_stack.apis.eval import *  # noqa: F403
 
 
 class MemoryRouter(Memory):
@@ -252,3 +253,49 @@ class ScoringRouter(Scoring):
             res.update(score_response.results)
 
         return ScoreResponse(results=res)
+
+
+class EvalRouter(Eval):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def run_benchmark_eval(
+        self,
+        benchmark_id: str,
+        eval_task_config: BenchmarkEvalTaskConfig,
+    ) -> Job:
+        pass
+
+    async def run_eval(
+        self,
+        eval_task_def: EvalTaskDef,
+        eval_task_config: EvalTaskConfig,
+    ) -> Job:
+        pass
+
+    @webmethod(route="/eval/evaluate_rows", method="POST")
+    async def evaluate_rows(
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: List[str],
+        eval_task_config: EvalTaskConfig,  # type: ignore
+    ) -> EvaluateResponse:
+        pass
+
+    async def job_status(self, job_id: str) -> Optional[JobStatus]:
+        pass
+
+    async def job_cancel(self, job_id: str) -> None:
+        pass
+
+    async def job_result(self, job_id: str) -> EvaluateResponse:
+        pass

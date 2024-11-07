@@ -12,6 +12,7 @@ from llama_stack.distribution.store import DistributionRegistry
 
 from .routing_tables import (
     DatasetsRoutingTable,
+    EvalTasksRoutingTable,
     MemoryBanksRoutingTable,
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
@@ -31,6 +32,7 @@ async def get_routing_table_impl(
         "shields": ShieldsRoutingTable,
         "datasets": DatasetsRoutingTable,
         "scoring_functions": ScoringFunctionsRoutingTable,
+        "eval_tasks": EvalTasksRoutingTable,
     }
 
     if api.value not in api_to_tables:
@@ -44,6 +46,7 @@ async def get_routing_table_impl(
 async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> Any:
     from .routers import (
         DatasetIORouter,
+        EvalRouter,
         InferenceRouter,
         MemoryRouter,
         SafetyRouter,
@@ -56,6 +59,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         "safety": SafetyRouter,
         "datasetio": DatasetIORouter,
         "scoring": ScoringRouter,
+        "eval": EvalRouter,
     }
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")

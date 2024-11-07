@@ -10,34 +10,37 @@ from ..conftest import get_provider_fixture_overrides
 
 from ..datasetio.fixtures import DATASETIO_FIXTURES
 from ..inference.fixtures import INFERENCE_FIXTURES
-from .fixtures import SCORING_FIXTURES
+from ..scoring.fixtures import SCORING_FIXTURES
+from .fixtures import EVAL_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
+            "eval": "meta_reference",
             "scoring": "meta_reference",
             "datasetio": "meta_reference",
             "inference": "fireworks",
         },
-        id="meta_reference_scoring_fireworks_inference",
-        marks=pytest.mark.meta_reference_scoring_fireworks_inference,
+        id="meta_reference_eval_fireworks_inference",
+        marks=pytest.mark.meta_reference_eval_fireworks_inference,
     ),
     pytest.param(
         {
+            "eval": "meta_reference",
             "scoring": "meta_reference",
             "datasetio": "meta_reference",
             "inference": "together",
         },
-        id="meta_reference_scoring_together_inference",
-        marks=pytest.mark.meta_reference_scoring_together_inference,
+        id="meta_reference_eval_together_inference",
+        marks=pytest.mark.meta_reference_eval_together_inference,
     ),
 ]
 
 
 def pytest_configure(config):
     for fixture_name in [
-        "meta_reference_scoring_fireworks_inference",
-        "meta_reference_scoring_together_inference",
+        "meta_reference_eval_fireworks_inference",
+        "meta_reference_eval_together_inference",
     ]:
         config.addinivalue_line(
             "markers",
@@ -55,8 +58,9 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if "scoring_stack" in metafunc.fixturenames:
+    if "eval_stack" in metafunc.fixturenames:
         available_fixtures = {
+            "eval": EVAL_FIXTURES,
             "scoring": SCORING_FIXTURES,
             "datasetio": DATASETIO_FIXTURES,
             "inference": INFERENCE_FIXTURES,
@@ -65,4 +69,4 @@ def pytest_generate_tests(metafunc):
             get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )
-        metafunc.parametrize("scoring_stack", combinations, indirect=True)
+        metafunc.parametrize("eval_stack", combinations, indirect=True)

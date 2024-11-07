@@ -15,6 +15,7 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTasks
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.memory import Memory
@@ -46,6 +47,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.scoring: Scoring,
         Api.scoring_functions: ScoringFunctions,
         Api.eval: Eval,
+        Api.eval_tasks: EvalTasks,
     }
 
 
@@ -56,6 +58,7 @@ def additional_protocols_map() -> Dict[Api, Any]:
         Api.safety: (ShieldsProtocolPrivate, Shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets),
         Api.scoring: (ScoringFunctionsProtocolPrivate, ScoringFunctions),
+        Api.eval_tasks: (EvalTasksProtocolPrivate, EvalTasks),
     }
 
 

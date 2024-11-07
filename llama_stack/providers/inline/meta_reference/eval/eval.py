@@ -6,13 +6,16 @@
 from enum import Enum
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
+from .....apis.common.job_types import Job
+from .....apis.eval.eval import BenchmarkEvalTaskConfig
 from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.apis.common.job_types import Job
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval import Eval, EvalCandidate, EvaluateResponse, JobStatus
+from llama_stack.apis.eval import *  # noqa: F403
+from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring
+from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
 from .config import MetaReferenceEvalConfig
 
@@ -25,7 +28,7 @@ class ColumnName(Enum):
     generated_answer = "generated_answer"
 
 
-class MetaReferenceEvalImpl(Eval):
+class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
     def __init__(
         self,
         config: MetaReferenceEvalConfig,
@@ -46,6 +49,10 @@ class MetaReferenceEvalImpl(Eval):
     async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
+
+    async def list_eval_tasks(self) -> List[EvalTaskDefWithProvider]:
+        print("HHHH")
+        return []
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -70,12 +77,22 @@ class MetaReferenceEvalImpl(Eval):
                 f"Dataset {dataset_id} does not have a correct input schema in {expected_schemas}"
             )
 
-    async def evaluate_batch(
+    async def run_benchmark_eval(
         self,
-        dataset_id: str,
-        candidate: EvalCandidate,
-        scoring_functions: List[str],
+        benchmark_id: str,
+        eval_task_config: BenchmarkEvalTaskConfig,
     ) -> Job:
+        raise NotImplementedError("Benchmark eval is not implemented yet")
+
+    async def run_eval(
+        self,
+        eval_task_def: EvalTaskDef,
+        eval_task_config: EvalTaskConfig,
+    ) -> Job:
+        dataset_id = eval_task_def.dataset_id
+        candidate = eval_task_config.eval_candidate
+        scoring_functions = eval_task_def.scoring_functions
+
         await self.validate_eval_input_dataset_schema(dataset_id=dataset_id)
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
@@ -93,12 +110,13 @@ class MetaReferenceEvalImpl(Eval):
         self.jobs[job_id] = res
         return Job(job_id=job_id)
 
-    async def evaluate(
+    async def evaluate_rows(
         self,
         input_rows: List[Dict[str, Any]],
-        candidate: EvalCandidate,
         scoring_functions: List[str],
+        eval_task_config: EvalTaskConfig,
     ) -> EvaluateResponse:
+        candidate = eval_task_config.eval_candidate
         if candidate.type == "agent":
             raise NotImplementedError(
                 "Evaluation with generation has not been implemented for agents"
