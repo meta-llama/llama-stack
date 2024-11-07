@@ -38,13 +38,13 @@ EvalCandidate = Annotated[
 
 @json_schema_type
 class BenchmarkEvalTaskConfig(BaseModel):
-    eval_candidate: EvalCandidate  # type: ignore
+    eval_candidate: EvalCandidate
 
 
 @json_schema_type
 class AppEvalTaskConfig(BaseModel):
-    eval_candidate: EvalCandidate  # type: ignore
-    scoring_params: Dict[str, ScoringFnParams] = Field(  # type: ignore
+    eval_candidate: EvalCandidate
+    scoring_params: Dict[str, ScoringFnParams] = Field(
         description="Map between scoring function id and parameters",
         default_factory=dict,
     )
@@ -83,7 +83,7 @@ class Eval(Protocol):
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        eval_task_config: EvalTaskConfig,  # type: ignore
+        eval_task_config: EvalTaskConfig,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/job/status", method="GET")
