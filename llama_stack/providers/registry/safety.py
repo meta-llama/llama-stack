@@ -48,18 +48,6 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.safety.bedrock.BedrockSafetyConfig",
             ),
         ),
-        remote_provider_spec(
-            api=Api.safety,
-            adapter=AdapterSpec(
-                adapter_type="together",
-                pip_packages=[
-                    "together",
-                ],
-                module="llama_stack.providers.remote.safety.together",
-                config_class="llama_stack.providers.remote.safety.together.TogetherSafetyConfig",
-                provider_data_validator="llama_stack.providers.remote.safety.together.TogetherProviderDataValidator",
-            ),
-        ),
         InlineProviderSpec(
             api=Api.safety,
             provider_type="meta-reference/codeshield",
