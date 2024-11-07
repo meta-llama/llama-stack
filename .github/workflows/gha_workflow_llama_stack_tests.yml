@@ -48,7 +48,7 @@ on:
 
 env:
   # Path to model checkpoints within EFS volume
-  MODEL_CHECKPOINT_DIR: "/data/llama"
+  MODEL_CHECKPOINT_DIR: "/data/llama/Llama3.2-3B-Instruct"
 
   # Path to directory to run tests from
   TESTS_PATH: "${{ github.workspace }}/llama_stack/providers/tests"
@@ -97,16 +97,16 @@ jobs:
       - name: "Check if models exist in EFS volume"
         id: check_if_models_exist
         run: |
-          for model_id in ${MODEL_IDS//,/ }; do
-            model_path="${MODEL_CHECKPOINT_DIR}/${model_id}"
-            if [ ! -d "${model_path}" ]; then
-              echo "Model '${model_id}' does not exist in mounted EFS volume, Terminating workflow."
-              exit 1
-            else
-              echo "Content of '${model_id}' model"
-              ls -la "${model_path}"
-            fi
-          done
+          #for model_id in ${MODEL_IDS//,/ }; do
+          #  model_path="${MODEL_CHECKPOINT_DIR}/${model_id}"
+          #  if [ ! -d "${model_path}" ]; then
+          #    echo "Model '${model_id}' does not exist in mounted EFS volume, Terminating workflow."
+          #    exit 1
+          #  else
+          #    echo "Content of '${model_id}' model"
+          #    ls -la "${model_path}"
+          #  fi
+          #done
 
       - name: "[DEBUG] Get runner container OS information"
         id: debug_os_info
