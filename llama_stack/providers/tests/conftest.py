@@ -25,15 +25,19 @@ class ProviderFixture(BaseModel):
 
 
 def remote_stack_fixture() -> ProviderFixture:
+    if url := os.getenv("REMOTE_STACK_URL", None):
+        config = RemoteProviderConfig.from_url(url)
+    else:
+        config = RemoteProviderConfig(
+            host=get_env_or_fail("REMOTE_STACK_HOST"),
+            port=int(get_env_or_fail("REMOTE_STACK_PORT")),
+        )
     return ProviderFixture(
         providers=[
             Provider(
                 provider_id="remote",
                 provider_type="remote",
-                config=RemoteProviderConfig(
-                    host=get_env_or_fail("REMOTE_STACK_HOST"),
-                    port=int(get_env_or_fail("REMOTE_STACK_PORT")),
-                ).model_dump(),
+                config=config.model_dump(),
             )
         ],
     )
