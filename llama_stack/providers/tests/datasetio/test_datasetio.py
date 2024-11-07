@@ -97,6 +97,10 @@ class TestDatasetIO:
         assert len(response.rows) == 3
         assert response.next_page_token == "3"
 
+        provider = datasetio_impl.routing_table.get_provider_impl("test_dataset")
+        if provider.__provider_spec__.provider_type == "remote":
+            pytest.skip("remote provider doesn't support get_rows_paginated")
+
         # iterate over all rows
         response = await datasetio_impl.get_rows_paginated(
             dataset_id="test_dataset",
