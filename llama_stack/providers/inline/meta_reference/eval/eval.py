@@ -122,7 +122,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         res = await self.evaluate_rows(
             input_rows=all_rows.rows,
             scoring_functions=scoring_functions,
-            eval_task_config=task_config,
+            task_config=task_config,
         )
 
         # TODO: currently needs to wait for generation before returning
@@ -135,10 +135,10 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        eval_task_config: EvalTaskConfig,
+        task_config: EvalTaskConfig,
         eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse:
-        candidate = eval_task_config.eval_candidate
+        candidate = task_config.eval_candidate
         if candidate.type == "agent":
             raise NotImplementedError(
                 "Evaluation with generation has not been implemented for agents"
@@ -190,12 +190,9 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             for input_r, generated_r in zip(input_rows, generations)
         ]
 
-        if (
-            eval_task_config.type == "app"
-            and eval_task_config.scoring_params is not None
-        ):
+        if task_config.type == "app" and task_config.scoring_params is not None:
             scoring_functions_dict = {
-                scoring_fn_id: eval_task_config.scoring_params.get(scoring_fn_id, None)
+                scoring_fn_id: task_config.scoring_params.get(scoring_fn_id, None)
                 for scoring_fn_id in scoring_functions
             }
         else:
@@ -209,21 +206,17 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
         return EvaluateResponse(generations=generations, scores=score_response.results)
 
-    async def job_status(
-        self, job_id: str, eval_task_id: Optional[str] = None
-    ) -> Optional[JobStatus]:
+    async def job_status(self, job_id: str, eval_task_id: str) -> Optional[JobStatus]:
         if job_id in self.jobs:
             return JobStatus.completed
 
         return None
 
-    async def job_cancel(self, job_id: str, eval_task_id: Optional[str] = None) -> None:
+    async def job_cancel(self, job_id: str, eval_task_id: str) -> None:
         raise NotImplementedError("Job cancel is not implemented yet")
 
-    async def job_result(
-        self, job_id: str, eval_task_id: Optional[str] = None
-    ) -> EvaluateResponse:
-        status = await self.job_status(job_id)
+    async def job_result(self, job_id: str, eval_task_id: str) -> EvaluateResponse:
+        status = await self.job_status(job_id, eval_task_id)
         if not status or status != JobStatus.completed:
             raise ValueError(f"Job is not completed, Status: {status.value}")
 

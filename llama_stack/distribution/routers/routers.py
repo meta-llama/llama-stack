@@ -290,7 +290,7 @@ class EvalRouter(Eval):
         self,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
-        eval_task_config: EvalTaskConfig,
+        task_config: EvalTaskConfig,
         eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse:
         # NOTE: This is to deal with the case where we do not pre-register an eval benchmark_task
@@ -300,36 +300,32 @@ class EvalRouter(Eval):
         return await self.routing_table.get_provider_impl(eval_task_id).evaluate_rows(
             input_rows=input_rows,
             scoring_functions=scoring_functions,
-            eval_task_config=eval_task_config,
+            task_config=task_config,
         )
 
     async def job_status(
         self,
         job_id: str,
-        eval_task_id: Optional[str] = None,
+        eval_task_id: str,
     ) -> Optional[JobStatus]:
-        if eval_task_id is None:
-            eval_task_id = DEFAULT_EVAL_TASK_IDENTIFIER
         return await self.routing_table.get_provider_impl(eval_task_id).job_status(
-            job_id
+            job_id, eval_task_id
         )
 
     async def job_cancel(
         self,
         job_id: str,
-        eval_task_id: Optional[str] = None,
+        eval_task_id: str,
     ) -> None:
-        if eval_task_id is None:
-            eval_task_id = DEFAULT_EVAL_TASK_IDENTIFIER
-        await self.routing_table.get_provider_impl(eval_task_id).job_cancel(job_id)
+        await self.routing_table.get_provider_impl(eval_task_id).job_cancel(
+            job_id, eval_task_id
+        )
 
     async def job_result(
         self,
         job_id: str,
-        eval_task_id: Optional[str] = None,
+        eval_task_id: str,
     ) -> EvaluateResponse:
-        if eval_task_id is None:
-            eval_task_id = DEFAULT_EVAL_TASK_IDENTIFIER
         return await self.routing_table.get_provider_impl(eval_task_id).job_result(
-            job_id
+            job_id, eval_task_id
         )

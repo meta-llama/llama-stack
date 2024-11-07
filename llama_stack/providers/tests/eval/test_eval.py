@@ -52,7 +52,7 @@ class Testeval:
         response = await eval_impl.evaluate_rows(
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
-            eval_task_config=AppEvalTaskConfig(
+            task_config=AppEvalTaskConfig(
                 eval_candidate=ModelCandidate(
                     model="Llama3.2-3B-Instruct",
                     sampling_params=SamplingParams(),
@@ -90,9 +90,13 @@ class Testeval:
             ),
         )
         assert response.job_id == "0"
-        job_status = await eval_impl.job_status(response.job_id)
+        job_status = await eval_impl.job_status(
+            response.job_id, "meta-reference::app_eval"
+        )
         assert job_status and job_status.value == "completed"
-        eval_response = await eval_impl.job_result(response.job_id)
+        eval_response = await eval_impl.job_result(
+            response.job_id, "meta-reference::app_eval"
+        )
 
         assert eval_response is not None
         assert len(eval_response.generations) == 5
