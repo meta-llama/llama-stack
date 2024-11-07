@@ -41,7 +41,17 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        raise ValueError("Registering dynamic shields is not supported")
+        response = self.bedrock_client.list_guardrails(
+            guardrailIdentifier=shield.identifier,
+        )
+        if (
+            not response["guardrails"]
+            or len(response["guardrails"]) == 0
+            or response["guardrails"][0]["version"] != shield.params["guardrailVersion"]
+        ):
+            raise ValueError(
+                f"Shield {shield.identifier} with version {shield.params['guardrailVersion']} not found in Bedrock"
+            )
 
     async def run_shield(
         self, shield: Shield, messages: List[Message], params: Dict[str, Any] = None
