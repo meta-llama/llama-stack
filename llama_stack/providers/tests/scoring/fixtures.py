@@ -37,7 +37,6 @@ SCORING_FIXTURES = ["meta_reference", "remote"]
 @pytest_asyncio.fixture(scope="session")
 async def scoring_stack(request):
     fixture_dict = request.param
-    print("!!!", fixture_dict)
 
     providers = {}
     provider_data = {}
@@ -56,5 +55,6 @@ async def scoring_stack(request):
     return (
         impls[Api.scoring],
         impls[Api.scoring_functions],
+        impls[Api.datasetio],
         impls[Api.datasets],
     )
