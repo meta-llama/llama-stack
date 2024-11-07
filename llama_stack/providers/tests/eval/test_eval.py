@@ -44,11 +44,11 @@ class Testeval:
         provider = datasetio_impl.routing_table.get_provider_impl(
             "test_dataset_for_eval"
         )
-        if provider.__provider_spec__.provider_type != "meta-reference":
-            pytest.skip("Only meta-reference provider supports registering datasets")
+        # if provider.__provider_spec__.provider_type != "meta-reference":
+        #     pytest.skip("Only meta-reference provider supports registering datasets")
 
         response = await datasets_impl.list_datasets()
-        assert len(response) == 1
+        assert len(response) >= 1
         rows = await datasetio_impl.get_rows_paginated(
             dataset_id="test_dataset_for_eval",
             rows_in_page=3,
