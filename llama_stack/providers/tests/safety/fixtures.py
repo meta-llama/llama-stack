@@ -8,7 +8,7 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.meta_reference.safety import (
+from llama_stack.providers.inline.safety.meta_reference import (
     LlamaGuardShieldConfig,
     SafetyConfig,
 )
