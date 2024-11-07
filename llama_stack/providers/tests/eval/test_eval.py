@@ -9,7 +9,12 @@ import pytest
 
 from llama_models.llama3.api import SamplingParams
 
-from llama_stack.apis.eval.eval import AppEvalTaskConfig, EvalTaskDef, ModelCandidate
+from llama_stack.apis.eval.eval import (
+    AppEvalTaskConfig,
+    BenchmarkEvalTaskConfig,
+    EvalTaskDef,
+    ModelCandidate,
+)
 from llama_stack.providers.tests.datasetio.test_datasetio import register_dataset
 
 
@@ -36,6 +41,12 @@ class Testeval:
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
+        provider = datasetio_impl.routing_table.get_provider_impl(
+            "test_dataset_for_eval"
+        )
+        if provider.__provider_spec__.provider_type != "meta-reference":
+            pytest.skip("Only meta-reference provider supports registering datasets")
+
         response = await datasets_impl.list_datasets()
         assert len(response) == 1
         rows = await datasetio_impl.get_rows_paginated(
@@ -69,6 +80,11 @@ class Testeval:
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
+        provider = datasetio_impl.routing_table.get_provider_impl(
+            "test_dataset_for_eval"
+        )
+        if provider.__provider_spec__.provider_type != "meta-reference":
+            pytest.skip("Only meta-reference provider supports registering datasets")
 
         scoring_functions = [
             "meta-reference::llm_as_judge_8b_correctness",
@@ -107,27 +123,29 @@ class Testeval:
     async def test_eval_run_benchmark_eval(self, eval_stack):
         eval_impl, eval_tasks_impl, _, _, datasetio_impl, datasets_impl = eval_stack
         response = await datasets_impl.list_datasets()
-        assert len(response) == 1
+        assert len(response) > 0
+        if response[0].provider_id != "huggingface":
+            pytest.skip(
+                "Only huggingface provider supports pre-registered benchmarks datasets"
+            )
 
-        rows = await datasetio_impl.get_rows_paginated(
-            dataset_id="llamastack_mmlu",
-            rows_in_page=3,
-        )
-        assert len(rows.rows) == 3
+        # list benchmarks
+        response = await eval_tasks_impl.list_eval_tasks()
+        assert len(response) > 0
 
-        scoring_functions = [
-            "meta-reference::regex_parser_multiple_choice_answer",
-        ]
-
-        response = await eval_impl.evaluate_rows(
-            input_rows=rows.rows,
-            scoring_functions=scoring_functions,
-            eval_task_config=AppEvalTaskConfig(
+        benchmark_id = "meta-reference-mmlu"
+        response = await eval_impl.run_benchmark(
+            benchmark_id=benchmark_id,
+            benchmark_config=BenchmarkEvalTaskConfig(
                 eval_candidate=ModelCandidate(
                     model="Llama3.2-3B-Instruct",
                     sampling_params=SamplingParams(),
                 ),
+                num_examples=3,
             ),
         )
-
-        print(response)
+        job_status = await eval_impl.job_status(response.job_id, benchmark_id)
+        assert job_status and job_status.value == "completed"
+        eval_response = await eval_impl.job_result(response.job_id, benchmark_id)
+        assert eval_response is not None
+        assert len(eval_response.generations) == 3

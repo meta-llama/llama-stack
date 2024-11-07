@@ -40,6 +40,10 @@ EvalCandidate = Annotated[
 class BenchmarkEvalTaskConfig(BaseModel):
     type: Literal["benchmark"] = "benchmark"
     eval_candidate: EvalCandidate
+    num_examples: Optional[int] = Field(
+        description="Number of examples to evaluate (useful for quick debugging), if not provided, all examples in the dataset will be evaluated",
+        default=None,
+    )
 
 
 @json_schema_type
@@ -49,6 +53,10 @@ class AppEvalTaskConfig(BaseModel):
     scoring_params: Dict[str, ScoringFnParams] = Field(
         description="Map between scoring function id and parameters for each scoring function you want to run",
         default_factory=dict,
+    )
+    num_examples: Optional[int] = Field(
+        description="Number of examples to evaluate (useful for quick debugging), if not provided, all examples in the dataset will be evaluated",
+        default=None,
     )
     # we could optinally add any specific dataset config here
 

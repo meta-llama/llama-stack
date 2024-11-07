@@ -16,6 +16,8 @@ from .....apis.eval.eval import (
     JobStatus,
 )
 from llama_stack.apis.common.type_system import *  # noqa: F403
+from tqdm import tqdm
+
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTaskDef
@@ -58,22 +60,32 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs = {}
 
-    async def initialize(self) -> None: ...
+        # Keep track of benchmark eval tasks that are supported by this provider
+        self.eval_tasks = {}
+
+    async def initialize(self) -> None:
+        self.eval_tasks = {
+            # NOTE: In order to be routed to this provider, the eval task def must have
+            # a EvalTaskDef with identifier defined as DEFAULT_EVAL_TASK_IDENTIFIER
+            # for app eval where eval task benchmark_id is not pre-registered
+            DEFAULT_EVAL_TASK_IDENTIFIER: EvalTaskDef(
+                identifier=DEFAULT_EVAL_TASK_IDENTIFIER,
+                dataset_id="",
+                scoring_functions=[],
+            ),
+            "meta-reference-mmlu": EvalTaskDef(
+                identifier="meta-reference-mmlu",
+                dataset_id="llamastack_mmlu",
+                scoring_functions=[
+                    "meta-reference::regex_parser_multiple_choice_answer"
+                ],
+            ),
+        }
 
     async def shutdown(self) -> None: ...
 
     async def list_eval_tasks(self) -> List[EvalTaskDef]:
-        # NOTE: In order to be routed to this provider, the eval task def must have
-        # a EvalTaskDef with identifier defined as DEFAULT_EVAL_TASK_IDENTIFIER
-        # for app eval where eval task benchmark_id is not pre-registered
-        eval_tasks = [
-            EvalTaskDef(
-                identifier=DEFAULT_EVAL_TASK_IDENTIFIER,
-                dataset_id="",
-                scoring_functions=[],
-            )
-        ]
-        return eval_tasks
+        return list(self.eval_tasks.values())
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -103,7 +115,25 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         benchmark_id: str,
         benchmark_config: BenchmarkEvalTaskConfig,
     ) -> Job:
-        raise NotImplementedError("Benchmark eval is not implemented yet")
+        eval_task_def = self.eval_tasks[benchmark_id]
+        all_rows = await self.datasetio_api.get_rows_paginated(
+            dataset_id=eval_task_def.dataset_id,
+            rows_in_page=(
+                -1
+                if benchmark_config.num_examples is None
+                else benchmark_config.num_examples
+            ),
+        )
+        res = await self.evaluate_rows(
+            input_rows=all_rows.rows,
+            scoring_functions=eval_task_def.scoring_functions,
+            task_config=benchmark_config,
+        )
+        # TODO: currently needs to wait for generation before returning
+        # need job scheduler queue (celery) w/ jobs api
+        job_id = str(len(self.jobs))
+        self.jobs[job_id] = res
+        return Job(job_id=job_id)
 
     async def run_eval(
         self,
@@ -117,7 +147,9 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         await self.validate_eval_input_dataset_schema(dataset_id=dataset_id)
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
-            rows_in_page=-1,
+            rows_in_page=(
+                -1 if task_config.num_examples is None else task_config.num_examples
+            ),
         )
         res = await self.evaluate_rows(
             input_rows=all_rows.rows,
@@ -148,7 +180,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         ), "SamplingParams.max_tokens must be provided"
 
         generations = []
-        for x in input_rows:
+        for x in tqdm(input_rows):
             if ColumnName.completion_input.value in x:
                 input_content = eval(str(x[ColumnName.completion_input.value]))
                 response = await self.inference_api.completion(

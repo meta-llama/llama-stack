@@ -31,11 +31,15 @@ class RegexParserScoringFn(BaseScoringFn):
         self,
         input_row: Dict[str, Any],
         scoring_fn_identifier: Optional[str] = None,
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
         assert (
             scoring_fn_identifier is not None
         ), "Scoring function identifier not found."
         fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
+        if scoring_params is not None:
+            fn_def.params = scoring_params
+
         assert (
             fn_def.params is not None
             and fn_def.params.type == ScoringConfigType.regex_parser.value
@@ -46,7 +50,7 @@ class RegexParserScoringFn(BaseScoringFn):
 
         # parse answer according to regex
         parsed_answer = None
-        for regex in fn_def.params.parsing_regex:
+        for regex in fn_def.params.parsing_regexes:
             match = re.search(regex, generated_answer)
             if match:
                 parsed_answer = match.group(1)

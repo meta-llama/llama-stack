@@ -273,7 +273,10 @@ class EvalRouter(Eval):
         benchmark_id: str,
         benchmark_config: BenchmarkEvalTaskConfig,
     ) -> Job:
-        pass
+        return await self.routing_table.get_provider_impl(benchmark_id).run_benchmark(
+            benchmark_id=benchmark_id,
+            benchmark_config=benchmark_config,
+        )
 
     async def run_eval(
         self,
