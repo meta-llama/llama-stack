@@ -16,7 +16,7 @@ from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.memory_banks import MemoryBankDef
 from llama_stack.apis.models import ModelDef
 from llama_stack.apis.scoring_functions import ScoringFnDef
-from llama_stack.apis.shields import ShieldDef
+from llama_stack.apis.shields import Shield
 
 
 @json_schema_type
@@ -49,9 +49,7 @@ class ModelsProtocolPrivate(Protocol):
 
 
 class ShieldsProtocolPrivate(Protocol):
-    async def list_shields(self) -> List[ShieldDef]: ...
-
-    async def register_shield(self, shield: ShieldDef) -> None: ...
+    async def register_shield(self, shield: Shield) -> None: ...
 
 
 class MemoryBanksProtocolPrivate(Protocol):

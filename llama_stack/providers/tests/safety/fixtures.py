@@ -8,6 +8,7 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
+from llama_stack.providers.adapters.safety.bedrock import BedrockSafetyConfig
 from llama_stack.providers.inline.safety.meta_reference import (
     LlamaGuardShieldConfig,
     SafetyConfig,
@@ -47,7 +48,36 @@ def safety_meta_reference(safety_model) -> ProviderFixture:
     )
 
 
-SAFETY_FIXTURES = ["meta_reference", "remote"]
+@pytest.fixture(scope="session")
+def safety_together() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="together",
+                provider_type="remote::together",
+                config=TogetherSafetyConfig().model_dump(),
+            )
+        ],
+        provider_data=dict(
+            together_api_key=get_env_or_fail("TOGETHER_API_KEY"),
+        ),
+    )
+
+
+SAFETY_FIXTURES = ["meta_reference", "together", "remote", "bedrock"]
+
+
+@pytest.fixture(scope="session")
+def safety_bedrock() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="bedrock",
+                provider_type="remote::bedrock",
+                config=BedrockSafetyConfig().model_dump(),
+            )
+        ],
+    )
 
 
 @pytest_asyncio.fixture(scope="session")

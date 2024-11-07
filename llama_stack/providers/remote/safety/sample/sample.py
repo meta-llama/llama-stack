@@ -14,7 +14,7 @@ class SampleSafetyImpl(Safety):
     def __init__(self, config: SampleConfig):
         self.config = config
 
-    async def register_shield(self, shield: ShieldDef) -> None:
+    async def register_shield(self, shield: Shield) -> None:
         # these are the safety shields the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
         pass
