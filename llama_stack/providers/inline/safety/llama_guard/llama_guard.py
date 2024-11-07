@@ -7,16 +7,67 @@
 import re
 
 from string import Template
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.distribution.datatypes import Api
 
-from .base import CANNED_RESPONSE_TEXT, OnViolationAction, ShieldBase, ShieldResponse
+from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 
+from .config import LlamaGuardConfig
+
+
+class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
+    def __init__(self, config: LlamaGuardConfig, deps) -> None:
+        self.config = config
+        self.inference_api = deps[Api.inference]
+
+    async def initialize(self) -> None:
+        self.shield = LlamaGuardShield(
+            model=self.config.model,
+            inference_api=self.inference_api,
+            excluded_categories=self.config.excluded_categories,
+        )
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def register_shield(self, shield: ShieldDef) -> None:
+        raise ValueError("Registering dynamic shields is not supported")
+
+    async def list_shields(self) -> List[ShieldDef]:
+        return [
+            ShieldDef(
+                identifier=ShieldType.llama_guard.value,
+                shield_type=ShieldType.llama_guard.value,
+                params={},
+            ),
+        ]
+
+    async def run_shield(
+        self,
+        identifier: str,
+        messages: List[Message],
+        params: Dict[str, Any] = None,
+    ) -> RunShieldResponse:
+        shield_def = await self.shield_store.get_shield(identifier)
+        if not shield_def:
+            raise ValueError(f"Unknown shield {identifier}")
+
+        messages = messages.copy()
+        # some shields like llama-guard require the first message to be a user message
+        # since this might be a tool call, first role might not be user
+        if len(messages) > 0 and messages[0].role != Role.user.value:
+            messages[0] = UserMessage(content=messages[0].content)
+
+        return await self.shield.run(messages)
+
+
+CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 
 SAFE_RESPONSE = "safe"
-_INSTANCE = None
 
 CAT_VIOLENT_CRIMES = "Violent Crimes"
 CAT_NON_VIOLENT_CRIMES = "Non-Violent Crimes"
@@ -107,16 +158,13 @@ PROMPT_TEMPLATE = Template(
 )
 
 
-class LlamaGuardShield(ShieldBase):
+class LlamaGuardShield:
     def __init__(
         self,
         model: str,
         inference_api: Inference,
-        excluded_categories: List[str] = None,
-        on_violation_action: OnViolationAction = OnViolationAction.RAISE,
+        excluded_categories: Optional[List[str]] = None,
     ):
-        super().__init__(on_violation_action)
-
         if excluded_categories is None:
             excluded_categories = []
 
@@ -174,7 +222,7 @@ class LlamaGuardShield(ShieldBase):
                 )
         return messages
 
-    async def run(self, messages: List[Message]) -> ShieldResponse:
+    async def run(self, messages: List[Message]) -> RunShieldResponse:
         messages = self.validate_messages(messages)
 
         if self.model == CoreModelId.llama_guard_3_11b_vision.value:
@@ -195,8 +243,7 @@ class LlamaGuardShield(ShieldBase):
                 content += event.delta
 
         content = content.strip()
-        shield_response = self.get_shield_response(content)
-        return shield_response
+        return self.get_shield_response(content)
 
     def build_text_shield_input(self, messages: List[Message]) -> UserMessage:
         return UserMessage(content=self.build_prompt(messages))
@@ -250,19 +297,23 @@ class LlamaGuardShield(ShieldBase):
             conversations=conversations_str,
         )
 
-    def get_shield_response(self, response: str) -> ShieldResponse:
+    def get_shield_response(self, response: str) -> RunShieldResponse:
         response = response.strip()
         if response == SAFE_RESPONSE:
-            return ShieldResponse(is_violation=False)
+            return RunShieldResponse(violation=None)
+
         unsafe_code = self.check_unsafe_response(response)
         if unsafe_code:
             unsafe_code_list = unsafe_code.split(",")
             if set(unsafe_code_list).issubset(set(self.excluded_categories)):
-                return ShieldResponse(is_violation=False)
-            return ShieldResponse(
-                is_violation=True,
-                violation_type=unsafe_code,
-                violation_return_message=CANNED_RESPONSE_TEXT,
+                return RunShieldResponse(violation=None)
+
+            return RunShieldResponse(
+                violation=SafetyViolation(
+                    violation_level=ViolationLevel.ERROR,
+                    user_message=CANNED_RESPONSE_TEXT,
+                    metadata={"violation_type": unsafe_code},
+                ),
             )
 
         raise ValueError(f"Unexpected response: {response}")

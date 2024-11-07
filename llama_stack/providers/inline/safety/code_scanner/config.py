@@ -7,5 +7,5 @@
 from pydantic import BaseModel
 
 
-class CodeShieldConfig(BaseModel):
+class CodeScannerConfig(BaseModel):
     pass

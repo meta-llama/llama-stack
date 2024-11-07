@@ -29,6 +29,42 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[
                 Api.inference,
             ],
+            deprecation_warning="Please use the `llama-guard` / `prompt-guard` / `code-scanner` providers instead.",
+        ),
+        InlineProviderSpec(
+            api=Api.safety,
+            provider_type="llama-guard",
+            pip_packages=[],
+            module="llama_stack.providers.inline.safety.llama_guard",
+            config_class="llama_stack.providers.inline.safety.llama_guard.LlamaGuardConfig",
+            api_dependencies=[
+                Api.inference,
+            ],
+        ),
+        InlineProviderSpec(
+            api=Api.safety,
+            provider_type="prompt-guard",
+            pip_packages=[
+                "transformers",
+                "torch --index-url https://download.pytorch.org/whl/cpu",
+            ],
+            module="llama_stack.providers.inline.safety.prompt_guard",
+            config_class="llama_stack.providers.inline.safety.prompt_guard.PromptGuardConfig",
+            api_dependencies=[
+                Api.inference,
+            ],
+        ),
+        InlineProviderSpec(
+            api=Api.safety,
+            provider_type="code-scanner",
+            pip_packages=[
+                "codeshield",
+            ],
+            module="llama_stack.providers.inline.safety.code_scanner",
+            config_class="llama_stack.providers.inline.safety.code_scanner.CodeScannerConfig",
+            api_dependencies=[
+                Api.inference,
+            ],
         ),
         remote_provider_spec(
             api=Api.safety,
@@ -47,15 +83,5 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.safety.bedrock",
                 config_class="llama_stack.providers.remote.safety.bedrock.BedrockSafetyConfig",
             ),
-        ),
-        InlineProviderSpec(
-            api=Api.safety,
-            provider_type="meta-reference/codeshield",
-            pip_packages=[
-                "codeshield",
-            ],
-            module="llama_stack.providers.inline.safety.meta_reference",
-            config_class="llama_stack.providers.inline.safety.meta_reference.CodeShieldConfig",
-            api_dependencies=[],
         ),
     ]
