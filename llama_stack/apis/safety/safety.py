@@ -48,5 +48,5 @@ class Safety(Protocol):
 
     @webmethod(route="/safety/run_shield")
     async def run_shield(
-        self, identifier: str, messages: List[Message], params: Dict[str, Any] = None
+        self, shield_type: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse: ...
