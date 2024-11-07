@@ -57,13 +57,13 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
 
     async def run_shield(
         self,
-        shield_type: str,
+        identifier: str,
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        shield_def = await self.shield_store.get_shield(shield_type)
+        shield_def = await self.shield_store.get_shield(identifier)
         if not shield_def:
-            raise ValueError(f"Unknown shield {shield_type}")
+            raise ValueError(f"Unknown shield {identifier}")
 
         shield = self.get_shield_impl(shield_def)
 
