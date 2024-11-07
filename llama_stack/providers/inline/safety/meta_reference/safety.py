@@ -42,30 +42,17 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_shield(self, shield: ShieldDef) -> None:
+    async def register_shield(self, shield: Shield) -> None:
         raise ValueError("Registering dynamic shields is not supported")
-
-    async def list_shields(self) -> List[ShieldDef]:
-        return [
-            ShieldDef(
-                identifier=shield_type,
-                shield_type=shield_type,
-                params={},
-            )
-            for shield_type in self.available_shields
-        ]
 
     async def run_shield(
         self,
-        identifier: str,
+        shield: Shield,
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        shield_def = await self.shield_store.get_shield(identifier)
-        if not shield_def:
-            raise ValueError(f"Unknown shield {identifier}")
 
-        shield = self.get_shield_impl(shield_def)
+        shield_impl = self.get_shield_impl(shield)
 
         messages = messages.copy()
         # some shields like llama-guard require the first message to be a user message
@@ -74,7 +61,7 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
             messages[0] = UserMessage(content=messages[0].content)
 
         # TODO: we can refactor ShieldBase, etc. to be inline with the API types
-        res = await shield.run(messages)
+        res = await shield_impl.run(messages)
         violation = None
         if res.is_violation and shield.on_violation_action != OnViolationAction.IGNORE:
             violation = SafetyViolation(
@@ -91,7 +78,7 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
 
         return RunShieldResponse(violation=violation)
 
-    def get_shield_impl(self, shield: ShieldDef) -> ShieldBase:
+    def get_shield_impl(self, shield: Shield) -> ShieldBase:
         if shield.shield_type == ShieldType.llama_guard.value:
             cfg = self.config.llama_guard_shield
             return LlamaGuardShield(

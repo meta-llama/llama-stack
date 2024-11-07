@@ -39,6 +39,14 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     ),
     pytest.param(
         {
+            "inference": "bedrock",
+            "safety": "bedrock",
+        },
+        id="bedrock",
+        marks=pytest.mark.bedrock,
+    ),
+    pytest.param(
+        {
             "inference": "remote",
             "safety": "remote",
         },

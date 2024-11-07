@@ -26,16 +26,16 @@ class ShieldsClient(Shields):
     async def shutdown(self) -> None:
         pass
 
-    async def list_shields(self) -> List[ShieldDefWithProvider]:
+    async def list_shields(self) -> List[Shield]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/shields/list",
                 headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
-            return [ShieldDefWithProvider(**x) for x in response.json()]
+            return [Shield(**x) for x in response.json()]
 
-    async def register_shield(self, shield: ShieldDefWithProvider) -> None:
+    async def register_shield(self, shield: Shield) -> None:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/shields/register",
@@ -46,7 +46,7 @@ class ShieldsClient(Shields):
             )
             response.raise_for_status()
 
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]:
+    async def get_shield(self, shield_type: str) -> Optional[Shield]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/shields/get",
@@ -61,7 +61,7 @@ class ShieldsClient(Shields):
             if j is None:
                 return None
 
-            return ShieldDefWithProvider(**j)
+            return Shield(**j)
 
 
 async def run_main(host: str, port: int, stream: bool):

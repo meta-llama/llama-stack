@@ -83,11 +83,6 @@ class CommonRoutingTableImpl(RoutingTable):
                 models = await p.list_models()
                 await add_objects(models, pid, ModelDefWithProvider)
 
-            elif api == Api.safety:
-                p.shield_store = self
-                shields = await p.list_shields()
-                await add_objects(shields, pid, ShieldDefWithProvider)
-
             elif api == Api.memory:
                 p.memory_bank_store = self
                 memory_banks = await p.list_memory_banks()
@@ -201,13 +196,13 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
-    async def list_shields(self) -> List[ShieldDef]:
+    async def list_shields(self) -> List[Shield]:
         return await self.get_all_with_type("shield")
 
-    async def get_shield(self, identifier: str) -> Optional[ShieldDefWithProvider]:
+    async def get_shield(self, identifier: str) -> Optional[Shield]:
         return await self.get_object_by_identifier(identifier)
 
-    async def register_shield(self, shield: ShieldDefWithProvider) -> None:
+    async def register_shield(self, shield: Shield) -> None:
         await self.register_object(shield)
 
 
