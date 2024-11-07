@@ -11,13 +11,15 @@ from .....apis.eval.eval import BenchmarkEvalTaskConfig
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval import *  # noqa: F403
+from llama_stack.apis.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
 from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
 from .config import MetaReferenceEvalConfig
+
+DEFAULT_EVAL_TASK_IDENTIFIER = "meta-reference::app_eval"
 
 
 class ColumnName(Enum):
@@ -50,9 +52,18 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
     async def shutdown(self) -> None: ...
 
-    async def list_eval_tasks(self) -> List[EvalTaskDefWithProvider]:
-        print("HHHH")
-        return []
+    async def list_eval_tasks(self) -> List[EvalTaskDef]:
+        # NOTE: In order to be routed to this provider, the eval task def must have
+        # a EvalTaskDef with identifier defined as DEFAULT_EVAL_TASK_IDENTIFIER
+        # for app eval where eval task benchmark_id is not pre-registered
+        eval_tasks = [
+            EvalTaskDef(
+                identifier=DEFAULT_EVAL_TASK_IDENTIFIER,
+                dataset_id="",
+                scoring_functions=[],
+            )
+        ]
+        return eval_tasks
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -98,10 +109,10 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             dataset_id=dataset_id,
             rows_in_page=-1,
         )
-        res = await self.evaluate(
+        res = await self.evaluate_rows(
             input_rows=all_rows.rows,
-            candidate=candidate,
             scoring_functions=scoring_functions,
+            eval_task_config=eval_task_config,
         )
 
         # TODO: currently needs to wait for generation before returning
@@ -140,7 +151,10 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
                     }
                 )
             elif ColumnName.chat_completion_input.value in x:
-                input_messages = eval(str(x[ColumnName.chat_completion_input.value]))
+                chat_completion_input_str = str(
+                    x[ColumnName.chat_completion_input.value]
+                )
+                input_messages = eval(chat_completion_input_str)
                 input_messages = [UserMessage(**x) for x in input_messages]
                 messages = []
                 if candidate.system_message:
