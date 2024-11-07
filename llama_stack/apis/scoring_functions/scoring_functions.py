@@ -33,7 +33,7 @@ class ScoringConfigType(Enum):
 
 @json_schema_type
 class LLMAsJudgeScoringFnParams(BaseModel):
-    type: Literal[ScoringConfigType.llm_as_judge.value] = (  # type: ignore
+    type: Literal[ScoringConfigType.llm_as_judge.value] = (
         ScoringConfigType.llm_as_judge.value
     )
     judge_model: str
@@ -46,7 +46,7 @@ class LLMAsJudgeScoringFnParams(BaseModel):
 
 @json_schema_type
 class RegexParserScoringFnParams(BaseModel):
-    type: Literal[ScoringConfigType.regex_parser.value] = (  # type: ignore
+    type: Literal[ScoringConfigType.regex_parser.value] = (
         ScoringConfigType.regex_parser.value
     )
     parsing_regexes: Optional[List[str]] = Field(
@@ -75,7 +75,7 @@ class ScoringFnDef(BaseModel):
     return_type: ParamType = Field(
         description="The return type of the deterministic function",
     )
-    params: Optional[ScoringFnParams] = Field(  # type: ignore
+    params: Optional[ScoringFnParams] = Field(
         description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
         default=None,
     )
