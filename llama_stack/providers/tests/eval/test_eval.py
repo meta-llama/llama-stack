@@ -98,3 +98,32 @@ class Testeval:
         assert len(eval_response.generations) == 5
         assert "meta-reference::subset_of" in eval_response.scores
         assert "meta-reference::llm_as_judge_8b_correctness" in eval_response.scores
+
+    @pytest.mark.asyncio
+    async def test_eval_run_benchmark_eval(self, eval_stack):
+        eval_impl, eval_tasks_impl, _, _, datasetio_impl, datasets_impl = eval_stack
+        response = await datasets_impl.list_datasets()
+        assert len(response) == 1
+
+        rows = await datasetio_impl.get_rows_paginated(
+            dataset_id="llamastack_mmlu",
+            rows_in_page=3,
+        )
+        assert len(rows.rows) == 3
+
+        scoring_functions = [
+            "meta-reference::regex_parser_multiple_choice_answer",
+        ]
+
+        response = await eval_impl.evaluate_rows(
+            input_rows=rows.rows,
+            scoring_functions=scoring_functions,
+            eval_task_config=AppEvalTaskConfig(
+                eval_candidate=ModelCandidate(
+                    model="Llama3.2-3B-Instruct",
+                    sampling_params=SamplingParams(),
+                ),
+            ),
+        )
+
+        print(response)

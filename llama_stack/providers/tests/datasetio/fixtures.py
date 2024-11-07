@@ -31,7 +31,20 @@ def datasetio_meta_reference() -> ProviderFixture:
     )
 
 
-DATASETIO_FIXTURES = ["meta_reference", "remote"]
+@pytest.fixture(scope="session")
+def datasetio_huggingface() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="huggingface",
+                provider_type="huggingface",
+                config={},
+            )
+        ],
+    )
+
+
+DATASETIO_FIXTURES = ["meta_reference", "remote", "huggingface"]
 
 
 @pytest_asyncio.fixture(scope="session")

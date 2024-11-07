@@ -58,7 +58,6 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             for impl in self.scoring_fn_id_impls.values()
             for fn_def in impl.get_supported_scoring_fn_defs()
         ]
-        print("!!!", scoring_fn_defs_list)
 
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith(
