@@ -19,4 +19,12 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.inline.meta_reference.datasetio.MetaReferenceDatasetIOConfig",
             api_dependencies=[],
         ),
+        InlineProviderSpec(
+            api=Api.datasetio,
+            provider_type="huggingface",
+            pip_packages=["datasets"],
+            module="llama_stack.providers.inline.huggingface.datasetio",
+            config_class="llama_stack.providers.inline.huggingface.datasetio.HuggingfaceDatasetIOConfig",
+            api_dependencies=[],
+        ),
     ]
