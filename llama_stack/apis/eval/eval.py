@@ -38,14 +38,16 @@ EvalCandidate = Annotated[
 
 @json_schema_type
 class BenchmarkEvalTaskConfig(BaseModel):
+    type: Literal["benchmark"] = "benchmark"
     eval_candidate: EvalCandidate
 
 
 @json_schema_type
 class AppEvalTaskConfig(BaseModel):
+    type: Literal["app"] = "app"
     eval_candidate: EvalCandidate
     scoring_params: Dict[str, ScoringFnParams] = Field(
-        description="Map between scoring function id and parameters",
+        description="Map between scoring function id and parameters for each scoring function you want to run",
         default_factory=dict,
     )
     # we could optinally add any specific dataset config here
@@ -64,18 +66,18 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/run_benchmark_eval", method="POST")
-    async def run_benchmark_eval(
+    @webmethod(route="/eval/run_benchmark", method="POST")
+    async def run_benchmark(
         self,
         benchmark_id: str,
-        eval_task_config: BenchmarkEvalTaskConfig,
+        benchmark_config: BenchmarkEvalTaskConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/run_eval", method="POST")
     async def run_eval(
         self,
-        eval_task_def: EvalTaskDef,
-        eval_task_config: EvalTaskConfig,
+        task: EvalTaskDef,
+        task_config: AppEvalTaskConfig,
     ) -> Job: ...
 
     @webmethod(route="/eval/evaluate_rows", method="POST")

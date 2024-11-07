@@ -96,8 +96,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: List[str],
-        scoring_params: Optional[Dict[str, ScoringFnParams]] = None,
+        scoring_functions: Optional[Dict[str, ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
@@ -108,7 +107,6 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         res = await self.score(
             input_rows=all_rows.rows,
             scoring_functions=scoring_functions,
-            scoring_params=scoring_params,
         )
         if save_results_dataset:
             # TODO: persist and register dataset on to server for reading
@@ -122,17 +120,14 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score(
         self,
         input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
-        scoring_params: Optional[Dict[str, ScoringFnParams]] = None,
+        scoring_functions: Optional[Dict[str, ScoringFnParams]] = None,
     ) -> ScoreResponse:
         res = {}
-        for scoring_fn_id in scoring_functions:
+        for scoring_fn_id in scoring_functions.keys():
             if scoring_fn_id not in self.scoring_fn_id_impls:
                 raise ValueError(f"Scoring function {scoring_fn_id} is not supported.")
             scoring_fn = self.scoring_fn_id_impls[scoring_fn_id]
-            scoring_fn_params = None
-            if scoring_params is not None:
-                scoring_fn_params = scoring_params.get(scoring_fn_id, None)
+            scoring_fn_params = scoring_functions.get(scoring_fn_id, None)
             score_results = await scoring_fn.score(
                 input_rows, scoring_fn_id, scoring_fn_params
             )

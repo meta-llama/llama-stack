@@ -76,13 +76,13 @@ class Testeval:
         ]
 
         response = await eval_impl.run_eval(
-            eval_task_def=EvalTaskDef(
+            task=EvalTaskDef(
                 # NOTE: this is needed to make the router work for all app evals
                 identifier="meta-reference::app_eval",
                 dataset_id="test_dataset_for_eval",
                 scoring_functions=scoring_functions,
             ),
-            eval_task_config=AppEvalTaskConfig(
+            task_config=AppEvalTaskConfig(
                 eval_candidate=ModelCandidate(
                     model="Llama3.2-3B-Instruct",
                     sampling_params=SamplingParams(),
