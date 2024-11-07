@@ -143,14 +143,21 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
             else:
                 data.update(convert(kwargs))
 
-            return dict(
+            ret = dict(
                 method=webmethod.method or "POST",
                 url=url,
-                headers={"Content-Type": "application/json"},
-                params=params,
-                json=data,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
                 timeout=30,
             )
+            if params:
+                ret["params"] = params
+            if data:
+                ret["json"] = data
+
+            return ret
 
     # Add protocol methods to the wrapper
     for p in protocols:

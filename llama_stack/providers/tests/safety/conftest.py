@@ -32,7 +32,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "together",
-            "safety": "together",
+            "safety": "meta_reference",
         },
         id="together",
         marks=pytest.mark.together,

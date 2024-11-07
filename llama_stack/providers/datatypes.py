@@ -6,6 +6,7 @@
 
 from enum import Enum
 from typing import Any, List, Optional, Protocol
+from urllib.parse import urlparse
 
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
@@ -145,11 +146,19 @@ Fully-qualified name of the module to import. The module is expected to have:
 
 class RemoteProviderConfig(BaseModel):
     host: str = "localhost"
-    port: int
+    port: Optional[int] = None
+    protocol: str = "http"
 
     @property
     def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
+        if self.port is None:
+            return f"{self.protocol}://{self.host}"
+        return f"{self.protocol}://{self.host}:{self.port}"
+
+    @classmethod
+    def from_url(cls, url: str) -> "RemoteProviderConfig":
+        parsed = urlparse(url)
+        return cls(host=parsed.hostname, port=parsed.port, protocol=parsed.scheme)
 
 
 @json_schema_type

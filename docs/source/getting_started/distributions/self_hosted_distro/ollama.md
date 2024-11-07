@@ -102,7 +102,7 @@ ollama pull llama3.1:70b-instruct-fp16
 ```
 
 > [!NOTE]
-> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/adapters/inference/ollama/ollama.py) for the supported Ollama models.
+> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers.remote/inference/ollama/ollama.py) for the supported Ollama models.
 
 
 To serve a new model with `ollama`

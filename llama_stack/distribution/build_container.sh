@@ -36,7 +36,6 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
 DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
-REPO_CONFIGS_DIR="$REPO_DIR/tmp/configs"
 
 TEMP_DIR=$(mktemp -d)
 
@@ -115,8 +114,6 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
 
 EOF
 
-add_to_docker "ADD tmp/configs/$(basename "$build_file_path") ./llamastack-build.yaml"
-
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
@@ -138,7 +135,6 @@ set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 
 # clean up tmp/configs
-rm -rf $REPO_CONFIGS_DIR
 set +x
 
 echo "Success!"

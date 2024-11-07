@@ -182,6 +182,12 @@ class CommonRoutingTableImpl(RoutingTable):
         objs = await self.dist_registry.get_all()
         return [obj for obj in objs if obj.type == type]
 
+    async def get_all_with_types(
+        self, types: List[str]
+    ) -> List[RoutableObjectWithProvider]:
+        objs = await self.dist_registry.get_all()
+        return [obj for obj in objs if obj.type in types]
+
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> List[ModelDefWithProvider]:
@@ -198,8 +204,8 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> List[ShieldDef]:
         return await self.get_all_with_type("shield")
 
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]:
-        return await self.get_object_by_identifier(shield_type)
+    async def get_shield(self, identifier: str) -> Optional[ShieldDefWithProvider]:
+        return await self.get_object_by_identifier(identifier)
 
     async def register_shield(self, shield: ShieldDefWithProvider) -> None:
         await self.register_object(shield)
@@ -207,7 +213,14 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
     async def list_memory_banks(self) -> List[MemoryBankDefWithProvider]:
-        return await self.get_all_with_type("memory_bank")
+        return await self.get_all_with_types(
+            [
+                MemoryBankType.vector.value,
+                MemoryBankType.keyvalue.value,
+                MemoryBankType.keyword.value,
+                MemoryBankType.graph.value,
+            ]
+        )
 
     async def get_memory_bank(
         self, identifier: str
