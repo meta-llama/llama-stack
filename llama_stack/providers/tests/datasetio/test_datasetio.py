@@ -16,7 +16,7 @@ from pathlib import Path
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/memory/test_memory.py
+# pytest llama_stack/providers/tests/datasetio/test_datasetio.py
 #   -m "meta_reference"
 #   -v -s --tb=short --disable-warnings
 

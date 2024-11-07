@@ -64,6 +64,7 @@ def inference_ollama(inference_model) -> ProviderFixture:
     inference_model = (
         [inference_model] if isinstance(inference_model, str) else inference_model
     )
+    print("!!!", inference_model)
     if "Llama3.1-8B-Instruct" in inference_model:
         pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
