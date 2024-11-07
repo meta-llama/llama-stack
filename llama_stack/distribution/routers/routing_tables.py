@@ -248,7 +248,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
 
 class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
     async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]:
-        return await self.get_all_with_type("scoring_function")
+        return await self.get_all_with_type("scoring_fn")
 
     async def get_scoring_function(
         self, name: str

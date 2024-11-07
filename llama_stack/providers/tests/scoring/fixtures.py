@@ -53,5 +53,8 @@ async def scoring_stack(request):
         provider_data,
     )
 
-    print(impls)
-    return impls[Api.scoring], impls[Api.scoring_functions]
+    return (
+        impls[Api.scoring],
+        impls[Api.scoring_functions],
+        impls[Api.datasets],
+    )
