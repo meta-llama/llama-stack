@@ -29,11 +29,18 @@ def available_providers() -> List[ProviderSpec]:
             api_dependencies=[
                 Api.inference,
             ],
-            deprecation_warning="Please use the `llama-guard` / `prompt-guard` / `code-scanner` providers instead.",
+            deprecation_error="""
+Provider `meta-reference` for API `safety` does not work with the latest Llama Stack.
+
+- if you are using Llama Guard v3, please use the `inline::llama-guard` provider instead.
+- if you are using Prompt Guard, please use the `inline::prompt-guard` provider instead.
+- if you are using Code Scanner, please use the `inline::code-scanner` provider instead.
+
+            """,
         ),
         InlineProviderSpec(
             api=Api.safety,
-            provider_type="llama-guard",
+            provider_type="inline::llama-guard",
             pip_packages=[],
             module="llama_stack.providers.inline.safety.llama_guard",
             config_class="llama_stack.providers.inline.safety.llama_guard.LlamaGuardConfig",
@@ -43,7 +50,7 @@ def available_providers() -> List[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.safety,
-            provider_type="prompt-guard",
+            provider_type="inline::prompt-guard",
             pip_packages=[
                 "transformers",
                 "torch --index-url https://download.pytorch.org/whl/cpu",
@@ -56,7 +63,7 @@ def available_providers() -> List[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.safety,
-            provider_type="code-scanner",
+            provider_type="inline::code-scanner",
             pip_packages=[
                 "codeshield",
             ],

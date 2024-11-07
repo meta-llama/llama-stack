@@ -16,7 +16,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "meta_reference",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="meta_reference",
         marks=pytest.mark.meta_reference,
@@ -24,7 +24,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "ollama",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="ollama",
         marks=pytest.mark.ollama,
@@ -32,7 +32,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "together",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="together",
         marks=pytest.mark.together,

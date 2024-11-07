@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 import importlib
 import inspect
+import sys
 
 from typing import Any, Dict, List, Set
 
@@ -102,10 +103,14 @@ async def resolve_impls(
                 )
 
             p = provider_registry[api][provider.provider_type]
-            if p.deprecation_warning:
+            if p.deprecation_error:
+                cprint(p.deprecation_error, "red", attrs=["bold"])
+                sys.exit(1)
+
+            elif p.deprecation_warning:
                 cprint(
                     f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
-                    "red",
+                    "yellow",
                     attrs=["bold"],
                 )
             p.deps__ = [a.value for a in p.api_dependencies]
