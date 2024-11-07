@@ -9,9 +9,17 @@ from typing import Dict, List, Protocol
 
 import pydantic
 
-from llama_stack.distribution.datatypes import RoutableObjectWithProvider
+from llama_stack.distribution.datatypes import (
+    RoutableObjectWithProvider,
+    StackRunConfig,
+)
+from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 
-from llama_stack.providers.utils.kvstore import KVStore
+from llama_stack.providers.utils.kvstore import (
+    KVStore,
+    kvstore_impl,
+    SqliteKVStoreConfig,
+)
 
 
 class DistributionRegistry(Protocol):
@@ -133,3 +141,21 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
             self.cache[obj.identifier].append(obj)
 
         return success
+
+
+async def create_dist_registry(
+    config: StackRunConfig,
+) -> tuple[CachedDiskDistributionRegistry, KVStore]:
+    # instantiate kvstore for storing and retrieving distribution metadata
+    if config.metadata_store:
+        dist_kvstore = await kvstore_impl(config.metadata_store)
+    else:
+        dist_kvstore = await kvstore_impl(
+            SqliteKVStoreConfig(
+                db_path=(
+                    DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
+                ).as_posix()
+            )
+        )
+
+    return CachedDiskDistributionRegistry(dist_kvstore), dist_kvstore
