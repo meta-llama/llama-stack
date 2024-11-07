@@ -10,11 +10,11 @@ import pytest_asyncio
 from llama_stack.apis.shields import Shield, ShieldType
 
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.adapters.safety.bedrock import BedrockSafetyConfig
 from llama_stack.providers.inline.safety.meta_reference import (
     LlamaGuardShieldConfig,
     SafetyConfig,
 )
+from llama_stack.providers.remote.safety.bedrock import BedrockSafetyConfig
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 
 from ..conftest import ProviderFixture, remote_stack_fixture
