@@ -42,7 +42,6 @@ async def resolve_impls_for_test_v2(
         impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
     except ModuleNotFoundError as e:
         print_pip_install_help(providers)
-        print(f"ModuleNotFoundError: {e}")  # Add explicit print of error
         raise e
 
     if provider_data:
@@ -76,7 +75,7 @@ async def resolve_impls_for_test(api: Api, deps: List[Api] = None):
         impls = await resolve_impls(run_config, get_provider_registry())
     except ModuleNotFoundError as e:
         print_pip_install_help(providers)
-        print(f"ModuleNotFoundError: {e}")  # Add explicit print of error
+        raise e
 
     if "provider_data" in config_dict:
         provider_id = chosen[api.value][0].provider_id
