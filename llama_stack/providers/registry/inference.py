@@ -45,7 +45,7 @@ def available_providers() -> List[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.inference,
-            provider_type="vllm",
+            provider_type="inline::vllm",
             pip_packages=[
                 "vllm",
             ],

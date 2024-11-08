@@ -13,10 +13,10 @@ apis:
 - safety
 providers:
   inference:
-  - provider_id: ollama0
-    provider_type: remote::ollama
+  - provider_id: vllm0
+    provider_type: remote::vllm
     config:
-      url: http://127.0.0.1:14343
+      url: http://127.0.0.1:8000
   safety:
   - provider_id: meta0
     provider_type: meta-reference

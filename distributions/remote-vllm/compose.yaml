@@ -1,11 +1,11 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
+  vllm:
+    image: vllm/vllm-openai:latest
     network_mode: "host"
     volumes:
-      - ollama:/root/.ollama # this solution synchronizes with the docker volume and loads the model rocket fast
+      - $HOME/.cache/huggingface:/root/.cache/huggingface
     ports:
-      - "11434:11434"
+      - "8000:8000"
     devices:
       - nvidia.com/gpu=all
     environment:
@@ -27,17 +27,17 @@ services:
     runtime: nvidia
   llamastack:
     depends_on:
-    - ollama
-    image: llamastack/distribution-ollama
+    - vllm
+    image: llamastack/distribution-remote-vllm
     network_mode: "host"
     volumes:
       - ~/.llama:/root/.llama
       # Link to ollama run.yaml file
-      - ./run.yaml:/root/llamastack-run-ollama.yaml
+      - ./run.yaml:/root/llamastack-run-remote-vllm.yaml
     ports:
       - "5000:5000"
-    # Hack: wait for ollama server to start before starting docker
-    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-ollama.yaml"
+    # Hack: wait for vllm server to start before starting docker
+    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-remote-vllm.yaml"
     deploy:
       restart_policy:
         condition: on-failure
@@ -45,4 +45,4 @@ services:
         max_attempts: 5
         window: 60s
 volumes:
-  ollama:
+  vllm:

@@ -1,0 +1,12 @@
+name: remote-vllm
+distribution_spec:
+  description: Use (an external) vLLM server for running LLM inference
+  providers:
+    inference: remote::vllm
+    memory:
+    - meta-reference
+    - remote::chromadb
+    - remote::pgvector
+    safety: meta-reference
+    agents: meta-reference
+    telemetry: meta-reference
