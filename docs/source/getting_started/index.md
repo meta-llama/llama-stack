@@ -144,7 +144,11 @@ docker compose down
 
 :::{tab-item} ollama
 ```
-$ cd llama-stack/distributions/ollama/cpu && docker compose up
+$ cd llama-stack/distributions/ollama && docker compose up
+
+# OR
+
+$ cd llama-stack/distributions/ollama-gpu && docker compose up
 ```
 
 You will see outputs similar to following ---

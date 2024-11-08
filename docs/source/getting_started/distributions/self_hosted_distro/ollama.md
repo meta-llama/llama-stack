@@ -7,16 +7,22 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | **Provider(s)** 	| remote::ollama 	| meta-reference 	| remote::pgvector, remote::chroma 	| remote::ollama 	| meta-reference 	|
 
 
-### Docker: Start a Distribution (Single Node GPU)
+### Docker: Start the Distribution (Single Node regular Desktop machine)
+
+> [!NOTE]
+> This will start an ollama server with CPU only, please see [Ollama Documentations](https://github.com/ollama/ollama) for serving models on CPU only.
+
+```
+$ cd distributions/ollama; docker compose up
+```
+
+### Docker: Start a Distribution (Single Node with nvidia GPUs)
 
 > [!NOTE]
 > This assumes you have access to GPU to start a Ollama server with access to your GPU.
 
 ```
-$ cd distributions/ollama/gpu
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
+$ cd distributions/ollama-gpu; docker compose up
 ```
 
 You will see outputs similar to following ---
@@ -36,18 +42,6 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 To kill the server
 ```
 docker compose down
-```
-
-### Docker: Start the Distribution (Single Node CPU)
-
-> [!NOTE]
-> This will start an ollama server with CPU only, please see [Ollama Documentations](https://github.com/ollama/ollama) for serving models on CPU only.
-
-```
-$ cd distributions/ollama/cpu
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
 ```
 
 ### Conda: ollama run + llama stack run
