@@ -51,25 +51,6 @@ def safety_meta_reference(safety_model) -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def safety_together() -> ProviderFixture:
-    return ProviderFixture(
-        providers=[
-            Provider(
-                provider_id="together",
-                provider_type="remote::together",
-                config=TogetherSafetyConfig().model_dump(),
-            )
-        ],
-        provider_data=dict(
-            together_api_key=get_env_or_fail("TOGETHER_API_KEY"),
-        ),
-    )
-
-
-SAFETY_FIXTURES = ["meta_reference", "together", "remote", "bedrock"]
-
-
-@pytest.fixture(scope="session")
 def safety_bedrock() -> ProviderFixture:
     return ProviderFixture(
         providers=[
@@ -80,6 +61,9 @@ def safety_bedrock() -> ProviderFixture:
             )
         ],
     )
+
+
+SAFETY_FIXTURES = ["meta_reference", "bedrock", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")
