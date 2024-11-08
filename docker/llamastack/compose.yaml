@@ -1,0 +1,20 @@
+services:
+  llamastack:
+    depends_on:
+    - ollama
+    image: llamastack/distribution-ollama
+    network_mode: "host"
+    volumes:
+      - ~/.llama:/root/.llama
+      # Link to ollama run.yaml file
+      - ./run.yaml:/root/my-run.yaml
+    ports:
+      - "5000:5000"
+    # Hack: wait for ollama server to start before starting docker
+    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/my-run.yaml"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s

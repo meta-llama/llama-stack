@@ -1,0 +1,18 @@
+services:
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: postgres.Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/vector_extension.sql:/docker-entrypoint-initdb.d/0-vector_extension.sql
+      # - ./postgres/0-vector-extension.sh:/docker-entrypoint-initdb.d/0-vector-extension.sh
+
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vectorexample
+volumes:
+  postgres_data:

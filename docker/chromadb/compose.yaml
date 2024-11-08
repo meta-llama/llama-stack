@@ -1,0 +1,11 @@
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./chroma_vdb:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+    network_mode: "host"
