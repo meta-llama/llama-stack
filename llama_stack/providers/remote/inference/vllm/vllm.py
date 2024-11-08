@@ -13,7 +13,7 @@ from llama_models.sku_list import all_registered_models, resolve_model
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -44,13 +44,13 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def initialize(self) -> None:
         self.client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
 
-    async def register_model(self, model: ModelDef) -> None:
+    async def register_model(self, model: Model) -> None:
         raise ValueError("Model registration is not supported for vLLM models")
 
     async def shutdown(self) -> None:
         pass
 
-    async def list_models(self) -> List[ModelDef]:
+    async def list_models(self) -> List[Model]:
         models = []
         for model in self.client.models.list():
             repo = model.id
@@ -60,7 +60,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
             identifier = self.huggingface_repo_to_llama_model_id[repo]
             models.append(
-                ModelDef(
+                Model(
                     identifier=identifier,
                     llama_model=identifier,
                 )

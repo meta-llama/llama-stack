@@ -10,6 +10,7 @@ import pytest
 import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
+from llama_stack.providers.datatypes import Model
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
@@ -153,7 +154,7 @@ INFERENCE_FIXTURES = [
 
 
 @pytest_asyncio.fixture(scope="session")
-async def inference_stack(request):
+async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
     impls = await resolve_impls_for_test_v2(
@@ -161,5 +162,12 @@ async def inference_stack(request):
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
     )
+
+    model = Model(
+        identifier=inference_model,
+        provider_id=inference_fixture.providers[0].provider_id,
+    )
+
+    await impls[Api.models].register_model(model)
 
     return (impls[Api.inference], impls[Api.models])

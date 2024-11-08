@@ -71,7 +71,7 @@ class InferenceRouter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: ModelDef) -> None:
+    async def register_model(self, model: Model) -> None:
         await self.routing_table.register_model(model)
 
     async def chat_completion(
