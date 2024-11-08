@@ -217,8 +217,7 @@ $ llama stack build --template meta-reference-gpu --image-type conda
 
 3. Start running distribution
 ```
-$ cd llama-stack/distributions/meta-reference-gpu
-$ llama stack run ./run.yaml
+$ llama stack run ~/.llama/distributions/llamastack-meta-reference-gpu/meta-reference-gpu-run.yaml
 ```
 :::
 
@@ -246,7 +245,7 @@ inference:
 
 5. Start Llama Stack server
 ```bash
-llama stack run ./gpu/run.yaml
+$ llama stack run ~/.llama/distributions/llamastack-tgi/tgi-run.yaml
 ```
 :::
 
@@ -282,7 +281,7 @@ inference:
 
 ```
 llama stack build --template ollama --image-type conda
-llama stack run ./gpu/run.yaml
+llama stack run ~/.llama/distributions/llamastack-ollama/ollama-run.yaml
 ```
 
 :::
@@ -313,7 +312,7 @@ inference:
 ```bash
 llama stack build --template together --image-type conda
 # -- modify run.yaml to a valid Together server endpoint
-llama stack run ./run.yaml
+llama stack run ~/.llama/distributions/llamastack-together/together-run.yaml
 ```
 
 Make sure your `run.yaml` file has the inference provider pointing to the correct Together URL server endpoint. E.g.
