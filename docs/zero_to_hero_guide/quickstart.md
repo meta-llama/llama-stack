@@ -1,6 +1,6 @@
 # Llama Stack Quickstart Guide
 
-This guide will walk you through setting up an end-to-end workflow with Llama Stack, enabling you to perform text generation using the `Llama3.2-11B-Vision-Instruct` model. Follow these steps to get started quickly.
+This guide will walk you through setting up an end-to-end workflow with Llama Stack, enabling you to perform text generation using the `Llama3.1-8B-Instruct` model. Follow these steps to get started quickly.
 
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
@@ -42,7 +42,7 @@ pip install llama-stack
 Download the necessary Llama model checkpoints using the `llama` CLI:
 
 ```bash
-llama download --model-id Llama3.2-11B-Vision-Instruct
+llama download --model-id Llama3.1-8B-Instruct
 ```
 
 *Follow the CLI prompts to complete the download. You may need to accept a license agreement. Obtain an instant license [here](https://www.llama.com/llama-downloads/).*
