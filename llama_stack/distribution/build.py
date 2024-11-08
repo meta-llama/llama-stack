@@ -47,7 +47,10 @@ class ApiInput(BaseModel):
     api: Api
     provider: str
 
-def get_provider_dependencies(config_providers: Dict[str, List[Provider]]) -> tuple[list[str], list[str]]:
+
+def get_provider_dependencies(
+    config_providers: Dict[str, List[Provider]]
+) -> tuple[list[str], list[str]]:
     """Get normal and special dependencies from provider configuration."""
     all_providers = get_provider_registry()
     deps = []
@@ -63,7 +66,9 @@ def get_provider_dependencies(config_providers: Dict[str, List[Provider]]) -> tu
 
         for provider in providers:
             # Providers from BuildConfig and RunConfig are subtly different – not great
-            provider_type = provider if isinstance(provider, str) else provider.provider_type
+            provider_type = (
+                provider if isinstance(provider, str) else provider.provider_type
+            )
 
             if provider_type not in providers_for_api:
                 raise ValueError(
@@ -104,7 +109,9 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
     )
 
     # extend package dependencies based on providers spec
-    normal_deps, special_deps = get_provider_dependencies(build_config.distribution_spec.providers)
+    normal_deps, special_deps = get_provider_dependencies(
+        build_config.distribution_spec.providers
+    )
     package_deps.pip_packages.extend(normal_deps)
     package_deps.pip_packages.extend(special_deps)
 

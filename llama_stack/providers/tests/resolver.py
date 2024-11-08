@@ -13,11 +13,11 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_impls
-from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.store import CachedDiskDistributionRegistry
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
