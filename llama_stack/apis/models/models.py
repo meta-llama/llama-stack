@@ -15,6 +15,9 @@ from llama_stack.apis.resource import Resource
 @json_schema_type
 class Model(Resource):
     type: Literal["model"] = "model"
+    llama_model: str = Field(
+        description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
+    )
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this model",
