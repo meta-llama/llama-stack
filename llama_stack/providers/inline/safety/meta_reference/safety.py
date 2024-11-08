@@ -47,9 +47,6 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
         if shield.shield_type not in self.available_shields:
             raise ValueError(f"Shield type {shield.shield_type} not supported")
 
-    async def supported_shield_types(self) -> List[ShieldType]:
-        return SUPPORTED_SHIELDS
-
     async def run_shield(
         self,
         shield_id: str,

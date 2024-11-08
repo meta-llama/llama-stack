@@ -38,7 +38,7 @@ class ShieldsClient(Shields):
         self,
         shield_id: str,
         shield_type: ShieldType,
-        provider_resource_identifier: Optional[str],
+        provider_shield_id: Optional[str],
         provider_id: Optional[str],
         params: Optional[Dict[str, Any]],
     ) -> None:
@@ -48,7 +48,7 @@ class ShieldsClient(Shields):
                 json={
                     "shield_id": shield_id,
                     "shield_type": shield_type,
-                    "provider_resource_identifier": provider_resource_identifier,
+                    "provider_shield_id": provider_shield_id,
                     "provider_id": provider_id,
                     "params": params,
                 },

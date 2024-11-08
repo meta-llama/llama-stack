@@ -42,7 +42,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
 
     async def register_shield(self, shield: Shield) -> None:
         response = self.bedrock_client.list_guardrails(
-            guardrailIdentifier=shield.identifier,
+            guardrailIdentifier=shield.provider_resource_id,
         )
         if (
             not response["guardrails"]
@@ -50,11 +50,8 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
             or response["guardrails"][0]["version"] != shield.params["guardrailVersion"]
         ):
             raise ValueError(
-                f"Shield {shield.identifier} with version {shield.params['guardrailVersion']} not found in Bedrock"
+                f"Shield {shield.provider_resource_id} with version {shield.params['guardrailVersion']} not found in Bedrock"
             )
-
-    async def supported_shield_types(self) -> List[ShieldType]:
-        return BEDROCK_SUPPORTED_SHIELDS
 
     async def run_shield(
         self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None
@@ -89,7 +86,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         )
 
         response = self.bedrock_runtime_client.apply_guardrail(
-            guardrailIdentifier=shield.identifier,
+            guardrailIdentifier=shield.provider_resource_id,
             guardrailVersion=shield_params["guardrailVersion"],
             source="OUTPUT",  # or 'INPUT' depending on your use case
             content=content_messages,

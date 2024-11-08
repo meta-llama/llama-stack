@@ -154,12 +154,12 @@ class SafetyRouter(Safety):
         self,
         shield_id: str,
         shield_type: ShieldType,
-        provider_resource_identifier: Optional[str] = None,
+        provider_shield_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
     ) -> Shield:
         return await self.routing_table.register_shield(
-            shield_id, shield_type, provider_resource_identifier, provider_id, params
+            shield_id, shield_type, provider_shield_id, provider_id, params
         )
 
     async def run_shield(

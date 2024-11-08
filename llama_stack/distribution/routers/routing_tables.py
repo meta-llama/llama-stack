@@ -219,25 +219,16 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
         self,
         shield_id: str,
         shield_type: ShieldType,
-        provider_resource_identifier: Optional[str] = None,
+        provider_shield_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
     ) -> Shield:
-        if provider_resource_identifier is None:
-            provider_resource_identifier = shield_id
+        if provider_shield_id is None:
+            provider_shield_id = shield_id
         if provider_id is None:
             # If provider_id not specified, use the only provider if it supports this shield type
             if len(self.impls_by_provider_id) == 1:
-                provider = list(self.impls_by_provider_id.values())[0]
-                if (
-                    hasattr(provider, "supported_shield_types")
-                    and shield_type in await provider.supported_shield_types()
-                ):
-                    provider_id = list(self.impls_by_provider_id.keys())[0]
-                else:
-                    raise ValueError(
-                        f"No provider available that supports shield type {shield_type}"
-                    )
+                provider_id = list(self.impls_by_provider_id.keys())[0]
             else:
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
@@ -247,7 +238,7 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
         shield = Shield(
             identifier=shield_id,
             shield_type=shield_type,
-            provider_resource_identifier=provider_resource_identifier,
+            provider_resource_id=provider_shield_id,
             provider_id=provider_id,
             params=params,
         )

@@ -42,7 +42,7 @@ class Shields(Protocol):
         self,
         shield_id: str,
         shield_type: ShieldType,
-        provider_resource_identifier: Optional[str] = None,
+        provider_shield_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
     ) -> Shield: ...

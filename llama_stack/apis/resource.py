@@ -26,7 +26,7 @@ class Resource(BaseModel):
         description="Unique identifier for this resource in llama stack"
     )
 
-    provider_resource_identifier: str = Field(
+    provider_resource_id: str = Field(
         description="Unique identifier for this resource in the provider",
         default=None,
     )
