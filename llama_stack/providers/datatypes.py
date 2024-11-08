@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetDef
 from llama_stack.apis.eval_tasks import EvalTaskDef
-from llama_stack.apis.memory_banks import MemoryBankDef
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFnDef
 from llama_stack.apis.shields import Shield
@@ -51,9 +50,9 @@ class ShieldsProtocolPrivate(Protocol):
 
 
 class MemoryBanksProtocolPrivate(Protocol):
-    async def list_memory_banks(self) -> List[MemoryBankDef]: ...
+    async def list_memory_banks(self) -> List[MemoryBank]: ...
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None: ...
+    async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
 
 
 class DatasetsProtocolPrivate(Protocol):

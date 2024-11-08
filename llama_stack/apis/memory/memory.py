@@ -39,7 +39,7 @@ class QueryDocumentsResponse(BaseModel):
 
 
 class MemoryBankStore(Protocol):
-    def get_memory_bank(self, bank_id: str) -> Optional[MemoryBankDef]: ...
+    def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]: ...
 
 
 @runtime_checkable

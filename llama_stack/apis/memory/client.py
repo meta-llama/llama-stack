@@ -75,14 +75,16 @@ class MemoryClient(Memory):
 async def run_main(host: str, port: int, stream: bool):
     banks_client = MemoryBanksClient(f"http://{host}:{port}")
 
-    bank = VectorMemoryBankDef(
+    bank = VectorMemoryBank(
         identifier="test_bank",
         provider_id="",
         embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=512,
         overlap_size_in_tokens=64,
     )
-    await banks_client.register_memory_bank(bank)
+    await banks_client.register_memory_bank(
+        bank.identifier, bank.memory_bank_type, provider_resource_id=bank.identifier
+    )
 
     retrieved_bank = await banks_client.get_memory_bank(bank.identifier)
     assert retrieved_bank is not None

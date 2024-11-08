@@ -148,7 +148,7 @@ class EmbeddingIndex(ABC):
 
 @dataclass
 class BankWithIndex:
-    bank: MemoryBankDef
+    bank: VectorMemoryBank
     index: EmbeddingIndex
 
     async def insert_documents(

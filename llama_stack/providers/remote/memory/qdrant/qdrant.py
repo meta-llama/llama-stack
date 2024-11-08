@@ -12,6 +12,7 @@ from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
+from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 
 from llama_stack.apis.memory import *  # noqa: F403
@@ -112,11 +113,11 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         index = BankWithIndex(
             bank=memory_bank,
@@ -125,7 +126,7 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
+    async def list_memory_banks(self) -> List[MemoryBank]:
         # Qdrant doesn't have collection level metadata to store the bank properties
         # So we only return from the cache value
         return [i.bank for i in self.cache.values()]

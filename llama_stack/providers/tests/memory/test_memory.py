@@ -43,14 +43,15 @@ def sample_documents():
 
 
 async def register_memory_bank(banks_impl: MemoryBanks):
-    bank = VectorMemoryBankDef(
-        identifier="test_bank",
-        embedding_model="all-MiniLM-L6-v2",
-        chunk_size_in_tokens=512,
-        overlap_size_in_tokens=64,
-    )
 
-    await banks_impl.register_memory_bank(bank)
+    await banks_impl.register_memory_bank(
+        VectorRegistration(
+            memory_bank_id="test_bank",
+            embedding_model="all-MiniLM-L6-v2",
+            chunk_size_in_tokens=512,
+            overlap_size_in_tokens=64,
+        )
+    )
 
 
 class TestMemory:
@@ -68,8 +69,8 @@ class TestMemory:
         # NOTE: this needs you to ensure that you are starting from a clean state
         # but so far we don't have an unregister API unfortunately, so be careful
         _, banks_impl = memory_stack
-        bank = VectorMemoryBankDef(
-            identifier="test_bank_no_provider",
+        bank = VectorRegistration(
+            memory_bank_id="test_bank_no_provider",
             embedding_model="all-MiniLM-L6-v2",
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,

@@ -32,8 +32,11 @@ class MemoryRouter(Memory):
     async def shutdown(self) -> None:
         pass
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
-        await self.routing_table.register_memory_bank(memory_bank)
+    async def register_memory_bank(
+        self,
+        request: RegistrationRequest,
+    ) -> None:
+        await self.routing_table.register_memory_bank(request)
 
     async def insert_documents(
         self,

@@ -114,11 +114,11 @@ class WeaviateMemoryAdapter(
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         client = self._get_client()
 
@@ -141,7 +141,7 @@ class WeaviateMemoryAdapter(
         )
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
+    async def list_memory_banks(self) -> List[MemoryBank]:
         # TODO: right now the Llama Stack is the source of truth for these banks. That is
         # not ideal. It should be Weaviate which is the source of truth. Unfortunately,
         # list() happens at Stack startup when the Weaviate client (credentials) is not
@@ -157,8 +157,8 @@ class WeaviateMemoryAdapter(
             raise ValueError(f"Bank {bank_id} not found")
 
         client = self._get_client()
-        if not client.collections.exists(bank_id):
-            raise ValueError(f"Collection with name `{bank_id}` not found")
+        if not client.collections.exists(bank.identifier):
+            raise ValueError(f"Collection with name `{bank.identifier}` not found")
 
         index = BankWithIndex(
             bank=bank,
