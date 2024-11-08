@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-07 22:26:27.169134"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-07 22:57:18.550543"
     },
     "servers": [
         {
@@ -726,6 +726,51 @@
                 ]
             }
         },
+        "/eval_tasks/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/EvalTaskDefWithProvider"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/memory_banks/get": {
             "get": {
                 "responses": {
@@ -1388,6 +1433,36 @@
                 ]
             }
         },
+        "/eval_tasks/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvalTaskDefWithProvider"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/memory_banks/list": {
             "get": {
                 "responses": {
@@ -1729,6 +1804,39 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RegisterDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/eval_tasks/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
                             }
                         }
                     },
@@ -5199,6 +5307,65 @@
                     "provider_id"
                 ]
             },
+            "EvalTaskDefWithProvider": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "eval_task",
+                        "default": "eval_task"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "dataset_id",
+                    "scoring_functions",
+                    "metadata",
+                    "type",
+                    "provider_id"
+                ]
+            },
             "ModelDefWithProvider": {
                 "type": "object",
                 "properties": {
@@ -6459,6 +6626,18 @@
                     "dataset_def"
                 ]
             },
+            "RegisterEvalTaskRequest": {
+                "type": "object",
+                "properties": {
+                    "eval_task_def": {
+                        "$ref": "#/components/schemas/EvalTaskDefWithProvider"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "eval_task_def"
+                ]
+            },
             "RegisterMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -7071,55 +7250,58 @@
     ],
     "tags": [
         {
-            "name": "ScoringFunctions"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Safety"
+            "name": "Inspect"
         },
         {
             "name": "MemoryBanks"
         },
         {
-            "name": "Models"
+            "name": "Safety"
         },
         {
             "name": "BatchInference"
         },
         {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Datasets"
+            "name": "Telemetry"
         },
         {
             "name": "DatasetIO"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Models"
         },
         {
-            "name": "Memory"
+            "name": "Shields"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "PostTraining"
         },
         {
             "name": "Eval"
         },
         {
-            "name": "Inspect"
+            "name": "ScoringFunctions"
         },
         {
-            "name": "Scoring"
+            "name": "EvalTasks"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Inference"
         },
         {
             "name": "BuiltinTool",
@@ -7450,6 +7632,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DatasetDefWithProvider\" />"
         },
         {
+            "name": "EvalTaskDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTaskDefWithProvider\" />"
+        },
+        {
             "name": "ModelDefWithProvider",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDefWithProvider\" />"
         },
@@ -7586,6 +7772,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterDatasetRequest\" />"
         },
         {
+            "name": "RegisterEvalTaskRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterEvalTaskRequest\" />"
+        },
+        {
             "name": "RegisterMemoryBankRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterMemoryBankRequest\" />"
         },
@@ -7671,6 +7861,7 @@
                 "DatasetIO",
                 "Datasets",
                 "Eval",
+                "EvalTasks",
                 "Inference",
                 "Inspect",
                 "Memory",
@@ -7730,6 +7921,7 @@
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
+                "EvalTaskDefWithProvider",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
                 "FinetuningAlgorithm",
@@ -7771,6 +7963,7 @@
                 "RLHFAlgorithm",
                 "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
+                "RegisterEvalTaskRequest",
                 "RegisterMemoryBankRequest",
                 "RegisterModelRequest",
                 "RegisterScoringFunctionRequest",

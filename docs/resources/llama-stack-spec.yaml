@@ -918,6 +918,41 @@ components:
       required:
       - embeddings
       type: object
+    EvalTaskDefWithProvider:
+      additionalProperties: false
+      properties:
+        dataset_id:
+          type: string
+        identifier:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        scoring_functions:
+          items:
+            type: string
+          type: array
+        type:
+          const: eval_task
+          default: eval_task
+          type: string
+      required:
+      - identifier
+      - dataset_id
+      - scoring_functions
+      - metadata
+      - type
+      - provider_id
+      type: object
     EvaluateResponse:
       additionalProperties: false
       properties:
@@ -1820,6 +1855,14 @@ components:
           $ref: '#/components/schemas/DatasetDefWithProvider'
       required:
       - dataset_def
+      type: object
+    RegisterEvalTaskRequest:
+      additionalProperties: false
+      properties:
+        eval_task_def:
+          $ref: '#/components/schemas/EvalTaskDefWithProvider'
+      required:
+      - eval_task_def
       type: object
     RegisterMemoryBankRequest:
       additionalProperties: false
@@ -2983,7 +3026,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-07 22:26:27.169134"
+    \ draft and subject to change.\n                Generated at 2024-11-07 22:57:18.550543"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3503,6 +3546,72 @@ paths:
           description: OK
       tags:
       - Eval
+  /eval_tasks/get:
+    get:
+      parameters:
+      - in: query
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/EvalTaskDefWithProvider'
+                - type: 'null'
+          description: OK
+      tags:
+      - EvalTasks
+  /eval_tasks/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/EvalTaskDefWithProvider'
+          description: OK
+      tags:
+      - EvalTasks
+  /eval_tasks/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterEvalTaskRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - EvalTasks
   /health:
     get:
       parameters:
@@ -4275,23 +4384,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: ScoringFunctions
-- name: Agents
-- name: Shields
-- name: Telemetry
-- name: Safety
-- name: MemoryBanks
-- name: Models
-- name: BatchInference
-- name: PostTraining
-- name: Inference
-- name: Datasets
-- name: DatasetIO
-- name: SyntheticDataGeneration
-- name: Memory
-- name: Eval
 - name: Inspect
+- name: MemoryBanks
+- name: Safety
+- name: BatchInference
+- name: Telemetry
+- name: DatasetIO
+- name: Models
+- name: Shields
 - name: Scoring
+- name: Datasets
+- name: Agents
+- name: PostTraining
+- name: Eval
+- name: ScoringFunctions
+- name: EvalTasks
+- name: Memory
+- name: SyntheticDataGeneration
+- name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4546,6 +4656,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DatasetDefWithProvider"
     />
   name: DatasetDefWithProvider
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvalTaskDefWithProvider"
+    />
+  name: EvalTaskDefWithProvider
 - description: <SchemaDefinition schemaRef="#/components/schemas/ModelDefWithProvider"
     />
   name: ModelDefWithProvider
@@ -4647,6 +4760,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterDatasetRequest"
     />
   name: RegisterDatasetRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/RegisterEvalTaskRequest"
+    />
+  name: RegisterEvalTaskRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterMemoryBankRequest"
     />
   name: RegisterMemoryBankRequest
@@ -4712,6 +4828,7 @@ x-tagGroups:
   - DatasetIO
   - Datasets
   - Eval
+  - EvalTasks
   - Inference
   - Inspect
   - Memory
@@ -4768,6 +4885,7 @@ x-tagGroups:
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
+  - EvalTaskDefWithProvider
   - EvaluateResponse
   - EvaluateRowsRequest
   - FinetuningAlgorithm
@@ -4809,6 +4927,7 @@ x-tagGroups:
   - RLHFAlgorithm
   - RegexParserScoringFnParams
   - RegisterDatasetRequest
+  - RegisterEvalTaskRequest
   - RegisterMemoryBankRequest
   - RegisterModelRequest
   - RegisterScoringFunctionRequest
