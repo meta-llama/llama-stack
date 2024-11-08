@@ -202,7 +202,35 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def get_model(self, identifier: str) -> Optional[Model]:
         return await self.get_object_by_identifier(identifier)
 
-    async def register_model(self, model: Model) -> None:
+    async def register_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        llama_model: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        if provider_model_id is None:
+            provider_model_id = model_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this model
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if metadata is None:
+            metadata = {}
+        if llama_model is None:
+            llama_model = model_id
+        model = Model(
+            identifier=model_id,
+            provider_resource_id=provider_model_id,
+            provider_id=provider_id,
+            llama_model=llama_model,
+            metadata=metadata,
+        )
         await self.register_object(model)
 
 

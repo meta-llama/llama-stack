@@ -9,12 +9,12 @@ from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkab
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import Field
 
-from llama_stack.apis.resource import Resource
+from llama_stack.apis.resource import Resource, ResourceType
 
 
 @json_schema_type
 class Model(Resource):
-    type: Literal["model"] = "model"
+    type: Literal[ResourceType.model.value] = ResourceType.model.value
     llama_model: str = Field(
         description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
     )
@@ -33,4 +33,11 @@ class Models(Protocol):
     async def get_model(self, identifier: str) -> Optional[Model]: ...
 
     @webmethod(route="/models/register", method="POST")
-    async def register_model(self, model: Model) -> None: ...
+    async def register_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        llama_model: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Model: ...
