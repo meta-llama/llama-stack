@@ -8,24 +8,25 @@ from typing import List, Optional
 from llama_stack.apis.datasetio import *  # noqa: F403
 
 
-from datasets import Dataset, load_dataset
+import datasets as hf_datasets
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 
+from .benchmarks import llamastack_mmlu
+
 from .config import HuggingfaceDatasetIOConfig
-from .dataset_defs.llamastack_mmlu import llamastack_mmlu
 
 
 def load_hf_dataset(dataset_def: DatasetDef):
     if dataset_def.metadata.get("path", None):
-        return load_dataset(**dataset_def.metadata)
+        return hf_datasets.load_dataset(**dataset_def.metadata)
 
     df = get_dataframe_from_url(dataset_def.url)
 
     if df is None:
         raise ValueError(f"Failed to load dataset from {dataset_def.url}")
 
-    dataset = Dataset.from_pandas(df)
+    dataset = hf_datasets.Dataset.from_pandas(df)
     return dataset
 
 
@@ -37,8 +38,8 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def initialize(self) -> None:
         # pre-registered benchmark datasets
-        self.pre_registered_datasets = [llamastack_mmlu]
-        self.dataset_infos = {x.identifier: x for x in self.pre_registered_datasets}
+        pre_registered_datasets = [llamastack_mmlu]
+        self.dataset_infos = {x.identifier: x for x in pre_registered_datasets}
 
     async def shutdown(self) -> None: ...
 
