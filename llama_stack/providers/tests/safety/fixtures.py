@@ -15,6 +15,7 @@ from llama_stack.providers.inline.safety.meta_reference import (
     SafetyConfig,
 )
 from llama_stack.providers.remote.safety.bedrock import BedrockSafetyConfig
+from llama_stack.providers.tests.env import get_env_or_fail
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 
 from ..conftest import ProviderFixture, remote_stack_fixture
@@ -120,10 +121,8 @@ async def safety_stack(inference_model, safety_model, request):
     elif provider_type == "remote::together":
         shield_config["model"] = safety_model
     elif provider_type == "remote::bedrock":
-        identifier = request.config.getoption("--bedrock-guardrail-id", None)
-        shield_config["guardrailVersion"] = request.config.getoption(
-            "--bedrock-guardrail-version", None
-        )
+        identifier = get_env_or_fail("BEDROCK_GUARDRAIL_IDENTIFIER")
+        shield_config["guardrailVersion"] = get_env_or_fail("BEDROCK_GUARDRAIL_VERSION")
 
     # Create shield
     shield = Shield(
