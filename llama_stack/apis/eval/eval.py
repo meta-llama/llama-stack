@@ -41,7 +41,7 @@ class BenchmarkEvalTaskConfig(BaseModel):
     type: Literal["benchmark"] = "benchmark"
     eval_candidate: EvalCandidate
     num_examples: Optional[int] = Field(
-        description="Number of examples to evaluate (useful for quick debugging), if not provided, all examples in the dataset will be evaluated",
+        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
         default=None,
     )
 
@@ -55,7 +55,7 @@ class AppEvalTaskConfig(BaseModel):
         default_factory=dict,
     )
     num_examples: Optional[int] = Field(
-        description="Number of examples to evaluate (useful for quick debugging), if not provided, all examples in the dataset will be evaluated",
+        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
         default=None,
     )
     # we could optinally add any specific dataset config here
