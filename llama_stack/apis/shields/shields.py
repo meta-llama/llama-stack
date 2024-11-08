@@ -38,4 +38,11 @@ class Shields(Protocol):
     async def get_shield(self, identifier: str) -> Optional[Shield]: ...
 
     @webmethod(route="/shields/register", method="POST")
-    async def register_shield(self, shield: Shield) -> None: ...
+    async def register_shield(
+        self,
+        shield_id: str,
+        shield_type: ShieldType,
+        provider_resource_identifier: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Shield: ...

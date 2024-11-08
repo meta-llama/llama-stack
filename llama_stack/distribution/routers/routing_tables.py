@@ -215,8 +215,44 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def get_shield(self, identifier: str) -> Optional[Shield]:
         return await self.get_object_by_identifier(identifier)
 
-    async def register_shield(self, shield: Shield) -> None:
+    async def register_shield(
+        self,
+        shield_id: str,
+        shield_type: ShieldType,
+        provider_resource_identifier: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Shield:
+        if provider_resource_identifier is None:
+            provider_resource_identifier = shield_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this shield type
+            if len(self.impls_by_provider_id) == 1:
+                provider = list(self.impls_by_provider_id.values())[0]
+                if (
+                    hasattr(provider, "supported_shield_types")
+                    and shield_type in await provider.supported_shield_types()
+                ):
+                    provider_id = list(self.impls_by_provider_id.keys())[0]
+                else:
+                    raise ValueError(
+                        f"No provider available that supports shield type {shield_type}"
+                    )
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if params is None:
+            params = {}
+        shield = Shield(
+            identifier=shield_id,
+            shield_type=shield_type,
+            provider_resource_identifier=provider_resource_identifier,
+            provider_id=provider_id,
+            params=params,
+        )
         await self.register_object(shield)
+        return shield
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):

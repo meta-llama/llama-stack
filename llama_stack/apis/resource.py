@@ -36,8 +36,3 @@ class Resource(BaseModel):
     type: ResourceType = Field(
         description="Type of resource (e.g. 'model', 'shield', 'memory_bank', etc.)"
     )
-
-    # If the provider_resource_identifier is not set, set it to the identifier
-    def model_post_init(self, __context) -> None:
-        if self.provider_resource_identifier is None:
-            self.provider_resource_identifier = self.identifier

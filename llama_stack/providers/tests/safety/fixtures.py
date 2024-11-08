@@ -7,7 +7,7 @@
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.shields import Shield, ShieldType
+from llama_stack.apis.shields import ShieldType
 
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.safety.meta_reference import (
@@ -95,10 +95,10 @@ async def safety_stack(inference_model, safety_model, request):
     shields_impl = impls[Api.shields]
 
     # Register the appropriate shield based on provider type
-    provider_id = safety_fixture.providers[0].provider_id
     provider_type = safety_fixture.providers[0].provider_type
 
     shield_config = {}
+    shield_type = ShieldType.llama_guard
     identifier = "llama_guard"
     if provider_type == "meta-reference":
         shield_config["model"] = safety_model
@@ -107,12 +107,11 @@ async def safety_stack(inference_model, safety_model, request):
     elif provider_type == "remote::bedrock":
         identifier = get_env_or_fail("BEDROCK_GUARDRAIL_IDENTIFIER")
         shield_config["guardrailVersion"] = get_env_or_fail("BEDROCK_GUARDRAIL_VERSION")
+        shield_type = ShieldType.generic_content_shield
 
-    # Create shield
-    shield = Shield(
-        identifier=identifier,
-        shield_type=ShieldType.llama_guard,
-        provider_id=provider_id,
+    shield = await shields_impl.register_shield(
+        shield_id=identifier,
+        shield_type=shield_type,
         params=shield_config,
     )
 

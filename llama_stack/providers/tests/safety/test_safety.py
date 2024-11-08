@@ -19,9 +19,15 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 
 class TestSafety:
     @pytest.mark.asyncio
-    async def test_shield_list(self, safety_stack):
+    async def test_new_shield(self, safety_stack):
         _, shields_impl, shield = safety_stack
-        await shields_impl.register_shield(shield)
+        assert shield is not None
+        assert shield.provider_resource_identifier == shield.identifier
+        assert shield.provider_id is not None
+
+    @pytest.mark.asyncio
+    async def test_shield_list(self, safety_stack):
+        _, shields_impl, _ = safety_stack
         response = await shields_impl.list_shields()
         assert isinstance(response, list)
         assert len(response) >= 1
@@ -32,9 +38,7 @@ class TestSafety:
 
     @pytest.mark.asyncio
     async def test_run_shield(self, safety_stack):
-        safety_impl, shields_impl, shield = safety_stack
-
-        await shields_impl.register_shield(shield)
+        safety_impl, _, shield = safety_stack
 
         response = await safety_impl.run_shield(
             shield_id=shield.identifier,

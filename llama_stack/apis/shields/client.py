@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 
 from typing import List, Optional
 
@@ -35,12 +34,23 @@ class ShieldsClient(Shields):
             response.raise_for_status()
             return [Shield(**x) for x in response.json()]
 
-    async def register_shield(self, shield: Shield) -> None:
+    async def register_shield(
+        self,
+        shield_id: str,
+        shield_type: ShieldType,
+        provider_resource_identifier: Optional[str],
+        provider_id: Optional[str],
+        params: Optional[Dict[str, Any]],
+    ) -> None:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/shields/register",
                 json={
-                    "shield": json.loads(shield.json()),
+                    "shield_id": shield_id,
+                    "shield_type": shield_type,
+                    "provider_resource_identifier": provider_resource_identifier,
+                    "provider_id": provider_id,
+                    "params": params,
                 },
                 headers={"Content-Type": "application/json"},
             )

@@ -150,8 +150,17 @@ class SafetyRouter(Safety):
     async def shutdown(self) -> None:
         pass
 
-    async def register_shield(self, shield: Shield) -> None:
-        await self.routing_table.register_shield(shield)
+    async def register_shield(
+        self,
+        shield_id: str,
+        shield_type: ShieldType,
+        provider_resource_identifier: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Shield:
+        return await self.routing_table.register_shield(
+            shield_id, shield_type, provider_resource_identifier, provider_id, params
+        )
 
     async def run_shield(
         self,

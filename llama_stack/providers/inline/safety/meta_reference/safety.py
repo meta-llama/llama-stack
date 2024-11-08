@@ -21,6 +21,7 @@ from .prompt_guard import InjectionShield, JailbreakShield, PromptGuardShield
 
 
 PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
+SUPPORTED_SHIELDS = [ShieldType.llama_guard, ShieldType.prompt_guard]
 
 
 class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
@@ -45,6 +46,9 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
     async def register_shield(self, shield: Shield) -> None:
         if shield.shield_type not in self.available_shields:
             raise ValueError(f"Shield type {shield.shield_type} not supported")
+
+    async def supported_shield_types(self) -> List[ShieldType]:
+        return SUPPORTED_SHIELDS
 
     async def run_shield(
         self,

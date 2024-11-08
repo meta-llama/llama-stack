@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 BEDROCK_SUPPORTED_SHIELDS = [
-    ShieldType.generic_content_shield.value,
+    ShieldType.generic_content_shield,
 ]
 
 
@@ -52,6 +52,9 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
             raise ValueError(
                 f"Shield {shield.identifier} with version {shield.params['guardrailVersion']} not found in Bedrock"
             )
+
+    async def supported_shield_types(self) -> List[ShieldType]:
+        return BEDROCK_SUPPORTED_SHIELDS
 
     async def run_shield(
         self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None
