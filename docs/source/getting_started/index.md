@@ -121,7 +121,7 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 
 :::{tab-item} tgi
 ```
-$ cd llama-stack/distributions/tgi/gpu && docker compose up
+$ cd llama-stack/distributions/tgi && docker compose up
 ```
 
 The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should see the following outputs --
