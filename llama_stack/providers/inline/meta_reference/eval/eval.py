@@ -51,22 +51,20 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs = {}
 
+        self.eval_tasks = {}
+
     async def initialize(self) -> None: ...
 
     async def shutdown(self) -> None: ...
+
+    async def register_eval_task(self, task_def: EvalTaskDef) -> None:
+        self.eval_tasks[task_def.identifier] = task_def
 
     async def list_eval_tasks(self) -> List[EvalTaskDef]:
         # NOTE: In order to be routed to this provider, the eval task def must have
         # a EvalTaskDef with identifier defined as DEFAULT_EVAL_TASK_IDENTIFIER
         # for app eval where eval task benchmark_id is not pre-registered
-        eval_tasks = [
-            EvalTaskDef(
-                identifier=DEFAULT_EVAL_TASK_IDENTIFIER,
-                dataset_id="",
-                scoring_functions=[],
-            )
-        ]
-        return eval_tasks
+        return list(self.eval_tasks.values())
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
@@ -94,9 +92,9 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
     async def run_eval(
         self,
         task_id: str,
-        task_def: EvalTaskDef,
         task_config: EvalTaskConfig,
     ) -> Job:
+        task_def = self.eval_tasks[task_id]
         dataset_id = task_def.dataset_id
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions

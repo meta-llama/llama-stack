@@ -267,12 +267,10 @@ class EvalRouter(Eval):
     async def run_eval(
         self,
         task_id: str,
-        task_def: EvalTaskDef,
         task_config: AppEvalTaskConfig,
     ) -> Job:
         return await self.routing_table.get_provider_impl(task_id).run_eval(
             task_id=task_id,
-            task_def=task_def,
             task_config=task_config,
         )
 

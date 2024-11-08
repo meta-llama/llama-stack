@@ -70,7 +70,6 @@ class Eval(Protocol):
     async def run_eval(
         self,
         task_id: str,
-        task_def: EvalTaskDef,
         task_config: EvalTaskConfig,
     ) -> Job: ...
 
