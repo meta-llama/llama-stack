@@ -212,7 +212,7 @@ class ScoringRouter(Scoring):
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Optional[Dict[str, ScoringFnParams]] = None,
+        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         res = {}
@@ -235,7 +235,7 @@ class ScoringRouter(Scoring):
     async def score(
         self,
         input_rows: List[Dict[str, Any]],
-        scoring_functions: Optional[Dict[str, ScoringFnParams]] = None,
+        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
     ) -> ScoreResponse:
         res = {}
         # look up and map each scoring function to its provider impl
