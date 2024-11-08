@@ -114,7 +114,12 @@ The `llama-stack-client` library offers a robust and efficient python methods fo
 pip install llama-stack-client
 ```
 
-### 2. Create a Python Script (`test_llama_stack.py`)
+### 3. Create Python Script (`test_llama_stack.py`)
+```bash
+touch test_llama_stack.py
+```
+
+### 4. Create a Chat Completion Request in Python
 
 ```python
 from llama_stack_client import LlamaStackClient
@@ -136,7 +141,7 @@ response = client.inference.chat_completion(
 print(response.completion_message.content)
 ```
 
-### 3. Run the Python Script
+### 5. Run the Python Script
 
 ```bash
 python test_llama_stack.py
