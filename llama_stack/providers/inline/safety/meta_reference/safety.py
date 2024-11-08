@@ -64,11 +64,14 @@ class MetaReferenceSafetyImpl(Safety, ShieldsProtocolPrivate):
         # TODO: we can refactor ShieldBase, etc. to be inline with the API types
         res = await shield_impl.run(messages)
         violation = None
-        if res.is_violation and shield.on_violation_action != OnViolationAction.IGNORE:
+        if (
+            res.is_violation
+            and shield_impl.on_violation_action != OnViolationAction.IGNORE
+        ):
             violation = SafetyViolation(
                 violation_level=(
                     ViolationLevel.ERROR
-                    if shield.on_violation_action == OnViolationAction.RAISE
+                    if shield_impl.on_violation_action == OnViolationAction.RAISE
                     else ViolationLevel.WARN
                 ),
                 user_message=res.violation_return_message,
