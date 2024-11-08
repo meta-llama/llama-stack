@@ -80,7 +80,7 @@ class MockInferenceAPI:
 
 class MockSafetyAPI:
     async def run_shield(
-        self, shield_type: str, messages: List[Message]
+        self, shield_identifier: str, messages: List[Message]
     ) -> RunShieldResponse:
         return RunShieldResponse(violation=None)
 

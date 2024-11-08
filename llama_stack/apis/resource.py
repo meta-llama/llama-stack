@@ -22,10 +22,22 @@ class ResourceType(Enum):
 class Resource(BaseModel):
     """Base class for all Llama Stack resources"""
 
-    identifier: str = Field(description="Unique identifier for this resource")
+    identifier: str = Field(
+        description="Unique identifier for this resource in llama stack"
+    )
+
+    provider_resource_identifier: str = Field(
+        description="Unique identifier for this resource in the provider",
+        default=None,
+    )
 
     provider_id: str = Field(description="ID of the provider that owns this resource")
 
     type: ResourceType = Field(
         description="Type of resource (e.g. 'model', 'shield', 'memory_bank', etc.)"
     )
+
+    # If the provider_resource_identifier is not set, set it to the identifier
+    def model_post_init(self, __context) -> None:
+        if self.provider_resource_identifier is None:
+            self.provider_resource_identifier = self.identifier

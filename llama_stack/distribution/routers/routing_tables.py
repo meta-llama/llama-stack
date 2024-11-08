@@ -86,6 +86,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.model_store = self
                 models = await p.list_models()
                 await add_objects(models, pid, ModelDefWithProvider)
+            elif api == Api.safety:
+                p.shield_store = self
 
             elif api == Api.memory:
                 p.memory_bank_store = self

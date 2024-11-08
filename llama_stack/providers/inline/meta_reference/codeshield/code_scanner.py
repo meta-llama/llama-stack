@@ -30,10 +30,14 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
 
     async def run_shield(
         self,
-        shield: Shield,
+        shield_id: str,
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
+        shield = await self.shield_store.get_shield(shield_id)
+        if not shield:
+            raise ValueError(f"Shield {shield_id} not found")
+
         from codeshield.cs import CodeShield
 
         text = "\n".join([interleaved_text_media_as_str(m.content) for m in messages])

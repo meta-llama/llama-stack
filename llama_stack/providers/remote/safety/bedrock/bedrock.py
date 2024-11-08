@@ -54,8 +54,12 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
             )
 
     async def run_shield(
-        self, shield: Shield, messages: List[Message], params: Dict[str, Any] = None
+        self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse:
+        shield = await self.shield_store.get_shield(shield_id)
+        if not shield:
+            raise ValueError(f"Shield {shield_id} not found")
+
         """This is the implementation for the bedrock guardrails. The input to the guardrails is to be of this format
         ```content = [
             {
