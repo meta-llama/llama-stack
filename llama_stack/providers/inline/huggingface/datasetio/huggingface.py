@@ -10,6 +10,7 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 
 from datasets import Dataset, load_dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
+from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 
 from .config import HuggingfaceDatasetIOConfig
 from .dataset_defs.llamastack_mmlu import llamastack_mmlu

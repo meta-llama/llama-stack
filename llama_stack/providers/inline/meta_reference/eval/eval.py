@@ -49,7 +49,18 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
         self.eval_tasks = {}
 
-    async def initialize(self) -> None: ...
+    async def initialize(self) -> None:
+        # pre-register eval tasks
+        benchmark_tasks = [
+            EvalTaskDef(
+                identifier="meta-reference-mmlu",
+                dataset_id="llamastack_mmlu",
+                scoring_functions=[
+                    "meta-reference::regex_parser_multiple_choice_answer"
+                ],
+            )
+        ]
+        self.eval_tasks = {x.identifier: x for x in benchmark_tasks}
 
     async def shutdown(self) -> None: ...
 

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from llama_models.llama3.api.datatypes import URL
-from llama_stack.apis.common.type_system import StringType
+from llama_stack.apis.common.type_system import CompletionInputType, StringType
 from llama_stack.apis.datasetio import DatasetDef
 
 
@@ -15,7 +15,7 @@ llamastack_mmlu = DatasetDef(
     dataset_schema={
         "expected_answer": StringType(),
         "input_query": StringType(),
-        "generated_answer": StringType(),
+        "chat_completion_input": CompletionInputType(),
     },
     metadata={"path": "yanxi0830/ls-mmlu", "split": "train"},
 )
