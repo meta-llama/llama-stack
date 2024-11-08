@@ -71,18 +71,6 @@ def pytest_addoption(parser):
         default=None,
         help="Specify the safety model to use for testing",
     )
-    parser.addoption(
-        "--bedrock-guardrail-id",
-        action="store",
-        default=None,
-        help="Specify the guard rail ID to use for testing bedrock",
-    )
-    parser.addoption(
-        "--bedrock-guardrail-version",
-        action="store",
-        default=None,
-        help="Specify the guard rail version to use for testing bedrock",
-    )
 
 
 SAFETY_MODEL_PARAMS = [
