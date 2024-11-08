@@ -19,12 +19,6 @@ from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 from .config import MetaReferenceEvalConfig
 
 
-# NOTE: this is the default eval task identifier for app eval
-# it is used to make the router work for all app evals
-# For app eval using other eval providers, the eval task identifier will be different
-DEFAULT_EVAL_TASK_IDENTIFIER = "meta-reference::app_eval"
-
-
 class ColumnName(Enum):
     input_query = "input_query"
     expected_answer = "expected_answer"
@@ -61,9 +55,6 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         self.eval_tasks[task_def.identifier] = task_def
 
     async def list_eval_tasks(self) -> List[EvalTaskDef]:
-        # NOTE: In order to be routed to this provider, the eval task def must have
-        # a EvalTaskDef with identifier defined as DEFAULT_EVAL_TASK_IDENTIFIER
-        # for app eval where eval task benchmark_id is not pre-registered
         return list(self.eval_tasks.values())
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
