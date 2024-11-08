@@ -54,7 +54,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         benchmark_tasks = [
             EvalTaskDef(
                 identifier="meta-reference-mmlu",
-                dataset_id="llamastack_mmlu",
+                dataset_id="llamastack_mmlu_loose",
                 scoring_functions=[
                     "meta-reference::regex_parser_multiple_choice_answer"
                 ],
