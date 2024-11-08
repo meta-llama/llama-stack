@@ -23,10 +23,8 @@ Ensure you have the following installed on your system:
 
 - **Conda**: A package, dependency, and environment management tool.
 
-
 ### 2. Installation
 The `llama` CLI tool helps you manage the Llama Stack toolchain and agent systems.
-
 
 ```bash
 pip install llama-stack
@@ -114,12 +112,12 @@ The `llama-stack-client` library offers a robust and efficient python methods fo
 pip install llama-stack-client
 ```
 
-### 3. Create Python Script (`test_llama_stack.py`)
+### 2. Create Python Script (`test_llama_stack.py`)
 ```bash
 touch test_llama_stack.py
 ```
 
-### 4. Create a Chat Completion Request in Python
+### 3. Create a Chat Completion Request in Python
 
 ```python
 from llama_stack_client import LlamaStackClient
@@ -141,7 +139,7 @@ response = client.inference.chat_completion(
 print(response.completion_message.content)
 ```
 
-### 5. Run the Python Script
+### 4. Run the Python Script
 
 ```bash
 python test_llama_stack.py
