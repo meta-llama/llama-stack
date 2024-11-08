@@ -19,6 +19,7 @@ from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
 from .config import MetaReferenceEvalConfig
+from .eval_task_defs.meta_reference_mmlu import meta_reference_mmlu
 
 
 class ColumnName(Enum):
@@ -51,15 +52,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
     async def initialize(self) -> None:
         # pre-register eval tasks
-        benchmark_tasks = [
-            EvalTaskDef(
-                identifier="meta-reference-mmlu",
-                dataset_id="llamastack_mmlu_loose",
-                scoring_functions=[
-                    "meta-reference::regex_parser_multiple_choice_answer"
-                ],
-            )
-        ]
+        benchmark_tasks = [meta_reference_mmlu]
         self.eval_tasks = {x.identifier: x for x in benchmark_tasks}
 
     async def shutdown(self) -> None: ...
