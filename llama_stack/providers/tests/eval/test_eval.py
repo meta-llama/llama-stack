@@ -50,6 +50,7 @@ class Testeval:
         ]
 
         response = await eval_impl.evaluate_rows(
+            task_id="meta-reference::app_eval",
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
             task_config=AppEvalTaskConfig(
@@ -75,10 +76,12 @@ class Testeval:
             "meta-reference::subset_of",
         ]
 
+        task_id = "meta-reference::app_eval"
         response = await eval_impl.run_eval(
-            task=EvalTaskDef(
+            task_id=task_id,
+            task_def=EvalTaskDef(
                 # NOTE: this is needed to make the router work for all app evals
-                identifier="meta-reference::app_eval",
+                identifier=task_id,
                 dataset_id="test_dataset_for_eval",
                 scoring_functions=scoring_functions,
             ),
@@ -90,13 +93,9 @@ class Testeval:
             ),
         )
         assert response.job_id == "0"
-        job_status = await eval_impl.job_status(
-            response.job_id, "meta-reference::app_eval"
-        )
+        job_status = await eval_impl.job_status(task_id, response.job_id)
         assert job_status and job_status.value == "completed"
-        eval_response = await eval_impl.job_result(
-            response.job_id, "meta-reference::app_eval"
-        )
+        eval_response = await eval_impl.job_result(task_id, response.job_id)
 
         assert eval_response is not None
         assert len(eval_response.generations) == 5

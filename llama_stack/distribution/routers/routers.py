@@ -16,10 +16,6 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.scoring import *  # noqa: F403
 from llama_stack.apis.eval import *  # noqa: F403
 
-from llama_stack.providers.inline.meta_reference.eval.eval import (
-    DEFAULT_EVAL_TASK_IDENTIFIER,
-)
-
 
 class MemoryRouter(Memory):
     """Routes to an provider based on the memory bank identifier"""
@@ -268,36 +264,28 @@ class EvalRouter(Eval):
     async def shutdown(self) -> None:
         pass
 
-    async def run_benchmark(
-        self,
-        benchmark_id: str,
-        benchmark_config: BenchmarkEvalTaskConfig,
-    ) -> Job:
-        pass
-
     async def run_eval(
         self,
-        task: EvalTaskDef,
+        task_id: str,
+        task_def: EvalTaskDef,
         task_config: AppEvalTaskConfig,
     ) -> Job:
-        return await self.routing_table.get_provider_impl(task.identifier).run_eval(
-            task=task,
+        return await self.routing_table.get_provider_impl(task_id).run_eval(
+            task_id=task_id,
+            task_def=task_def,
             task_config=task_config,
         )
 
     @webmethod(route="/eval/evaluate_rows", method="POST")
     async def evaluate_rows(
         self,
+        task_id: str,
         input_rows: List[Dict[str, Any]],
         scoring_functions: List[str],
         task_config: EvalTaskConfig,
-        eval_task_id: Optional[str] = None,
     ) -> EvaluateResponse:
-        # NOTE: This is to deal with the case where we do not pre-register an eval benchmark_task
-        # We use default DEFAULT_EVAL_TASK_IDENTIFIER as identifier
-        if eval_task_id is None:
-            eval_task_id = DEFAULT_EVAL_TASK_IDENTIFIER
-        return await self.routing_table.get_provider_impl(eval_task_id).evaluate_rows(
+        return await self.routing_table.get_provider_impl(task_id).evaluate_rows(
+            task_id=task_id,
             input_rows=input_rows,
             scoring_functions=scoring_functions,
             task_config=task_config,
@@ -305,27 +293,29 @@ class EvalRouter(Eval):
 
     async def job_status(
         self,
+        task_id: str,
         job_id: str,
-        eval_task_id: str,
     ) -> Optional[JobStatus]:
-        return await self.routing_table.get_provider_impl(eval_task_id).job_status(
-            job_id, eval_task_id
+        return await self.routing_table.get_provider_impl(task_id).job_status(
+            task_id, job_id
         )
 
     async def job_cancel(
         self,
+        task_id: str,
         job_id: str,
-        eval_task_id: str,
     ) -> None:
-        await self.routing_table.get_provider_impl(eval_task_id).job_cancel(
-            job_id, eval_task_id
+        await self.routing_table.get_provider_impl(task_id).job_cancel(
+            task_id,
+            job_id,
         )
 
     async def job_result(
         self,
+        task_id: str,
         job_id: str,
-        eval_task_id: str,
     ) -> EvaluateResponse:
-        return await self.routing_table.get_provider_impl(eval_task_id).job_result(
-            job_id, eval_task_id
+        return await self.routing_table.get_provider_impl(task_id).job_result(
+            task_id,
+            job_id,
         )
