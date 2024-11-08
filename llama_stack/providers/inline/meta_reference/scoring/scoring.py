@@ -89,7 +89,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Optional[Dict[str, ScoringFnParams]] = None,
+        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
@@ -113,7 +113,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def score(
         self,
         input_rows: List[Dict[str, Any]],
-        scoring_functions: Optional[Dict[str, ScoringFnParams]] = None,
+        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
     ) -> ScoreResponse:
         res = {}
         for scoring_fn_id in scoring_functions.keys():

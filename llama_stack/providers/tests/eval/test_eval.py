@@ -11,8 +11,7 @@ from llama_models.llama3.api import SamplingParams
 
 from llama_stack.apis.eval.eval import (
     AppEvalTaskConfig,
-    BenchmarkEvalTaskConfig,
-    EvalTaskDef,
+    EvalTaskDefWithProvider,
     ModelCandidate,
 )
 from llama_stack.providers.tests.datasetio.test_datasetio import register_dataset
@@ -33,7 +32,7 @@ class Testeval:
         _, eval_tasks_impl, _, _, _, _ = eval_stack
         response = await eval_tasks_impl.list_eval_tasks()
         assert isinstance(response, list)
-        assert len(response) >= 1
+        assert len(response) == 0
 
     @pytest.mark.asyncio
     async def test_eval_evaluate_rows(self, eval_stack):
@@ -59,8 +58,17 @@ class Testeval:
             "meta-reference::llm_as_judge_8b_correctness",
             "meta-reference::equality",
         ]
+        task_id = "meta-reference::app_eval"
+        task_def = EvalTaskDefWithProvider(
+            identifier=task_id,
+            dataset_id="test_dataset_for_eval",
+            scoring_functions=scoring_functions,
+            provider_id="meta-reference",
+        )
+        await eval_tasks_impl.register_eval_task(task_def)
 
         response = await eval_impl.evaluate_rows(
+            task_id=task_id,
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
             task_config=AppEvalTaskConfig(
@@ -91,13 +99,16 @@ class Testeval:
             "meta-reference::subset_of",
         ]
 
+        task_id = "meta-reference::app_eval-2"
+        task_def = EvalTaskDefWithProvider(
+            identifier=task_id,
+            dataset_id="test_dataset_for_eval",
+            scoring_functions=scoring_functions,
+            provider_id="meta-reference",
+        )
+        await eval_tasks_impl.register_eval_task(task_def)
         response = await eval_impl.run_eval(
-            task=EvalTaskDef(
-                # NOTE: this is needed to make the router work for all app evals
-                identifier="meta-reference::app_eval",
-                dataset_id="test_dataset_for_eval",
-                scoring_functions=scoring_functions,
-            ),
+            task_id=task_id,
             task_config=AppEvalTaskConfig(
                 eval_candidate=ModelCandidate(
                     model="Llama3.2-3B-Instruct",
@@ -106,13 +117,9 @@ class Testeval:
             ),
         )
         assert response.job_id == "0"
-        job_status = await eval_impl.job_status(
-            response.job_id, "meta-reference::app_eval"
-        )
+        job_status = await eval_impl.job_status(task_id, response.job_id)
         assert job_status and job_status.value == "completed"
-        eval_response = await eval_impl.job_result(
-            response.job_id, "meta-reference::app_eval"
-        )
+        eval_response = await eval_impl.job_result(task_id, response.job_id)
 
         assert eval_response is not None
         assert len(eval_response.generations) == 5
