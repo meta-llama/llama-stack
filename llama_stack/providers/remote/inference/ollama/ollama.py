@@ -72,7 +72,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         ollama_to_llama = {v: k for k, v in OLLAMA_SUPPORTED_MODELS.items()}
 
         ret = []
-        res = await self.client.ps()
+        res = await self.client.list()
         for r in res["models"]:
             if r["model"] not in ollama_to_llama:
                 print(f"Ollama is running a model unknown to Llama Stack: {r['model']}")
