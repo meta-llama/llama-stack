@@ -13,7 +13,7 @@ from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 
 from .config import HuggingfaceDatasetIOConfig
-from .dataset_defs.llamastack_mmlu_loose import llamastack_mmlu_loose
+from .dataset_defs.llamastack_mmlu import llamastack_mmlu
 
 
 def load_hf_dataset(dataset_def: DatasetDef):
@@ -37,7 +37,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def initialize(self) -> None:
         # pre-registered benchmark datasets
-        self.pre_registered_datasets = [llamastack_mmlu_loose]
+        self.pre_registered_datasets = [llamastack_mmlu]
         self.dataset_infos = {x.identifier: x for x in self.pre_registered_datasets}
 
     async def shutdown(self) -> None: ...

@@ -9,13 +9,19 @@ from llama_stack.apis.common.type_system import ChatCompletionInputType, StringT
 from llama_stack.apis.datasetio import DatasetDef
 
 # TODO: migrate these to meta-llama/ HF repo with finalized schema
-llamastack_mmlu_loose = DatasetDef(
-    identifier="llamastack_mmlu_loose",
-    url=URL(uri="https://huggingface.co/datasets/yanxi0830/ls-mmlu"),
+llamastack_mmlu = DatasetDef(
+    identifier="llamastack_mmlu",
+    url=URL(
+        uri="https://huggingface.co/datasets/llamastack/Llama-3.2-1B-Instruct-evals"
+    ),
     dataset_schema={
         "input_query": StringType(),
         "expected_answer": StringType(),
         "chat_completion_input": ChatCompletionInputType(),
     },
-    metadata={"path": "yanxi0830/ls-mmlu", "split": "train"},
+    metadata={
+        "path": "llamastack/Llama-3.2-1B-Instruct-evals",
+        "name": "Llama-3.2-1B-Instruct-evals__mmlu__details",
+        "split": "train",
+    },
 )
