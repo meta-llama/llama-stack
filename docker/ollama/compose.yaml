@@ -1,7 +1,6 @@
 services:
   ollama:
     image: ollama/ollama:latest
-    network_mode: "host"
     volumes:
       - ollama:/root/.ollama # this solution synchronizes with the docker volume and loads the model rocket fast
     ports:
