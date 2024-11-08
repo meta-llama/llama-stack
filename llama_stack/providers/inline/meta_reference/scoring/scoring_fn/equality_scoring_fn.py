@@ -35,6 +35,7 @@ class EqualityScoringFn(BaseScoringFn):
         self,
         input_row: Dict[str, Any],
         scoring_fn_identifier: Optional[str] = "equality",
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
         assert "expected_answer" in input_row, "Expected answer not found in input row."
         assert (

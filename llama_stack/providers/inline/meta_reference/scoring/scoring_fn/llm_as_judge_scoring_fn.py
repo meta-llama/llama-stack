@@ -36,31 +36,37 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         self,
         input_row: Dict[str, Any],
         scoring_fn_identifier: Optional[str] = None,
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
         assert (
             scoring_fn_identifier is not None
         ), "Scoring function identifier not found."
         fn_def = self.supported_fn_defs_registry[scoring_fn_identifier]
-        assert fn_def.context is not None, f"LLMAsJudgeContext not found for {fn_def}."
+
+        # override params if scoring_params is provided
+        if scoring_params is not None:
+            fn_def.params = scoring_params
+
+        assert fn_def.params is not None, f"LLMAsJudgeparams not found for {fn_def}."
         assert (
-            fn_def.context.prompt_template is not None
+            fn_def.params.prompt_template is not None
         ), "LLM Judge prompt_template not found."
         assert (
-            fn_def.context.judge_score_regex is not None
-        ), "LLM Judge judge_score_regex not found."
+            fn_def.params.judge_score_regexes is not None
+        ), "LLM Judge judge_score_regexes not found."
 
         input_query = input_row["input_query"]
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]
 
-        judge_input_msg = fn_def.context.prompt_template.format(
+        judge_input_msg = fn_def.params.prompt_template.format(
             input_query=input_query,
             expected_answer=expected_answer,
             generated_answer=generated_answer,
         )
 
         judge_response = await self.inference_api.chat_completion(
-            model=fn_def.context.judge_model,
+            model=fn_def.params.judge_model,
             messages=[
                 {
                     "role": "user",
@@ -69,10 +75,10 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
             ],
         )
         content = judge_response.completion_message.content
-        rating_regexs = fn_def.context.judge_score_regex
+        rating_regexes = fn_def.params.judge_score_regexes
 
         judge_rating = None
-        for regex in rating_regexs:
+        for regex in rating_regexes:
             match = re.search(regex, content)
             if match:
                 judge_rating = int(match.group(1))

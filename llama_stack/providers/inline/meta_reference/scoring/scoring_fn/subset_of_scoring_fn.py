@@ -34,6 +34,7 @@ class SubsetOfScoringFn(BaseScoringFn):
         self,
         input_row: Dict[str, Any],
         scoring_fn_identifier: Optional[str] = "subset_of",
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
         expected_answer = input_row["expected_answer"]
         generated_answer = input_row["generated_answer"]

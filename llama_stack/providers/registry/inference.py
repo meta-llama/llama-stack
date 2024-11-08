@@ -27,8 +27,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.inference,
             provider_type="meta-reference",
             pip_packages=META_REFERENCE_DEPS,
-            module="llama_stack.providers.inline.meta_reference.inference",
-            config_class="llama_stack.providers.inline.meta_reference.inference.MetaReferenceInferenceConfig",
+            module="llama_stack.providers.inline.inference.meta_reference",
+            config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceInferenceConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,
@@ -40,8 +40,17 @@ def available_providers() -> List[ProviderSpec]:
                     "torchao==0.5.0",
                 ]
             ),
-            module="llama_stack.providers.inline.meta_reference.inference",
-            config_class="llama_stack.providers.inline.meta_reference.inference.MetaReferenceQuantizedInferenceConfig",
+            module="llama_stack.providers.inline.inference.meta_reference",
+            config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceQuantizedInferenceConfig",
+        ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_type="vllm",
+            pip_packages=[
+                "vllm",
+            ],
+            module="llama_stack.providers.inline.inference.vllm",
+            config_class="llama_stack.providers.inline.inference.vllm.VLLMConfig",
         ),
         remote_provider_spec(
             api=Api.inference,
@@ -117,7 +126,7 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.remote.inference.together",
                 config_class="llama_stack.providers.remote.inference.together.TogetherImplConfig",
-                provider_data_validator="llama_stack.providers.remote.safety.together.TogetherProviderDataValidator",
+                provider_data_validator="llama_stack.providers.remote.inference.together.TogetherProviderDataValidator",
             ),
         ),
         remote_provider_spec(
@@ -148,14 +157,5 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.adapters.inference.azure_ai_inference",
                 config_class="llama_stack.providers.adapters.inference.azure_ai_inference.AzureAIInferenceConfig",
             ),
-        ),
-        InlineProviderSpec(
-            api=Api.inference,
-            provider_type="vllm",
-            pip_packages=[
-                "vllm",
-            ],
-            module="llama_stack.providers.inline.vllm",
-            config_class="llama_stack.providers.inline.vllm.VLLMConfig",
         ),
     ]

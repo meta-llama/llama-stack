@@ -36,7 +36,10 @@ class BaseScoringFn(ABC):
 
     @abstractmethod
     async def score_row(
-        self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
+        self,
+        input_row: Dict[str, Any],
+        scoring_fn_identifier: Optional[str] = None,
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> ScoringResultRow:
         raise NotImplementedError()
 
@@ -50,8 +53,9 @@ class BaseScoringFn(ABC):
         self,
         input_rows: List[Dict[str, Any]],
         scoring_fn_identifier: Optional[str] = None,
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> List[ScoringResultRow]:
         return [
-            await self.score_row(input_row, scoring_fn_identifier)
+            await self.score_row(input_row, scoring_fn_identifier, scoring_params)
             for input_row in input_rows
         ]
