@@ -5,7 +5,7 @@ This guide will walk you through setting up an end-to-end workflow with Llama St
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
 ## Table of Contents
-1. [Setting up](#Setting-up)
+1. [Setup](#Setup)
 2. [Build, Configure, and Run Llama Stack](#build-configure-and-run-llama-stack)
 3. [Testing with `curl`](#testing-with-curl)
 4. [Testing with Python](#testing-with-python)
@@ -15,7 +15,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 
 
 
-## Setting up
+## Setup
 
 ### 1. Prerequisite
 
