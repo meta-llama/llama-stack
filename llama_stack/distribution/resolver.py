@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import importlib
 import inspect
-import sys
 
 from typing import Any, Dict, List, Set
 
@@ -32,6 +31,10 @@ from llama_stack.apis.telemetry import Telemetry
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+
+class InvalidProviderError(Exception):
+    pass
 
 
 def api_protocol_map() -> Dict[Api, Any]:
@@ -105,7 +108,7 @@ async def resolve_impls(
             p = provider_registry[api][provider.provider_type]
             if p.deprecation_error:
                 cprint(p.deprecation_error, "red", attrs=["bold"])
-                sys.exit(1)
+                raise InvalidProviderError(p.deprecation_error)
 
             elif p.deprecation_warning:
                 cprint(
@@ -116,7 +119,7 @@ async def resolve_impls(
             p.deps__ = [a.value for a in p.api_dependencies]
             spec = ProviderWithSpec(
                 spec=p,
-                **(provider.dict()),
+                **(provider.model_dump()),
             )
             specs[provider.provider_id] = spec
 

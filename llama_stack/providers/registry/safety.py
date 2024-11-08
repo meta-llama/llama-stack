@@ -57,9 +57,6 @@ Provider `meta-reference` for API `safety` does not work with the latest Llama S
             ],
             module="llama_stack.providers.inline.safety.prompt_guard",
             config_class="llama_stack.providers.inline.safety.prompt_guard.PromptGuardConfig",
-            api_dependencies=[
-                Api.inference,
-            ],
         ),
         InlineProviderSpec(
             api=Api.safety,
@@ -69,9 +66,6 @@ Provider `meta-reference` for API `safety` does not work with the latest Llama S
             ],
             module="llama_stack.providers.inline.safety.code_scanner",
             config_class="llama_stack.providers.inline.safety.code_scanner.CodeScannerConfig",
-            api_dependencies=[
-                Api.inference,
-            ],
         ),
         remote_provider_spec(
             api=Api.safety,
