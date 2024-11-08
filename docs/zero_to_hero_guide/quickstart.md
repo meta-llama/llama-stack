@@ -1,51 +1,48 @@
 # Llama Stack Quickstart Guide
 
-This guide will walk you through setting up an end-to-end workflow with Llama Stack, enabling you to perform text generation using the `Llama3.1-8B-Instruct` model. Follow these steps to get started quickly.
+This guide will walk you through setting up an end-to-end workflow with Llama Stack, enabling you to perform text generation using the `Llama3.2-3B-Instruct` model. Follow these steps to get started quickly.
 
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
 ## Table of Contents
-1. [Prerequisite](#prerequisite)
-2. [Installation](#installation)
-3. [Download Llama Models](#download-llama-models)
-4. [Build, Configure, and Run Llama Stack](#build-configure-and-run-llama-stack)
-5. [Testing with `curl`](#testing-with-curl)
-6. [Testing with Python](#testing-with-python)
-7. [Next Steps](#next-steps)
+1. [Setting up](#Setting-up)
+2. [Build, Configure, and Run Llama Stack](#build-configure-and-run-llama-stack)
+3. [Testing with `curl`](#testing-with-curl)
+4. [Testing with Python](#testing-with-python)
+5. [Next Steps](#next-steps)
 
 ---
 
-## Prerequisite
+
+
+## Setting up
+
+### 1. Prerequisite
 
 Ensure you have the following installed on your system:
 
 - **Conda**: A package, dependency, and environment management tool.
 
----
 
-## Installation
-
+### 2. Installation
 The `llama` CLI tool helps you manage the Llama Stack toolchain and agent systems.
 
-**Install via PyPI:**
 
 ```bash
 pip install llama-stack
 ```
 
-*After installation, the `llama` command should be available in your PATH.*
+After installation, the `llama` command should be available in your PATH.
 
----
-
-## Download Llama Models
+### 3. Download Llama Models
 
 Download the necessary Llama model checkpoints using the `llama` CLI:
 
 ```bash
-llama download --model-id Llama3.1-8B-Instruct
+llama download --model-id Llama3.2-3B-Instruct
 ```
 
-*Follow the CLI prompts to complete the download. You may need to accept a license agreement. Obtain an instant license [here](https://www.llama.com/llama-downloads/).*
+Follow the CLI prompts to complete the download. You may need to accept a license agreement. Obtain an instant license [here](https://www.llama.com/llama-downloads/).
 
 ---
 
@@ -53,7 +50,7 @@ llama download --model-id Llama3.1-8B-Instruct
 
 ### 1. Build the Llama Stack Distribution
 
-We will default into building a `meta-reference-gpu` distribution, however you could read more about the different distriubtion [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider).
+We will default into building a `meta-reference-gpu` distribution, however you could read more about the different distributions [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider).
 
 ```bash
 llama stack build --template meta-reference-gpu --image-type conda
@@ -70,7 +67,7 @@ cd llama-stack/distributions/meta-reference-gpu
 llama stack run ./run.yaml
 ```
 
-*The server will start and listen on `http://localhost:5000` by default.*
+The server will start and listen on `http://localhost:5000` by default.
 
 ---
 
@@ -82,7 +79,7 @@ After setting up the server, verify it's working by sending a `POST` request usi
 curl http://localhost:5000/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "Llama3.1-8B-Instruct",
+    "model": "Llama3.2-3B-Instruct",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2-sentence poem about the moon"}
@@ -132,7 +129,7 @@ response = client.inference.chat_completion(
         SystemMessage(content="You are a helpful assistant.", role="system"),
         UserMessage(content="Write me a 2-sentence poem about the moon", role="user")
     ],
-    model="Llama3.1-8B-Instruct",
+    model="Llama3.2-3B-Instruct",
 )
 
 # Print the response
