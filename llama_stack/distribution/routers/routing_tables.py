@@ -86,11 +86,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.model_store = self
                 models = await p.list_models()
                 await add_objects(models, pid, ModelDefWithProvider)
-
             elif api == Api.safety:
                 p.shield_store = self
-                shields = await p.list_shields()
-                await add_objects(shields, pid, ShieldDefWithProvider)
 
             elif api == Api.memory:
                 p.memory_bank_store = self
@@ -212,14 +209,41 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
-    async def list_shields(self) -> List[ShieldDef]:
+    async def list_shields(self) -> List[Shield]:
         return await self.get_all_with_type("shield")
 
-    async def get_shield(self, identifier: str) -> Optional[ShieldDefWithProvider]:
+    async def get_shield(self, identifier: str) -> Optional[Shield]:
         return await self.get_object_by_identifier(identifier)
 
-    async def register_shield(self, shield: ShieldDefWithProvider) -> None:
+    async def register_shield(
+        self,
+        shield_id: str,
+        shield_type: ShieldType,
+        provider_shield_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Shield:
+        if provider_shield_id is None:
+            provider_shield_id = shield_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this shield type
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if params is None:
+            params = {}
+        shield = Shield(
+            identifier=shield_id,
+            shield_type=shield_type,
+            provider_resource_id=provider_shield_id,
+            provider_id=provider_id,
+            params=params,
+        )
         await self.register_object(shield)
+        return shield
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):

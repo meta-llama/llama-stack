@@ -24,19 +24,19 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
     async def shutdown(self) -> None:
         pass
 
-    async def register_shield(self, shield: ShieldDef) -> None:
+    async def register_shield(self, shield: Shield) -> None:
         if shield.shield_type != ShieldType.code_scanner.value:
             raise ValueError(f"Unsupported safety shield type: {shield.shield_type}")
 
     async def run_shield(
         self,
-        shield_type: str,
+        shield_id: str,
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        shield_def = await self.shield_store.get_shield(shield_type)
-        if not shield_def:
-            raise ValueError(f"Unknown shield {shield_type}")
+        shield = await self.shield_store.get_shield(shield_id)
+        if not shield:
+            raise ValueError(f"Shield {shield_id} not found")
 
         from codeshield.cs import CodeShield
 

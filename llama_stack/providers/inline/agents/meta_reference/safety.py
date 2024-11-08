@@ -37,7 +37,7 @@ class ShieldRunnerMixin:
         responses = await asyncio.gather(
             *[
                 self.safety_api.run_shield(
-                    identifier=identifier,
+                    shield_id=identifier,
                     messages=messages,
                 )
                 for identifier in identifiers

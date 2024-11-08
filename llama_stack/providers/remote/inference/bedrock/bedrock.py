@@ -84,7 +84,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         contents = bedrock_message["content"]
 
         tool_calls = []
-        text_content = []
+        text_content = ""
         for content in contents:
             if "toolUse" in content:
                 tool_use = content["toolUse"]
@@ -98,7 +98,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                     )
                 )
             elif "text" in content:
-                text_content.append(content["text"])
+                text_content += content["text"]
 
         return CompletionMessage(
             role=role,
