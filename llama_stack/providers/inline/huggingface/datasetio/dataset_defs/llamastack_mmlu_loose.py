@@ -8,7 +8,7 @@ from llama_models.llama3.api.datatypes import URL
 from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
 from llama_stack.apis.datasetio import DatasetDef
 
-
+# TODO: migrate these to meta-llama/ HF repo with finalized schema
 llamastack_mmlu_loose = DatasetDef(
     identifier="llamastack_mmlu_loose",
     url=URL(uri="https://huggingface.co/datasets/yanxi0830/ls-mmlu"),
