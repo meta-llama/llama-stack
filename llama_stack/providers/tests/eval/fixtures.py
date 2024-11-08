@@ -52,11 +52,4 @@ async def eval_stack(request):
         provider_data,
     )
 
-    return (
-        impls[Api.eval],
-        impls[Api.eval_tasks],
-        impls[Api.scoring],
-        impls[Api.scoring_functions],
-        impls[Api.datasetio],
-        impls[Api.datasets],
-    )
+    return impls

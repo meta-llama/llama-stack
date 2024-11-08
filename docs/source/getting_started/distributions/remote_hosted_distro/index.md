@@ -1,15 +1,42 @@
 # Remote-Hosted Distribution
 
-Remote Hosted distributions are distributions connecting to remote hosted services through Llama Stack server. Inference is done through remote providers. These are useful if you have an API key for a remote inference provider like Fireworks, Together, etc.
+Remote-Hosted distributions are available endpoints serving Llama Stack API that you can directly connect to.
 
-| **Distribution** 	|           **Llama Stack Docker**           	| Start This Distribution 	|    **Inference**   	|     **Agents**     	|     **Memory**     	|     **Safety**     	|    **Telemetry**   	|
-|:----------------:	|:------------------------------------------:	|:-----------------------:	|:------------------:	|:------------------:	|:------------------:	|:------------------:	|:------------------:	|
-|        Together       	|         [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)       	| remote::together 	| meta-reference | remote::weaviate | meta-reference 	| meta-reference  	|
-|        Fireworks       	|         [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)       	| remote::fireworks 	| meta-reference | remote::weaviate | meta-reference 	| meta-reference  	|
+| Distribution | Endpoint | Inference | Agents | Memory | Safety | Telemetry |
+|-------------|----------|-----------|---------|---------|---------|------------|
+| Together | [https://llama-stack.together.ai](https://llama-stack.together.ai) | remote::together | meta-reference | remote::weaviate | meta-reference | meta-reference |
+| Fireworks | [https://llamastack-preview.fireworks.ai](https://llamastack-preview.fireworks.ai) | remote::fireworks | meta-reference | remote::weaviate | meta-reference | meta-reference |
 
-```{toctree}
-:maxdepth: 1
+## Connecting to Remote-Hosted Distributions
 
-fireworks
-together
+You can use `llama-stack-client` to interact with these endpoints. For example, to list the available models served by the Fireworks endpoint:
+
+```bash
+$ pip install llama-stack-client
+$ llama-stack-client configure --endpoint https://llamastack-preview.fireworks.ai
+$ llama-stack-client models list
 ```
+
+You will see outputs:
+```
+$ llama-stack-client models list
++------------------------------+------------------------------+---------------+------------+
+| identifier                   | llama_model                  | provider_id   | metadata   |
++==============================+==============================+===============+============+
+| Llama3.1-8B-Instruct         | Llama3.1-8B-Instruct         | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.1-70B-Instruct        | Llama3.1-70B-Instruct        | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.1-405B-Instruct       | Llama3.1-405B-Instruct       | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-1B-Instruct         | Llama3.2-1B-Instruct         | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-3B-Instruct         | Llama3.2-3B-Instruct         | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-11B-Vision-Instruct | Llama3.2-11B-Vision-Instruct | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+| Llama3.2-90B-Vision-Instruct | Llama3.2-90B-Vision-Instruct | fireworks0    | {}         |
++------------------------------+------------------------------+---------------+------------+
+```
+
+Checkout the [llama-stack-client-python](https://github.com/meta-llama/llama-stack-client-python/blob/main/docs/cli_reference.md) repo for more details on how to use the `llama-stack-client` CLI. Checkout [llama-stack-app](https://github.com/meta-llama/llama-stack-apps/tree/main) for examples applications built on top of Llama Stack.
