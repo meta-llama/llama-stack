@@ -50,7 +50,7 @@ Follow the CLI prompts to complete the download. You may need to accept a licens
 
 ### 1. Build the Llama Stack Distribution
 
-We will default into building a `meta-reference-gpu` distribution, however you could read more about the different distributions [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider).
+We will default to building the `meta-reference-gpu` distribution due to its optimized configuration tailored for inference tasks that utilize local GPU capabilities effectively. If you have limited GPU resources, prefer using a cloud-based instance or plan to run on a CPU, you can explore other distribution options [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider).
 
 ```bash
 llama stack build --template meta-reference-gpu --image-type conda
