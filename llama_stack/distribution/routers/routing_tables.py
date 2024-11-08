@@ -209,7 +209,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         provider_id: Optional[str] = None,
         llama_model: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> None:
+    ) -> Model:
         if provider_model_id is None:
             provider_model_id = model_id
         if provider_id is None:
@@ -232,6 +232,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             metadata=metadata,
         )
         await self.register_object(model)
+        return model
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
