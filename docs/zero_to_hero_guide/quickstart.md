@@ -23,8 +23,16 @@ Ensure you have the following installed on your system:
 
 - **Conda**: A package, dependency, and environment management tool.
 
+
 ### 2. Installation
-The `llama` CLI tool helps you manage the Llama Stack toolchain and agent systems.
+The `llama` CLI tool helps you manage the Llama Stack toolchain and agent systems. Follow these step to install
+
+First activate and activate your conda environment
+```
+conda create --name my-env
+conda activate my-env
+```
+Then install llama-stack with pip, you could also check out other installation methods [here](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html).
 
 ```bash
 pip install llama-stack
@@ -129,8 +137,8 @@ client = LlamaStackClient(base_url="http://localhost:5000")
 # Create a chat completion request
 response = client.inference.chat_completion(
     messages=[
-        SystemMessage(content="You are a helpful assistant.", role="system"),
-        UserMessage(content="Write me a 2-sentence poem about the moon", role="user")
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Write a two-sentence poem about llama."}
     ],
     model="Llama3.2-3B-Instruct",
 )
