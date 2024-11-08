@@ -26,16 +26,16 @@ class ModelsClient(Models):
     async def shutdown(self) -> None:
         pass
 
-    async def list_models(self) -> List[ModelDefWithProvider]:
+    async def list_models(self) -> List[Model]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/models/list",
                 headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
-            return [ModelDefWithProvider(**x) for x in response.json()]
+            return [Model(**x) for x in response.json()]
 
-    async def register_model(self, model: ModelDefWithProvider) -> None:
+    async def register_model(self, model: Model) -> None:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/models/register",
@@ -46,7 +46,7 @@ class ModelsClient(Models):
             )
             response.raise_for_status()
 
-    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]:
+    async def get_model(self, identifier: str) -> Optional[Model]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/models/get",
@@ -59,7 +59,7 @@ class ModelsClient(Models):
             j = response.json()
             if j is None:
                 return None
-            return ModelDefWithProvider(**j)
+            return Model(**j)
 
 
 async def run_main(host: str, port: int, stream: bool):

@@ -16,7 +16,7 @@ from llama_models.sku_list import all_registered_models
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.models import *  # noqa: F403
 
-from llama_stack.providers.datatypes import ModelDef, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -50,14 +50,14 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             if model.huggingface_repo
         }
 
-    async def register_model(self, model: ModelDef) -> None:
-        raise ValueError("Model registration is not supported for HuggingFace models")
+    async def register_model(self, model: Model) -> None:
+        pass
 
-    async def list_models(self) -> List[ModelDef]:
+    async def list_models(self) -> List[Model]:
         repo = self.model_id
         identifier = self.huggingface_repo_to_llama_model_id[repo]
         return [
-            ModelDef(
+            Model(
                 identifier=identifier,
                 llama_model=identifier,
                 metadata={

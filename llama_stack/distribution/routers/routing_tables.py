@@ -78,12 +78,7 @@ class CommonRoutingTableImpl(RoutingTable):
         # Register all objects from providers
         for pid, p in self.impls_by_provider_id.items():
             api = get_impl_api(p)
-            if api == Api.inference:
-                p.model_store = self
-                models = await p.list_models()
-                await add_objects(models, pid, ModelDefWithProvider)
-
-            elif api == Api.memory:
+            if api == Api.memory:
                 p.memory_bank_store = self
                 memory_banks = await p.list_memory_banks()
                 await add_objects(memory_banks, pid, None)
@@ -185,13 +180,13 @@ class CommonRoutingTableImpl(RoutingTable):
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
-    async def list_models(self) -> List[ModelDefWithProvider]:
+    async def list_models(self) -> List[Model]:
         return await self.get_all_with_type("model")
 
-    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]:
+    async def get_model(self, identifier: str) -> Optional[Model]:
         return await self.get_object_by_identifier(identifier)
 
-    async def register_model(self, model: ModelDefWithProvider) -> None:
+    async def register_model(self, model: Model) -> None:
         await self.register_object(model)
 
 

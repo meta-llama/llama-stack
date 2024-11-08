@@ -15,7 +15,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -65,10 +65,11 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: ModelDef) -> None:
-        raise ValueError("Dynamic model registration is not supported")
+    async def register_model(self, model: Model) -> None:
+        if model.identifier not in OLLAMA_SUPPORTED_MODELS:
+            raise ValueError(f"Model {model.identifier} is not supported by Ollama")
 
-    async def list_models(self) -> List[ModelDef]:
+    async def list_models(self) -> List[Model]:
         ollama_to_llama = {v: k for k, v in OLLAMA_SUPPORTED_MODELS.items()}
 
         ret = []
@@ -80,9 +81,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
             llama_model = ollama_to_llama[r["model"]]
             ret.append(
-                ModelDef(
+                Model(
                     identifier=llama_model,
-                    llama_model=llama_model,
                     metadata={
                         "ollama_model": r["model"],
                     },

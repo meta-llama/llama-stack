@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetDef
 from llama_stack.apis.memory_banks import MemoryBankDef
-from llama_stack.apis.models import ModelDef
+from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFnDef
 from llama_stack.apis.shields import Shield
 
@@ -41,9 +41,7 @@ class Api(Enum):
 
 
 class ModelsProtocolPrivate(Protocol):
-    async def list_models(self) -> List[ModelDef]: ...
-
-    async def register_model(self, model: ModelDef) -> None: ...
+    async def register_model(self, model: Model) -> None: ...
 
 
 class ShieldsProtocolPrivate(Protocol):

@@ -216,7 +216,7 @@ class EmbeddingsResponse(BaseModel):
 
 
 class ModelStore(Protocol):
-    def get_model(self, identifier: str) -> ModelDef: ...
+    def get_model(self, identifier: str) -> Model: ...
 
 
 @runtime_checkable
