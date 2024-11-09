@@ -38,6 +38,10 @@ If you're looking for more specific topics like tool calling or agent setup, we 
      ```
      **Note**: The supported models for llama stack for now is listed in [here](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L43)
 
+1. **Download Ollama App**:
+   - Go to [https://ollama.com/download](https://ollama.com/download).
+   - Download and unzip `Ollama-darwin.zip`.
+   - Run the `Ollama` application.
 
 ---
 
@@ -107,7 +111,7 @@ After setting up the server, open a new terminal window and verify it's working 
 curl http://localhost:5050/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "Llama3.2-3B-Instruct",
+    "model": "llama3.2:1b",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2-sentence poem about the moon"}
