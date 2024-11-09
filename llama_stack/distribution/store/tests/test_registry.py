@@ -9,7 +9,7 @@ import os
 import pytest
 import pytest_asyncio
 from llama_stack.distribution.store import *  # noqa F403
-from llama_stack.apis.inference import ModelDefWithProvider
+from llama_stack.apis.inference import Model
 from llama_stack.apis.memory_banks import VectorMemoryBankDef
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 from llama_stack.distribution.datatypes import *  # noqa F403
@@ -50,9 +50,8 @@ def sample_bank():
 
 @pytest.fixture
 def sample_model():
-    return ModelDefWithProvider(
+    return Model(
         identifier="test_model",
-        llama_model="Llama3.2-3B-Instruct",
         provider_id="test-provider",
     )
 
@@ -84,7 +83,6 @@ async def test_basic_registration(registry, sample_bank, sample_model):
     assert len(results) == 1
     result_model = results[0]
     assert result_model.identifier == sample_model.identifier
-    assert result_model.llama_model == sample_model.llama_model
     assert result_model.provider_id == sample_model.provider_id
 
 

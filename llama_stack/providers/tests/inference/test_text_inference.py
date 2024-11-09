@@ -69,7 +69,7 @@ class TestInference:
         response = await models_impl.list_models()
         assert isinstance(response, list)
         assert len(response) >= 1
-        assert all(isinstance(model, ModelDefWithProvider) for model in response)
+        assert all(isinstance(model, Model) for model in response)
 
         model_def = None
         for model in response:

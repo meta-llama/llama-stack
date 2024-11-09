@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, AsyncGenerator, Dict, List
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from llama_stack.apis.datasetio.datasetio import DatasetIO
 from llama_stack.distribution.datatypes import RoutingTable
@@ -71,8 +71,16 @@ class InferenceRouter(Inference):
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: ModelDef) -> None:
-        await self.routing_table.register_model(model)
+    async def register_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        await self.routing_table.register_model(
+            model_id, provider_model_id, provider_id, metadata
+        )
 
     async def chat_completion(
         self,

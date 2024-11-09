@@ -84,8 +84,6 @@ class CommonRoutingTableImpl(RoutingTable):
             api = get_impl_api(p)
             if api == Api.inference:
                 p.model_store = self
-                models = await p.list_models()
-                await add_objects(models, pid, ModelDefWithProvider)
             elif api == Api.safety:
                 p.shield_store = self
 
@@ -198,14 +196,39 @@ class CommonRoutingTableImpl(RoutingTable):
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
-    async def list_models(self) -> List[ModelDefWithProvider]:
+    async def list_models(self) -> List[Model]:
         return await self.get_all_with_type("model")
 
-    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]:
+    async def get_model(self, identifier: str) -> Optional[Model]:
         return await self.get_object_by_identifier(identifier)
 
-    async def register_model(self, model: ModelDefWithProvider) -> None:
+    async def register_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Model:
+        if provider_model_id is None:
+            provider_model_id = model_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this model
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
+                )
+        if metadata is None:
+            metadata = {}
+        model = Model(
+            identifier=model_id,
+            provider_resource_id=provider_model_id,
+            provider_id=provider_id,
+            metadata=metadata,
+        )
         await self.register_object(model)
+        return model
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):

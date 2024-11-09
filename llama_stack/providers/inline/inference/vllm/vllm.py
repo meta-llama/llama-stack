@@ -20,7 +20,7 @@ from vllm.sampling_params import SamplingParams as VLLMSamplingParams
 
 from llama_stack.apis.inference import *  # noqa: F403
 
-from llama_stack.providers.datatypes import ModelDef, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
@@ -83,18 +83,10 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         if self.engine:
             self.engine.shutdown_background_loop()
 
-    async def register_model(self, model: ModelDef) -> None:
+    async def register_model(self, model: Model) -> None:
         raise ValueError(
             "You cannot dynamically add a model to a running vllm instance"
         )
-
-    async def list_models(self) -> List[ModelDef]:
-        return [
-            ModelDef(
-                identifier=self.config.model,
-                llama_model=self.config.model,
-            )
-        ]
 
     def _sampling_params(self, sampling_params: SamplingParams) -> VLLMSamplingParams:
         if sampling_params is None:
