@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetDef
 from llama_stack.apis.eval_tasks import EvalTaskDef
+from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFnDef
 from llama_stack.apis.shields import Shield

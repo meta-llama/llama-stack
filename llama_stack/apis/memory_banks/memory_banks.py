@@ -5,11 +5,19 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import List, Literal, Optional, Protocol, runtime_checkable
+from typing import (
+    Annotated,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
 
@@ -63,9 +71,10 @@ class VectorMemoryBankParams(BaseModel):
     overlap_size_in_tokens: Optional[int] = None
 
 
-BankParams = VectorMemoryBankParams  # For now, since we only have one type of params
-# If you need to add more types later, you can do:
-# BankParams = Union[VectorMemoryBankParams, KeyValueMemoryBankParams, KeywordMemoryBankParams, GraphMemoryBankParams]
+BankParams = Annotated[
+    Union[VectorMemoryBankParams],
+    Field(discriminator="type"),
+]
 
 
 @runtime_checkable
