@@ -80,6 +80,11 @@ Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-
 
 :::
 
+:::{tab-item} vLLM
+##### System Requirements
+Access to Single-Node GPU to start a vLLM server.
+:::
+
 :::{tab-item} tgi
 ##### System Requirements
 Access to Single-Node GPU to start a TGI server.
@@ -116,6 +121,22 @@ This will download and start running a pre-built Docker container. Alternatively
 
 ```
 docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
+```
+:::
+
+:::{tab-item} vLLM
+```
+$ cd llama-stack/distributions/remote-vllm && docker compose up
+```
+
+The script will first start up vLLM server on port 8000, then start up Llama Stack distribution server hooking up to it for inference. You should see the following outputs --
+```
+<TO BE FILLED>
+```
+
+To kill the server
+```
+docker compose down
 ```
 :::
 

@@ -2,17 +2,21 @@
 
 The `llamastack/distribution-ollama` distribution consists of the following provider configurations.
 
-| **API**         	| **Inference**  	| **Agents**     	| **Memory**                       	| **Safety**     	| **Telemetry**  	|
-|-----------------	|----------------	|----------------	|----------------------------------	|----------------	|----------------	|
-| **Provider(s)** 	| remote::ollama 	| meta-reference 	| remote::pgvector, remote::chroma 	| remote::ollama 	| meta-reference 	|
+| **API**         	| **Inference**  	| **Agents**     	| **Memory**                       	  | **Safety**     	| **Telemetry**  	|
+|-----------------	|----------------	|----------------	|------------------------------------	|----------------	|----------------	|
+| **Provider(s)** 	| remote::ollama 	| meta-reference 	| remote::pgvector, remote::chromadb 	| meta-reference 	| meta-reference 	|
 
+
+## Using Docker Compose
+
+You can use `docker compose` to start a Ollama server and connect with Llama Stack server in a single command.
 
 ### Docker: Start the Distribution (Single Node regular Desktop machine)
 
 > [!NOTE]
 > This will start an ollama server with CPU only, please see [Ollama Documentations](https://github.com/ollama/ollama) for serving models on CPU only.
 
-```
+```bash
 $ cd distributions/ollama; docker compose up
 ```
 
@@ -21,12 +25,12 @@ $ cd distributions/ollama; docker compose up
 > [!NOTE]
 > This assumes you have access to GPU to start a Ollama server with access to your GPU.
 
-```
+```bash
 $ cd distributions/ollama-gpu; docker compose up
 ```
 
 You will see outputs similar to following ---
-```
+```bash
 [ollama]               | [GIN] 2024/10/18 - 21:19:41 | 200 |     226.841µs |             ::1 | GET      "/api/ps"
 [ollama]               | [GIN] 2024/10/18 - 21:19:42 | 200 |      60.908µs |             ::1 | GET      "/api/ps"
 INFO:     Started server process [1]
@@ -40,24 +44,24 @@ INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
 ```
 
 To kill the server
-```
+```bash
 docker compose down
 ```
 
-### Conda: ollama run + llama stack run
+## Starting Ollama and Llama Stack separately
 
-If you wish to separately spin up a Ollama server, and connect with Llama Stack, you may use the following commands.
+If you wish to separately spin up a Ollama server, and connect with Llama Stack, you should use the following commands.
 
-#### Start Ollama server.
-- Please check the [Ollama Documentations](https://github.com/ollama/ollama) for more details.
+#### Start Ollama server
+- Please check the [Ollama Documentation](https://github.com/ollama/ollama) for more details.
 
 **Via Docker**
-```
+```bash
 docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
 ```
 
 **Via CLI**
-```
+```bash
 ollama run <model_id>
 ```
 
@@ -65,7 +69,7 @@ ollama run <model_id>
 
 **Via Conda**
 
-```
+```bash
 llama stack build --template ollama --image-type conda
 llama stack run ./gpu/run.yaml
 ```
@@ -76,7 +80,7 @@ docker run --network host -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./gpu/run
 ```
 
 Make sure in your `run.yaml` file, your inference provider is pointing to the correct Ollama endpoint. E.g.
-```
+```yaml
 inference:
   - provider_id: ollama0
     provider_type: remote::ollama
@@ -90,7 +94,7 @@ inference:
 
 You can use ollama for managing model downloads.
 
-```
+```bash
 ollama pull llama3.1:8b-instruct-fp16
 ollama pull llama3.1:70b-instruct-fp16
 ```
@@ -100,7 +104,7 @@ ollama pull llama3.1:70b-instruct-fp16
 
 
 To serve a new model with `ollama`
-```
+```bash
 ollama run <model_name>
 ```
 
@@ -113,7 +117,7 @@ llama3.1:8b-instruct-fp16    4aacac419454    17 GB    100% GPU     4 minutes fro
 ```
 
 To verify that the model served by ollama is correctly connected to Llama Stack server
-```
+```bash
 $ llama-stack-client models list
 +----------------------+----------------------+---------------+-----------------------------------------------+
 | identifier           | llama_model          | provider_id   | metadata                                      |
