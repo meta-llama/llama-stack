@@ -25,7 +25,7 @@ def build_memory_bank(
     provider_memorybank_id: str,
     params: Optional[BankParams] = None,
 ) -> MemoryBank:
-    if memory_bank_type == MemoryBankType.vector:
+    if memory_bank_type == MemoryBankType.vector.value:
         assert isinstance(params, VectorMemoryBankParams)
         memory_bank = VectorMemoryBank(
             identifier=memory_bank_id,
@@ -36,21 +36,21 @@ def build_memory_bank(
             chunk_size_in_tokens=params.chunk_size_in_tokens,
             overlap_size_in_tokens=params.overlap_size_in_tokens,
         )
-    elif memory_bank_type == MemoryBankType.keyvalue:
+    elif memory_bank_type == MemoryBankType.keyvalue.value:
         memory_bank = KeyValueMemoryBank(
             identifier=memory_bank_id,
             provider_id=provider_id,
             provider_resource_id=provider_memorybank_id,
             memory_bank_type=memory_bank_type,
         )
-    elif memory_bank_type == MemoryBankType.keyword:
+    elif memory_bank_type == MemoryBankType.keyword.value:
         memory_bank = KeywordMemoryBank(
             identifier=memory_bank_id,
             provider_id=provider_id,
             provider_resource_id=provider_memorybank_id,
             memory_bank_type=memory_bank_type,
         )
-    elif memory_bank_type == MemoryBankType.graph:
+    elif memory_bank_type == MemoryBankType.graph.value:
         memory_bank = GraphMemoryBank(
             identifier=memory_bank_id,
             provider_id=provider_id,
