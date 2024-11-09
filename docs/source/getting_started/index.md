@@ -244,16 +244,6 @@ $ llama stack build --template meta-reference-gpu --image-type conda
 ```
 $ llama stack run ~/.llama/distributions/llamastack-meta-reference-gpu/meta-reference-gpu-run.yaml
 ```
-:::
-
-:::{tab-item} tgi
-1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
-
-2. Build the `tgi` distribution
-
-```bash
-llama stack build --template tgi --image-type conda
-```
 
 Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
 ```
@@ -265,6 +255,17 @@ memory:
         namespace: null
         type: sqlite
         db_path: ~/.llama/runtime/faiss_store.db
+```
+
+:::
+
+:::{tab-item} tgi
+1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
+
+2. Build the `tgi` distribution
+
+```bash
+llama stack build --template tgi --image-type conda
 ```
 
 3. Start a TGI server endpoint
