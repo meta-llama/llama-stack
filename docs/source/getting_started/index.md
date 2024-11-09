@@ -255,6 +255,18 @@ $ llama stack run ~/.llama/distributions/llamastack-meta-reference-gpu/meta-refe
 llama stack build --template tgi --image-type conda
 ```
 
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
+```
+memory:
+  - provider_id: faiss-0
+    provider_type: faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/faiss_store.db
+```
+
 3. Start a TGI server endpoint
 
 4. Make sure in your `run.yaml` file, your `conda_env` is pointing to the conda environment and inference provider is pointing to the correct TGI server endpoint. E.g.
@@ -271,6 +283,18 @@ inference:
 5. Start Llama Stack server
 ```bash
 $ llama stack run ~/.llama/distributions/llamastack-tgi/tgi-run.yaml
+```
+
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
+```
+memory:
+  - provider_id: faiss-0
+    provider_type: faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/faiss_store.db
 ```
 :::
 
@@ -307,6 +331,18 @@ inference:
 ```
 llama stack build --template ollama --image-type conda
 llama stack run ~/.llama/distributions/llamastack-ollama/ollama-run.yaml
+```
+
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
+```
+memory:
+  - provider_id: faiss-0
+    provider_type: faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/faiss_store.db
 ```
 
 :::
