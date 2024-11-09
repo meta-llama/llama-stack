@@ -1,91 +1,103 @@
-# Llama Stack Quickstart Guide
+# Ollama Quickstart Guide
 
-This guide will walk you through setting up an end-to-end workflow with Llama Stack, enabling you to perform text generation using the `Llama3.2-3B-Instruct` model. Follow these steps to get started quickly.
+This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-1B-Instruct` model. Follow these steps to get started quickly.
 
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
+> If you'd prefer not to set up a local server, explore our notebook on [tool calling with the Together API](Tool_Calling101_Using_Together's_Llama_Stack_Server.ipynb). This guide will show you how to leverage Together.ai's Llama Stack Server API, allowing you to get started with Llama Stack without the need for a locally built and running server.
+
 ## Table of Contents
-1. [Setup](#Setup)
-2. [Build, Configure, and Run Llama Stack](#build-configure-and-run-llama-stack)
-3. [Testing with `curl`](#testing-with-curl)
-4. [Testing with Python](#testing-with-python)
+1. [Setup ollama](#setup-ollama)
+2. [Install Dependencies and Set Up Environment](#install-dependencies-and-set-up-environment)
+3. [Build, Configure, and Run Llama Stack](#build-configure-and-run-llama-stack)
+4. [Run Ollama Model](#run-ollama-model)
 5. [Next Steps](#next-steps)
 
 ---
 
+## Setup ollama
 
+1. **Download Ollama App**:
+   - Go to [https://ollama.com/download](https://ollama.com/download).
+   - Download and unzip `Ollama-darwin.zip`.
+   - Run the `Ollama` application.
 
-## Setup
+2. **Download the Ollama CLI**:
+   - Ensure you have the `ollama` command line tool by downloading and installing it from the same website.
 
-### 1. Prerequisite
+3. **Verify Installation**:
+   - Open the terminal and run:
+     ```bash
+     ollama run llama3.2:1b
+     ```
 
-Ensure you have the following installed on your system:
+---
 
-- **Conda**: A package, dependency, and environment management tool.
+## Install Dependencies and Set Up Environment
 
+1. **Create a Conda Environment**:
+   - Create a new Conda environment with Python 3.11:
+     ```bash
+     conda create -n hack python=3.11
+     ```
+   - Activate the environment:
+     ```bash
+     conda activate hack
+     ```
 
-### 2. Installation
-The `llama` CLI tool helps you manage the Llama Stack toolchain and agent systems. Follow these step to install
+2. **Install ChromaDB**:
+   - Install `chromadb` using `pip`:
+     ```bash
+     pip install chromadb
+     ```
 
-First activate and activate your conda environment
-```
-conda create --name my-env
-conda activate my-env
-```
-Then install llama-stack with pip, you could also check out other installation methods [here](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html).
+3. **Run ChromaDB**:
+   - Start the ChromaDB server:
+     ```bash
+     chroma run --host localhost --port 8000 --path ./my_chroma_data
+     ```
 
-```bash
-pip install llama-stack
-```
-
-After installation, the `llama` command should be available in your PATH.
-
-### 3. Download Llama Models
-
-Download the necessary Llama model checkpoints using the `llama` CLI:
-
-```bash
-llama download --model-id Llama3.2-3B-Instruct
-```
-
-Follow the CLI prompts to complete the download. You may need to accept a license agreement. Obtain an instant license [here](https://www.llama.com/llama-downloads/).
+4. **Install Llama Stack**:
+   - Open a new terminal and install `llama-stack`:
+     ```bash
+     conda activate hack
+     pip install llama-stack
+     ```
 
 ---
 
 ## Build, Configure, and Run Llama Stack
 
-### 1. Build the Llama Stack Distribution
+1. **Build the Llama Stack**:
+   - Build the Llama Stack using the `ollama` template:
+     ```bash
+     llama stack build --template ollama --image-type conda
+     ```
 
-We will default to building the `meta-reference-gpu` distribution due to its optimized configuration tailored for inference tasks that utilize local GPU capabilities effectively. If you have limited GPU resources, prefer using a cloud-based instance or plan to run on a CPU, you can explore other distribution options [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider).
+2. **Edit Configuration**:
+   - Modify the `ollama-run.yaml` file located at `/Users/yourusername/.llama/distributions/llamastack-ollama/ollama-run.yaml`:
+     - Change the `chromadb` port to `8000`.
+     - Remove the `pgvector` section if present.
 
-```bash
-llama stack build --template meta-reference-gpu --image-type conda
-```
+3. **Run the Llama Stack**:
+   - Run the stack with the configured YAML file:
+     ```bash
+     llama stack run /path/to/your/distro/llamastack-ollama/ollama-run.yaml --port 5050
+     ```
 
-
-### 2. Run the Llama Stack Distribution
-> Launching a distribution initializes and configures the necessary APIs and Providers, enabling seamless interaction with the underlying model.
-
-Start the server with the configured stack:
-
-```bash
-cd llama-stack/distributions/meta-reference-gpu
-llama stack run ./run.yaml
-```
-
-The server will start and listen on `http://localhost:5000` by default.
+The server will start and listen on `http://localhost:5050`.
 
 ---
 
 ## Testing with `curl`
 
-After setting up the server, verify it's working by sending a `POST` request using `curl`:
+After setting up the server, open a new terminal window and verify it's working by sending a `POST` request using `curl`:
 
 ```bash
-curl http://localhost:5000/inference/chat_completion \
+curl http://localhost:5050/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "Llama3.2-3B-Instruct",
+    "model": "llama3.2:1b",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2-sentence poem about the moon"}
@@ -113,10 +125,11 @@ curl http://localhost:5000/inference/chat_completion \
 
 You can also interact with the Llama Stack server using a simple Python script. Below is an example:
 
-### 1. Install Required Python Packages
+### 1. Active Conda Environment and Install Required Python Packages
 The `llama-stack-client` library offers a robust and efficient python methods for interacting with the Llama Stack server.
 
 ```bash
+conda activate your-llama-stack-conda-env
 pip install llama-stack-client
 ```
 
@@ -129,10 +142,9 @@ touch test_llama_stack.py
 
 ```python
 from llama_stack_client import LlamaStackClient
-from llama_stack_client.types import SystemMessage, UserMessage
 
 # Initialize the client
-client = LlamaStackClient(base_url="http://localhost:5000")
+client = LlamaStackClient(base_url="http://localhost:5050")
 
 # Create a chat completion request
 response = client.inference.chat_completion(
@@ -140,7 +152,7 @@ response = client.inference.chat_completion(
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write a two-sentence poem about llama."}
     ],
-    model="Llama3.2-3B-Instruct",
+    model="llama3.2:1b",
 )
 
 # Print the response
@@ -160,6 +172,8 @@ A beacon of wonder, as it catches the eye.
 ```
 
 With these steps, you should have a functional Llama Stack setup capable of generating text using the specified model. For more detailed information and advanced configurations, refer to some of our documentation below.
+
+This command initializes the model to interact with your local Llama Stack instance.
 
 ---
 
