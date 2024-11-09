@@ -8,10 +8,10 @@ import logging
 
 from typing import Any, Dict, List, Optional
 
+import faiss
+
 import numpy as np
 from numpy.typing import NDArray
-
-import faiss
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 

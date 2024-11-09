@@ -35,12 +35,13 @@ from termcolor import cprint
 
 from llama_stack.apis.inference import *  # noqa: F403
 
+from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
+
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,
     chat_completion_request_to_messages,
 )
-from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 
 from .config import (
     Fp8QuantizationConfig,
