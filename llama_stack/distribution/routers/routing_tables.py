@@ -17,6 +17,7 @@ from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.distribution.utils.memory_bank_utils import build_memory_bank
 
 
 def get_impl_api(p: Any) -> Api:
@@ -272,19 +273,24 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
 
     async def register_memory_bank(
         self,
-        request: RegistrationRequest,
+        memory_bank_id: str,
+        provider_id: str,
+        provider_memorybank_id: str,
+        params: BankParams,
     ) -> MemoryBank:
-        if request.provider_resource_id is None:
-            request.provider_resource_id = request.memory_bank_id
-        if request.provider_id is None:
+        if provider_memorybank_id is None:
+            provider_memorybank_id = memory_bank_id
+        if provider_id is None:
             # If provider_id not specified, use the only provider if it supports this shield type
             if len(self.impls_by_provider_id) == 1:
-                request.provider_id = list(self.impls_by_provider_id.keys())[0]
+                provider_id = list(self.impls_by_provider_id.keys())[0]
             else:
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
-        memory_bank = registration_request_to_memory_bank(request)
+        memory_bank = build_memory_bank(
+            memory_bank_id, params.type, provider_id, provider_memorybank_id, params
+        )
         await self.register_object(memory_bank)
         return memory_bank
 

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import List, Literal, Optional, Protocol, runtime_checkable, Union
+from typing import List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -56,76 +56,16 @@ class GraphMemoryBank(MemoryBank):
 
 
 @json_schema_type
-class BaseRegistration(BaseModel):
-    memory_bank_id: str
-    provider_resource_id: Optional[str] = None
-    provider_id: Optional[str] = None
-
-
-@json_schema_type
-class VectorRegistration(BaseRegistration):
+class VectorMemoryBankParams(BaseModel):
+    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
     overlap_size_in_tokens: Optional[int] = None
 
 
-@json_schema_type
-class KeyValueRegistration(BaseRegistration):
-    pass
-
-
-@json_schema_type
-class KeywordRegistration(BaseRegistration):
-    pass
-
-
-@json_schema_type
-class GraphRegistration(BaseRegistration):
-    pass
-
-
-RegistrationRequest = Union[
-    VectorRegistration,
-    KeyValueRegistration,
-    KeywordRegistration,
-    GraphRegistration,
-]
-
-
-def registration_request_to_memory_bank(request: RegistrationRequest) -> MemoryBank:
-    """Convert registration request to memory bank object"""
-    if isinstance(request, VectorRegistration):
-        return VectorMemoryBank(
-            identifier=request.memory_bank_id,
-            provider_resource_id=request.provider_resource_id,
-            provider_id=request.provider_id,
-            embedding_model=request.embedding_model,
-            chunk_size_in_tokens=request.chunk_size_in_tokens,
-            overlap_size_in_tokens=request.overlap_size_in_tokens,
-        )
-    elif isinstance(request, KeyValueRegistration):
-        return KeyValueMemoryBank(
-            identifier=request.memory_bank_id,
-            provider_resource_id=request.provider_resource_id,
-            provider_id=request.provider_id,
-            memory_bank_type=MemoryBankType.keyvalue,
-        )
-    elif isinstance(request, KeywordRegistration):
-        return KeywordMemoryBank(
-            identifier=request.memory_bank_id,
-            provider_resource_id=request.provider_resource_id,
-            provider_id=request.provider_id,
-            memory_bank_type=MemoryBankType.keyword,
-        )
-    elif isinstance(request, GraphRegistration):
-        return GraphMemoryBank(
-            identifier=request.memory_bank_id,
-            provider_resource_id=request.provider_resource_id,
-            provider_id=request.provider_id,
-            memory_bank_type=MemoryBankType.graph,
-        )
-    else:
-        raise ValueError(f"Unknown registration type: {type(request)}")
+BankParams = VectorMemoryBankParams  # For now, since we only have one type of params
+# If you need to add more types later, you can do:
+# BankParams = Union[VectorMemoryBankParams, KeyValueMemoryBankParams, KeywordMemoryBankParams, GraphMemoryBankParams]
 
 
 @runtime_checkable
@@ -138,5 +78,10 @@ class MemoryBanks(Protocol):
 
     @webmethod(route="/memory_banks/register", method="POST")
     async def register_memory_bank(
-        self, request: RegistrationRequest
+        self,
+        memory_bank_id: str,
+        memory_bank_type: MemoryBankType,
+        provider_id: Optional[str] = None,
+        provider_memorybank_id: Optional[str] = None,
+        params: Optional[BankParams] = None,
     ) -> MemoryBank: ...
