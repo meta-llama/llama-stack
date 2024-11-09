@@ -245,7 +245,7 @@ $ llama stack build --template meta-reference-gpu --image-type conda
 $ llama stack run ~/.llama/distributions/llamastack-meta-reference-gpu/meta-reference-gpu-run.yaml
 ```
 
-Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section:
 ```
 memory:
   - provider_id: faiss-0
@@ -286,7 +286,7 @@ inference:
 $ llama stack run ~/.llama/distributions/llamastack-tgi/tgi-run.yaml
 ```
 
-Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section:
 ```
 memory:
   - provider_id: faiss-0
@@ -334,7 +334,7 @@ llama stack build --template ollama --image-type conda
 llama stack run ~/.llama/distributions/llamastack-ollama/ollama-run.yaml
 ```
 
-Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section: 
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section:
 ```
 memory:
   - provider_id: faiss-0
