@@ -88,14 +88,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             "You cannot dynamically add a model to a running vllm instance"
         )
 
-    async def list_models(self) -> List[Model]:
-        return [
-            Model(
-                identifier=self.config.model,
-                llama_model=self.config.model,
-            )
-        ]
-
     def _sampling_params(self, sampling_params: SamplingParams) -> VLLMSamplingParams:
         if sampling_params is None:
             return VLLMSamplingParams(max_tokens=self.config.max_tokens)

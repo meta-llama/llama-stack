@@ -15,9 +15,6 @@ from llama_stack.apis.resource import Resource, ResourceType
 @json_schema_type
 class Model(Resource):
     type: Literal[ResourceType.model.value] = ResourceType.model.value
-    llama_model: str = Field(
-        description="Pointer to the underlying core Llama family model. Each model served by Llama Stack must have a core Llama model.",
-    )
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this model",
@@ -38,6 +35,5 @@ class Models(Protocol):
         model_id: str,
         provider_model_id: Optional[str] = None,
         provider_id: Optional[str] = None,
-        llama_model: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Model: ...

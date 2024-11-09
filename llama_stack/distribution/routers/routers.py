@@ -76,11 +76,10 @@ class InferenceRouter(Inference):
         model_id: str,
         provider_model_id: Optional[str] = None,
         provider_id: Optional[str] = None,
-        llama_model: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         await self.routing_table.register_model(
-            model_id, provider_model_id, provider_id, llama_model, metadata
+            model_id, provider_model_id, provider_id, metadata
         )
 
     async def chat_completion(

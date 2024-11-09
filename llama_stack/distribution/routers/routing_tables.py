@@ -207,7 +207,6 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         model_id: str,
         provider_model_id: Optional[str] = None,
         provider_id: Optional[str] = None,
-        llama_model: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Model:
         if provider_model_id is None:
@@ -218,17 +217,14 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                 provider_id = list(self.impls_by_provider_id.keys())[0]
             else:
                 raise ValueError(
-                    "No provider specified and multiple providers available. Please specify a provider_id."
+                    "No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
                 )
         if metadata is None:
             metadata = {}
-        if llama_model is None:
-            llama_model = model_id
         model = Model(
             identifier=model_id,
             provider_resource_id=provider_model_id,
             provider_id=provider_id,
-            llama_model=llama_model,
             metadata=metadata,
         )
         await self.register_object(model)
