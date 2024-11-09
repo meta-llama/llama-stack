@@ -80,6 +80,11 @@ Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-
 
 :::
 
+:::{tab-item} vLLM
+##### System Requirements
+Access to Single-Node GPU to start a vLLM server.
+:::
+
 :::{tab-item} tgi
 ##### System Requirements
 Access to Single-Node GPU to start a TGI server.
@@ -119,6 +124,22 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 ```
 :::
 
+:::{tab-item} vLLM
+```
+$ cd llama-stack/distributions/remote-vllm && docker compose up
+```
+
+The script will first start up vLLM server on port 8000, then start up Llama Stack distribution server hooking up to it for inference. You should see the following outputs --
+```
+<TO BE FILLED>
+```
+
+To kill the server
+```
+docker compose down
+```
+:::
+
 :::{tab-item} tgi
 ```
 $ cd llama-stack/distributions/tgi && docker compose up
@@ -144,7 +165,11 @@ docker compose down
 
 :::{tab-item} ollama
 ```
-$ cd llama-stack/distributions/ollama/cpu && docker compose up
+$ cd llama-stack/distributions/ollama && docker compose up
+
+# OR
+
+$ cd llama-stack/distributions/ollama-gpu && docker compose up
 ```
 
 You will see outputs similar to following ---
