@@ -11,6 +11,7 @@ from llama_stack.apis.shields import ShieldType
 
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.safety.llama_guard import LlamaGuardConfig
+from llama_stack.providers.inline.safety.prompt_guard import PromptGuardConfig
 from llama_stack.providers.remote.safety.bedrock import BedrockSafetyConfig
 
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
@@ -39,6 +40,22 @@ def safety_llama_guard(safety_model) -> ProviderFixture:
                 provider_id="inline::llama-guard",
                 provider_type="inline::llama-guard",
                 config=LlamaGuardConfig(model=safety_model).model_dump(),
+            )
+        ],
+    )
+
+
+# TODO: this is not tested yet; we would need to configure the run_shield() test
+# and parametrize it with the "prompt" for testing depending on the safety fixture
+# we are using.
+@pytest.fixture(scope="session")
+def safety_prompt_guard() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="inline::prompt-guard",
+                provider_type="inline::prompt-guard",
+                config=PromptGuardConfig().model_dump(),
             )
         ],
     )

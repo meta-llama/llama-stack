@@ -19,15 +19,14 @@ providers:
       url: http://127.0.0.1:14343
   safety:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::llama-guard
     config:
-      llama_guard_shield:
-        model: Llama-Guard-3-1B
-        excluded_categories: []
-        disable_input_check: false
-        disable_output_check: false
-      prompt_guard_shield:
-        model: Prompt-Guard-86M
+      model: Llama-Guard-3-1B
+      excluded_categories: []
+  - provider_id: meta1
+    provider_type: inline::prompt-guard
+    config:
+      model: Prompt-Guard-86M
   memory:
   - provider_id: meta0
     provider_type: meta-reference

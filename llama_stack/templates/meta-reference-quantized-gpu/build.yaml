@@ -8,6 +8,6 @@ distribution_spec:
     - meta-reference
     - remote::chromadb
     - remote::pgvector
-    safety: meta-reference
+    safety: inline::llama-guard
     agents: meta-reference
     telemetry: meta-reference
