@@ -15,8 +15,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.datasetio,
             provider_type="meta-reference",
             pip_packages=["pandas"],
-            module="llama_stack.providers.inline.meta_reference.datasetio",
-            config_class="llama_stack.providers.inline.meta_reference.datasetio.MetaReferenceDatasetIOConfig",
+            module="llama_stack.providers.inline.datasetio.meta_reference",
+            config_class="llama_stack.providers.inline.datasetio.meta_reference.MetaReferenceDatasetIOConfig",
             api_dependencies=[],
         ),
         remote_provider_spec(

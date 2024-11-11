@@ -15,8 +15,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.eval,
             provider_type="meta-reference",
             pip_packages=[],
-            module="llama_stack.providers.inline.meta_reference.eval",
-            config_class="llama_stack.providers.inline.meta_reference.eval.MetaReferenceEvalConfig",
+            module="llama_stack.providers.inline.eval.meta_reference",
+            config_class="llama_stack.providers.inline.eval.meta_reference.MetaReferenceEvalConfig",
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,
