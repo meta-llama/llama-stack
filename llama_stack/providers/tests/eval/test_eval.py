@@ -16,7 +16,6 @@ from llama_stack.apis.datasetio.datasetio import DatasetDefWithProvider
 from llama_stack.apis.eval.eval import (
     AppEvalTaskConfig,
     BenchmarkEvalTaskConfig,
-    EvalTaskDefWithProvider,
     ModelCandidate,
 )
 from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams
@@ -70,13 +69,11 @@ class Testeval:
             "meta-reference::equality",
         ]
         task_id = "meta-reference::app_eval"
-        task_def = EvalTaskDefWithProvider(
-            identifier=task_id,
+        await eval_tasks_impl.register_eval_task(
+            eval_task_id=task_id,
             dataset_id="test_dataset_for_eval",
             scoring_functions=scoring_functions,
-            provider_id="meta-reference",
         )
-        await eval_tasks_impl.register_eval_task(task_def)
         response = await eval_impl.evaluate_rows(
             task_id=task_id,
             input_rows=rows.rows,
@@ -125,13 +122,11 @@ class Testeval:
         ]
 
         task_id = "meta-reference::app_eval-2"
-        task_def = EvalTaskDefWithProvider(
-            identifier=task_id,
+        await eval_tasks_impl.register_eval_task(
+            eval_task_id=task_id,
             dataset_id="test_dataset_for_eval",
             scoring_functions=scoring_functions,
-            provider_id="meta-reference",
         )
-        await eval_tasks_impl.register_eval_task(task_def)
         response = await eval_impl.run_eval(
             task_id=task_id,
             task_config=AppEvalTaskConfig(
@@ -189,14 +184,11 @@ class Testeval:
         await datasets_impl.register_dataset(mmlu)
 
         # register eval task
-        meta_reference_mmlu = EvalTaskDefWithProvider(
-            identifier="meta-reference-mmlu",
+        await eval_tasks_impl.register_eval_task(
+            eval_task_id="meta-reference-mmlu",
             dataset_id="mmlu",
             scoring_functions=["meta-reference::regex_parser_multiple_choice_answer"],
-            provider_id="",
         )
-
-        await eval_tasks_impl.register_eval_task(meta_reference_mmlu)
 
         # list benchmarks
         response = await eval_tasks_impl.list_eval_tasks()

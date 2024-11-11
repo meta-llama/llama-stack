@@ -12,8 +12,8 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import Dataset
-from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.memory_banks.memory_banks import MemoryBank
+from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFnDef
 from llama_stack.apis.shields import Shield
@@ -67,9 +67,9 @@ class ScoringFunctionsProtocolPrivate(Protocol):
 
 
 class EvalTasksProtocolPrivate(Protocol):
-    async def list_eval_tasks(self) -> List[EvalTaskDef]: ...
+    async def list_eval_tasks(self) -> List[EvalTask]: ...
 
-    async def register_eval_task(self, eval_task_def: EvalTaskDef) -> None: ...
+    async def register_eval_task(self, eval_task: EvalTask) -> None: ...
 
 
 @json_schema_type
