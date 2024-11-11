@@ -121,6 +121,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
+        print(f"Initializing PGVector memory adapter with config: {self.config}")
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -160,8 +161,8 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         memory_bank: VectorMemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         upsert_models(
             self.cursor,
