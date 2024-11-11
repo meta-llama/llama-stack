@@ -6,6 +6,6 @@ distribution_spec:
     memory:
     - meta-reference
     - remote::weaviate
-    safety: meta-reference
+    safety: inline::llama-guard
     agents: meta-reference
     telemetry: meta-reference

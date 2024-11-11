@@ -25,7 +25,7 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        if shield.shield_type != ShieldType.code_scanner.value:
+        if shield.shield_type != ShieldType.code_scanner:
             raise ValueError(f"Unsupported safety shield type: {shield.shield_type}")
 
     async def run_shield(

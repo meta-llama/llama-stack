@@ -3,7 +3,7 @@ distribution_spec:
   description: Use Databricks for running LLM inference
   providers:
     inference: remote::databricks
-    memory: meta-reference
-    safety: meta-reference
+    memory: inline::faiss
+    safety: inline::llama-guard
     agents: meta-reference
     telemetry: meta-reference

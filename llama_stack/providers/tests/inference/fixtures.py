@@ -65,7 +65,6 @@ def inference_ollama(inference_model) -> ProviderFixture:
     inference_model = (
         [inference_model] if isinstance(inference_model, str) else inference_model
     )
-    print("!!!", inference_model)
     if "Llama3.1-8B-Instruct" in inference_model:
         pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
@@ -162,9 +161,11 @@ async def inference_stack(request, inference_model):
         inference_fixture.provider_data,
     )
 
+    provider_id = inference_fixture.providers[0].provider_id
+    print(f"Registering model {inference_model} with provider {provider_id}")
     await impls[Api.models].register_model(
         model_id=inference_model,
-        provider_model_id=inference_fixture.providers[0].provider_id,
+        provider_id=provider_id,
     )
 
     return (impls[Api.inference], impls[Api.models])

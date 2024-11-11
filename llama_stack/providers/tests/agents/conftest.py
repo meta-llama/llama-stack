@@ -18,7 +18,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "meta_reference",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
             "memory": "meta_reference",
             "agents": "meta_reference",
         },
@@ -28,7 +28,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "ollama",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
             "memory": "meta_reference",
             "agents": "meta_reference",
         },
@@ -38,7 +38,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "together",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
             # make this work with Weaviate which is what the together distro supports
             "memory": "meta_reference",
             "agents": "meta_reference",

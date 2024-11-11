@@ -4,20 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
-from typing import List, Optional
+from typing import List
 
 from llama_models.sku_list import CoreModelId, safety_models
 
 from pydantic import BaseModel, field_validator
 
 
-class PromptGuardType(Enum):
-    injection = "injection"
-    jailbreak = "jailbreak"
-
-
-class LlamaGuardShieldConfig(BaseModel):
+class LlamaGuardConfig(BaseModel):
     model: str = "Llama-Guard-3-1B"
     excluded_categories: List[str] = []
 
@@ -41,8 +35,3 @@ class LlamaGuardShieldConfig(BaseModel):
                 f"Invalid model: {model}. Must be one of {permitted_models}"
             )
         return model
-
-
-class SafetyConfig(BaseModel):
-    llama_guard_shield: Optional[LlamaGuardShieldConfig] = None
-    enable_prompt_guard: Optional[bool] = False

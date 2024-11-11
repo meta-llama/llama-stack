@@ -21,7 +21,7 @@ providers:
       gpu_memory_utilization: 0.4
       enforce_eager: true
       max_tokens: 4096
-  - provider_id: vllm-safety
+  - provider_id: vllm-inference-safety
     provider_type: inline::vllm
     config:
       model: Llama-Guard-3-1B
@@ -31,14 +31,15 @@ providers:
       max_tokens: 4096
   safety:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::llama-guard
     config:
-      llama_guard_shield:
-        model: Llama-Guard-3-1B
-        excluded_categories: []
-# Uncomment to use prompt guard
-#      prompt_guard_shield:
-#        model: Prompt-Guard-86M
+      model: Llama-Guard-3-1B
+      excluded_categories: []
+  # Uncomment to use prompt guard
+  # - provider_id: meta1
+  #   provider_type: inline::prompt-guard
+  #   config:
+  #     model: Prompt-Guard-86M
   memory:
   - provider_id: meta0
     provider_type: meta-reference
