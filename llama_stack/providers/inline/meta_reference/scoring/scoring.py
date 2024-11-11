@@ -13,21 +13,14 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
-from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.equality_scoring_fn import (
-    EqualityScoringFn,
-)
-
-from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.llm_as_judge_scoring_fn import (
-    LlmAsJudgeScoringFn,
-)
-
-from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.subset_of_scoring_fn import (
-    SubsetOfScoringFn,
-)
 
 from .config import MetaReferenceScoringConfig
+from .scoring_fn.equality_scoring_fn import EqualityScoringFn
+from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
+from .scoring_fn.regex_parser_scoring_fn import RegexParserScoringFn
+from .scoring_fn.subset_of_scoring_fn import SubsetOfScoringFn
 
-FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn]
+FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn, RegexParserScoringFn]
 
 LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 

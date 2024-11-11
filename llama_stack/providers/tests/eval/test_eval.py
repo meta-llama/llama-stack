@@ -7,10 +7,15 @@
 
 import pytest
 
-from llama_models.llama3.api import SamplingParams
+from llama_models.llama3.api import SamplingParams, URL
+
+from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
+
+from llama_stack.apis.datasetio.datasetio import DatasetDefWithProvider
 
 from llama_stack.apis.eval.eval import (
     AppEvalTaskConfig,
+    BenchmarkEvalTaskConfig,
     EvalTaskDefWithProvider,
     ModelCandidate,
 )
@@ -21,7 +26,7 @@ from llama_stack.providers.tests.datasetio.test_datasetio import register_datase
 # How to run this test:
 #
 # pytest llama_stack/providers/tests/eval/test_eval.py
-#   -m "meta_reference"
+#   -m "meta_reference_eval_together_inference_huggingface_datasetio"
 #   -v -s --tb=short --disable-warnings
 
 
@@ -33,21 +38,26 @@ class Testeval:
         eval_tasks_impl = eval_stack[Api.eval_tasks]
         response = await eval_tasks_impl.list_eval_tasks()
         assert isinstance(response, list)
-        assert len(response) == 0
 
     @pytest.mark.asyncio
     async def test_eval_evaluate_rows(self, eval_stack):
-        eval_impl, eval_tasks_impl, datasetio_impl, datasets_impl = (
+        eval_impl, eval_tasks_impl, datasetio_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasetio],
             eval_stack[Api.datasets],
+            eval_stack[Api.models],
         )
+        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
+            await models_impl.register_model(
+                model_id=model_id,
+                provider_id="",
+            )
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
         response = await datasets_impl.list_datasets()
-        assert len(response) == 1
+
         rows = await datasetio_impl.get_rows_paginated(
             dataset_id="test_dataset_for_eval",
             rows_in_page=3,
@@ -66,7 +76,6 @@ class Testeval:
             provider_id="meta-reference",
         )
         await eval_tasks_impl.register_eval_task(task_def)
-
         response = await eval_impl.evaluate_rows(
             task_id=task_id,
             input_rows=rows.rows,
@@ -84,11 +93,17 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack):
-        eval_impl, eval_tasks_impl, datasets_impl = (
+        eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasets],
+            eval_stack[Api.models],
         )
+        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
+            await models_impl.register_model(
+                model_id=model_id,
+                provider_id="",
+            )
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
@@ -124,3 +139,72 @@ class Testeval:
         assert len(eval_response.generations) == 5
         assert "meta-reference::subset_of" in eval_response.scores
         assert "meta-reference::llm_as_judge_8b_correctness" in eval_response.scores
+
+    @pytest.mark.asyncio
+    async def test_eval_run_benchmark_eval(self, eval_stack):
+        eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
+            eval_stack[Api.eval],
+            eval_stack[Api.eval_tasks],
+            eval_stack[Api.datasets],
+            eval_stack[Api.models],
+        )
+        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
+            await models_impl.register_model(
+                model_id=model_id,
+                provider_id="",
+            )
+        response = await datasets_impl.list_datasets()
+        assert len(response) > 0
+        if response[0].provider_id != "huggingface":
+            pytest.skip(
+                "Only huggingface provider supports pre-registered remote datasets"
+            )
+        # register dataset
+        mmlu = DatasetDefWithProvider(
+            identifier="mmlu",
+            url=URL(uri="https://huggingface.co/datasets/llamastack/evals"),
+            dataset_schema={
+                "input_query": StringType(),
+                "expected_answer": StringType(),
+                "chat_completion_input": ChatCompletionInputType(),
+            },
+            metadata={
+                "path": "llamastack/evals",
+                "name": "evals__mmlu__details",
+                "split": "train",
+            },
+            provider_id="",
+        )
+
+        await datasets_impl.register_dataset(mmlu)
+
+        # register eval task
+        meta_reference_mmlu = EvalTaskDefWithProvider(
+            identifier="meta-reference-mmlu",
+            dataset_id="mmlu",
+            scoring_functions=["meta-reference::regex_parser_multiple_choice_answer"],
+            provider_id="",
+        )
+
+        await eval_tasks_impl.register_eval_task(meta_reference_mmlu)
+
+        # list benchmarks
+        response = await eval_tasks_impl.list_eval_tasks()
+        assert len(response) > 0
+
+        benchmark_id = "meta-reference-mmlu"
+        response = await eval_impl.run_eval(
+            task_id=benchmark_id,
+            task_config=BenchmarkEvalTaskConfig(
+                eval_candidate=ModelCandidate(
+                    model="Llama3.2-3B-Instruct",
+                    sampling_params=SamplingParams(),
+                ),
+                num_examples=3,
+            ),
+        )
+        job_status = await eval_impl.job_status(benchmark_id, response.job_id)
+        assert job_status and job_status.value == "completed"
+        eval_response = await eval_impl.job_result(benchmark_id, response.job_id)
+        assert eval_response is not None
+        assert len(eval_response.generations) == 3
