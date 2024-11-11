@@ -100,12 +100,12 @@ async def run_main(host: str, port: int, stream: bool):
 
     # register memory bank for the first time
     response = await client.register_memory_bank(
-        VectorMemoryBank(
-            identifier="test_bank2",
+        memory_bank_id="test_bank2",
+        params=VectorMemoryBankParams(
             embedding_model="all-MiniLM-L6-v2",
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,
-        )
+        ),
     )
     cprint(f"register_memory_bank response={response}", "blue")
 
