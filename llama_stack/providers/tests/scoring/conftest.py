@@ -16,7 +16,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "scoring": "meta_reference",
-            "datasetio": "meta_reference",
+            "datasetio": "localfs",
             "inference": "fireworks",
         },
         id="meta_reference_scoring_fireworks_inference",
@@ -25,11 +25,20 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "scoring": "meta_reference",
-            "datasetio": "meta_reference",
+            "datasetio": "localfs",
             "inference": "together",
         },
         id="meta_reference_scoring_together_inference",
         marks=pytest.mark.meta_reference_scoring_together_inference,
+    ),
+    pytest.param(
+        {
+            "scoring": "braintrust",
+            "datasetio": "localfs",
+            "inference": "together",
+        },
+        id="braintrust_scoring_together_inference",
+        marks=pytest.mark.braintrust_scoring_together_inference,
     ),
 ]
 
@@ -38,6 +47,7 @@ def pytest_configure(config):
     for fixture_name in [
         "meta_reference_scoring_fireworks_inference",
         "meta_reference_scoring_together_inference",
+        "braintrust_scoring_together_inference",
     ]:
         config.addinivalue_line(
             "markers",

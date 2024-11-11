@@ -4,20 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from llama_stack.apis.inference.inference import Inference
-from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.base_scoring_fn import (
-    BaseScoringFn,
-)
+
+from .base_scoring_fn import BaseScoringFn
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 import re
 
-from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.common import (
-    aggregate_average,
-)
-from llama_stack.providers.inline.meta_reference.scoring.scoring_fn.fn_defs.llm_as_judge_8b_correctness import (
-    llm_as_judge_8b_correctness,
-)
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_average
+
+from .fn_defs.llm_as_judge_base import llm_as_judge_base
 
 
 class LlmAsJudgeScoringFn(BaseScoringFn):
@@ -29,7 +25,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         super().__init__(*arg, **kwargs)
         self.inference_api = inference_api
         self.supported_fn_defs_registry = {
-            llm_as_judge_8b_correctness.identifier: llm_as_judge_8b_correctness,
+            llm_as_judge_base.identifier: llm_as_judge_base,
         }
 
     async def score_row(

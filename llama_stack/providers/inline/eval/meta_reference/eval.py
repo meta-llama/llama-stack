@@ -9,14 +9,13 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from .....apis.common.job_types import Job
 from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
 from llama_stack.apis.common.type_system import *  # noqa: F403
-from tqdm import tqdm
-
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
+from tqdm import tqdm
 
 from .config import MetaReferenceEvalConfig
 

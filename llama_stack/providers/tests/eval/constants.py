@@ -4,10 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
-from llama_stack.apis.scoring import *  # noqa: F401, F403
-from llama_stack.apis.common.type_system import NumberType
-
 JUDGE_PROMPT = """
 You will be given a question, a expected_answer, and a system_answer.
 Your task is to provide a 'total rating' scoring how well the system_answer answers compared with ground truth in expected_answer in terms of factual correctness to the question.
@@ -22,18 +18,3 @@ System Answer: {generated_answer}
 Feedback:::
 Total rating:
 """
-
-llm_as_judge_8b_correctness = ScoringFnDef(
-    identifier="meta-reference::llm_as_judge_8b_correctness",
-    description="Llm As Judge Scoring Function",
-    return_type=NumberType(),
-    params=LLMAsJudgeScoringFnParams(
-        prompt_template=JUDGE_PROMPT,
-        judge_model="Llama3.1-8B-Instruct",
-        judge_score_regexes=[
-            r"Total rating: (\d+)",
-            r"rating: (\d+)",
-            r"Rating: (\d+)",
-        ],
-    ),
-)

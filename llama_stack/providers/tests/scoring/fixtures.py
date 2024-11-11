@@ -31,7 +31,20 @@ def scoring_meta_reference() -> ProviderFixture:
     )
 
 
-SCORING_FIXTURES = ["meta_reference", "remote"]
+@pytest.fixture(scope="session")
+def scoring_braintrust() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="braintrust",
+                provider_type="braintrust",
+                config={},
+            )
+        ],
+    )
+
+
+SCORING_FIXTURES = ["meta_reference", "remote", "braintrust"]
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -52,9 +65,4 @@ async def scoring_stack(request):
         provider_data,
     )
 
-    return (
-        impls[Api.scoring],
-        impls[Api.scoring_functions],
-        impls[Api.datasetio],
-        impls[Api.datasets],
-    )
+    return impls
