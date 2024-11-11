@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 
-from .config import LocalfsDatasetIOConfig
+from .config import LocalFSDatasetIOConfig
 
 
 class BaseDataset(ABC):
@@ -77,8 +77,8 @@ class PandasDataframeDataset(BaseDataset):
         self.df = self._validate_dataset_schema(df)
 
 
-class LocalfsDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
-    def __init__(self, config: LocalfsDatasetIOConfig) -> None:
+class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
+    def __init__(self, config: LocalFSDatasetIOConfig) -> None:
         self.config = config
         # local registry for keeping track of datasets within the provider
         self.dataset_infos = {}

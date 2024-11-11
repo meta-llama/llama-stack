@@ -16,7 +16,7 @@ def available_providers() -> List[ProviderSpec]:
             provider_type="localfs",
             pip_packages=["pandas"],
             module="llama_stack.providers.inline.datasetio.localfs",
-            config_class="llama_stack.providers.inline.datasetio.localfs.LocalfsDatasetIOConfig",
+            config_class="llama_stack.providers.inline.datasetio.localfs.LocalFSDatasetIOConfig",
             api_dependencies=[],
         ),
         remote_provider_spec(

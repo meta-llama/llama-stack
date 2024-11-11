@@ -4,15 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .config import LocalfsDatasetIOConfig
+from .config import LocalFSDatasetIOConfig
 
 
 async def get_provider_impl(
-    config: LocalfsDatasetIOConfig,
+    config: LocalFSDatasetIOConfig,
     _deps,
 ):
-    from .datasetio import LocalfsDatasetIOImpl
+    from .datasetio import LocalFSDatasetIOImpl
 
-    impl = LocalfsDatasetIOImpl(config)
+    impl = LocalFSDatasetIOImpl(config)
     await impl.initialize()
     return impl
