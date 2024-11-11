@@ -60,8 +60,9 @@ class TestScoring:
         )
         assert len(rows.rows) == 3
 
+        scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
         scoring_functions = {
-            "meta-reference::equality": None,
+            scoring_fns_list[0].identifier: None,
         }
 
         response = await scoring_impl.score(
@@ -107,6 +108,11 @@ class TestScoring:
                 model_id=model_id,
                 provider_id="",
             )
+
+        scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
+        provider_id = scoring_fns_list[0].provider_id
+        if provider_id == "braintrust":
+            pytest.skip("Braintrust provider does not support scoring with params")
 
         # scoring individual rows
         rows = await datasetio_impl.get_rows_paginated(
