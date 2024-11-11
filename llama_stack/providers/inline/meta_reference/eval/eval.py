@@ -51,9 +51,6 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
     async def initialize(self) -> None:
         pass
-        # # pre-register eval tasks
-        # benchmark_tasks = [meta_reference_mmlu]
-        # self.eval_tasks = {x.identifier: x for x in benchmark_tasks}
 
     async def shutdown(self) -> None: ...
 

@@ -36,9 +36,6 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def initialize(self) -> None:
         pass
-        # pre-registered benchmark datasets
-        # pre_registered_datasets = [mmlu]
-        # self.dataset_infos = {x.identifier: x for x in pre_registered_datasets}
 
     async def shutdown(self) -> None: ...
 
