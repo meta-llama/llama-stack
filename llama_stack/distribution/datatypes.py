@@ -31,8 +31,8 @@ RoutingKey = Union[str, List[str]]
 
 
 RoutableObject = Union[
-    ModelDef,
-    ShieldDef,
+    Model,
+    Shield,
     MemoryBankDef,
     DatasetDef,
     ScoringFnDef,
@@ -41,8 +41,8 @@ RoutableObject = Union[
 
 RoutableObjectWithProvider = Annotated[
     Union[
-        ModelDefWithProvider,
-        ShieldDefWithProvider,
+        Model,
+        Shield,
         MemoryBankDefWithProvider,
         DatasetDefWithProvider,
         ScoringFnDefWithProvider,

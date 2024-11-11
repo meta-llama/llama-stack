@@ -12,7 +12,7 @@ from llama_models.sku_list import resolve_model
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.datatypes import ModelDef, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_media_to_url,
@@ -45,16 +45,11 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
         else:
             self.generator = Llama.build(self.config)
 
-    async def register_model(self, model: ModelDef) -> None:
-        raise ValueError("Dynamic model registration is not supported")
-
-    async def list_models(self) -> List[ModelDef]:
-        return [
-            ModelDef(
-                identifier=self.model.descriptor(),
-                llama_model=self.model.descriptor(),
+    async def register_model(self, model: Model) -> None:
+        if model.identifier != self.model.descriptor():
+            raise ValueError(
+                f"Model mismatch: {model.identifier} != {self.model.descriptor()}"
             )
-        ]
 
     async def shutdown(self) -> None:
         if self.config.create_distributed_process_group:

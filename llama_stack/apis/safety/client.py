@@ -41,13 +41,13 @@ class SafetyClient(Safety):
         pass
 
     async def run_shield(
-        self, shield_type: str, messages: List[Message]
+        self, shield_id: str, messages: List[Message]
     ) -> RunShieldResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/safety/run_shield",
                 json=dict(
-                    shield_type=shield_type,
+                    shield_id=shield_id,
                     messages=[encodable_dict(m) for m in messages],
                 ),
                 headers={
@@ -80,7 +80,7 @@ async def run_main(host: str, port: int, image_path: str = None):
         )
         cprint(f"User>{message.content}", "green")
         response = await client.run_shield(
-            shield_type="llama_guard",
+            shield_id="llama_guard",
             messages=[message],
         )
         print(response)
@@ -91,7 +91,7 @@ async def run_main(host: str, port: int, image_path: str = None):
     ]:
         cprint(f"User>{message.content}", "green")
         response = await client.run_shield(
-            shield_type="llama_guard",
+            shield_id="llama_guard",
             messages=[message],
         )
         print(response)

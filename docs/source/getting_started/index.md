@@ -80,6 +80,11 @@ Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-
 
 :::
 
+:::{tab-item} vLLM
+##### System Requirements
+Access to Single-Node GPU to start a vLLM server.
+:::
+
 :::{tab-item} tgi
 ##### System Requirements
 Access to Single-Node GPU to start a TGI server.
@@ -119,9 +124,25 @@ docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.
 ```
 :::
 
+:::{tab-item} vLLM
+```
+$ cd llama-stack/distributions/remote-vllm && docker compose up
+```
+
+The script will first start up vLLM server on port 8000, then start up Llama Stack distribution server hooking up to it for inference. You should see the following outputs --
+```
+<TO BE FILLED>
+```
+
+To kill the server
+```
+docker compose down
+```
+:::
+
 :::{tab-item} tgi
 ```
-$ cd llama-stack/distributions/tgi/gpu && docker compose up
+$ cd llama-stack/distributions/tgi && docker compose up
 ```
 
 The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should see the following outputs --
@@ -144,7 +165,11 @@ docker compose down
 
 :::{tab-item} ollama
 ```
-$ cd llama-stack/distributions/ollama/cpu && docker compose up
+$ cd llama-stack/distributions/ollama && docker compose up
+
+# OR
+
+$ cd llama-stack/distributions/ollama-gpu && docker compose up
 ```
 
 You will see outputs similar to following ---
@@ -217,9 +242,21 @@ $ llama stack build --template meta-reference-gpu --image-type conda
 
 3. Start running distribution
 ```
-$ cd llama-stack/distributions/meta-reference-gpu
-$ llama stack run ./run.yaml
+$ llama stack run ~/.llama/distributions/llamastack-meta-reference-gpu/meta-reference-gpu-run.yaml
 ```
+
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section:
+```
+memory:
+  - provider_id: faiss-0
+    provider_type: faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/faiss_store.db
+```
+
 :::
 
 :::{tab-item} tgi
@@ -246,7 +283,19 @@ inference:
 
 5. Start Llama Stack server
 ```bash
-llama stack run ./gpu/run.yaml
+$ llama stack run ~/.llama/distributions/llamastack-tgi/tgi-run.yaml
+```
+
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section:
+```
+memory:
+  - provider_id: faiss-0
+    provider_type: faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/faiss_store.db
 ```
 :::
 
@@ -282,7 +331,19 @@ inference:
 
 ```
 llama stack build --template ollama --image-type conda
-llama stack run ./gpu/run.yaml
+llama stack run ~/.llama/distributions/llamastack-ollama/ollama-run.yaml
+```
+
+Note: If you wish to use pgvector or chromadb as memory provider. You may need to update generated `run.yaml` file to point to the desired memory provider. See [Memory Providers](https://llama-stack.readthedocs.io/en/latest/api_providers/memory_api.html) for more details. Or comment out the pgvector or chromadb memory provider in `run.yaml` file to use the default inline memory provider, keeping only the following section:
+```
+memory:
+  - provider_id: faiss-0
+    provider_type: faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/faiss_store.db
 ```
 
 :::
@@ -313,7 +374,7 @@ inference:
 ```bash
 llama stack build --template together --image-type conda
 # -- modify run.yaml to a valid Together server endpoint
-llama stack run ./run.yaml
+llama stack run ~/.llama/distributions/llamastack-together/together-run.yaml
 ```
 
 Make sure your `run.yaml` file has the inference provider pointing to the correct Together URL server endpoint. E.g.

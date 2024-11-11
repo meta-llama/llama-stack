@@ -10,13 +10,14 @@ from jinja2 import Template
 from llama_models.llama3.api import *  # noqa: F403
 
 
+from termcolor import cprint  # noqa: F401
+
 from llama_stack.apis.agents import (
     DefaultMemoryQueryGeneratorConfig,
     LLMMemoryQueryGeneratorConfig,
     MemoryQueryGenerator,
     MemoryQueryGeneratorConfig,
 )
-from termcolor import cprint  # noqa: F401
 from llama_stack.apis.inference import *  # noqa: F403
 
 

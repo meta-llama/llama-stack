@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 BEDROCK_SUPPORTED_SHIELDS = [
-    ShieldType.generic_content_shield.value,
+    ShieldType.generic_content_shield,
 ]
 
 
@@ -40,32 +40,25 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_shield(self, shield: ShieldDef) -> None:
-        raise ValueError("Registering dynamic shields is not supported")
-
-    async def list_shields(self) -> List[ShieldDef]:
-        response = self.bedrock_client.list_guardrails()
-        shields = []
-        for guardrail in response["guardrails"]:
-            # populate the shield def with the guardrail id and version
-            shield_def = ShieldDef(
-                identifier=guardrail["id"],
-                shield_type=ShieldType.generic_content_shield.value,
-                params={
-                    "guardrailIdentifier": guardrail["id"],
-                    "guardrailVersion": guardrail["version"],
-                },
+    async def register_shield(self, shield: Shield) -> None:
+        response = self.bedrock_client.list_guardrails(
+            guardrailIdentifier=shield.provider_resource_id,
+        )
+        if (
+            not response["guardrails"]
+            or len(response["guardrails"]) == 0
+            or response["guardrails"][0]["version"] != shield.params["guardrailVersion"]
+        ):
+            raise ValueError(
+                f"Shield {shield.provider_resource_id} with version {shield.params['guardrailVersion']} not found in Bedrock"
             )
-            self.registered_shields.append(shield_def)
-            shields.append(shield_def)
-        return shields
 
     async def run_shield(
-        self, identifier: str, messages: List[Message], params: Dict[str, Any] = None
+        self, shield_id: str, messages: List[Message], params: Dict[str, Any] = None
     ) -> RunShieldResponse:
-        shield_def = await self.shield_store.get_shield(identifier)
-        if not shield_def:
-            raise ValueError(f"Unknown shield {identifier}")
+        shield = await self.shield_store.get_shield(shield_id)
+        if not shield:
+            raise ValueError(f"Shield {shield_id} not found")
 
         """This is the implementation for the bedrock guardrails. The input to the guardrails is to be of this format
         ```content = [
@@ -81,7 +74,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         They contain content, role . For now we will extract the content and default the "qualifiers": ["query"]
         """
 
-        shield_params = shield_def.params
+        shield_params = shield.params
         logger.debug(f"run_shield::{shield_params}::messages={messages}")
 
         # - convert the messages into format Bedrock expects
@@ -93,7 +86,7 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         )
 
         response = self.bedrock_runtime_client.apply_guardrail(
-            guardrailIdentifier=shield_params["guardrailIdentifier"],
+            guardrailIdentifier=shield.provider_resource_id,
             guardrailVersion=shield_params["guardrailVersion"],
             source="OUTPUT",  # or 'INPUT' depending on your use case
             content=content_messages,
