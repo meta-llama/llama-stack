@@ -56,9 +56,6 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
     async def register_eval_task(self, task_def: EvalTask) -> None:
         self.eval_tasks[task_def.identifier] = task_def
 
-    async def list_eval_tasks(self) -> List[EvalTask]:
-        return list(self.eval_tasks.values())
-
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
         if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:

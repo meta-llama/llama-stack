@@ -67,8 +67,6 @@ class ScoringFunctionsProtocolPrivate(Protocol):
 
 
 class EvalTasksProtocolPrivate(Protocol):
-    async def list_eval_tasks(self) -> List[EvalTask]: ...
-
     async def register_eval_task(self, eval_task: EvalTask) -> None: ...
 
 
