@@ -61,9 +61,9 @@ class TestScoring:
         assert len(rows.rows) == 3
 
         scoring_functions = {
-            "meta-reference::llm_as_judge_8b_correctness": None,
             "meta-reference::equality": None,
         }
+
         response = await scoring_impl.score(
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
@@ -116,7 +116,7 @@ class TestScoring:
         assert len(rows.rows) == 3
 
         scoring_functions = {
-            "meta-reference::llm_as_judge_8b_correctness": LLMAsJudgeScoringFnParams(
+            "meta-reference::llm_as_judge_base": LLMAsJudgeScoringFnParams(
                 judge_model="Llama3.1-405B-Instruct",
                 prompt_template="Output a number response in the following format: Score: <number>, where <number> is the number between 0 and 9.",
                 judge_score_regexes=[r"Score: (\d+)"],

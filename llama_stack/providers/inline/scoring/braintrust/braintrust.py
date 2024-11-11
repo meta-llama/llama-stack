@@ -17,7 +17,7 @@ from autoevals.llm import Factuality
 from autoevals.ragas import AnswerCorrectness
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
-from ..meta_reference.scoring.scoring_fn.common import aggregate_average
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_average
 
 from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def

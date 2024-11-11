@@ -8,7 +8,7 @@ from .base_scoring_fn import BaseScoringFn
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
-from .common import aggregate_accuracy
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_accuracy
 
 from .fn_defs.subset_of import subset_of
 
