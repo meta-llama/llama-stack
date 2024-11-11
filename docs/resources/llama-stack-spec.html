@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-07 22:57:18.550543"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-11 13:59:59.544511"
     },
     "servers": [
         {
@@ -839,7 +839,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ModelDefWithProvider"
+                                            "$ref": "#/components/schemas/Model"
                                         },
                                         {
                                             "type": "null"
@@ -991,7 +991,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ShieldDefWithProvider"
+                                            "$ref": "#/components/schemas/Shield"
                                         },
                                         {
                                             "type": "null"
@@ -1514,7 +1514,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ModelDefWithProvider"
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
@@ -1643,7 +1643,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ShieldDefWithProvider"
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
@@ -1881,7 +1881,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Model"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -1947,7 +1954,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Shield"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -5366,14 +5380,22 @@
                     "provider_id"
                 ]
             },
-            "ModelDefWithProvider": {
+            "Model": {
                 "type": "object",
                 "properties": {
                     "identifier": {
                         "type": "string"
                     },
-                    "llama_model": {
+                    "provider_resource_id": {
                         "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
                     },
                     "metadata": {
                         "type": "object",
@@ -5399,23 +5421,15 @@
                                 }
                             ]
                         }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "model",
-                        "default": "model"
-                    },
-                    "provider_id": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "llama_model",
-                    "metadata",
+                    "provider_resource_id",
+                    "provider_id",
                     "type",
-                    "provider_id"
+                    "metadata"
                 ]
             },
             "PaginatedRowsResult": {
@@ -5668,14 +5682,25 @@
                     "provider_id"
                 ]
             },
-            "ShieldDefWithProvider": {
+            "Shield": {
                 "type": "object",
                 "properties": {
                     "identifier": {
                         "type": "string"
                     },
-                    "shield_type": {
+                    "provider_resource_id": {
                         "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "shield",
+                        "default": "shield"
+                    },
+                    "shield_type": {
+                        "$ref": "#/components/schemas/ShieldType"
                     },
                     "params": {
                         "type": "object",
@@ -5701,23 +5726,26 @@
                                 }
                             ]
                         }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "shield",
-                        "default": "shield"
-                    },
-                    "provider_id": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "shield_type",
-                    "params",
+                    "provider_resource_id",
+                    "provider_id",
                     "type",
-                    "provider_id"
+                    "shield_type",
+                    "params"
+                ],
+                "title": "A safety shield resource that can be used to check content"
+            },
+            "ShieldType": {
+                "type": "string",
+                "enum": [
+                    "generic_content_shield",
+                    "llama_guard",
+                    "code_scanner",
+                    "prompt_guard"
                 ]
             },
             "Trace": {
@@ -6666,13 +6694,44 @@
             "RegisterModelRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/ModelDefWithProvider"
+                    "model_id": {
+                        "type": "string"
+                    },
+                    "provider_model_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model"
+                    "model_id"
                 ]
             },
             "RegisterScoringFunctionRequest": {
@@ -6690,13 +6749,48 @@
             "RegisterShieldRequest": {
                 "type": "object",
                 "properties": {
-                    "shield": {
-                        "$ref": "#/components/schemas/ShieldDefWithProvider"
+                    "shield_id": {
+                        "type": "string"
+                    },
+                    "shield_type": {
+                        "$ref": "#/components/schemas/ShieldType"
+                    },
+                    "provider_shield_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "shield"
+                    "shield_id",
+                    "shield_type"
                 ]
             },
             "RunEvalRequest": {
@@ -6737,7 +6831,7 @@
             "RunShieldRequest": {
                 "type": "object",
                 "properties": {
-                    "identifier": {
+                    "shield_id": {
                         "type": "string"
                     },
                     "messages": {
@@ -6787,7 +6881,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "identifier",
+                    "shield_id",
                     "messages",
                     "params"
                 ]
@@ -7250,34 +7344,25 @@
     ],
     "tags": [
         {
-            "name": "Inspect"
+            "name": "ScoringFunctions"
         },
         {
-            "name": "MemoryBanks"
+            "name": "Datasets"
+        },
+        {
+            "name": "Inspect"
         },
         {
             "name": "Safety"
         },
         {
+            "name": "Eval"
+        },
+        {
+            "name": "Inference"
+        },
+        {
             "name": "BatchInference"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "Scoring"
-        },
-        {
-            "name": "Datasets"
         },
         {
             "name": "Agents"
@@ -7286,22 +7371,31 @@
             "name": "PostTraining"
         },
         {
-            "name": "Eval"
-        },
-        {
-            "name": "ScoringFunctions"
-        },
-        {
-            "name": "EvalTasks"
+            "name": "Shields"
         },
         {
             "name": "Memory"
         },
         {
+            "name": "Scoring"
+        },
+        {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "Inference"
+            "name": "EvalTasks"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Telemetry"
         },
         {
             "name": "BuiltinTool",
@@ -7636,8 +7730,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTaskDefWithProvider\" />"
         },
         {
-            "name": "ModelDefWithProvider",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDefWithProvider\" />"
+            "name": "Model",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
         },
         {
             "name": "PaginatedRowsResult",
@@ -7648,8 +7742,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFnDefWithProvider\" />"
         },
         {
-            "name": "ShieldDefWithProvider",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefWithProvider\" />"
+            "name": "Shield",
+            "description": "A safety shield resource that can be used to check content\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Shield\" />"
+        },
+        {
+            "name": "ShieldType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldType\" />"
         },
         {
             "name": "Trace",
@@ -7945,8 +8043,8 @@
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",
+                "Model",
                 "ModelCandidate",
-                "ModelDefWithProvider",
                 "OptimizerConfig",
                 "PaginatedRowsResult",
                 "PhotogenToolDefinition",
@@ -7985,8 +8083,9 @@
                 "ScoringResult",
                 "SearchToolDefinition",
                 "Session",
+                "Shield",
                 "ShieldCallStep",
-                "ShieldDefWithProvider",
+                "ShieldType",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",

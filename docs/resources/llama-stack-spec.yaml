@@ -1493,6 +1493,36 @@ components:
       - value
       - unit
       type: object
+    Model:
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        provider_resource_id:
+          type: string
+        type:
+          const: model
+          default: model
+          type: string
+      required:
+      - identifier
+      - provider_resource_id
+      - provider_id
+      - type
+      - metadata
+      type: object
     ModelCandidate:
       additionalProperties: false
       properties:
@@ -1510,36 +1540,6 @@ components:
       - type
       - model
       - sampling_params
-      type: object
-    ModelDefWithProvider:
-      additionalProperties: false
-      properties:
-        identifier:
-          type: string
-        llama_model:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        provider_id:
-          type: string
-        type:
-          const: model
-          default: model
-          type: string
-      required:
-      - identifier
-      - llama_model
-      - metadata
-      - type
-      - provider_id
       type: object
     OptimizerConfig:
       additionalProperties: false
@@ -1879,10 +1879,24 @@ components:
     RegisterModelRequest:
       additionalProperties: false
       properties:
-        model:
-          $ref: '#/components/schemas/ModelDefWithProvider'
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        model_id:
+          type: string
+        provider_id:
+          type: string
+        provider_model_id:
+          type: string
       required:
-      - model
+      - model_id
       type: object
     RegisterScoringFunctionRequest:
       additionalProperties: false
@@ -1895,10 +1909,27 @@ components:
     RegisterShieldRequest:
       additionalProperties: false
       properties:
-        shield:
-          $ref: '#/components/schemas/ShieldDefWithProvider'
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        provider_shield_id:
+          type: string
+        shield_id:
+          type: string
+        shield_type:
+          $ref: '#/components/schemas/ShieldType'
       required:
-      - shield
+      - shield_id
+      - shield_type
       type: object
     RestAPIExecutionConfig:
       additionalProperties: false
@@ -1980,8 +2011,6 @@ components:
     RunShieldRequest:
       additionalProperties: false
       properties:
-        identifier:
-          type: string
         messages:
           items:
             oneOf:
@@ -2000,8 +2029,10 @@ components:
             - type: array
             - type: object
           type: object
+        shield_id:
+          type: string
       required:
-      - identifier
+      - shield_id
       - messages
       - params
       type: object
@@ -2343,6 +2374,40 @@ components:
       - started_at
       title: A single session of an interaction with an Agentic System.
       type: object
+    Shield:
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+        params:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        provider_resource_id:
+          type: string
+        shield_type:
+          $ref: '#/components/schemas/ShieldType'
+        type:
+          const: shield
+          default: shield
+          type: string
+      required:
+      - identifier
+      - provider_resource_id
+      - provider_id
+      - type
+      - shield_type
+      - params
+      title: A safety shield resource that can be used to check content
+      type: object
     ShieldCallStep:
       additionalProperties: false
       properties:
@@ -2367,36 +2432,13 @@ components:
       - step_id
       - step_type
       type: object
-    ShieldDefWithProvider:
-      additionalProperties: false
-      properties:
-        identifier:
-          type: string
-        params:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        provider_id:
-          type: string
-        shield_type:
-          type: string
-        type:
-          const: shield
-          default: shield
-          type: string
-      required:
-      - identifier
-      - shield_type
-      - params
-      - type
-      - provider_id
-      type: object
+    ShieldType:
+      enum:
+      - generic_content_shield
+      - llama_guard
+      - code_scanner
+      - prompt_guard
+      type: string
     SpanEndPayload:
       additionalProperties: false
       properties:
@@ -3026,7 +3068,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-07 22:57:18.550543"
+    \ draft and subject to change.\n                Generated at 2024-11-11 13:59:59.544511"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3851,7 +3893,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ModelDefWithProvider'
+                - $ref: '#/components/schemas/Model'
                 - type: 'null'
           description: OK
       tags:
@@ -3871,7 +3913,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ModelDefWithProvider'
+                $ref: '#/components/schemas/Model'
           description: OK
       tags:
       - Models
@@ -3893,6 +3935,10 @@ paths:
         required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
           description: OK
       tags:
       - Models
@@ -4264,7 +4310,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ShieldDefWithProvider'
+                - $ref: '#/components/schemas/Shield'
                 - type: 'null'
           description: OK
       tags:
@@ -4284,7 +4330,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ShieldDefWithProvider'
+                $ref: '#/components/schemas/Shield'
           description: OK
       tags:
       - Shields
@@ -4306,6 +4352,10 @@ paths:
         required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shield'
           description: OK
       tags:
       - Shields
@@ -4384,24 +4434,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inspect
-- name: MemoryBanks
-- name: Safety
-- name: BatchInference
-- name: Telemetry
-- name: DatasetIO
-- name: Models
-- name: Shields
-- name: Scoring
+- name: ScoringFunctions
 - name: Datasets
+- name: Inspect
+- name: Safety
+- name: Eval
+- name: Inference
+- name: BatchInference
 - name: Agents
 - name: PostTraining
-- name: Eval
-- name: ScoringFunctions
-- name: EvalTasks
+- name: Shields
 - name: Memory
+- name: Scoring
 - name: SyntheticDataGeneration
-- name: Inference
+- name: EvalTasks
+- name: MemoryBanks
+- name: DatasetIO
+- name: Models
+- name: Telemetry
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4659,18 +4709,21 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvalTaskDefWithProvider"
     />
   name: EvalTaskDefWithProvider
-- description: <SchemaDefinition schemaRef="#/components/schemas/ModelDefWithProvider"
-    />
-  name: ModelDefWithProvider
+- description: <SchemaDefinition schemaRef="#/components/schemas/Model" />
+  name: Model
 - description: <SchemaDefinition schemaRef="#/components/schemas/PaginatedRowsResult"
     />
   name: PaginatedRowsResult
 - description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFnDefWithProvider"
     />
   name: ScoringFnDefWithProvider
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldDefWithProvider"
-    />
-  name: ShieldDefWithProvider
+- description: 'A safety shield resource that can be used to check content
+
+
+    <SchemaDefinition schemaRef="#/components/schemas/Shield" />'
+  name: Shield
+- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldType" />
+  name: ShieldType
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: 'Checkpoint created during training runs
@@ -4909,8 +4962,8 @@ x-tagGroups:
   - MemoryRetrievalStep
   - MemoryToolDefinition
   - MetricEvent
+  - Model
   - ModelCandidate
-  - ModelDefWithProvider
   - OptimizerConfig
   - PaginatedRowsResult
   - PhotogenToolDefinition
@@ -4949,8 +5002,9 @@ x-tagGroups:
   - ScoringResult
   - SearchToolDefinition
   - Session
+  - Shield
   - ShieldCallStep
-  - ShieldDefWithProvider
+  - ShieldType
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus
