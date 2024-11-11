@@ -37,7 +37,7 @@ def datasetio_huggingface() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="huggingface",
-                provider_type="huggingface",
+                provider_type="remote::huggingface",
                 config={},
             )
         ],

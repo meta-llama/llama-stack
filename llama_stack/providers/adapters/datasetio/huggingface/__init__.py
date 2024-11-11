@@ -7,7 +7,7 @@
 from .config import HuggingfaceDatasetIOConfig
 
 
-async def get_provider_impl(
+async def get_adapter_impl(
     config: HuggingfaceDatasetIOConfig,
     _deps,
 ):
