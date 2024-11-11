@@ -367,8 +367,8 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
         dataset_id: str,
         scoring_functions: List[str],
         metadata: Optional[Dict[str, Any]] = None,
-        provider_id: Optional[str] = None,
         provider_eval_task_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
     ) -> None:
         if metadata is None:
             metadata = {}

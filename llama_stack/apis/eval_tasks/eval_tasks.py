@@ -37,7 +37,7 @@ class EvalTasks(Protocol):
         eval_task_id: str,
         dataset_id: str,
         scoring_functions: List[str],
-        provider_id: Optional[str] = None,
         provider_eval_task_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None: ...
