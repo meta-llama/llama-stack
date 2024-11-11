@@ -154,8 +154,8 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="azure-ai-inference",
                 pip_packages=["azure-ai-inference", "azure-identity", "aiohttp"],
-                module="llama_stack.providers.adapters.inference.azure_ai_inference",
-                config_class="llama_stack.providers.adapters.inference.azure_ai_inference.AzureAIInferenceConfig",
+                module="llama_stack.providers.remote.inference.azure_ai_inference",
+                config_class="llama_stack.providers.remote.inference.azure_ai_inference.AzureAIInferenceConfig",
             ),
         ),
     ]
