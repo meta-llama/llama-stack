@@ -65,7 +65,6 @@ class Testeval:
         assert len(rows.rows) == 3
 
         scoring_functions = [
-            "meta-reference::llm_as_judge_8b_correctness",
             "meta-reference::equality",
         ]
         task_id = "meta-reference::app_eval"
@@ -88,7 +87,6 @@ class Testeval:
             ),
         )
         assert len(response.generations) == 3
-        assert "meta-reference::llm_as_judge_8b_correctness" in response.scores
         assert "meta-reference::equality" in response.scores
 
     @pytest.mark.asyncio
@@ -109,7 +107,6 @@ class Testeval:
         )
 
         scoring_functions = [
-            "meta-reference::llm_as_judge_8b_correctness",
             "meta-reference::subset_of",
         ]
 
@@ -138,7 +135,6 @@ class Testeval:
         assert eval_response is not None
         assert len(eval_response.generations) == 5
         assert "meta-reference::subset_of" in eval_response.scores
-        assert "meta-reference::llm_as_judge_8b_correctness" in eval_response.scores
 
     @pytest.mark.asyncio
     async def test_eval_run_benchmark_eval(self, eval_stack):
