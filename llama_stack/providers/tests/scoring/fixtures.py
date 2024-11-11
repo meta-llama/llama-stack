@@ -66,7 +66,6 @@ async def scoring_stack(request, inference_model):
     )
 
     provider_id = providers["inference"][0].provider_id
-    print(f"Registering model {inference_model} with provider {provider_id}")
     await impls[Api.models].register_model(
         model_id=inference_model,
         provider_id=provider_id,
