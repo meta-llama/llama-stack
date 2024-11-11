@@ -83,7 +83,13 @@ async def run_main(host: str, port: int, stream: bool):
         overlap_size_in_tokens=64,
     )
     await banks_client.register_memory_bank(
-        bank.identifier, bank.memory_bank_type, provider_resource_id=bank.identifier
+        bank.identifier,
+        VectorMemoryBankParams(
+            embedding_model="all-MiniLM-L6-v2",
+            chunk_size_in_tokens=512,
+            overlap_size_in_tokens=64,
+        ),
+        provider_resource_id=bank.identifier,
     )
 
     retrieved_bank = await banks_client.get_memory_bank(bank.identifier)

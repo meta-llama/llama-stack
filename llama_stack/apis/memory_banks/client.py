@@ -58,7 +58,7 @@ class MemoryBanksClient(MemoryBanks):
     async def register_memory_bank(
         self,
         memory_bank_id: str,
-        memory_bank_type: MemoryBankType,
+        params: BankParams,
         provider_resource_id: Optional[str] = None,
         provider_id: Optional[str] = None,
     ) -> None:
@@ -67,9 +67,9 @@ class MemoryBanksClient(MemoryBanks):
                 f"{self.base_url}/memory_banks/register",
                 json={
                     "memory_bank_id": memory_bank_id,
-                    "memory_bank_type": memory_bank_type.value,
                     "provider_resource_id": provider_resource_id,
                     "provider_id": provider_id,
+                    "params": params.dict(),
                 },
                 headers={"Content-Type": "application/json"},
             )
