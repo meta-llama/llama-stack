@@ -21,7 +21,7 @@ class PaginatedRowsResult(BaseModel):
 
 
 class DatasetStore(Protocol):
-    def get_dataset(self, identifier: str) -> DatasetDefWithProvider: ...
+    def get_dataset(self, dataset_id: str) -> Dataset: ...
 
 
 @runtime_checkable

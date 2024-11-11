@@ -37,12 +37,12 @@ class BaseDataset(ABC):
 
 @dataclass
 class DatasetInfo:
-    dataset_def: DatasetDef
+    dataset_def: Dataset
     dataset_impl: BaseDataset
 
 
 class PandasDataframeDataset(BaseDataset):
-    def __init__(self, dataset_def: DatasetDef, *args, **kwargs) -> None:
+    def __init__(self, dataset_def: Dataset, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.dataset_def = dataset_def
         self.df = None
@@ -60,9 +60,9 @@ class PandasDataframeDataset(BaseDataset):
 
     def _validate_dataset_schema(self, df) -> pandas.DataFrame:
         # note that we will drop any columns in dataset that are not in the schema
-        df = df[self.dataset_def.dataset_schema.keys()]
+        df = df[self.dataset_def.schema.keys()]
         # check all columns in dataset schema are present
-        assert len(df.columns) == len(self.dataset_def.dataset_schema)
+        assert len(df.columns) == len(self.dataset_def.schema)
         # TODO: type checking against column types in dataset schema
         return df
 
@@ -89,15 +89,15 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def register_dataset(
         self,
-        dataset_def: DatasetDef,
+        dataset: Dataset,
     ) -> None:
-        dataset_impl = PandasDataframeDataset(dataset_def)
-        self.dataset_infos[dataset_def.identifier] = DatasetInfo(
-            dataset_def=dataset_def,
+        dataset_impl = PandasDataframeDataset(dataset)
+        self.dataset_infos[dataset.identifier] = DatasetInfo(
+            dataset_def=dataset,
             dataset_impl=dataset_impl,
         )
 
-    async def list_datasets(self) -> List[DatasetDef]:
+    async def list_datasets(self) -> List[Dataset]:
         return [i.dataset_def for i in self.dataset_infos.values()]
 
     async def get_rows_paginated(

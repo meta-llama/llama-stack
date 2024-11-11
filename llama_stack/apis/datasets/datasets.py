@@ -10,19 +10,16 @@ from llama_models.llama3.api.datatypes import URL
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from llama_stack.apis.common.type_system import ParamType
+from llama_stack.apis.resource import Resource
 
 
 @json_schema_type
-class DatasetDef(BaseModel):
-    identifier: str = Field(
-        description="A unique name for the dataset",
-    )
-    dataset_schema: Dict[str, ParamType] = Field(
-        description="The schema definition for this dataset",
-    )
+class Dataset(Resource):
+    type: Literal["dataset"] = "dataset"
+    schema: Dict[str, ParamType]
     url: URL
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
@@ -30,26 +27,23 @@ class DatasetDef(BaseModel):
     )
 
 
-@json_schema_type
-class DatasetDefWithProvider(DatasetDef):
-    type: Literal["dataset"] = "dataset"
-    provider_id: str = Field(
-        description="ID of the provider which serves this dataset",
-    )
-
-
 class Datasets(Protocol):
     @webmethod(route="/datasets/register", method="POST")
     async def register_dataset(
         self,
-        dataset_def: DatasetDefWithProvider,
+        dataset_id: str,
+        schema: Dict[str, ParamType],
+        url: URL,
+        provider_dataset_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None: ...
 
     @webmethod(route="/datasets/get", method="GET")
     async def get_dataset(
         self,
-        dataset_identifier: str,
-    ) -> Optional[DatasetDefWithProvider]: ...
+        dataset_id: str,
+    ) -> Optional[Dataset]: ...
 
     @webmethod(route="/datasets/list", method="GET")
-    async def list_datasets(self) -> List[DatasetDefWithProvider]: ...
+    async def list_datasets(self) -> List[Dataset]: ...
