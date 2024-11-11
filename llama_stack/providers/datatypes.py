@@ -57,8 +57,6 @@ class MemoryBanksProtocolPrivate(Protocol):
 
 
 class DatasetsProtocolPrivate(Protocol):
-    async def list_datasets(self) -> List[Dataset]: ...
-
     async def register_dataset(self, dataset: Dataset) -> None: ...
 
 

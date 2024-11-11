@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List, Optional
+from typing import Optional
 
 from llama_stack.apis.datasetio import *  # noqa: F403
 
@@ -44,9 +44,6 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         dataset_def: DatasetDef,
     ) -> None:
         self.dataset_infos[dataset_def.identifier] = dataset_def
-
-    async def list_datasets(self) -> List[DatasetDef]:
-        return list(self.dataset_infos.values())
 
     async def get_rows_paginated(
         self,

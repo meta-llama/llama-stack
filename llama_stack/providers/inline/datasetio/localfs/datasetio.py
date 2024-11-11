@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List, Optional
+from typing import Optional
 
 import pandas
 from llama_models.llama3.api.datatypes import *  # noqa: F403
@@ -96,9 +96,6 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             dataset_def=dataset,
             dataset_impl=dataset_impl,
         )
-
-    async def list_datasets(self) -> List[Dataset]:
-        return [i.dataset_def for i in self.dataset_infos.values()]
 
     async def get_rows_paginated(
         self,
