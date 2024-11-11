@@ -97,8 +97,6 @@ class CommonRoutingTableImpl(RoutingTable):
 
             elif api == Api.datasetio:
                 p.dataset_store = self
-                datasets = await p.list_datasets()
-                await add_objects(datasets, pid, Dataset)
 
             elif api == Api.scoring:
                 p.scoring_function_store = self
