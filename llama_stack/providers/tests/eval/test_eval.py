@@ -19,9 +19,10 @@ from llama_stack.apis.eval.eval import (
     EvalTaskDefWithProvider,
     ModelCandidate,
 )
+from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.tests.datasetio.test_datasetio import register_dataset
-
+from .constants import JUDGE_PROMPT
 
 # How to run this test:
 #
@@ -65,6 +66,7 @@ class Testeval:
         assert len(rows.rows) == 3
 
         scoring_functions = [
+            "meta-reference::llm_as_judge_base",
             "meta-reference::equality",
         ]
         task_id = "meta-reference::app_eval"
@@ -84,10 +86,22 @@ class Testeval:
                     model="Llama3.2-3B-Instruct",
                     sampling_params=SamplingParams(),
                 ),
+                scoring_params={
+                    "meta-reference::llm_as_judge_base": LLMAsJudgeScoringFnParams(
+                        judge_model="Llama3.1-8B-Instruct",
+                        prompt_template=JUDGE_PROMPT,
+                        judge_score_regexes=[
+                            r"Total rating: (\d+)",
+                            r"rating: (\d+)",
+                            r"Rating: (\d+)",
+                        ],
+                    )
+                },
             ),
         )
         assert len(response.generations) == 3
         assert "meta-reference::equality" in response.scores
+        assert "meta-reference::llm_as_judge_base" in response.scores
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack):
