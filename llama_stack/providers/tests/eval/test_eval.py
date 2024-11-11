@@ -37,12 +37,18 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_evaluate_rows(self, eval_stack):
-        eval_impl, eval_tasks_impl, datasetio_impl, datasets_impl = (
+        eval_impl, eval_tasks_impl, datasetio_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasetio],
             eval_stack[Api.datasets],
+            eval_stack[Api.models],
         )
+        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
+            await models_impl.register_model(
+                model_id=model_id,
+                provider_id="",
+            )
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
@@ -66,7 +72,6 @@ class Testeval:
             provider_id="meta-reference",
         )
         await eval_tasks_impl.register_eval_task(task_def)
-
         response = await eval_impl.evaluate_rows(
             task_id=task_id,
             input_rows=rows.rows,
@@ -84,11 +89,17 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack):
-        eval_impl, eval_tasks_impl, datasets_impl = (
+        eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasets],
+            eval_stack[Api.models],
         )
+        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
+            await models_impl.register_model(
+                model_id=model_id,
+                provider_id="",
+            )
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
@@ -127,11 +138,17 @@ class Testeval:
 
     @pytest.mark.asyncio
     async def test_eval_run_benchmark_eval(self, eval_stack):
-        eval_impl, eval_tasks_impl, datasets_impl = (
+        eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasets],
+            eval_stack[Api.models],
         )
+        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
+            await models_impl.register_model(
+                model_id=model_id,
+                provider_id="",
+            )
         response = await datasets_impl.list_datasets()
         assert len(response) > 0
         if response[0].provider_id != "huggingface":

@@ -23,8 +23,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.datasetio,
             provider_type="huggingface",
             pip_packages=["datasets"],
-            module="llama_stack.providers.inline.huggingface.datasetio",
-            config_class="llama_stack.providers.inline.huggingface.datasetio.HuggingfaceDatasetIOConfig",
+            module="llama_stack.providers.adapters.datasetio.huggingface",
+            config_class="llama_stack.providers.adapters.datasetio.huggingface.HuggingfaceDatasetIOConfig",
             api_dependencies=[],
         ),
     ]
