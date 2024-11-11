@@ -7,7 +7,11 @@
 
 import pytest
 
-from llama_models.llama3.api import SamplingParams
+from llama_models.llama3.api import SamplingParams, URL
+
+from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
+
+from llama_stack.apis.datasetio.datasetio import DatasetDefWithProvider
 
 from llama_stack.apis.eval.eval import (
     AppEvalTaskConfig,
@@ -153,8 +157,36 @@ class Testeval:
         assert len(response) > 0
         if response[0].provider_id != "huggingface":
             pytest.skip(
-                "Only huggingface provider supports pre-registered benchmarks datasets"
+                "Only huggingface provider supports pre-registered remote datasets"
             )
+        # register dataset
+        mmlu = DatasetDefWithProvider(
+            identifier="mmlu",
+            url=URL(uri="https://huggingface.co/datasets/llamastack/evals"),
+            dataset_schema={
+                "input_query": StringType(),
+                "expected_answer": StringType(),
+                "chat_completion_input": ChatCompletionInputType(),
+            },
+            metadata={
+                "path": "llamastack/evals",
+                "name": "evals__mmlu__details",
+                "split": "train",
+            },
+            provider_id="",
+        )
+
+        await datasets_impl.register_dataset(mmlu)
+
+        # register eval task
+        meta_reference_mmlu = EvalTaskDefWithProvider(
+            identifier="meta-reference-mmlu",
+            dataset_id="mmlu",
+            scoring_functions=["meta-reference::regex_parser_multiple_choice_answer"],
+            provider_id="",
+        )
+
+        await eval_tasks_impl.register_eval_task(meta_reference_mmlu)
 
         # list benchmarks
         response = await eval_tasks_impl.list_eval_tasks()
