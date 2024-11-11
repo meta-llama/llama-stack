@@ -127,27 +127,19 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_shield(self, shield: ShieldDef) -> None:
-        raise ValueError("Registering dynamic shields is not supported")
-
-    async def list_shields(self) -> List[ShieldDef]:
-        return [
-            ShieldDef(
-                identifier=ShieldType.llama_guard.value,
-                shield_type=ShieldType.llama_guard.value,
-                params={},
-            ),
-        ]
+    async def register_shield(self, shield: Shield) -> None:
+        if shield.shield_type != ShieldType.llama_guard.value:
+            raise ValueError(f"Unsupported shield type: {shield.shield_type}")
 
     async def run_shield(
         self,
-        identifier: str,
+        shield_id: str,
         messages: List[Message],
         params: Dict[str, Any] = None,
     ) -> RunShieldResponse:
-        shield_def = await self.shield_store.get_shield(identifier)
-        if not shield_def:
-            raise ValueError(f"Unknown shield {identifier}")
+        shield = await self.shield_store.get_shield(shield_id)
+        if not shield:
+            raise ValueError(f"Unknown shield {shield_id}")
 
         messages = messages.copy()
         # some shields like llama-guard require the first message to be a user message
