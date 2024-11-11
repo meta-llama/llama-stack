@@ -3,4 +3,4 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from .llamastack_mmlu import llamastack_mmlu  # noqa: F401
+from .mmlu import mmlu  # noqa: F401

@@ -8,6 +8,6 @@ from llama_stack.apis.eval import EvalTaskDef
 
 meta_reference_mmlu = EvalTaskDef(
     identifier="meta-reference-mmlu",
-    dataset_id="llamastack_mmlu",
+    dataset_id="mmlu",
     scoring_functions=["meta-reference::regex_parser_multiple_choice_answer"],
 )
