@@ -47,7 +47,6 @@ async def register_memory_bank(banks_impl: MemoryBanks):
 
     return await banks_impl.register_memory_bank(
         memory_bank_id="test_bank",
-        memory_bank_type="vector",
         params=VectorMemoryBankParams(
             embedding_model="all-MiniLM-L6-v2",
             chunk_size_in_tokens=512,
@@ -74,7 +73,6 @@ class TestMemory:
 
         bank = await banks_impl.register_memory_bank(
             memory_bank_id="test_bank_no_provider",
-            memory_bank_type="vector",
             params=VectorMemoryBankParams(
                 embedding_model="all-MiniLM-L6-v2",
                 chunk_size_in_tokens=512,
@@ -88,7 +86,6 @@ class TestMemory:
         # register same memory bank with same id again will fail
         await banks_impl.register_memory_bank(
             memory_bank_id="test_bank_no_provider",
-            memory_bank_type="vector",
             params=VectorMemoryBankParams(
                 embedding_model="all-MiniLM-L6-v2",
                 chunk_size_in_tokens=512,

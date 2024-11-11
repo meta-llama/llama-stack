@@ -272,10 +272,9 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
     async def register_memory_bank(
         self,
         memory_bank_id: str,
-        memory_bank_type: MemoryBankType,
+        params: BankParams,
         provider_id: Optional[str] = None,
         provider_memorybank_id: Optional[str] = None,
-        params: Optional[BankParams] = None,
     ) -> MemoryBank:
         if provider_memorybank_id is None:
             provider_memorybank_id = memory_bank_id
@@ -289,10 +288,9 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
                 )
         memory_bank = build_memory_bank(
             memory_bank_id,
-            memory_bank_type,
+            params,
             provider_id,
             provider_memorybank_id,
-            params,
         )
         await self.register_object(memory_bank)
         return memory_bank

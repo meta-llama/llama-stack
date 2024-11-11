@@ -65,15 +65,39 @@ class GraphMemoryBank(MemoryBank):
 
 @json_schema_type
 class VectorMemoryBankParams(BaseModel):
-    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+    memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
     overlap_size_in_tokens: Optional[int] = None
 
 
+@json_schema_type
+class KeyValueMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.keyvalue.value] = (
+        MemoryBankType.keyvalue.value
+    )
+
+
+@json_schema_type
+class KeywordMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.keyword.value] = (
+        MemoryBankType.keyword.value
+    )
+
+
+@json_schema_type
+class GraphMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+
+
 BankParams = Annotated[
-    Union[VectorMemoryBankParams],
-    Field(discriminator="type"),
+    Union[
+        VectorMemoryBankParams,
+        KeyValueMemoryBankParams,
+        KeywordMemoryBankParams,
+        GraphMemoryBankParams,
+    ],
+    Field(discriminator="memory_bank_type"),
 ]
 
 
@@ -89,8 +113,7 @@ class MemoryBanks(Protocol):
     async def register_memory_bank(
         self,
         memory_bank_id: str,
-        memory_bank_type: MemoryBankType,
+        params: BankParams,
         provider_id: Optional[str] = None,
         provider_memorybank_id: Optional[str] = None,
-        params: Optional[BankParams] = None,
     ) -> MemoryBank: ...
