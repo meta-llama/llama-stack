@@ -15,7 +15,7 @@ The `llamastack/distribution-tgi` distribution consists of the following provide
 
 
 ```
-$ cd distributions/tgi/gpu && docker compose up
+$ cd distributions/tgi && docker compose up
 ```
 
 The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should be able to see the following outputs --
@@ -34,23 +34,6 @@ To kill the server
 docker compose down
 ```
 
-### Docker: Start the Distribution (Single Node CPU)
-
-> [!NOTE]
-> This assumes you have an hosted endpoint compatible with TGI server.
-
-```
-$ cd distributions/tgi/cpu && docker compose up
-```
-
-Replace <ENTER_YOUR_TGI_HOSTED_ENDPOINT> in `run.yaml` file with your TGI endpoint.
-```
-inference:
-  - provider_id: tgi0
-    provider_type: remote::tgi
-    config:
-      url: <ENTER_YOUR_TGI_HOSTED_ENDPOINT>
-```
 
 ### Conda: TGI server + llama stack run
 

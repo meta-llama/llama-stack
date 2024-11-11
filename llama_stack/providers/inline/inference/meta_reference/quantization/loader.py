@@ -21,12 +21,12 @@ from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
 from llama_models.sku_list import resolve_model
 
-from llama_stack.apis.inference import QuantizationType
-
 from termcolor import cprint
 from torch import nn, Tensor
 
 from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
+
+from llama_stack.apis.inference import QuantizationType
 
 from ..config import MetaReferenceQuantizedInferenceConfig
 

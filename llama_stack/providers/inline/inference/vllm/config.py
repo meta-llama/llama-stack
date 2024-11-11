@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 
 from llama_models.schema_utils import json_schema_type
+from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.providers.utils.inference import supported_inference_models
-from pydantic import BaseModel, Field, field_validator
 
 
 @json_schema_type

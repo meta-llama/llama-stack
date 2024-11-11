@@ -9,6 +9,8 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from .....apis.common.job_types import Job
 from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
 from llama_stack.apis.common.type_system import *  # noqa: F403
+from tqdm import tqdm
+
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTaskDef
@@ -47,7 +49,8 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
         self.eval_tasks = {}
 
-    async def initialize(self) -> None: ...
+    async def initialize(self) -> None:
+        pass
 
     async def shutdown(self) -> None: ...
 
@@ -93,7 +96,9 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         await self.validate_eval_input_dataset_schema(dataset_id=dataset_id)
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
-            rows_in_page=-1,
+            rows_in_page=(
+                -1 if task_config.num_examples is None else task_config.num_examples
+            ),
         )
         res = await self.evaluate_rows(
             task_id=task_id,
@@ -125,7 +130,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         ), "SamplingParams.max_tokens must be provided"
 
         generations = []
-        for x in input_rows:
+        for x in tqdm(input_rows):
             if ColumnName.completion_input.value in x:
                 input_content = eval(str(x[ColumnName.completion_input.value]))
                 response = await self.inference_api.completion(

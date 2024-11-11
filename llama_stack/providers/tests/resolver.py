@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
@@ -37,7 +38,11 @@ async def resolve_impls_for_test_v2(
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     dist_kvstore = await kvstore_impl(SqliteKVStoreConfig(db_path=sqlite_file.name))
     dist_registry = CachedDiskDistributionRegistry(dist_kvstore)
-    impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
+    try:
+        impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
+    except ModuleNotFoundError as e:
+        print_pip_install_help(providers)
+        raise e
 
     if provider_data:
         set_request_provider_data(
@@ -66,7 +71,11 @@ async def resolve_impls_for_test(api: Api, deps: List[Api] = None):
         providers=chosen,
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
-    impls = await resolve_impls(run_config, get_provider_registry())
+    try:
+        impls = await resolve_impls(run_config, get_provider_registry())
+    except ModuleNotFoundError as e:
+        print_pip_install_help(providers)
+        raise e
 
     if "provider_data" in config_dict:
         provider_id = chosen[api.value][0].provider_id

@@ -49,6 +49,7 @@ from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.inspect import *  # noqa: F403
+from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 
 class LlamaStack(
@@ -63,6 +64,7 @@ class LlamaStack(
     PostTraining,
     Memory,
     Eval,
+    EvalTasks,
     Scoring,
     ScoringFunctions,
     DatasetIO,

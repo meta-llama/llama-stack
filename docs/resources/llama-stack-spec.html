@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-10-31 14:28:52.128905"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-11 13:59:59.544511"
     },
     "servers": [
         {
@@ -469,7 +469,7 @@
                 }
             }
         },
-        "/eval/evaluate": {
+        "/eval/evaluate_rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -501,47 +501,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/EvaluateRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/eval/evaluate_batch": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Job"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Eval"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EvaluateBatchRequest"
+                                "$ref": "#/components/schemas/EvaluateRowsRequest"
                             }
                         }
                     },
@@ -766,6 +726,51 @@
                 ]
             }
         },
+        "/eval_tasks/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/EvalTaskDefWithProvider"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/memory_banks/get": {
             "get": {
                 "responses": {
@@ -834,7 +839,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ModelDefWithProvider"
+                                            "$ref": "#/components/schemas/Model"
                                         },
                                         {
                                             "type": "null"
@@ -986,7 +991,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "$ref": "#/components/schemas/ShieldDefWithProvider"
+                                            "$ref": "#/components/schemas/Shield"
                                         },
                                         {
                                             "type": "null"
@@ -1002,7 +1007,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "shield_type",
+                        "name": "identifier",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1318,6 +1323,14 @@
                 ],
                 "parameters": [
                     {
+                        "name": "task_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "job_id",
                         "in": "query",
                         "required": true,
@@ -1363,6 +1376,14 @@
                 ],
                 "parameters": [
                     {
+                        "name": "task_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "job_id",
                         "in": "query",
                         "required": true,
@@ -1398,6 +1419,36 @@
                 },
                 "tags": [
                     "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/eval_tasks/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EvalTaskDefWithProvider"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
                 ],
                 "parameters": [
                     {
@@ -1463,7 +1514,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ModelDefWithProvider"
+                                    "$ref": "#/components/schemas/Model"
                                 }
                             }
                         }
@@ -1592,7 +1643,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ShieldDefWithProvider"
+                                    "$ref": "#/components/schemas/Shield"
                                 }
                             }
                         }
@@ -1760,6 +1811,39 @@
                 }
             }
         },
+        "/eval_tasks/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/memory_banks/register": {
             "post": {
                 "responses": {
@@ -1797,7 +1881,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Model"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -1863,7 +1954,14 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Shield"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
@@ -1885,6 +1983,46 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/RegisterShieldRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/eval/run_eval": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Job"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Eval"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunEvalRequest"
                             }
                         }
                     },
@@ -4490,6 +4628,103 @@
                     "config"
                 ]
             },
+            "AppEvalTaskConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "app",
+                        "default": "app"
+                    },
+                    "eval_candidate": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ModelCandidate"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentCandidate"
+                            }
+                        ]
+                    },
+                    "scoring_params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                }
+                            ]
+                        }
+                    },
+                    "num_examples": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "eval_candidate",
+                    "scoring_params"
+                ]
+            },
+            "BenchmarkEvalTaskConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "benchmark",
+                        "default": "benchmark"
+                    },
+                    "eval_candidate": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ModelCandidate"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AgentCandidate"
+                            }
+                        ]
+                    },
+                    "num_examples": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "eval_candidate"
+                ]
+            },
+            "LLMAsJudgeScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "llm_as_judge",
+                        "default": "llm_as_judge"
+                    },
+                    "judge_model": {
+                        "type": "string"
+                    },
+                    "prompt_template": {
+                        "type": "string"
+                    },
+                    "judge_score_regexes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "judge_model"
+                ]
+            },
             "ModelCandidate": {
                 "type": "object",
                 "properties": {
@@ -4515,9 +4750,32 @@
                     "sampling_params"
                 ]
             },
-            "EvaluateRequest": {
+            "RegexParserScoringFnParams": {
                 "type": "object",
                 "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "regex_parser",
+                        "default": "regex_parser"
+                    },
+                    "parsing_regexes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
+            "EvaluateRowsRequest": {
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "string"
+                    },
                     "input_rows": {
                         "type": "array",
                         "items": {
@@ -4546,28 +4804,29 @@
                             }
                         }
                     },
-                    "candidate": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ModelCandidate"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentCandidate"
-                            }
-                        ]
-                    },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         }
+                    },
+                    "task_config": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AppEvalTaskConfig"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "task_id",
                     "input_rows",
-                    "candidate",
-                    "scoring_functions"
+                    "scoring_functions",
+                    "task_config"
                 ]
             },
             "EvaluateResponse": {
@@ -4675,48 +4934,6 @@
                 "required": [
                     "score_rows",
                     "aggregated_results"
-                ]
-            },
-            "EvaluateBatchRequest": {
-                "type": "object",
-                "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "candidate": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ModelCandidate"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AgentCandidate"
-                            }
-                        ]
-                    },
-                    "scoring_functions": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dataset_id",
-                    "candidate",
-                    "scoring_functions"
-                ]
-            },
-            "Job": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id"
                 ]
             },
             "GetAgentsSessionRequest": {
@@ -5085,6 +5302,11 @@
                             ]
                         }
                     },
+                    "type": {
+                        "type": "string",
+                        "const": "dataset",
+                        "default": "dataset"
+                    },
                     "provider_id": {
                         "type": "string"
                     }
@@ -5095,17 +5317,24 @@
                     "dataset_schema",
                     "url",
                     "metadata",
+                    "type",
                     "provider_id"
                 ]
             },
-            "ModelDefWithProvider": {
+            "EvalTaskDefWithProvider": {
                 "type": "object",
                 "properties": {
                     "identifier": {
                         "type": "string"
                     },
-                    "llama_model": {
+                    "dataset_id": {
                         "type": "string"
+                    },
+                    "scoring_functions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "metadata": {
                         "type": "object",
@@ -5132,6 +5361,11 @@
                             ]
                         }
                     },
+                    "type": {
+                        "type": "string",
+                        "const": "eval_task",
+                        "default": "eval_task"
+                    },
                     "provider_id": {
                         "type": "string"
                     }
@@ -5139,9 +5373,63 @@
                 "additionalProperties": false,
                 "required": [
                     "identifier",
-                    "llama_model",
+                    "dataset_id",
+                    "scoring_functions",
                     "metadata",
+                    "type",
                     "provider_id"
+                ]
+            },
+            "Model": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "model",
+                        "default": "model"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "metadata"
                 ]
             },
             "PaginatedRowsResult": {
@@ -5188,166 +5476,6 @@
                     "total_count"
                 ]
             },
-            "Parameter": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "string",
-                                        "default": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "number",
-                                        "default": "number"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "boolean",
-                                        "default": "boolean"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "array",
-                                        "default": "array"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "object",
-                                        "default": "object"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json",
-                                        "default": "json"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "union",
-                                        "default": "union"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "chat_completion_input",
-                                        "default": "chat_completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "completion_input",
-                                        "default": "completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "agent_turn_input",
-                                        "default": "agent_turn_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "type"
-                ]
-            },
             "ScoringFnDefWithProvider": {
                 "type": "object",
                 "properties": {
@@ -5380,12 +5508,6 @@
                                     "type": "object"
                                 }
                             ]
-                        }
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Parameter"
                         }
                     },
                     "return_type": {
@@ -5532,26 +5654,20 @@
                             }
                         ]
                     },
-                    "context": {
-                        "type": "object",
-                        "properties": {
-                            "judge_model": {
-                                "type": "string"
+                    "params": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
                             },
-                            "prompt_template": {
-                                "type": "string"
-                            },
-                            "judge_score_regex": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                            {
+                                "$ref": "#/components/schemas/RegexParserScoringFnParams"
                             }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "judge_model"
                         ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "scoring_fn",
+                        "default": "scoring_fn"
                     },
                     "provider_id": {
                         "type": "string"
@@ -5561,19 +5677,30 @@
                 "required": [
                     "identifier",
                     "metadata",
-                    "parameters",
                     "return_type",
+                    "type",
                     "provider_id"
                 ]
             },
-            "ShieldDefWithProvider": {
+            "Shield": {
                 "type": "object",
                 "properties": {
                     "identifier": {
                         "type": "string"
                     },
-                    "type": {
+                    "provider_resource_id": {
                         "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "shield",
+                        "default": "shield"
+                    },
+                    "shield_type": {
+                        "$ref": "#/components/schemas/ShieldType"
                     },
                     "params": {
                         "type": "object",
@@ -5599,17 +5726,26 @@
                                 }
                             ]
                         }
-                    },
-                    "provider_id": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "identifier",
+                    "provider_resource_id",
+                    "provider_id",
                     "type",
-                    "params",
-                    "provider_id"
+                    "shield_type",
+                    "params"
+                ],
+                "title": "A safety shield resource that can be used to check content"
+            },
+            "ShieldType": {
+                "type": "string",
+                "enum": [
+                    "generic_content_shield",
+                    "llama_guard",
+                    "code_scanner",
+                    "prompt_guard"
                 ]
             },
             "Trace": {
@@ -5867,12 +6003,16 @@
             "JobCancelRequest": {
                 "type": "object",
                 "properties": {
+                    "task_id": {
+                        "type": "string"
+                    },
                     "job_id": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "task_id",
                     "job_id"
                 ]
             },
@@ -6514,6 +6654,18 @@
                     "dataset_def"
                 ]
             },
+            "RegisterEvalTaskRequest": {
+                "type": "object",
+                "properties": {
+                    "eval_task_def": {
+                        "$ref": "#/components/schemas/EvalTaskDefWithProvider"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "eval_task_def"
+                ]
+            },
             "RegisterMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -6542,13 +6694,44 @@
             "RegisterModelRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
-                        "$ref": "#/components/schemas/ModelDefWithProvider"
+                    "model_id": {
+                        "type": "string"
+                    },
+                    "provider_model_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model"
+                    "model_id"
                 ]
             },
             "RegisterScoringFunctionRequest": {
@@ -6566,19 +6749,89 @@
             "RegisterShieldRequest": {
                 "type": "object",
                 "properties": {
-                    "shield": {
-                        "$ref": "#/components/schemas/ShieldDefWithProvider"
+                    "shield_id": {
+                        "type": "string"
+                    },
+                    "shield_type": {
+                        "$ref": "#/components/schemas/ShieldType"
+                    },
+                    "provider_shield_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "shield"
+                    "shield_id",
+                    "shield_type"
+                ]
+            },
+            "RunEvalRequest": {
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "string"
+                    },
+                    "task_config": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BenchmarkEvalTaskConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AppEvalTaskConfig"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "task_id",
+                    "task_config"
+                ]
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_id"
                 ]
             },
             "RunShieldRequest": {
                 "type": "object",
                 "properties": {
-                    "shield_type": {
+                    "shield_id": {
                         "type": "string"
                     },
                     "messages": {
@@ -6628,7 +6881,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "shield_type",
+                    "shield_id",
                     "messages",
                     "params"
                 ]
@@ -6674,9 +6927,23 @@
                         }
                     },
                     "scoring_functions": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
                         }
                     }
                 },
@@ -6708,9 +6975,23 @@
                         "type": "string"
                     },
                     "scoring_functions": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/LLMAsJudgeScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
                         }
                     },
                     "save_results_dataset": {
@@ -7063,55 +7344,58 @@
     ],
     "tags": [
         {
-            "name": "Memory"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "Eval"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "BatchInference"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Inspect"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
-            "name": "SyntheticDataGeneration"
+            "name": "ScoringFunctions"
         },
         {
             "name": "Datasets"
         },
         {
-            "name": "Scoring"
-        },
-        {
-            "name": "ScoringFunctions"
+            "name": "Inspect"
         },
         {
             "name": "Safety"
+        },
+        {
+            "name": "Eval"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Memory"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "EvalTasks"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Telemetry"
         },
         {
             "name": "BuiltinTool",
@@ -7378,12 +7662,28 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentCandidate\" />"
         },
         {
+            "name": "AppEvalTaskConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppEvalTaskConfig\" />"
+        },
+        {
+            "name": "BenchmarkEvalTaskConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BenchmarkEvalTaskConfig\" />"
+        },
+        {
+            "name": "LLMAsJudgeScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LLMAsJudgeScoringFnParams\" />"
+        },
+        {
             "name": "ModelCandidate",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelCandidate\" />"
         },
         {
-            "name": "EvaluateRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRequest\" />"
+            "name": "RegexParserScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegexParserScoringFnParams\" />"
+        },
+        {
+            "name": "EvaluateRowsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
         },
         {
             "name": "EvaluateResponse",
@@ -7392,14 +7692,6 @@
         {
             "name": "ScoringResult",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringResult\" />"
-        },
-        {
-            "name": "EvaluateBatchRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateBatchRequest\" />"
-        },
-        {
-            "name": "Job",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Job\" />"
         },
         {
             "name": "GetAgentsSessionRequest",
@@ -7434,24 +7726,28 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DatasetDefWithProvider\" />"
         },
         {
-            "name": "ModelDefWithProvider",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelDefWithProvider\" />"
+            "name": "EvalTaskDefWithProvider",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvalTaskDefWithProvider\" />"
+        },
+        {
+            "name": "Model",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Model\" />"
         },
         {
             "name": "PaginatedRowsResult",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PaginatedRowsResult\" />"
         },
         {
-            "name": "Parameter",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Parameter\" />"
-        },
-        {
             "name": "ScoringFnDefWithProvider",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringFnDefWithProvider\" />"
         },
         {
-            "name": "ShieldDefWithProvider",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldDefWithProvider\" />"
+            "name": "Shield",
+            "description": "A safety shield resource that can be used to check content\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Shield\" />"
+        },
+        {
+            "name": "ShieldType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldType\" />"
         },
         {
             "name": "Trace",
@@ -7574,6 +7870,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterDatasetRequest\" />"
         },
         {
+            "name": "RegisterEvalTaskRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterEvalTaskRequest\" />"
+        },
+        {
             "name": "RegisterMemoryBankRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterMemoryBankRequest\" />"
         },
@@ -7588,6 +7888,14 @@
         {
             "name": "RegisterShieldRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterShieldRequest\" />"
+        },
+        {
+            "name": "RunEvalRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RunEvalRequest\" />"
+        },
+        {
+            "name": "Job",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Job\" />"
         },
         {
             "name": "RunShieldRequest",
@@ -7651,6 +7959,7 @@
                 "DatasetIO",
                 "Datasets",
                 "Eval",
+                "EvalTasks",
                 "Inference",
                 "Inspect",
                 "Memory",
@@ -7680,11 +7989,13 @@
                 "AgentTurnResponseStreamChunk",
                 "AgentTurnResponseTurnCompletePayload",
                 "AgentTurnResponseTurnStartPayload",
+                "AppEvalTaskConfig",
                 "Attachment",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
+                "BenchmarkEvalTaskConfig",
                 "BuiltinTool",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
@@ -7708,9 +8019,9 @@
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
-                "EvaluateBatchRequest",
-                "EvaluateRequest",
+                "EvalTaskDefWithProvider",
                 "EvaluateResponse",
+                "EvaluateRowsRequest",
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
@@ -7724,6 +8035,7 @@
                 "JobStatus",
                 "KeyValueMemoryBankDef",
                 "KeywordMemoryBankDef",
+                "LLMAsJudgeScoringFnParams",
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
@@ -7731,11 +8043,10 @@
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
                 "MetricEvent",
+                "Model",
                 "ModelCandidate",
-                "ModelDefWithProvider",
                 "OptimizerConfig",
                 "PaginatedRowsResult",
-                "Parameter",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
@@ -7748,7 +8059,9 @@
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "RLHFAlgorithm",
+                "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
+                "RegisterEvalTaskRequest",
                 "RegisterMemoryBankRequest",
                 "RegisterModelRequest",
                 "RegisterScoringFunctionRequest",
@@ -7756,6 +8069,7 @@
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
                 "RouteInfo",
+                "RunEvalRequest",
                 "RunShieldRequest",
                 "RunShieldResponse",
                 "SafetyViolation",
@@ -7769,8 +8083,9 @@
                 "ScoringResult",
                 "SearchToolDefinition",
                 "Session",
+                "Shield",
                 "ShieldCallStep",
-                "ShieldDefWithProvider",
+                "ShieldType",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",

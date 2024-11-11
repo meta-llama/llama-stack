@@ -13,7 +13,7 @@ apis:
 - safety
 providers:
   inference:
-  - provider_id: meta-reference-inference
+  - provider_id: inference0
     provider_type: meta-reference
     config:
       model: Llama3.2-3B-Instruct
@@ -21,7 +21,7 @@ providers:
       torch_seed: null
       max_seq_len: 4096
       max_batch_size: 1
-  - provider_id: meta-reference-safety
+  - provider_id: inference1
     provider_type: meta-reference
     config:
       model: Llama-Guard-3-1B
@@ -31,11 +31,14 @@ providers:
       max_batch_size: 1
   safety:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::llama-guard
     config:
-      llama_guard_shield:
-        model: Llama-Guard-3-1B
-        excluded_categories: []
+      model: Llama-Guard-3-1B
+      excluded_categories: []
+  - provider_id: meta1
+    provider_type: inline::prompt-guard
+    config:
+      model: Prompt-Guard-86M
 # Uncomment to use prompt guard
 #      prompt_guard_shield:
 #        model: Prompt-Guard-86M

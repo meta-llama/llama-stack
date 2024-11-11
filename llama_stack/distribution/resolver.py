@@ -33,6 +33,10 @@ from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 
+class InvalidProviderError(Exception):
+    pass
+
+
 def api_protocol_map() -> Dict[Api, Any]:
     return {
         Api.agents: Agents,
@@ -102,16 +106,20 @@ async def resolve_impls(
                 )
 
             p = provider_registry[api][provider.provider_type]
-            if p.deprecation_warning:
+            if p.deprecation_error:
+                cprint(p.deprecation_error, "red", attrs=["bold"])
+                raise InvalidProviderError(p.deprecation_error)
+
+            elif p.deprecation_warning:
                 cprint(
                     f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
-                    "red",
+                    "yellow",
                     attrs=["bold"],
                 )
             p.deps__ = [a.value for a in p.api_dependencies]
             spec = ProviderWithSpec(
                 spec=p,
-                **(provider.dict()),
+                **(provider.model_dump()),
             )
             specs[provider.provider_id] = spec
 

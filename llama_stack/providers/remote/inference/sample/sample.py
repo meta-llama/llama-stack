@@ -14,7 +14,7 @@ class SampleInferenceImpl(Inference):
     def __init__(self, config: SampleConfig):
         self.config = config
 
-    async def register_model(self, model: ModelDef) -> None:
+    async def register_model(self, model: Model) -> None:
         # these are the model names the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
         pass

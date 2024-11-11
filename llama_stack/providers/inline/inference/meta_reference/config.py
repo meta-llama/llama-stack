@@ -10,8 +10,9 @@ from llama_models.datatypes import *  # noqa: F403
 from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import *  # noqa: F401, F403
-from llama_stack.providers.utils.inference import supported_inference_models
 from pydantic import BaseModel, Field, field_validator
+
+from llama_stack.providers.utils.inference import supported_inference_models
 
 
 class MetaReferenceInferenceConfig(BaseModel):

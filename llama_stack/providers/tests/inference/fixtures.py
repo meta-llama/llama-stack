@@ -13,6 +13,7 @@ from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
+from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
@@ -64,7 +65,6 @@ def inference_ollama(inference_model) -> ProviderFixture:
     inference_model = (
         [inference_model] if isinstance(inference_model, str) else inference_model
     )
-    print("!!!", inference_model)
     if "Llama3.1-8B-Instruct" in inference_model:
         pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
@@ -127,6 +127,19 @@ def inference_together() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def inference_bedrock() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="bedrock",
+                provider_type="remote::bedrock",
+                config=BedrockConfig().model_dump(),
+            )
+        ],
+    )
+
+
 INFERENCE_FIXTURES = [
     "meta_reference",
     "ollama",
@@ -134,17 +147,25 @@ INFERENCE_FIXTURES = [
     "together",
     "vllm_remote",
     "remote",
+    "bedrock",
 ]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def inference_stack(request):
+async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
     impls = await resolve_impls_for_test_v2(
         [Api.inference],
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
+    )
+
+    provider_id = inference_fixture.providers[0].provider_id
+    print(f"Registering model {inference_model} with provider {provider_id}")
+    await impls[Api.models].register_model(
+        model_id=inference_model,
+        provider_id=provider_id,
     )
 
     return (impls[Api.inference], impls[Api.models])

@@ -34,6 +34,16 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         id="meta_reference_eval_together_inference",
         marks=pytest.mark.meta_reference_eval_together_inference,
     ),
+    pytest.param(
+        {
+            "eval": "meta_reference",
+            "scoring": "meta_reference",
+            "datasetio": "huggingface",
+            "inference": "together",
+        },
+        id="meta_reference_eval_together_inference_huggingface_datasetio",
+        marks=pytest.mark.meta_reference_eval_together_inference_huggingface_datasetio,
+    ),
 ]
 
 
@@ -41,6 +51,7 @@ def pytest_configure(config):
     for fixture_name in [
         "meta_reference_eval_fireworks_inference",
         "meta_reference_eval_together_inference",
+        "meta_reference_eval_together_inference_huggingface_datasetio",
     ]:
         config.addinivalue_line(
             "markers",

@@ -16,7 +16,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "meta_reference",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="meta_reference",
         marks=pytest.mark.meta_reference,
@@ -24,7 +24,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "ollama",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="ollama",
         marks=pytest.mark.ollama,
@@ -32,10 +32,18 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "together",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="together",
         marks=pytest.mark.together,
+    ),
+    pytest.param(
+        {
+            "inference": "bedrock",
+            "safety": "bedrock",
+        },
+        id="bedrock",
+        marks=pytest.mark.bedrock,
     ),
     pytest.param(
         {
@@ -49,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together", "remote"]:
+    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",
