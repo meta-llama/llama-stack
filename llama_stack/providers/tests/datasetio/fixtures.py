@@ -19,12 +19,12 @@ def datasetio_remote() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def datasetio_meta_reference() -> ProviderFixture:
+def datasetio_localfs() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="meta-reference",
-                provider_type="meta-reference",
+                provider_id="localfs",
+                provider_type="localfs",
                 config={},
             )
         ],
@@ -44,7 +44,7 @@ def datasetio_huggingface() -> ProviderFixture:
     )
 
 
-DATASETIO_FIXTURES = ["meta_reference", "remote", "huggingface"]
+DATASETIO_FIXTURES = ["localfs", "remote", "huggingface"]
 
 
 @pytest_asyncio.fixture(scope="session")
