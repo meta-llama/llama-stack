@@ -90,8 +90,6 @@ class CommonRoutingTableImpl(RoutingTable):
 
             elif api == Api.memory:
                 p.memory_bank_store = self
-                memory_banks = await p.list_memory_banks()
-                await add_objects(memory_banks, pid, None)
 
             elif api == Api.datasetio:
                 p.dataset_store = self

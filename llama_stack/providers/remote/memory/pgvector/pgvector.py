@@ -158,7 +158,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: VectorMemoryBank,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
             memory_bank.memory_bank_type == MemoryBankType.vector.value
@@ -177,7 +177,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[VectorMemoryBank]:
+    async def list_memory_banks(self) -> List[MemoryBank]:
         banks = load_models(self.cursor, VectorMemoryBank)
         for bank in banks:
             if bank.identifier not in self.cache:
