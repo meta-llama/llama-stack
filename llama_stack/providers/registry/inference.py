@@ -115,6 +115,7 @@ def available_providers() -> List[ProviderSpec]:
                 ],
                 module="llama_stack.providers.remote.inference.fireworks",
                 config_class="llama_stack.providers.remote.inference.fireworks.FireworksImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.fireworks.FireworksProviderDataValidator",
             ),
         ),
         remote_provider_spec(
