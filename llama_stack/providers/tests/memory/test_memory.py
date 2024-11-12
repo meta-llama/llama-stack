@@ -8,6 +8,7 @@ import pytest
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.apis.memory_banks.memory_banks import VectorMemoryBankParams
 
 # How to run this test:
 #
@@ -43,14 +44,15 @@ def sample_documents():
 
 
 async def register_memory_bank(banks_impl: MemoryBanks):
-    bank = VectorMemoryBankDef(
-        identifier="test_bank",
-        embedding_model="all-MiniLM-L6-v2",
-        chunk_size_in_tokens=512,
-        overlap_size_in_tokens=64,
-    )
 
-    await banks_impl.register_memory_bank(bank)
+    return await banks_impl.register_memory_bank(
+        memory_bank_id="test_bank",
+        params=VectorMemoryBankParams(
+            embedding_model="all-MiniLM-L6-v2",
+            chunk_size_in_tokens=512,
+            overlap_size_in_tokens=64,
+        ),
+    )
 
 
 class TestMemory:
@@ -68,20 +70,28 @@ class TestMemory:
         # NOTE: this needs you to ensure that you are starting from a clean state
         # but so far we don't have an unregister API unfortunately, so be careful
         _, banks_impl = memory_stack
-        bank = VectorMemoryBankDef(
-            identifier="test_bank_no_provider",
-            embedding_model="all-MiniLM-L6-v2",
-            chunk_size_in_tokens=512,
-            overlap_size_in_tokens=64,
-        )
 
-        await banks_impl.register_memory_bank(bank)
+        bank = await banks_impl.register_memory_bank(
+            memory_bank_id="test_bank_no_provider",
+            params=VectorMemoryBankParams(
+                embedding_model="all-MiniLM-L6-v2",
+                chunk_size_in_tokens=512,
+                overlap_size_in_tokens=64,
+            ),
+        )
         response = await banks_impl.list_memory_banks()
         assert isinstance(response, list)
         assert len(response) == 1
 
         # register same memory bank with same id again will fail
-        await banks_impl.register_memory_bank(bank)
+        await banks_impl.register_memory_bank(
+            memory_bank_id="test_bank_no_provider",
+            params=VectorMemoryBankParams(
+                embedding_model="all-MiniLM-L6-v2",
+                chunk_size_in_tokens=512,
+                overlap_size_in_tokens=64,
+            ),
+        )
         response = await banks_impl.list_memory_banks()
         assert isinstance(response, list)
         assert len(response) == 1

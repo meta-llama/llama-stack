@@ -52,7 +52,7 @@ def load_models(cur, cls):
 
 
 class PGVectorIndex(EmbeddingIndex):
-    def __init__(self, bank: MemoryBankDef, dimension: int, cursor):
+    def __init__(self, bank: VectorMemoryBank, dimension: int, cursor):
         self.cursor = cursor
         self.table_name = f"vector_store_{bank.identifier}"
 
@@ -121,6 +121,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
+        print(f"Initializing PGVector memory adapter with config: {self.config}")
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -157,11 +158,11 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         upsert_models(
             self.cursor,
@@ -176,8 +177,8 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
-        banks = load_models(self.cursor, MemoryBankDef)
+    async def list_memory_banks(self) -> List[MemoryBank]:
+        banks = load_models(self.cursor, VectorMemoryBank)
         for bank in banks:
             if bank.identifier not in self.cache:
                 index = BankWithIndex(

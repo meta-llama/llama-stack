@@ -83,7 +83,7 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
         stored_banks = await self.kvstore.range(start_key, end_key)
 
         for bank_data in stored_banks:
-            bank = VectorMemoryBankDef.model_validate_json(bank_data)
+            bank = VectorMemoryBank.model_validate_json(bank_data)
             index = BankWithIndex(
                 bank=bank, index=FaissIndex(ALL_MINILM_L6_V2_DIMENSION)
             )
@@ -95,10 +95,10 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
         ), f"Only vector banks are supported {memory_bank.type}"
 
         # Store in kvstore
@@ -114,7 +114,7 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
+    async def list_memory_banks(self) -> List[MemoryBank]:
         return [i.bank for i in self.cache.values()]
 
     async def insert_documents(

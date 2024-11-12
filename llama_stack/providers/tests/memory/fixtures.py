@@ -10,11 +10,10 @@ import tempfile
 import pytest
 import pytest_asyncio
 
-from llama_stack.distribution.datatypes import Api, Provider
+from llama_stack.distribution.datatypes import Api, Provider, RemoteProviderConfig
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
-
 from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
@@ -78,7 +77,23 @@ def memory_weaviate() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["meta_reference", "pgvector", "weaviate", "remote"]
+@pytest.fixture(scope="session")
+def memory_chroma() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="chroma",
+                provider_type="remote::chromadb",
+                config=RemoteProviderConfig(
+                    host=get_env_or_fail("CHROMA_HOST"),
+                    port=get_env_or_fail("CHROMA_PORT"),
+                ).model_dump(),
+            )
+        ]
+    )
+
+
+MEMORY_FIXTURES = ["meta_reference", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")

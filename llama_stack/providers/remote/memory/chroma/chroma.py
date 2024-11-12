@@ -98,11 +98,11 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         collection = await self.client.get_or_create_collection(
             name=memory_bank.identifier,
@@ -113,12 +113,12 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = bank_index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
+    async def list_memory_banks(self) -> List[MemoryBank]:
         collections = await self.client.list_collections()
         for collection in collections:
             try:
                 data = json.loads(collection.metadata["bank"])
-                bank = parse_obj_as(MemoryBankDef, data)
+                bank = parse_obj_as(VectorMemoryBank, data)
             except Exception:
                 import traceback
 

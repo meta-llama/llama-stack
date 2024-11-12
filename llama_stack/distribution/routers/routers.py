@@ -7,8 +7,8 @@
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from llama_stack.apis.datasetio.datasetio import DatasetIO
+from llama_stack.apis.memory_banks.memory_banks import BankParams
 from llama_stack.distribution.datatypes import RoutingTable
-
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
@@ -32,8 +32,19 @@ class MemoryRouter(Memory):
     async def shutdown(self) -> None:
         pass
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
-        await self.routing_table.register_memory_bank(memory_bank)
+    async def register_memory_bank(
+        self,
+        memory_bank_id: str,
+        params: BankParams,
+        provider_id: Optional[str] = None,
+        provider_memorybank_id: Optional[str] = None,
+    ) -> None:
+        await self.routing_table.register_memory_bank(
+            memory_bank_id,
+            params,
+            provider_id,
+            provider_memorybank_id,
+        )
 
     async def insert_documents(
         self,

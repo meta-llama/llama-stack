@@ -641,7 +641,7 @@ class ChatAgent(ShieldRunnerMixin):
 
         if session_info.memory_bank_id is None:
             bank_id = f"memory_bank_{session_id}"
-            memory_bank = VectorMemoryBankDef(
+            memory_bank = VectorMemoryBank(
                 identifier=bank_id,
                 embedding_model="all-MiniLM-L6-v2",
                 chunk_size_in_tokens=512,

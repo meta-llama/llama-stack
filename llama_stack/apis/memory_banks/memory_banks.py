@@ -5,11 +5,21 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import List, Literal, Optional, Protocol, runtime_checkable, Union
+from typing import (
+    Annotated,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
+
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
+
+from llama_stack.apis.resource import Resource, ResourceType
 
 
 @json_schema_type
@@ -20,59 +30,98 @@ class MemoryBankType(Enum):
     graph = "graph"
 
 
-class CommonDef(BaseModel):
-    identifier: str
-    # Hack: move this out later
-    provider_id: str = ""
-
-
 @json_schema_type
-class VectorMemoryBankDef(CommonDef):
-    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+class VectorMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
+    memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
     overlap_size_in_tokens: Optional[int] = None
 
 
 @json_schema_type
-class KeyValueMemoryBankDef(CommonDef):
-    type: Literal[MemoryBankType.keyvalue.value] = MemoryBankType.keyvalue.value
+class KeyValueMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
+    memory_bank_type: Literal[MemoryBankType.keyvalue.value] = (
+        MemoryBankType.keyvalue.value
+    )
 
 
 @json_schema_type
-class KeywordMemoryBankDef(CommonDef):
-    type: Literal[MemoryBankType.keyword.value] = MemoryBankType.keyword.value
+class KeywordMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
+    memory_bank_type: Literal[MemoryBankType.keyword.value] = (
+        MemoryBankType.keyword.value
+    )
 
 
 @json_schema_type
-class GraphMemoryBankDef(CommonDef):
-    type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+class GraphMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
+    memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
 
 
-MemoryBankDef = Annotated[
+@json_schema_type
+class VectorMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+    embedding_model: str
+    chunk_size_in_tokens: int
+    overlap_size_in_tokens: Optional[int] = None
+
+
+@json_schema_type
+class KeyValueMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.keyvalue.value] = (
+        MemoryBankType.keyvalue.value
+    )
+
+
+@json_schema_type
+class KeywordMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.keyword.value] = (
+        MemoryBankType.keyword.value
+    )
+
+
+@json_schema_type
+class GraphMemoryBankParams(BaseModel):
+    memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+
+
+MemoryBank = Annotated[
     Union[
-        VectorMemoryBankDef,
-        KeyValueMemoryBankDef,
-        KeywordMemoryBankDef,
-        GraphMemoryBankDef,
+        VectorMemoryBank,
+        KeyValueMemoryBank,
+        KeywordMemoryBank,
+        GraphMemoryBank,
     ],
-    Field(discriminator="type"),
+    Field(discriminator="memory_bank_type"),
 ]
 
-MemoryBankDefWithProvider = MemoryBankDef
+BankParams = Annotated[
+    Union[
+        VectorMemoryBankParams,
+        KeyValueMemoryBankParams,
+        KeywordMemoryBankParams,
+        GraphMemoryBankParams,
+    ],
+    Field(discriminator="memory_bank_type"),
+]
 
 
 @runtime_checkable
 class MemoryBanks(Protocol):
     @webmethod(route="/memory_banks/list", method="GET")
-    async def list_memory_banks(self) -> List[MemoryBankDefWithProvider]: ...
+    async def list_memory_banks(self) -> List[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/get", method="GET")
-    async def get_memory_bank(
-        self, identifier: str
-    ) -> Optional[MemoryBankDefWithProvider]: ...
+    async def get_memory_bank(self, memory_bank_id: str) -> Optional[MemoryBank]: ...
 
     @webmethod(route="/memory_banks/register", method="POST")
     async def register_memory_bank(
-        self, memory_bank: MemoryBankDefWithProvider
-    ) -> None: ...
+        self,
+        memory_bank_id: str,
+        params: BankParams,
+        provider_id: Optional[str] = None,
+        provider_memorybank_id: Optional[str] = None,
+    ) -> MemoryBank: ...

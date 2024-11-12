@@ -6,6 +6,8 @@
 
 from typing import Any, Dict, List, Optional
 
+from pydantic import parse_obj_as
+
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.models import *  # noqa: F403
@@ -89,8 +91,6 @@ class CommonRoutingTableImpl(RoutingTable):
 
             elif api == Api.memory:
                 p.memory_bank_store = self
-                memory_banks = await p.list_memory_banks()
-                await add_objects(memory_banks, pid, None)
 
             elif api == Api.datasetio:
                 p.dataset_store = self
@@ -188,12 +188,6 @@ class CommonRoutingTableImpl(RoutingTable):
         objs = await self.dist_registry.get_all()
         return [obj for obj in objs if obj.type == type]
 
-    async def get_all_with_types(
-        self, types: List[str]
-    ) -> List[RoutableObjectWithProvider]:
-        objs = await self.dist_registry.get_all()
-        return [obj for obj in objs if obj.type in types]
-
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> List[Model]:
@@ -233,7 +227,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> List[Shield]:
-        return await self.get_all_with_type("shield")
+        return await self.get_all_with_type(ResourceType.shield.value)
 
     async def get_shield(self, identifier: str) -> Optional[Shield]:
         return await self.get_object_by_identifier(identifier)
@@ -270,25 +264,41 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
-    async def list_memory_banks(self) -> List[MemoryBankDefWithProvider]:
-        return await self.get_all_with_types(
-            [
-                MemoryBankType.vector.value,
-                MemoryBankType.keyvalue.value,
-                MemoryBankType.keyword.value,
-                MemoryBankType.graph.value,
-            ]
-        )
+    async def list_memory_banks(self) -> List[MemoryBank]:
+        return await self.get_all_with_type(ResourceType.memory_bank.value)
 
-    async def get_memory_bank(
-        self, identifier: str
-    ) -> Optional[MemoryBankDefWithProvider]:
-        return await self.get_object_by_identifier(identifier)
+    async def get_memory_bank(self, memory_bank_id: str) -> Optional[MemoryBank]:
+        return await self.get_object_by_identifier(memory_bank_id)
 
     async def register_memory_bank(
-        self, memory_bank: MemoryBankDefWithProvider
-    ) -> None:
+        self,
+        memory_bank_id: str,
+        params: BankParams,
+        provider_id: Optional[str] = None,
+        provider_memorybank_id: Optional[str] = None,
+    ) -> MemoryBank:
+        if provider_memorybank_id is None:
+            provider_memorybank_id = memory_bank_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this shield type
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        memory_bank = parse_obj_as(
+            MemoryBank,
+            {
+                "identifier": memory_bank_id,
+                "type": ResourceType.memory_bank.value,
+                "provider_id": provider_id,
+                "provider_resource_id": provider_memorybank_id,
+                **params.model_dump(),
+            },
+        )
         await self.register_object(memory_bank)
+        return memory_bank
 
 
 class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):

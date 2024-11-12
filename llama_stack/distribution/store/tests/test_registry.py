@@ -10,7 +10,7 @@ import pytest
 import pytest_asyncio
 from llama_stack.distribution.store import *  # noqa F403
 from llama_stack.apis.inference import Model
-from llama_stack.apis.memory_banks import VectorMemoryBankDef
+from llama_stack.apis.memory_banks import VectorMemoryBank
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 from llama_stack.distribution.datatypes import *  # noqa F403
 
@@ -39,7 +39,7 @@ async def cached_registry(config):
 
 @pytest.fixture
 def sample_bank():
-    return VectorMemoryBankDef(
+    return VectorMemoryBank(
         identifier="test_bank",
         embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=512,
@@ -113,7 +113,7 @@ async def test_cached_registry_updates(config):
     cached_registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
     await cached_registry.initialize()
 
-    new_bank = VectorMemoryBankDef(
+    new_bank = VectorMemoryBank(
         identifier="test_bank_2",
         embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=256,
@@ -144,7 +144,7 @@ async def test_duplicate_provider_registration(config):
     cached_registry = CachedDiskDistributionRegistry(await kvstore_impl(config))
     await cached_registry.initialize()
 
-    original_bank = VectorMemoryBankDef(
+    original_bank = VectorMemoryBank(
         identifier="test_bank_2",
         embedding_model="all-MiniLM-L6-v2",
         chunk_size_in_tokens=256,
@@ -153,7 +153,7 @@ async def test_duplicate_provider_registration(config):
     )
     await cached_registry.register(original_bank)
 
-    duplicate_bank = VectorMemoryBankDef(
+    duplicate_bank = VectorMemoryBank(
         identifier="test_bank_2",
         embedding_model="different-model",
         chunk_size_in_tokens=128,
