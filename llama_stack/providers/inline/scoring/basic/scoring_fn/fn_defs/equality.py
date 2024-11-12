@@ -9,10 +9,10 @@ from llama_stack.apis.scoring_functions import ScoringFn
 
 
 equality = ScoringFn(
-    identifier="meta-reference::equality",
+    identifier="basic::equality",
     description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
     params=None,
-    provider_id="meta-reference",
+    provider_id="basic",
     provider_resource_id="equality",
     return_type=NumberType(),
 )

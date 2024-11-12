@@ -7,19 +7,17 @@ from typing import Dict
 
 from llama_stack.distribution.datatypes import Api, ProviderSpec
 
-from .config import BasicScoringConfig
+from .config import LlmAsJudgeScoringConfig
 
 
 async def get_provider_impl(
-    config: BasicScoringConfig,
+    config: LlmAsJudgeScoringConfig,
     deps: Dict[Api, ProviderSpec],
 ):
-    from .scoring import BasicScoringImpl
+    from .scoring import LlmAsJudgeScoringImpl
 
-    impl = BasicScoringImpl(
-        config,
-        deps[Api.datasetio],
-        deps[Api.datasets],
+    impl = LlmAsJudgeScoringImpl(
+        config, deps[Api.datasetio], deps[Api.datasets], deps[Api.inference]
     )
     await impl.initialize()
     return impl

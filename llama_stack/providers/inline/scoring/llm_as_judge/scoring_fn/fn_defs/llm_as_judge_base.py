@@ -9,9 +9,9 @@ from llama_stack.apis.scoring_functions import ScoringFn
 
 
 llm_as_judge_base = ScoringFn(
-    identifier="meta-reference::llm_as_judge_base",
+    identifier="llm-as-judge::llm_as_judge_base",
     description="Llm As Judge Scoring Function",
     return_type=NumberType(),
-    provider_id="meta-reference",
+    provider_id="llm-as-judge",
     provider_resource_id="llm-as-judge-base",
 )

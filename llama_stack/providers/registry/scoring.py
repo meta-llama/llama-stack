@@ -13,10 +13,21 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.scoring,
-            provider_type="meta-reference",
+            provider_type="basic",
             pip_packages=[],
             module="llama_stack.providers.inline.scoring.basic",
             config_class="llama_stack.providers.inline.scoring.basic.BasicScoringConfig",
+            api_dependencies=[
+                Api.datasetio,
+                Api.datasets,
+            ],
+        ),
+        InlineProviderSpec(
+            api=Api.scoring,
+            provider_type="llm-as-judge",
+            pip_packages=[],
+            module="llama_stack.providers.inline.scoring.llm_as_judge",
+            config_class="llama_stack.providers.inline.scoring.llm_as_judge.LlmAsJudgeScoringConfig",
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,

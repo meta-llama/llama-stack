@@ -57,10 +57,10 @@ MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
 )
 
 regex_parser_multiple_choice_answer = ScoringFn(
-    identifier="meta-reference::regex_parser_multiple_choice_answer",
+    identifier="basic::regex_parser_multiple_choice_answer",
     description="Extract answer from response matching Answer: [the_answer_letter], and compare with expected result",
     return_type=NumberType(),
-    provider_id="meta-reference",
+    provider_id="basic",
     provider_resource_id="regex-parser-multiple-choice-answer",
     params=RegexParserScoringFnParams(
         parsing_regexes=[

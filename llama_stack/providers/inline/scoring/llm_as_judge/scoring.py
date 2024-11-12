@@ -3,41 +3,48 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List
+from typing import Any, Dict, List, Optional
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
-from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.inference.inference import Inference
+
+from llama_stack.apis.scoring import (
+    ScoreBatchResponse,
+    ScoreResponse,
+    Scoring,
+    ScoringResult,
+)
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
-from .config import BasicScoringConfig
-from .scoring_fn.equality_scoring_fn import EqualityScoringFn
-from .scoring_fn.regex_parser_scoring_fn import RegexParserScoringFn
-from .scoring_fn.subset_of_scoring_fn import SubsetOfScoringFn
-
-FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn, RegexParserScoringFn]
+from .config import LlmAsJudgeScoringConfig
+from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
 
 
-class BasicScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
+LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
+
+
+class LlmAsJudgeScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     def __init__(
         self,
-        config: BasicScoringConfig,
+        config: LlmAsJudgeScoringConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
+        inference_api: Inference,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
+        self.inference_api = inference_api
         self.scoring_fn_id_impls = {}
 
     async def initialize(self) -> None:
-        for x in FIXED_FNS:
-            impl = x()
+        for x in LLM_JUDGE_FNS:
+            impl = x(inference_api=self.inference_api)
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
+                self.llm_as_judge_fn = impl
 
     async def shutdown(self) -> None: ...
 
@@ -50,8 +57,8 @@ class BasicScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith(
-                "basic"
-            ), "All basic scoring fn must have identifier prefixed with 'basic'! "
+                "llm-as-judge"
+            ), "All meta-reference scoring fn must have identifier prefixed with 'meta-reference'! "
 
         return scoring_fn_defs_list
 
