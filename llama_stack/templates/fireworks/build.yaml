@@ -4,8 +4,8 @@ distribution_spec:
   providers:
     inference: remote::fireworks
     memory:
-    - meta-reference
+    - inline::faiss
     - remote::weaviate
     safety: inline::llama-guard
-    agents: meta-reference
-    telemetry: meta-reference
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference

@@ -4,9 +4,9 @@ distribution_spec:
   providers:
     inference: remote::vllm
     memory:
-    - meta-reference
+    - inline::faiss
     - remote::chromadb
     - remote::pgvector
     safety: inline::llama-guard
-    agents: meta-reference
-    telemetry: meta-reference
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference

@@ -29,7 +29,7 @@ providers:
       model: Prompt-Guard-86M
   memory:
   - provider_id: meta0
-    provider_type: inline::meta-reference
+    provider_type: inline::faiss
     config: {}
   agents:
   - provider_id: meta0
