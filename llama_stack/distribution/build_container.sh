@@ -140,12 +140,16 @@ if command -v selinuxenabled &>/dev/null && selinuxenabled; then
   DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
 fi
 
+# Set version tag based on PyPI version
 if [ -n "$TEST_PYPI_VERSION" ]; then
-  image_name="$image_name-test-$TEST_PYPI_VERSION"
+  version_tag="test-$TEST_PYPI_VERSION"
 else
   URL="https://pypi.org/pypi/llama-stack/json"
-  image_name="$image_name-$(curl -s $URL | jq -r '.info.version')"
+  version_tag=$(curl -s $URL | jq -r '.info.version')
 fi
+
+# Add version tag to image name
+image_tag="$image_name:$version_tag"
 
 # Detect platform architecture
 ARCH=$(uname -m)

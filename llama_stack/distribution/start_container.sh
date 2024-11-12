@@ -56,17 +56,18 @@ if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
   DOCKER_OPTS="$DOCKER_OPTS --gpus=all"
 fi
 
+version_tag="latest"
 if [ -n "$PYPI_VERSION" ]; then
-  docker_image="$docker_image-$PYPI_VERSION"
+  version_tag="$PYPI_VERSION"
 elif [ -n "$TEST_PYPI_VERSION" ]; then
-  docker_image="$docker_image-test-$TEST_PYPI_VERSION"
+  version_tag="test-$TEST_PYPI_VERSION"
 fi
 
 $DOCKER_BINARY run $DOCKER_OPTS -it \
   -p $port:$port \
   -v "$yaml_config:/app/config.yaml" \
   $mounts \
-  $docker_image \
+  $docker_image:$version_tag \
   python -m llama_stack.distribution.server.server \
   --yaml_config /app/config.yaml \
   --port $port "$@"
