@@ -6,6 +6,8 @@
 
 from typing import Any, Dict
 
+from termcolor import colored
+
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
@@ -76,4 +78,23 @@ async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
     for obj in objects:
         await dist_registry.register(obj)
 
+    resources = [
+        ("models", Api.models),
+        ("shields", Api.shields),
+        ("memory_banks", Api.memory_banks),
+        ("datasets", Api.datasets),
+        ("scoring_fns", Api.scoring_functions),
+        ("eval_tasks", Api.eval_tasks),
+    ]
+    for rsrc, api in resources:
+        if api not in impls:
+            continue
+
+        method = getattr(impls[api], f"list_{api.value}")
+        for obj in await method():
+            print(
+                f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",
+            )
+
+    print("")
     return impls
