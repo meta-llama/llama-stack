@@ -273,17 +273,8 @@ async def instantiate_provider(
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider.config)
 
-        if provider_spec.adapter:
-            method = "get_adapter_impl"
-            args = [config, deps]
-        else:
-            method = "get_client_impl"
-            protocol = protocols[provider_spec.api]
-            if provider_spec.api in additional_protocols:
-                _, additional_protocol = additional_protocols[provider_spec.api]
-            else:
-                additional_protocol = None
-            args = [protocol, additional_protocol, config, deps]
+        method = "get_adapter_impl"
+        args = [config, deps]
 
     elif isinstance(provider_spec, AutoRoutedProviderSpec):
         method = "get_auto_router_impl"

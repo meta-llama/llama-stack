@@ -182,15 +182,6 @@ async def lifespan(app: FastAPI):
         await impl.shutdown()
 
 
-def create_dynamic_passthrough(
-    downstream_url: str, downstream_headers: Optional[Dict[str, str]] = None
-):
-    async def endpoint(request: Request):
-        return await passthrough(request, downstream_url, downstream_headers)
-
-    return endpoint
-
-
 def is_streaming_request(func_name: str, request: Request, **kwargs):
     # TODO: pass the api method and punt it to the Protocol definition directly
     return kwargs.get("stream", False)
@@ -305,28 +296,19 @@ def main(
         endpoints = all_endpoints[api]
         impl = impls[api]
 
-        if is_passthrough(impl.__provider_spec__):
-            for endpoint in endpoints:
-                url = impl.__provider_config__.url.rstrip("/") + endpoint.route
-                getattr(app, endpoint.method)(endpoint.route)(
-                    create_dynamic_passthrough(url)
-                )
-        else:
-            for endpoint in endpoints:
-                if not hasattr(impl, endpoint.name):
-                    # ideally this should be a typing violation already
-                    raise ValueError(
-                        f"Could not find method {endpoint.name} on {impl}!!"
-                    )
+        for endpoint in endpoints:
+            if not hasattr(impl, endpoint.name):
+                # ideally this should be a typing violation already
+                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
 
-                impl_method = getattr(impl, endpoint.name)
+            impl_method = getattr(impl, endpoint.name)
 
-                getattr(app, endpoint.method)(endpoint.route, response_model=None)(
-                    create_dynamic_typed_route(
-                        impl_method,
-                        endpoint.method,
-                    )
+            getattr(app, endpoint.method)(endpoint.route, response_model=None)(
+                create_dynamic_typed_route(
+                    impl_method,
+                    endpoint.method,
                 )
+            )
 
         cprint(f"Serving API {api_str}", "white", attrs=["bold"])
         for endpoint in endpoints:

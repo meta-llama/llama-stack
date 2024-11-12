@@ -189,6 +189,7 @@ async def inference_stack(request, inference_model):
         models=[
             ModelInput(
                 model_id=inference_model,
+                provider_id=inference_fixture.providers[0].provider_id,
             )
         ],
     )
