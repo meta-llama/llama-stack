@@ -10,6 +10,8 @@ DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
 LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
+TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+PYPI_VERSION=${PYPI_VERSION:-}
 
 set -euo pipefail
 
@@ -52,6 +54,12 @@ fi
 if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
   mounts="$mounts -v $LLAMA_CHECKPOINT_DIR:/root/.llama"
   DOCKER_OPTS="$DOCKER_OPTS --gpus=all"
+fi
+
+if [ -n "$PYPI_VERSION" ]; then
+  docker_image="$docker_image-$PYPI_VERSION"
+elif [ -n "$TEST_PYPI_VERSION" ]; then
+  docker_image="$docker_image-test-$TEST_PYPI_VERSION"
 fi
 
 $DOCKER_BINARY run $DOCKER_OPTS -it \
