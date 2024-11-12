@@ -24,7 +24,7 @@ def scoring_basic() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="basic",
-                provider_type="basic",
+                provider_type="inline::basic",
                 config={},
             )
         ],
@@ -37,7 +37,7 @@ def scoring_braintrust() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="braintrust",
-                provider_type="braintrust",
+                provider_type="inline::braintrust",
                 config={},
             )
         ],
@@ -50,7 +50,7 @@ def scoring_llm_as_judge() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="llm-as-judge",
-                provider_type="llm-as-judge",
+                provider_type="inline::llm-as-judge",
                 config={},
             )
         ],

@@ -64,7 +64,6 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        print(dataset_def)
         if not dataset_def.schema or len(dataset_def.schema) == 0:
             raise ValueError(
                 f"Dataset {dataset_id} does not have a schema defined. Please define a schema for the dataset."
