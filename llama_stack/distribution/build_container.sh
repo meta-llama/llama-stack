@@ -64,6 +64,19 @@ RUN apt-get update && apt-get install -y \
 
 EOF
 
+# Add pip dependencies first since llama-stack is what will change most often
+# so we can reuse layers.
+if [ -n "$pip_dependencies" ]; then
+  add_to_docker "RUN pip install --no-cache $pip_dependencies"
+fi
+
+if [ -n "$special_pip_deps" ]; then
+  IFS='#' read -ra parts <<<"$special_pip_deps"
+  for part in "${parts[@]}"; do
+    add_to_docker "RUN pip install --no-cache $part"
+  done
+fi
+
 stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
 
@@ -103,16 +116,6 @@ RUN pip install --no-cache $models_mount
 EOF
 fi
 
-if [ -n "$pip_dependencies" ]; then
-  add_to_docker "RUN pip install --no-cache $pip_dependencies"
-fi
-
-if [ -n "$special_pip_deps" ]; then
-  IFS='#' read -ra parts <<<"$special_pip_deps"
-  for part in "${parts[@]}"; do
-    add_to_docker "RUN pip install --no-cache $part"
-  done
-fi
 
 add_to_docker <<EOF
 
