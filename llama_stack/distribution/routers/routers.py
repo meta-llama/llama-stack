@@ -105,9 +105,8 @@ class InferenceRouter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        model = await self.routing_table.get_model(model_id)
         params = dict(
-            model_id=model.provider_resource_id,
+            model_id=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -132,10 +131,9 @@ class InferenceRouter(Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        model = await self.routing_table.get_model(model_id)
         provider = self.routing_table.get_provider_impl(model_id)
         params = dict(
-            model_id=model.provider_resource_id,
+            model_id=model_id,
             content=content,
             sampling_params=sampling_params,
             response_format=response_format,
@@ -152,9 +150,8 @@ class InferenceRouter(Inference):
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        model = await self.routing_table.get_model(model_id)
         return await self.routing_table.get_provider_impl(model_id).embeddings(
-            model_id=model.provider_resource_id,
+            model_id=model_id,
             contents=contents,
         )
 

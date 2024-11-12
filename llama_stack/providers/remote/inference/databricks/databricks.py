@@ -37,7 +37,7 @@ DATABRICKS_SUPPORTED_MODELS = {
 class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: DatabricksImplConfig) -> None:
         ModelRegistryHelper.__init__(
-            self, stack_to_provider_models_map=DATABRICKS_SUPPORTED_MODELS
+            self, provider_to_common_model_aliases_map=DATABRICKS_SUPPORTED_MODELS
         )
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())

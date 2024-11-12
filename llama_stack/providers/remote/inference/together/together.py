@@ -6,6 +6,8 @@
 
 from typing import AsyncGenerator
 
+from llama_models.datatypes import CoreModelId
+
 from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message
@@ -15,7 +17,10 @@ from together import Together
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.model_registry import (
+    ModelAlias,
+    ModelRegistryHelper,
+)
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,
@@ -33,25 +38,55 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import TogetherImplConfig
 
 
-TOGETHER_SUPPORTED_MODELS = {
-    "Llama3.1-8B-Instruct": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-    "Llama3.1-70B-Instruct": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-    "Llama3.1-405B-Instruct": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-    "Llama3.2-3B-Instruct": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
-    "Llama3.2-11B-Vision-Instruct": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-    "Llama3.2-90B-Vision-Instruct": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
-    "Llama-Guard-3-8B": "meta-llama/Meta-Llama-Guard-3-8B",
-    "Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
-}
+model_aliases = [
+    ModelAlias(
+        provider_model_id="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+        aliases=["Llama3.1-8B-Instruct"],
+        llama_model=CoreModelId.llama3_1_8b_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        aliases=["Llama3.1-70B-Instruct"],
+        llama_model=CoreModelId.llama3_1_70b_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+        aliases=["Llama3.1-405B-Instruct"],
+        llama_model=CoreModelId.llama3_1_405b_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Llama-3.2-3B-Instruct-Turbo",
+        aliases=["Llama3.2-3B-Instruct"],
+        llama_model=CoreModelId.llama3_2_3b_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+        aliases=["Llama3.2-11B-Vision-Instruct"],
+        llama_model=CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+        aliases=["Llama3.2-90B-Vision-Instruct"],
+        llama_model=CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Meta-Llama-Guard-3-8B",
+        aliases=["Llama-Guard-3-8B"],
+        llama_model=CoreModelId.llama_guard_3_8b.value,
+    ),
+    ModelAlias(
+        provider_model_id="meta-llama/Llama-Guard-3-11B-Vision-Turbo",
+        aliases=["Llama-Guard-3-11B-Vision"],
+        llama_model=CoreModelId.llama_guard_3_11b_vision.value,
+    ),
+]
 
 
 class TogetherInferenceAdapter(
     ModelRegistryHelper, Inference, NeedsRequestProviderData
 ):
     def __init__(self, config: TogetherImplConfig) -> None:
-        ModelRegistryHelper.__init__(
-            self, stack_to_provider_models_map=TOGETHER_SUPPORTED_MODELS
-        )
+        ModelRegistryHelper.__init__(self, model_aliases)
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -70,8 +105,9 @@ class TogetherInferenceAdapter(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
-            model=model_id,
+            model=model.provider_resource_id,
             content=content,
             sampling_params=sampling_params,
             response_format=response_format,
@@ -145,8 +181,9 @@ class TogetherInferenceAdapter(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
-            model=model_id,
+            model=model.provider_resource_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -204,7 +241,7 @@ class TogetherInferenceAdapter(
                 ]
             else:
                 input_dict["prompt"] = chat_completion_request_to_prompt(
-                    request, self.formatter
+                    request, self.get_llama_model(request.model), self.formatter
                 )
         else:
             assert (
@@ -213,7 +250,7 @@ class TogetherInferenceAdapter(
             input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
 
         return {
-            "model": self.map_to_provider_model(request.model),
+            "model": request.model,
             **input_dict,
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.response_format),
