@@ -12,8 +12,8 @@ from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import Dataset
-from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.eval_tasks import EvalTask
+from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFnDef
 from llama_stack.apis.shields import Shield
