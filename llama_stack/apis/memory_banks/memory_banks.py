@@ -124,7 +124,6 @@ MemoryBank = Annotated[
 
 @json_schema_type
 class MemoryBankInput(BaseModel):
-    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
     memory_bank_id: str
     params: BankParams
     provider_memory_bank_id: Optional[str] = None
