@@ -24,7 +24,7 @@ def eval_meta_reference() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="meta-reference",
-                provider_type="meta-reference",
+                provider_type="inline::meta-reference",
                 config={},
             )
         ],

@@ -17,6 +17,8 @@ from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
@@ -36,6 +38,7 @@ RoutableObject = Union[
     MemoryBank,
     Dataset,
     ScoringFn,
+    EvalTask,
 ]
 
 
@@ -46,6 +49,7 @@ RoutableObjectWithProvider = Annotated[
         MemoryBank,
         Dataset,
         ScoringFn,
+        EvalTask,
     ],
     Field(discriminator="type"),
 ]
@@ -56,6 +60,7 @@ RoutedProtocol = Union[
     Memory,
     DatasetIO,
     Scoring,
+    Eval,
 ]
 
 
