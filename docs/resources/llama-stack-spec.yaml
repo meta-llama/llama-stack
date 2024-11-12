@@ -720,10 +720,26 @@ components:
       - epsilon
       - gamma
       type: object
-    DatasetDefWithProvider:
+    Dataset:
       additionalProperties: false
       properties:
-        dataset_schema:
+        identifier:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        provider_resource_id:
+          type: string
+        schema:
           additionalProperties:
             oneOf:
             - additionalProperties: false
@@ -817,20 +833,6 @@ components:
               - type
               type: object
           type: object
-        identifier:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        provider_id:
-          type: string
         type:
           const: dataset
           default: dataset
@@ -839,11 +841,12 @@ components:
           $ref: '#/components/schemas/URL'
       required:
       - identifier
-      - dataset_schema
+      - provider_resource_id
+      - provider_id
+      - type
+      - schema
       - url
       - metadata
-      - type
-      - provider_id
       type: object
     DeleteAgentsRequest:
       additionalProperties: false
@@ -918,7 +921,7 @@ components:
       required:
       - embeddings
       type: object
-    EvalTaskDefWithProvider:
+    EvalTask:
       additionalProperties: false
       properties:
         dataset_id:
@@ -937,6 +940,8 @@ components:
           type: object
         provider_id:
           type: string
+        provider_resource_id:
+          type: string
         scoring_functions:
           items:
             type: string
@@ -947,11 +952,12 @@ components:
           type: string
       required:
       - identifier
+      - provider_resource_id
+      - provider_id
+      - type
       - dataset_id
       - scoring_functions
       - metadata
-      - type
-      - provider_id
       type: object
     EvaluateResponse:
       additionalProperties: false
@@ -1053,22 +1059,39 @@ components:
             type: string
           type: array
       type: object
-    GraphMemoryBankDef:
+    GraphMemoryBank:
       additionalProperties: false
       properties:
         identifier:
           type: string
+        memory_bank_type:
+          const: graph
+          default: graph
+          type: string
         provider_id:
-          default: ''
+          type: string
+        provider_resource_id:
           type: string
         type:
+          const: memory_bank
+          default: memory_bank
+          type: string
+      required:
+      - identifier
+      - provider_resource_id
+      - provider_id
+      - type
+      - memory_bank_type
+      type: object
+    GraphMemoryBankParams:
+      additionalProperties: false
+      properties:
+        memory_bank_type:
           const: graph
           default: graph
           type: string
       required:
-      - identifier
-      - provider_id
-      - type
+      - memory_bank_type
       type: object
     HealthInfo:
       additionalProperties: false
@@ -1159,39 +1182,73 @@ components:
       - completed
       - in_progress
       type: string
-    KeyValueMemoryBankDef:
+    KeyValueMemoryBank:
       additionalProperties: false
       properties:
         identifier:
           type: string
+        memory_bank_type:
+          const: keyvalue
+          default: keyvalue
+          type: string
         provider_id:
-          default: ''
+          type: string
+        provider_resource_id:
           type: string
         type:
+          const: memory_bank
+          default: memory_bank
+          type: string
+      required:
+      - identifier
+      - provider_resource_id
+      - provider_id
+      - type
+      - memory_bank_type
+      type: object
+    KeyValueMemoryBankParams:
+      additionalProperties: false
+      properties:
+        memory_bank_type:
           const: keyvalue
           default: keyvalue
           type: string
       required:
-      - identifier
-      - provider_id
-      - type
+      - memory_bank_type
       type: object
-    KeywordMemoryBankDef:
+    KeywordMemoryBank:
       additionalProperties: false
       properties:
         identifier:
           type: string
+        memory_bank_type:
+          const: keyword
+          default: keyword
+          type: string
         provider_id:
-          default: ''
+          type: string
+        provider_resource_id:
           type: string
         type:
+          const: memory_bank
+          default: memory_bank
+          type: string
+      required:
+      - identifier
+      - provider_resource_id
+      - provider_id
+      - type
+      - memory_bank_type
+      type: object
+    KeywordMemoryBankParams:
+      additionalProperties: false
+      properties:
+        memory_bank_type:
           const: keyword
           default: keyword
           type: string
       required:
-      - identifier
-      - provider_id
-      - type
+      - memory_bank_type
       type: object
     LLMAsJudgeScoringFnParams:
       additionalProperties: false
@@ -1851,30 +1908,171 @@ components:
     RegisterDatasetRequest:
       additionalProperties: false
       properties:
-        dataset_def:
-          $ref: '#/components/schemas/DatasetDefWithProvider'
+        dataset_id:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_dataset_id:
+          type: string
+        provider_id:
+          type: string
+        schema:
+          additionalProperties:
+            oneOf:
+            - additionalProperties: false
+              properties:
+                type:
+                  const: string
+                  default: string
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: number
+                  default: number
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: boolean
+                  default: boolean
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: array
+                  default: array
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: object
+                  default: object
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: json
+                  default: json
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: union
+                  default: union
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: chat_completion_input
+                  default: chat_completion_input
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: completion_input
+                  default: completion_input
+                  type: string
+              required:
+              - type
+              type: object
+            - additionalProperties: false
+              properties:
+                type:
+                  const: agent_turn_input
+                  default: agent_turn_input
+                  type: string
+              required:
+              - type
+              type: object
+          type: object
+        url:
+          $ref: '#/components/schemas/URL'
       required:
-      - dataset_def
+      - dataset_id
+      - schema
+      - url
       type: object
     RegisterEvalTaskRequest:
       additionalProperties: false
       properties:
-        eval_task_def:
-          $ref: '#/components/schemas/EvalTaskDefWithProvider'
+        dataset_id:
+          type: string
+        eval_task_id:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_eval_task_id:
+          type: string
+        provider_id:
+          type: string
+        scoring_functions:
+          items:
+            type: string
+          type: array
       required:
-      - eval_task_def
+      - eval_task_id
+      - dataset_id
+      - scoring_functions
       type: object
     RegisterMemoryBankRequest:
       additionalProperties: false
       properties:
-        memory_bank:
+        memory_bank_id:
+          type: string
+        params:
           oneOf:
-          - $ref: '#/components/schemas/VectorMemoryBankDef'
-          - $ref: '#/components/schemas/KeyValueMemoryBankDef'
-          - $ref: '#/components/schemas/KeywordMemoryBankDef'
-          - $ref: '#/components/schemas/GraphMemoryBankDef'
+          - $ref: '#/components/schemas/VectorMemoryBankParams'
+          - $ref: '#/components/schemas/KeyValueMemoryBankParams'
+          - $ref: '#/components/schemas/KeywordMemoryBankParams'
+          - $ref: '#/components/schemas/GraphMemoryBankParams'
+        provider_id:
+          type: string
+        provider_memorybank_id:
+          type: string
       required:
-      - memory_bank
+      - memory_bank_id
+      - params
       type: object
     RegisterModelRequest:
       additionalProperties: false
@@ -1901,10 +2099,114 @@ components:
     RegisterScoringFunctionRequest:
       additionalProperties: false
       properties:
-        function_def:
-          $ref: '#/components/schemas/ScoringFnDefWithProvider'
+        description:
+          type: string
+        params:
+          oneOf:
+          - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
+          - $ref: '#/components/schemas/RegexParserScoringFnParams'
+        provider_id:
+          type: string
+        provider_scoring_fn_id:
+          type: string
+        return_type:
+          oneOf:
+          - additionalProperties: false
+            properties:
+              type:
+                const: string
+                default: string
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: number
+                default: number
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: boolean
+                default: boolean
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: array
+                default: array
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: object
+                default: object
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: json
+                default: json
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: union
+                default: union
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: chat_completion_input
+                default: chat_completion_input
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: completion_input
+                default: completion_input
+                type: string
+            required:
+            - type
+            type: object
+          - additionalProperties: false
+            properties:
+              type:
+                const: agent_turn_input
+                default: agent_turn_input
+                type: string
+            required:
+            - type
+            type: object
+        scoring_fn_id:
+          type: string
       required:
-      - function_def
+      - scoring_fn_id
+      - description
+      - return_type
       type: object
     RegisterShieldRequest:
       additionalProperties: false
@@ -2162,7 +2464,7 @@ components:
       required:
       - results
       type: object
-    ScoringFnDefWithProvider:
+    ScoringFn:
       additionalProperties: false
       properties:
         description:
@@ -2184,6 +2486,8 @@ components:
           - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
           - $ref: '#/components/schemas/RegexParserScoringFnParams'
         provider_id:
+          type: string
+        provider_resource_id:
           type: string
         return_type:
           oneOf:
@@ -2278,15 +2582,16 @@ components:
             - type
             type: object
         type:
-          const: scoring_fn
-          default: scoring_fn
+          const: scoring_function
+          default: scoring_function
           type: string
       required:
       - identifier
+      - provider_resource_id
+      - provider_id
+      - type
       - metadata
       - return_type
-      - type
-      - provider_id
       type: object
     ScoringResult:
       additionalProperties: false
@@ -2352,10 +2657,10 @@ components:
       properties:
         memory_bank:
           oneOf:
-          - $ref: '#/components/schemas/VectorMemoryBankDef'
-          - $ref: '#/components/schemas/KeyValueMemoryBankDef'
-          - $ref: '#/components/schemas/KeywordMemoryBankDef'
-          - $ref: '#/components/schemas/GraphMemoryBankDef'
+          - $ref: '#/components/schemas/VectorMemoryBank'
+          - $ref: '#/components/schemas/KeyValueMemoryBank'
+          - $ref: '#/components/schemas/KeywordMemoryBank'
+          - $ref: '#/components/schemas/GraphMemoryBank'
         session_id:
           type: string
         session_name:
@@ -3010,7 +3315,7 @@ components:
       - role
       - content
       type: object
-    VectorMemoryBankDef:
+    VectorMemoryBank:
       additionalProperties: false
       properties:
         chunk_size_in_tokens:
@@ -3019,19 +3324,44 @@ components:
           type: string
         identifier:
           type: string
-        overlap_size_in_tokens:
-          type: integer
-        provider_id:
-          default: ''
-          type: string
-        type:
+        memory_bank_type:
           const: vector
           default: vector
           type: string
+        overlap_size_in_tokens:
+          type: integer
+        provider_id:
+          type: string
+        provider_resource_id:
+          type: string
+        type:
+          const: memory_bank
+          default: memory_bank
+          type: string
       required:
       - identifier
+      - provider_resource_id
       - provider_id
       - type
+      - memory_bank_type
+      - embedding_model
+      - chunk_size_in_tokens
+      type: object
+    VectorMemoryBankParams:
+      additionalProperties: false
+      properties:
+        chunk_size_in_tokens:
+          type: integer
+        embedding_model:
+          type: string
+        memory_bank_type:
+          const: vector
+          default: vector
+          type: string
+        overlap_size_in_tokens:
+          type: integer
+      required:
+      - memory_bank_type
       - embedding_model
       - chunk_size_in_tokens
       type: object
@@ -3068,7 +3398,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-11 18:11:42.086884"
+    \ draft and subject to change.\n                Generated at 2024-11-11 18:44:30.967321"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -3395,7 +3725,7 @@ paths:
     get:
       parameters:
       - in: query
-        name: dataset_identifier
+        name: dataset_id
         required: true
         schema:
           type: string
@@ -3412,7 +3742,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/DatasetDefWithProvider'
+                - $ref: '#/components/schemas/Dataset'
                 - type: 'null'
           description: OK
       tags:
@@ -3432,7 +3762,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/DatasetDefWithProvider'
+                $ref: '#/components/schemas/Dataset'
           description: OK
       tags:
       - Datasets
@@ -3609,7 +3939,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/EvalTaskDefWithProvider'
+                - $ref: '#/components/schemas/EvalTask'
                 - type: 'null'
           description: OK
       tags:
@@ -3629,7 +3959,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/EvalTaskDefWithProvider'
+                $ref: '#/components/schemas/EvalTask'
           description: OK
       tags:
       - EvalTasks
@@ -3802,7 +4132,7 @@ paths:
     get:
       parameters:
       - in: query
-        name: identifier
+        name: memory_bank_id
         required: true
         schema:
           type: string
@@ -3820,10 +4150,10 @@ paths:
               schema:
                 oneOf:
                 - oneOf:
-                  - $ref: '#/components/schemas/VectorMemoryBankDef'
-                  - $ref: '#/components/schemas/KeyValueMemoryBankDef'
-                  - $ref: '#/components/schemas/KeywordMemoryBankDef'
-                  - $ref: '#/components/schemas/GraphMemoryBankDef'
+                  - $ref: '#/components/schemas/VectorMemoryBank'
+                  - $ref: '#/components/schemas/KeyValueMemoryBank'
+                  - $ref: '#/components/schemas/KeywordMemoryBank'
+                  - $ref: '#/components/schemas/GraphMemoryBank'
                 - type: 'null'
           description: OK
       tags:
@@ -3844,10 +4174,10 @@ paths:
             application/jsonl:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/VectorMemoryBankDef'
-                - $ref: '#/components/schemas/KeyValueMemoryBankDef'
-                - $ref: '#/components/schemas/KeywordMemoryBankDef'
-                - $ref: '#/components/schemas/GraphMemoryBankDef'
+                - $ref: '#/components/schemas/VectorMemoryBank'
+                - $ref: '#/components/schemas/KeyValueMemoryBank'
+                - $ref: '#/components/schemas/KeywordMemoryBank'
+                - $ref: '#/components/schemas/GraphMemoryBank'
           description: OK
       tags:
       - MemoryBanks
@@ -3867,9 +4197,7 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterMemoryBankRequest'
         required: true
-      responses:
-        '200':
-          description: OK
+      responses: {}
       tags:
       - MemoryBanks
   /models/get:
@@ -4227,7 +4555,7 @@ paths:
     get:
       parameters:
       - in: query
-        name: name
+        name: scoring_fn_id
         required: true
         schema:
           type: string
@@ -4244,7 +4572,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/ScoringFnDefWithProvider'
+                - $ref: '#/components/schemas/ScoringFn'
                 - type: 'null'
           description: OK
       tags:
@@ -4264,7 +4592,7 @@ paths:
           content:
             application/jsonl:
               schema:
-                $ref: '#/components/schemas/ScoringFnDefWithProvider'
+                $ref: '#/components/schemas/ScoringFn'
           description: OK
       tags:
       - ScoringFunctions
@@ -4434,24 +4762,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Memory
-- name: DatasetIO
 - name: Datasets
-- name: Agents
-- name: Models
 - name: Telemetry
-- name: Inference
-- name: Eval
-- name: MemoryBanks
-- name: Scoring
-- name: EvalTasks
-- name: Inspect
 - name: PostTraining
-- name: ScoringFunctions
+- name: MemoryBanks
+- name: Eval
+- name: Memory
+- name: EvalTasks
+- name: Models
+- name: Scoring
+- name: Inference
 - name: Shields
-- name: BatchInference
-- name: SyntheticDataGeneration
+- name: DatasetIO
 - name: Safety
+- name: Agents
+- name: SyntheticDataGeneration
+- name: ScoringFunctions
+- name: BatchInference
+- name: Inspect
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -4683,40 +5011,37 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/GetAgentsSessionRequest"
     />
   name: GetAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankDef"
+- description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBank"
     />
-  name: GraphMemoryBankDef
-- description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBankDef"
+  name: GraphMemoryBank
+- description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBank"
     />
-  name: KeyValueMemoryBankDef
-- description: <SchemaDefinition schemaRef="#/components/schemas/KeywordMemoryBankDef"
+  name: KeyValueMemoryBank
+- description: <SchemaDefinition schemaRef="#/components/schemas/KeywordMemoryBank"
     />
-  name: KeywordMemoryBankDef
+  name: KeywordMemoryBank
 - description: 'A single session of an interaction with an Agentic System.
 
 
     <SchemaDefinition schemaRef="#/components/schemas/Session" />'
   name: Session
-- description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBankDef"
+- description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBank"
     />
-  name: VectorMemoryBankDef
+  name: VectorMemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
   name: AgentStepResponse
-- description: <SchemaDefinition schemaRef="#/components/schemas/DatasetDefWithProvider"
-    />
-  name: DatasetDefWithProvider
-- description: <SchemaDefinition schemaRef="#/components/schemas/EvalTaskDefWithProvider"
-    />
-  name: EvalTaskDefWithProvider
+- description: <SchemaDefinition schemaRef="#/components/schemas/Dataset" />
+  name: Dataset
+- description: <SchemaDefinition schemaRef="#/components/schemas/EvalTask" />
+  name: EvalTask
 - description: <SchemaDefinition schemaRef="#/components/schemas/Model" />
   name: Model
 - description: <SchemaDefinition schemaRef="#/components/schemas/PaginatedRowsResult"
     />
   name: PaginatedRowsResult
-- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFnDefWithProvider"
-    />
-  name: ScoringFnDefWithProvider
+- description: <SchemaDefinition schemaRef="#/components/schemas/ScoringFn" />
+  name: ScoringFn
 - description: 'A safety shield resource that can be used to check content
 
 
@@ -4816,6 +5141,18 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterEvalTaskRequest"
     />
   name: RegisterEvalTaskRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankParams"
+    />
+  name: GraphMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/KeyValueMemoryBankParams"
+    />
+  name: KeyValueMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/KeywordMemoryBankParams"
+    />
+  name: KeywordMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBankParams"
+    />
+  name: VectorMemoryBankParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterMemoryBankRequest"
     />
   name: RegisterMemoryBankRequest
@@ -4932,19 +5269,20 @@ x-tagGroups:
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
   - DPOAlignmentConfig
-  - DatasetDefWithProvider
+  - Dataset
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
-  - EvalTaskDefWithProvider
+  - EvalTask
   - EvaluateResponse
   - EvaluateRowsRequest
   - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
-  - GraphMemoryBankDef
+  - GraphMemoryBank
+  - GraphMemoryBankParams
   - HealthInfo
   - ImageMedia
   - InferenceStep
@@ -4952,8 +5290,10 @@ x-tagGroups:
   - Job
   - JobCancelRequest
   - JobStatus
-  - KeyValueMemoryBankDef
-  - KeywordMemoryBankDef
+  - KeyValueMemoryBank
+  - KeyValueMemoryBankParams
+  - KeywordMemoryBank
+  - KeywordMemoryBankParams
   - LLMAsJudgeScoringFnParams
   - LogEventRequest
   - LogSeverity
@@ -4998,7 +5338,7 @@ x-tagGroups:
   - ScoreBatchResponse
   - ScoreRequest
   - ScoreResponse
-  - ScoringFnDefWithProvider
+  - ScoringFn
   - ScoringResult
   - SearchToolDefinition
   - Session
@@ -5031,6 +5371,7 @@ x-tagGroups:
   - URL
   - UnstructuredLogEvent
   - UserMessage
-  - VectorMemoryBankDef
+  - VectorMemoryBank
+  - VectorMemoryBankParams
   - ViolationLevel
   - WolframAlphaToolDefinition
