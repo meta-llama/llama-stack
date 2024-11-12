@@ -31,13 +31,8 @@ class MemoryBankType(Enum):
 
 
 @json_schema_type
-class MemoryBank(Resource):
+class VectorMemoryBank(Resource):
     type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
-    memory_bank_type: MemoryBankType
-
-
-@json_schema_type
-class VectorMemoryBank(MemoryBank):
     memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
@@ -45,21 +40,24 @@ class VectorMemoryBank(MemoryBank):
 
 
 @json_schema_type
-class KeyValueMemoryBank(MemoryBank):
+class KeyValueMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
     memory_bank_type: Literal[MemoryBankType.keyvalue.value] = (
         MemoryBankType.keyvalue.value
     )
 
 
 @json_schema_type
-class KeywordMemoryBank(MemoryBank):
+class KeywordMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
     memory_bank_type: Literal[MemoryBankType.keyword.value] = (
         MemoryBankType.keyword.value
     )
 
 
 @json_schema_type
-class GraphMemoryBank(MemoryBank):
+class GraphMemoryBank(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
     memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
 
 
@@ -90,7 +88,7 @@ class GraphMemoryBankParams(BaseModel):
     memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
 
 
-AnyMemoryBank = Annotated[
+MemoryBank = Annotated[
     Union[
         VectorMemoryBank,
         KeyValueMemoryBank,

@@ -288,14 +288,13 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
         memory_bank = parse_obj_as(
-            AnyMemoryBank,
+            MemoryBank,
             {
                 "identifier": memory_bank_id,
                 "type": ResourceType.memory_bank.value,
                 "provider_id": provider_id,
                 "provider_resource_id": provider_memorybank_id,
-                "memory_bank_type": params.memory_bank_type,
-                **params.model_dump(exclude={"memory_bank_type"}),
+                **params.model_dump(),
             },
         )
         await self.register_object(memory_bank)
