@@ -5,9 +5,6 @@
 #
 # If you need "host" network mode, please uncomment
 #  - network_mode: "host"
-# and comment the lines with port mapping
-#  - ports:
-#    - "5100:5100"
 #
 # Similarly change "host.docker.internal" to "localhost" in the run.yaml file
 #
@@ -69,7 +66,7 @@ services:
     - vllm-0
     - vllm-1
       # image: llamastack/distribution-remote-vllm
-    image: localhost/distribution-remote-vllm:test-0.0.52rc3
+    image: llamastack/distribution-remote-vllm:test-0.0.52rc3
     volumes:
       - ~/.llama:/root/.llama
       - ~/local/llama-stack/distributions/remote-vllm/run.yaml:/root/llamastack-run-remote-vllm.yaml
