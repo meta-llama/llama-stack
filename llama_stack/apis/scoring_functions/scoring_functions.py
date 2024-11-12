@@ -96,7 +96,6 @@ class ScoringFn(CommonScoringFnFields, Resource):
         return self.provider_resource_id
 
 
-@json_schema_type
 class ScoringFnInput(CommonScoringFnFields, BaseModel):
     scoring_fn_id: str
     provider_id: Optional[str] = None

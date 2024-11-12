@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-12 11:16:58.657871"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-12 11:39:48.665782"
     },
     "servers": [
         {
@@ -5743,9 +5743,6 @@
                         "const": "shield",
                         "default": "shield"
                     },
-                    "shield_type": {
-                        "$ref": "#/components/schemas/ShieldType"
-                    },
                     "params": {
                         "type": "object",
                         "additionalProperties": {
@@ -5777,19 +5774,9 @@
                     "identifier",
                     "provider_resource_id",
                     "provider_id",
-                    "type",
-                    "shield_type"
+                    "type"
                 ],
                 "title": "A safety shield resource that can be used to check content"
-            },
-            "ShieldType": {
-                "type": "string",
-                "enum": [
-                    "generic_content_shield",
-                    "llama_guard",
-                    "code_scanner",
-                    "prompt_guard"
-                ]
             },
             "Trace": {
                 "type": "object",
@@ -7262,9 +7249,6 @@
                     "shield_id": {
                         "type": "string"
                     },
-                    "shield_type": {
-                        "$ref": "#/components/schemas/ShieldType"
-                    },
                     "provider_shield_id": {
                         "type": "string"
                     },
@@ -7299,8 +7283,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "shield_id",
-                    "shield_type"
+                    "shield_id"
                 ]
             },
             "RunEvalRequest": {
@@ -7854,13 +7837,19 @@
     ],
     "tags": [
         {
-            "name": "Inference"
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "BatchInference"
         },
         {
             "name": "Agents"
         },
         {
-            "name": "Telemetry"
+            "name": "Inference"
+        },
+        {
+            "name": "DatasetIO"
         },
         {
             "name": "Eval"
@@ -7869,43 +7858,37 @@
             "name": "Models"
         },
         {
-            "name": "Inspect"
-        },
-        {
-            "name": "EvalTasks"
+            "name": "PostTraining"
         },
         {
             "name": "ScoringFunctions"
         },
         {
-            "name": "Memory"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
-            "name": "MemoryBanks"
+            "name": "Datasets"
         },
         {
             "name": "Shields"
         },
         {
-            "name": "PostTraining"
+            "name": "Telemetry"
         },
         {
-            "name": "Datasets"
+            "name": "Inspect"
         },
         {
-            "name": "Scoring"
+            "name": "Safety"
         },
         {
             "name": "SyntheticDataGeneration"
         },
         {
-            "name": "BatchInference"
+            "name": "Memory"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "EvalTasks"
         },
         {
             "name": "BuiltinTool",
@@ -8254,10 +8237,6 @@
         {
             "name": "Shield",
             "description": "A safety shield resource that can be used to check content\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Shield\" />"
-        },
-        {
-            "name": "ShieldType",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ShieldType\" />"
         },
         {
             "name": "Trace",
@@ -8614,7 +8593,6 @@
                 "Session",
                 "Shield",
                 "ShieldCallStep",
-                "ShieldType",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",

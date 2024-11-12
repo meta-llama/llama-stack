@@ -34,7 +34,6 @@ class EvalTask(CommonEvalTaskFields, Resource):
         return self.provider_resource_id
 
 
-@json_schema_type
 class EvalTaskInput(CommonEvalTaskFields, BaseModel):
     eval_task_id: str
     provider_id: Optional[str] = None

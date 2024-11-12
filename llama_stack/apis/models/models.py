@@ -32,7 +32,6 @@ class Model(CommonModelFields, Resource):
         return self.provider_resource_id
 
 
-@json_schema_type
 class ModelInput(CommonModelFields):
     model_id: str
     provider_id: Optional[str] = None

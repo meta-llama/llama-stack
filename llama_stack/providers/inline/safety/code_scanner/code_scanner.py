@@ -14,6 +14,12 @@ from .config import CodeScannerConfig
 from llama_stack.apis.safety import *  # noqa: F403
 
 
+ALLOWED_CODE_SCANNER_MODEL_IDS = [
+    "CodeScanner",
+    "CodeShield",
+]
+
+
 class MetaReferenceCodeScannerSafetyImpl(Safety):
     def __init__(self, config: CodeScannerConfig, deps) -> None:
         self.config = config
@@ -25,8 +31,10 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        if shield.shield_type != ShieldType.code_scanner:
-            raise ValueError(f"Unsupported safety shield type: {shield.shield_type}")
+        if shield.provider_resource_id not in ALLOWED_CODE_SCANNER_MODEL_IDS:
+            raise ValueError(
+                f"Unsupported Code Scanner ID: {shield.provider_resource_id}. Allowed IDs: {ALLOWED_CODE_SCANNER_MODEL_IDS}"
+            )
 
     async def run_shield(
         self,

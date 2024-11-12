@@ -2227,11 +2227,8 @@ components:
           type: string
         shield_id:
           type: string
-        shield_type:
-          $ref: '#/components/schemas/ShieldType'
       required:
       - shield_id
-      - shield_type
       type: object
     RestAPIExecutionConfig:
       additionalProperties: false
@@ -2698,8 +2695,6 @@ components:
           type: string
         provider_resource_id:
           type: string
-        shield_type:
-          $ref: '#/components/schemas/ShieldType'
         type:
           const: shield
           default: shield
@@ -2709,7 +2704,6 @@ components:
       - provider_resource_id
       - provider_id
       - type
-      - shield_type
       title: A safety shield resource that can be used to check content
       type: object
     ShieldCallStep:
@@ -2736,13 +2730,6 @@ components:
       - step_id
       - step_type
       type: object
-    ShieldType:
-      enum:
-      - generic_content_shield
-      - llama_guard
-      - code_scanner
-      - prompt_guard
-      type: string
     SpanEndPayload:
       additionalProperties: false
       properties:
@@ -3397,7 +3384,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-12 11:16:58.657871"
+    \ draft and subject to change.\n                Generated at 2024-11-12 11:39:48.665782"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4761,24 +4748,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inference
+- name: MemoryBanks
+- name: BatchInference
 - name: Agents
-- name: Telemetry
+- name: Inference
+- name: DatasetIO
 - name: Eval
 - name: Models
-- name: Inspect
-- name: EvalTasks
-- name: ScoringFunctions
-- name: Memory
-- name: Safety
-- name: DatasetIO
-- name: MemoryBanks
-- name: Shields
 - name: PostTraining
+- name: ScoringFunctions
 - name: Datasets
-- name: Scoring
+- name: Shields
+- name: Telemetry
+- name: Inspect
+- name: Safety
 - name: SyntheticDataGeneration
-- name: BatchInference
+- name: Memory
+- name: Scoring
+- name: EvalTasks
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
@@ -5046,8 +5033,6 @@ tags:
 
     <SchemaDefinition schemaRef="#/components/schemas/Shield" />'
   name: Shield
-- description: <SchemaDefinition schemaRef="#/components/schemas/ShieldType" />
-  name: ShieldType
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: 'Checkpoint created during training runs
@@ -5343,7 +5328,6 @@ x-tagGroups:
   - Session
   - Shield
   - ShieldCallStep
-  - ShieldType
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus

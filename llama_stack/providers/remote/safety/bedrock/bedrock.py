@@ -20,11 +20,6 @@ from .config import BedrockSafetyConfig
 logger = logging.getLogger(__name__)
 
 
-BEDROCK_SUPPORTED_SHIELDS = [
-    ShieldType.generic_content_shield,
-]
-
-
 class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
     def __init__(self, config: BedrockSafetyConfig) -> None:
         self.config = config

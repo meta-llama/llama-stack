@@ -241,7 +241,6 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def register_shield(
         self,
         shield_id: str,
-        shield_type: ShieldType,
         provider_shield_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
@@ -260,7 +259,6 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
             params = {}
         shield = Shield(
             identifier=shield_id,
-            shield_type=shield_type,
             provider_resource_id=provider_shield_id,
             provider_id=provider_id,
             params=params,
