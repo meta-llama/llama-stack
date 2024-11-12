@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 from llama_stack.apis.inference.inference import Inference
 
-from .base_scoring_fn import BaseScoringFn
+from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
 from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403

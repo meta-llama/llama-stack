@@ -3,32 +3,32 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List
+from typing import Any, Dict, List, Optional
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
-from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.inference.inference import Inference
+
+from llama_stack.apis.scoring import (
+    ScoreBatchResponse,
+    ScoreResponse,
+    Scoring,
+    ScoringResult,
+)
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
-from .config import MetaReferenceScoringConfig
-from .scoring_fn.equality_scoring_fn import EqualityScoringFn
+from .config import LlmAsJudgeScoringConfig
 from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
-from .scoring_fn.regex_parser_scoring_fn import RegexParserScoringFn
-from .scoring_fn.subset_of_scoring_fn import SubsetOfScoringFn
 
-FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn, RegexParserScoringFn]
 
 LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 
 
-class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
+class LlmAsJudgeScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     def __init__(
         self,
-        config: MetaReferenceScoringConfig,
+        config: LlmAsJudgeScoringConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
         inference_api: Inference,
@@ -40,12 +40,8 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self.scoring_fn_id_impls = {}
 
     async def initialize(self) -> None:
-        for x in FIXED_FNS:
-            impl = x()
-            for fn_defs in impl.get_supported_scoring_fn_defs():
-                self.scoring_fn_id_impls[fn_defs.identifier] = impl
-        for x in LLM_JUDGE_FNS:
-            impl = x(inference_api=self.inference_api)
+        for fn in LLM_JUDGE_FNS:
+            impl = fn(inference_api=self.inference_api)
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
                 self.llm_as_judge_fn = impl
@@ -61,8 +57,8 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith(
-                "meta-reference"
-            ), "All meta-reference scoring fn must have identifier prefixed with 'meta-reference'! "
+                "llm-as-judge"
+            ), "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
 
         return scoring_fn_defs_list
 
@@ -70,18 +66,18 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         raise NotImplementedError("Register scoring function not implemented yet")
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
-        dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
-        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
+        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+        if not dataset_def.schema or len(dataset_def.schema) == 0:
             raise ValueError(
                 f"Dataset {dataset_id} does not have a schema defined. Please define a schema for the dataset."
             )
 
         for required_column in ["generated_answer", "expected_answer", "input_query"]:
-            if required_column not in dataset_def.dataset_schema:
+            if required_column not in dataset_def.schema:
                 raise ValueError(
                     f"Dataset {dataset_id} does not have a '{required_column}' column."
                 )
-            if dataset_def.dataset_schema[required_column].type != "string":
+            if dataset_def.schema[required_column].type != "string":
                 raise ValueError(
                     f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'."
                 )

@@ -15,21 +15,12 @@ from .fixtures import SCORING_FIXTURES
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
-            "scoring": "meta_reference",
-            "datasetio": "localfs",
-            "inference": "fireworks",
-        },
-        id="meta_reference_scoring_fireworks_inference",
-        marks=pytest.mark.meta_reference_scoring_fireworks_inference,
-    ),
-    pytest.param(
-        {
-            "scoring": "meta_reference",
+            "scoring": "basic",
             "datasetio": "localfs",
             "inference": "together",
         },
-        id="meta_reference_scoring_together_inference",
-        marks=pytest.mark.meta_reference_scoring_together_inference,
+        id="basic_scoring_together_inference",
+        marks=pytest.mark.basic_scoring_together_inference,
     ),
     pytest.param(
         {
@@ -40,13 +31,21 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         id="braintrust_scoring_together_inference",
         marks=pytest.mark.braintrust_scoring_together_inference,
     ),
+    pytest.param(
+        {
+            "scoring": "llm_as_judge",
+            "datasetio": "localfs",
+            "inference": "together",
+        },
+        id="llm_as_judge_scoring_together_inference",
+        marks=pytest.mark.llm_as_judge_scoring_together_inference,
+    ),
 ]
 
 
 def pytest_configure(config):
     for fixture_name in [
-        "meta_reference_scoring_fireworks_inference",
-        "meta_reference_scoring_together_inference",
+        "basic_scoring_together_inference",
         "braintrust_scoring_together_inference",
     ]:
         config.addinivalue_line(

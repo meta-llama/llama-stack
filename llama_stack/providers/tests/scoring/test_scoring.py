@@ -43,6 +43,13 @@ class TestScoring:
             scoring_stack[Api.datasets],
             scoring_stack[Api.models],
         )
+        scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
+        provider_id = scoring_fns_list[0].provider_id
+        if provider_id == "llm-as-judge":
+            pytest.skip(
+                f"{provider_id} provider does not support scoring without params"
+            )
+
         await register_dataset(datasets_impl)
         response = await datasets_impl.list_datasets()
         assert len(response) == 1
@@ -111,8 +118,8 @@ class TestScoring:
 
         scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
         provider_id = scoring_fns_list[0].provider_id
-        if provider_id == "braintrust":
-            pytest.skip("Braintrust provider does not support scoring with params")
+        if provider_id == "braintrust" or provider_id == "basic":
+            pytest.skip(f"{provider_id} provider does not support scoring with params")
 
         # scoring individual rows
         rows = await datasetio_impl.get_rows_paginated(
@@ -122,7 +129,7 @@ class TestScoring:
         assert len(rows.rows) == 3
 
         scoring_functions = {
-            "meta-reference::llm_as_judge_base": LLMAsJudgeScoringFnParams(
+            "llm-as-judge::llm_as_judge_base": LLMAsJudgeScoringFnParams(
                 judge_model="Llama3.1-405B-Instruct",
                 prompt_template="Output a number response in the following format: Score: <number>, where <number> is the number between 0 and 9.",
                 judge_score_regexes=[r"Score: (\d+)"],

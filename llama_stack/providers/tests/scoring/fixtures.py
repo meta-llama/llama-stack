@@ -19,12 +19,12 @@ def scoring_remote() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def scoring_meta_reference() -> ProviderFixture:
+def scoring_basic() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="meta-reference",
-                provider_type="meta-reference",
+                provider_id="basic",
+                provider_type="inline::basic",
                 config={},
             )
         ],
@@ -37,14 +37,27 @@ def scoring_braintrust() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="braintrust",
-                provider_type="braintrust",
+                provider_type="inline::braintrust",
                 config={},
             )
         ],
     )
 
 
-SCORING_FIXTURES = ["meta_reference", "remote", "braintrust"]
+@pytest.fixture(scope="session")
+def scoring_llm_as_judge() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="llm-as-judge",
+                provider_type="inline::llm-as-judge",
+                config={},
+            )
+        ],
+    )
+
+
+SCORING_FIXTURES = ["basic", "remote", "braintrust", "llm_as_judge"]
 
 
 @pytest_asyncio.fixture(scope="session")
