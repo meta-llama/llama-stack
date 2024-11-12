@@ -70,18 +70,18 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         raise NotImplementedError("Register scoring function not implemented yet")
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
-        dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
-        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
+        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+        if not dataset_def.schema or len(dataset_def.schema) == 0:
             raise ValueError(
                 f"Dataset {dataset_id} does not have a schema defined. Please define a schema for the dataset."
             )
 
         for required_column in ["generated_answer", "expected_answer", "input_query"]:
-            if required_column not in dataset_def.dataset_schema:
+            if required_column not in dataset_def.schema:
                 raise ValueError(
                     f"Dataset {dataset_id} does not have a '{required_column}' column."
                 )
-            if dataset_def.dataset_schema[required_column].type != "string":
+            if dataset_def.schema[required_column].type != "string":
                 raise ValueError(
                     f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'."
                 )

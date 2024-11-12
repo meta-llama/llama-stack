@@ -15,8 +15,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.scoring,
             provider_type="meta-reference",
             pip_packages=[],
-            module="llama_stack.providers.inline.scoring.meta_reference",
-            config_class="llama_stack.providers.inline.scoring.meta_reference.MetaReferenceScoringConfig",
+            module="llama_stack.providers.inline.scoring.basic",
+            config_class="llama_stack.providers.inline.scoring.basic.MetaReferenceScoringConfig",
             api_dependencies=[
                 Api.datasetio,
                 Api.datasets,
