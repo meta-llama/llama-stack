@@ -38,7 +38,7 @@ class DistributionRegistry(Protocol):
     async def register(self, obj: RoutableObjectWithProvider) -> bool: ...
 
 
-KEY_FORMAT = "distributions:registry:{}"
+KEY_FORMAT = "distributions:registry:v1::{}"
 
 
 class DiskDistributionRegistry(DistributionRegistry):

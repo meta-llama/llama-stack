@@ -30,7 +30,7 @@ from .config import FaissImplConfig
 
 logger = logging.getLogger(__name__)
 
-MEMORY_BANKS_PREFIX = "memory_banks:"
+MEMORY_BANKS_PREFIX = "memory_banks:v1::"
 
 
 class FaissIndex(EmbeddingIndex):
