@@ -66,8 +66,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         pass
 
     async def register_model(self, model: Model) -> None:
-        if model.identifier not in OLLAMA_SUPPORTED_MODELS:
-            raise ValueError(f"Model {model.identifier} is not supported by Ollama")
+        if model.provider_resource_id not in OLLAMA_SUPPORTED_MODELS:
+            raise ValueError(
+                f"Model {model.provider_resource_id} is not supported by Ollama"
+            )
 
     async def list_models(self) -> List[Model]:
         ollama_to_llama = {v: k for k, v in OLLAMA_SUPPORTED_MODELS.items()}
@@ -94,7 +96,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -102,7 +104,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         request = CompletionRequest(
-            model=model,
+            model=model_id,
             content=content,
             sampling_params=sampling_params,
             stream=stream,
@@ -148,7 +150,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -159,7 +161,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         request = ChatCompletionRequest(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -271,7 +273,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

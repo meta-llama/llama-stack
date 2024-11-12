@@ -46,7 +46,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             self.generator = Llama.build(self.config)
 
     async def register_model(self, model: Model) -> None:
-        if model.identifier != self.model.descriptor():
+        if model.provider_resource_id != self.model.descriptor():
             raise ValueError(
                 f"Model mismatch: {model.identifier} != {self.model.descriptor()}"
             )
@@ -68,7 +68,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -79,7 +79,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
             assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
 
         request = CompletionRequest(
-            model=model,
+            model=model_id,
             content=content,
             sampling_params=sampling_params,
             response_format=response_format,
@@ -186,7 +186,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -201,7 +201,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
 
         # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = ChatCompletionRequest(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -386,7 +386,7 @@ class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

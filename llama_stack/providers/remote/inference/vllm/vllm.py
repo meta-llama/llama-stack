@@ -45,8 +45,15 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self.client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
 
     async def register_model(self, model: Model) -> None:
-        for running_model in self.client.models.list():
-            repo = running_model.id
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def list_models(self) -> List[Model]:
+        models = []
+        for model in self.client.models.list():
+            repo = model.id
             if repo not in self.huggingface_repo_to_llama_model_id:
                 print(f"Unknown model served by vllm: {repo}")
                 continue
@@ -67,7 +74,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -78,7 +85,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -89,7 +96,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         request = ChatCompletionRequest(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -173,7 +180,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

@@ -49,7 +49,7 @@ def inference_meta_reference(inference_model) -> ProviderFixture:
         providers=[
             Provider(
                 provider_id=f"meta-reference-{i}",
-                provider_type="meta-reference",
+                provider_type="inline::meta-reference",
                 config=MetaReferenceInferenceConfig(
                     model=m,
                     max_seq_len=4096,
