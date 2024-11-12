@@ -90,6 +90,16 @@ class GraphMemoryBankParams(BaseModel):
     memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
 
 
+AnyMemoryBank = Annotated[
+    Union[
+        VectorMemoryBank,
+        KeyValueMemoryBank,
+        KeywordMemoryBank,
+        GraphMemoryBank,
+    ],
+    Field(discriminator="memory_bank_type"),
+]
+
 BankParams = Annotated[
     Union[
         VectorMemoryBankParams,
