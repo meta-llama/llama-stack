@@ -179,7 +179,7 @@ INFERENCE_FIXTURES = [
 
 
 @pytest_asyncio.fixture(scope="session")
-async def inference_stack(request, inference_model, model_id):
+async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
     impls = await resolve_impls_for_test_v2(
@@ -188,7 +188,7 @@ async def inference_stack(request, inference_model, model_id):
         inference_fixture.provider_data,
         models=[
             ModelInput(
-                model_id=model_id,
+                model_id=inference_model,
             )
         ],
     )

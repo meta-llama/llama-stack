@@ -39,7 +39,7 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
             [
                 build_model_alias(
                     model.descriptor(),
-                    model.core_model_id,
+                    model.core_model_id.value,
                 )
             ],
         )
@@ -55,12 +55,6 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
             self.generator.start()
         else:
             self.generator = Llama.build(self.config)
-
-    async def register_model(self, model: Model) -> None:
-        if model.provider_resource_id != self.model.descriptor():
-            raise ValueError(
-                f"Model mismatch: {model.identifier} != {self.model.descriptor()}"
-            )
 
     async def shutdown(self) -> None:
         if self.config.create_distributed_process_group:

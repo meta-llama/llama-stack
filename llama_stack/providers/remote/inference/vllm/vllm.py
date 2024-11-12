@@ -38,7 +38,7 @@ def build_model_aliases():
     return [
         build_model_alias(
             model.huggingface_repo,
-            model.core_model_id,
+            model.descriptor(),
         )
         for model in all_registered_models()
         if model.huggingface_repo
@@ -85,6 +85,7 @@ class VLLMInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPrivate
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         model = await self.model_store.get_model(model_id)
+        print(f"model={model}")
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,

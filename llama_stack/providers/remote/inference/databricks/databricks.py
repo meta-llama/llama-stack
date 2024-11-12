@@ -36,11 +36,11 @@ from .config import DatabricksImplConfig
 model_aliases = [
     build_model_alias(
         "databricks-meta-llama-3-1-70b-instruct",
-        CoreModelId.llama3_1_70b_instruct,
+        CoreModelId.llama3_1_70b_instruct.value,
     ),
     build_model_alias(
         "databricks-meta-llama-3-1-405b-instruct",
-        CoreModelId.llama3_1_405b_instruct,
+        CoreModelId.llama3_1_405b_instruct.value,
     ),
 ]
 

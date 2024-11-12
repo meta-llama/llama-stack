@@ -38,39 +38,39 @@ from .config import FireworksImplConfig
 model_aliases = [
     build_model_alias(
         "fireworks/llama-v3p1-8b-instruct",
-        CoreModelId.llama3_1_8b_instruct,
+        CoreModelId.llama3_1_8b_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p1-70b-instruct",
-        CoreModelId.llama3_1_70b_instruct,
+        CoreModelId.llama3_1_70b_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p1-405b-instruct",
-        CoreModelId.llama3_1_405b_instruct,
+        CoreModelId.llama3_1_405b_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p2-1b-instruct",
-        CoreModelId.llama3_2_3b_instruct,
+        CoreModelId.llama3_2_3b_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p2-3b-instruct",
-        CoreModelId.llama3_2_11b_vision_instruct,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p2-11b-vision-instruct",
-        CoreModelId.llama3_2_11b_vision_instruct,
+        CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p2-90b-vision-instruct",
-        CoreModelId.llama3_2_90b_vision_instruct,
+        CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-guard-3-8b",
-        CoreModelId.llama_guard_3_8b,
+        CoreModelId.llama_guard_3_8b.value,
     ),
     build_model_alias(
         "fireworks/llama-guard-3-11b-vision",
-        CoreModelId.llama_guard_3_11b_vision,
+        CoreModelId.llama_guard_3_11b_vision.value,
     ),
 ]
 
