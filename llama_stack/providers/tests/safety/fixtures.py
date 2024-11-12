@@ -101,6 +101,8 @@ async def safety_stack(inference_model, safety_model, request):
     shield_provider_type = safety_fixture.providers[0].provider_type
     shield_input = get_shield_to_register(shield_provider_type, safety_model)
 
+    print(f"inference_model: {inference_model}")
+    print(f"shield_input = {shield_input}")
     impls = await resolve_impls_for_test_v2(
         [Api.safety, Api.shields, Api.inference],
         providers,
