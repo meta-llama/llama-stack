@@ -150,12 +150,12 @@ fi
 # Detect platform architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-    PLATFORM="--platform linux/arm64"
+  PLATFORM="--platform linux/arm64"
 elif [ "$ARCH" = "x86_64" ]; then
-    PLATFORM="--platform linux/amd64"
+  PLATFORM="--platform linux/amd64"
 else
-    echo "Unsupported architecture: $ARCH"
-    exit 1
+  echo "Unsupported architecture: $ARCH"
+  exit 1
 fi
 
 set -x

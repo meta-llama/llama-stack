@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 import pkg_resources
 from pydantic import BaseModel
@@ -36,11 +36,6 @@ SERVER_DEPENDENCIES = [
 class ImageType(Enum):
     docker = "docker"
     conda = "conda"
-
-
-class Dependencies(BaseModel):
-    pip_packages: List[str]
-    docker_image: Optional[str] = None
 
 
 class ApiInput(BaseModel):
@@ -103,17 +98,12 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
 
 
 def build_image(build_config: BuildConfig, build_file_path: Path):
-    package_deps = Dependencies(
-        docker_image=build_config.distribution_spec.docker_image or "python:3.10-slim",
-        pip_packages=SERVER_DEPENDENCIES,
-    )
+    docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
 
-    # extend package dependencies based on providers spec
     normal_deps, special_deps = get_provider_dependencies(
         build_config.distribution_spec.providers
     )
-    package_deps.pip_packages.extend(normal_deps)
-    package_deps.pip_packages.extend(special_deps)
+    normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == ImageType.docker.value:
         script = pkg_resources.resource_filename(
@@ -122,7 +112,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         args = [
             script,
             build_config.name,
-            package_deps.docker_image,
+            docker_image,
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
