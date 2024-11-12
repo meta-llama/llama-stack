@@ -15,7 +15,7 @@ from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_u
 from .config import HuggingfaceDatasetIOConfig
 
 
-def load_hf_dataset(dataset_def: DatasetDef):
+def load_hf_dataset(dataset_def: Dataset):
     if dataset_def.metadata.get("path", None):
         return hf_datasets.load_dataset(**dataset_def.metadata)
 
@@ -41,7 +41,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
 
     async def register_dataset(
         self,
-        dataset_def: DatasetDef,
+        dataset_def: Dataset,
     ) -> None:
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
