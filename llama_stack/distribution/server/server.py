@@ -27,12 +27,7 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from llama_stack.distribution.distribution import (
-    builtin_automatically_routed_apis,
-    get_provider_registry,
-)
-
-from llama_stack.distribution.store.registry import create_dist_registry
+from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -42,14 +37,15 @@ from llama_stack.providers.utils.telemetry.tracing import (
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import InvalidProviderError, resolve_impls
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.stack import construct_stack
 
 from .endpoints import get_all_api_endpoints
 
 
 def create_sse_event(data: Any) -> str:
     if isinstance(data, BaseModel):
-        data = data.json()
+        data = data.model_dump_json()
     else:
         data = json.dumps(data)
 
@@ -281,12 +277,8 @@ def main(
 
     app = FastAPI()
 
-    dist_registry, dist_kvstore = asyncio.run(create_dist_registry(config))
-
     try:
-        impls = asyncio.run(
-            resolve_impls(config, get_provider_registry(), dist_registry)
-        )
+        impls = asyncio.run(construct_stack(config))
     except InvalidProviderError:
         sys.exit(1)
 

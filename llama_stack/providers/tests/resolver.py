@@ -17,29 +17,38 @@ from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import resolve_impls
-from llama_stack.distribution.store import CachedDiskDistributionRegistry
-from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
+from llama_stack.distribution.stack import construct_stack
+from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 
 
 async def resolve_impls_for_test_v2(
     apis: List[Api],
     providers: Dict[str, List[Provider]],
     provider_data: Optional[Dict[str, Any]] = None,
+    models: Optional[List[Model]] = None,
+    shields: Optional[List[Shield]] = None,
+    memory_banks: Optional[List[MemoryBank]] = None,
+    datasets: Optional[List[Dataset]] = None,
+    scoring_fns: Optional[List[ScoringFn]] = None,
+    eval_tasks: Optional[List[EvalTask]] = None,
 ):
+    sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     run_config = dict(
         built_at=datetime.now(),
         image_name="test-fixture",
         apis=apis,
         providers=providers,
+        metadata_store=SqliteKVStoreConfig(db_path=sqlite_file.name),
+        models=models or [],
+        shields=shields or [],
+        memory_banks=memory_banks or [],
+        datasets=datasets or [],
+        scoring_fns=scoring_fns or [],
+        eval_tasks=eval_tasks or [],
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
-
-    sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-    dist_kvstore = await kvstore_impl(SqliteKVStoreConfig(db_path=sqlite_file.name))
-    dist_registry = CachedDiskDistributionRegistry(dist_kvstore)
     try:
-        impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
+        impls = await construct_stack(run_config)
     except ModuleNotFoundError as e:
         print_pip_install_help(providers)
         raise e

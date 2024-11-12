@@ -151,6 +151,14 @@ Configuration for the persistence store used by the distribution registry. If no
 a default SQLite store will be used.""",
     )
 
+    # registry of "resources" in the distribution
+    models: List[Model] = Field(default_factory=list)
+    shields: List[Shield] = Field(default_factory=list)
+    memory_banks: List[MemoryBank] = Field(default_factory=list)
+    datasets: List[Dataset] = Field(default_factory=list)
+    scoring_fns: List[ScoringFn] = Field(default_factory=list)
+    eval_tasks: List[EvalTask] = Field(default_factory=list)
+
 
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION

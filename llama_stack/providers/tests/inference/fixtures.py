@@ -9,6 +9,8 @@ import os
 import pytest
 import pytest_asyncio
 
+from llama_stack.apis.models import Model
+
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
@@ -159,13 +161,13 @@ async def inference_stack(request, inference_model):
         [Api.inference],
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
-    )
-
-    provider_id = inference_fixture.providers[0].provider_id
-    print(f"Registering model {inference_model} with provider {provider_id}")
-    await impls[Api.models].register_model(
-        model_id=inference_model,
-        provider_id=provider_id,
+        models=[
+            Model(
+                identifier=inference_model,
+                provider_resource_id=inference_model,
+                provider_id=inference_fixture.providers[0].provider_id,
+            )
+        ],
     )
 
     return (impls[Api.inference], impls[Api.models])
