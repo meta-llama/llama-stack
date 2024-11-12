@@ -44,7 +44,6 @@ def sample_documents():
 
 
 async def register_memory_bank(banks_impl: MemoryBanks):
-
     return await banks_impl.register_memory_bank(
         memory_bank_id="test_bank",
         params=VectorMemoryBankParams(
@@ -71,7 +70,7 @@ class TestMemory:
         # but so far we don't have an unregister API unfortunately, so be careful
         _, banks_impl = memory_stack
 
-        bank = await banks_impl.register_memory_bank(
+        await banks_impl.register_memory_bank(
             memory_bank_id="test_bank_no_provider",
             params=VectorMemoryBankParams(
                 embedding_model="all-MiniLM-L6-v2",

@@ -19,7 +19,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "meta_reference",
             "safety": "llama_guard",
-            "memory": "meta_reference",
+            "memory": "faiss",
             "agents": "meta_reference",
         },
         id="meta_reference",
@@ -29,7 +29,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
         {
             "inference": "ollama",
             "safety": "llama_guard",
-            "memory": "meta_reference",
+            "memory": "faiss",
             "agents": "meta_reference",
         },
         id="ollama",
@@ -40,7 +40,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "inference": "together",
             "safety": "llama_guard",
             # make this work with Weaviate which is what the together distro supports
-            "memory": "meta_reference",
+            "memory": "faiss",
             "agents": "meta_reference",
         },
         id="together",

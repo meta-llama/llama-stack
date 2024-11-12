@@ -99,7 +99,7 @@ async def safety_stack(inference_model, safety_model, request):
         provider_data.update(safety_fixture.provider_data)
 
     shield_provider_type = safety_fixture.providers[0].provider_type
-    shield = get_shield(
+    shield = get_shield_to_register(
         shield_provider_type, safety_fixture.providers[0].provider_id, safety_model
     )
 
@@ -120,7 +120,7 @@ async def safety_stack(inference_model, safety_model, request):
     return impls[Api.safety], impls[Api.shields], shield
 
 
-def get_shield(provider_type: str, provider_id: str, safety_model: str):
+def get_shield_to_register(provider_type: str, provider_id: str, safety_model: str):
     shield_config = {}
     shield_type = ShieldType.llama_guard
     identifier = "llama_guard"

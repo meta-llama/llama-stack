@@ -641,12 +641,13 @@ class ChatAgent(ShieldRunnerMixin):
 
         if session_info.memory_bank_id is None:
             bank_id = f"memory_bank_{session_id}"
-            memory_bank = VectorMemoryBank(
-                identifier=bank_id,
-                embedding_model="all-MiniLM-L6-v2",
-                chunk_size_in_tokens=512,
+            await self.memory_banks_api.register_memory_bank(
+                memory_bank_id=bank_id,
+                params=VectorMemoryBankParams(
+                    embedding_model="all-MiniLM-L6-v2",
+                    chunk_size_in_tokens=512,
+                ),
             )
-            await self.memory_banks_api.register_memory_bank(memory_bank)
             await self.storage.add_memory_bank_to_session(session_id, bank_id)
         else:
             bank_id = session_info.memory_bank_id

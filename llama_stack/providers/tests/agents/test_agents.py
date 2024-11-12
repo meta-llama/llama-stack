@@ -16,15 +16,12 @@ from llama_stack.providers.datatypes import *  # noqa: F403
 # pytest -v -s llama_stack/providers/tests/agents/test_agents.py
 #   -m "meta_reference"
 
+from .fixtures import pick_inference_model
+
 
 @pytest.fixture
 def common_params(inference_model):
-    # This is not entirely satisfactory. The fixture `inference_model` can correspond to
-    # multiple models when you need to run a safety model in addition to normal agent
-    # inference model. We filter off the safety model by looking for "Llama-Guard"
-    if isinstance(inference_model, list):
-        inference_model = next(m for m in inference_model if "Llama-Guard" not in m)
-        assert inference_model is not None
+    inference_model = pick_inference_model(inference_model)
 
     return dict(
         model=inference_model,
