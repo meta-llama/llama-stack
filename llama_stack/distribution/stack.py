@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 from typing import Any, Dict
-
 from termcolor import colored
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
