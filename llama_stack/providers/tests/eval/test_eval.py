@@ -63,8 +63,7 @@ class Testeval:
         assert len(rows.rows) == 3
 
         scoring_functions = [
-            "meta-reference::llm_as_judge_base",
-            "meta-reference::equality",
+            "basic::equality",
         ]
         task_id = "meta-reference::app_eval"
         await eval_tasks_impl.register_eval_task(
@@ -95,8 +94,7 @@ class Testeval:
             ),
         )
         assert len(response.generations) == 3
-        assert "meta-reference::equality" in response.scores
-        assert "meta-reference::llm_as_judge_base" in response.scores
+        assert "basic::equality" in response.scores
 
     @pytest.mark.asyncio
     async def test_eval_run_eval(self, eval_stack):
@@ -116,7 +114,7 @@ class Testeval:
         )
 
         scoring_functions = [
-            "meta-reference::subset_of",
+            "basic::subset_of",
         ]
 
         task_id = "meta-reference::app_eval-2"
@@ -141,7 +139,7 @@ class Testeval:
 
         assert eval_response is not None
         assert len(eval_response.generations) == 5
-        assert "meta-reference::subset_of" in eval_response.scores
+        assert "basic::subset_of" in eval_response.scores
 
     @pytest.mark.asyncio
     async def test_eval_run_benchmark_eval(self, eval_stack):
@@ -182,7 +180,7 @@ class Testeval:
         await eval_tasks_impl.register_eval_task(
             eval_task_id="meta-reference-mmlu",
             dataset_id="mmlu",
-            scoring_functions=["meta-reference::regex_parser_multiple_choice_answer"],
+            scoring_functions=["basic::regex_parser_multiple_choice_answer"],
         )
 
         # list benchmarks

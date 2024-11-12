@@ -17,8 +17,8 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "eval": "meta_reference",
-            "scoring": "meta_reference",
-            "datasetio": "meta_reference",
+            "scoring": "basic",
+            "datasetio": "localfs",
             "inference": "fireworks",
         },
         id="meta_reference_eval_fireworks_inference",
@@ -27,8 +27,8 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "eval": "meta_reference",
-            "scoring": "meta_reference",
-            "datasetio": "meta_reference",
+            "scoring": "basic",
+            "datasetio": "localfs",
             "inference": "together",
         },
         id="meta_reference_eval_together_inference",
@@ -37,7 +37,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "eval": "meta_reference",
-            "scoring": "meta_reference",
+            "scoring": "basic",
             "datasetio": "huggingface",
             "inference": "together",
         },
