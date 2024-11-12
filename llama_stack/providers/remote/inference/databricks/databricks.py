@@ -6,6 +6,8 @@
 
 from typing import AsyncGenerator
 
+from llama_models.datatypes import CoreModelId
+
 from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.llama3.api.datatypes import Message
@@ -15,7 +17,10 @@ from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
 
-from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.model_registry import (
+    ModelAlias,
+    ModelRegistryHelper,
+)
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     process_chat_completion_response,
@@ -28,16 +33,25 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import DatabricksImplConfig
 
 
-DATABRICKS_SUPPORTED_MODELS = {
-    "Llama3.1-70B-Instruct": "databricks-meta-llama-3-1-70b-instruct",
-    "Llama3.1-405B-Instruct": "databricks-meta-llama-3-1-405b-instruct",
-}
+model_aliases = [
+    ModelAlias(
+        provider_model_id="databricks-meta-llama-3-1-70b-instruct",
+        aliases=["Llama3.1-70B-Instruct"],
+        llama_model=CoreModelId.llama3_1_70b_instruct.value,
+    ),
+    ModelAlias(
+        provider_model_id="databricks-meta-llama-3-1-405b-instruct",
+        aliases=["Llama3.1-405B-Instruct"],
+        llama_model=CoreModelId.llama3_1_405b_instruct.value,
+    ),
+]
 
 
 class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: DatabricksImplConfig) -> None:
         ModelRegistryHelper.__init__(
-            self, provider_to_common_model_aliases_map=DATABRICKS_SUPPORTED_MODELS
+            self,
+            model_aliases=model_aliases,
         )
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
@@ -113,8 +127,10 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         return {
-            "model": self.map_to_provider_model(request.model),
-            "prompt": chat_completion_request_to_prompt(request, self.formatter),
+            "model": request.model,
+            "prompt": chat_completion_request_to_prompt(
+                request, self.get_llama_model(request.model), self.formatter
+            ),
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
         }
