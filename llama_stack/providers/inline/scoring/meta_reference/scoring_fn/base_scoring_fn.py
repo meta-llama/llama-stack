@@ -24,15 +24,15 @@ class BaseScoringFn(ABC):
     def __str__(self) -> str:
         return self.__class__.__name__
 
-    def get_supported_scoring_fn_defs(self) -> List[ScoringFnDef]:
+    def get_supported_scoring_fn_defs(self) -> List[ScoringFn]:
         return [x for x in self.supported_fn_defs_registry.values()]
 
-    def register_scoring_fn_def(self, scoring_fn_def: ScoringFnDef) -> None:
-        if scoring_fn_def.identifier in self.supported_fn_defs_registry:
+    def register_scoring_fn_def(self, scoring_fn: ScoringFn) -> None:
+        if scoring_fn.identifier in self.supported_fn_defs_registry:
             raise ValueError(
-                f"Scoring function def with identifier {scoring_fn_def.identifier} already exists."
+                f"Scoring function def with identifier {scoring_fn.identifier} already exists."
             )
-        self.supported_fn_defs_registry[scoring_fn_def.identifier] = scoring_fn_def
+        self.supported_fn_defs_registry[scoring_fn.identifier] = scoring_fn
 
     @abstractmethod
     async def score_row(

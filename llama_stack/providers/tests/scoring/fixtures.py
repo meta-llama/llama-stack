@@ -48,7 +48,7 @@ SCORING_FIXTURES = ["meta_reference", "remote", "braintrust"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def scoring_stack(request):
+async def scoring_stack(request, inference_model):
     fixture_dict = request.param
 
     providers = {}
@@ -63,6 +63,20 @@ async def scoring_stack(request):
         [Api.scoring, Api.datasetio, Api.inference],
         providers,
         provider_data,
+    )
+
+    provider_id = providers["inference"][0].provider_id
+    await impls[Api.models].register_model(
+        model_id=inference_model,
+        provider_id=provider_id,
+    )
+    await impls[Api.models].register_model(
+        model_id="Llama3.1-405B-Instruct",
+        provider_id=provider_id,
+    )
+    await impls[Api.models].register_model(
+        model_id="Llama3.1-8B-Instruct",
+        provider_id=provider_id,
     )
 
     return impls

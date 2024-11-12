@@ -48,7 +48,7 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
     async def shutdown(self) -> None: ...
 
-    async def list_scoring_functions(self) -> List[ScoringFnDef]:
+    async def list_scoring_functions(self) -> List[ScoringFn]:
         scoring_fn_defs_list = [x for x in self.supported_fn_defs_registry.values()]
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith(
@@ -57,7 +57,7 @@ class BraintrustScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
         return scoring_fn_defs_list
 
-    async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
+    async def register_scoring_function(self, scoring_fn: ScoringFn) -> None:
         raise NotImplementedError(
             "Registering scoring function not allowed for braintrust provider"
         )

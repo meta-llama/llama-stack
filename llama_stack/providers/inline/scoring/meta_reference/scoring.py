@@ -52,7 +52,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
     async def shutdown(self) -> None: ...
 
-    async def list_scoring_functions(self) -> List[ScoringFnDef]:
+    async def list_scoring_functions(self) -> List[ScoringFn]:
         scoring_fn_defs_list = [
             fn_def
             for impl in self.scoring_fn_id_impls.values()
@@ -66,7 +66,7 @@ class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
 
         return scoring_fn_defs_list
 
-    async def register_scoring_function(self, function_def: ScoringFnDef) -> None:
+    async def register_scoring_function(self, function_def: ScoringFn) -> None:
         raise NotImplementedError("Register scoring function not implemented yet")
 
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:

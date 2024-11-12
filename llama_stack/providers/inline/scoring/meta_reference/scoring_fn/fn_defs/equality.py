@@ -5,11 +5,14 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.common.type_system import NumberType
-from llama_stack.apis.scoring_functions import ScoringFnDef
+from llama_stack.apis.scoring_functions import ScoringFn
 
 
-equality = ScoringFnDef(
+equality = ScoringFn(
     identifier="meta-reference::equality",
     description="Returns 1.0 if the input is equal to the target, 0.0 otherwise.",
+    params=None,
+    provider_id="meta-reference",
+    provider_resource_id="equality",
     return_type=NumberType(),
 )

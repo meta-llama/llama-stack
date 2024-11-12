@@ -15,7 +15,7 @@ from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
-from llama_stack.apis.scoring_functions import ScoringFnDef
+from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
 
 
@@ -61,9 +61,9 @@ class DatasetsProtocolPrivate(Protocol):
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
-    async def list_scoring_functions(self) -> List[ScoringFnDef]: ...
+    async def list_scoring_functions(self) -> List[ScoringFn]: ...
 
-    async def register_scoring_function(self, function_def: ScoringFnDef) -> None: ...
+    async def register_scoring_function(self, scoring_fn: ScoringFn) -> None: ...
 
 
 class EvalTasksProtocolPrivate(Protocol):
