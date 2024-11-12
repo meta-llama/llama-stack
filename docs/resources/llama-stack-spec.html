@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-12 11:39:48.665782"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-12 15:47:15.607543"
     },
     "servers": [
         {
@@ -2856,7 +2856,7 @@
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
+                    "model_id": {
                         "type": "string"
                     },
                     "messages": {
@@ -2993,7 +2993,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "messages"
                 ]
             },
@@ -3120,7 +3120,7 @@
             "CompletionRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
+                    "model_id": {
                         "type": "string"
                     },
                     "content": {
@@ -3249,7 +3249,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "content"
                 ]
             },
@@ -4552,7 +4552,7 @@
             "EmbeddingsRequest": {
                 "type": "object",
                 "properties": {
-                    "model": {
+                    "model_id": {
                         "type": "string"
                     },
                     "contents": {
@@ -4584,7 +4584,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "model",
+                    "model_id",
                     "contents"
                 ]
             },
@@ -7837,34 +7837,10 @@
     ],
     "tags": [
         {
-            "name": "MemoryBanks"
+            "name": "Safety"
         },
         {
-            "name": "BatchInference"
-        },
-        {
-            "name": "Agents"
-        },
-        {
-            "name": "Inference"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
-            "name": "Eval"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "ScoringFunctions"
-        },
-        {
-            "name": "Datasets"
+            "name": "EvalTasks"
         },
         {
             "name": "Shields"
@@ -7873,22 +7849,46 @@
             "name": "Telemetry"
         },
         {
-            "name": "Inspect"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "SyntheticDataGeneration"
-        },
-        {
             "name": "Memory"
         },
         {
             "name": "Scoring"
         },
         {
-            "name": "EvalTasks"
+            "name": "ScoringFunctions"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Agents"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "Inference"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Eval"
+        },
+        {
+            "name": "Inspect"
         },
         {
             "name": "BuiltinTool",
