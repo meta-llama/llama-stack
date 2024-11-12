@@ -1,35 +1,47 @@
 version: '2'
-built_at: '2024-10-08T17:40:45.325529'
-image_name: local
-docker_image: null
-conda_env: local
+built_at: '2024-11-11T20:09:45.988375'
+image_name: remote-vllm
+docker_image: remote-vllm
+conda_env: null
 apis:
-- shields
-- agents
-- models
-- memory
-- memory_banks
 - inference
+- memory
 - safety
+- agents
+- telemetry
 providers:
   inference:
-  - provider_id: vllm0
+  # serves main inference model
+  - provider_id: vllm-0
     provider_type: remote::vllm
     config:
-      url: http://127.0.0.1:8000
+      # NOTE: replace with "localhost" if you are running in "host" network mode
+      url: http://host.docker.internal:5100/v1
+      max_tokens: 4096
+      api_token: fake
+  # serves safety llama_guard model
+  - provider_id: vllm-1
+    provider_type: remote::vllm
+    config:
+      # NOTE: replace with "localhost" if you are running in "host" network mode
+      url: http://host.docker.internal:5101/v1
+      max_tokens: 4096
+      api_token: fake
+  memory:
+  - provider_id: faiss-0
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        namespace: null
+        type: sqlite
+        db_path: /home/ashwin/.llama/distributions/remote-vllm/faiss_store.db
   safety:
-  - provider_id: meta0
+  - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config:
-      model: Llama-Guard-3-1B
-      excluded_categories: []
-  - provider_id: meta1
-    provider_type: inline::prompt-guard
-    config:
-      model: Prompt-Guard-86M
+    config: {}
   memory:
   - provider_id: meta0
-    provider_type: inline::meta-reference
+    provider_type: inline::faiss
     config: {}
   agents:
   - provider_id: meta0
@@ -38,8 +50,19 @@ providers:
       persistence_store:
         namespace: null
         type: sqlite
-        db_path: ~/.llama/runtime/kvstore.db
+        db_path: /home/ashwin/.llama/distributions/remote-vllm/agents_store.db
   telemetry:
   - provider_id: meta0
     provider_type: inline::meta-reference
     config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: /home/ashwin/.llama/distributions/remote-vllm/registry.db
+models:
+  - model_id: Llama3.1-8B-Instruct
+    provider_id: vllm-0
+  - model_id: Llama-Guard-3-1B
+    provider_id: vllm-1
+shields:
+  - shield_id: Llama-Guard-3-1B
