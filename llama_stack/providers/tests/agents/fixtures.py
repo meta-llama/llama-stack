@@ -44,7 +44,7 @@ def agents_meta_reference() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="meta-reference",
-                provider_type="meta-reference",
+                provider_type="inline::meta-reference",
                 config=MetaReferenceAgentsImplConfig(
                     # TODO: make this an in-memory store
                     persistence_store=SqliteKVStoreConfig(

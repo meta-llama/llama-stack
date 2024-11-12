@@ -27,7 +27,7 @@ async def get_client_impl(config: RemoteProviderConfig, _deps: Any) -> Safety:
 
 
 def encodable_dict(d: BaseModel):
-    return json.loads(d.json())
+    return json.loads(d.model_dump_json())
 
 
 class SafetyClient(Safety):
@@ -80,7 +80,7 @@ async def run_main(host: str, port: int, image_path: str = None):
         )
         cprint(f"User>{message.content}", "green")
         response = await client.run_shield(
-            shield_id="llama_guard",
+            shield_id="Llama-Guard-3-1B",
             messages=[message],
         )
         print(response)

@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
@@ -13,16 +12,7 @@ from pydantic import BaseModel
 from llama_stack.apis.resource import Resource, ResourceType
 
 
-@json_schema_type
-class ShieldType(Enum):
-    generic_content_shield = "generic_content_shield"
-    llama_guard = "llama_guard"
-    code_scanner = "code_scanner"
-    prompt_guard = "prompt_guard"
-
-
 class CommonShieldFields(BaseModel):
-    shield_type: ShieldType
     params: Optional[Dict[str, Any]] = None
 
 
@@ -59,7 +49,6 @@ class Shields(Protocol):
     async def register_shield(
         self,
         shield_id: str,
-        shield_type: ShieldType,
         provider_shield_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,

@@ -34,7 +34,6 @@ class TestSafety:
 
         for shield in response:
             assert isinstance(shield, Shield)
-            assert shield.shield_type in [v for v in ShieldType]
 
     @pytest.mark.asyncio
     async def test_run_shield(self, safety_stack):

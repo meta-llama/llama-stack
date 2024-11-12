@@ -4,7 +4,8 @@ In short, provide a summary of what this PR does and why. Usually, the relevant 
 
 - [ ] Addresses issue (#issue)
 
-## Feature/Issue validation/testing/test plan
+
+## Test Plan
 
 Please describe:
  - tests you ran to verify your changes with result summaries.

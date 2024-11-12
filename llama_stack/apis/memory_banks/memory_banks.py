@@ -122,7 +122,6 @@ MemoryBank = Annotated[
 ]
 
 
-@json_schema_type
 class MemoryBankInput(BaseModel):
     memory_bank_id: str
     params: BankParams

@@ -37,7 +37,6 @@ class ShieldsClient(Shields):
     async def register_shield(
         self,
         shield_id: str,
-        shield_type: ShieldType,
         provider_shield_id: Optional[str],
         provider_id: Optional[str],
         params: Optional[Dict[str, Any]],
@@ -47,7 +46,6 @@ class ShieldsClient(Shields):
                 f"{self.base_url}/shields/register",
                 json={
                     "shield_id": shield_id,
-                    "shield_type": shield_type,
                     "provider_shield_id": provider_shield_id,
                     "provider_id": provider_id,
                     "params": params,
@@ -56,12 +54,12 @@ class ShieldsClient(Shields):
             )
             response.raise_for_status()
 
-    async def get_shield(self, shield_type: str) -> Optional[Shield]:
+    async def get_shield(self, shield_id: str) -> Optional[Shield]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/shields/get",
                 params={
-                    "shield_type": shield_type,
+                    "shield_id": shield_id,
                 },
                 headers={"Content-Type": "application/json"},
             )

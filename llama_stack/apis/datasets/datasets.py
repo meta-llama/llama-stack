@@ -38,7 +38,6 @@ class Dataset(CommonDatasetFields, Resource):
         return self.provider_resource_id
 
 
-@json_schema_type
 class DatasetInput(CommonDatasetFields, BaseModel):
     dataset_id: str
     provider_id: Optional[str] = None

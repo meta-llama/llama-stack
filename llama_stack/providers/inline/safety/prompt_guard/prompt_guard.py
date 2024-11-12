@@ -36,8 +36,10 @@ class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        if shield.shield_type != ShieldType.prompt_guard:
-            raise ValueError(f"Unsupported shield type: {shield.shield_type}")
+        if shield.provider_resource_id != PROMPT_GUARD_MODEL:
+            raise ValueError(
+                f"Only {PROMPT_GUARD_MODEL} is supported for Prompt Guard. "
+            )
 
     async def run_shield(
         self,
