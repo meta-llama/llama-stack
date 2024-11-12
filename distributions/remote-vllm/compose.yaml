@@ -22,7 +22,7 @@ services:
     devices:
       - nvidia.com/gpu=all
     environment:
-      - CUDA_VISIBLE_DEVICES=4
+      - CUDA_VISIBLE_DEVICES=0
       - HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
     command: >
       --gpu-memory-utilization 0.75
@@ -48,7 +48,7 @@ services:
     devices:
       - nvidia.com/gpu=all
     environment:
-      - CUDA_VISIBLE_DEVICES=5
+      - CUDA_VISIBLE_DEVICES=1
       - HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
     command: >
       --gpu-memory-utilization 0.75
