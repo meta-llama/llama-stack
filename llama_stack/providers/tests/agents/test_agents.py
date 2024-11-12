@@ -82,7 +82,7 @@ async def create_agent_session(agents_impl, agent_config):
 class TestAgents:
     @pytest.mark.asyncio
     async def test_agent_turns_with_safety(
-        self, safety_model, agents_stack, common_params
+        self, safety_shield, agents_stack, common_params
     ):
         agents_impl, _ = agents_stack
         agent_id, session_id = await create_agent_session(
@@ -90,8 +90,8 @@ class TestAgents:
             AgentConfig(
                 **{
                     **common_params,
-                    "input_shields": [safety_model],
-                    "output_shields": [safety_model],
+                    "input_shields": [safety_shield.shield_id],
+                    "output_shields": [safety_shield.shield_id],
                 }
             ),
         )
