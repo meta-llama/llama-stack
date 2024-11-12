@@ -163,7 +163,7 @@ else
 fi
 
 set -x
-$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM -t $image_tag -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 
 # clean up tmp/configs
 set +x
