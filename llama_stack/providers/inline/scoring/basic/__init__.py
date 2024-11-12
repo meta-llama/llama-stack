@@ -14,9 +14,9 @@ async def get_provider_impl(
     config: BasicScoringConfig,
     deps: Dict[Api, ProviderSpec],
 ):
-    from .scoring import MetaReferenceScoringImpl
+    from .scoring import BasicScoringImpl
 
-    impl = MetaReferenceScoringImpl(
+    impl = BasicScoringImpl(
         config, deps[Api.datasetio], deps[Api.datasets], deps[Api.inference]
     )
     await impl.initialize()

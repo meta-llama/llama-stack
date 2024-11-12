@@ -25,7 +25,7 @@ FIXED_FNS = [EqualityScoringFn, SubsetOfScoringFn, RegexParserScoringFn]
 LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 
 
-class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
+class BasicScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     def __init__(
         self,
         config: BasicScoringConfig,
