@@ -31,48 +31,7 @@ from .strong_typing.schema import json_schema_type
 
 schema_utils.json_schema_type = json_schema_type
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
-from llama_stack.apis.eval import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.batch_inference import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.telemetry import *  # noqa: F403
-from llama_stack.apis.post_training import *  # noqa: F403
-from llama_stack.apis.synthetic_data_generation import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.inspect import *  # noqa: F403
-from llama_stack.apis.eval_tasks import *  # noqa: F403
-
-
-class LlamaStack(
-    MemoryBanks,
-    Inference,
-    BatchInference,
-    Agents,
-    Safety,
-    SyntheticDataGeneration,
-    Datasets,
-    Telemetry,
-    PostTraining,
-    Memory,
-    Eval,
-    EvalTasks,
-    Scoring,
-    ScoringFunctions,
-    DatasetIO,
-    Models,
-    Shields,
-    Inspect,
-):
-    pass
+from llama_stack.distribution.stack import LlamaStack
 
 
 # TODO: this should be fixed in the generator itself so it reads appropriate annotations

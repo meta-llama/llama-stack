@@ -5,14 +5,11 @@
 # the root directory of this source tree.
 
 import json
-from typing import Dict, List, Protocol
+from typing import Dict, List, Optional, Protocol
 
 import pydantic
 
-from llama_stack.distribution.datatypes import (
-    RoutableObjectWithProvider,
-    StackRunConfig,
-)
+from llama_stack.distribution.datatypes import KVStoreConfig, RoutableObjectWithProvider
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 
 from llama_stack.providers.utils.kvstore import (
@@ -144,17 +141,16 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
 
 
 async def create_dist_registry(
-    config: StackRunConfig,
+    metadata_store: Optional[KVStoreConfig],
+    image_name: str,
 ) -> tuple[CachedDiskDistributionRegistry, KVStore]:
     # instantiate kvstore for storing and retrieving distribution metadata
-    if config.metadata_store:
-        dist_kvstore = await kvstore_impl(config.metadata_store)
+    if metadata_store:
+        dist_kvstore = await kvstore_impl(metadata_store)
     else:
         dist_kvstore = await kvstore_impl(
             SqliteKVStoreConfig(
-                db_path=(
-                    DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
-                ).as_posix()
+                db_path=(DISTRIBS_BASE_DIR / image_name / "kvstore.db").as_posix()
             )
         )
 

@@ -26,13 +26,13 @@ def memory_remote() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def memory_meta_reference() -> ProviderFixture:
+def memory_faiss() -> ProviderFixture:
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="meta-reference",
-                provider_type="meta-reference",
+                provider_id="faiss",
+                provider_type="inline::faiss",
                 config=FaissImplConfig(
                     kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
                 ).model_dump(),
@@ -93,7 +93,7 @@ def memory_chroma() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["meta_reference", "pgvector", "weaviate", "remote", "chroma"]
+MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
