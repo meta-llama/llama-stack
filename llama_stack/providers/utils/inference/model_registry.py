@@ -29,7 +29,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         return self.stack_to_provider_models_map[identifier]
 
     async def register_model(self, model: Model) -> None:
-        if model.identifier not in self.stack_to_provider_models_map:
+        if model.provider_resource_id not in self.stack_to_provider_models_map:
             raise ValueError(
-                f"Unsupported model {model.identifier}. Supported models: {self.stack_to_provider_models_map.keys()}"
+                f"Unsupported model {model.provider_resource_id}. Supported models: {self.stack_to_provider_models_map.keys()}"
             )

@@ -63,7 +63,7 @@ class TogetherInferenceAdapter(
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -71,7 +71,7 @@ class TogetherInferenceAdapter(
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         request = CompletionRequest(
-            model=model,
+            model=model_id,
             content=content,
             sampling_params=sampling_params,
             response_format=response_format,
@@ -135,7 +135,7 @@ class TogetherInferenceAdapter(
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
@@ -146,7 +146,7 @@ class TogetherInferenceAdapter(
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         request = ChatCompletionRequest(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -221,7 +221,7 @@ class TogetherInferenceAdapter(
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
