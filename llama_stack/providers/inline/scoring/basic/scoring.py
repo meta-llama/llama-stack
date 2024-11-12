@@ -14,7 +14,7 @@ from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
-from .config import MetaReferenceScoringConfig
+from .config import BasicScoringConfig
 from .scoring_fn.equality_scoring_fn import EqualityScoringFn
 from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
 from .scoring_fn.regex_parser_scoring_fn import RegexParserScoringFn
@@ -28,7 +28,7 @@ LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 class MetaReferenceScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     def __init__(
         self,
-        config: MetaReferenceScoringConfig,
+        config: BasicScoringConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
         inference_api: Inference,

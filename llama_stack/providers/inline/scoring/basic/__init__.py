@@ -7,11 +7,11 @@ from typing import Dict
 
 from llama_stack.distribution.datatypes import Api, ProviderSpec
 
-from .config import MetaReferenceScoringConfig
+from .config import BasicScoringConfig
 
 
 async def get_provider_impl(
-    config: MetaReferenceScoringConfig,
+    config: BasicScoringConfig,
     deps: Dict[Api, ProviderSpec],
 ):
     from .scoring import MetaReferenceScoringImpl
