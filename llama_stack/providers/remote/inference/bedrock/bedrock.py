@@ -49,7 +49,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -286,7 +286,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -299,7 +299,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
     ]:
         request = ChatCompletionRequest(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -433,7 +433,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
