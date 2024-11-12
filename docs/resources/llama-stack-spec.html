@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-11 18:44:30.967321"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-12 11:16:58.657871"
     },
     "servers": [
         {
@@ -5778,8 +5778,7 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "shield_type",
-                    "params"
+                    "shield_type"
                 ],
                 "title": "A safety shield resource that can be used to check content"
             },
@@ -7027,7 +7026,7 @@
                     "provider_id": {
                         "type": "string"
                     },
-                    "provider_memorybank_id": {
+                    "provider_memory_bank_id": {
                         "type": "string"
                     }
                 },
@@ -7855,58 +7854,58 @@
     ],
     "tags": [
         {
-            "name": "Datasets"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
-            "name": "MemoryBanks"
-        },
-        {
-            "name": "Eval"
-        },
-        {
-            "name": "Memory"
-        },
-        {
-            "name": "EvalTasks"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Scoring"
-        },
-        {
             "name": "Inference"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "DatasetIO"
-        },
-        {
-            "name": "Safety"
         },
         {
             "name": "Agents"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "Telemetry"
+        },
+        {
+            "name": "Eval"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "EvalTasks"
         },
         {
             "name": "ScoringFunctions"
         },
         {
-            "name": "BatchInference"
+            "name": "Memory"
         },
         {
-            "name": "Inspect"
+            "name": "Safety"
+        },
+        {
+            "name": "DatasetIO"
+        },
+        {
+            "name": "MemoryBanks"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Datasets"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "BatchInference"
         },
         {
             "name": "BuiltinTool",
