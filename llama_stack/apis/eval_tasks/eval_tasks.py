@@ -7,20 +7,38 @@ from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkab
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
-from llama_stack.apis.resource import Resource
+from llama_stack.apis.resource import Resource, ResourceType
 
 
-@json_schema_type
-class EvalTask(Resource):
-    type: Literal["eval_task"] = "eval_task"
+class CommonEvalTaskFields(BaseModel):
     dataset_id: str
     scoring_functions: List[str]
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Metadata for this evaluation task",
     )
+
+
+@json_schema_type
+class EvalTask(CommonEvalTaskFields, Resource):
+    type: Literal[ResourceType.eval_task.value] = ResourceType.eval_task.value
+
+    @property
+    def eval_task_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_eval_task_id(self) -> str:
+        return self.provider_resource_id
+
+
+@json_schema_type
+class EvalTaskInput(CommonEvalTaskFields, BaseModel):
+    eval_task_id: str
+    provider_id: Optional[str] = None
+    provider_eval_task_id: Optional[str] = None
 
 
 @runtime_checkable

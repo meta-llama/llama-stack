@@ -9,7 +9,7 @@ import os
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.models import Model
+from llama_stack.apis.models import ModelInput
 
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.inference.meta_reference import (
@@ -162,10 +162,8 @@ async def inference_stack(request, inference_model):
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
         models=[
-            Model(
-                identifier=inference_model,
-                provider_resource_id=inference_model,
-                provider_id=inference_fixture.providers[0].provider_id,
+            ModelInput(
+                model_id=inference_model,
             )
         ],
     )

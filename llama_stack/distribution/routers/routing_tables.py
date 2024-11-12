@@ -277,10 +277,10 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
         memory_bank_id: str,
         params: BankParams,
         provider_id: Optional[str] = None,
-        provider_memorybank_id: Optional[str] = None,
+        provider_memory_bank_id: Optional[str] = None,
     ) -> MemoryBank:
-        if provider_memorybank_id is None:
-            provider_memorybank_id = memory_bank_id
+        if provider_memory_bank_id is None:
+            provider_memory_bank_id = memory_bank_id
         if provider_id is None:
             # If provider_id not specified, use the only provider if it supports this shield type
             if len(self.impls_by_provider_id) == 1:
@@ -295,7 +295,7 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
                 "identifier": memory_bank_id,
                 "type": ResourceType.memory_bank.value,
                 "provider_id": provider_id,
-                "provider_resource_id": provider_memorybank_id,
+                "provider_resource_id": provider_memory_bank_id,
                 **params.model_dump(),
             },
         )

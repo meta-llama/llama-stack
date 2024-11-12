@@ -9,7 +9,7 @@ import tempfile
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.models import Model
+from llama_stack.apis.models import ModelInput
 from llama_stack.distribution.datatypes import Api, Provider
 
 from llama_stack.providers.inline.agents.meta_reference import (
@@ -71,13 +71,9 @@ async def agents_stack(request, inference_model, safety_model):
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
 
-    inf_provider_id = providers["inference"][0].provider_id
-    safety_provider_id = providers["safety"][0].provider_id
-
-    shield = get_shield_to_register(
-        providers["safety"][0].provider_type, safety_provider_id, safety_model
+    shield_input = get_shield_to_register(
+        providers["safety"][0].provider_type, safety_model
     )
-
     inference_models = (
         inference_model if isinstance(inference_model, list) else [inference_model]
     )
@@ -86,13 +82,11 @@ async def agents_stack(request, inference_model, safety_model):
         providers,
         provider_data,
         models=[
-            Model(
-                identifier=model,
-                provider_id=inf_provider_id,
-                provider_resource_id=model,
+            ModelInput(
+                model_id=model,
             )
             for model in inference_models
         ],
-        shields=[shield],
+        shields=[shield_input],
     )
     return impls[Api.agents], impls[Api.memory]

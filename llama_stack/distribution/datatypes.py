@@ -18,7 +18,7 @@ from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTask
+from llama_stack.apis.eval_tasks import EvalTaskInput
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
@@ -152,12 +152,12 @@ a default SQLite store will be used.""",
     )
 
     # registry of "resources" in the distribution
-    models: List[Model] = Field(default_factory=list)
-    shields: List[Shield] = Field(default_factory=list)
-    memory_banks: List[MemoryBank] = Field(default_factory=list)
-    datasets: List[Dataset] = Field(default_factory=list)
-    scoring_fns: List[ScoringFn] = Field(default_factory=list)
-    eval_tasks: List[EvalTask] = Field(default_factory=list)
+    models: List[ModelInput] = Field(default_factory=list)
+    shields: List[ShieldInput] = Field(default_factory=list)
+    memory_banks: List[MemoryBankInput] = Field(default_factory=list)
+    datasets: List[DatasetInput] = Field(default_factory=list)
+    scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
+    eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
 
 
 class BuildConfig(BaseModel):

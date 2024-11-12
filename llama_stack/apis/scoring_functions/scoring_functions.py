@@ -66,11 +66,7 @@ ScoringFnParams = Annotated[
 ]
 
 
-@json_schema_type
-class ScoringFn(Resource):
-    type: Literal[ResourceType.scoring_function.value] = (
-        ResourceType.scoring_function.value
-    )
+class CommonScoringFnFields(BaseModel):
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
@@ -83,6 +79,28 @@ class ScoringFn(Resource):
         description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
         default=None,
     )
+
+
+@json_schema_type
+class ScoringFn(CommonScoringFnFields, Resource):
+    type: Literal[ResourceType.scoring_function.value] = (
+        ResourceType.scoring_function.value
+    )
+
+    @property
+    def scoring_fn_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_scoring_fn_id(self) -> str:
+        return self.provider_resource_id
+
+
+@json_schema_type
+class ScoringFnInput(CommonScoringFnFields, BaseModel):
+    scoring_fn_id: str
+    provider_id: Optional[str] = None
+    provider_scoring_fn_id: Optional[str] = None
 
 
 @runtime_checkable

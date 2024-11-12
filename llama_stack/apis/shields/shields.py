@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
+from pydantic import BaseModel
 
 from llama_stack.apis.resource import Resource, ResourceType
 
@@ -20,13 +21,30 @@ class ShieldType(Enum):
     prompt_guard = "prompt_guard"
 
 
+class CommonShieldFields(BaseModel):
+    shield_type: ShieldType
+    params: Optional[Dict[str, Any]] = None
+
+
 @json_schema_type
-class Shield(Resource):
+class Shield(CommonShieldFields, Resource):
     """A safety shield resource that can be used to check content"""
 
     type: Literal[ResourceType.shield.value] = ResourceType.shield.value
-    shield_type: ShieldType
-    params: Dict[str, Any] = {}
+
+    @property
+    def shield_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_shield_id(self) -> str:
+        return self.provider_resource_id
+
+
+class ShieldInput(CommonShieldFields):
+    shield_id: str
+    provider_id: Optional[str] = None
+    provider_shield_id: Optional[str] = None
 
 
 @runtime_checkable
