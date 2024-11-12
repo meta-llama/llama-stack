@@ -25,11 +25,11 @@ def up_to_date_config():
         providers:
           inference:
             - provider_id: provider1
-              provider_type: meta-reference
+              provider_type: inline::meta-reference
               config: {{}}
           safety:
             - provider_id: provider1
-              provider_type: meta-reference
+              provider_type: inline::meta-reference
               config:
                 llama_guard_shield:
                   model: Llama-Guard-3-1B
@@ -39,7 +39,7 @@ def up_to_date_config():
                 enable_prompt_guard: false
           memory:
             - provider_id: provider1
-              provider_type: meta-reference
+              provider_type: inline::meta-reference
               config: {{}}
     """.format(
             version=LLAMA_STACK_RUN_CONFIG_VERSION, built_at=datetime.now().isoformat()
@@ -61,13 +61,13 @@ def old_config():
                 host: localhost
                 port: 11434
               routing_key: Llama3.2-1B-Instruct
-            - provider_type: meta-reference
+            - provider_type: inline::meta-reference
               config:
                 model: Llama3.1-8B-Instruct
               routing_key: Llama3.1-8B-Instruct
           safety:
             - routing_key: ["shield1", "shield2"]
-              provider_type: meta-reference
+              provider_type: inline::meta-reference
               config:
                 llama_guard_shield:
                   model: Llama-Guard-3-1B
@@ -77,7 +77,7 @@ def old_config():
                 enable_prompt_guard: false
           memory:
             - routing_key: vector
-              provider_type: meta-reference
+              provider_type: inline::meta-reference
               config: {{}}
         api_providers:
           telemetry:

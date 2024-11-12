@@ -59,7 +59,7 @@ You may change the `config.model` in `run.yaml` to update the model currently be
 ```
 inference:
   - provider_id: meta0
-    provider_type: meta-reference
+    provider_type: inline::meta-reference
     config:
       model: Llama3.2-11B-Vision-Instruct
       quantization: null

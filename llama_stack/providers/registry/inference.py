@@ -25,14 +25,14 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.inference,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=META_REFERENCE_DEPS,
             module="llama_stack.providers.inline.inference.meta_reference",
             config_class="llama_stack.providers.inline.inference.meta_reference.MetaReferenceInferenceConfig",
         ),
         InlineProviderSpec(
             api=Api.inference,
-            provider_type="meta-reference-quantized",
+            provider_type="inline::meta-reference-quantized",
             pip_packages=(
                 META_REFERENCE_DEPS
                 + [
