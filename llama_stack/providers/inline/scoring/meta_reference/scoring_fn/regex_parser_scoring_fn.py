@@ -42,7 +42,7 @@ class RegexParserScoringFn(BaseScoringFn):
 
         assert (
             fn_def.params is not None
-            and fn_def.params.type == ScoringConfigType.regex_parser.value
+            and fn_def.params.type == ScoringFnParamsType.regex_parser.value
         ), f"RegexParserScoringFnParams not found for {fn_def}."
 
         expected_answer = input_row["expected_answer"]

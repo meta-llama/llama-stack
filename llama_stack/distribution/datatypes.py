@@ -35,7 +35,7 @@ RoutableObject = Union[
     Shield,
     MemoryBank,
     Dataset,
-    ScoringFnDef,
+    ScoringFn,
 ]
 
 
@@ -45,7 +45,7 @@ RoutableObjectWithProvider = Annotated[
         Shield,
         MemoryBank,
         Dataset,
-        ScoringFnDefWithProvider,
+        ScoringFn,
     ],
     Field(discriminator="type"),
 ]

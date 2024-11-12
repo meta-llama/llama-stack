@@ -22,19 +22,21 @@ from typing_extensions import Annotated
 
 from llama_stack.apis.common.type_system import ParamType
 
+from llama_stack.apis.resource import Resource, ResourceType
+
 
 # Perhaps more structure can be imposed on these functions. Maybe they could be associated
 # with standard metrics so they can be rolled up?
 @json_schema_type
-class ScoringConfigType(Enum):
+class ScoringFnParamsType(Enum):
     llm_as_judge = "llm_as_judge"
     regex_parser = "regex_parser"
 
 
 @json_schema_type
 class LLMAsJudgeScoringFnParams(BaseModel):
-    type: Literal[ScoringConfigType.llm_as_judge.value] = (
-        ScoringConfigType.llm_as_judge.value
+    type: Literal[ScoringFnParamsType.llm_as_judge.value] = (
+        ScoringFnParamsType.llm_as_judge.value
     )
     judge_model: str
     prompt_template: Optional[str] = None
@@ -46,8 +48,8 @@ class LLMAsJudgeScoringFnParams(BaseModel):
 
 @json_schema_type
 class RegexParserScoringFnParams(BaseModel):
-    type: Literal[ScoringConfigType.regex_parser.value] = (
-        ScoringConfigType.regex_parser.value
+    type: Literal[ScoringFnParamsType.regex_parser.value] = (
+        ScoringFnParamsType.regex_parser.value
     )
     parsing_regexes: Optional[List[str]] = Field(
         description="Regex to extract the answer from generated response",
@@ -65,8 +67,10 @@ ScoringFnParams = Annotated[
 
 
 @json_schema_type
-class ScoringFnDef(BaseModel):
-    identifier: str
+class ScoringFn(Resource):
+    type: Literal[ResourceType.scoring_function.value] = (
+        ResourceType.scoring_function.value
+    )
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
@@ -79,28 +83,23 @@ class ScoringFnDef(BaseModel):
         description="The parameters for the scoring function for benchmark eval, these can be overridden for app eval",
         default=None,
     )
-    # We can optionally add information here to support packaging of code, etc.
-
-
-@json_schema_type
-class ScoringFnDefWithProvider(ScoringFnDef):
-    type: Literal["scoring_fn"] = "scoring_fn"
-    provider_id: str = Field(
-        description="ID of the provider which serves this dataset",
-    )
 
 
 @runtime_checkable
 class ScoringFunctions(Protocol):
     @webmethod(route="/scoring_functions/list", method="GET")
-    async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]: ...
+    async def list_scoring_functions(self) -> List[ScoringFn]: ...
 
     @webmethod(route="/scoring_functions/get", method="GET")
-    async def get_scoring_function(
-        self, name: str
-    ) -> Optional[ScoringFnDefWithProvider]: ...
+    async def get_scoring_function(self, scoring_fn_id: str) -> Optional[ScoringFn]: ...
 
     @webmethod(route="/scoring_functions/register", method="POST")
     async def register_scoring_function(
-        self, function_def: ScoringFnDefWithProvider
+        self,
+        scoring_fn_id: str,
+        description: str,
+        return_type: ParamType,
+        provider_scoring_fn_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[ScoringFnParams] = None,
     ) -> None: ...
