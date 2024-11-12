@@ -19,7 +19,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.safety,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=[
                 "transformers",
                 "torch --index-url https://download.pytorch.org/whl/cpu",
@@ -30,7 +30,7 @@ def available_providers() -> List[ProviderSpec]:
                 Api.inference,
             ],
             deprecation_error="""
-Provider `meta-reference` for API `safety` does not work with the latest Llama Stack.
+Provider `inline::meta-reference` for API `safety` does not work with the latest Llama Stack.
 
 - if you are using Llama Guard v3, please use the `inline::llama-guard` provider instead.
 - if you are using Prompt Guard, please use the `inline::prompt-guard` provider instead.

@@ -13,7 +13,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.eval,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=[],
             module="llama_stack.providers.inline.eval.meta_reference",
             config_class="llama_stack.providers.inline.eval.meta_reference.MetaReferenceEvalConfig",

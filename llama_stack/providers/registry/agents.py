@@ -14,7 +14,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.agents,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=[
                 "matplotlib",
                 "pillow",

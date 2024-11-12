@@ -147,8 +147,19 @@ else
   image_name="$image_name-$(curl -s $URL | jq -r '.info.version')"
 fi
 
+# Detect platform architecture
+ARCH=$(uname -m)
+if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+  PLATFORM="--platform linux/arm64"
+elif [ "$ARCH" = "x86_64" ]; then
+  PLATFORM="--platform linux/amd64"
+else
+  echo "Unsupported architecture: $ARCH"
+  exit 1
+fi
+
 set -x
-$DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 
 # clean up tmp/configs
 set +x

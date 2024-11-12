@@ -13,7 +13,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.scoring,
-            provider_type="basic",
+            provider_type="inline::basic",
             pip_packages=[],
             module="llama_stack.providers.inline.scoring.basic",
             config_class="llama_stack.providers.inline.scoring.basic.BasicScoringConfig",
@@ -24,7 +24,7 @@ def available_providers() -> List[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.scoring,
-            provider_type="llm-as-judge",
+            provider_type="inline::llm-as-judge",
             pip_packages=[],
             module="llama_stack.providers.inline.scoring.llm_as_judge",
             config_class="llama_stack.providers.inline.scoring.llm_as_judge.LlmAsJudgeScoringConfig",
@@ -36,7 +36,7 @@ def available_providers() -> List[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.scoring,
-            provider_type="braintrust",
+            provider_type="inline::braintrust",
             pip_packages=["autoevals", "openai"],
             module="llama_stack.providers.inline.scoring.braintrust",
             config_class="llama_stack.providers.inline.scoring.braintrust.BraintrustScoringConfig",

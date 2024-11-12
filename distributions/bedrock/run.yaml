@@ -23,7 +23,7 @@ providers:
         region_name: <AWS_REGION>
   memory:
     - provider_id: meta0
-      provider_type: meta-reference
+      provider_type: inline::meta-reference
       config: {}
   safety:
     - provider_id: bedrock0
@@ -35,12 +35,12 @@ providers:
         region_name: <AWS_REGION>
   agents:
     - provider_id: meta0
-      provider_type: meta-reference
+      provider_type: inline::meta-reference
       config:
         persistence_store:
           type: sqlite
           db_path: ~/.llama/runtime/kvstore.db
   telemetry:
     - provider_id: meta0
-      provider_type: meta-reference
+      provider_type: inline::meta-reference
       config: {}
