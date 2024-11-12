@@ -17,6 +17,9 @@ from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 
+from llama_models.llama3.api.datatypes import URL
+
+from llama_stack.apis.common.type_system import ParamType
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
@@ -94,8 +97,6 @@ class CommonRoutingTableImpl(RoutingTable):
 
             elif api == Api.datasetio:
                 p.dataset_store = self
-                datasets = await p.list_datasets()
-                await add_objects(datasets, pid, DatasetDefWithProvider)
 
             elif api == Api.scoring:
                 p.scoring_function_store = self
@@ -302,16 +303,42 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
 
 
 class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
-    async def list_datasets(self) -> List[DatasetDefWithProvider]:
+    async def list_datasets(self) -> List[Dataset]:
         return await self.get_all_with_type("dataset")
 
-    async def get_dataset(
-        self, dataset_identifier: str
-    ) -> Optional[DatasetDefWithProvider]:
-        return await self.get_object_by_identifier(dataset_identifier)
+    async def get_dataset(self, dataset_id: str) -> Optional[Dataset]:
+        return await self.get_object_by_identifier(dataset_id)
 
-    async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
-        await self.register_object(dataset_def)
+    async def register_dataset(
+        self,
+        dataset_id: str,
+        schema: Dict[str, ParamType],
+        url: URL,
+        provider_dataset_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        if provider_dataset_id is None:
+            provider_dataset_id = dataset_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this dataset
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if metadata is None:
+            metadata = {}
+        dataset = Dataset(
+            identifier=dataset_id,
+            provider_resource_id=provider_dataset_id,
+            provider_id=provider_id,
+            schema=schema,
+            url=url,
+            metadata=metadata,
+        )
+        await self.register_object(dataset)
 
 
 class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):

@@ -55,15 +55,11 @@ async def register_dataset(
             "generated_answer": StringType(),
         }
 
-    dataset = DatasetDefWithProvider(
-        identifier=dataset_id,
-        provider_id="",
-        url=URL(
-            uri=test_url,
-        ),
-        dataset_schema=dataset_schema,
+    await datasets_impl.register_dataset(
+        dataset_id=dataset_id,
+        schema=dataset_schema,
+        url=URL(uri=test_url),
     )
-    await datasets_impl.register_dataset(dataset)
 
 
 class TestDatasetIO:

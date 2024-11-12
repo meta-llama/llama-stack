@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.datasets import DatasetDef
+from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.eval_tasks import EvalTaskDef
 from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
@@ -57,9 +57,7 @@ class MemoryBanksProtocolPrivate(Protocol):
 
 
 class DatasetsProtocolPrivate(Protocol):
-    async def list_datasets(self) -> List[DatasetDef]: ...
-
-    async def register_dataset(self, dataset_def: DatasetDef) -> None: ...
+    async def register_dataset(self, dataset: Dataset) -> None: ...
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
