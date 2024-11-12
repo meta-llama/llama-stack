@@ -43,6 +43,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset_def: Dataset,
     ) -> None:
+        print(f"Registering dataset: {dataset_def.identifier}")
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
     async def get_rows_paginated(
