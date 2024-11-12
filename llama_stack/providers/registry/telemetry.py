@@ -13,7 +13,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.telemetry,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=[],
             module="llama_stack.providers.inline.meta_reference.telemetry",
             config_class="llama_stack.providers.inline.meta_reference.telemetry.ConsoleConfig",
