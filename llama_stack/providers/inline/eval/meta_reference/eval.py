@@ -11,7 +11,7 @@ from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatu
 from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.eval_tasks import EvalTaskDef
+from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
@@ -53,15 +53,12 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
     async def shutdown(self) -> None: ...
 
-    async def register_eval_task(self, task_def: EvalTaskDef) -> None:
+    async def register_eval_task(self, task_def: EvalTask) -> None:
         self.eval_tasks[task_def.identifier] = task_def
 
-    async def list_eval_tasks(self) -> List[EvalTaskDef]:
-        return list(self.eval_tasks.values())
-
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
-        dataset_def = await self.datasets_api.get_dataset(dataset_identifier=dataset_id)
-        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
+        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+        if not dataset_def.schema or len(dataset_def.schema) == 0:
             raise ValueError(f"Dataset {dataset_id} does not have a schema defined.")
 
         expected_schemas = [
@@ -77,7 +74,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             },
         ]
 
-        if dataset_def.dataset_schema not in expected_schemas:
+        if dataset_def.schema not in expected_schemas:
             raise ValueError(
                 f"Dataset {dataset_id} does not have a correct input schema in {expected_schemas}"
             )
