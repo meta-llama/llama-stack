@@ -40,8 +40,8 @@ class LlmAsJudgeScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self.scoring_fn_id_impls = {}
 
     async def initialize(self) -> None:
-        for x in LLM_JUDGE_FNS:
-            impl = x(inference_api=self.inference_api)
+        for fn in LLM_JUDGE_FNS:
+            impl = fn(inference_api=self.inference_api)
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
                 self.llm_as_judge_fn = impl
@@ -58,7 +58,7 @@ class LlmAsJudgeScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         for f in scoring_fn_defs_list:
             assert f.identifier.startswith(
                 "llm-as-judge"
-            ), "All meta-reference scoring fn must have identifier prefixed with 'meta-reference'! "
+            ), "All llm-as-judge scoring fn must have identifier prefixed with 'llm-as-judge'! "
 
         return scoring_fn_defs_list
 

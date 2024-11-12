@@ -34,8 +34,8 @@ class BasicScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
         self.scoring_fn_id_impls = {}
 
     async def initialize(self) -> None:
-        for x in FIXED_FNS:
-            impl = x()
+        for fn in FIXED_FNS:
+            impl = fn()
             for fn_defs in impl.get_supported_scoring_fn_defs():
                 self.scoring_fn_id_impls[fn_defs.identifier] = impl
 
