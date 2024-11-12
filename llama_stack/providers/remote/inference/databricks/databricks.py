@@ -18,7 +18,7 @@ from openai import OpenAI
 from llama_stack.apis.inference import *  # noqa: F403
 
 from llama_stack.providers.utils.inference.model_registry import (
-    ModelAlias,
+    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -34,15 +34,13 @@ from .config import DatabricksImplConfig
 
 
 model_aliases = [
-    ModelAlias(
-        provider_model_id="databricks-meta-llama-3-1-70b-instruct",
-        aliases=["Llama3.1-70B-Instruct"],
-        llama_model=CoreModelId.llama3_1_70b_instruct.value,
+    build_model_alias(
+        "databricks-meta-llama-3-1-70b-instruct",
+        CoreModelId.llama3_1_70b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="databricks-meta-llama-3-1-405b-instruct",
-        aliases=["Llama3.1-405B-Instruct"],
-        llama_model=CoreModelId.llama3_1_405b_instruct.value,
+    build_model_alias(
+        "databricks-meta-llama-3-1-405b-instruct",
+        CoreModelId.llama3_1_405b_instruct,
     ),
 ]
 

@@ -15,7 +15,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
 from llama_stack.providers.utils.inference.model_registry import (
-    ModelAlias,
+    build_model_alias,
     ModelRegistryHelper,
 )
 
@@ -40,40 +40,33 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 
 model_aliases = [
-    ModelAlias(
-        provider_model_id="llama3.1:8b-instruct-fp16",
-        aliases=["Llama3.1-8B-Instruct"],
-        llama_model=CoreModelId.llama3_1_8b_instruct.value,
+    build_model_alias(
+        "llama3.1:8b-instruct-fp16",
+        CoreModelId.llama3_1_8b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="llama3.1:70b-instruct-fp16",
-        aliases=["Llama3.1-70B-Instruct"],
-        llama_model=CoreModelId.llama3_1_70b_instruct.value,
+    build_model_alias(
+        "llama3.1:70b-instruct-fp16",
+        CoreModelId.llama3_1_70b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="llama3.2:1b-instruct-fp16",
-        aliases=["Llama3.2-1B-Instruct"],
-        llama_model=CoreModelId.llama3_2_1b_instruct.value,
+    build_model_alias(
+        "llama3.2:1b-instruct-fp16",
+        CoreModelId.llama3_2_1b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="llama3.2:3b-instruct-fp16",
-        aliases=["Llama3.2-3B-Instruct"],
-        llama_model=CoreModelId.llama3_2_3b_instruct.value,
+    build_model_alias(
+        "llama3.2:3b-instruct-fp16",
+        CoreModelId.llama3_2_3b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="llama-guard3:8b",
-        aliases=["Llama-Guard-3-8B"],
-        llama_model=CoreModelId.llama_guard_3_8b.value,
+    build_model_alias(
+        "llama-guard3:8b",
+        CoreModelId.llama_guard_3_8b,
     ),
-    ModelAlias(
-        provider_model_id="llama-guard3:1b",
-        aliases=["Llama-Guard-3-1B"],
-        llama_model=CoreModelId.llama_guard_3_1b.value,
+    build_model_alias(
+        "llama-guard3:1b",
+        CoreModelId.llama_guard_3_1b,
     ),
-    ModelAlias(
-        provider_model_id="x/llama3.2-vision:11b-instruct-fp16",
-        aliases=["Llama3.2-11B-Vision-Instruct"],
-        llama_model=CoreModelId.llama3_2_11b_vision_instruct.value,
+    build_model_alias(
+        "x/llama3.2-vision:11b-instruct-fp16",
+        CoreModelId.llama3_2_11b_vision_instruct,
     ),
 ]
 

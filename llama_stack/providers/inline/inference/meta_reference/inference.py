@@ -11,9 +11,11 @@ from typing import AsyncGenerator, List
 from llama_models.sku_list import resolve_model
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 
+from llama_stack.providers.utils.inference.model_registry import build_model_alias
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_media_to_url,
     request_has_media,
@@ -28,10 +30,19 @@ from .model_parallel import LlamaModelParallelGenerator
 SEMAPHORE = asyncio.Semaphore(1)
 
 
-class MetaReferenceInferenceImpl(Inference, ModelsProtocolPrivate):
+class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolPrivate):
     def __init__(self, config: MetaReferenceInferenceConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
+        ModelRegistryHelper.__init__(
+            self,
+            [
+                build_model_alias(
+                    model.descriptor(),
+                    model.core_model_id,
+                )
+            ],
+        )
         if model is None:
             raise RuntimeError(f"Unknown model: {config.model}, Run `llama model list`")
         self.model = model

@@ -15,7 +15,7 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
-    ModelAlias,
+    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -36,50 +36,41 @@ from .config import FireworksImplConfig
 
 
 model_aliases = [
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p1-8b-instruct",
-        aliases=["Llama3.1-8B-Instruct"],
-        llama_model=CoreModelId.llama3_1_8b_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p1-8b-instruct",
+        CoreModelId.llama3_1_8b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p1-70b-instruct",
-        aliases=["Llama3.1-70B-Instruct"],
-        llama_model=CoreModelId.llama3_1_70b_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p1-70b-instruct",
+        CoreModelId.llama3_1_70b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p1-405b-instruct",
-        aliases=["Llama3.1-405B-Instruct"],
-        llama_model=CoreModelId.llama3_1_405b_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p1-405b-instruct",
+        CoreModelId.llama3_1_405b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p2-1b-instruct",
-        aliases=["Llama3.2-1B-Instruct"],
-        llama_model=CoreModelId.llama3_2_3b_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p2-1b-instruct",
+        CoreModelId.llama3_2_3b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p2-3b-instruct",
-        aliases=["Llama3.2-3B-Instruct"],
-        llama_model=CoreModelId.llama3_2_11b_vision_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p2-3b-instruct",
+        CoreModelId.llama3_2_11b_vision_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p2-11b-vision-instruct",
-        aliases=["Llama3.2-11B-Vision-Instruct"],
-        llama_model=CoreModelId.llama3_2_11b_vision_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p2-11b-vision-instruct",
+        CoreModelId.llama3_2_11b_vision_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-v3p2-90b-vision-instruct",
-        aliases=["Llama3.2-90B-Vision-Instruct"],
-        llama_model=CoreModelId.llama3_2_90b_vision_instruct.value,
+    build_model_alias(
+        "fireworks/llama-v3p2-90b-vision-instruct",
+        CoreModelId.llama3_2_90b_vision_instruct,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-guard-3-8b",
-        aliases=["Llama-Guard-3-8B"],
-        llama_model=CoreModelId.llama_guard_3_8b.value,
+    build_model_alias(
+        "fireworks/llama-guard-3-8b",
+        CoreModelId.llama_guard_3_8b,
     ),
-    ModelAlias(
-        provider_model_id="fireworks/llama-guard-3-11b-vision",
-        aliases=["Llama-Guard-3-11B-Vision"],
-        llama_model=CoreModelId.llama_guard_3_11b_vision.value,
+    build_model_alias(
+        "fireworks/llama-guard-3-11b-vision",
+        CoreModelId.llama_guard_3_11b_vision,
     ),
 ]
 

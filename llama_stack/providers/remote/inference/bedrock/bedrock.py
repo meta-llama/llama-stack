@@ -13,7 +13,7 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.providers.utils.inference.model_registry import (
-    ModelAlias,
+    build_model_alias,
     ModelRegistryHelper,
 )
 
@@ -24,20 +24,17 @@ from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 
 model_aliases = [
-    ModelAlias(
-        provider_model_id="meta.llama3-1-8b-instruct-v1:0",
-        aliases=["Llama3.1-8B-Instruct"],
-        llama_model=CoreModelId.llama3_1_8b_instruct,
+    build_model_alias(
+        "meta.llama3-1-8b-instruct-v1:0",
+        CoreModelId.llama3_1_8b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta.llama3-1-70b-instruct-v1:0",
-        aliases=["Llama3.1-70B-Instruct"],
-        llama_model=CoreModelId.llama3_1_70b_instruct,
+    build_model_alias(
+        "meta.llama3-1-70b-instruct-v1:0",
+        CoreModelId.llama3_1_70b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta.llama3-1-405b-instruct-v1:0",
-        aliases=["Llama3.1-405B-Instruct"],
-        llama_model=CoreModelId.llama3_1_405b_instruct,
+    build_model_alias(
+        "meta.llama3-1-405b-instruct-v1:0",
+        CoreModelId.llama3_1_405b_instruct,
     ),
 ]
 

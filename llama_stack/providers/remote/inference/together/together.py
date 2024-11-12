@@ -18,7 +18,7 @@ from together import Together
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
-    ModelAlias,
+    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -39,45 +39,37 @@ from .config import TogetherImplConfig
 
 
 model_aliases = [
-    ModelAlias(
-        provider_model_id="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        aliases=["Llama3.1-8B-Instruct"],
-        llama_model=CoreModelId.llama3_1_8b_instruct.value,
+    build_model_alias(
+        "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+        CoreModelId.llama3_1_8b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-        aliases=["Llama3.1-70B-Instruct"],
-        llama_model=CoreModelId.llama3_1_70b_instruct.value,
+    build_model_alias(
+        "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        CoreModelId.llama3_1_70b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-        aliases=["Llama3.1-405B-Instruct"],
-        llama_model=CoreModelId.llama3_1_405b_instruct.value,
+    build_model_alias(
+        "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+        CoreModelId.llama3_1_405b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Llama-3.2-3B-Instruct-Turbo",
-        aliases=["Llama3.2-3B-Instruct"],
-        llama_model=CoreModelId.llama3_2_3b_instruct.value,
+    build_model_alias(
+        "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+        CoreModelId.llama3_2_3b_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-        aliases=["Llama3.2-11B-Vision-Instruct"],
-        llama_model=CoreModelId.llama3_2_11b_vision_instruct.value,
+    build_model_alias(
+        "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+        CoreModelId.llama3_2_11b_vision_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
-        aliases=["Llama3.2-90B-Vision-Instruct"],
-        llama_model=CoreModelId.llama3_2_90b_vision_instruct.value,
+    build_model_alias(
+        "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+        CoreModelId.llama3_2_90b_vision_instruct,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Meta-Llama-Guard-3-8B",
-        aliases=["Llama-Guard-3-8B"],
-        llama_model=CoreModelId.llama_guard_3_8b.value,
+    build_model_alias(
+        "meta-llama/Meta-Llama-Guard-3-8B",
+        CoreModelId.llama_guard_3_8b,
     ),
-    ModelAlias(
-        provider_model_id="meta-llama/Llama-Guard-3-11B-Vision-Turbo",
-        aliases=["Llama-Guard-3-11B-Vision"],
-        llama_model=CoreModelId.llama_guard_3_11b_vision.value,
+    build_model_alias(
+        "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
+        CoreModelId.llama_guard_3_11b_vision,
     ),
 ]
 

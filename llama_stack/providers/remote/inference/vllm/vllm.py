@@ -16,7 +16,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.model_registry import (
-    ModelAlias,
+    build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -36,10 +36,9 @@ from .config import VLLMInferenceAdapterConfig
 
 def build_model_aliases():
     return [
-        ModelAlias(
-            provider_model_id=model.huggingface_repo,
-            aliases=[model.descriptor()],
-            llama_model=model.descriptor(),
+        build_model_alias(
+            model.huggingface_repo,
+            model.core_model_id,
         )
         for model in all_registered_models()
         if model.huggingface_repo
@@ -55,11 +54,6 @@ class VLLMInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPrivate
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
         self.client = None
-        self.huggingface_repo_to_llama_model_id = {
-            model.huggingface_repo: model.descriptor()
-            for model in all_registered_models()
-            if model.huggingface_repo
-        }
 
     async def initialize(self) -> None:
         self.client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
