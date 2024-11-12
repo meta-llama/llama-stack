@@ -128,7 +128,6 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        print(f"Registering shield {shield}")
         if shield.shield_type != ShieldType.llama_guard:
             raise ValueError(f"Unsupported shield type: {shield.shield_type}")
 

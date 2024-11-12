@@ -32,6 +32,10 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> None:
     api = get_impl_api(p)
 
     if obj.provider_id == "remote":
+        # TODO:  this is broken right now because we use the generic
+        # { identifier, provider_id, provider_resource_id } tuple here
+        # but the APIs expect things like ModelInput, ShieldInput, etc.
+
         # if this is just a passthrough, we want to let the remote
         # end actually do the registration with the correct provider
         obj = obj.model_copy(deep=True)
