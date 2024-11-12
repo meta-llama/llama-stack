@@ -78,7 +78,16 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
   # rebuild. This is just for development convenience.
   add_to_docker "RUN pip install --no-cache -e $stack_mount"
 else
-  add_to_docker "RUN pip install --no-cache llama-stack"
+  if [ -n "$TEST_PYPI_VERSION" ]; then
+    # these packages are damaged in test-pypi, so install them first
+    add_to_docker "RUN pip install fastapi libcst"
+    add_to_docker <<EOF
+RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
+  llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
+EOF
+  else
+    add_to_docker "RUN pip install --no-cache llama-stack"
+  fi
 fi
 
 if [ -n "$LLAMA_MODELS_DIR" ]; then
