@@ -140,6 +140,13 @@ if command -v selinuxenabled &>/dev/null && selinuxenabled; then
   DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
 fi
 
+if [ -n "$TEST_PYPI_VERSION" ]; then
+  image_name="$image_name-test-$TEST_PYPI_VERSION"
+else
+  URL="https://pypi.org/pypi/llama-stack/json"
+  image_name="$image_name-$(curl -s $URL | jq -r '.info.version')"
+fi
+
 set -x
 $DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 
