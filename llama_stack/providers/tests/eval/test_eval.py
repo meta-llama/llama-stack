@@ -11,8 +11,6 @@ from llama_models.llama3.api import SamplingParams, URL
 
 from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
 
-from llama_stack.apis.datasetio.datasetio import DatasetDefWithProvider
-
 from llama_stack.apis.eval.eval import (
     AppEvalTaskConfig,
     BenchmarkEvalTaskConfig,
@@ -164,24 +162,21 @@ class Testeval:
             pytest.skip(
                 "Only huggingface provider supports pre-registered remote datasets"
             )
-        # register dataset
-        mmlu = DatasetDefWithProvider(
-            identifier="mmlu",
-            url=URL(uri="https://huggingface.co/datasets/llamastack/evals"),
-            dataset_schema={
+
+        await datasets_impl.register_dataset(
+            dataset_id="mmlu",
+            schema={
                 "input_query": StringType(),
                 "expected_answer": StringType(),
                 "chat_completion_input": ChatCompletionInputType(),
             },
+            url=URL(uri="https://huggingface.co/datasets/llamastack/evals"),
             metadata={
                 "path": "llamastack/evals",
                 "name": "evals__mmlu__details",
                 "split": "train",
             },
-            provider_id="",
         )
-
-        await datasets_impl.register_dataset(mmlu)
 
         # register eval task
         await eval_tasks_impl.register_eval_task(
