@@ -4,9 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
-from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
-from llama_stack.apis.scoring import *  # noqa: F401, F403
+from typing import Any, Dict, List, Optional
+
+from llama_stack.apis.scoring import ScoringFnParams, ScoringResultRow
+from llama_stack.apis.scoring_functions import ScoringFn
 
 
 class BaseScoringFn(ABC):
