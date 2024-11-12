@@ -7,9 +7,9 @@
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.models import Model
+from llama_stack.apis.models import ModelInput
 
-from llama_stack.apis.shields import Shield, ShieldType
+from llama_stack.apis.shields import ShieldInput, ShieldType
 
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.safety.llama_guard import LlamaGuardConfig
@@ -99,28 +99,21 @@ async def safety_stack(inference_model, safety_model, request):
         provider_data.update(safety_fixture.provider_data)
 
     shield_provider_type = safety_fixture.providers[0].provider_type
-    shield = get_shield_to_register(
-        shield_provider_type, safety_fixture.providers[0].provider_id, safety_model
-    )
+    shield_input = get_shield_to_register(shield_provider_type, safety_model)
 
     impls = await resolve_impls_for_test_v2(
         [Api.safety, Api.shields, Api.inference],
         providers,
         provider_data,
-        models=[
-            Model(
-                identifier=inference_model,
-                provider_id=inference_fixture.providers[0].provider_id,
-                provider_resource_id=inference_model,
-            )
-        ],
-        shields=[shield],
+        models=[ModelInput(model_id=inference_model)],
+        shields=[shield_input],
     )
 
+    shield = await impls[Api.shields].get_shield(shield_input.shield_id)
     return impls[Api.safety], impls[Api.shields], shield
 
 
-def get_shield_to_register(provider_type: str, provider_id: str, safety_model: str):
+def get_shield_to_register(provider_type: str, safety_model: str) -> ShieldInput:
     shield_config = {}
     shield_type = ShieldType.llama_guard
     identifier = "llama_guard"
@@ -133,10 +126,8 @@ def get_shield_to_register(provider_type: str, provider_id: str, safety_model: s
         shield_config["guardrailVersion"] = get_env_or_fail("BEDROCK_GUARDRAIL_VERSION")
         shield_type = ShieldType.generic_content_shield
 
-    return Shield(
-        identifier=identifier,
+    return ShieldInput(
+        shield_id=identifier,
         shield_type=shield_type,
         params=shield_config,
-        provider_id=provider_id,
-        provider_resource_id=identifier,
     )

@@ -30,37 +30,8 @@ class MemoryBankType(Enum):
     graph = "graph"
 
 
-@json_schema_type
-class VectorMemoryBank(Resource):
-    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
-    memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
-    embedding_model: str
-    chunk_size_in_tokens: int
-    overlap_size_in_tokens: Optional[int] = None
-
-
-@json_schema_type
-class KeyValueMemoryBank(Resource):
-    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
-    memory_bank_type: Literal[MemoryBankType.keyvalue.value] = (
-        MemoryBankType.keyvalue.value
-    )
-
-
-@json_schema_type
-class KeywordMemoryBank(Resource):
-    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
-    memory_bank_type: Literal[MemoryBankType.keyword.value] = (
-        MemoryBankType.keyword.value
-    )
-
-
-@json_schema_type
-class GraphMemoryBank(Resource):
-    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
-    memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
-
-
+# define params for each type of memory bank, this leads to a tagged union
+# accepted as input from the API or from the config.
 @json_schema_type
 class VectorMemoryBankParams(BaseModel):
     memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
@@ -88,6 +59,58 @@ class GraphMemoryBankParams(BaseModel):
     memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
 
 
+BankParams = Annotated[
+    Union[
+        VectorMemoryBankParams,
+        KeyValueMemoryBankParams,
+        KeywordMemoryBankParams,
+        GraphMemoryBankParams,
+    ],
+    Field(discriminator="memory_bank_type"),
+]
+
+
+# Some common functionality for memory banks.
+class MemoryBankResourceMixin(Resource):
+    type: Literal[ResourceType.memory_bank.value] = ResourceType.memory_bank.value
+
+    @property
+    def memory_bank_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_memory_bank_id(self) -> str:
+        return self.provider_resource_id
+
+
+@json_schema_type
+class VectorMemoryBank(MemoryBankResourceMixin):
+    memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+    embedding_model: str
+    chunk_size_in_tokens: int
+    overlap_size_in_tokens: Optional[int] = None
+
+
+@json_schema_type
+class KeyValueMemoryBank(MemoryBankResourceMixin):
+    memory_bank_type: Literal[MemoryBankType.keyvalue.value] = (
+        MemoryBankType.keyvalue.value
+    )
+
+
+# TODO: KeyValue and Keyword are so similar in name, oof. Get a better naming convention.
+@json_schema_type
+class KeywordMemoryBank(MemoryBankResourceMixin):
+    memory_bank_type: Literal[MemoryBankType.keyword.value] = (
+        MemoryBankType.keyword.value
+    )
+
+
+@json_schema_type
+class GraphMemoryBank(MemoryBankResourceMixin):
+    memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+
+
 MemoryBank = Annotated[
     Union[
         VectorMemoryBank,
@@ -98,15 +121,12 @@ MemoryBank = Annotated[
     Field(discriminator="memory_bank_type"),
 ]
 
-BankParams = Annotated[
-    Union[
-        VectorMemoryBankParams,
-        KeyValueMemoryBankParams,
-        KeywordMemoryBankParams,
-        GraphMemoryBankParams,
-    ],
-    Field(discriminator="memory_bank_type"),
-]
+
+@json_schema_type
+class MemoryBankInput(BaseModel):
+    memory_bank_id: str
+    params: BankParams
+    provider_memory_bank_id: Optional[str] = None
 
 
 @runtime_checkable
@@ -123,5 +143,5 @@ class MemoryBanks(Protocol):
         memory_bank_id: str,
         params: BankParams,
         provider_id: Optional[str] = None,
-        provider_memorybank_id: Optional[str] = None,
+        provider_memory_bank_id: Optional[str] = None,
     ) -> MemoryBank: ...

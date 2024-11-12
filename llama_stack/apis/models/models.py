@@ -7,18 +7,36 @@
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
 
 
-@json_schema_type
-class Model(Resource):
-    type: Literal[ResourceType.model.value] = ResourceType.model.value
+class CommonModelFields(BaseModel):
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this model",
     )
+
+
+@json_schema_type
+class Model(CommonModelFields, Resource):
+    type: Literal[ResourceType.model.value] = ResourceType.model.value
+
+    @property
+    def model_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_model_id(self) -> str:
+        return self.provider_resource_id
+
+
+@json_schema_type
+class ModelInput(CommonModelFields):
+    model_id: str
+    provider_id: Optional[str] = None
+    provider_model_id: Optional[str] = None
 
 
 @runtime_checkable

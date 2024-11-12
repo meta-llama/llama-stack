@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from typing import Any, Dict
+from termcolor import colored
 
 from termcolor import colored
 
@@ -67,30 +68,29 @@ async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
 
     impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
 
-    objects = [
-        *run_config.models,
-        *run_config.shields,
-        *run_config.memory_banks,
-        *run_config.datasets,
-        *run_config.scoring_fns,
-        *run_config.eval_tasks,
-    ]
-    for obj in objects:
-        await dist_registry.register(obj)
-
     resources = [
-        ("models", Api.models),
-        ("shields", Api.shields),
-        ("memory_banks", Api.memory_banks),
-        ("datasets", Api.datasets),
-        ("scoring_fns", Api.scoring_functions),
-        ("eval_tasks", Api.eval_tasks),
+        ("models", Api.models, "register_model", "list_models"),
+        ("shields", Api.shields, "register_shield", "list_shields"),
+        ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
+        ("datasets", Api.datasets, "register_dataset", "list_datasets"),
+        (
+            "scoring_fns",
+            Api.scoring_functions,
+            "register_scoring_function",
+            "list_scoring_functions",
+        ),
+        ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
     ]
-    for rsrc, api in resources:
+    for rsrc, api, register_method, list_method in resources:
+        objects = getattr(run_config, rsrc)
         if api not in impls:
             continue
 
-        method = getattr(impls[api], f"list_{api.value}")
+        method = getattr(impls[api], register_method)
+        for obj in objects:
+            await method(**obj.model_dump())
+
+        method = getattr(impls[api], list_method)
         for obj in await method():
             print(
                 f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",

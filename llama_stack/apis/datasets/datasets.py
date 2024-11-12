@@ -10,21 +10,39 @@ from llama_models.llama3.api.datatypes import URL
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.common.type_system import ParamType
-from llama_stack.apis.resource import Resource
+from llama_stack.apis.resource import Resource, ResourceType
 
 
-@json_schema_type
-class Dataset(Resource):
-    type: Literal["dataset"] = "dataset"
+class CommonDatasetFields(BaseModel):
     schema: Dict[str, ParamType]
     url: URL
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this dataset",
     )
+
+
+@json_schema_type
+class Dataset(CommonDatasetFields, Resource):
+    type: Literal[ResourceType.dataset.value] = ResourceType.dataset.value
+
+    @property
+    def dataset_id(self) -> str:
+        return self.identifier
+
+    @property
+    def provider_dataset_id(self) -> str:
+        return self.provider_resource_id
+
+
+@json_schema_type
+class DatasetInput(CommonDatasetFields, BaseModel):
+    dataset_id: str
+    provider_id: Optional[str] = None
+    provider_dataset_id: Optional[str] = None
 
 
 class Datasets(Protocol):
