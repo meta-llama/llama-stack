@@ -38,15 +38,15 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
     if api == Api.inference:
         return await p.register_model(obj)
     elif api == Api.safety:
-        await p.register_shield(obj)
+        return await p.register_shield(obj)
     elif api == Api.memory:
-        await p.register_memory_bank(obj)
+        return await p.register_memory_bank(obj)
     elif api == Api.datasetio:
-        await p.register_dataset(obj)
+        return await p.register_dataset(obj)
     elif api == Api.scoring:
-        await p.register_scoring_function(obj)
+        return await p.register_scoring_function(obj)
     elif api == Api.eval:
-        await p.register_eval_task(obj)
+        return await p.register_eval_task(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 

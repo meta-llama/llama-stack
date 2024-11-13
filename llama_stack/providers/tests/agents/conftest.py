@@ -48,6 +48,16 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     ),
     pytest.param(
         {
+            "inference": "fireworks",
+            "safety": "llama_guard",
+            "memory": "faiss",
+            "agents": "meta_reference",
+        },
+        id="fireworks",
+        marks=pytest.mark.fireworks,
+    ),
+    pytest.param(
+        {
             "inference": "remote",
             "safety": "remote",
             "memory": "remote",
@@ -60,7 +70,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together", "remote"]:
+    for mark in ["meta_reference", "ollama", "together", "fireworks", "remote"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",
