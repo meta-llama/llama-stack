@@ -152,6 +152,10 @@ class CommonRoutingTableImpl(RoutingTable):
         assert len(objects) == 1
         return objects[0]
 
+    async def delete_object(self, obj: RoutableObjectWithProvider) -> None:
+        await self.dist_registry.delete(obj.type, obj.identifier)
+        # TODO: delete from provider
+
     async def register_object(
         self, obj: RoutableObjectWithProvider
     ) -> RoutableObjectWithProvider:
@@ -224,6 +228,33 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         )
         registered_model = await self.register_object(model)
         return registered_model
+
+    async def update_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Model:
+        existing_model = await self.get_model(model_id)
+        if existing_model is None:
+            raise ValueError(f"Model {model_id} not found")
+
+        updated_model = Model(
+            identifier=model_id,
+            provider_resource_id=provider_model_id
+            or existing_model.provider_resource_id,
+            provider_id=provider_id or existing_model.provider_id,
+            metadata=metadata or existing_model.metadata,
+        )
+        registered_model = await self.register_object(updated_model)
+        return registered_model
+
+    async def delete_model(self, model_id: str) -> None:
+        existing_model = await self.get_model(model_id)
+        if existing_model is None:
+            raise ValueError(f"Model {model_id} not found")
+        await self.delete_object(existing_model)
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):

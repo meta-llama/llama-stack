@@ -54,3 +54,15 @@ class Models(Protocol):
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Model: ...
+
+    @webmethod(route="/models/update", method="PUT")
+    async def update_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Model: ...
+
+    @webmethod(route="/models/delete", method="DELETE")
+    async def delete_model(self, model_id: str) -> None: ...

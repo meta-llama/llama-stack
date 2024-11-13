@@ -36,6 +36,8 @@ class DistributionRegistry(Protocol):
     # The current approach could lead to inconsistencies if the same logical object has different data across providers.
     async def register(self, obj: RoutableObjectWithProvider) -> bool: ...
 
+    async def delete(self, type: str, identifier: str) -> None: ...
+
 
 REGISTER_PREFIX = "distributions:registry"
 KEY_VERSION = "v1"
@@ -119,6 +121,9 @@ class DiskDistributionRegistry(DistributionRegistry):
             json.dumps(objects_json),
         )
         return True
+
+    async def delete(self, type: str, identifier: str) -> None:
+        await self.kvstore.delete(KEY_FORMAT.format(type=type, identifier=identifier))
 
 
 class CachedDiskDistributionRegistry(DiskDistributionRegistry):
@@ -205,6 +210,13 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
                     cache[cache_key].append(obj)
 
         return success
+
+    async def delete(self, type: str, identifier: str) -> None:
+        await super().delete(type, identifier)
+        cache_key = (type, identifier)
+        async with self._locked_cache() as cache:
+            if cache_key in cache:
+                del cache[cache_key]
 
 
 async def create_dist_registry(

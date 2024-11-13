@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-13 11:02:50.081698"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-13 15:29:27.077633"
     },
     "servers": [
         {
@@ -422,6 +422,39 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/DeleteAgentsSessionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/models/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeleteModelRequest"
                             }
                         }
                     },
@@ -2219,6 +2252,46 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/models/update": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Model"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateModelRequest"
                             }
                         }
                     },
@@ -4547,6 +4620,18 @@
                 "required": [
                     "agent_id",
                     "session_id"
+                ]
+            },
+            "DeleteModelRequest": {
+                "type": "object",
+                "properties": {
+                    "model_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model_id"
                 ]
             },
             "EmbeddingsRequest": {
@@ -7826,6 +7911,49 @@
                     "synthetic_data"
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
+            },
+            "UpdateModelRequest": {
+                "type": "object",
+                "properties": {
+                    "model_id": {
+                        "type": "string"
+                    },
+                    "provider_model_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model_id"
+                ]
             }
         },
         "responses": {}
@@ -7837,52 +7965,52 @@
     ],
     "tags": [
         {
-            "name": "Inspect"
-        },
-        {
-            "name": "Models"
-        },
-        {
-            "name": "Eval"
-        },
-        {
-            "name": "EvalTasks"
-        },
-        {
-            "name": "Scoring"
+            "name": "Datasets"
         },
         {
             "name": "Inference"
         },
         {
-            "name": "Memory"
-        },
-        {
-            "name": "Safety"
-        },
-        {
-            "name": "PostTraining"
-        },
-        {
             "name": "ScoringFunctions"
-        },
-        {
-            "name": "Telemetry"
-        },
-        {
-            "name": "Shields"
-        },
-        {
-            "name": "BatchInference"
         },
         {
             "name": "MemoryBanks"
         },
         {
-            "name": "Datasets"
+            "name": "Telemetry"
+        },
+        {
+            "name": "PostTraining"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Inspect"
+        },
+        {
+            "name": "Safety"
+        },
+        {
+            "name": "Scoring"
+        },
+        {
+            "name": "BatchInference"
+        },
+        {
+            "name": "Eval"
         },
         {
             "name": "SyntheticDataGeneration"
+        },
+        {
+            "name": "EvalTasks"
+        },
+        {
+            "name": "Shields"
+        },
+        {
+            "name": "Memory"
         },
         {
             "name": "DatasetIO"
@@ -8141,6 +8269,10 @@
         {
             "name": "DeleteAgentsSessionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
+        },
+        {
+            "name": "DeleteModelRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteModelRequest\" />"
         },
         {
             "name": "EmbeddingsRequest",
@@ -8453,6 +8585,10 @@
         {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
+        },
+        {
+            "name": "UpdateModelRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateModelRequest\" />"
         }
     ],
     "x-tagGroups": [
@@ -8521,6 +8657,7 @@
                 "Dataset",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
+                "DeleteModelRequest",
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
@@ -8618,6 +8755,7 @@
                 "Turn",
                 "URL",
                 "UnstructuredLogEvent",
+                "UpdateModelRequest",
                 "UserMessage",
                 "VectorMemoryBank",
                 "VectorMemoryBankParams",

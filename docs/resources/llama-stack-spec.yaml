@@ -867,6 +867,14 @@ components:
       - agent_id
       - session_id
       type: object
+    DeleteModelRequest:
+      additionalProperties: false
+      properties:
+        model_id:
+          type: string
+      required:
+      - model_id
+      type: object
     DoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -3272,6 +3280,28 @@ components:
       - message
       - severity
       type: object
+    UpdateModelRequest:
+      additionalProperties: false
+      properties:
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        model_id:
+          type: string
+        provider_id:
+          type: string
+        provider_model_id:
+          type: string
+      required:
+      - model_id
+      type: object
     UserMessage:
       additionalProperties: false
       properties:
@@ -3384,7 +3414,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-13 11:02:50.081698"
+    \ draft and subject to change.\n                Generated at 2024-11-13 15:29:27.077633"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4186,6 +4216,27 @@ paths:
       responses: {}
       tags:
       - MemoryBanks
+  /models/delete:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteModelRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Models
   /models/get:
     get:
       parameters:
@@ -4246,6 +4297,31 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterModelRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: OK
+      tags:
+      - Models
+  /models/update:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModelRequest'
         required: true
       responses:
         '200':
@@ -4748,22 +4824,22 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Inspect
-- name: Models
-- name: Eval
-- name: EvalTasks
-- name: Scoring
-- name: Inference
-- name: Memory
-- name: Safety
-- name: PostTraining
-- name: ScoringFunctions
-- name: Telemetry
-- name: Shields
-- name: BatchInference
-- name: MemoryBanks
 - name: Datasets
+- name: Inference
+- name: ScoringFunctions
+- name: MemoryBanks
+- name: Telemetry
+- name: PostTraining
+- name: Models
+- name: Inspect
+- name: Safety
+- name: Scoring
+- name: BatchInference
+- name: Eval
 - name: SyntheticDataGeneration
+- name: EvalTasks
+- name: Shields
+- name: Memory
 - name: DatasetIO
 - name: Agents
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
@@ -4964,6 +5040,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
   name: DeleteAgentsSessionRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteModelRequest"
+    />
+  name: DeleteModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
@@ -5194,6 +5273,9 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerationResponse"
     />'
   name: SyntheticDataGenerationResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateModelRequest"
+    />
+  name: UpdateModelRequest
 x-tagGroups:
 - name: Operations
   tags:
@@ -5256,6 +5338,7 @@ x-tagGroups:
   - Dataset
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
+  - DeleteModelRequest
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
@@ -5353,6 +5436,7 @@ x-tagGroups:
   - Turn
   - URL
   - UnstructuredLogEvent
+  - UpdateModelRequest
   - UserMessage
   - VectorMemoryBank
   - VectorMemoryBankParams
