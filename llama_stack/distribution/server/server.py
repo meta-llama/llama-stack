@@ -13,6 +13,7 @@ import re
 import signal
 import sys
 import traceback
+import warnings
 
 from contextlib import asynccontextmanager
 from ssl import SSLError
@@ -43,6 +44,16 @@ from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import construct_stack
 
 from .endpoints import get_all_api_endpoints
+
+
+def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    log = file if hasattr(file, "write") else sys.stderr
+    traceback.print_stack(file=log)
+    log.write(warnings.formatwarning(message, category, filename, lineno, line))
+
+
+if os.environ.get("LLAMA_STACK_TRACE_WARNINGS"):
+    warnings.showwarning = warn_with_traceback
 
 
 def create_sse_event(data: Any) -> str:
