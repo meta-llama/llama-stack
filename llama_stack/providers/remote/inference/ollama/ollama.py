@@ -282,6 +282,21 @@ class OllamaInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPriva
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 
+    async def register_model(self, model: Model) -> Model:
+        # First perform the parent class's registration check
+        model = await super().register_model(model)
+
+        # Additional Ollama-specific check
+        models = await self.client.ps()
+        available_models = [m["model"] for m in models["models"]]
+        if model.provider_resource_id not in available_models:
+            raise ValueError(
+                f"Model '{model.provider_resource_id}' is not available in Ollama. "
+                f"Available models: {', '.join(available_models)}"
+            )
+
+        return model
+
 
 async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
     async def _convert_content(content) -> dict:
