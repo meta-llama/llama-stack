@@ -57,7 +57,7 @@ async def register_dataset(
 
     await datasets_impl.register_dataset(
         dataset_id=dataset_id,
-        schema=dataset_schema,
+        dataset_schema=dataset_schema,
         url=URL(uri=test_url),
     )
 
