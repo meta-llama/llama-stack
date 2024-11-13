@@ -118,7 +118,7 @@ class ParallelDownloader:
     def __init__(
         self,
         max_concurrent_downloads: int = 3,
-        buffer_size: int = 32 * 1024,
+        buffer_size: int = 1024 * 1024,
         timeout: int = 30,
     ):
         self.max_concurrent_downloads = max_concurrent_downloads
