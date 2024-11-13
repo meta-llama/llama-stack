@@ -53,6 +53,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="chromadb",
                 pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
                 module="llama_stack.providers.remote.memory.chroma",
+                config_class="llama_stack.distribution.datatypes.RemoteProviderConfig",
             ),
         ),
         remote_provider_spec(

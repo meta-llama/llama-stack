@@ -85,4 +85,5 @@ async def agents_stack(request, inference_model, safety_shield):
         ],
         shields=[safety_shield],
     )
+
     return impls[Api.agents], impls[Api.memory]

@@ -59,12 +59,16 @@ def api_protocol_map() -> Dict[Api, Any]:
 
 def additional_protocols_map() -> Dict[Api, Any]:
     return {
-        Api.inference: (ModelsProtocolPrivate, Models),
-        Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks),
-        Api.safety: (ShieldsProtocolPrivate, Shields),
-        Api.datasetio: (DatasetsProtocolPrivate, Datasets),
-        Api.scoring: (ScoringFunctionsProtocolPrivate, ScoringFunctions),
-        Api.eval_tasks: (EvalTasksProtocolPrivate, EvalTasks),
+        Api.inference: (ModelsProtocolPrivate, Models, Api.models),
+        Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks, Api.memory_banks),
+        Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
+        Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
+        Api.scoring: (
+            ScoringFunctionsProtocolPrivate,
+            ScoringFunctions,
+            Api.scoring_functions,
+        ),
+        Api.eval: (EvalTasksProtocolPrivate, EvalTasks, Api.eval_tasks),
     }
 
 

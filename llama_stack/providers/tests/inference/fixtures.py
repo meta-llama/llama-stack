@@ -186,12 +186,7 @@ async def inference_stack(request, inference_model):
         [Api.inference],
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
-        models=[
-            ModelInput(
-                model_id=inference_model,
-                provider_id=inference_fixture.providers[0].provider_id,
-            )
-        ],
+        models=[ModelInput(model_id=inference_model)],
     )
 
     return (impls[Api.inference], impls[Api.models])
