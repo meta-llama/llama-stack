@@ -17,7 +17,7 @@ from llama_stack.apis.resource import Resource, ResourceType
 
 
 class CommonDatasetFields(BaseModel):
-    schema: Dict[str, ParamType]
+    dataset_schema: Dict[str, ParamType]
     url: URL
     metadata: Dict[str, Any] = Field(
         default_factory=dict,

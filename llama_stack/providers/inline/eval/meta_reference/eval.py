@@ -58,7 +58,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        if not dataset_def.schema or len(dataset_def.schema) == 0:
+        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
             raise ValueError(f"Dataset {dataset_id} does not have a schema defined.")
 
         expected_schemas = [
@@ -74,7 +74,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             },
         ]
 
-        if dataset_def.schema not in expected_schemas:
+        if dataset_def.dataset_schema not in expected_schemas:
             raise ValueError(
                 f"Dataset {dataset_id} does not have a correct input schema in {expected_schemas}"
             )
