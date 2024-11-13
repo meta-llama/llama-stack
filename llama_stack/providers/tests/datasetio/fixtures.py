@@ -24,7 +24,7 @@ def datasetio_localfs() -> ProviderFixture:
         providers=[
             Provider(
                 provider_id="localfs",
-                provider_type="localfs",
+                provider_type="inline::localfs",
                 config={},
             )
         ],
