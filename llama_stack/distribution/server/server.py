@@ -260,23 +260,52 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
-def replace_env_vars(config):
+class EnvVarError(Exception):
+    def __init__(self, var_name: str, path: str = ""):
+        self.var_name = var_name
+        self.path = path
+        super().__init__(
+            f"Environment variable '{var_name}' not set{f' at {path}' if path else ''}"
+        )
+
+
+def replace_env_vars(config: Any, path: str = "") -> Any:
     if isinstance(config, dict):
-        return {k: replace_env_vars(v) for k, v in config.items()}
+        result = {}
+        for k, v in config.items():
+            try:
+                result[k] = replace_env_vars(v, f"{path}.{k}" if path else k)
+            except EnvVarError as e:
+                raise EnvVarError(e.var_name, e.path) from None
+        return result
+
     elif isinstance(config, list):
-        return [replace_env_vars(v) for v in config]
+        result = []
+        for i, v in enumerate(config):
+            try:
+                result.append(replace_env_vars(v, f"{path}[{i}]"))
+            except EnvVarError as e:
+                raise EnvVarError(e.var_name, e.path) from None
+        return result
+
     elif isinstance(config, str):
-        pattern = r"\${env\.([A-Z0-9_]+)}"
+        pattern = r"\${env\.([A-Z0-9_]+)(?::([^}]*))?}"
 
         def get_env_var(match):
             env_var = match.group(1)
+            default_val = match.group(2)
+
             if env_var not in os.environ:
-                raise ValueError(
-                    f"Environment variable {env_var} not set (for config: {config})"
-                )
+                if default_val is None:
+                    raise EnvVarError(env_var, path)
+                return default_val
             return os.environ[env_var]
 
-        return re.sub(pattern, get_env_var, config)
+        try:
+            return re.sub(pattern, get_env_var, config)
+        except EnvVarError as e:
+            raise EnvVarError(e.var_name, e.path) from None
+
     return config
 
 
