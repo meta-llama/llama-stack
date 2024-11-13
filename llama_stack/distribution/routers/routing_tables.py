@@ -332,7 +332,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
             identifier=dataset_id,
             provider_resource_id=provider_dataset_id,
             provider_id=provider_id,
-            schema=schema,
+            dataset_schema=schema,
             url=url,
             metadata=metadata,
         )

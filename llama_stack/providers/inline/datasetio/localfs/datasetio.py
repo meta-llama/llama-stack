@@ -60,9 +60,9 @@ class PandasDataframeDataset(BaseDataset):
 
     def _validate_dataset_schema(self, df) -> pandas.DataFrame:
         # note that we will drop any columns in dataset that are not in the schema
-        df = df[self.dataset_def.schema.keys()]
+        df = df[self.dataset_def.dataset_schema.keys()]
         # check all columns in dataset schema are present
-        assert len(df.columns) == len(self.dataset_def.schema)
+        assert len(df.columns) == len(self.dataset_def.dataset_schema)
         # TODO: type checking against column types in dataset schema
         return df
 
