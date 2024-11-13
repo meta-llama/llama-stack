@@ -13,7 +13,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.datasetio,
-            provider_type="localfs",
+            provider_type="inline::localfs",
             pip_packages=["pandas"],
             module="llama_stack.providers.inline.datasetio.localfs",
             config_class="llama_stack.providers.inline.datasetio.localfs.LocalFSDatasetIOConfig",
