@@ -96,7 +96,7 @@ class TestInference:
         response = await inference_impl.completion(
             content="Micheael Jordan is born in ",
             stream=False,
-            model=inference_model,
+            model_id=inference_model,
             sampling_params=SamplingParams(
                 max_tokens=50,
             ),
@@ -110,7 +110,7 @@ class TestInference:
             async for r in await inference_impl.completion(
                 content="Roses are red,",
                 stream=True,
-                model=inference_model,
+                model_id=inference_model,
                 sampling_params=SamplingParams(
                     max_tokens=50,
                 ),
@@ -171,7 +171,7 @@ class TestInference:
     ):
         inference_impl, _ = inference_stack
         response = await inference_impl.chat_completion(
-            model=inference_model,
+            model_id=inference_model,
             messages=sample_messages,
             stream=False,
             **common_params,
@@ -204,7 +204,7 @@ class TestInference:
             num_seasons_in_nba: int
 
         response = await inference_impl.chat_completion(
-            model=inference_model,
+            model_id=inference_model,
             messages=[
                 SystemMessage(content="You are a helpful assistant."),
                 UserMessage(content="Please give me information about Michael Jordan."),
@@ -227,7 +227,7 @@ class TestInference:
         assert answer.num_seasons_in_nba == 15
 
         response = await inference_impl.chat_completion(
-            model=inference_model,
+            model_id=inference_model,
             messages=[
                 SystemMessage(content="You are a helpful assistant."),
                 UserMessage(content="Please give me information about Michael Jordan."),
@@ -250,7 +250,7 @@ class TestInference:
         response = [
             r
             async for r in await inference_impl.chat_completion(
-                model=inference_model,
+                model_id=inference_model,
                 messages=sample_messages,
                 stream=True,
                 **common_params,
@@ -286,7 +286,7 @@ class TestInference:
         ]
 
         response = await inference_impl.chat_completion(
-            model=inference_model,
+            model_id=inference_model,
             messages=messages,
             tools=[sample_tool_definition],
             stream=False,
@@ -327,7 +327,7 @@ class TestInference:
         response = [
             r
             async for r in await inference_impl.chat_completion(
-                model=inference_model,
+                model_id=inference_model,
                 messages=messages,
                 tools=[sample_tool_definition],
                 stream=True,

@@ -49,7 +49,7 @@ def inference_meta_reference(inference_model) -> ProviderFixture:
         providers=[
             Provider(
                 provider_id=f"meta-reference-{i}",
-                provider_type="meta-reference",
+                provider_type="inline::meta-reference",
                 config=MetaReferenceInferenceConfig(
                     model=m,
                     max_seq_len=4096,
@@ -140,6 +140,31 @@ def inference_bedrock() -> ProviderFixture:
             )
         ],
     )
+
+
+def get_model_short_name(model_name: str) -> str:
+    """Convert model name to a short test identifier.
+
+    Args:
+        model_name: Full model name like "Llama3.1-8B-Instruct"
+
+    Returns:
+        Short name like "llama_8b" suitable for test markers
+    """
+    model_name = model_name.lower()
+    if "vision" in model_name:
+        return "llama_vision"
+    elif "3b" in model_name:
+        return "llama_3b"
+    elif "8b" in model_name:
+        return "llama_8b"
+    else:
+        return model_name.replace(".", "_").replace("-", "_")
+
+
+@pytest.fixture(scope="session")
+def model_id(inference_model) -> str:
+    return get_model_short_name(inference_model)
 
 
 INFERENCE_FIXTURES = [

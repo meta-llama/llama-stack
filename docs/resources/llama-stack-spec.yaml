@@ -396,7 +396,7 @@ components:
             - $ref: '#/components/schemas/ToolResponseMessage'
             - $ref: '#/components/schemas/CompletionMessage'
           type: array
-        model:
+        model_id:
           type: string
         response_format:
           oneOf:
@@ -453,7 +453,7 @@ components:
             $ref: '#/components/schemas/ToolDefinition'
           type: array
       required:
-      - model
+      - model_id
       - messages
       type: object
     ChatCompletionResponse:
@@ -577,7 +577,7 @@ components:
               default: 0
               type: integer
           type: object
-        model:
+        model_id:
           type: string
         response_format:
           oneOf:
@@ -626,7 +626,7 @@ components:
         stream:
           type: boolean
       required:
-      - model
+      - model_id
       - content
       type: object
     CompletionResponse:
@@ -903,10 +903,10 @@ components:
                 - $ref: '#/components/schemas/ImageMedia'
               type: array
           type: array
-        model:
+        model_id:
           type: string
       required:
-      - model
+      - model_id
       - contents
       type: object
     EmbeddingsResponse:
@@ -3384,7 +3384,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-12 11:39:48.665782"
+    \ draft and subject to change.\n                Generated at 2024-11-12 15:47:15.607543"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4748,24 +4748,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: MemoryBanks
-- name: BatchInference
-- name: Agents
-- name: Inference
-- name: DatasetIO
-- name: Eval
-- name: Models
-- name: PostTraining
-- name: ScoringFunctions
-- name: Datasets
+- name: Safety
+- name: EvalTasks
 - name: Shields
 - name: Telemetry
-- name: Inspect
-- name: Safety
-- name: SyntheticDataGeneration
 - name: Memory
 - name: Scoring
-- name: EvalTasks
+- name: ScoringFunctions
+- name: SyntheticDataGeneration
+- name: Models
+- name: Agents
+- name: MemoryBanks
+- name: DatasetIO
+- name: Inference
+- name: Datasets
+- name: PostTraining
+- name: BatchInference
+- name: Eval
+- name: Inspect
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"

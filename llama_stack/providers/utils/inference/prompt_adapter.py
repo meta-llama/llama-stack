@@ -147,17 +147,17 @@ def augment_content_with_response_format_prompt(response_format, content):
 
 
 def chat_completion_request_to_prompt(
-    request: ChatCompletionRequest, formatter: ChatFormat
+    request: ChatCompletionRequest, llama_model: str, formatter: ChatFormat
 ) -> str:
-    messages = chat_completion_request_to_messages(request)
+    messages = chat_completion_request_to_messages(request, llama_model)
     model_input = formatter.encode_dialog_prompt(messages)
     return formatter.tokenizer.decode(model_input.tokens)
 
 
 def chat_completion_request_to_model_input_info(
-    request: ChatCompletionRequest, formatter: ChatFormat
+    request: ChatCompletionRequest, llama_model: str, formatter: ChatFormat
 ) -> Tuple[str, int]:
-    messages = chat_completion_request_to_messages(request)
+    messages = chat_completion_request_to_messages(request, llama_model)
     model_input = formatter.encode_dialog_prompt(messages)
     return (
         formatter.tokenizer.decode(model_input.tokens),
@@ -167,14 +167,15 @@ def chat_completion_request_to_model_input_info(
 
 def chat_completion_request_to_messages(
     request: ChatCompletionRequest,
+    llama_model: str,
 ) -> List[Message]:
     """Reads chat completion request and augments the messages to handle tools.
     For eg. for llama_3_1, add system message with the appropriate tools or
     add user messsage for custom tools, etc.
     """
-    model = resolve_model(request.model)
+    model = resolve_model(llama_model)
     if model is None:
-        cprint(f"Could not resolve model {request.model}", color="red")
+        cprint(f"Could not resolve model {llama_model}", color="red")
         return request.messages
 
     if model.descriptor() not in supported_inference_models():

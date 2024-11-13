@@ -538,7 +538,7 @@ Once the server is set up, we can test it with a client to verify it's working c
 $ curl http://localhost:5000/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "Llama3.1-8B-Instruct",
+    "model_id": "Llama3.1-8B-Instruct",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2 sentence poem about the moon"}

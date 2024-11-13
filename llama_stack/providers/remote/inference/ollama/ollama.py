@@ -7,15 +7,20 @@
 from typing import AsyncGenerator
 
 import httpx
+from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from ollama import AsyncClient
 
+from llama_stack.providers.utils.inference.model_registry import (
+    build_model_alias,
+    ModelRegistryHelper,
+)
+
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -33,19 +38,45 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     request_has_media,
 )
 
-OLLAMA_SUPPORTED_MODELS = {
-    "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
-    "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
-    "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
-    "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
-    "Llama-Guard-3-8B": "llama-guard3:8b",
-    "Llama-Guard-3-1B": "llama-guard3:1b",
-    "Llama3.2-11B-Vision-Instruct": "x/llama3.2-vision:11b-instruct-fp16",
-}
+
+model_aliases = [
+    build_model_alias(
+        "llama3.1:8b-instruct-fp16",
+        CoreModelId.llama3_1_8b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.1:70b-instruct-fp16",
+        CoreModelId.llama3_1_70b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2:1b-instruct-fp16",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2:3b-instruct-fp16",
+        CoreModelId.llama3_2_3b_instruct.value,
+    ),
+    build_model_alias(
+        "llama-guard3:8b",
+        CoreModelId.llama_guard_3_8b.value,
+    ),
+    build_model_alias(
+        "llama-guard3:1b",
+        CoreModelId.llama_guard_3_1b.value,
+    ),
+    build_model_alias(
+        "x/llama3.2-vision:11b-instruct-fp16",
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+]
 
 
-class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
+class OllamaInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPrivate):
     def __init__(self, url: str) -> None:
+        ModelRegistryHelper.__init__(
+            self,
+            model_aliases=model_aliases,
+        )
         self.url = url
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -65,44 +96,18 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: Model) -> None:
-        if model.identifier not in OLLAMA_SUPPORTED_MODELS:
-            raise ValueError(f"Model {model.identifier} is not supported by Ollama")
-
-    async def list_models(self) -> List[Model]:
-        ollama_to_llama = {v: k for k, v in OLLAMA_SUPPORTED_MODELS.items()}
-
-        ret = []
-        res = await self.client.ps()
-        for r in res["models"]:
-            if r["model"] not in ollama_to_llama:
-                print(f"Ollama is running a model unknown to Llama Stack: {r['model']}")
-                continue
-
-            llama_model = ollama_to_llama[r["model"]]
-            print(f"Found model {llama_model} in Ollama")
-            ret.append(
-                Model(
-                    identifier=llama_model,
-                    metadata={
-                        "ollama_model": r["model"],
-                    },
-                )
-            )
-
-        return ret
-
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             content=content,
             sampling_params=sampling_params,
             stream=stream,
@@ -148,7 +153,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -158,8 +163,10 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
+        print(f"model={model}")
         request = ChatCompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -197,7 +204,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             else:
                 input_dict["raw"] = True
                 input_dict["prompt"] = chat_completion_request_to_prompt(
-                    request, self.formatter
+                    request, self.get_llama_model(request.model), self.formatter
                 )
         else:
             assert (
@@ -207,7 +214,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             input_dict["raw"] = True
 
         return {
-            "model": OLLAMA_SUPPORTED_MODELS[request.model],
+            "model": request.model,
             **input_dict,
             "options": sampling_options,
             "stream": request.stream,
@@ -271,7 +278,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

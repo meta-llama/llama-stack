@@ -150,7 +150,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
                     messages.append(candidate.system_message)
                 messages += input_messages
                 response = await self.inference_api.chat_completion(
-                    model=candidate.model,
+                    model_id=candidate.model,
                     messages=messages,
                     sampling_params=candidate.sampling_params,
                 )

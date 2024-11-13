@@ -110,7 +110,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -120,7 +120,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("vLLM completion")
         messages = [UserMessage(content=content)]
         return self.chat_completion(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             stream=stream,
@@ -129,7 +129,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
@@ -144,7 +144,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         assert self.engine is not None
 
         request = ChatCompletionRequest(
-            model=model,
+            model=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -215,7 +215,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def embeddings(
-        self, model: str, contents: list[InterleavedTextMedia]
+        self, model_id: str, contents: list[InterleavedTextMedia]
     ) -> EmbeddingsResponse:
         log.info("vLLM embeddings")
         # TODO

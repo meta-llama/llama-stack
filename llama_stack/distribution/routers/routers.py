@@ -95,7 +95,7 @@ class InferenceRouter(Inference):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -106,7 +106,7 @@ class InferenceRouter(Inference):
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         params = dict(
-            model=model,
+            model_id=model_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -116,7 +116,7 @@ class InferenceRouter(Inference):
             stream=stream,
             logprobs=logprobs,
         )
-        provider = self.routing_table.get_provider_impl(model)
+        provider = self.routing_table.get_provider_impl(model_id)
         if stream:
             return (chunk async for chunk in await provider.chat_completion(**params))
         else:
@@ -124,16 +124,16 @@ class InferenceRouter(Inference):
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        provider = self.routing_table.get_provider_impl(model)
+        provider = self.routing_table.get_provider_impl(model_id)
         params = dict(
-            model=model,
+            model_id=model_id,
             content=content,
             sampling_params=sampling_params,
             response_format=response_format,
@@ -147,11 +147,11 @@ class InferenceRouter(Inference):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        return await self.routing_table.get_provider_impl(model).embeddings(
-            model=model,
+        return await self.routing_table.get_provider_impl(model_id).embeddings(
+            model_id=model_id,
             contents=contents,
         )
 

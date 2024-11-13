@@ -62,7 +62,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         )
 
         judge_response = await self.inference_api.chat_completion(
-            model=fn_def.params.judge_model,
+            model_id=fn_def.params.judge_model,
             messages=[
                 {
                     "role": "user",
