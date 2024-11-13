@@ -71,6 +71,13 @@ services:
       - ~/.llama:/root/.llama
       - ~/local/llama-stack/distributions/remote-vllm/run.yaml:/root/llamastack-run-remote-vllm.yaml
     # network_mode: "host"
+    environment:
+      - LLAMA_INFERENCE_VLLM_URL=${LLAMA_INFERENCE_VLLM_URL:-http://host.docker.internal:5100/v1}
+      - LLAMA_INFERENCE_MODEL=${LLAMA_INFERENCE_MODEL:-Llama3.1-8B-Instruct}
+      - MAX_TOKENS=${MAX_TOKENS:-4096}
+      - SQLITE_STORE_DIR=${SQLITE_STORE_DIR:-$HOME/.llama/distributions/remote-vllm}
+      - LLAMA_SAFETY_VLLM_URL=${LLAMA_SAFETY_VLLM_URL:-http://host.docker.internal:5101/v1}
+      - LLAMA_SAFETY_MODEL=${LLAMA_SAFETY_MODEL:-Llama-Guard-3-1B}
     ports:
       - "5001:5001"
     # Hack: wait for vLLM server to start before starting docker

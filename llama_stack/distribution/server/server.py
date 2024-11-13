@@ -295,11 +295,17 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
             env_var = match.group(1)
             default_val = match.group(2)
 
-            if env_var not in os.environ:
-                if default_val is None:
+            if default_val is None:
+                if env_var not in os.environ:
                     raise EnvVarError(env_var, path)
-                return default_val
-            return os.environ[env_var]
+                value = os.environ[env_var]
+            else:
+                # use the default if env var is "nullish"
+                value = os.environ.get(env_var)
+                if not value:
+                    value = default_val
+
+            return value
 
         try:
             return re.sub(pattern, get_env_var, config)
