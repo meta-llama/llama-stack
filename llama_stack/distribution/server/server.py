@@ -265,7 +265,7 @@ class EnvVarError(Exception):
         self.var_name = var_name
         self.path = path
         super().__init__(
-            f"Environment variable '{var_name}' not set{f' at {path}' if path else ''}"
+            f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
         )
 
 
@@ -295,14 +295,11 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
             env_var = match.group(1)
             default_val = match.group(2)
 
-            if default_val is None:
-                if env_var not in os.environ:
+            value = os.environ.get(env_var)
+            if not value:
+                if default_val is None:
                     raise EnvVarError(env_var, path)
-                value = os.environ[env_var]
-            else:
-                # use the default if env var is "nullish"
-                value = os.environ.get(env_var)
-                if not value:
+                else:
                     value = default_val
 
             return value
