@@ -17,9 +17,23 @@ from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.distribution.resolver import resolve_impls, resolve_remote_stack_impls
 from llama_stack.distribution.stack import construct_stack
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
+
+
+async def construct_stack_for_test(run_config: StackRunConfig):
+    remote_config = remote_provider_config(run_config)
+    if not remote_config:
+        return await construct_stack(run_config)
+
+    impls = await resolve_remote_stack_impls(remote_config, run_config.apis)
+
+    # we don't register resources for a remote stack as part of the fixture setup
+    # because the stack is already "up". if a test needs to register resources, it
+    # can do so manually always.
+
+    return impls
 
 
 async def resolve_impls_for_test_v2(
@@ -49,7 +63,7 @@ async def resolve_impls_for_test_v2(
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
     try:
-        impls = await construct_stack(run_config)
+        impls = await construct_stack_for_test(run_config)
     except ModuleNotFoundError as e:
         print_pip_install_help(providers)
         raise e
@@ -60,6 +74,24 @@ async def resolve_impls_for_test_v2(
         )
 
     return impls
+
+
+def remote_provider_config(
+    run_config: StackRunConfig,
+) -> Optional[RemoteProviderConfig]:
+    remote_config = None
+    has_non_remote = False
+    for api_providers in run_config.providers.values():
+        for provider in api_providers:
+            if provider.provider_type == "test::remote":
+                remote_config = RemoteProviderConfig(**provider.config)
+            else:
+                has_non_remote = True
+
+    if remote_config:
+        assert not has_non_remote, "Remote stack cannot have non-remote providers"
+
+    return remote_config
 
 
 async def resolve_impls_for_test(api: Api, deps: List[Api] = None):

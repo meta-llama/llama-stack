@@ -28,16 +28,11 @@ from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.inspect import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
 
-from llama_stack.distribution.client import get_client_impl
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.resolver import (
-    additional_protocols_map,
-    api_protocol_map,
-    resolve_impls,
-)
+from llama_stack.distribution.resolver import resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
-from llama_stack.providers.datatypes import Api, RemoteProviderConfig
+from llama_stack.providers.datatypes import Api
 
 
 class LlamaStack(
@@ -63,31 +58,23 @@ class LlamaStack(
     pass
 
 
-# Produces a stack of providers for the given run config. Not all APIs may be
-# asked for in the run config.
-async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
-    dist_registry, _ = await create_dist_registry(
-        run_config.metadata_store, run_config.image_name
-    )
+RESOURCES = [
+    ("models", Api.models, "register_model", "list_models"),
+    ("shields", Api.shields, "register_shield", "list_shields"),
+    ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
+    ("datasets", Api.datasets, "register_dataset", "list_datasets"),
+    (
+        "scoring_fns",
+        Api.scoring_functions,
+        "register_scoring_function",
+        "list_scoring_functions",
+    ),
+    ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
+]
 
-    impls = await maybe_get_remote_stack_impls(run_config)
-    if impls is None:
-        impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
 
-    resources = [
-        ("models", Api.models, "register_model", "list_models"),
-        ("shields", Api.shields, "register_shield", "list_shields"),
-        ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
-        ("datasets", Api.datasets, "register_dataset", "list_datasets"),
-        (
-            "scoring_fns",
-            Api.scoring_functions,
-            "register_scoring_function",
-            "list_scoring_functions",
-        ),
-        ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
-    ]
-    for rsrc, api, register_method, list_method in resources:
+async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
+    for rsrc, api, register_method, list_method in RESOURCES:
         objects = getattr(run_config, rsrc)
         if api not in impls:
             continue
@@ -103,55 +90,14 @@ async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
             )
 
     print("")
+
+
+# Produces a stack of providers for the given run config. Not all APIs may be
+# asked for in the run config.
+async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
+    dist_registry, _ = await create_dist_registry(
+        run_config.metadata_store, run_config.image_name
+    )
+    impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
+    await register_resources(run_config, impls)
     return impls
-
-
-# NOTE: this code path is really for the tests so you can send HTTP requests
-# to the remote stack without needing to use llama-stack-client
-async def maybe_get_remote_stack_impls(
-    run_config: StackRunConfig,
-) -> Optional[Dict[Api, Any]]:
-    remote_config = remote_provider_config(run_config)
-    if not remote_config:
-        return None
-
-    protocols = api_protocol_map()
-    additional_protocols = additional_protocols_map()
-
-    impls = {}
-    for api_str in run_config.apis:
-        api = Api(api_str)
-        impls[api] = await get_client_impl(
-            protocols[api],
-            None,
-            remote_config,
-            {},
-        )
-        if api in additional_protocols:
-            _, additional_protocol, additional_api = additional_protocols[api]
-            impls[additional_api] = await get_client_impl(
-                additional_protocol,
-                None,
-                remote_config,
-                {},
-            )
-
-    return impls
-
-
-def remote_provider_config(
-    run_config: StackRunConfig,
-) -> Optional[RemoteProviderConfig]:
-    remote_config = None
-    has_non_remote = False
-    for api_providers in run_config.providers.values():
-        for provider in api_providers:
-            if provider.provider_type == "remote":
-                remote_config = RemoteProviderConfig(**provider.config)
-            else:
-                has_non_remote = True
-
-    if remote_config:
-        assert not has_non_remote, "Remote stack cannot have non-remote providers"
-
-    return remote_config

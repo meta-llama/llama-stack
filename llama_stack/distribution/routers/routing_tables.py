@@ -87,13 +87,10 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.model_store = self
             elif api == Api.safety:
                 p.shield_store = self
-
             elif api == Api.memory:
                 p.memory_bank_store = self
-
             elif api == Api.datasetio:
                 p.dataset_store = self
-
             elif api == Api.scoring:
                 p.scoring_function_store = self
                 scoring_functions = await p.list_scoring_functions()

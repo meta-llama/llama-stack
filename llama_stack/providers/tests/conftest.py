@@ -35,8 +35,8 @@ def remote_stack_fixture() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="remote",
-                provider_type="remote",
+                provider_id="test::remote",
+                provider_type="test::remote",
                 config=config.model_dump(),
             )
         ],
