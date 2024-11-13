@@ -156,7 +156,7 @@ class ChatAgent(ShieldRunnerMixin):
         turns = await self.storage.get_session_turns(request.session_id)
 
         messages = []
-        if len(turns) == 0 and self.agent_config.instructions != "":
+        if self.agent_config.instructions != "":
             messages.append(SystemMessage(content=self.agent_config.instructions))
 
         for i, turn in enumerate(turns):
