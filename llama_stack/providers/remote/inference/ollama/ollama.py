@@ -73,10 +73,7 @@ model_aliases = [
 
 class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, url: str) -> None:
-        self.model_register_helper = ModelRegistryHelper(
-            self,
-            model_aliases=model_aliases,
-        )
+        self.model_register_helper = ModelRegistryHelper(model_aliases)
         self.url = url
         self.formatter = ChatFormat(Tokenizer.get_instance())
 

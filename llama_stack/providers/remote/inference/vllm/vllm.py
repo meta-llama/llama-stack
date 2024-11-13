@@ -47,10 +47,7 @@ def build_model_aliases():
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, config: VLLMInferenceAdapterConfig) -> None:
-        self.model_register_helper = ModelRegistryHelper(
-            self,
-            model_aliases=build_model_aliases(),
-        )
+        self.model_register_helper = ModelRegistryHelper(build_model_aliases())
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
         self.client = None
