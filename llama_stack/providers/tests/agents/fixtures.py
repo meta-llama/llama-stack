@@ -16,7 +16,7 @@ from llama_stack.providers.inline.agents.meta_reference import (
     MetaReferenceAgentsImplConfig,
 )
 
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
 
@@ -73,7 +73,7 @@ async def agents_stack(request, inference_model, safety_shield):
     inference_models = (
         inference_model if isinstance(inference_model, list) else [inference_model]
     )
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.agents, Api.inference, Api.safety, Api.memory],
         providers,
         provider_data,
@@ -85,5 +85,4 @@ async def agents_stack(request, inference_model, safety_shield):
         ],
         shields=[safety_shield],
     )
-
-    return impls[Api.agents], impls[Api.memory]
+    return test_stack

@@ -9,7 +9,7 @@ import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
 
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 from ..conftest import ProviderFixture, remote_stack_fixture
 
 
@@ -46,10 +46,10 @@ async def eval_stack(request):
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
 
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.eval, Api.datasetio, Api.inference, Api.scoring],
         providers,
         provider_data,
     )
 
-    return impls
+    return test_stack.impls

@@ -78,10 +78,13 @@ class ProviderWithSpec(Provider):
     spec: ProviderSpec
 
 
+ProviderRegistry = Dict[Api, Dict[str, ProviderSpec]]
+
+
 # TODO: this code is not very straightforward to follow and needs one more round of refactoring
 async def resolve_impls(
     run_config: StackRunConfig,
-    provider_registry: Dict[Api, Dict[str, ProviderSpec]],
+    provider_registry: ProviderRegistry,
     dist_registry: DistributionRegistry,
 ) -> Dict[Api, Any]:
     """

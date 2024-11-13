@@ -21,7 +21,7 @@ from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
@@ -182,11 +182,11 @@ INFERENCE_FIXTURES = [
 async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.inference],
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
         models=[ModelInput(model_id=inference_model)],
     )
 
-    return (impls[Api.inference], impls[Api.models])
+    return test_stack.impls[Api.inference], test_stack.impls[Api.models]

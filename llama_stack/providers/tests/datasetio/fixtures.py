@@ -9,7 +9,7 @@ import pytest_asyncio
 
 from llama_stack.distribution.datatypes import Api, Provider
 
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 from ..conftest import ProviderFixture, remote_stack_fixture
 
 
@@ -52,10 +52,10 @@ async def datasetio_stack(request):
     fixture_name = request.param
     fixture = request.getfixturevalue(f"datasetio_{fixture_name}")
 
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.datasetio],
         {"datasetio": fixture.providers},
         fixture.provider_data,
     )
 
-    return impls[Api.datasetio], impls[Api.datasets]
+    return test_stack.impls[Api.datasetio], test_stack.impls[Api.datasets]

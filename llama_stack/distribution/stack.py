@@ -30,7 +30,7 @@ from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.providers.datatypes import Api
 
@@ -94,10 +94,14 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
 
 # Produces a stack of providers for the given run config. Not all APIs may be
 # asked for in the run config.
-async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
+async def construct_stack(
+    run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
+) -> Dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(
         run_config.metadata_store, run_config.image_name
     )
-    impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
+    impls = await resolve_impls(
+        run_config, provider_registry or get_provider_registry(), dist_registry
+    )
     await register_resources(run_config, impls)
     return impls

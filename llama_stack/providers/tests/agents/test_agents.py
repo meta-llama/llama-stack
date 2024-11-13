@@ -17,6 +17,7 @@ from llama_stack.providers.datatypes import *  # noqa: F403
 #   -m "meta_reference"
 
 from .fixtures import pick_inference_model
+from .utils import create_agent_session
 
 
 @pytest.fixture
@@ -67,24 +68,12 @@ def query_attachment_messages():
     ]
 
 
-async def create_agent_session(agents_impl, agent_config):
-    create_response = await agents_impl.create_agent(agent_config)
-    agent_id = create_response.agent_id
-
-    # Create a session
-    session_create_response = await agents_impl.create_agent_session(
-        agent_id, "Test Session"
-    )
-    session_id = session_create_response.session_id
-    return agent_id, session_id
-
-
 class TestAgents:
     @pytest.mark.asyncio
     async def test_agent_turns_with_safety(
         self, safety_shield, agents_stack, common_params
     ):
-        agents_impl, _ = agents_stack
+        agents_impl = agents_stack.impls[Api.agents]
         agent_id, session_id = await create_agent_session(
             agents_impl,
             AgentConfig(
@@ -127,7 +116,7 @@ class TestAgents:
     async def test_create_agent_turn(
         self, agents_stack, sample_messages, common_params
     ):
-        agents_impl, _ = agents_stack
+        agents_impl = agents_stack.impls[Api.agents]
 
         agent_id, session_id = await create_agent_session(
             agents_impl, AgentConfig(**common_params)
@@ -158,7 +147,7 @@ class TestAgents:
         query_attachment_messages,
         common_params,
     ):
-        agents_impl, _ = agents_stack
+        agents_impl = agents_stack.impls[Api.agents]
         urls = [
             "memory_optimizations.rst",
             "chat.rst",
@@ -226,7 +215,7 @@ class TestAgents:
     async def test_create_agent_turn_with_brave_search(
         self, agents_stack, search_query_messages, common_params
     ):
-        agents_impl, _ = agents_stack
+        agents_impl = agents_stack.impls[Api.agents]
 
         if "BRAVE_SEARCH_API_KEY" not in os.environ:
             pytest.skip("BRAVE_SEARCH_API_KEY not set, skipping test")
