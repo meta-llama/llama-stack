@@ -30,7 +30,7 @@ from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.providers.datatypes import Api
 
@@ -58,29 +58,23 @@ class LlamaStack(
     pass
 
 
-# Produces a stack of providers for the given run config. Not all APIs may be
-# asked for in the run config.
-async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
-    dist_registry, _ = await create_dist_registry(
-        run_config.metadata_store, run_config.image_name
-    )
+RESOURCES = [
+    ("models", Api.models, "register_model", "list_models"),
+    ("shields", Api.shields, "register_shield", "list_shields"),
+    ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
+    ("datasets", Api.datasets, "register_dataset", "list_datasets"),
+    (
+        "scoring_fns",
+        Api.scoring_functions,
+        "register_scoring_function",
+        "list_scoring_functions",
+    ),
+    ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
+]
 
-    impls = await resolve_impls(run_config, get_provider_registry(), dist_registry)
 
-    resources = [
-        ("models", Api.models, "register_model", "list_models"),
-        ("shields", Api.shields, "register_shield", "list_shields"),
-        ("memory_banks", Api.memory_banks, "register_memory_bank", "list_memory_banks"),
-        ("datasets", Api.datasets, "register_dataset", "list_datasets"),
-        (
-            "scoring_fns",
-            Api.scoring_functions,
-            "register_scoring_function",
-            "list_scoring_functions",
-        ),
-        ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
-    ]
-    for rsrc, api, register_method, list_method in resources:
+async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
+    for rsrc, api, register_method, list_method in RESOURCES:
         objects = getattr(run_config, rsrc)
         if api not in impls:
             continue
@@ -96,4 +90,18 @@ async def construct_stack(run_config: StackRunConfig) -> Dict[Api, Any]:
             )
 
     print("")
+
+
+# Produces a stack of providers for the given run config. Not all APIs may be
+# asked for in the run config.
+async def construct_stack(
+    run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
+) -> Dict[Api, Any]:
+    dist_registry, _ = await create_dist_registry(
+        run_config.metadata_store, run_config.image_name
+    )
+    impls = await resolve_impls(
+        run_config, provider_registry or get_provider_registry(), dist_registry
+    )
+    await register_resources(run_config, impls)
     return impls

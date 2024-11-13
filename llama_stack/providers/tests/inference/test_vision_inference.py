@@ -55,7 +55,7 @@ class TestVisionModelInference:
             )
 
         response = await inference_impl.chat_completion(
-            model=inference_model,
+            model_id=inference_model,
             messages=[
                 UserMessage(content="You are a helpful assistant."),
                 UserMessage(content=[image, "Describe this image in two sentences."]),
@@ -102,7 +102,7 @@ class TestVisionModelInference:
             response = [
                 r
                 async for r in await inference_impl.chat_completion(
-                    model=inference_model,
+                    model_id=inference_model,
                     messages=[
                         UserMessage(content="You are a helpful assistant."),
                         UserMessage(

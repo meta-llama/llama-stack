@@ -14,7 +14,7 @@ from llama_stack.distribution.datatypes import Api, Provider, RemoteProviderConf
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
@@ -101,10 +101,10 @@ async def memory_stack(request):
     fixture_name = request.param
     fixture = request.getfixturevalue(f"memory_{fixture_name}")
 
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.memory],
         {"memory": fixture.providers},
         fixture.provider_data,
     )
 
-    return impls[Api.memory], impls[Api.memory_banks]
+    return test_stack.impls[Api.memory], test_stack.impls[Api.memory_banks]

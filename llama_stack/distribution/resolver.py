@@ -28,6 +28,7 @@ from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
+from llama_stack.distribution.client import get_client_impl
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -59,12 +60,16 @@ def api_protocol_map() -> Dict[Api, Any]:
 
 def additional_protocols_map() -> Dict[Api, Any]:
     return {
-        Api.inference: (ModelsProtocolPrivate, Models),
-        Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks),
-        Api.safety: (ShieldsProtocolPrivate, Shields),
-        Api.datasetio: (DatasetsProtocolPrivate, Datasets),
-        Api.scoring: (ScoringFunctionsProtocolPrivate, ScoringFunctions),
-        Api.eval_tasks: (EvalTasksProtocolPrivate, EvalTasks),
+        Api.inference: (ModelsProtocolPrivate, Models, Api.models),
+        Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks, Api.memory_banks),
+        Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
+        Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
+        Api.scoring: (
+            ScoringFunctionsProtocolPrivate,
+            ScoringFunctions,
+            Api.scoring_functions,
+        ),
+        Api.eval: (EvalTasksProtocolPrivate, EvalTasks, Api.eval_tasks),
     }
 
 
@@ -73,10 +78,13 @@ class ProviderWithSpec(Provider):
     spec: ProviderSpec
 
 
+ProviderRegistry = Dict[Api, Dict[str, ProviderSpec]]
+
+
 # TODO: this code is not very straightforward to follow and needs one more round of refactoring
 async def resolve_impls(
     run_config: StackRunConfig,
-    provider_registry: Dict[Api, Dict[str, ProviderSpec]],
+    provider_registry: ProviderRegistry,
     dist_registry: DistributionRegistry,
 ) -> Dict[Api, Any]:
     """
@@ -273,17 +281,8 @@ async def instantiate_provider(
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider.config)
 
-        if provider_spec.adapter:
-            method = "get_adapter_impl"
-            args = [config, deps]
-        else:
-            method = "get_client_impl"
-            protocol = protocols[provider_spec.api]
-            if provider_spec.api in additional_protocols:
-                _, additional_protocol = additional_protocols[provider_spec.api]
-            else:
-                additional_protocol = None
-            args = [protocol, additional_protocol, config, deps]
+        method = "get_adapter_impl"
+        args = [config, deps]
 
     elif isinstance(provider_spec, AutoRoutedProviderSpec):
         method = "get_auto_router_impl"
@@ -313,7 +312,7 @@ async def instantiate_provider(
         not isinstance(provider_spec, AutoRoutedProviderSpec)
         and provider_spec.api in additional_protocols
     ):
-        additional_api, _ = additional_protocols[provider_spec.api]
+        additional_api, _, _ = additional_protocols[provider_spec.api]
         check_protocol_compliance(impl, additional_api)
 
     return impl
@@ -359,3 +358,29 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
         raise ValueError(
             f"Provider `{obj.__provider_id__} ({obj.__provider_spec__.api})` does not implement the following methods:\n{missing_methods}"
         )
+
+
+async def resolve_remote_stack_impls(
+    config: RemoteProviderConfig,
+    apis: List[str],
+) -> Dict[Api, Any]:
+    protocols = api_protocol_map()
+    additional_protocols = additional_protocols_map()
+
+    impls = {}
+    for api_str in apis:
+        api = Api(api_str)
+        impls[api] = await get_client_impl(
+            protocols[api],
+            config,
+            {},
+        )
+        if api in additional_protocols:
+            _, additional_protocol, additional_api = additional_protocols[api]
+            impls[additional_api] = await get_client_impl(
+                additional_protocol,
+                config,
+                {},
+            )
+
+    return impls

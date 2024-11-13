@@ -147,9 +147,9 @@ class TestInference:
 
         user_input = "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls. He retired in 2003."
         response = await inference_impl.completion(
+            model_id=inference_model,
             content=user_input,
             stream=False,
-            model=inference_model,
             sampling_params=SamplingParams(
                 max_tokens=50,
             ),
