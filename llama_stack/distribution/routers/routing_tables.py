@@ -310,7 +310,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def register_dataset(
         self,
         dataset_id: str,
-        schema: Dict[str, ParamType],
+        dataset_schema: Dict[str, ParamType],
         url: URL,
         provider_dataset_id: Optional[str] = None,
         provider_id: Optional[str] = None,
@@ -332,7 +332,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
             identifier=dataset_id,
             provider_resource_id=provider_dataset_id,
             provider_id=provider_id,
-            dataset_schema=schema,
+            dataset_schema=dataset_schema,
             url=url,
             metadata=metadata,
         )

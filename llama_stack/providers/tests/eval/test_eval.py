@@ -163,7 +163,7 @@ class Testeval:
 
         await datasets_impl.register_dataset(
             dataset_id="mmlu",
-            schema={
+            dataset_schema={
                 "input_query": StringType(),
                 "expected_answer": StringType(),
                 "chat_completion_input": ChatCompletionInputType(),

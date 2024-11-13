@@ -49,7 +49,7 @@ class Datasets(Protocol):
     async def register_dataset(
         self,
         dataset_id: str,
-        schema: Dict[str, ParamType],
+        dataset_schema: Dict[str, ParamType],
         url: URL,
         provider_dataset_id: Optional[str] = None,
         provider_id: Optional[str] = None,

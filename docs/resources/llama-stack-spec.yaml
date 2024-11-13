@@ -723,23 +723,7 @@ components:
     Dataset:
       additionalProperties: false
       properties:
-        identifier:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        provider_id:
-          type: string
-        provider_resource_id:
-          type: string
-        schema:
+        dataset_schema:
           additionalProperties:
             oneOf:
             - additionalProperties: false
@@ -833,6 +817,22 @@ components:
               - type
               type: object
           type: object
+        identifier:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_id:
+          type: string
+        provider_resource_id:
+          type: string
         type:
           const: dataset
           default: dataset
@@ -844,7 +844,7 @@ components:
       - provider_resource_id
       - provider_id
       - type
-      - schema
+      - dataset_schema
       - url
       - metadata
       type: object
@@ -1910,21 +1910,7 @@ components:
       properties:
         dataset_id:
           type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        provider_dataset_id:
-          type: string
-        provider_id:
-          type: string
-        schema:
+        dataset_schema:
           additionalProperties:
             oneOf:
             - additionalProperties: false
@@ -2018,11 +2004,25 @@ components:
               - type
               type: object
           type: object
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        provider_dataset_id:
+          type: string
+        provider_id:
+          type: string
         url:
           $ref: '#/components/schemas/URL'
       required:
       - dataset_id
-      - schema
+      - dataset_schema
       - url
       type: object
     RegisterEvalTaskRequest:
@@ -3384,7 +3384,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-12 15:47:15.607543"
+    \ draft and subject to change.\n                Generated at 2024-11-13 11:02:50.081698"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4748,24 +4748,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Safety
-- name: EvalTasks
-- name: Shields
-- name: Telemetry
-- name: Memory
-- name: Scoring
-- name: ScoringFunctions
-- name: SyntheticDataGeneration
-- name: Models
-- name: Agents
-- name: MemoryBanks
-- name: DatasetIO
-- name: Inference
-- name: Datasets
-- name: PostTraining
-- name: BatchInference
-- name: Eval
 - name: Inspect
+- name: Models
+- name: Eval
+- name: EvalTasks
+- name: Scoring
+- name: Inference
+- name: Memory
+- name: Safety
+- name: PostTraining
+- name: ScoringFunctions
+- name: Telemetry
+- name: Shields
+- name: BatchInference
+- name: MemoryBanks
+- name: Datasets
+- name: SyntheticDataGeneration
+- name: DatasetIO
+- name: Agents
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
