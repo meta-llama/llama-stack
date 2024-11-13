@@ -57,7 +57,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         if provider_model_id in self.provider_id_to_llama_model_map:
             return self.provider_id_to_llama_model_map[provider_model_id]
         else:
-            None
+            return None
 
     async def register_model(self, model: Model) -> Model:
         model.provider_resource_id = self.get_provider_model_id(

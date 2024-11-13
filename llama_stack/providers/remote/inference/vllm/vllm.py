@@ -131,6 +131,15 @@ class VLLMInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPrivate
         ):
             yield chunk
 
+    async def register_model(self, model: Model) -> None:
+        model = await super().register_model(model)
+        res = self.client.models.list()
+        available_models = [m.id for m in res]
+        if model.provider_resource_id not in available_models:
+            raise ValueError(
+                f"Model {model.provider_resource_id} is not being served by vLLM"
+            )
+
     async def _get_params(
         self, request: Union[ChatCompletionRequest, CompletionRequest]
     ) -> dict:
