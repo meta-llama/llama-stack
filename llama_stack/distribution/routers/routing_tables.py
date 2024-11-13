@@ -38,15 +38,15 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
     if api == Api.inference:
         return await p.register_model(obj)
     elif api == Api.safety:
-        await p.register_shield(**obj.model_dump())
+        await p.register_shield(obj)
     elif api == Api.memory:
-        await p.register_memory_bank(**obj.model_dump())
+        await p.register_memory_bank(obj)
     elif api == Api.datasetio:
-        await p.register_dataset(**obj.model_dump())
+        await p.register_dataset(obj)
     elif api == Api.scoring:
-        await p.register_scoring_function(**obj.model_dump())
+        await p.register_scoring_function(obj)
     elif api == Api.eval:
-        await p.register_eval_task(**obj.model_dump())
+        await p.register_eval_task(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -95,7 +95,6 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.scoring_function_store = self
                 scoring_functions = await p.list_scoring_functions()
                 await add_objects(scoring_functions, pid, ScoringFn)
-
             elif api == Api.eval:
                 p.eval_task_store = self
 

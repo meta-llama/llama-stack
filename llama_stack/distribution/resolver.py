@@ -369,7 +369,6 @@ async def resolve_remote_stack_impls(
         api = Api(api_str)
         impls[api] = await get_client_impl(
             protocols[api],
-            None,
             config,
             {},
         )
@@ -377,7 +376,6 @@ async def resolve_remote_stack_impls(
             _, additional_protocol, additional_api = additional_protocols[api]
             impls[additional_api] = await get_client_impl(
                 additional_protocol,
-                None,
                 config,
                 {},
             )
