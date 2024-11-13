@@ -6,8 +6,8 @@ This guide contains references to walk you through adding a new API provider.
 1. First, decide which API your provider falls into (e.g. Inference, Safety, Agents, Memory).
 2. Decide whether your provider is a remote provider, or inline implmentation. A remote provider is a provider that makes a remote request to an service. An inline provider is a provider where implementation is executed locally. Checkout the examples, and follow the structure to add your own API provider. Please find the following code pointers:
 
-    - [Inference Remote Adapter](https://github.com/meta-llama/llama-stack/tree/docs/llama_stack/providers/remote/inference)
-    - [Inference Inline Provider](https://github.com/meta-llama/llama-stack/tree/docs/llama_stack/providers/inline/meta_reference/inference)
+    - [Remote Adapters](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/remote)
+    - [Inline Providers](https://github.com/meta-llama/llama-stack/tree/main/llama_stack/providers/inline)
 
 3. [Build a Llama Stack distribution](https://llama-stack.readthedocs.io/en/latest/distribution_dev/building_distro.html) with your API provider.
 4. Test your code!
