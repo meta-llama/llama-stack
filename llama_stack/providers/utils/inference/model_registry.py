@@ -54,7 +54,10 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             raise ValueError(f"Unknown model: `{identifier}`")
 
     def get_llama_model(self, provider_model_id: str) -> str:
-        return self.provider_id_to_llama_model_map[provider_model_id]
+        if provider_model_id in self.provider_id_to_llama_model_map:
+            return self.provider_id_to_llama_model_map[provider_model_id]
+        else:
+            return None
 
     async def register_model(self, model: Model) -> Model:
         model.provider_resource_id = self.get_provider_model_id(
