@@ -71,9 +71,9 @@ model_aliases = [
 ]
 
 
-class OllamaInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPrivate):
+class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, url: str) -> None:
-        ModelRegistryHelper.__init__(
+        self.model_register_helper = ModelRegistryHelper(
             self,
             model_aliases=model_aliases,
         )
@@ -203,7 +203,9 @@ class OllamaInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPriva
             else:
                 input_dict["raw"] = True
                 input_dict["prompt"] = chat_completion_request_to_prompt(
-                    request, self.get_llama_model(request.model), self.formatter
+                    request,
+                    self.model_register_helper.get_llama_model(request.model),
+                    self.formatter,
                 )
         else:
             assert (
@@ -283,7 +285,7 @@ class OllamaInferenceAdapter(Inference, ModelRegistryHelper, ModelsProtocolPriva
         raise NotImplementedError()
 
     async def register_model(self, model: Model) -> Model:
-        model = await super().register_model(model)
+        model = await self.model_register_helper.register_model(model)
         models = await self.client.ps()
         available_models = [m["model"] for m in models["models"]]
         if model.provider_resource_id not in available_models:
