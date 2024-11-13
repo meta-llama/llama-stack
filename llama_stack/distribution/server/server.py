@@ -8,6 +8,8 @@ import asyncio
 import functools
 import inspect
 import json
+import os
+import re
 import signal
 import sys
 import traceback
@@ -258,13 +260,34 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
+def replace_env_vars(config):
+    if isinstance(config, dict):
+        return {k: replace_env_vars(v) for k, v in config.items()}
+    elif isinstance(config, list):
+        return [replace_env_vars(v) for v in config]
+    elif isinstance(config, str):
+        pattern = r"\${env\.([A-Z0-9_]+)}"
+
+        def get_env_var(match):
+            env_var = match.group(1)
+            if env_var not in os.environ:
+                raise ValueError(
+                    f"Environment variable {env_var} not set (for config: {config})"
+                )
+            return os.environ[env_var]
+
+        return re.sub(pattern, get_env_var, config)
+    return config
+
+
 def main(
     yaml_config: str = "llamastack-run.yaml",
     port: int = 5000,
     disable_ipv6: bool = False,
 ):
     with open(yaml_config, "r") as fp:
-        config = StackRunConfig(**yaml.safe_load(fp))
+        config = replace_env_vars(yaml.safe_load(fp))
+        config = StackRunConfig(**config)
 
     app = FastAPI()
 
