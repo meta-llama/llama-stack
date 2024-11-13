@@ -80,5 +80,5 @@ class AgentPersistence:
             except Exception as e:
                 print(f"Error parsing turn: {e}")
                 continue
-
+        turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns
