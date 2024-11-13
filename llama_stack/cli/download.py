@@ -150,7 +150,6 @@ class ParallelDownloader:
     async def retry_with_exponential_backoff(
         self, task: DownloadTask, func, *args, **kwargs
     ):
-        """Custom retry logic with exponential backoff"""
         last_exception = None
         for attempt in range(task.max_retries):
             try:
@@ -170,8 +169,6 @@ class ParallelDownloader:
     async def get_file_info(
         self, client: httpx.AsyncClient, task: DownloadTask
     ) -> None:
-        """Get file information with retry logic"""
-
         async def _get_info():
             response = await client.head(
                 task.url, headers={"Accept-Encoding": "identity"}, **self.client_options
@@ -200,7 +197,6 @@ class ParallelDownloader:
             raise
 
     def verify_file_integrity(self, task: DownloadTask) -> bool:
-        """Verify if the downloaded file size matches the expected size"""
         if not os.path.exists(task.output_file):
             return False
         return os.path.getsize(task.output_file) == task.total_size
@@ -208,8 +204,6 @@ class ParallelDownloader:
     async def download_chunk(
         self, client: httpx.AsyncClient, task: DownloadTask, start: int, end: int
     ) -> None:
-        """Download a chunk of the file with retry logic"""
-
         async def _download_chunk():
             headers = {"Range": f"bytes={start}-{end}"}
             async with client.stream(
@@ -236,7 +230,6 @@ class ParallelDownloader:
             ) from e
 
     async def prepare_download(self, task: DownloadTask) -> None:
-        """Prepare for download by creating directory and checking existing file"""
         output_dir = os.path.dirname(task.output_file)
         os.makedirs(output_dir, exist_ok=True)
 
@@ -244,7 +237,6 @@ class ParallelDownloader:
             task.downloaded_size = os.path.getsize(task.output_file)
 
     async def download_file(self, task: DownloadTask) -> None:
-        """Download a single file with error handling"""
         try:
             async with httpx.AsyncClient(**self.client_options) as client:
                 await self.get_file_info(client, task)
@@ -289,7 +281,6 @@ class ParallelDownloader:
             ) from e
 
     def has_disk_space(self, tasks: List[DownloadTask]) -> bool:
-        """Check if there's enough disk space for all downloads"""
         try:
             total_remaining_size = sum(
                 task.total_size - task.downloaded_size for task in tasks
@@ -312,7 +303,6 @@ class ParallelDownloader:
             raise DownloadError(f"Failed to check disk space: {str(e)}") from e
 
     async def download_all(self, tasks: List[DownloadTask]) -> None:
-        """Download all files with proper error handling"""
         if not tasks:
             raise ValueError("No download tasks provided")
 
@@ -394,7 +384,6 @@ def _meta_download(
     info: "LlamaDownloadInfo",
     max_concurrent_downloads: int,
 ):
-    """Download model files from Meta using parallel downloader"""
     from llama_stack.distribution.utils.model_utils import model_local_dir
 
     output_dir = Path(model_local_dir(model.descriptor()))
@@ -434,7 +423,6 @@ class Manifest(BaseModel):
 
 
 def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
-    """Download files from manifest using parallel downloader"""
     from llama_stack.distribution.utils.model_utils import model_local_dir
 
     with open(manifest_file, "r") as f:
