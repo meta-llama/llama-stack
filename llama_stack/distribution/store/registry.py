@@ -220,5 +220,6 @@ async def create_dist_registry(
                 db_path=(DISTRIBS_BASE_DIR / image_name / "kvstore.db").as_posix()
             )
         )
-
-    return CachedDiskDistributionRegistry(dist_kvstore), dist_kvstore
+    dist_registry = CachedDiskDistributionRegistry(dist_kvstore)
+    await dist_registry.initialize()
+    return dist_registry, dist_kvstore
