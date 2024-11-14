@@ -14,4 +14,4 @@ from pydantic import BaseModel
 class HuggingfaceDatasetIOConfig(BaseModel):
     kvstore: KVStoreConfig = SqliteKVStoreConfig(
         db_path=(RUNTIME_BASE_DIR / "huggingface_datasetio.db").as_posix()
-    )  # Uses SQLite config specific to FAISS storage
+    )  # Uses SQLite config specific to HF storage
