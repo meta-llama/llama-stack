@@ -144,3 +144,15 @@ class MemoryBanks(Protocol):
         provider_id: Optional[str] = None,
         provider_memory_bank_id: Optional[str] = None,
     ) -> MemoryBank: ...
+
+    @webmethod(route="/memory_banks/update", method="POST")
+    async def update_memory_bank(
+        self,
+        memory_bank_id: str,
+        params: BankParams,
+        provider_id: Optional[str] = None,
+        provider_memory_bank_id: Optional[str] = None,
+    ) -> MemoryBank: ...
+
+    @webmethod(route="/memory_banks/delete", method="POST")
+    async def delete_memory_bank(self, memory_bank_id: str) -> None: ...
