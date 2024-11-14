@@ -107,7 +107,6 @@ def verify_files(
 
 
 def run_verify_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
-    """Main verify command handler"""
     from llama_stack.distribution.utils.model_utils import model_local_dir
 
     console = Console()
@@ -143,7 +142,3 @@ def run_verify_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
 
     if all_good:
         console.print("\n[green]All files verified successfully![/green]")
-        return 0
-    else:
-        console.print("\n[red]Some files failed verification[/red]")
-        return 1
