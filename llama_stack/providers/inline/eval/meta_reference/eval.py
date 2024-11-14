@@ -15,9 +15,12 @@ from llama_stack.apis.eval_tasks import EvalTask
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
+from llama_stack.providers.utils.kvstore import kvstore_impl
 from tqdm import tqdm
 
 from .config import MetaReferenceEvalConfig
+
+EVAL_TASKS_PREFIX = "eval_tasks:"
 
 
 class ColumnName(Enum):
@@ -49,11 +52,29 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         self.eval_tasks = {}
 
     async def initialize(self) -> None:
-        pass
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        # Load existing datasets from kvstore
+        start_key = EVAL_TASKS_PREFIX
+        end_key = f"{EVAL_TASKS_PREFIX}\xff"
+        stored_eval_tasks = await self.kvstore.range(start_key, end_key)
+
+        for eval_task in stored_eval_tasks:
+            eval_task = EvalTask.model_validate_json(eval_task)
+            self.eval_tasks[eval_task.identifier] = eval_task
+
+        print(f"Meta Reference Eval initialized with {self.eval_tasks}")
 
     async def shutdown(self) -> None: ...
 
     async def register_eval_task(self, task_def: EvalTask) -> None:
+        print("REGISTER EVAL TASK")
+        # Store in kvstore
+        key = f"{EVAL_TASKS_PREFIX}{task_def.identifier}"
+        await self.kvstore.set(
+            key=key,
+            value=task_def.json(),
+        )
+        print(self.eval_tasks)
         self.eval_tasks[task_def.identifier] = task_def
 
     async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
