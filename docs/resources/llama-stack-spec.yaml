@@ -3414,7 +3414,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-13 18:16:59.065989"
+    \ draft and subject to change.\n                Generated at 2024-11-13 21:05:58.323310"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4824,24 +4824,24 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
-- name: Shields
-- name: ScoringFunctions
-- name: MemoryBanks
-- name: Datasets
 - name: Agents
 - name: DatasetIO
-- name: Inference
-- name: Inspect
-- name: Memory
 - name: Models
-- name: PostTraining
+- name: Inference
+- name: BatchInference
+- name: Memory
 - name: Safety
-- name: SyntheticDataGeneration
+- name: Inspect
 - name: EvalTasks
 - name: Scoring
-- name: BatchInference
+- name: Datasets
+- name: PostTraining
 - name: Eval
+- name: Shields
 - name: Telemetry
+- name: ScoringFunctions
+- name: MemoryBanks
+- name: SyntheticDataGeneration
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CompletionMessage"
