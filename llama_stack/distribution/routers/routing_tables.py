@@ -64,8 +64,6 @@ class CommonRoutingTableImpl(RoutingTable):
         self.dist_registry = dist_registry
 
     async def initialize(self) -> None:
-        # Initialize the registry if not already done
-        await self.dist_registry.initialize()
 
         async def add_objects(
             objs: List[RoutableObjectWithProvider], provider_id: str, cls
