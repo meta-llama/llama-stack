@@ -64,5 +64,5 @@ class Models(Protocol):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Model: ...
 
-    @webmethod(route="/models/delete", method="DELETE")
+    @webmethod(route="/models/delete", method="POST")
     async def delete_model(self, model_id: str) -> None: ...
