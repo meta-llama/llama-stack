@@ -49,8 +49,6 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             dataset = Dataset.model_validate_json(dataset)
             self.dataset_infos[dataset.identifier] = dataset
 
-        print(f"HF DatasetIO initialized with {self.dataset_infos}")
-
     async def shutdown(self) -> None: ...
 
     async def register_dataset(
