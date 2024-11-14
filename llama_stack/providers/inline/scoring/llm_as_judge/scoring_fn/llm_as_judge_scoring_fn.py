@@ -11,8 +11,6 @@ from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 import re
 
-from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_average
-
 from .fn_defs.llm_as_judge_base import llm_as_judge_base
 
 
@@ -88,4 +86,5 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
     async def aggregate(
         self, scoring_results: List[ScoringResultRow]
     ) -> Dict[str, Any]:
-        return aggregate_average(scoring_results)
+        # TODO: this needs to be config based aggregation, and only useful w/ Jobs API
+        return {}
