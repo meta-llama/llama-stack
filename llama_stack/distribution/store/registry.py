@@ -34,10 +34,6 @@ class DistributionRegistry(Protocol):
         self, obj: RoutableObjectWithProvider
     ) -> RoutableObjectWithProvider: ...
 
-    # The current data structure allows multiple objects with the same identifier but different providers.
-    # This is not ideal - we should have a single object that can be served by multiple providers,
-    # suggesting a data structure like (obj: Obj, providers: List[str]) rather than List[RoutableObjectWithProvider].
-    # The current approach could lead to inconsistencies if the same logical object has different data across providers.
     async def register(self, obj: RoutableObjectWithProvider) -> bool: ...
 
     async def delete(self, type: str, identifier: str) -> None: ...
