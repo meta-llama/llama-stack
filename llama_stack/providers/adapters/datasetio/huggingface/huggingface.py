@@ -11,8 +11,11 @@ from llama_stack.apis.datasetio import *  # noqa: F403
 import datasets as hf_datasets
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
+from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import HuggingfaceDatasetIOConfig
+
+DATASETS_PREFIX = "datasets:"
 
 
 def load_hf_dataset(dataset_def: Dataset):
@@ -33,9 +36,18 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self.config = config
         # local registry for keeping track of datasets within the provider
         self.dataset_infos = {}
+        self.kvstore = None
 
     async def initialize(self) -> None:
-        pass
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        # Load existing datasets from kvstore
+        start_key = DATASETS_PREFIX
+        end_key = f"{DATASETS_PREFIX}\xff"
+        stored_datasets = await self.kvstore.range(start_key, end_key)
+
+        for dataset in stored_datasets:
+            dataset = Dataset.model_validate_json(dataset)
+            self.dataset_infos[dataset.identifier] = dataset
 
     async def shutdown(self) -> None: ...
 
@@ -43,6 +55,12 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset_def: Dataset,
     ) -> None:
+        # Store in kvstore
+        key = f"{DATASETS_PREFIX}{dataset_def.identifier}"
+        await self.kvstore.set(
+            key=key,
+            value=dataset_def.json(),
+        )
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
     async def get_rows_paginated(
