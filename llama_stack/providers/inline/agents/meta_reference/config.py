@@ -14,9 +14,9 @@ class MetaReferenceAgentsImplConfig(BaseModel):
     persistence_store: KVStoreConfig = Field(default=SqliteKVStoreConfig())
 
     @classmethod
-    def sample_dict(cls):
+    def sample_run_config(cls):
         return {
-            "persistence_store": SqliteKVStoreConfig.sample_dict(
+            "persistence_store": SqliteKVStoreConfig.sample_run_config(
                 db_name="agents_store.db"
             ),
         }

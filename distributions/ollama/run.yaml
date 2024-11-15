@@ -33,7 +33,7 @@ providers:
       persistence_store:
         namespace: null
         type: sqlite
-        db_path: ~/.llama/runtime/kvstore.db
+        db_path: ${env.SQLITE_STORE_DIR:/home/ashwin/.llama/runtime}/kvstore.db
   telemetry:
   - provider_id: meta0
     provider_type: inline::meta-reference

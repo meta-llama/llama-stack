@@ -35,7 +35,7 @@ class VLLMConfig(BaseModel):
     )
 
     @classmethod
-    def sample_dict(cls):
+    def sample_run_config(cls):
         return {
             "model": "${env.VLLM_INFERENCE_MODEL:Llama3.2-3B-Instruct}",
             "tensor_parallel_size": "${env.VLLM_TENSOR_PARALLEL_SIZE:1}",

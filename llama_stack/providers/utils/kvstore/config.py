@@ -37,7 +37,7 @@ class RedisKVStoreConfig(CommonConfig):
         return f"redis://{self.host}:{self.port}"
 
     @classmethod
-    def sample_dict(cls):
+    def sample_run_config(cls):
         return {
             "type": "redis",
             "namespace": None,
@@ -54,7 +54,7 @@ class SqliteKVStoreConfig(CommonConfig):
     )
 
     @classmethod
-    def sample_dict(cls, db_name: str = "kvstore.db"):
+    def sample_run_config(cls, db_name: str = "kvstore.db"):
         return {
             "type": "sqlite",
             "namespace": None,
@@ -72,7 +72,7 @@ class PostgresKVStoreConfig(CommonConfig):
     table_name: str = "llamastack_kvstore"
 
     @classmethod
-    def sample_dict(cls, table_name: str = "llamastack_kvstore"):
+    def sample_run_config(cls, table_name: str = "llamastack_kvstore"):
         return {
             "type": "postgres",
             "namespace": None,

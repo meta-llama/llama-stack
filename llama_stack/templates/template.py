@@ -4,19 +4,22 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from datetime import datetime
+
 from io import StringIO
 
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import jinja2
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from rich.console import Console
 from rich.table import Table
 
 from llama_stack.distribution.datatypes import (
+    Api,
     BuildConfig,
     DistributionSpec,
     KVStoreConfig,
@@ -25,6 +28,12 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     StackRunConfig,
 )
+from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.providers.remote.inference.vllm.config import (
+    VLLMInferenceAdapterConfig,
+)
+from llama_stack.providers.utils.docker.service_config import DockerComposeServiceConfig
 
 
 class DistributionTemplate(BaseModel):
@@ -36,12 +45,17 @@ class DistributionTemplate(BaseModel):
     name: str
     description: str
     providers: Dict[str, List[str]]
+    run_config_overrides: Dict[str, List[Provider]] = Field(default_factory=dict)
+    compose_config_overrides: Dict[str, Dict[str, DockerComposeServiceConfig]] = Field(
+        default_factory=dict
+    )
+
     default_models: List[ModelInput]
     default_shields: Optional[List[ShieldInput]] = None
 
     # Optional configuration
     metadata_store: Optional[KVStoreConfig] = None
-    env_vars: Optional[Dict[str, str]] = None
+    docker_compose_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
     docker_image: Optional[str] = None
 
     @property
@@ -59,8 +73,42 @@ class DistributionTemplate(BaseModel):
             image_type="conda",  # default to conda, can be overridden
         )
 
-    def run_config(self, provider_configs: Dict[str, List[Provider]]) -> StackRunConfig:
-        from datetime import datetime
+    def run_config(self) -> StackRunConfig:
+        provider_registry = get_provider_registry()
+
+        provider_configs = {}
+        for api_str, provider_types in self.providers.items():
+            if providers := self.run_config_overrides.get(api_str):
+                provider_configs[api_str] = providers
+                continue
+
+            provider_type = provider_types[0]
+            provider_id = provider_type.split("::")[-1]
+
+            api = Api(api_str)
+            if provider_type not in provider_registry[api]:
+                raise ValueError(
+                    f"Unknown provider type: {provider_type} for API: {api_str}"
+                )
+
+            config_class = provider_registry[api][provider_type].config_class
+            assert (
+                config_class is not None
+            ), f"No config class for provider type: {provider_type} for API: {api_str}"
+
+            config_class = instantiate_class_type(config_class)
+            if hasattr(config_class, "sample_run_config"):
+                config = config_class.sample_run_config()
+            else:
+                config = {}
+
+            provider_configs[api_str] = [
+                Provider(
+                    provider_id=provider_id,
+                    provider_type=provider_type,
+                    config=config,
+                )
+            ]
 
         # Get unique set of APIs from providers
         apis: Set[str] = set(self.providers.keys())
@@ -75,6 +123,70 @@ class DistributionTemplate(BaseModel):
             models=self.default_models,
             shields=self.default_shields or [],
         )
+
+    def docker_compose_config(self) -> Dict[str, Any]:
+        services = {}
+        provider_registry = get_provider_registry()
+
+        # Add provider services based on their sample_compose_config
+        for api_str, api_providers in self.providers.items():
+            if overrides := self.compose_config_overrides.get(api_str):
+                services |= overrides
+                continue
+
+            # only look at the first provider to get the compose config for now
+            # we may want to use `docker compose profiles` in the future
+            provider_type = api_providers[0]
+            provider_id = provider_type.split("::")[-1]
+            api = Api(api_str)
+            if provider_type not in provider_registry[api]:
+                raise ValueError(
+                    f"Unknown provider type: {provider_type} for API: {api_str}"
+                )
+
+            config_class = provider_registry[api][provider_type].config_class
+            assert (
+                config_class is not None
+            ), f"No config class for provider type: {provider_type} for API: {api_str}"
+
+            config_class = instantiate_class_type(config_class)
+            if not hasattr(config_class, "sample_docker_compose_config"):
+                continue
+
+            compose_config = config_class.sample_docker_compose_config()
+            services[provider_id] = compose_config
+
+        port = "${LLAMASTACK_PORT:-5001}"
+        # Add main llamastack service
+        llamastack_config = DockerComposeServiceConfig(
+            image=f"llamastack/distribution-{self.name}:latest",
+            depends_on=list(services.keys()),
+            volumes=[
+                "~/.llama:/root/.llama",
+                f"~/local/llama-stack/distributions/{self.name}/run.yaml:/root/llamastack-run-{self.name}.yaml",
+            ],
+            ports=[f"{port}:{port}"],
+            environment={
+                k: v[0] for k, v in (self.docker_compose_env_vars or {}).items()
+            },
+            entrypoint=(
+                f'bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-{self.name}.yaml --port {port}"'
+            ),
+            deploy={
+                "restart_policy": {
+                    "condition": "on-failure",
+                    "delay": "3s",
+                    "max_attempts": 5,
+                    "window": "60s",
+                }
+            },
+        )
+
+        services["llamastack"] = llamastack_config
+        return {
+            "services": {k: v.model_dump() for k, v in services.items()},
+            "volumes": {service_name: None for service_name in services.keys()},
+        }
 
     def generate_markdown_docs(self) -> str:
         """Generate markdown documentation using both Jinja2 templates and rich tables."""
@@ -108,7 +220,7 @@ The `llamastack/distribution-{{ name }}` distribution consists of the following 
 
 The following environment variables can be configured:
 
-{% for var, description in env_vars.items() %}
+{% for var, (value, description) in docker_compose_env_vars.items() %}
 - `{{ var }}`: {{ description }}
 {% endfor %}
 {%- endif %}
@@ -120,29 +232,6 @@ The following environment variables can be configured:
 ```bash
 $ cd distributions/{{ name }}
 $ docker compose up
-```
-
-### Manual Configuration
-
-You can also configure the distribution manually by creating a `run.yaml` file:
-
-```yaml
-version: '2'
-image_name: {{ name }}
-apis:
-{% for api in providers.keys() %}
-  - {{ api }}
-{% endfor %}
-
-providers:
-{% for api, provider_list in providers.items() %}
-  {{ api }}:
-  {% for provider in provider_list %}
-    - provider_id: {{ provider.lower() }}-0
-      provider_type: {{ provider }}
-      config: {}
-  {% endfor %}
-{% endfor %}
 ```
 
 ## Models
@@ -170,7 +259,7 @@ The following safety shields are configured:
             description=self.description,
             providers=self.providers,
             providers_table=providers_table,
-            env_vars=self.env_vars,
+            docker_compose_env_vars=self.docker_compose_env_vars,
             default_models=self.default_models,
             default_shields=self.default_shields,
         )
@@ -178,29 +267,24 @@ The following safety shields are configured:
     def save_distribution(self, output_dir: Path) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save build.yaml
         build_config = self.build_config()
         with open(output_dir / "build.yaml", "w") as f:
             yaml.safe_dump(build_config.model_dump(), f, sort_keys=False)
 
-        # Save run.yaml template
-        # Create a minimal provider config for the template
-        provider_configs = {
-            api: [
-                Provider(
-                    provider_id=f"{provider.lower()}-0",
-                    provider_type=provider,
-                    config={},
-                )
-                for provider in providers
-            ]
-            for api, providers in self.providers.items()
-        }
-        run_config = self.run_config(provider_configs)
+        run_config = self.run_config()
+        serialized = run_config.model_dump()
         with open(output_dir / "run.yaml", "w") as f:
-            yaml.safe_dump(run_config.model_dump(), f, sort_keys=False)
+            yaml.safe_dump(serialized, f, sort_keys=False)
 
-        # Save documentation
+        # serialized_str = yaml.dump(serialized, sort_keys=False)
+        # env_vars = set()
+        # for match in re.finditer(r"\${env\.([A-Za-z0-9_-]+)}", serialized_str):
+        #     env_vars.add(match.group(1))
+
+        docker_compose = self.docker_compose_config()
+        with open(output_dir / "compose.yaml", "w") as f:
+            yaml.safe_dump(docker_compose, f, sort_keys=False, default_flow_style=False)
+
         docs = self.generate_markdown_docs()
         with open(output_dir / f"{self.name}.md", "w") as f:
             f.write(docs)
@@ -217,21 +301,77 @@ The following safety shields are configured:
                 "agents": ["inline::meta-reference"],
                 "telemetry": ["inline::meta-reference"],
             },
+            run_config_overrides={
+                "inference": [
+                    Provider(
+                        provider_id="vllm-0",
+                        provider_type="remote::vllm",
+                        config=VLLMInferenceAdapterConfig.sample_run_config(
+                            url="${env.VLLM_URL:http://host.docker.internal:5100/v1}",
+                        ),
+                    ),
+                    Provider(
+                        provider_id="vllm-1",
+                        provider_type="remote::vllm",
+                        config=VLLMInferenceAdapterConfig.sample_run_config(
+                            url="${env.SAFETY_VLLM_URL:http://host.docker.internal:5101/v1}",
+                        ),
+                    ),
+                ]
+            },
+            compose_config_overrides={
+                "inference": {
+                    "vllm-0": VLLMInferenceAdapterConfig.sample_docker_compose_config(
+                        port=5100,
+                        cuda_visible_devices="0",
+                        model="${env.INFERENCE_MODEL:Llama3.2-3B-Instruct}",
+                    ),
+                    "vllm-1": VLLMInferenceAdapterConfig.sample_docker_compose_config(
+                        port=5100,
+                        cuda_visible_devices="1",
+                        model="${env.SAFETY_MODEL:Llama-Guard-3-1B}",
+                    ),
+                }
+            },
             default_models=[
                 ModelInput(
-                    model_id="${env.LLAMA_INFERENCE_MODEL:Llama3.1-8B-Instruct}"
+                    model_id="${env.INFERENCE_MODEL:Llama3.2-3B-Instruct}",
+                    provider_id="vllm-0",
                 ),
-                ModelInput(model_id="${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}"),
+                ModelInput(
+                    model_id="${env.SAFETY_MODEL:Llama-Guard-3-1B}",
+                    provider_id="vllm-1",
+                ),
             ],
             default_shields=[
-                ShieldInput(shield_id="${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}")
+                ShieldInput(shield_id="${env.SAFETY_MODEL:Llama-Guard-3-1B}")
             ],
-            env_vars={
-                "LLAMA_INFERENCE_VLLM_URL": "URL of the vLLM inference server",
-                "LLAMA_SAFETY_VLLM_URL": "URL of the vLLM safety server",
-                "MAX_TOKENS": "Maximum number of tokens for generation",
-                "LLAMA_INFERENCE_MODEL": "Name of the inference model to use",
-                "LLAMA_SAFETY_MODEL": "Name of the safety model to use",
+            docker_compose_env_vars={
+                # these defaults are for the Docker Compose configuration
+                "VLLM_URL": (
+                    "http://host.docker.internal:${VLLM_PORT:-5100}/v1",
+                    "URL of the vLLM server with the main inference model",
+                ),
+                "SAFETY_VLLM_URL": (
+                    "http://host.docker.internal:${SAFETY_VLLM_PORT:-5101}/v1",
+                    "URL of the vLLM server with the safety model",
+                ),
+                "MAX_TOKENS": (
+                    "${MAX_TOKENS:-4096}",
+                    "Maximum number of tokens for generation",
+                ),
+                "INFERENCE_MODEL": (
+                    "${INFERENCE_MODEL:-Llama3.2-3B-Instruct}",
+                    "Name of the inference model to use",
+                ),
+                "SAFETY_MODEL": (
+                    "${SAFETY_MODEL:-Llama-Guard-3-1B}",
+                    "Name of the safety (Llama-Guard) model to use",
+                ),
+                "LLAMASTACK_PORT": (
+                    "${LLAMASTACK_PORT:-5001}",
+                    "Port for the Llama Stack distribution server",
+                ),
             },
         )
 
