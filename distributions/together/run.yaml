@@ -2,7 +2,7 @@ version: '2'
 built_at: '2024-10-08T17:40:45.325529'
 image_name: local
 docker_image: null
-conda_env: local
+conda_env: together
 apis:
 - shields
 - agents
