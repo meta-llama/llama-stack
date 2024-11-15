@@ -14,6 +14,7 @@ from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.agents import AgentConfig
 from llama_stack.apis.common.job_types import Job, JobStatus
 from llama_stack.apis.scoring import *  # noqa: F403
+from llama_stack.apis.eval_tasks import *  # noqa: F403
 
 
 @json_schema_type
@@ -36,35 +37,64 @@ EvalCandidate = Annotated[
 
 
 @json_schema_type
+class BenchmarkEvalTaskConfig(BaseModel):
+    type: Literal["benchmark"] = "benchmark"
+    eval_candidate: EvalCandidate
+    num_examples: Optional[int] = Field(
+        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
+        default=None,
+    )
+
+
+@json_schema_type
+class AppEvalTaskConfig(BaseModel):
+    type: Literal["app"] = "app"
+    eval_candidate: EvalCandidate
+    scoring_params: Dict[str, ScoringFnParams] = Field(
+        description="Map between scoring function id and parameters for each scoring function you want to run",
+        default_factory=dict,
+    )
+    num_examples: Optional[int] = Field(
+        description="Number of examples to evaluate (useful for testing), if not provided, all examples in the dataset will be evaluated",
+        default=None,
+    )
+    # we could optinally add any specific dataset config here
+
+
+EvalTaskConfig = Annotated[
+    Union[BenchmarkEvalTaskConfig, AppEvalTaskConfig], Field(discriminator="type")
+]
+
+
+@json_schema_type
 class EvaluateResponse(BaseModel):
     generations: List[Dict[str, Any]]
-
     # each key in the dict is a scoring function name
     scores: Dict[str, ScoringResult]
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/evaluate_batch", method="POST")
-    async def evaluate_batch(
+    @webmethod(route="/eval/run_eval", method="POST")
+    async def run_eval(
         self,
-        dataset_id: str,
-        candidate: EvalCandidate,
-        scoring_functions: List[str],
+        task_id: str,
+        task_config: EvalTaskConfig,
     ) -> Job: ...
 
-    @webmethod(route="/eval/evaluate", method="POST")
-    async def evaluate(
+    @webmethod(route="/eval/evaluate_rows", method="POST")
+    async def evaluate_rows(
         self,
+        task_id: str,
         input_rows: List[Dict[str, Any]],
-        candidate: EvalCandidate,
         scoring_functions: List[str],
+        task_config: EvalTaskConfig,
     ) -> EvaluateResponse: ...
 
     @webmethod(route="/eval/job/status", method="GET")
-    async def job_status(self, job_id: str) -> Optional[JobStatus]: ...
+    async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
 
     @webmethod(route="/eval/job/cancel", method="POST")
-    async def job_cancel(self, job_id: str) -> None: ...
+    async def job_cancel(self, task_id: str, job_id: str) -> None: ...
 
     @webmethod(route="/eval/job/result", method="GET")
-    async def job_result(self, job_id: str) -> EvaluateResponse: ...
+    async def job_result(self, task_id: str, job_id: str) -> EvaluateResponse: ...

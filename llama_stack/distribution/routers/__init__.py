@@ -7,8 +7,12 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+
+from llama_stack.distribution.store import DistributionRegistry
+
 from .routing_tables import (
     DatasetsRoutingTable,
+    EvalTasksRoutingTable,
     MemoryBanksRoutingTable,
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
@@ -20,6 +24,7 @@ async def get_routing_table_impl(
     api: Api,
     impls_by_provider_id: Dict[str, RoutedProtocol],
     _deps,
+    dist_registry: DistributionRegistry,
 ) -> Any:
     api_to_tables = {
         "memory_banks": MemoryBanksRoutingTable,
@@ -27,12 +32,13 @@ async def get_routing_table_impl(
         "shields": ShieldsRoutingTable,
         "datasets": DatasetsRoutingTable,
         "scoring_functions": ScoringFunctionsRoutingTable,
+        "eval_tasks": EvalTasksRoutingTable,
     }
 
     if api.value not in api_to_tables:
         raise ValueError(f"API {api.value} not found in router map")
 
-    impl = api_to_tables[api.value](impls_by_provider_id)
+    impl = api_to_tables[api.value](impls_by_provider_id, dist_registry)
     await impl.initialize()
     return impl
 
@@ -40,6 +46,7 @@ async def get_routing_table_impl(
 async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> Any:
     from .routers import (
         DatasetIORouter,
+        EvalRouter,
         InferenceRouter,
         MemoryRouter,
         SafetyRouter,
@@ -52,6 +59,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         "safety": SafetyRouter,
         "datasetio": DatasetIORouter,
         "scoring": ScoringRouter,
+        "eval": EvalRouter,
     }
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")

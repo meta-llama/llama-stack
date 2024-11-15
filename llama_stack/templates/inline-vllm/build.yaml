@@ -1,0 +1,13 @@
+name: meta-reference-gpu
+distribution_spec:
+  docker_image: pytorch/pytorch:2.5.0-cuda12.4-cudnn9-runtime
+  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  providers:
+    inference: inline::meta-reference
+    memory:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety: inline::llama-guard
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference

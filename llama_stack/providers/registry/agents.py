@@ -14,7 +14,7 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.agents,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=[
                 "matplotlib",
                 "pillow",
@@ -22,8 +22,8 @@ def available_providers() -> List[ProviderSpec]:
                 "scikit-learn",
             ]
             + kvstore_dependencies(),
-            module="llama_stack.providers.impls.meta_reference.agents",
-            config_class="llama_stack.providers.impls.meta_reference.agents.MetaReferenceAgentsImplConfig",
+            module="llama_stack.providers.inline.agents.meta_reference",
+            config_class="llama_stack.providers.inline.agents.meta_reference.MetaReferenceAgentsImplConfig",
             api_dependencies=[
                 Api.inference,
                 Api.safety,
@@ -36,8 +36,8 @@ def available_providers() -> List[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="sample",
                 pip_packages=[],
-                module="llama_stack.providers.adapters.agents.sample",
-                config_class="llama_stack.providers.adapters.agents.sample.SampleConfig",
+                module="llama_stack.providers.remote.agents.sample",
+                config_class="llama_stack.providers.remote.agents.sample.SampleConfig",
             ),
         ),
     ]

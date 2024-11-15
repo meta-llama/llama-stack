@@ -10,6 +10,8 @@ DOCKER_BINARY=${DOCKER_BINARY:-docker}
 DOCKER_OPTS=${DOCKER_OPTS:-}
 LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
+TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+PYPI_VERSION=${PYPI_VERSION:-}
 
 set -euo pipefail
 
@@ -54,11 +56,18 @@ if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
   DOCKER_OPTS="$DOCKER_OPTS --gpus=all"
 fi
 
+version_tag="latest"
+if [ -n "$PYPI_VERSION" ]; then
+  version_tag="$PYPI_VERSION"
+elif [ -n "$TEST_PYPI_VERSION" ]; then
+  version_tag="test-$TEST_PYPI_VERSION"
+fi
+
 $DOCKER_BINARY run $DOCKER_OPTS -it \
   -p $port:$port \
   -v "$yaml_config:/app/config.yaml" \
   $mounts \
-  $docker_image \
+  $docker_image:$version_tag \
   python -m llama_stack.distribution.server.server \
   --yaml_config /app/config.yaml \
   --port $port "$@"

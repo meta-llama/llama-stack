@@ -1,0 +1,94 @@
+# NOTES:
+#
+# This Docker Compose (and the associated run.yaml) assumes you will be
+# running in the default "bridged" network mode.
+#
+# If you need "host" network mode, please uncomment
+#  - network_mode: "host"
+#
+# Similarly change "host.docker.internal" to "localhost" in the run.yaml file
+#
+services:
+  vllm-0:
+    image: vllm/vllm-openai:latest
+    volumes:
+      - $HOME/.cache/huggingface:/root/.cache/huggingface
+    # network_mode: "host"
+    ports:
+       - "5100:5100"
+    devices:
+      - nvidia.com/gpu=all
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
+    command: >
+      --gpu-memory-utilization 0.75
+      --model meta-llama/Llama-3.1-8B-Instruct
+      --enforce-eager
+      --max-model-len 8192
+      --max-num-seqs 16
+      --port 5100
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+    runtime: nvidia
+  vllm-1:
+    image: vllm/vllm-openai:latest
+    volumes:
+      - $HOME/.cache/huggingface:/root/.cache/huggingface
+    # network_mode: "host"
+    ports:
+      - "5101:5101"
+    devices:
+      - nvidia.com/gpu=all
+    environment:
+      - CUDA_VISIBLE_DEVICES=1
+      - HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
+    command: >
+      --gpu-memory-utilization 0.75
+      --model meta-llama/Llama-Guard-3-1B
+      --enforce-eager
+      --max-model-len 8192
+      --max-num-seqs 16
+      --port 5101
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+    runtime: nvidia
+  llamastack:
+    depends_on:
+    - vllm-0
+    - vllm-1
+      # image: llamastack/distribution-remote-vllm
+    image: llamastack/distribution-remote-vllm:test-0.0.52rc3
+    volumes:
+      - ~/.llama:/root/.llama
+      - ~/local/llama-stack/distributions/remote-vllm/run.yaml:/root/llamastack-run-remote-vllm.yaml
+    # network_mode: "host"
+    environment:
+      - LLAMA_INFERENCE_VLLM_URL=${LLAMA_INFERENCE_VLLM_URL:-http://host.docker.internal:5100/v1}
+      - LLAMA_INFERENCE_MODEL=${LLAMA_INFERENCE_MODEL:-Llama3.1-8B-Instruct}
+      - MAX_TOKENS=${MAX_TOKENS:-4096}
+      - SQLITE_STORE_DIR=${SQLITE_STORE_DIR:-$HOME/.llama/distributions/remote-vllm}
+      - LLAMA_SAFETY_VLLM_URL=${LLAMA_SAFETY_VLLM_URL:-http://host.docker.internal:5101/v1}
+      - LLAMA_SAFETY_MODEL=${LLAMA_SAFETY_MODEL:-Llama-Guard-3-1B}
+    ports:
+      - "5001:5001"
+    # Hack: wait for vLLM server to start before starting docker
+    entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-remote-vllm.yaml --port 5001"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+volumes:
+  vllm-0:
+  vllm-1:
+  llamastack:

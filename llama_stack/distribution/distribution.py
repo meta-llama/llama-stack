@@ -9,7 +9,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
-from llama_stack.providers.datatypes import Api, ProviderSpec, remote_provider_spec
+from llama_stack.providers.datatypes import Api, ProviderSpec
 
 
 def stack_apis() -> List[Api]:
@@ -43,6 +43,10 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             routing_table_api=Api.scoring_functions,
             router_api=Api.scoring,
         ),
+        AutoRoutedApiInfo(
+            routing_table_api=Api.eval_tasks,
+            router_api=Api.eval,
+        ),
     ]
 
 
@@ -58,9 +62,6 @@ def get_provider_registry() -> Dict[Api, Dict[str, ProviderSpec]]:
     for api in providable_apis():
         name = api.name.lower()
         module = importlib.import_module(f"llama_stack.providers.registry.{name}")
-        ret[api] = {
-            "remote": remote_provider_spec(api),
-            **{a.provider_type: a for a in module.available_providers()},
-        }
+        ret[api] = {a.provider_type: a for a in module.available_providers()}
 
     return ret

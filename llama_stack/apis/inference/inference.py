@@ -216,7 +216,7 @@ class EmbeddingsResponse(BaseModel):
 
 
 class ModelStore(Protocol):
-    def get_model(self, identifier: str) -> ModelDef: ...
+    def get_model(self, identifier: str) -> Model: ...
 
 
 @runtime_checkable
@@ -226,7 +226,7 @@ class Inference(Protocol):
     @webmethod(route="/inference/completion")
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -237,7 +237,7 @@ class Inference(Protocol):
     @webmethod(route="/inference/chat_completion")
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         # zero-shot tool definitions as input to the model
@@ -254,6 +254,6 @@ class Inference(Protocol):
     @webmethod(route="/inference/embeddings")
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse: ...

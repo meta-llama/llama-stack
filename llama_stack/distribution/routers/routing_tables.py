@@ -6,13 +6,21 @@
 
 from typing import Any, Dict, List, Optional
 
+from pydantic import parse_obj_as
+
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.eval_tasks import *  # noqa: F403
 
+
+from llama_models.llama3.api.datatypes import URL
+
+from llama_stack.apis.common.type_system import ParamType
+from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
@@ -20,88 +28,83 @@ def get_impl_api(p: Any) -> Api:
     return p.__provider_spec__.api
 
 
-async def register_object_with_provider(obj: RoutableObject, p: Any) -> None:
+# TODO: this should return the registered object for all APIs
+async def register_object_with_provider(obj: RoutableObject, p: Any) -> RoutableObject:
+
     api = get_impl_api(p)
 
-    if obj.provider_id == "remote":
-        # if this is just a passthrough, we want to let the remote
-        # end actually do the registration with the correct provider
-        obj = obj.model_copy(deep=True)
-        obj.provider_id = ""
+    assert obj.provider_id != "remote", "Remote provider should not be registered"
 
     if api == Api.inference:
-        await p.register_model(obj)
+        return await p.register_model(obj)
     elif api == Api.safety:
-        await p.register_shield(obj)
+        return await p.register_shield(obj)
     elif api == Api.memory:
-        await p.register_memory_bank(obj)
+        return await p.register_memory_bank(obj)
     elif api == Api.datasetio:
-        await p.register_dataset(obj)
+        return await p.register_dataset(obj)
     elif api == Api.scoring:
-        await p.register_scoring_function(obj)
+        return await p.register_scoring_function(obj)
+    elif api == Api.eval:
+        return await p.register_eval_task(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
+
+
+async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
+    api = get_impl_api(p)
+    if api == Api.memory:
+        return await p.unregister_memory_bank(obj.identifier)
+    elif api == Api.inference:
+        return await p.unregister_model(obj.identifier)
+    else:
+        raise ValueError(f"Unregister not supported for {api}")
 
 
 Registry = Dict[str, List[RoutableObjectWithProvider]]
 
 
-# TODO: this routing table maintains state in memory purely. We need to
-# add persistence to it when we add dynamic registration of objects.
 class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
         impls_by_provider_id: Dict[str, RoutedProtocol],
+        dist_registry: DistributionRegistry,
     ) -> None:
         self.impls_by_provider_id = impls_by_provider_id
+        self.dist_registry = dist_registry
 
     async def initialize(self) -> None:
-        self.registry: Registry = {}
 
-        def add_objects(
+        async def add_objects(
             objs: List[RoutableObjectWithProvider], provider_id: str, cls
         ) -> None:
             for obj in objs:
-                if obj.identifier not in self.registry:
-                    self.registry[obj.identifier] = []
-
                 if cls is None:
                     obj.provider_id = provider_id
                 else:
-                    if provider_id == "remote":
-                        # if this is just a passthrough, we got the *WithProvider object
-                        # so we should just override the provider in-place
-                        obj.provider_id = provider_id
-                    else:
-                        obj = cls(**obj.model_dump(), provider_id=provider_id)
-                self.registry[obj.identifier].append(obj)
+                    # Create a copy of the model data and explicitly set provider_id
+                    model_data = obj.model_dump()
+                    model_data["provider_id"] = provider_id
+                    obj = cls(**model_data)
+                await self.dist_registry.register(obj)
 
+        # Register all objects from providers
         for pid, p in self.impls_by_provider_id.items():
             api = get_impl_api(p)
             if api == Api.inference:
                 p.model_store = self
-                models = await p.list_models()
-                add_objects(models, pid, ModelDefWithProvider)
-
             elif api == Api.safety:
                 p.shield_store = self
-                shields = await p.list_shields()
-                add_objects(shields, pid, ShieldDefWithProvider)
-
             elif api == Api.memory:
                 p.memory_bank_store = self
-                memory_banks = await p.list_memory_banks()
-                add_objects(memory_banks, pid, None)
-
             elif api == Api.datasetio:
                 p.dataset_store = self
-                datasets = await p.list_datasets()
-                add_objects(datasets, pid, DatasetDefWithProvider)
-
             elif api == Api.scoring:
                 p.scoring_function_store = self
                 scoring_functions = await p.list_scoring_functions()
-                add_objects(scoring_functions, pid, ScoringFnDefWithProvider)
+                await add_objects(scoring_functions, pid, ScoringFn)
+            elif api == Api.eval:
+                p.eval_task_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
@@ -121,42 +124,60 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("DatasetIO", "dataset")
             elif isinstance(self, ScoringFunctionsRoutingTable):
                 return ("Scoring", "scoring_function")
+            elif isinstance(self, EvalTasksRoutingTable):
+                return ("Eval", "eval_task")
             else:
                 raise ValueError("Unknown routing table type")
 
-        if routing_key not in self.registry:
-            apiname, objname = apiname_object()
+        apiname, objtype = apiname_object()
+
+        # Get objects from disk registry
+        obj = self.dist_registry.get_cached(objtype, routing_key)
+        if not obj:
+            provider_ids = list(self.impls_by_provider_id.keys())
+            if len(provider_ids) > 1:
+                provider_ids_str = f"any of the providers: {', '.join(provider_ids)}"
+            else:
+                provider_ids_str = f"provider: `{provider_ids[0]}`"
             raise ValueError(
-                f"`{routing_key}` not registered. Make sure there is an {apiname} provider serving this {objname}."
+                f"{objtype.capitalize()} `{routing_key}` not served by {provider_ids_str}. Make sure there is an {apiname} provider serving this {objtype}."
             )
 
-        objs = self.registry[routing_key]
-        for obj in objs:
-            if not provider_id or provider_id == obj.provider_id:
-                return self.impls_by_provider_id[obj.provider_id]
+        if not provider_id or provider_id == obj.provider_id:
+            return self.impls_by_provider_id[obj.provider_id]
 
         raise ValueError(f"Provider not found for `{routing_key}`")
 
-    def get_object_by_identifier(
-        self, identifier: str
+    async def get_object_by_identifier(
+        self, type: str, identifier: str
     ) -> Optional[RoutableObjectWithProvider]:
-        objs = self.registry.get(identifier, [])
-        if not objs:
+        # Get from disk registry
+        obj = await self.dist_registry.get(type, identifier)
+        if not obj:
             return None
 
-        # kind of ill-defined behavior here, but we'll just return the first one
-        return objs[0]
+        return obj
 
-    async def register_object(self, obj: RoutableObjectWithProvider):
-        entries = self.registry.get(obj.identifier, [])
-        for entry in entries:
-            if entry.provider_id == obj.provider_id or not obj.provider_id:
-                print(
-                    f"`{obj.identifier}` already registered with `{entry.provider_id}`"
-                )
-                return
+    async def unregister_object(self, obj: RoutableObjectWithProvider) -> None:
+        await self.dist_registry.delete(obj.type, obj.identifier)
+        await unregister_object_from_provider(
+            obj, self.impls_by_provider_id[obj.provider_id]
+        )
 
-        # if provider_id is not specified, we'll pick an arbitrary one from existing entries
+    async def register_object(
+        self, obj: RoutableObjectWithProvider
+    ) -> RoutableObjectWithProvider:
+        # Get existing objects from registry
+        existing_obj = await self.dist_registry.get(obj.type, obj.identifier)
+
+        # Check for existing registration
+        if existing_obj and existing_obj.provider_id == obj.provider_id:
+            print(
+                f"`{obj.identifier}` already registered with `{existing_obj.provider_id}`"
+            )
+            return existing_obj
+
+        # if provider_id is not specified, pick an arbitrary one from existing entries
         if not obj.provider_id and len(self.impls_by_provider_id) > 0:
             obj.provider_id = list(self.impls_by_provider_id.keys())[0]
 
@@ -165,90 +186,252 @@ class CommonRoutingTableImpl(RoutingTable):
 
         p = self.impls_by_provider_id[obj.provider_id]
 
-        await register_object_with_provider(obj, p)
+        registered_obj = await register_object_with_provider(obj, p)
+        # TODO: This needs to be fixed for all APIs once they return the registered object
+        if obj.type == ResourceType.model.value:
+            await self.dist_registry.register(registered_obj)
+            return registered_obj
 
-        if obj.identifier not in self.registry:
-            self.registry[obj.identifier] = []
-        self.registry[obj.identifier].append(obj)
+        else:
+            await self.dist_registry.register(obj)
+            return obj
 
-        # TODO: persist this to a store
+    async def get_all_with_type(self, type: str) -> List[RoutableObjectWithProvider]:
+        objs = await self.dist_registry.get_all()
+        return [obj for obj in objs if obj.type == type]
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
-    async def list_models(self) -> List[ModelDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+    async def list_models(self) -> List[Model]:
+        return await self.get_all_with_type("model")
 
-    async def get_model(self, identifier: str) -> Optional[ModelDefWithProvider]:
-        return self.get_object_by_identifier(identifier)
+    async def get_model(self, identifier: str) -> Optional[Model]:
+        return await self.get_object_by_identifier("model", identifier)
 
-    async def register_model(self, model: ModelDefWithProvider) -> None:
-        await self.register_object(model)
+    async def register_model(
+        self,
+        model_id: str,
+        provider_model_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Model:
+        if provider_model_id is None:
+            provider_model_id = model_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this model
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id. Available providers: {self.impls_by_provider_id.keys()}"
+                )
+        if metadata is None:
+            metadata = {}
+        model = Model(
+            identifier=model_id,
+            provider_resource_id=provider_model_id,
+            provider_id=provider_id,
+            metadata=metadata,
+        )
+        registered_model = await self.register_object(model)
+        return registered_model
+
+    async def unregister_model(self, model_id: str) -> None:
+        existing_model = await self.get_model(model_id)
+        if existing_model is None:
+            raise ValueError(f"Model {model_id} not found")
+        await self.unregister_object(existing_model)
 
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
-    async def list_shields(self) -> List[ShieldDef]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+    async def list_shields(self) -> List[Shield]:
+        return await self.get_all_with_type(ResourceType.shield.value)
 
-    async def get_shield(self, shield_type: str) -> Optional[ShieldDefWithProvider]:
-        return self.get_object_by_identifier(shield_type)
+    async def get_shield(self, identifier: str) -> Optional[Shield]:
+        return await self.get_object_by_identifier("shield", identifier)
 
-    async def register_shield(self, shield: ShieldDefWithProvider) -> None:
+    async def register_shield(
+        self,
+        shield_id: str,
+        provider_shield_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Shield:
+        if provider_shield_id is None:
+            provider_shield_id = shield_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this shield type
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if params is None:
+            params = {}
+        shield = Shield(
+            identifier=shield_id,
+            provider_resource_id=provider_shield_id,
+            provider_id=provider_id,
+            params=params,
+        )
         await self.register_object(shield)
+        return shield
 
 
 class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
-    async def list_memory_banks(self) -> List[MemoryBankDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+    async def list_memory_banks(self) -> List[MemoryBank]:
+        return await self.get_all_with_type(ResourceType.memory_bank.value)
 
-    async def get_memory_bank(
-        self, identifier: str
-    ) -> Optional[MemoryBankDefWithProvider]:
-        return self.get_object_by_identifier(identifier)
+    async def get_memory_bank(self, memory_bank_id: str) -> Optional[MemoryBank]:
+        return await self.get_object_by_identifier("memory_bank", memory_bank_id)
 
     async def register_memory_bank(
-        self, memory_bank: MemoryBankDefWithProvider
-    ) -> None:
+        self,
+        memory_bank_id: str,
+        params: BankParams,
+        provider_id: Optional[str] = None,
+        provider_memory_bank_id: Optional[str] = None,
+    ) -> MemoryBank:
+        if provider_memory_bank_id is None:
+            provider_memory_bank_id = memory_bank_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this shield type
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        memory_bank = parse_obj_as(
+            MemoryBank,
+            {
+                "identifier": memory_bank_id,
+                "type": ResourceType.memory_bank.value,
+                "provider_id": provider_id,
+                "provider_resource_id": provider_memory_bank_id,
+                **params.model_dump(),
+            },
+        )
         await self.register_object(memory_bank)
+        return memory_bank
+
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None:
+        existing_bank = await self.get_memory_bank(memory_bank_id)
+        if existing_bank is None:
+            raise ValueError(f"Memory bank {memory_bank_id} not found")
+        await self.unregister_object(existing_bank)
 
 
 class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
-    async def list_datasets(self) -> List[DatasetDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+    async def list_datasets(self) -> List[Dataset]:
+        return await self.get_all_with_type(ResourceType.dataset.value)
 
-    async def get_dataset(
-        self, dataset_identifier: str
-    ) -> Optional[DatasetDefWithProvider]:
-        return self.get_object_by_identifier(dataset_identifier)
+    async def get_dataset(self, dataset_id: str) -> Optional[Dataset]:
+        return await self.get_object_by_identifier("dataset", dataset_id)
 
-    async def register_dataset(self, dataset_def: DatasetDefWithProvider) -> None:
-        await self.register_object(dataset_def)
+    async def register_dataset(
+        self,
+        dataset_id: str,
+        dataset_schema: Dict[str, ParamType],
+        url: URL,
+        provider_dataset_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        if provider_dataset_id is None:
+            provider_dataset_id = dataset_id
+        if provider_id is None:
+            # If provider_id not specified, use the only provider if it supports this dataset
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if metadata is None:
+            metadata = {}
+        dataset = Dataset(
+            identifier=dataset_id,
+            provider_resource_id=provider_dataset_id,
+            provider_id=provider_id,
+            dataset_schema=dataset_schema,
+            url=url,
+            metadata=metadata,
+        )
+        await self.register_object(dataset)
 
 
-class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, Scoring):
-    async def list_scoring_functions(self) -> List[ScoringFnDefWithProvider]:
-        objects = []
-        for objs in self.registry.values():
-            objects.extend(objs)
-        return objects
+class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
+    async def list_scoring_functions(self) -> List[ScoringFn]:
+        return await self.get_all_with_type(ResourceType.scoring_function.value)
 
-    async def get_scoring_function(
-        self, name: str
-    ) -> Optional[ScoringFnDefWithProvider]:
-        return self.get_object_by_identifier(name)
+    async def get_scoring_function(self, scoring_fn_id: str) -> Optional[ScoringFn]:
+        return await self.get_object_by_identifier("scoring_function", scoring_fn_id)
 
     async def register_scoring_function(
-        self, function_def: ScoringFnDefWithProvider
+        self,
+        scoring_fn_id: str,
+        description: str,
+        return_type: ParamType,
+        provider_scoring_fn_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+        params: Optional[ScoringFnParams] = None,
     ) -> None:
-        await self.register_object(function_def)
+        if provider_scoring_fn_id is None:
+            provider_scoring_fn_id = scoring_fn_id
+        if provider_id is None:
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        scoring_fn = ScoringFn(
+            identifier=scoring_fn_id,
+            description=description,
+            return_type=return_type,
+            provider_resource_id=provider_scoring_fn_id,
+            provider_id=provider_id,
+            params=params,
+        )
+        scoring_fn.provider_id = provider_id
+        await self.register_object(scoring_fn)
+
+
+class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
+    async def list_eval_tasks(self) -> List[EvalTask]:
+        return await self.get_all_with_type(ResourceType.eval_task.value)
+
+    async def get_eval_task(self, name: str) -> Optional[EvalTask]:
+        return await self.get_object_by_identifier("eval_task", name)
+
+    async def register_eval_task(
+        self,
+        eval_task_id: str,
+        dataset_id: str,
+        scoring_functions: List[str],
+        metadata: Optional[Dict[str, Any]] = None,
+        provider_eval_task_id: Optional[str] = None,
+        provider_id: Optional[str] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+        if provider_id is None:
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        if provider_eval_task_id is None:
+            provider_eval_task_id = eval_task_id
+        eval_task = EvalTask(
+            identifier=eval_task_id,
+            dataset_id=dataset_id,
+            scoring_functions=scoring_functions,
+            metadata=metadata,
+            provider_id=provider_id,
+            provider_resource_id=provider_eval_task_id,
+        )
+        await self.register_object(eval_task)

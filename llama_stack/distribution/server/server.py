@@ -8,8 +8,12 @@ import asyncio
 import functools
 import inspect
 import json
+import os
+import re
 import signal
+import sys
 import traceback
+import warnings
 
 from contextlib import asynccontextmanager
 from ssl import SSLError
@@ -26,10 +30,7 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from llama_stack.distribution.distribution import (
-    builtin_automatically_routed_apis,
-    get_provider_registry,
-)
+from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -38,16 +39,26 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
-
 from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.stack import construct_stack
 
 from .endpoints import get_all_api_endpoints
 
 
+def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    log = file if hasattr(file, "write") else sys.stderr
+    traceback.print_stack(file=log)
+    log.write(warnings.formatwarning(message, category, filename, lineno, line))
+
+
+if os.environ.get("LLAMA_STACK_TRACE_WARNINGS"):
+    warnings.showwarning = warn_with_traceback
+
+
 def create_sse_event(data: Any) -> str:
     if isinstance(data, BaseModel):
-        data = data.json()
+        data = data.model_dump_json()
     else:
         data = json.dumps(data)
 
@@ -184,15 +195,6 @@ async def lifespan(app: FastAPI):
         await impl.shutdown()
 
 
-def create_dynamic_passthrough(
-    downstream_url: str, downstream_headers: Optional[Dict[str, str]] = None
-):
-    async def endpoint(request: Request):
-        return await passthrough(request, downstream_url, downstream_headers)
-
-    return endpoint
-
-
 def is_streaming_request(func_name: str, request: Request, **kwargs):
     # TODO: pass the api method and punt it to the Protocol definition directly
     return kwargs.get("stream", False)
@@ -206,7 +208,8 @@ async def maybe_await(value):
 
 async def sse_generator(event_gen):
     try:
-        async for item in await event_gen:
+        event_gen = await event_gen
+        async for item in event_gen:
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
@@ -226,7 +229,6 @@ async def sse_generator(event_gen):
 
 
 def create_dynamic_typed_route(func: Any, method: str):
-
     async def endpoint(request: Request, **kwargs):
         await start_trace(func.__name__)
 
@@ -269,17 +271,74 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
+class EnvVarError(Exception):
+    def __init__(self, var_name: str, path: str = ""):
+        self.var_name = var_name
+        self.path = path
+        super().__init__(
+            f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
+        )
+
+
+def replace_env_vars(config: Any, path: str = "") -> Any:
+    if isinstance(config, dict):
+        result = {}
+        for k, v in config.items():
+            try:
+                result[k] = replace_env_vars(v, f"{path}.{k}" if path else k)
+            except EnvVarError as e:
+                raise EnvVarError(e.var_name, e.path) from None
+        return result
+
+    elif isinstance(config, list):
+        result = []
+        for i, v in enumerate(config):
+            try:
+                result.append(replace_env_vars(v, f"{path}[{i}]"))
+            except EnvVarError as e:
+                raise EnvVarError(e.var_name, e.path) from None
+        return result
+
+    elif isinstance(config, str):
+        pattern = r"\${env\.([A-Z0-9_]+)(?::([^}]*))?}"
+
+        def get_env_var(match):
+            env_var = match.group(1)
+            default_val = match.group(2)
+
+            value = os.environ.get(env_var)
+            if not value:
+                if default_val is None:
+                    raise EnvVarError(env_var, path)
+                else:
+                    value = default_val
+
+            return value
+
+        try:
+            return re.sub(pattern, get_env_var, config)
+        except EnvVarError as e:
+            raise EnvVarError(e.var_name, e.path) from None
+
+    return config
+
+
 def main(
     yaml_config: str = "llamastack-run.yaml",
     port: int = 5000,
     disable_ipv6: bool = False,
 ):
     with open(yaml_config, "r") as fp:
-        config = StackRunConfig(**yaml.safe_load(fp))
+        config = replace_env_vars(yaml.safe_load(fp))
+        config = StackRunConfig(**config)
 
     app = FastAPI()
 
-    impls = asyncio.run(resolve_impls(config, get_provider_registry()))
+    try:
+        impls = asyncio.run(construct_stack(config))
+    except InvalidProviderError:
+        sys.exit(1)
+
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
@@ -303,28 +362,19 @@ def main(
         endpoints = all_endpoints[api]
         impl = impls[api]
 
-        if is_passthrough(impl.__provider_spec__):
-            for endpoint in endpoints:
-                url = impl.__provider_config__.url.rstrip("/") + endpoint.route
-                getattr(app, endpoint.method)(endpoint.route)(
-                    create_dynamic_passthrough(url)
-                )
-        else:
-            for endpoint in endpoints:
-                if not hasattr(impl, endpoint.name):
-                    # ideally this should be a typing violation already
-                    raise ValueError(
-                        f"Could not find method {endpoint.name} on {impl}!!"
-                    )
+        for endpoint in endpoints:
+            if not hasattr(impl, endpoint.name):
+                # ideally this should be a typing violation already
+                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
 
-                impl_method = getattr(impl, endpoint.name)
+            impl_method = getattr(impl, endpoint.name)
 
-                getattr(app, endpoint.method)(endpoint.route, response_model=None)(
-                    create_dynamic_typed_route(
-                        impl_method,
-                        endpoint.method,
-                    )
+            getattr(app, endpoint.method)(endpoint.route, response_model=None)(
+                create_dynamic_typed_route(
+                    impl_method,
+                    endpoint.method,
                 )
+            )
 
         cprint(f"Serving API {api_str}", "white", attrs=["bold"])
         for endpoint in endpoints:

@@ -358,6 +358,7 @@ def unwrap_union_types(typ: object) -> Tuple[object, ...]:
     :returns: The inner types `T1`, `T2`, etc.
     """
 
+    typ = unwrap_annotated_type(typ)
     return _unwrap_union_types(typ)
 
 

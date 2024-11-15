@@ -20,20 +20,16 @@ from llama_stack.providers.datatypes import RemoteProviderConfig
 _CLIENT_CLASSES = {}
 
 
-async def get_client_impl(
-    protocol, additional_protocol, config: RemoteProviderConfig, _deps: Any
-):
-    client_class = create_api_client_class(protocol, additional_protocol)
+async def get_client_impl(protocol, config: RemoteProviderConfig, _deps: Any):
+    client_class = create_api_client_class(protocol)
     impl = client_class(config.url)
     await impl.initialize()
     return impl
 
 
-def create_api_client_class(protocol, additional_protocol) -> Type:
+def create_api_client_class(protocol) -> Type:
     if protocol in _CLIENT_CLASSES:
         return _CLIENT_CLASSES[protocol]
-
-    protocols = [protocol, additional_protocol] if additional_protocol else [protocol]
 
     class APIClient:
         def __init__(self, base_url: str):
@@ -42,11 +38,10 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
             self.routes = {}
 
             # Store routes for this protocol
-            for p in protocols:
-                for name, method in inspect.getmembers(p):
-                    if hasattr(method, "__webmethod__"):
-                        sig = inspect.signature(method)
-                        self.routes[name] = (method.__webmethod__, sig)
+            for name, method in inspect.getmembers(protocol):
+                if hasattr(method, "__webmethod__"):
+                    sig = inspect.signature(method)
+                    self.routes[name] = (method.__webmethod__, sig)
 
         async def initialize(self):
             pass
@@ -83,6 +78,7 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
                 j = response.json()
                 if j is None:
                     return None
+                # print(f"({protocol.__name__}) Returning {j}, type {return_type}")
                 return parse_obj_as(return_type, j)
 
         async def _call_streaming(self, method_name: str, *args, **kwargs) -> Any:
@@ -102,14 +98,15 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
                         if line.startswith("data:"):
                             data = line[len("data: ") :]
                             try:
+                                data = json.loads(data)
                                 if "error" in data:
                                     cprint(data, "red")
                                     continue
 
-                                yield parse_obj_as(return_type, json.loads(data))
+                                yield parse_obj_as(return_type, data)
                             except Exception as e:
-                                print(data)
                                 print(f"Error with parsing or validation: {e}")
+                                print(data)
 
         def httpx_request_params(self, method_name: str, *args, **kwargs) -> dict:
             webmethod, sig = self.routes[method_name]
@@ -141,27 +138,33 @@ def create_api_client_class(protocol, additional_protocol) -> Type:
             else:
                 data.update(convert(kwargs))
 
-            return dict(
+            ret = dict(
                 method=webmethod.method or "POST",
                 url=url,
-                headers={"Content-Type": "application/json"},
-                params=params,
-                json=data,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
                 timeout=30,
             )
+            if params:
+                ret["params"] = params
+            if data:
+                ret["json"] = data
+
+            return ret
 
     # Add protocol methods to the wrapper
-    for p in protocols:
-        for name, method in inspect.getmembers(p):
-            if hasattr(method, "__webmethod__"):
+    for name, method in inspect.getmembers(protocol):
+        if hasattr(method, "__webmethod__"):
 
-                async def method_impl(self, *args, method_name=name, **kwargs):
-                    return await self.__acall__(method_name, *args, **kwargs)
+            async def method_impl(self, *args, method_name=name, **kwargs):
+                return await self.__acall__(method_name, *args, **kwargs)
 
-                method_impl.__name__ = name
-                method_impl.__qualname__ = f"APIClient.{name}"
-                method_impl.__signature__ = inspect.signature(method)
-                setattr(APIClient, name, method_impl)
+            method_impl.__name__ = name
+            method_impl.__qualname__ = f"APIClient.{name}"
+            method_impl.__signature__ = inspect.signature(method)
+            setattr(APIClient, name, method_impl)
 
     # Name the class after the protocol
     APIClient.__name__ = f"{protocol.__name__}Client"

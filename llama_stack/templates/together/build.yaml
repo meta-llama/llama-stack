@@ -4,8 +4,8 @@ distribution_spec:
   providers:
     inference: remote::together
     memory:
-    - meta-reference
+    - inline::faiss
     - remote::weaviate
-    safety: remote::together
-    agents: meta-reference
-    telemetry: meta-reference
+    safety: inline::llama-guard
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference

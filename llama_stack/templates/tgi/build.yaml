@@ -4,9 +4,9 @@ distribution_spec:
   providers:
     inference: remote::tgi
     memory:
-    - meta-reference
+    - inline::faiss
     - remote::chromadb
     - remote::pgvector
-    safety: meta-reference
-    agents: meta-reference
-    telemetry: meta-reference
+    safety: inline::llama-guard
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference

@@ -17,10 +17,13 @@ from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTaskInput
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
@@ -30,19 +33,25 @@ RoutingKey = Union[str, List[str]]
 
 
 RoutableObject = Union[
-    ModelDef,
-    ShieldDef,
-    MemoryBankDef,
-    DatasetDef,
-    ScoringFnDef,
+    Model,
+    Shield,
+    MemoryBank,
+    Dataset,
+    ScoringFn,
+    EvalTask,
 ]
 
-RoutableObjectWithProvider = Union[
-    ModelDefWithProvider,
-    ShieldDefWithProvider,
-    MemoryBankDefWithProvider,
-    DatasetDefWithProvider,
-    ScoringFnDefWithProvider,
+
+RoutableObjectWithProvider = Annotated[
+    Union[
+        Model,
+        Shield,
+        MemoryBank,
+        Dataset,
+        ScoringFn,
+        EvalTask,
+    ],
+    Field(discriminator="type"),
 ]
 
 RoutedProtocol = Union[
@@ -51,6 +60,7 @@ RoutedProtocol = Union[
     Memory,
     DatasetIO,
     Scoring,
+    Eval,
 ]
 
 
@@ -134,6 +144,20 @@ One or more providers to use for each API. The same provider_type (e.g., meta-re
 can be instantiated multiple times (with different configs) if necessary.
 """,
     )
+    metadata_store: Optional[KVStoreConfig] = Field(
+        default=None,
+        description="""
+Configuration for the persistence store used by the distribution registry. If not specified,
+a default SQLite store will be used.""",
+    )
+
+    # registry of "resources" in the distribution
+    models: List[ModelInput] = Field(default_factory=list)
+    shields: List[ShieldInput] = Field(default_factory=list)
+    memory_banks: List[MemoryBankInput] = Field(default_factory=list)
+    datasets: List[DatasetInput] = Field(default_factory=list)
+    scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
+    eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
 
 
 class BuildConfig(BaseModel):

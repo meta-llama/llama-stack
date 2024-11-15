@@ -145,10 +145,14 @@ class EmbeddingIndex(ABC):
     ) -> QueryDocumentsResponse:
         raise NotImplementedError()
 
+    @abstractmethod
+    async def delete(self):
+        raise NotImplementedError()
+
 
 @dataclass
 class BankWithIndex:
-    bank: MemoryBankDef
+    bank: VectorMemoryBank
     index: EmbeddingIndex
 
     async def insert_documents(

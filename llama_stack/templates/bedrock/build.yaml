@@ -3,7 +3,7 @@ distribution_spec:
   description: Use Amazon Bedrock APIs.
   providers:
     inference: remote::bedrock
-    memory: meta-reference
-    safety: meta-reference
-    agents: meta-reference
-    telemetry: meta-reference
+    memory: inline::faiss
+    safety: inline::llama-guard
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference
