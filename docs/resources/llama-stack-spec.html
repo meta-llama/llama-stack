@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-14 14:47:24.435917"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-14 16:18:00.903125"
     },
     "servers": [
         {
@@ -422,72 +422,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/DeleteAgentsSessionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory_banks/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteMemoryBankRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/models/delete": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Models"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteModelRequest"
                             }
                         }
                     },
@@ -2285,6 +2219,72 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/memory_banks/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterMemoryBankRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/models/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterModelRequest"
                             }
                         }
                     },
@@ -4682,30 +4682,6 @@
                 "required": [
                     "agent_id",
                     "session_id"
-                ]
-            },
-            "DeleteMemoryBankRequest": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_id"
-                ]
-            },
-            "DeleteModelRequest": {
-                "type": "object",
-                "properties": {
-                    "model_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model_id"
                 ]
             },
             "EmbeddingsRequest": {
@@ -7986,6 +7962,30 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
+            "UnregisterMemoryBankRequest": {
+                "type": "object",
+                "properties": {
+                    "memory_bank_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "memory_bank_id"
+                ]
+            },
+            "UnregisterModelRequest": {
+                "type": "object",
+                "properties": {
+                    "model_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "model_id"
+                ]
+            },
             "UpdateMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -8240,14 +8240,6 @@
         {
             "name": "DeleteAgentsSessionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
-        },
-        {
-            "name": "DeleteMemoryBankRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteMemoryBankRequest\" />"
-        },
-        {
-            "name": "DeleteModelRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteModelRequest\" />"
         },
         {
             "name": "DoraFinetuningConfig",
@@ -8676,6 +8668,14 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
+            "name": "UnregisterMemoryBankRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterMemoryBankRequest\" />"
+        },
+        {
+            "name": "UnregisterModelRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterModelRequest\" />"
+        },
+        {
             "name": "UnstructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
         },
@@ -8774,8 +8774,6 @@
                 "Dataset",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
-                "DeleteMemoryBankRequest",
-                "DeleteModelRequest",
                 "DoraFinetuningConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
@@ -8872,6 +8870,8 @@
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UnregisterMemoryBankRequest",
+                "UnregisterModelRequest",
                 "UnstructuredLogEvent",
                 "UpdateMemoryBankRequest",
                 "UpdateModelRequest",

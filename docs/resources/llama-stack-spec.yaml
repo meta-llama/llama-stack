@@ -867,22 +867,6 @@ components:
       - agent_id
       - session_id
       type: object
-    DeleteMemoryBankRequest:
-      additionalProperties: false
-      properties:
-        memory_bank_id:
-          type: string
-      required:
-      - memory_bank_id
-      type: object
-    DeleteModelRequest:
-      additionalProperties: false
-      properties:
-        model_id:
-          type: string
-      required:
-      - model_id
-      type: object
     DoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -3252,6 +3236,22 @@ components:
       format: uri
       pattern: ^(https?://|file://|data:)
       type: string
+    UnregisterMemoryBankRequest:
+      additionalProperties: false
+      properties:
+        memory_bank_id:
+          type: string
+      required:
+      - memory_bank_id
+      type: object
+    UnregisterModelRequest:
+      additionalProperties: false
+      properties:
+        model_id:
+          type: string
+      required:
+      - model_id
+      type: object
     UnstructuredLogEvent:
       additionalProperties: false
       properties:
@@ -3441,7 +3441,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-14 14:47:24.435917"
+    \ draft and subject to change.\n                Generated at 2024-11-14 16:18:00.903125"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4171,27 +4171,6 @@ paths:
           description: OK
       tags:
       - Memory
-  /memory_banks/delete:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteMemoryBankRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - MemoryBanks
   /memory_banks/get:
     get:
       parameters:
@@ -4264,6 +4243,27 @@ paths:
       responses: {}
       tags:
       - MemoryBanks
+  /memory_banks/unregister:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnregisterMemoryBankRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - MemoryBanks
   /memory_banks/update:
     post:
       parameters:
@@ -4283,27 +4283,6 @@ paths:
       responses: {}
       tags:
       - MemoryBanks
-  /models/delete:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteModelRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Models
   /models/get:
     get:
       parameters:
@@ -4371,6 +4350,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Model'
+          description: OK
+      tags:
+      - Models
+  /models/unregister:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnregisterModelRequest'
+        required: true
+      responses:
+        '200':
           description: OK
       tags:
       - Models
@@ -5027,12 +5027,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
   name: DeleteAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteMemoryBankRequest"
-    />
-  name: DeleteMemoryBankRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteModelRequest"
-    />
-  name: DeleteModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
     />
   name: DoraFinetuningConfig
@@ -5327,6 +5321,12 @@ tags:
   name: Turn
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterMemoryBankRequest"
+    />
+  name: UnregisterMemoryBankRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterModelRequest"
+    />
+  name: UnregisterModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
@@ -5411,8 +5411,6 @@ x-tagGroups:
   - Dataset
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
-  - DeleteMemoryBankRequest
-  - DeleteModelRequest
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
@@ -5509,6 +5507,8 @@ x-tagGroups:
   - TrainingConfig
   - Turn
   - URL
+  - UnregisterMemoryBankRequest
+  - UnregisterModelRequest
   - UnstructuredLogEvent
   - UpdateMemoryBankRequest
   - UpdateModelRequest
