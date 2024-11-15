@@ -57,6 +57,8 @@ async def update_object_with_provider(
     api = get_impl_api(p)
     if api == Api.memory:
         return await p.update_memory_bank(obj)
+    elif api == Api.inference:
+        return await p.update_model(obj)
     else:
         raise ValueError(f"Update not supported for {api}")
 
@@ -65,6 +67,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
     api = get_impl_api(p)
     if api == Api.memory:
         return await p.unregister_memory_bank(obj.identifier)
+    elif api == Api.inference:
+        return await p.unregister_model(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
