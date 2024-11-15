@@ -75,7 +75,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         for regex in rating_regexes:
             match = re.search(regex, content)
             if match:
-                judge_rating = int(match.group(1))
+                judge_rating = match.group(1)
                 break
 
         return {
