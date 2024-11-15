@@ -184,10 +184,6 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         await self.cache[memory_bank_id].index.delete()
         del self.cache[memory_bank_id]
 
-    async def update_memory_bank(self, memory_bank: MemoryBank) -> None:
-        await self.unregister_memory_bank(memory_bank.identifier)
-        await self.register_memory_bank(memory_bank)
-
     async def list_memory_banks(self) -> List[MemoryBank]:
         banks = load_models(self.cursor, VectorMemoryBank)
         for bank in banks:

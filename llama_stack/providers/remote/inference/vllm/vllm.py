@@ -58,9 +58,6 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def update_model(self, model: Model) -> None:
-        pass
-
     async def unregister_model(self, model_id: str) -> None:
         pass
 

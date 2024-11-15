@@ -7,7 +7,7 @@
 import asyncio
 import json
 
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import fire
 import httpx
@@ -60,27 +60,6 @@ class ModelsClient(Models):
             if j is None:
                 return None
             return Model(**j)
-
-    async def update_model(
-        self,
-        model_id: str,
-        provider_model_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Model:
-        async with httpx.AsyncClient() as client:
-            response = await client.put(
-                f"{self.base_url}/models/update",
-                json={
-                    "model_id": model_id,
-                    "provider_model_id": provider_model_id,
-                    "provider_id": provider_id,
-                    "metadata": metadata,
-                },
-                headers={"Content-Type": "application/json"},
-            )
-            response.raise_for_status()
-            return Model(**response.json())
 
     async def unregister_model(self, model_id: str) -> None:
         async with httpx.AsyncClient() as client:

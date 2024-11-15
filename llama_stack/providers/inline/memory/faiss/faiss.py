@@ -48,10 +48,9 @@ class FaissIndex(EmbeddingIndex):
         self.initialize()
 
     async def initialize(self) -> None:
-        if not self.kvstore or not self.bank_id:
+        if not self.kvstore:
             return
 
-        # Load existing index data from kvstore
         index_key = f"faiss_index:v1::{self.bank_id}"
         stored_data = await self.kvstore.get(index_key)
 
@@ -63,7 +62,6 @@ class FaissIndex(EmbeddingIndex):
                 for k, v in data["chunk_by_index"].items()
             }
 
-            # Load FAISS index
             index_bytes = base64.b64decode(data["faiss_index"])
             self.index = faiss.deserialize_index(index_bytes)
 
@@ -71,17 +69,14 @@ class FaissIndex(EmbeddingIndex):
         if not self.kvstore or not self.bank_id:
             return
 
-        # Serialize FAISS index
         index_bytes = faiss.serialize_index(self.index)
 
-        # Prepare data for storage
         data = {
             "id_by_index": self.id_by_index,
             "chunk_by_index": {k: v.json() for k, v in self.chunk_by_index.items()},
             "faiss_index": base64.b64encode(index_bytes).decode(),
         }
 
-        # Store in kvstore
         index_key = f"faiss_index:v1::{self.bank_id}"
         await self.kvstore.set(key=index_key, value=json.dumps(data))
 
@@ -174,15 +169,6 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
         await self.cache[memory_bank_id].index.delete()
         del self.cache[memory_bank_id]
         await self.kvstore.delete(f"{MEMORY_BANKS_PREFIX}{memory_bank_id}")
-
-    async def update_memory_bank(self, memory_bank: MemoryBank) -> None:
-        # Not possible to update the index in place, so we delete and recreate
-        await self.cache[memory_bank.identifier].index.delete()
-
-        self.cache[memory_bank.identifier] = BankWithIndex(
-            bank=memory_bank,
-            index=FaissIndex(ALL_MINILM_L6_V2_DIMENSION, self.kvstore),
-        )
 
     async def insert_documents(
         self,

@@ -3288,47 +3288,6 @@ components:
       - message
       - severity
       type: object
-    UpdateMemoryBankRequest:
-      additionalProperties: false
-      properties:
-        memory_bank_id:
-          type: string
-        params:
-          oneOf:
-          - $ref: '#/components/schemas/VectorMemoryBankParams'
-          - $ref: '#/components/schemas/KeyValueMemoryBankParams'
-          - $ref: '#/components/schemas/KeywordMemoryBankParams'
-          - $ref: '#/components/schemas/GraphMemoryBankParams'
-        provider_id:
-          type: string
-        provider_memory_bank_id:
-          type: string
-      required:
-      - memory_bank_id
-      - params
-      type: object
-    UpdateModelRequest:
-      additionalProperties: false
-      properties:
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        model_id:
-          type: string
-        provider_id:
-          type: string
-        provider_model_id:
-          type: string
-      required:
-      - model_id
-      type: object
     UserMessage:
       additionalProperties: false
       properties:
@@ -3441,7 +3400,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-14 16:18:00.903125"
+    \ draft and subject to change.\n                Generated at 2024-11-14 17:04:24.301559"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4264,25 +4223,6 @@ paths:
           description: OK
       tags:
       - MemoryBanks
-  /memory_banks/update:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateMemoryBankRequest'
-        required: true
-      responses: {}
-      tags:
-      - MemoryBanks
   /models/get:
     get:
       parameters:
@@ -4371,31 +4311,6 @@ paths:
         required: true
       responses:
         '200':
-          description: OK
-      tags:
-      - Models
-  /models/update:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateModelRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Model'
           description: OK
       tags:
       - Models
@@ -5330,12 +5245,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateMemoryBankRequest"
-    />
-  name: UpdateMemoryBankRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateModelRequest"
-    />
-  name: UpdateModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBank"
@@ -5510,8 +5419,6 @@ x-tagGroups:
   - UnregisterMemoryBankRequest
   - UnregisterModelRequest
   - UnstructuredLogEvent
-  - UpdateMemoryBankRequest
-  - UpdateModelRequest
   - UserMessage
   - VectorMemoryBank
   - VectorMemoryBankParams

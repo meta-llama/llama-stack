@@ -141,10 +141,6 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         await self.cache[memory_bank_id].index.delete()
         del self.cache[memory_bank_id]
 
-    async def update_memory_bank(self, memory_bank: MemoryBank) -> None:
-        await self.unregister_memory_bank(memory_bank.identifier)
-        await self.register_memory_bank(memory_bank)
-
     async def insert_documents(
         self,
         bank_id: str,

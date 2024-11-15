@@ -21,7 +21,7 @@
     "info": {
         "title": "[DRAFT] Llama Stack Specification",
         "version": "0.0.1",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-14 16:18:00.903125"
+        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-14 17:04:24.301559"
     },
     "servers": [
         {
@@ -2285,75 +2285,6 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/UnregisterModelRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/memory_banks/update": {
-            "post": {
-                "responses": {},
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateMemoryBankRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/models/update": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Model"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Models"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateModelRequest"
                             }
                         }
                     },
@@ -7985,84 +7916,6 @@
                 "required": [
                     "model_id"
                 ]
-            },
-            "UpdateMemoryBankRequest": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_id": {
-                        "type": "string"
-                    },
-                    "params": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/VectorMemoryBankParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/KeyValueMemoryBankParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/KeywordMemoryBankParams"
-                            },
-                            {
-                                "$ref": "#/components/schemas/GraphMemoryBankParams"
-                            }
-                        ]
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "provider_memory_bank_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_id",
-                    "params"
-                ]
-            },
-            "UpdateModelRequest": {
-                "type": "object",
-                "properties": {
-                    "model_id": {
-                        "type": "string"
-                    },
-                    "provider_model_id": {
-                        "type": "string"
-                    },
-                    "provider_id": {
-                        "type": "string"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model_id"
-                ]
             }
         },
         "responses": {}
@@ -8680,14 +8533,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
         },
         {
-            "name": "UpdateMemoryBankRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateMemoryBankRequest\" />"
-        },
-        {
-            "name": "UpdateModelRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UpdateModelRequest\" />"
-        },
-        {
             "name": "UserMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserMessage\" />"
         },
@@ -8873,8 +8718,6 @@
                 "UnregisterMemoryBankRequest",
                 "UnregisterModelRequest",
                 "UnstructuredLogEvent",
-                "UpdateMemoryBankRequest",
-                "UpdateModelRequest",
                 "UserMessage",
                 "VectorMemoryBank",
                 "VectorMemoryBankParams",
