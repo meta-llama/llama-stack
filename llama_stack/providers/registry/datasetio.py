@@ -26,8 +26,8 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=[
                     "datasets",
                 ],
-                module="llama_stack.providers.adapters.datasetio.huggingface",
-                config_class="llama_stack.providers.adapters.datasetio.huggingface.HuggingfaceDatasetIOConfig",
+                module="llama_stack.providers.remote.datasetio.huggingface",
+                config_class="llama_stack.providers.remote.datasetio.huggingface.HuggingfaceDatasetIOConfig",
             ),
         ),
     ]
