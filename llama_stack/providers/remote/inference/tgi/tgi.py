@@ -69,6 +69,9 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
+    async def unregister_model(self, model_id: str) -> None:
+        pass
+
     async def completion(
         self,
         model: str,

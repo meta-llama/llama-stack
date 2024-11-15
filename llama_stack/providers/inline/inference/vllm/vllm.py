@@ -108,6 +108,9 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
 
         return VLLMSamplingParams(**kwargs)
 
+    async def unregister_model(self, model_id: str) -> None:
+        pass
+
     async def completion(
         self,
         model_id: str,

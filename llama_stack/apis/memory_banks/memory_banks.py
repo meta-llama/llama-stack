@@ -144,3 +144,6 @@ class MemoryBanks(Protocol):
         provider_id: Optional[str] = None,
         provider_memory_bank_id: Optional[str] = None,
     ) -> MemoryBank: ...
+
+    @webmethod(route="/memory_banks/unregister", method="POST")
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...

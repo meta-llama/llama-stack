@@ -71,6 +71,9 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
                 f"Model mismatch: {request.model} != {self.model.descriptor()}"
             )
 
+    async def unregister_model(self, model_id: str) -> None:
+        pass
+
     async def completion(
         self,
         model_id: str,

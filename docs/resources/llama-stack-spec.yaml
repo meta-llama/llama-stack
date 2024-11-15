@@ -867,14 +867,6 @@ components:
       - agent_id
       - session_id
       type: object
-    DeleteModelRequest:
-      additionalProperties: false
-      properties:
-        model_id:
-          type: string
-      required:
-      - model_id
-      type: object
     DoraFinetuningConfig:
       additionalProperties: false
       properties:
@@ -3244,6 +3236,22 @@ components:
       format: uri
       pattern: ^(https?://|file://|data:)
       type: string
+    UnregisterMemoryBankRequest:
+      additionalProperties: false
+      properties:
+        memory_bank_id:
+          type: string
+      required:
+      - memory_bank_id
+      type: object
+    UnregisterModelRequest:
+      additionalProperties: false
+      properties:
+        model_id:
+          type: string
+      required:
+      - model_id
+      type: object
     UnstructuredLogEvent:
       additionalProperties: false
       properties:
@@ -3279,28 +3287,6 @@ components:
       - type
       - message
       - severity
-      type: object
-    UpdateModelRequest:
-      additionalProperties: false
-      properties:
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        model_id:
-          type: string
-        provider_id:
-          type: string
-        provider_model_id:
-          type: string
-      required:
-      - model_id
       type: object
     UserMessage:
       additionalProperties: false
@@ -3414,7 +3400,7 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-14 12:51:12.176325"
+    \ draft and subject to change.\n                Generated at 2024-11-14 17:04:24.301559"
   title: '[DRAFT] Llama Stack Specification'
   version: 0.0.1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
@@ -4216,7 +4202,7 @@ paths:
       responses: {}
       tags:
       - MemoryBanks
-  /models/delete:
+  /memory_banks/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4230,13 +4216,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeleteModelRequest'
+              $ref: '#/components/schemas/UnregisterMemoryBankRequest'
         required: true
       responses:
         '200':
           description: OK
       tags:
-      - Models
+      - MemoryBanks
   /models/get:
     get:
       parameters:
@@ -4307,7 +4293,7 @@ paths:
           description: OK
       tags:
       - Models
-  /models/update:
+  /models/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4321,14 +4307,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateModelRequest'
+              $ref: '#/components/schemas/UnregisterModelRequest'
         required: true
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Model'
           description: OK
       tags:
       - Models
@@ -4960,9 +4942,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
   name: DeleteAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteModelRequest"
-    />
-  name: DeleteModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
     />
   name: DoraFinetuningConfig
@@ -5257,12 +5236,15 @@ tags:
   name: Turn
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterMemoryBankRequest"
+    />
+  name: UnregisterMemoryBankRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterModelRequest"
+    />
+  name: UnregisterModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
-- description: <SchemaDefinition schemaRef="#/components/schemas/UpdateModelRequest"
-    />
-  name: UpdateModelRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBank"
@@ -5338,7 +5320,6 @@ x-tagGroups:
   - Dataset
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
-  - DeleteModelRequest
   - DoraFinetuningConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
@@ -5435,8 +5416,9 @@ x-tagGroups:
   - TrainingConfig
   - Turn
   - URL
+  - UnregisterMemoryBankRequest
+  - UnregisterModelRequest
   - UnstructuredLogEvent
-  - UpdateModelRequest
   - UserMessage
   - VectorMemoryBank
   - VectorMemoryBankParams
