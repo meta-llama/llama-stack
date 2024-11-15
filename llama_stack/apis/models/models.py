@@ -7,7 +7,7 @@
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
 
@@ -36,6 +36,8 @@ class ModelInput(CommonModelFields):
     model_id: str
     provider_id: Optional[str] = None
     provider_model_id: Optional[str] = None
+
+    model_config = ConfigDict(protected_namespaces=())
 
 
 @runtime_checkable

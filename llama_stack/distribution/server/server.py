@@ -369,12 +369,16 @@ def main(
 
             impl_method = getattr(impl, endpoint.name)
 
-            getattr(app, endpoint.method)(endpoint.route, response_model=None)(
-                create_dynamic_typed_route(
-                    impl_method,
-                    endpoint.method,
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore", category=UserWarning, module="pydantic._internal._fields"
                 )
-            )
+                getattr(app, endpoint.method)(endpoint.route, response_model=None)(
+                    create_dynamic_typed_route(
+                        impl_method,
+                        endpoint.method,
+                    )
+                )
 
         cprint(f"Serving API {api_str}", "white", attrs=["bold"])
         for endpoint in endpoints:
