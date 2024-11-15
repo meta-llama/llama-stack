@@ -55,6 +55,10 @@ class MemoryBanksProtocolPrivate(Protocol):
 
     async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
 
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...
+
+    async def update_memory_bank(self, memory_bank: MemoryBank) -> None: ...
+
 
 class DatasetsProtocolPrivate(Protocol):
     async def register_dataset(self, dataset: Dataset) -> None: ...
@@ -99,7 +103,6 @@ class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...
 
 
-# TODO: this can now be inlined into RemoteProviderSpec
 @json_schema_type
 class AdapterSpec(BaseModel):
     adapter_type: str = Field(
@@ -172,10 +175,12 @@ class RemoteProviderConfig(BaseModel):
 
 @json_schema_type
 class RemoteProviderSpec(ProviderSpec):
-    adapter: AdapterSpec = Field(
+    adapter: Optional[AdapterSpec] = Field(
+        default=None,
         description="""
 If some code is needed to convert the remote responses into Llama Stack compatible
-API responses, specify the adapter here.
+API responses, specify the adapter here. If not specified, it indicates the remote
+as being "Llama Stack compatible"
 """,
     )
 
@@ -185,21 +190,38 @@ API responses, specify the adapter here.
 
     @property
     def module(self) -> str:
-        return self.adapter.module
+        if self.adapter:
+            return self.adapter.module
+        return "llama_stack.distribution.client"
 
     @property
     def pip_packages(self) -> List[str]:
-        return self.adapter.pip_packages
+        if self.adapter:
+            return self.adapter.pip_packages
+        return []
 
     @property
     def provider_data_validator(self) -> Optional[str]:
-        return self.adapter.provider_data_validator
+        if self.adapter:
+            return self.adapter.provider_data_validator
+        return None
 
 
-def remote_provider_spec(api: Api, adapter: AdapterSpec) -> RemoteProviderSpec:
+def is_passthrough(spec: ProviderSpec) -> bool:
+    return isinstance(spec, RemoteProviderSpec) and spec.adapter is None
+
+
+# Can avoid this by using Pydantic computed_field
+def remote_provider_spec(
+    api: Api, adapter: Optional[AdapterSpec] = None
+) -> RemoteProviderSpec:
+    config_class = (
+        adapter.config_class
+        if adapter and adapter.config_class
+        else "llama_stack.distribution.datatypes.RemoteProviderConfig"
+    )
+    provider_type = f"remote::{adapter.adapter_type}" if adapter else "remote"
+
     return RemoteProviderSpec(
-        api=api,
-        provider_type=f"remote::{adapter.adapter_type}",
-        config_class=adapter.config_class,
-        adapter=adapter,
+        api=api, provider_type=provider_type, config_class=config_class, adapter=adapter
     )

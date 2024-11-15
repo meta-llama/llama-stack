@@ -82,7 +82,7 @@ class ModelsClient(Models):
             response.raise_for_status()
             return Model(**response.json())
 
-    async def delete_model(self, model_id: str) -> None:
+    async def unregister_model(self, model_id: str) -> None:
         async with httpx.AsyncClient() as client:
             response = await client.delete(
                 f"{self.base_url}/models/delete",

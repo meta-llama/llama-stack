@@ -112,6 +112,9 @@ class PGVectorIndex(EmbeddingIndex):
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
+    async def delete(self):
+        self.cursor.execute(f"DROP TABLE IF EXISTS {self.table_name}")
+
 
 class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: PGVectorConfig) -> None:
@@ -176,6 +179,14 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             index=PGVectorIndex(memory_bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
         )
         self.cache[memory_bank.identifier] = index
+
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None:
+        await self.cache[memory_bank_id].index.delete()
+        del self.cache[memory_bank_id]
+
+    async def update_memory_bank(self, memory_bank: MemoryBank) -> None:
+        await self.unregister_memory_bank(memory_bank.identifier)
+        await self.register_memory_bank(memory_bank)
 
     async def list_memory_banks(self) -> List[MemoryBank]:
         banks = load_models(self.cursor, VectorMemoryBank)

@@ -54,4 +54,4 @@ class TestModelRegistration:
         assert updated_model.provider_resource_id != old_model.provider_resource_id
 
         # Cleanup
-        await models_impl.delete_model(model_id=model_id)
+        await models_impl.unregister_model(model_id=model_id)

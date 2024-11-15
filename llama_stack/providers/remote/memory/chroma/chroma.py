@@ -67,6 +67,9 @@ class ChromaIndex(EmbeddingIndex):
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
+    async def delete(self):
+        await self.client.delete_collection(self.collection.name)
+
 
 class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, url: str) -> None:
@@ -133,6 +136,14 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             self.cache[bank.identifier] = index
 
         return [i.bank for i in self.cache.values()]
+
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None:
+        await self.cache[memory_bank_id].index.delete()
+        del self.cache[memory_bank_id]
+
+    async def update_memory_bank(self, memory_bank: MemoryBank) -> None:
+        await self.unregister_memory_bank(memory_bank.identifier)
+        await self.register_memory_bank(memory_bank)
 
     async def insert_documents(
         self,
