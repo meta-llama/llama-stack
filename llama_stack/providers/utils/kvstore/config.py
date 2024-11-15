@@ -36,6 +36,15 @@ class RedisKVStoreConfig(CommonConfig):
     def url(self) -> str:
         return f"redis://{self.host}:{self.port}"
 
+    @classmethod
+    def sample_dict(cls):
+        return {
+            "type": "redis",
+            "namespace": None,
+            "host": "${env.REDIS_HOST:localhost}",
+            "port": "${env.REDIS_PORT:6379}",
+        }
+
 
 class SqliteKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.sqlite.value] = KVStoreType.sqlite.value
@@ -43,6 +52,14 @@ class SqliteKVStoreConfig(CommonConfig):
         default=(RUNTIME_BASE_DIR / "kvstore.db").as_posix(),
         description="File path for the sqlite database",
     )
+
+    @classmethod
+    def sample_dict(cls, db_name: str = "kvstore.db"):
+        return {
+            "type": "sqlite",
+            "namespace": None,
+            "db_path": "${env.SQLITE_STORE_DIR:~/.llama/runtime/" + db_name + "}",
+        }
 
 
 class PostgresKVStoreConfig(CommonConfig):
@@ -53,6 +70,19 @@ class PostgresKVStoreConfig(CommonConfig):
     user: str
     password: Optional[str] = None
     table_name: str = "llamastack_kvstore"
+
+    @classmethod
+    def sample_dict(cls, table_name: str = "llamastack_kvstore"):
+        return {
+            "type": "postgres",
+            "namespace": None,
+            "host": "${env.POSTGRES_HOST:localhost}",
+            "port": "${env.POSTGRES_PORT:5432}",
+            "db": "${env.POSTGRES_DB}",
+            "user": "${env.POSTGRES_USER}",
+            "password": "${env.POSTGRES_PASSWORD}",
+            "table_name": "${env.POSTGRES_TABLE_NAME:" + table_name + "}",
+        }
 
     @classmethod
     @field_validator("table_name")

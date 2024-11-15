@@ -12,3 +12,11 @@ from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 class MetaReferenceAgentsImplConfig(BaseModel):
     persistence_store: KVStoreConfig = Field(default=SqliteKVStoreConfig())
+
+    @classmethod
+    def sample_dict(cls):
+        return {
+            "persistence_store": SqliteKVStoreConfig.sample_dict(
+                db_name="agents_store.db"
+            ),
+        }

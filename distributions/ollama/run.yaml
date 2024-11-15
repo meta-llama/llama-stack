@@ -13,20 +13,15 @@ apis:
 - safety
 providers:
   inference:
-  - provider_id: ollama0
+  - provider_id: ollama
     provider_type: remote::ollama
     config:
-      url: http://127.0.0.1:14343
+      url: ${env.LLAMA_INFERENCE_OLLAMA_URL:http://127.0.0.1:11434}
   safety:
   - provider_id: meta0
     provider_type: inline::llama-guard
     config:
-      model: Llama-Guard-3-1B
       excluded_categories: []
-  - provider_id: meta1
-    provider_type: inline::prompt-guard
-    config:
-      model: Prompt-Guard-86M
   memory:
   - provider_id: meta0
     provider_type: inline::meta-reference
@@ -43,3 +38,10 @@ providers:
   - provider_id: meta0
     provider_type: inline::meta-reference
     config: {}
+models:
+  - model_id: ${env.LLAMA_INFERENCE_MODEL:Llama3.2-3B-Instruct}
+    provider_id: ollama
+  - model_id: ${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}
+    provider_id: ollama
+shields:
+  - shield_id: ${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}

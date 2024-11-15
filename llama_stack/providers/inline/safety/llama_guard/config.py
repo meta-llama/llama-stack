@@ -11,3 +11,9 @@ from pydantic import BaseModel
 
 class LlamaGuardConfig(BaseModel):
     excluded_categories: List[str] = []
+
+    @classmethod
+    def sample_dict(cls):
+        return {
+            "excluded_categories": [],
+        }

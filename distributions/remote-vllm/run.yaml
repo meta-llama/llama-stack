@@ -16,7 +16,7 @@ providers:
     provider_type: remote::vllm
     config:
       # NOTE: replace with "localhost" if you are running in "host" network mode
-      url: ${env.LLAMA_INFERENCE_VLLM_URL:http://host.docker.internal:5100/v1}
+      url: ${env.VLLM_URL:http://host.docker.internal:5100/v1}
       max_tokens: ${env.MAX_TOKENS:4096}
       api_token: fake
   # serves safety llama_guard model
@@ -24,7 +24,7 @@ providers:
     provider_type: remote::vllm
     config:
       # NOTE: replace with "localhost" if you are running in "host" network mode
-      url: ${env.LLAMA_SAFETY_VLLM_URL:http://host.docker.internal:5101/v1}
+      url: ${env.SAFETY_VLLM_URL:http://host.docker.internal:5101/v1}
       max_tokens: ${env.MAX_TOKENS:4096}
       api_token: fake
   memory:
@@ -34,7 +34,7 @@ providers:
       kvstore:
         namespace: null
         type: sqlite
-        db_path: "${env.SQLITE_STORE_DIR:/home/ashwin/.llama/distributions/remote-vllm}/faiss_store.db"
+        db_path: "${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/faiss_store.db"
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -50,7 +50,7 @@ providers:
       persistence_store:
         namespace: null
         type: sqlite
-        db_path: "${env.SQLITE_STORE_DIR:/home/ashwin/.llama/distributions/remote-vllm}/agents_store.db"
+        db_path: "${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/agents_store.db"
   telemetry:
   - provider_id: meta0
     provider_type: inline::meta-reference
@@ -58,11 +58,11 @@ providers:
 metadata_store:
   namespace: null
   type: sqlite
-  db_path: "${env.SQLITE_STORE_DIR:/home/ashwin/.llama/distributions/remote-vllm}/registry.db"
+  db_path: "${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db"
 models:
-  - model_id: ${env.LLAMA_INFERENCE_MODEL:Llama3.1-8B-Instruct}
+  - model_id: ${env.INFERENCE_MODEL:Llama3.1-8B-Instruct}
     provider_id: vllm-0
-  - model_id: ${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}
+  - model_id: ${env.SAFETY_MODEL:Llama-Guard-3-1B}
     provider_id: vllm-1
 shields:
-  - shield_id: ${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}
+  - shield_id: ${env.SAFETY_MODEL:Llama-Guard-3-1B}

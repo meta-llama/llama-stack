@@ -313,7 +313,8 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
                 else:
                     value = default_val
 
-            return value
+            # expand "~" from the values
+            return os.path.expanduser(value)
 
         try:
             return re.sub(pattern, get_env_var, config)

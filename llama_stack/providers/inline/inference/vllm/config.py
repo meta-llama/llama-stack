@@ -34,6 +34,16 @@ class VLLMConfig(BaseModel):
         default=0.3,
     )
 
+    @classmethod
+    def sample_dict(cls):
+        return {
+            "model": "${env.VLLM_INFERENCE_MODEL:Llama3.2-3B-Instruct}",
+            "tensor_parallel_size": "${env.VLLM_TENSOR_PARALLEL_SIZE:1}",
+            "max_tokens": "${env.VLLM_MAX_TOKENS:4096}",
+            "enforce_eager": "${env.VLLM_ENFORCE_EAGER:False}",
+            "gpu_memory_utilization": "${env.VLLM_GPU_MEMORY_UTILIZATION:0.3}",
+        }
+
     @field_validator("model")
     @classmethod
     def validate_model(cls, model: str) -> str:

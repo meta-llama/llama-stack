@@ -24,3 +24,12 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default="fake",
         description="The API token",
     )
+
+    @classmethod
+    def sample_dict(cls):
+        # TODO: we may need two modes, one for conda and one for docker
+        return {
+            "url": "${env.VLLM_URL:http://host.docker.internal:5100/v1}",
+            "max_tokens": "${env.VLLM_MAX_TOKENS:4096}",
+            "api_token": "${env.VLLM_API_TOKEN:fake}",
+        }
