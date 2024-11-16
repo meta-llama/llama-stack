@@ -48,7 +48,10 @@ class StackRun(Subcommand):
 
         from llama_stack.distribution.build import ImageType
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-        from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
+        from llama_stack.distribution.utils.config_dirs import (
+            BUILDS_BASE_DIR,
+            DISTRIBS_BASE_DIR,
+        )
         from llama_stack.distribution.utils.exec import run_with_pty
 
         if not args.config:
@@ -66,6 +69,14 @@ class StackRun(Subcommand):
             # check if it's a build config saved to docker dir
             config_file = Path(
                 BUILDS_BASE_DIR / ImageType.docker.value / f"{args.config}-run.yaml"
+            )
+
+        if not config_file.exists() and not args.config.endswith(".yaml"):
+            # check if it's a build config saved to ~/.llama dir
+            config_file = Path(
+                DISTRIBS_BASE_DIR
+                / f"llamastack-{args.config}"
+                / f"{args.config}-run.yaml"
             )
 
         if not config_file.exists():
