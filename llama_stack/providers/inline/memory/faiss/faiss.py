@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import base64
+import io
 import json
 import logging
 
@@ -67,19 +68,20 @@ class FaissIndex(EmbeddingIndex):
                 for k, v in data["chunk_by_index"].items()
             }
 
-            index_bytes = base64.b64decode(data["faiss_index"])
-            self.index = faiss.deserialize_index(index_bytes)
+            buffer = io.BytesIO(base64.b64decode(data["faiss_index"]))
+            self.index = faiss.deserialize_index(np.loadtxt(buffer, dtype=np.uint8))
 
     async def _save_index(self):
         if not self.kvstore or not self.bank_id:
             return
 
-        index_bytes = faiss.serialize_index(self.index)
-
+        np_index = faiss.serialize_index(self.index)
+        buffer = io.BytesIO()
+        np.savetxt(buffer, np_index)
         data = {
             "id_by_index": self.id_by_index,
             "chunk_by_index": {k: v.json() for k, v in self.chunk_by_index.items()},
-            "faiss_index": base64.b64encode(index_bytes).decode(),
+            "faiss_index": base64.b64encode(buffer.getvalue()).decode("utf-8"),
         }
 
         index_key = f"faiss_index:v1::{self.bank_id}"
@@ -188,7 +190,7 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
     ) -> None:
         index = self.cache.get(bank_id)
         if index is None:
-            raise ValueError(f"Bank {bank_id} not found")
+            raise ValueError(f"Bank {bank_id} not found. found: {self.cache.keys()}")
 
         await index.insert_documents(documents)
 
