@@ -1,0 +1,26 @@
+services:
+  ${SERVICE_NAME:-vllm}:
+    image: vllm/vllm-openai:latest
+    ports:
+      - ${VLLM_PORT:-5100}:${VLLM_PORT:-5100}
+    volumes:
+      - $HOME/.cache/huggingface:/root/.cache/huggingface
+    devices:
+      - nvidia.com/gpu=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    runtime: nvidia
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    command: >
+      --gpu-memory-utilization 0.75
+      --model ${VLLM_MODEL:-meta-llama/Llama-3.2-3B-Instruct}
+      --enforce-eager
+      --max-model-len 8192
+      --max-num-seqs 16
+      --port ${VLLM_PORT:-5100}

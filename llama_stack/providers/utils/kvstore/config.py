@@ -54,11 +54,11 @@ class SqliteKVStoreConfig(CommonConfig):
     )
 
     @classmethod
-    def sample_run_config(cls, db_name: str = "kvstore.db"):
+    def sample_run_config(cls, dir: str = "runtime", db_name: str = "kvstore.db"):
         return {
             "type": "sqlite",
             "namespace": None,
-            "db_path": "${env.SQLITE_STORE_DIR:~/.llama/runtime/" + db_name + "}",
+            "db_path": "${env.SQLITE_STORE_DIR:~/.llama/" + f"{dir}/{db_name}" + "}",
         }
 
 

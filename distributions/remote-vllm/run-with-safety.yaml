@@ -6,6 +6,7 @@ conda_env: null
 apis:
 - inference
 - memory
+- safety
 - agents
 - telemetry
 providers:
@@ -14,17 +15,30 @@ providers:
   - provider_id: vllm-inference
     provider_type: remote::vllm
     config:
+      # NOTE: replace with "localhost" if you are running in "host" network mode
       url: ${env.VLLM_URL}
       max_tokens: ${env.MAX_TOKENS:4096}
       api_token: fake
+  # serves safety llama_guard model
+  - provider_id: vllm-safety
+    provider_type: remote::vllm
+    config:
+      # NOTE: replace with "localhost" if you are running in "host" network mode
+      url: ${env.SAFETY_VLLM_URL}
+      max_tokens: ${env.MAX_TOKENS:4096}
+      api_token: fake
   memory:
-  - provider_id: faiss
+  - provider_id: faiss-0
     provider_type: inline::faiss
     config:
       kvstore:
         namespace: null
         type: sqlite
         db_path: "${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/faiss_store.db"
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
   memory:
   - provider_id: meta0
     provider_type: inline::faiss
@@ -48,3 +62,7 @@ metadata_store:
 models:
   - model_id: ${env.INFERENCE_MODEL}
     provider_id: vllm-inference
+  - model_id: ${env.SAFETY_MODEL}
+    provider_id: vllm-safety
+shields:
+  - shield_id: ${env.SAFETY_MODEL}
