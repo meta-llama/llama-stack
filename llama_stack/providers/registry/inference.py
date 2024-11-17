@@ -157,7 +157,7 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=[
                     "openai",
                 ],
-                module="llama_stack.providers.adapters.inference.nvidia",
+                module="llama_stack.providers.remote.inference.nvidia",
                 config_class="llama_stack.providers.remote.inference.nvidia.NVIDIAConfig",
             ),
         ),
