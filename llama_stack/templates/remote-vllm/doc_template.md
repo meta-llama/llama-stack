@@ -78,7 +78,7 @@ inference:
 If you are using Conda, you can build and run the Llama Stack server with the following commands:
 ```bash
 cd distributions/remote-vllm
-llama stack build --template remote_vllm --image-type conda
+llama stack build --template remote-vllm --image-type conda
 llama stack run run.yaml
 ```
 

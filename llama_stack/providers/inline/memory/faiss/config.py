@@ -4,10 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Any, Dict
+
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
 
-from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 from llama_stack.providers.utils.kvstore.config import (
     KVStoreConfig,
     SqliteKVStoreConfig,
@@ -16,6 +17,13 @@ from llama_stack.providers.utils.kvstore.config import (
 
 @json_schema_type
 class FaissImplConfig(BaseModel):
-    kvstore: KVStoreConfig = SqliteKVStoreConfig(
-        db_path=(RUNTIME_BASE_DIR / "faiss_store.db").as_posix()
-    )  # Uses SQLite config specific to FAISS storage
+    kvstore: KVStoreConfig
+
+    @classmethod
+    def sample_run_config(cls, __distro_dir__: str) -> Dict[str, Any]:
+        return {
+            "kvstore": SqliteKVStoreConfig.sample_run_config(
+                __distro_dir__=__distro_dir__,
+                db_name="faiss_store.db",
+            ).model_dump(),
+        }
