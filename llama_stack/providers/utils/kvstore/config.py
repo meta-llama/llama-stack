@@ -61,8 +61,9 @@ class SqliteKVStoreConfig(CommonConfig):
             "type": "sqlite",
             "namespace": None,
             "db_path": "${env.SQLITE_STORE_DIR:~/.llama/"
-            + f"{__distro_dir__}/{db_name}"
-            + "}",
+            + __distro_dir__
+            + "}/"
+            + db_name,
         }
 
 

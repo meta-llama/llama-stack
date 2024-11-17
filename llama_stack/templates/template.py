@@ -91,7 +91,7 @@ class RunConfigSettings(BaseModel):
             apis=list(apis),
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(
-                dir=f"distributions/{name}",
+                __distro_dir__=f"distributions/{name}",
                 db_name="registry.db",
             ),
             models=self.default_models,

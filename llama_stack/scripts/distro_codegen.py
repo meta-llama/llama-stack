@@ -50,6 +50,7 @@ def process_template(template_dir: Path, progress) -> None:
 
     except Exception as e:
         progress.print(f"[red]Error processing {template_dir.name}: {str(e)}")
+        raise e
 
 
 def main():

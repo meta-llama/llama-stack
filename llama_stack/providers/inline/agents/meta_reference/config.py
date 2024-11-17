@@ -21,5 +21,5 @@ class MetaReferenceAgentsImplConfig(BaseModel):
             "persistence_store": SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,
                 db_name="agents_store.db",
-            ).model_dump(),
+            )
         }

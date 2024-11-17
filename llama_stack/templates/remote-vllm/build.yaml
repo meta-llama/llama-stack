@@ -1,12 +1,19 @@
+version: '2'
 name: remote-vllm
 distribution_spec:
   description: Use (an external) vLLM server for running LLM inference
+  docker_image: llamastack/distribution-remote-vllm:test-0.0.52rc3
   providers:
-    inference: remote::vllm
+    inference:
+    - remote::vllm
     memory:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector
-    safety: inline::llama-guard
-    agents: inline::meta-reference
-    telemetry: inline::meta-reference
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

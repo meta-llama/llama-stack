@@ -25,5 +25,5 @@ class FaissImplConfig(BaseModel):
             "kvstore": SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,
                 db_name="faiss_store.db",
-            ).model_dump(),
+            )
         }
