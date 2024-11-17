@@ -1,14 +1,12 @@
 version: '2'
-built_at: '2024-10-08T17:40:45.325529'
-image_name: local
-docker_image: null
-conda_env: local
+built_at: 2024-11-17 15:19:07.395495
+image_name: ollama
+docker_image: llamastack/distribution-ollama:test-0.0.52rc3
+conda_env: null
 apis:
-- shields
+- telemetry
 - agents
-- models
 - memory
-- memory_banks
 - inference
 - safety
 providers:
@@ -16,32 +14,42 @@ providers:
   - provider_id: ollama
     provider_type: remote::ollama
     config:
-      url: ${env.LLAMA_INFERENCE_OLLAMA_URL:http://127.0.0.1:11434}
-  safety:
-  - provider_id: meta0
-    provider_type: inline::llama-guard
-    config:
-      excluded_categories: []
+      port: ${env.OLLAMA_PORT}
   memory:
-  - provider_id: meta0
-    provider_type: inline::meta-reference
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
     config: {}
   agents:
-  - provider_id: meta0
+  - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       persistence_store:
-        namespace: null
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:/home/ashwin/.llama/runtime}/kvstore.db
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
   telemetry:
-  - provider_id: meta0
+  - provider_id: meta-reference
     provider_type: inline::meta-reference
     config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
 models:
-  - model_id: ${env.LLAMA_INFERENCE_MODEL:Llama3.2-3B-Instruct}
-    provider_id: ollama
-  - model_id: ${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}
-    provider_id: ollama
-shields:
-  - shield_id: ${env.LLAMA_SAFETY_MODEL:Llama-Guard-3-1B}
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: ollama-inference
+  provider_model_id: null
+shields: []
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []

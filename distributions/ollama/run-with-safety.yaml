@@ -1,7 +1,7 @@
 version: '2'
-built_at: 2024-11-17 15:19:09.156305
-image_name: tgi
-docker_image: llamastack/distribution-tgi:test-0.0.52rc3
+built_at: 2024-11-17 15:19:07.405618
+image_name: ollama
+docker_image: llamastack/distribution-ollama:test-0.0.52rc3
 conda_env: null
 apis:
 - telemetry
@@ -11,10 +11,10 @@ apis:
 - safety
 providers:
   inference:
-  - provider_id: tgi-inference
-    provider_type: remote::tgi
+  - provider_id: ollama
+    provider_type: remote::ollama
     config:
-      url: ${env.TGI_URL}
+      port: ${env.OLLAMA_PORT}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -22,7 +22,7 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -34,7 +34,7 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -42,13 +42,21 @@ providers:
 metadata_store:
   namespace: null
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}
-  provider_id: tgi-inference
+  provider_id: ollama-inference
   provider_model_id: null
-shields: []
+- metadata: {}
+  model_id: ${env.SAFETY_MODEL}
+  provider_id: ollama-safety
+  provider_model_id: null
+shields:
+- params: null
+  shield_id: ${env.SAFETY_MODEL}
+  provider_id: null
+  provider_shield_id: null
 memory_banks: []
 datasets: []
 scoring_fns: []

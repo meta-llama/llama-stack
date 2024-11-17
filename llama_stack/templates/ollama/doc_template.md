@@ -1,39 +1,36 @@
 # Ollama Distribution
 
-The `llamastack/distribution-ollama` distribution consists of the following provider configurations.
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
-                        Provider Configuration
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ API       ┃ Provider(s)                                             ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ agents    │ `inline::meta-reference`                                │
-│ inference │ `remote::ollama`                                        │
-│ memory    │ `inline::faiss`, `remote::chromadb`, `remote::pgvector` │
-│ safety    │ `inline::llama-guard`                                   │
-│ telemetry │ `inline::meta-reference`                                │
-└───────────┴─────────────────────────────────────────────────────────┘
+{{ providers_table }}
 
+You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
 
-You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
+{%- if docker_compose_env_vars %}
+### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
-- `OLLAMA_PORT`: Port of the Ollama server (default: `14343`)
-- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
+{% for var, (default_value, description) in docker_compose_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
+
+{%- if default_models %}
 ### Models
 
 The following models are configured by default:
-- `${env.INFERENCE_MODEL}`
-- `${env.SAFETY_MODEL}`
+{% for model in default_models %}
+- `{{ model.model_id }}`
+{% endfor %}
+{% endif %}
 
 ## Using Docker Compose
 
 You can use `docker compose` to start a Ollama server and connect with Llama Stack server in a single command.
 
 ```bash
-$ cd distributions/ollama; docker compose up
+$ cd distributions/{{ name }}; docker compose up
 ```
 
 You will see outputs similar to following ---

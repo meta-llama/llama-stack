@@ -7,13 +7,13 @@
 from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
-from llama_stack.providers.remote.inference.tgi import TGIImplConfig
+from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::tgi"],
+        "inference": ["remote::ollama"],
         "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -21,27 +21,27 @@ def get_distribution_template() -> DistributionTemplate:
     }
 
     inference_provider = Provider(
-        provider_id="tgi-inference",
-        provider_type="remote::tgi",
-        config=TGIImplConfig.sample_run_config(
-            url="${env.TGI_URL}",
+        provider_id="ollama",
+        provider_type="remote::ollama",
+        config=OllamaImplConfig.sample_run_config(
+            port_str="${env.OLLAMA_PORT}",
         ),
     )
 
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
-        provider_id="tgi-inference",
+        provider_id="ollama-inference",
     )
     safety_model = ModelInput(
         model_id="${env.SAFETY_MODEL}",
-        provider_id="tgi-safety",
+        provider_id="ollama-safety",
     )
 
     return DistributionTemplate(
-        name="tgi",
+        name="ollama",
         distro_type="self_hosted",
-        description="Use (an external) TGI server for running LLM inference",
-        docker_image="llamastack/distribution-tgi:test-0.0.52rc3",
+        description="Use (an external) Ollama server for running LLM inference",
+        docker_image="llamastack/distribution-ollama:test-0.0.52rc3",
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=[inference_model, safety_model],
@@ -56,14 +56,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [
                         inference_provider,
-                        Provider(
-                            provider_id="tgi-safety",
-                            provider_type="remote::tgi",
-                            config=TGIImplConfig.sample_run_config(
-                                url="${env.SAFETY_TGI_URL}",
-                            ),
-                        ),
-                    ],
+                    ]
                 },
                 default_models=[
                     inference_model,
@@ -81,13 +74,9 @@ def get_distribution_template() -> DistributionTemplate:
                 "meta-llama/Llama-3.2-3B-Instruct",
                 "Inference model loaded into the TGI server",
             ),
-            "TGI_URL": (
-                "http://host.docker.internal:8080}/v1",
-                "URL of the TGI server with the main inference model",
-            ),
-            "SAFETY_TGI_URL": (
-                "http://host.docker.internal:8081/v1",
-                "URL of the TGI server with the safety model",
+            "OLLAMA_PORT": (
+                "14343",
+                "Port of the Ollama server",
             ),
             "SAFETY_MODEL": (
                 "meta-llama/Llama-Guard-3-1B",

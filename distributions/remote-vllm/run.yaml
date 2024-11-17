@@ -1,14 +1,14 @@
 version: '2'
-built_at: 2024-11-17 14:48:55.476058
+built_at: 2024-11-17 15:19:07.395327
 image_name: remote-vllm
 docker_image: llamastack/distribution-remote-vllm:test-0.0.52rc3
 conda_env: null
 apis:
-- safety
-- agents
 - telemetry
+- agents
 - memory
 - inference
+- safety
 providers:
   inference:
   - provider_id: vllm-inference
