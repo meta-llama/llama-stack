@@ -1,33 +1,29 @@
 # TGI Distribution
 
-The `llamastack/distribution-tgi` distribution consists of the following provider configurations.
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
-                        Provider Configuration
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ API       ┃ Provider(s)                                             ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ agents    │ `inline::meta-reference`                                │
-│ inference │ `remote::tgi`                                           │
-│ memory    │ `inline::faiss`, `remote::chromadb`, `remote::pgvector` │
-│ safety    │ `inline::llama-guard`                                   │
-│ telemetry │ `inline::meta-reference`                                │
-└───────────┴─────────────────────────────────────────────────────────┘
+{{ providers_table }}
 
+You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.
 
-You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.### Environment Variables
+{%- if docker_compose_env_vars %}
+### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
-- `TGI_URL`: URL of the TGI server with the main inference model (default: `http://host.docker.internal:8080}/v1`)
-- `SAFETY_TGI_URL`: URL of the TGI server with the safety model (default: `http://host.docker.internal:8081/v1`)
-- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
+{% for var, (default_value, description) in docker_compose_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
+
+{%- if default_models %}
 ### Models
 
 The following models are configured by default:
-- `${env.INFERENCE_MODEL}`
-- `${env.SAFETY_MODEL}`
+{% for model in default_models %}
+- `{{ model.model_id }}`
+{% endfor %}
+{% endif %}
 
 
 ## Using Docker Compose
@@ -35,7 +31,7 @@ The following models are configured by default:
 You can use `docker compose` to start a TGI container and Llama Stack server container together.
 
 ```bash
-$ cd distributions/tgi; docker compose up
+$ cd distributions/{{ name }}; docker compose up
 ```
 
 The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should be able to see the following outputs --
@@ -75,7 +71,7 @@ docker run --rm -it -v $HOME/.cache/huggingface:/data \
 **Via Conda**
 
 ```bash
-llama stack build --template tgi --image-type conda
+llama stack build --template {{ name }} --image-type conda
 # -- start a TGI server endpoint
 llama stack run ./gpu/run.yaml
 ```
@@ -84,11 +80,11 @@ llama stack run ./gpu/run.yaml
 ```bash
 docker run --network host -it -p 5001:5001 \
   -v ./run.yaml:/root/my-run.yaml --gpus=all \
-  llamastack/distribution-tgi \
+  llamastack/distribution-{{ name }} \
   --yaml_config /root/my-run.yaml
 ```
 
-We have provided a template `run.yaml` file in the `distributions/tgi` directory. Make sure in your `run.yaml` file, you inference provider is pointing to the correct TGI server endpoint. E.g.
+We have provided a template `run.yaml` file in the `distributions/{{ name }}` directory. Make sure in your `run.yaml` file, you inference provider is pointing to the correct TGI server endpoint. E.g.
 ```yaml
 inference:
   - provider_id: tgi0

@@ -1,13 +1,3 @@
-# NOTES:
-#
-# This Docker Compose (and the associated run.yaml) assumes you will be
-# running in the default "bridged" network mode.
-#
-# If you need "host" network mode, please uncomment
-#  - network_mode: "host"
-#
-# Similarly change "host.docker.internal" to "localhost" in the run.yaml file
-#
 services:
   vllm-inference:
     image: vllm/vllm-openai:latest
