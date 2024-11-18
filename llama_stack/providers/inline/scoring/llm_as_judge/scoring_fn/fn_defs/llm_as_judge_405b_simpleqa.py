@@ -78,7 +78,7 @@ Just return the letters "A", "B", or "C", with no text around it.
 
 
 llm_as_judge_405b_simpleqa = ScoringFn(
-    identifier="llm-as-judge::llm_as_judge_405b_simpleqa",
+    identifier="llm-as-judge::405b-simpleqa",
     description="Llm As Judge Scoring Function for SimpleQA Benchmark (https://github.com/openai/simple-evals/blob/main/simpleqa_eval.py)",
     return_type=NumberType(),
     provider_id="llm-as-judge",

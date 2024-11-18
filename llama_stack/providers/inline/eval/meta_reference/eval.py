@@ -133,7 +133,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         self, input_rows: List[Dict[str, Any]], task_config: EvalTaskConfig
     ) -> List[Dict[str, Any]]:
         candidate = task_config.eval_candidate
-        create_response = await self.agent_api.create_agent(candidate.config)
+        create_response = await self.agents_api.create_agent(candidate.config)
         agent_id = create_response.agent_id
 
         generations = []
@@ -143,7 +143,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             input_messages = [UserMessage(**x) for x in input_messages]
 
             # NOTE: only single-turn agent generation is supported. Create a new session for each input row
-            session_create_response = await self.agent_api.create_agent_session(
+            session_create_response = await self.agents_api.create_agent_session(
                 agent_id, f"session-{i}"
             )
             session_id = session_create_response.session_id
@@ -156,7 +156,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
             )
             turn_response = [
                 chunk
-                async for chunk in await self.agent_api.create_agent_turn(
+                async for chunk in await self.agents_api.create_agent_turn(
                     **turn_request
                 )
             ]
