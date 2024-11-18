@@ -19,7 +19,7 @@ import httpx
 
 from llama_models.datatypes import Model
 from llama_models.sku_list import LlamaDownloadInfo
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from rich.console import Console
 from rich.progress import (
@@ -293,8 +293,8 @@ class ParallelDownloader:
 
             if free_space < required_space:
                 self.console.print(
-                    f"[red]Not enough disk space. Required: {required_space // (1024*1024)} MB, "
-                    f"Available: {free_space // (1024*1024)} MB[/red]"
+                    f"[red]Not enough disk space. Required: {required_space // (1024 * 1024)} MB, "
+                    f"Available: {free_space // (1024 * 1024)} MB[/red]"
                 )
                 return False
             return True
@@ -413,8 +413,7 @@ class ModelEntry(BaseModel):
     model_id: str
     files: Dict[str, str]
 
-    class Config:
-        protected_namespaces = ()
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class Manifest(BaseModel):

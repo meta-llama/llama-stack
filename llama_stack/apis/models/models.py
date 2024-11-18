@@ -31,6 +31,8 @@ class Model(CommonModelFields, Resource):
     def provider_model_id(self) -> str:
         return self.provider_resource_id
 
+    model_config = ConfigDict(protected_namespaces=())
+
 
 class ModelInput(CommonModelFields):
     model_id: str
