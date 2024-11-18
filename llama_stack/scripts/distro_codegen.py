@@ -40,7 +40,7 @@ def process_template(template_dir: Path, progress) -> None:
             template = template_func()
 
             template.save_distribution(
-                yaml_output_dir=REPO_ROOT / "distributions" / template.name,
+                yaml_output_dir=REPO_ROOT / "llama_stack" / "templates" / template.name,
                 doc_output_dir=REPO_ROOT
                 / "docs/source/getting_started/distributions"
                 / f"{template.distro_type}_distro",
