@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from termcolor import colored
 
 from llama_stack.distribution.datatypes import Provider
-from llama_stack.providers.datatypes import RemoteProviderConfig
+from llama_stack.providers.datatypes import RemoteProviderConfig, TestFakeProviderConfig
 
 from .env import get_env_or_fail
 
@@ -22,6 +22,20 @@ from .env import get_env_or_fail
 class ProviderFixture(BaseModel):
     providers: List[Provider]
     provider_data: Optional[Dict[str, Any]] = None
+
+
+# Generic test fake fixture. Use TestFakeProviderConfig to set test fakes
+# that will be mapped to their corresponding APIs.
+def test_fake_stack_fixture(config: TestFakeProviderConfig) -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="test::test-fake",
+                provider_type="test::test-fake",
+                config=config.model_dump(),
+            )
+        ],
+    )
 
 
 def remote_stack_fixture() -> ProviderFixture:
