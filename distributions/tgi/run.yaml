@@ -3,10 +3,10 @@ image_name: tgi
 docker_image: llamastack/distribution-tgi:test-0.0.52rc3
 conda_env: null
 apis:
-- memory
 - agents
-- safety
 - inference
+- memory
+- safety
 - telemetry
 providers:
   inference:

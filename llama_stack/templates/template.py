@@ -4,17 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from io import StringIO
-
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Set, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import jinja2
 import yaml
 from pydantic import BaseModel, Field
-
-from rich.console import Console
-from rich.table import Table
 
 from llama_stack.distribution.datatypes import (
     Api,
@@ -80,12 +75,12 @@ class RunConfigSettings(BaseModel):
             ]
 
         # Get unique set of APIs from providers
-        apis: Set[str] = set(providers.keys())
+        apis = list(sorted(providers.keys()))
 
         return StackRunConfig(
             image_name=name,
             docker_image=docker_image,
-            apis=list(apis),
+            apis=apis,
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=f"distributions/{name}",
@@ -111,7 +106,7 @@ class DistributionTemplate(BaseModel):
     template_path: Path
 
     # Optional configuration
-    docker_compose_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
+    run_config_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
     docker_image: Optional[str] = None
 
     default_models: Optional[List[ModelInput]] = None
@@ -128,20 +123,12 @@ class DistributionTemplate(BaseModel):
         )
 
     def generate_markdown_docs(self) -> str:
-        """Generate markdown documentation using both Jinja2 templates and rich tables."""
-        # First generate the providers table using rich
-        output = StringIO()
-        console = Console(file=output, force_terminal=False)
-
-        table = Table(title="Provider Configuration", show_header=True)
-        table.add_column("API", style="bold")
-        table.add_column("Provider(s)")
+        providers_table = "| API | Provider(s) |\n"
+        providers_table += "|-----|-------------|\n"
 
         for api, providers in sorted(self.providers.items()):
-            table.add_row(api, ", ".join(f"`{p}`" for p in providers))
-
-        console.print(table)
-        providers_table = output.getvalue()
+            providers_str = ", ".join(f"`{p}`" for p in providers)
+            providers_table += f"| {api} | {providers_str} |\n"
 
         template = self.template_path.read_text()
         # Render template with rich-generated table
@@ -152,7 +139,7 @@ class DistributionTemplate(BaseModel):
             description=self.description,
             providers=self.providers,
             providers_table=providers_table,
-            docker_compose_env_vars=self.docker_compose_env_vars,
+            run_config_env_vars=self.run_config_env_vars,
             default_models=self.default_models,
         )
 

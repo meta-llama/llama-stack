@@ -2,29 +2,16 @@
 
 The `llamastack/distribution-remote-vllm` distribution consists of the following provider configurations:
 
-                        Provider Configuration
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ API       ┃ Provider(s)                                             ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ agents    │ `inline::meta-reference`                                │
-│ inference │ `remote::vllm`                                          │
-│ memory    │ `inline::faiss`, `remote::chromadb`, `remote::pgvector` │
-│ safety    │ `inline::llama-guard`                                   │
-│ telemetry │ `inline::meta-reference`                                │
-└───────────┴─────────────────────────────────────────────────────────┘
+| API | Provider(s) |
+|-----|-------------|
+| agents | `inline::meta-reference` |
+| inference | `remote::vllm` |
+| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard` |
+| telemetry | `inline::meta-reference` |
 
 
-You can use this distribution if you have GPUs and want to run an independent vLLM server container for running inference.### Environment Variables
-
-The following environment variables can be configured:
-
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `INFERENCE_MODEL`: Inference model loaded into the vLLM server (default: `meta-llama/Llama-3.2-3B-Instruct`)
-- `VLLM_URL`: URL of the vLLM server with the main inference model (default: `http://host.docker.internal:5100}/v1`)
-- `MAX_TOKENS`: Maximum number of tokens for generation (default: `4096`)
-- `SAFETY_VLLM_URL`: URL of the vLLM server with the safety model (default: `http://host.docker.internal:5101/v1`)
-- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
-
+You can use this distribution if you have GPUs and want to run an independent vLLM server container for running inference.
 ### Models
 
 The following models are configured by default:

@@ -6,120 +6,116 @@ The `llamastack/distribution-{{ name }}` distribution consists of the following 
 
 You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.
 
-{%- if docker_compose_env_vars %}
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
 
-{% for var, (default_value, description) in docker_compose_env_vars.items() %}
+{% for var, (default_value, description) in run_config_env_vars.items() %}
 - `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
 {% endfor %}
 {% endif %}
 
-{%- if default_models %}
-### Models
 
-The following models are configured by default:
-{% for model in default_models %}
-- `{{ model.model_id }}`
-{% endfor %}
-{% endif %}
+## Setting up TGI server
 
-
-## Using Docker Compose
-
-You can use `docker compose` to start a TGI container and Llama Stack server container together.
+Please check the [TGI Getting Started Guide](https://github.com/huggingface/text-generation-inference?tab=readme-ov-file#get-started) to get a TGI endpoint. Here is a sample script to start a TGI server locally via Docker:
 
 ```bash
-$ cd distributions/{{ name }}; docker compose up
+export TGI_INFERENCE_PORT=8080
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export CUDA_VISIBLE_DEVICES=0
+
+docker run --rm -it \
+  -v $HOME/.cache/huggingface:/data \
+  -p $TGI_INFERENCE_PORT:$TGI_INFERENCE_PORT \
+  --gpus $CUDA_VISIBLE_DEVICES \
+  ghcr.io/huggingface/text-generation-inference:2.3.1 \
+  --dtype bfloat16 \
+  --usage-stats off \
+  --sharded false \
+  --cuda-memory-fraction 0.7 \
+  --model-id $INFERENCE_MODEL \
+  --port $TGI_INFERENCE_PORT
 ```
 
-The script will first start up TGI server, then start up Llama Stack distribution server hooking up to the remote TGI provider for inference. You should be able to see the following outputs --
-```bash
-[text-generation-inference] | 2024-10-15T18:56:33.810397Z  INFO text_generation_router::server: router/src/server.rs:1813: Using config Some(Llama)
-[text-generation-inference] | 2024-10-15T18:56:33.810448Z  WARN text_generation_router::server: router/src/server.rs:1960: Invalid hostname, defaulting to 0.0.0.0
-[text-generation-inference] | 2024-10-15T18:56:33.864143Z  INFO text_generation_router::server: router/src/server.rs:2353: Connected
-INFO:     Started server process [1]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://[::]:5001 (Press CTRL+C to quit)
-```
-
-To kill the server
-```bash
-docker compose down
-```
-
-
-### Conda: TGI server + llama stack run
-
-If you wish to separately spin up a TGI server, and connect with Llama Stack, you may use the following commands.
-
-#### Start TGI server locally
-- Please check the [TGI Getting Started Guide](https://github.com/huggingface/text-generation-inference?tab=readme-ov-file#get-started) to get a TGI endpoint.
+If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a TGI with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
 
 ```bash
-docker run --rm -it -v $HOME/.cache/huggingface:/data \
-  -p 5009:5009 --gpus all \
-  ghcr.io/huggingface/text-generation-inference:latest \
-  --dtype bfloat16 --usage-stats on --sharded false \
-  --model-id meta-llama/Llama-3.2-3B-Instruct --port 5009
+export TGI_SAFETY_PORT=8081
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+export CUDA_VISIBLE_DEVICES=1
+
+docker run --rm -it \
+  -v $HOME/.cache/huggingface:/data \
+  -p $TGI_SAFETY_PORT:$TGI_SAFETY_PORT \
+  --gpus $CUDA_VISIBLE_DEVICES \
+  ghcr.io/huggingface/text-generation-inference:2.3.1 \
+  --dtype bfloat16 \
+  --usage-stats off \
+  --sharded false \
+  --model-id $SAFETY_MODEL \
+  --port $TGI_SAFETY_PORT
 ```
 
-#### Start Llama Stack server pointing to TGI server
+## Running Llama Stack with TGI as the inference provider
 
-**Via Conda**
+Now you are ready to run Llama Stack with TGI as the inference provider. You can do this via Conda (build code) or Docker which has a pre-built image.
+
+### Via Docker
+
+This method allows you to get started quickly without having to build the distribution code.
+
+```bash
+LLAMA_STACK_PORT=5001
+docker run \
+  --network host \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ./run.yaml:/root/my-run.yaml \
+  llamastack/distribution-{{ name }} \
+  /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env TGI_URL=http://host.docker.internal:$TGI_INFERENCE_PORT
+```
+
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+docker run \
+  --network host \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  llamastack/distribution-{{ name }} \
+  /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env TGI_URL=http://host.docker.internal:$TGI_INFERENCE_PORT \
+  --env SAFETY_MODEL=$SAFETY_MODEL \
+  --env TGI_SAFETY_URL=http://host.docker.internal:$TGI_SAFETY_PORT
+```
+
+### Via Conda
+
+Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
 llama stack build --template {{ name }} --image-type conda
-# -- start a TGI server endpoint
-llama stack run ./gpu/run.yaml
+llama stack run ./run.yaml
+  --port 5001
+  --env INFERENCE_MODEL=$INFERENCE_MODEL
+  --env TGI_URL=http://127.0.0.1:$TGI_INFERENCE_PORT
 ```
 
-**Via Docker**
+If you are using Llama Stack Safety / Shield APIs, use:
+
 ```bash
-docker run --network host -it -p 5001:5001 \
-  -v ./run.yaml:/root/my-run.yaml --gpus=all \
-  llamastack/distribution-{{ name }} \
-  --yaml_config /root/my-run.yaml
-```
-
-We have provided a template `run.yaml` file in the `distributions/{{ name }}` directory. Make sure in your `run.yaml` file, you inference provider is pointing to the correct TGI server endpoint. E.g.
-```yaml
-inference:
-  - provider_id: tgi0
-    provider_type: remote::tgi
-    config:
-      url: http://127.0.0.1:5009
-```
-
-
-### (Optional) Update Model Serving Configuration
-To serve a new model with `tgi`, change the docker command flag `--model-id <model-to-serve>`.
-
-This can be done by edit the `command` args in `compose.yaml`. E.g. Replace "Llama-3.2-1B-Instruct" with the model you want to serve.
-
-```yaml
-command: >
-  --dtype bfloat16 --usage-stats on --sharded false
-  --model-id meta-llama/Llama-3.2-1B-Instruct
-  --port 5009 --cuda-memory-fraction 0.7
-```
-
-or by changing the docker run command's `--model-id` flag
-```bash
-docker run --rm -it -v $HOME/.cache/huggingface:/data \
-  -p 5009:5009 --gpus all \
-  ghcr.io/huggingface/text-generation-inference:latest \
-  --dtype bfloat16 --usage-stats off --sharded false \
-  --model-id meta-llama/Llama-3.2-3B-Instruct --port 5009
-```
-
-In `run.yaml`, make sure you point the correct server endpoint to the TGI server endpoint serving your model.
-```yaml
-inference:
-  - provider_id: tgi0
-    provider_type: remote::tgi
-    config:
-      url: http://127.0.0.1:5009
+llama stack run ./run-with-safety.yaml
+  --port 5001
+  --env INFERENCE_MODEL=$INFERENCE_MODEL
+  --env TGI_URL=http://127.0.0.1:$TGI_INFERENCE_PORT
+  --env SAFETY_MODEL=$SAFETY_MODEL
+  --env TGI_SAFETY_URL=http://127.0.0.1:$TGI_SAFETY_PORT
 ```

@@ -28,11 +28,11 @@ def get_distribution_template() -> DistributionTemplate:
 
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
-        provider_id="ollama-inference",
+        provider_id="ollama",
     )
     safety_model = ModelInput(
         model_id="${env.SAFETY_MODEL}",
-        provider_id="ollama-safety",
+        provider_id="ollama",
     )
 
     return DistributionTemplate(

@@ -2,27 +2,16 @@
 
 The `llamastack/distribution-ollama` distribution consists of the following provider configurations.
 
-                        Provider Configuration
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ API       ┃ Provider(s)                                             ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ agents    │ `inline::meta-reference`                                │
-│ inference │ `remote::ollama`                                        │
-│ memory    │ `inline::faiss`, `remote::chromadb`, `remote::pgvector` │
-│ safety    │ `inline::llama-guard`                                   │
-│ telemetry │ `inline::meta-reference`                                │
-└───────────┴─────────────────────────────────────────────────────────┘
+| API | Provider(s) |
+|-----|-------------|
+| agents | `inline::meta-reference` |
+| inference | `remote::ollama` |
+| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard` |
+| telemetry | `inline::meta-reference` |
 
 
-You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
-
-The following environment variables can be configured:
-
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
-- `OLLAMA_URL`: URL of the Ollama server (default: `http://host.docker.internal:11434`)
-- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
-### Models
+You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Models
 
 The following models are configured by default:
 - `${env.INFERENCE_MODEL}`

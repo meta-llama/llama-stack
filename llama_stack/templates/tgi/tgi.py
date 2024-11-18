@@ -60,7 +60,7 @@ def get_distribution_template() -> DistributionTemplate:
                             provider_id="tgi-safety",
                             provider_type="remote::tgi",
                             config=TGIImplConfig.sample_run_config(
-                                url="${env.SAFETY_TGI_URL}",
+                                url="${env.TGI_SAFETY_URL}",
                             ),
                         ),
                     ],
@@ -72,7 +72,7 @@ def get_distribution_template() -> DistributionTemplate:
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
             ),
         },
-        docker_compose_env_vars={
+        run_config_env_vars={
             "LLAMASTACK_PORT": (
                 "5001",
                 "Port for the Llama Stack distribution server",
@@ -82,11 +82,11 @@ def get_distribution_template() -> DistributionTemplate:
                 "Inference model loaded into the TGI server",
             ),
             "TGI_URL": (
-                "http://host.docker.internal:8080}/v1",
+                "http://127.0.0.1:8080}/v1",
                 "URL of the TGI server with the main inference model",
             ),
-            "SAFETY_TGI_URL": (
-                "http://host.docker.internal:8081/v1",
+            "TGI_SAFETY_URL": (
+                "http://127.0.0.1:8081/v1",
                 "URL of the TGI server with the safety model",
             ),
             "SAFETY_MODEL": (

@@ -1,13 +1,12 @@
 version: '2'
-built_at: 2024-11-17 19:33:00
 image_name: tgi
 docker_image: llamastack/distribution-tgi:test-0.0.52rc3
 conda_env: null
 apis:
-- memory
 - agents
-- safety
 - inference
+- memory
+- safety
 - telemetry
 providers:
   inference:
@@ -18,7 +17,7 @@ providers:
   - provider_id: tgi-safety
     provider_type: remote::tgi
     config:
-      url: ${env.SAFETY_TGI_URL}
+      url: ${env.TGI_SAFETY_URL}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss

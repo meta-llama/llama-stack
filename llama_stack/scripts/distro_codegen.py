@@ -21,7 +21,9 @@ def find_template_dirs(templates_dir: Path) -> Iterator[Path]:
     if not templates_dir.exists():
         raise FileNotFoundError(f"Templates directory not found: {templates_dir}")
 
-    return (d for d in templates_dir.iterdir() if d.is_dir())
+    return (
+        d for d in templates_dir.iterdir() if d.is_dir() and d.name != "__pycache__"
+    )
 
 
 def process_template(template_dir: Path, progress) -> None:
