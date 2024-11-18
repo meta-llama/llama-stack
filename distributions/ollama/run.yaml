@@ -16,7 +16,7 @@ providers:
   - provider_id: ollama0
     provider_type: remote::ollama
     config:
-      url: http://127.0.0.1:14343
+      url: http://127.0.0.1:11434
   safety:
   - provider_id: meta0
     provider_type: inline::llama-guard
