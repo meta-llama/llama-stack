@@ -49,6 +49,18 @@ class MetaReferenceInferenceConfig(BaseModel):
         resolved = resolve_model(self.model)
         return resolved.pth_file_count
 
+    @classmethod
+    def sample_run_config(
+        cls,
+        model: str = "Llama3.2-3B-Instruct",
+        checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+    ) -> Dict[str, Any]:
+        return {
+            "model": model,
+            "max_seq_len": 4096,
+            "checkpoint_dir": checkpoint_dir,
+        }
+
 
 class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
     quantization: QuantizationConfig

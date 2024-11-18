@@ -1,18 +1,20 @@
 # Meta Reference Distribution
 
-The `llamastack/distribution-meta-reference-gpu` distribution consists of the following provider configurations:
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations:
 
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| inference | `inline::meta-reference` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
-| safety | `inline::llama-guard` |
-| telemetry | `inline::meta-reference` |
-
+{{ providers_table }}
 
 Note that you need access to nvidia GPUs to run this distribution. This distribution is not compatible with CPU-only machines or machines with AMD GPUs.
 
+{% if run_config_env_vars %}
+### Environment Variables
+
+The following environment variables can be configured:
+
+{% for var, (default_value, description) in run_config_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
 
 
 ## Prerequisite: Downloading Models
@@ -39,7 +41,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
-  llamastack/distribution-meta-reference-gpu \
+  llamastack/distribution-{{ name }} \
   /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
@@ -52,7 +54,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run-with-safety.yaml:/root/my-run.yaml \
-  llamastack/distribution-meta-reference-gpu \
+  llamastack/distribution-{{ name }} \
   /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \

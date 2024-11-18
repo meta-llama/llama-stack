@@ -16,6 +16,12 @@ providers:
       model: ${env.INFERENCE_MODEL}
       max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
+  - provider_id: meta-reference-safety
+    provider_type: inline::meta-reference
+    config:
+      model: ${env.SAFETY_MODEL}
+      max_seq_len: 4096
+      checkpoint_dir: ${env.SAFETY_CHECKPOINT_DIR:null}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -49,7 +55,15 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: meta-reference-inference
   provider_model_id: null
-shields: []
+- metadata: {}
+  model_id: ${env.SAFETY_MODEL}
+  provider_id: meta-reference-safety
+  provider_model_id: null
+shields:
+- params: null
+  shield_id: ${env.SAFETY_MODEL}
+  provider_id: null
+  provider_shield_id: null
 memory_banks: []
 datasets: []
 scoring_fns: []
