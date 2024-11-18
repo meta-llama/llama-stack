@@ -51,7 +51,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         if identifier in self.alias_to_provider_id_map:
             return self.alias_to_provider_id_map[identifier]
         else:
-            raise ValueError(f"Unknown model: `{identifier}`")
+            return None
 
     def get_llama_model(self, provider_model_id: str) -> str:
         if provider_model_id in self.provider_id_to_llama_model_map:
@@ -60,8 +60,18 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             return None
 
     async def register_model(self, model: Model) -> Model:
-        model.provider_resource_id = self.get_provider_model_id(
-            model.provider_resource_id
-        )
+        provider_resource_id = self.get_provider_model_id(model.provider_resource_id)
+        if provider_resource_id:
+            model.provider_resource_id = provider_resource_id
+        else:
+            if model.metadata.get("llama_model") is None:
+                raise ValueError(
+                    f"Model '{model.provider_resource_id}' is not available and no llama_model was specified in metadata. "
+                    "Please specify a llama_model in metadata or use a supported model identifier"
+                )
+            # Register the mapping from provider model id to llama model for future lookups
+            self.provider_id_to_llama_model_map[model.provider_resource_id] = (
+                model.metadata["llama_model"]
+            )
 
         return model
