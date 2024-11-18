@@ -11,6 +11,8 @@ from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import *  # noqa: F403
 import re
 
+from .fn_defs.llm_as_judge_405b_simpleqa import llm_as_judge_405b_simpleqa
+
 from .fn_defs.llm_as_judge_base import llm_as_judge_base
 
 
@@ -24,6 +26,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         self.inference_api = inference_api
         self.supported_fn_defs_registry = {
             llm_as_judge_base.identifier: llm_as_judge_base,
+            llm_as_judge_405b_simpleqa.identifier: llm_as_judge_405b_simpleqa,
         }
 
     async def score_row(
