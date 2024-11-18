@@ -40,14 +40,14 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         datasets_api: Datasets,
         scoring_api: Scoring,
         inference_api: Inference,
-        agent_api: Agents,
+        agents_api: Agents,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api
         self.scoring_api = scoring_api
         self.inference_api = inference_api
-        self.agent_api = agent_api
+        self.agents_api = agents_api
 
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs = {}
