@@ -75,7 +75,7 @@ def get_distribution_template() -> DistributionTemplate:
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
             ),
         },
-        docker_compose_env_vars={
+        run_config_env_vars={
             "LLAMASTACK_PORT": (
                 "5001",
                 "Port for the Llama Stack distribution server",

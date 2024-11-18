@@ -11,7 +11,15 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | telemetry | `inline::meta-reference` |
 
 
-You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.
+You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
+
+The following environment variables can be configured:
+
+- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `OLLAMA_URL`: URL of the Ollama server (default: `http://127.0.0.1:11434`)
+- `INFERENCE_MODEL`: Inference model loaded into the Ollama server (default: `meta-llama/Llama-3.2-3B-Instruct`)
+- `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
+
 
 ## Setting up Ollama server
 

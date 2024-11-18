@@ -6,6 +6,8 @@
 
 import concurrent.futures
 import importlib
+import subprocess
+import sys
 from functools import partial
 from pathlib import Path
 from typing import Iterator
@@ -55,6 +57,16 @@ def process_template(template_dir: Path, progress) -> None:
         raise e
 
 
+def check_for_changes() -> bool:
+    """Check if there are any uncommitted changes."""
+    result = subprocess.run(
+        ["git", "diff", "--exit-code"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+    )
+    return result.returncode != 0
+
+
 def main():
     templates_dir = REPO_ROOT / "llama_stack" / "templates"
 
@@ -75,6 +87,15 @@ def main():
             # Submit all tasks and wait for completion
             list(executor.map(process_func, template_dirs))
             progress.update(task, advance=len(template_dirs))
+
+    if check_for_changes():
+        print(
+            "Distribution template changes detected. Please commit the changes.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
