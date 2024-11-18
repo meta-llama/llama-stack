@@ -6,8 +6,6 @@
 
 import pytest
 
-from llama_models.datatypes import CoreModelId
-
 
 # How to run this test:
 #
@@ -28,10 +26,12 @@ class TestModelRegistration:
             "remote::vllm",
             "remote::tgi",
         ):
-            pytest.skip("70B instruct is too big only for local inference providers")
+            pytest.skip(
+                "Skipping test for remote inference providers since they can handle large models like 70B instruct"
+            )
 
         # Try to register a model that's too large for local inference
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             await models_impl.register_model(
                 model_id="Llama3.1-70B-Instruct",
             )
@@ -52,13 +52,13 @@ class TestModelRegistration:
 
         _ = await models_impl.register_model(
             model_id="custom-model",
-            metadata={"llama_model": CoreModelId.llama3_1_8b_instruct.value},
+            metadata={"llama_model": "meta-llama/Llama-2-7b"},
         )
 
         with pytest.raises(ValueError) as exc_info:
             await models_impl.register_model(
                 model_id="custom-model-2",
-                metadata={"llama_model": CoreModelId.llama3_2_3b_instruct.value},
+                metadata={"llama_model": "meta-llama/Llama-2-7b"},
                 provider_model_id="custom-model",
             )
 
@@ -66,7 +66,7 @@ class TestModelRegistration:
     async def test_register_with_invalid_llama_model(self, inference_stack):
         _, models_impl = inference_stack
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             await models_impl.register_model(
                 model_id="custom-model-2",
                 metadata={"llama_model": "invalid-llama-model"},

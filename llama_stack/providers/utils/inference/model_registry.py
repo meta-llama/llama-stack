@@ -7,10 +7,13 @@
 from collections import namedtuple
 from typing import List, Optional
 
-from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+
+from llama_stack.providers.utils.inference import (
+    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
+)
 
 ModelAlias = namedtuple("ModelAlias", ["provider_model_id", "aliases", "llama_model"])
 
@@ -77,17 +80,18 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                         f"Provider model id '{model.provider_resource_id}' is already registered to a different llama model: '{existing_llama_model}'"
                     )
             else:
-                # Validate that the llama model is a valid CoreModelId
-                try:
-                    CoreModelId(model.metadata["llama_model"])
-                except ValueError as err:
+                if (
+                    model.metadata["llama_model"]
+                    not in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR
+                ):
                     raise ValueError(
                         f"Invalid llama_model '{model.metadata['llama_model']}' specified in metadata. "
-                        f"Must be one of: {', '.join(m.value for m in CoreModelId)}"
-                    ) from err
-                # Register the mapping from provider model id to llama model for future lookups
+                        f"Must be one of: {', '.join(ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR.keys())}"
+                    )
                 self.provider_id_to_llama_model_map[model.provider_resource_id] = (
-                    model.metadata["llama_model"]
+                    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[
+                        model.metadata["llama_model"]
+                    ]
                 )
 
         return model
