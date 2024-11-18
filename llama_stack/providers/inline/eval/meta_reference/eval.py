@@ -226,9 +226,10 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         candidate = task_config.eval_candidate
         if candidate.type == "agent":
             generations = await self._run_agent_generation(input_rows, task_config)
-
-        if candidate.type == "model":
+        elif candidate.type == "model":
             generations = await self._run_model_generation(input_rows, task_config)
+        else:
+            raise ValueError(f"Invalid candidate type: {candidate.type}")
 
         # scoring with generated_answer
         score_input_rows = [
