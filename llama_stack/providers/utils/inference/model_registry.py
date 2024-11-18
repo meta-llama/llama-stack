@@ -7,6 +7,7 @@
 from collections import namedtuple
 from typing import List, Optional
 
+from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
@@ -69,9 +70,24 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                     f"Model '{model.provider_resource_id}' is not available and no llama_model was specified in metadata. "
                     "Please specify a llama_model in metadata or use a supported model identifier"
                 )
-            # Register the mapping from provider model id to llama model for future lookups
-            self.provider_id_to_llama_model_map[model.provider_resource_id] = (
-                model.metadata["llama_model"]
-            )
+            existing_llama_model = self.get_llama_model(model.provider_resource_id)
+            if existing_llama_model:
+                if existing_llama_model != model.metadata["llama_model"]:
+                    raise ValueError(
+                        f"Provider model id '{model.provider_resource_id}' is already registered to a different llama model: '{existing_llama_model}'"
+                    )
+            else:
+                # Validate that the llama model is a valid CoreModelId
+                try:
+                    CoreModelId(model.metadata["llama_model"])
+                except ValueError as err:
+                    raise ValueError(
+                        f"Invalid llama_model '{model.metadata['llama_model']}' specified in metadata. "
+                        f"Must be one of: {', '.join(m.value for m in CoreModelId)}"
+                    ) from err
+                # Register the mapping from provider model id to llama model for future lookups
+                self.provider_id_to_llama_model_map[model.provider_resource_id] = (
+                    model.metadata["llama_model"]
+                )
 
         return model

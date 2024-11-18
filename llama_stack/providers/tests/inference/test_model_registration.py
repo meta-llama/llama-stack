@@ -54,3 +54,20 @@ class TestModelRegistration:
             model_id="custom-model",
             metadata={"llama_model": CoreModelId.llama3_1_8b_instruct.value},
         )
+
+        with pytest.raises(ValueError) as exc_info:
+            await models_impl.register_model(
+                model_id="custom-model-2",
+                metadata={"llama_model": CoreModelId.llama3_2_3b_instruct.value},
+                provider_model_id="custom-model",
+            )
+
+    @pytest.mark.asyncio
+    async def test_register_with_invalid_llama_model(self, inference_stack):
+        _, models_impl = inference_stack
+
+        with pytest.raises(Exception) as exc_info:
+            await models_impl.register_model(
+                model_id="custom-model-2",
+                metadata={"llama_model": "invalid-llama-model"},
+            )
