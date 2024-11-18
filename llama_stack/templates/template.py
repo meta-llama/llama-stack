@@ -87,7 +87,7 @@ class RunConfigSettings(BaseModel):
         return StackRunConfig(
             image_name=name,
             docker_image=docker_image,
-            built_at=datetime.now(),
+            built_at=datetime.now().strftime("%Y-%m-%d %H:%M"),
             apis=list(apis),
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(

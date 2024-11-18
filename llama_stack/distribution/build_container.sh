@@ -146,6 +146,8 @@ fi
 # Set version tag based on PyPI version
 if [ -n "$TEST_PYPI_VERSION" ]; then
   version_tag="test-$TEST_PYPI_VERSION"
+elif [[ -n "$LLAMA_STACK_DIR" || -n "$LLAMA_MODELS_DIR" ]]; then
+  version_tag="dev"
 else
   URL="https://pypi.org/pypi/llama-stack/json"
   version_tag=$(curl -s $URL | jq -r '.info.version')

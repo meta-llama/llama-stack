@@ -6,17 +6,17 @@
 
 from typing import Any, Dict
 
-from llama_stack.distribution.datatypes import RemoteProviderConfig
+from pydantic import BaseModel
 
 
-DEFAULT_OLLAMA_PORT = 11434
+DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 
-class OllamaImplConfig(RemoteProviderConfig):
-    port: int
+class OllamaImplConfig(BaseModel):
+    url: str = DEFAULT_OLLAMA_URL
 
     @classmethod
     def sample_run_config(
-        cls, port_str: str = str(DEFAULT_OLLAMA_PORT)
+        cls, url: str = "${env.OLLAMA_URL:http://localhost:11434}", **kwargs
     ) -> Dict[str, Any]:
-        return {"port": port_str}
+        return {"url": url}

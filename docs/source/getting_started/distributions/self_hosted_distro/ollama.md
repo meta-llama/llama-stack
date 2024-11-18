@@ -20,7 +20,7 @@ The following environment variables can be configured:
 
 - `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `INFERENCE_MODEL`: Inference model loaded into the TGI server (default: `meta-llama/Llama-3.2-3B-Instruct`)
-- `OLLAMA_PORT`: Port of the Ollama server (default: `14343`)
+- `OLLAMA_URL`: URL of the Ollama server (default: `http://host.docker.internal:11434`)
 - `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
 ### Models
 

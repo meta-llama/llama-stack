@@ -1,14 +1,14 @@
 version: '2'
-built_at: 2024-11-17 15:19:09.156305
+built_at: 2024-11-17 19:33:00
 image_name: tgi
 docker_image: llamastack/distribution-tgi:test-0.0.52rc3
 conda_env: null
 apis:
-- telemetry
-- agents
 - memory
-- inference
+- agents
 - safety
+- inference
+- telemetry
 providers:
   inference:
   - provider_id: tgi-inference

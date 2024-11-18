@@ -217,15 +217,23 @@ class StackBuild(Subcommand):
                 provider_types = [provider_types]
 
             for i, provider_type in enumerate(provider_types):
-                p_spec = Provider(
-                    provider_id=f"{provider_type}-{i}",
-                    provider_type=provider_type,
-                    config={},
-                )
+                pid = provider_type.split("::")[-1]
+
                 config_type = instantiate_class_type(
                     provider_registry[Api(api)][provider_type].config_class
                 )
-                p_spec.config = config_type()
+                if hasattr(config_type, "sample_run_config"):
+                    config = config_type.sample_run_config(
+                        __distro_dir__=f"distributions/{build_config.name}"
+                    )
+                else:
+                    config = {}
+
+                p_spec = Provider(
+                    provider_id=f"{pid}-{i}" if len(provider_types) > 1 else pid,
+                    provider_type=provider_type,
+                    config=config,
+                )
                 run_config.providers[api].append(p_spec)
 
         os.makedirs(build_dir, exist_ok=True)

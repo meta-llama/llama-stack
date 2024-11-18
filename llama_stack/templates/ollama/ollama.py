@@ -23,9 +23,7 @@ def get_distribution_template() -> DistributionTemplate:
     inference_provider = Provider(
         provider_id="ollama",
         provider_type="remote::ollama",
-        config=OllamaImplConfig.sample_run_config(
-            port_str="${env.OLLAMA_PORT}",
-        ),
+        config=OllamaImplConfig.sample_run_config(),
     )
 
     inference_model = ModelInput(
@@ -41,7 +39,7 @@ def get_distribution_template() -> DistributionTemplate:
         name="ollama",
         distro_type="self_hosted",
         description="Use (an external) Ollama server for running LLM inference",
-        docker_image="llamastack/distribution-ollama:test-0.0.52rc3",
+        docker_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=[inference_model, safety_model],
@@ -74,9 +72,9 @@ def get_distribution_template() -> DistributionTemplate:
                 "meta-llama/Llama-3.2-3B-Instruct",
                 "Inference model loaded into the TGI server",
             ),
-            "OLLAMA_PORT": (
-                "14343",
-                "Port of the Ollama server",
+            "OLLAMA_URL": (
+                "http://host.docker.internal:11434",
+                "URL of the Ollama server",
             ),
             "SAFETY_MODEL": (
                 "meta-llama/Llama-Guard-3-1B",

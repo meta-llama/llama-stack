@@ -1,20 +1,20 @@
 version: '2'
-built_at: 2024-11-17 15:19:07.395495
+built_at: 2024-11-17 19:33:00
 image_name: ollama
-docker_image: llamastack/distribution-ollama:test-0.0.52rc3
+docker_image: null
 conda_env: null
 apis:
-- telemetry
-- agents
 - memory
-- inference
+- agents
 - safety
+- inference
+- telemetry
 providers:
   inference:
   - provider_id: ollama
     provider_type: remote::ollama
     config:
-      port: ${env.OLLAMA_PORT}
+      url: ${env.OLLAMA_URL:http://localhost:11434}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss

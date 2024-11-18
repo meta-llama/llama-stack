@@ -29,6 +29,7 @@ class VLLMInferenceAdapterConfig(BaseModel):
     def sample_run_config(
         cls,
         url: str = "${env.VLLM_URL}",
+        **kwargs,
     ):
         return {
             "url": url,

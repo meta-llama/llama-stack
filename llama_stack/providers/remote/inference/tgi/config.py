@@ -21,7 +21,7 @@ class TGIImplConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, url: str = "${env.TGI_URL}"):
+    def sample_run_config(cls, url: str = "${env.TGI_URL}", **kwargs):
         return {
             "url": url,
         }
