@@ -1,36 +1,28 @@
 # Fireworks Distribution
 
-The `llamastack/distribution-fireworks` distribution consists of the following provider configurations.
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| inference | `remote::fireworks` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
-| safety | `inline::llama-guard` |
-| telemetry | `inline::meta-reference` |
+{{ providers_table }}
 
-
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `FIREWORKS_API_KEY`: Fireworks.AI API Key (default: ``)
+{% for var, (default_value, description) in run_config_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
 
+{% if default_models %}
 ### Models
 
 The following models are available by default:
 
-- `fireworks/llama-v3p1-8b-instruct`
-- `fireworks/llama-v3p1-70b-instruct`
-- `fireworks/llama-v3p1-405b-instruct`
-- `fireworks/llama-v3p2-1b-instruct`
-- `fireworks/llama-v3p2-3b-instruct`
-- `fireworks/llama-v3p2-11b-vision-instruct`
-- `fireworks/llama-v3p2-90b-vision-instruct`
-- `fireworks/llama-guard-3-8b`
-- `fireworks/llama-guard-3-11b-vision`
+{% for model in default_models %}
+- `{{ model.model_id }}`
+{% endfor %}
+{% endif %}
 
 
 ### Prerequisite: API Keys
@@ -52,7 +44,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
-  llamastack/distribution-fireworks \
+  llamastack/distribution-{{ name }} \
   /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY

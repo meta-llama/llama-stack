@@ -38,7 +38,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import TogetherImplConfig
 
 
-model_aliases = [
+MODEL_ALIASES = [
     build_model_alias(
         "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
         CoreModelId.llama3_1_8b_instruct.value,
@@ -78,7 +78,7 @@ class TogetherInferenceAdapter(
     ModelRegistryHelper, Inference, NeedsRequestProviderData
 ):
     def __init__(self, config: TogetherImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, model_aliases)
+        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 

@@ -1,35 +1,28 @@
 # Fireworks Distribution
 
-The `llamastack/distribution-together` distribution consists of the following provider configurations.
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| inference | `remote::together` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
-| safety | `inline::llama-guard` |
-| telemetry | `inline::meta-reference` |
+{{ providers_table }}
 
-
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `TOGETHER_API_KEY`: Together.AI API Key (default: ``)
+{% for var, (default_value, description) in run_config_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
 
+{% if default_models %}
 ### Models
 
 The following models are available by default:
 
-- `meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo`
-- `meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo`
-- `meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo`
-- `meta-llama/Llama-3.2-3B-Instruct-Turbo`
-- `meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo`
-- `meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo`
-- `meta-llama/Meta-Llama-Guard-3-8B`
-- `meta-llama/Llama-Guard-3-11B-Vision-Turbo`
+{% for model in default_models %}
+- `{{ model.model_id }}`
+{% endfor %}
+{% endif %}
 
 
 ### Prerequisite: API Keys
@@ -51,7 +44,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
-  llamastack/distribution-together \
+  llamastack/distribution-{{ name }} \
   /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env TOGETHER_API_KEY=$TOGETHER_API_KEY

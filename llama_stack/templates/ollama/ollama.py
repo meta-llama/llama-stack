@@ -68,17 +68,17 @@ def get_distribution_template() -> DistributionTemplate:
                 "5001",
                 "Port for the Llama Stack distribution server",
             ),
+            "OLLAMA_URL": (
+                "http://127.0.0.1:11434",
+                "URL of the Ollama server",
+            ),
             "INFERENCE_MODEL": (
                 "meta-llama/Llama-3.2-3B-Instruct",
-                "Inference model loaded into the TGI server",
-            ),
-            "OLLAMA_URL": (
-                "http://host.docker.internal:11434",
-                "URL of the Ollama server",
+                "Inference model loaded into the Ollama server",
             ),
             "SAFETY_MODEL": (
                 "meta-llama/Llama-Guard-3-1B",
-                "Name of the safety (Llama-Guard) model to use",
+                "Safety model loaded into the Ollama server",
             ),
         },
     )

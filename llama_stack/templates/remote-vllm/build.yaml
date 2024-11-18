@@ -2,7 +2,7 @@ version: '2'
 name: remote-vllm
 distribution_spec:
   description: Use (an external) vLLM server for running LLM inference
-  docker_image: llamastack/distribution-remote-vllm:test-0.0.52rc3
+  docker_image: null
   providers:
     inference:
     - remote::vllm

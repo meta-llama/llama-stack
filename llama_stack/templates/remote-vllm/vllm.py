@@ -41,7 +41,6 @@ def get_distribution_template() -> DistributionTemplate:
         name="remote-vllm",
         distro_type="self_hosted",
         description="Use (an external) vLLM server for running LLM inference",
-        docker_image="llamastack/distribution-remote-vllm:test-0.0.52rc3",
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=[inference_model, safety_model],

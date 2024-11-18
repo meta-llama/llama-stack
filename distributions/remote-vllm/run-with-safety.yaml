@@ -1,6 +1,6 @@
 version: '2'
 image_name: remote-vllm
-docker_image: llamastack/distribution-remote-vllm:test-0.0.52rc3
+docker_image: null
 conda_env: null
 apis:
 - agents

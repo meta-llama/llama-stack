@@ -6,90 +6,114 @@ The `llamastack/distribution-{{ name }}` distribution consists of the following 
 
 You can use this distribution if you have GPUs and want to run an independent vLLM server container for running inference.
 
-{%- if docker_compose_env_vars %}
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
 
-{% for var, (default_value, description) in docker_compose_env_vars.items() %}
+{% for var, (default_value, description) in run_config_env_vars.items() %}
 - `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
 {% endfor %}
 {% endif %}
 
-{% if default_models %}
-### Models
 
-The following models are configured by default:
-{% for model in default_models %}
-- `{{ model.model_id }}`
-{% endfor %}
-{% endif %}
+## Setting up vLLM server
 
-## Using Docker Compose
-
-You can use `docker compose` to start a vLLM container and Llama Stack server container together.
-```bash
-$ cd distributions/{{ name }}; docker compose up
-```
-
-You will see outputs similar to following ---
-```
-<TO BE FILLED>
-```
-
-To kill the server
-```bash
-docker compose down
-```
-
-## Starting vLLM and Llama Stack separately
-
-You can also decide to start a vLLM server and connect with Llama Stack manually. There are two ways to start a vLLM server and connect with Llama Stack.
-
-#### Start vLLM server.
+Please check the [vLLM Documentation](https://docs.vllm.ai/en/v0.5.5/serving/deploying_with_docker.html) to get a vLLM endpoint. Here is a sample script to start a vLLM server locally via Docker:
 
 ```bash
-docker run --runtime nvidia --gpus all \
+export INFERENCE_PORT=8000
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export CUDA_VISIBLE_DEVICES=0
+
+docker run \
+    --runtime nvidia \
+    --gpus $CUDA_VISIBLE_DEVICES \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
-    --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
-    -p 8000:8000 \
+    --env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+    -p $INFERENCE_PORT:$INFERENCE_PORT \
     --ipc=host \
     vllm/vllm-openai:latest \
-    --model meta-llama/Llama-3.2-3B-Instruct
+    --model $INFERENCE_MODEL \
+    --port $INFERENCE_PORT
 ```
 
-Please check the [vLLM Documentation](https://docs.vllm.ai/en/v0.5.5/serving/deploying_with_docker.html) for more details.
+If you are using Llama Stack Safety / Shield APIs, then you will need to also run another instance of a vLLM with a corresponding safety model like `meta-llama/Llama-Guard-3-1B` using a script like:
 
-
-#### Start Llama Stack server pointing to your vLLM server
-
-
-We have provided a template `run.yaml` file in the `distributions/remote-vllm` directory. Please make sure to modify the `inference.provider_id` to point to your vLLM server endpoint. As an example, if your vLLM server is running on `http://127.0.0.1:8000`, your `run.yaml` file should look like the following:
-```yaml
-inference:
-  - provider_id: vllm0
-    provider_type: remote::vllm
-    config:
-      url: http://127.0.0.1:8000
-```
-
-**Via Conda**
-
-If you are using Conda, you can build and run the Llama Stack server with the following commands:
 ```bash
-cd distributions/remote-vllm
+export SAFETY_PORT=8081
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+export CUDA_VISIBLE_DEVICES=1
+
+docker run \
+    --runtime nvidia \
+    --gpus $CUDA_VISIBLE_DEVICES \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+    -p $SAFETY_PORT:$SAFETY_PORT \
+    --ipc=host \
+    vllm/vllm-openai:latest \
+    --model $SAFETY_MODEL \
+    --port $SAFETY_PORT
+```
+
+## Running Llama Stack
+
+Now you are ready to run Llama Stack with vLLM as the inference provider. You can do this via Conda (build code) or Docker which has a pre-built image.
+
+### Via Docker
+
+This method allows you to get started quickly without having to build the distribution code.
+
+```bash
+LLAMA_STACK_PORT=5001
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ./run.yaml:/root/my-run.yaml \
+  llamastack/distribution-{{ name }} \
+  /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT \
+```
+
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  llamastack/distribution-{{ name }} \
+  /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT \
+  --env SAFETY_MODEL=$SAFETY_MODEL \
+  --env VLLM_SAFETY_URL=http://host.docker.internal:$SAFETY_PORT
+```
+
+
+### Via Conda
+
+Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
+
+```bash
 llama stack build --template remote-vllm --image-type conda
-llama stack run run.yaml
+llama stack run ./run.yaml \
+  --port 5001 \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT
 ```
 
-**Via Docker**
+If you are using Llama Stack Safety / Shield APIs, use:
 
-You can use the Llama Stack Docker image to start the server with the following command:
 ```bash
-docker run --network host -it -p 5000:5000 \
-  -v ~/.llama:/root/.llama \
-  -v ./gpu/run.yaml:/root/llamastack-run-remote-vllm.yaml \
-  --gpus=all \
-  llamastack/distribution-remote-vllm \
-  --yaml_config /root/llamastack-run-remote-vllm.yaml
+llama stack run ./run-with-safety.yaml \
+  --port 5001 \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT \
+  --env SAFETY_MODEL=$SAFETY_MODEL \
+  --env VLLM_SAFETY_URL=http://127.0.0.1:$SAFETY_PORT
 ```
