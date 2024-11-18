@@ -1,5 +1,4 @@
 version: '2'
-built_at: 2024-11-17 19:33:00
 image_name: ollama
 docker_image: null
 conda_env: null

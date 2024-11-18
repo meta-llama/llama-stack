@@ -193,7 +193,6 @@ class StackBuild(Subcommand):
 
         apis = list(build_config.distribution_spec.providers.keys())
         run_config = StackRunConfig(
-            built_at=datetime.now(),
             docker_image=(
                 build_config.name
                 if build_config.image_type == ImageType.docker.value

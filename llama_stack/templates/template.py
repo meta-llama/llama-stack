@@ -4,8 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
-
 from io import StringIO
 
 from pathlib import Path
@@ -87,7 +85,6 @@ class RunConfigSettings(BaseModel):
         return StackRunConfig(
             image_name=name,
             docker_image=docker_image,
-            built_at=datetime.now().strftime("%Y-%m-%d %H:%M"),
             apis=list(apis),
             providers=provider_configs,
             metadata_store=SqliteKVStoreConfig.sample_run_config(

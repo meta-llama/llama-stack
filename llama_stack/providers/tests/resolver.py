@@ -6,7 +6,6 @@
 
 import json
 import tempfile
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
@@ -37,7 +36,6 @@ async def construct_stack_for_test(
 ) -> TestStack:
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     run_config = dict(
-        built_at=datetime.now(),
         image_name="test-fixture",
         apis=apis,
         providers=providers,

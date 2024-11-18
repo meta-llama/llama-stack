@@ -1,5 +1,4 @@
 version: '2'
-built_at: 2024-11-17 19:33:00
 image_name: tgi
 docker_image: llamastack/distribution-tgi:test-0.0.52rc3
 conda_env: null
