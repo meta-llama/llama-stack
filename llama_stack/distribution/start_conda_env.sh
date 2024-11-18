@@ -33,10 +33,33 @@ shift
 port="$1"
 shift
 
+# Process environment variables from --env arguments
+env_vars=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --env)
+
+            if [[ -n "$2" ]]; then
+                # collect environment variables so we can set them after activating the conda env
+                env_vars="$env_vars $2"
+                shift 2
+            else
+                echo -e "${RED}Error: --env requires a KEY=VALUE argument${NC}" >&2
+                exit 1
+            fi
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 eval "$(conda shell.bash hook)"
 conda deactivate && conda activate "$env_name"
 
-$CONDA_PREFIX/bin/python \
+set -x
+$env_vars \
+  $CONDA_PREFIX/bin/python \
   -m llama_stack.distribution.server.server \
   --yaml_config "$yaml_config" \
   --port "$port" "$@"

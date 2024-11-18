@@ -4,8 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
-
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -115,7 +113,6 @@ class Provider(BaseModel):
 
 class StackRunConfig(BaseModel):
     version: str = LLAMA_STACK_RUN_CONFIG_VERSION
-    built_at: datetime
 
     image_name: str = Field(
         ...,

@@ -1,15 +1,23 @@
 # Meta Reference Distribution
 
-The `llamastack/distribution-meta-reference-gpu` distribution consists of the following provider configurations.
+The `llamastack/distribution-meta-reference-gpu` distribution consists of the following provider configurations:
+
+| API | Provider(s) |
+|-----|-------------|
+| agents | `inline::meta-reference` |
+| inference | `inline::meta-reference` |
+| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard` |
+| telemetry | `inline::meta-reference` |
 
 
-| **API**         	| **Inference** 	| **Agents**     	| **Memory**                                       	| **Safety**     	| **Telemetry**  	|
-|-----------------	|---------------	|----------------	|--------------------------------------------------	|----------------	|----------------	|
-| **Provider(s)** 	| meta-reference  	| meta-reference 	| meta-reference, remote::pgvector, remote::chroma 	| meta-reference 	| meta-reference 	|
+Note that you need access to nvidia GPUs to run this distribution. This distribution is not compatible with CPU-only machines or machines with AMD GPUs.
 
 
-### Step 0. Prerequisite - Downloading Models
-Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
+
+## Prerequisite: Downloading Models
+
+Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models. Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
 
 ```
 $ ls ~/.llama/checkpoints
@@ -17,55 +25,56 @@ Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3
 Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
 ```
 
-### Step 1. Start the Distribution
+## Running the Distribution
 
-#### (Option 1) Start with Docker
-```
-$ cd distributions/meta-reference-gpu && docker compose up
-```
+You can do this via Conda (build code) or Docker which has a pre-built image.
 
-> [!NOTE]
-> This assumes you have access to GPU to start a local server with access to your GPU.
+### Via Docker
 
+This method allows you to get started quickly without having to build the distribution code.
 
-> [!NOTE]
-> `~/.llama` should be the path containing downloaded weights of Llama models.
-
-
-This will download and start running a pre-built docker container. Alternatively, you may use the following commands:
-
-```
-docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-gpu --yaml_config /root/my-run.yaml
-```
-
-#### (Option 2) Start with Conda
-
-1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
-
-2. Build the `meta-reference-gpu` distribution
-
-```
-$ llama stack build --template meta-reference-gpu --image-type conda
+```bash
+LLAMA_STACK_PORT=5001
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ./run.yaml:/root/my-run.yaml \
+  llamastack/distribution-meta-reference-gpu \
+  /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
 
-3. Start running distribution
-```
-$ cd distributions/meta-reference-gpu
-$ llama stack run ./run.yaml
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  llamastack/distribution-meta-reference-gpu \
+  /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
+  --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 ```
 
-### (Optional) Serving a new model
-You may change the `config.model` in `run.yaml` to update the model currently being served by the distribution. Make sure you have the model checkpoint downloaded in your `~/.llama`.
-```
-inference:
-  - provider_id: meta0
-    provider_type: inline::meta-reference
-    config:
-      model: Llama3.2-11B-Vision-Instruct
-      quantization: null
-      torch_seed: null
-      max_seq_len: 4096
-      max_batch_size: 1
+### Via Conda
+
+Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
+
+```bash
+llama stack build --template meta-reference-gpu --image-type conda
+llama stack run ./run.yaml \
+  --port 5001 \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
 
-Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+llama stack run ./run-with-safety.yaml \
+  --port 5001 \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
+  --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+```

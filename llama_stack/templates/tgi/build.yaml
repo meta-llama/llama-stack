@@ -1,12 +1,19 @@
+version: '2'
 name: tgi
 distribution_spec:
-  description: Use TGI for running LLM inference
+  description: Use (an external) TGI server for running LLM inference
+  docker_image: llamastack/distribution-tgi:test-0.0.52rc3
   providers:
-    inference: remote::tgi
+    inference:
+    - remote::tgi
     memory:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector
-    safety: inline::llama-guard
-    agents: inline::meta-reference
-    telemetry: inline::meta-reference
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

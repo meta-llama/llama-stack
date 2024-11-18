@@ -39,6 +39,13 @@ class StackRun(Subcommand):
             help="Disable IPv6 support",
             default=False,
         )
+        self.parser.add_argument(
+            "--env",
+            action="append",
+            help="Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times.",
+            default=[],
+            metavar="KEY=VALUE",
+        )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         from pathlib import Path
@@ -107,5 +114,17 @@ class StackRun(Subcommand):
         run_args.extend([str(config_file), str(args.port)])
         if args.disable_ipv6:
             run_args.append("--disable-ipv6")
+
+        for env_var in args.env:
+            if "=" not in env_var:
+                self.parser.error(
+                    f"Environment variable '{env_var}' must be in KEY=VALUE format"
+                )
+                return
+            key, value = env_var.split("=", 1)  # split on first = only
+            if not key:
+                self.parser.error(f"Environment variable '{env_var}' has empty key")
+                return
+            run_args.extend(["--env", f"{key}={value}"])
 
         run_with_pty(run_args)

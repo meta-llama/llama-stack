@@ -107,7 +107,7 @@ class Llama:
             sys.stdout = open(os.devnull, "w")
 
         start_time = time.time()
-        if config.checkpoint_dir:
+        if config.checkpoint_dir and config.checkpoint_dir != "null":
             ckpt_dir = config.checkpoint_dir
         else:
             ckpt_dir = model_checkpoint_dir(model)
@@ -137,7 +137,6 @@ class Llama:
         ), f"model_args vocab = {model_args.vocab_size} but tokenizer vocab = {tokenizer.n_words}"
 
         if isinstance(config, MetaReferenceQuantizedInferenceConfig):
-
             if isinstance(config.quantization, Fp8QuantizationConfig):
                 from .quantization.loader import convert_to_fp8_quantized_model
 

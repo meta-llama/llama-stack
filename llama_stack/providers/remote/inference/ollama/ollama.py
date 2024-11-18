@@ -82,7 +82,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
-        print("Initializing Ollama, checking connectivity to server...")
+        print(f"checking connectivity to Ollama at `{self.url}`...")
         try:
             await self.client.ps()
         except httpx.ConnectError as e:
