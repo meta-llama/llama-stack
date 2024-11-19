@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
@@ -50,3 +50,10 @@ class NVIDIAConfig(BaseModel):
     @property
     def is_hosted(self) -> bool:
         return "integrate.api.nvidia.com" in self.base_url
+    
+    @classmethod
+    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+        return {
+            "url": "https://integrate.api.nvidia.com",
+            "api_key": "${env.NVIDIA_API_KEY}",
+        }

@@ -1,0 +1,19 @@
+version: '2'
+name: nvidia
+distribution_spec:
+  description: Use NVIDIA NIM for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::nvidia
+    memory:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda
