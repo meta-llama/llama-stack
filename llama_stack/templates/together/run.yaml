@@ -1,7 +1,7 @@
 version: '2'
 image_name: together
 docker_image: null
-conda_env: null
+conda_env: together
 apis:
 - agents
 - inference

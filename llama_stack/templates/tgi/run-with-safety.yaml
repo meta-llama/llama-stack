@@ -1,7 +1,7 @@
 version: '2'
 image_name: tgi
 docker_image: llamastack/distribution-tgi:test-0.0.52rc3
-conda_env: null
+conda_env: tgi
 apis:
 - agents
 - inference

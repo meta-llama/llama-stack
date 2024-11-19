@@ -1,7 +1,7 @@
 version: '2'
 image_name: fireworks
 docker_image: null
-conda_env: null
+conda_env: fireworks
 apis:
 - agents
 - inference
