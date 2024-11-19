@@ -61,7 +61,7 @@ models:
   provider_id: null
   provider_model_id: fireworks/llama-v3p2-1b-instruct
 - metadata: {}
-  model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  model_id: meta-llama/Llama-3.2-3B-Instruct
   provider_id: null
   provider_model_id: fireworks/llama-v3p2-3b-instruct
 - metadata: {}
