@@ -88,7 +88,7 @@ docker run \
   /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT \
+  --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT/v1
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
@@ -105,9 +105,9 @@ docker run \
   /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT \
+  --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT/v1 \
   --env SAFETY_MODEL=$SAFETY_MODEL \
-  --env VLLM_SAFETY_URL=http://host.docker.internal:$SAFETY_PORT
+  --env VLLM_SAFETY_URL=http://host.docker.internal:$SAFETY_PORT/v1
 ```
 
 
@@ -126,16 +126,19 @@ llama stack build --template remote-vllm --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT
+  --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT/v1
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
+export SAFETY_PORT=8081
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+
 llama stack run ./run-with-safety.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
-  --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT \
+  --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT/v1 \
   --env SAFETY_MODEL=$SAFETY_MODEL \
-  --env VLLM_SAFETY_URL=http://127.0.0.1:$SAFETY_PORT
+  --env VLLM_SAFETY_URL=http://127.0.0.1:$SAFETY_PORT/v1
 ```
