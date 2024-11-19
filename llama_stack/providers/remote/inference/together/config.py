@@ -22,7 +22,7 @@ class TogetherImplConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls) -> Dict[str, Any]:
+    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
             "url": "https://api.together.xyz/v1",
             "api_key": "${env.TOGETHER_API_KEY}",

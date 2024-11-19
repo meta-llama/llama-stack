@@ -8,9 +8,13 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
+import importlib
 import os
+import shutil
 from functools import lru_cache
 from pathlib import Path
+
+import pkg_resources
 
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -99,7 +103,9 @@ class StackBuild(Subcommand):
                         self.parser.error(
                             f"Please specify a image-type (docker | conda) for {args.template}"
                         )
-                    self._run_stack_build_command_from_build_config(build_config)
+                    self._run_stack_build_command_from_build_config(
+                        build_config, template_name=args.template
+                    )
                     return
 
             self.parser.error(
@@ -248,12 +254,13 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command_from_build_config(
-        self, build_config: BuildConfig
+        self, build_config: BuildConfig, template_name: Optional[str] = None
     ) -> None:
         import json
         import os
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import build_image
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
@@ -271,7 +278,29 @@ class StackBuild(Subcommand):
         if return_code != 0:
             return
 
-        self._generate_run_config(build_config, build_dir)
+        if template_name:
+            # copy run.yaml from template to build_dir instead of generating it again
+            template_path = pkg_resources.resource_filename(
+                "llama_stack", f"templates/{template_name}/run.yaml"
+            )
+            os.makedirs(build_dir, exist_ok=True)
+            run_config_file = build_dir / f"{build_config.name}-run.yaml"
+            shutil.copy(template_path, run_config_file)
+            module_name = f"llama_stack.templates.{template_name}"
+            module = importlib.import_module(module_name)
+            distribution_template = module.get_distribution_template()
+            cprint("Build Successful! Next steps: ", color="green")
+            env_vars = ", ".join(distribution_template.run_config_env_vars.keys())
+            cprint(
+                f"   1. Set the environment variables: {env_vars}",
+                color="green",
+            )
+            cprint(
+                f"   2. `llama stack run {run_config_file}`",
+                color="green",
+            )
+        else:
+            self._generate_run_config(build_config, build_dir)
 
     def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
         import json
