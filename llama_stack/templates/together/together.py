@@ -6,6 +6,8 @@
 
 from pathlib import Path
 
+from llama_models.sku_list import all_registered_models
+
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
@@ -28,7 +30,16 @@ def get_distribution_template() -> DistributionTemplate:
         config=TogetherImplConfig.sample_run_config(),
     )
 
-    default_models = [ModelInput(model_id=m.provider_model_id) for m in MODEL_ALIASES]
+    core_model_to_hf_repo = {
+        m.descriptor(): m.huggingface_repo for m in all_registered_models()
+    }
+    default_models = [
+        ModelInput(
+            model_id=core_model_to_hf_repo[m.llama_model],
+            provider_model_id=m.provider_model_id,
+        )
+        for m in MODEL_ALIASES
+    ]
 
     return DistributionTemplate(
         name="together",

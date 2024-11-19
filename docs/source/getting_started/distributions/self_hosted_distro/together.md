@@ -22,14 +22,14 @@ The following environment variables can be configured:
 
 The following models are available by default:
 
-- `meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo`
-- `meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo`
-- `meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo`
-- `meta-llama/Llama-3.2-3B-Instruct-Turbo`
-- `meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo`
-- `meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo`
-- `meta-llama/Meta-Llama-Guard-3-8B`
-- `meta-llama/Llama-Guard-3-11B-Vision-Turbo`
+- `meta-llama/Llama-3.1-8B-Instruct`
+- `meta-llama/Llama-3.1-70B-Instruct`
+- `meta-llama/Llama-3.1-405B-Instruct-FP8`
+- `meta-llama/Llama-3.2-3B-Instruct`
+- `meta-llama/Llama-3.2-11B-Vision-Instruct`
+- `meta-llama/Llama-3.2-90B-Vision-Instruct`
+- `meta-llama/Llama-Guard-3-8B`
+- `meta-llama/Llama-Guard-3-11B-Vision`
 
 
 ### Prerequisite: API Keys

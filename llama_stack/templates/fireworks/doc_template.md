@@ -20,7 +20,7 @@ The following environment variables can be configured:
 The following models are available by default:
 
 {% for model in default_models %}
-- `{{ model.model_id }}`
+- `{{ model.model_id }} ({{ model.provider_model_id }})`
 {% endfor %}
 {% endif %}
 
