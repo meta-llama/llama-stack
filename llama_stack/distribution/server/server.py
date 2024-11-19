@@ -40,7 +40,11 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import construct_stack, replace_env_vars
+from llama_stack.distribution.stack import (
+    construct_stack,
+    replace_env_vars,
+    validate_env_pair,
+)
 
 from .endpoints import get_all_api_endpoints
 
