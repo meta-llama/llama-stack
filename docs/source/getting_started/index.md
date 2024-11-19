@@ -535,10 +535,10 @@ $ llama-stack-client models list
 Once the server is set up, we can test it with a client to verify it's working correctly. The following command will send a chat completion request to the server's `/inference/chat_completion` API:
 
 ```bash
-$ curl http://localhost:5000/inference/chat_completion \
+$ curl http://localhost:5000/alpha/inference/chat-completion \
 -H "Content-Type: application/json" \
 -d '{
-    "model_id": "Llama3.1-8B-Instruct",
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2 sentence poem about the moon"}
