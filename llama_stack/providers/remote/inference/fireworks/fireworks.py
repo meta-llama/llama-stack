@@ -214,10 +214,10 @@ class FireworksInferenceAdapter(
 
         async def _to_async_generator():
             if "messages" in params:
-                stream = await self._get_client().chat.completions.acreate(**params)
+                stream = self._get_client().chat.completions.acreate(**params)
             else:
-                stream = self._get_client().completion.create(**params)
-            for chunk in stream:
+                stream = self._get_client().completion.acreate(**params)
+            async for chunk in stream:
                 yield chunk
 
         stream = _to_async_generator()
