@@ -44,7 +44,7 @@ class ScoringFunctionStore(Protocol):
 class Scoring(Protocol):
     scoring_function_store: ScoringFunctionStore
 
-    @webmethod(route="/scoring/score_batch")
+    @webmethod(route="/scoring/score-batch")
     async def score_batch(
         self,
         dataset_id: str,

@@ -31,7 +31,12 @@ from .strong_typing.schema import json_schema_type
 
 schema_utils.json_schema_type = json_schema_type
 
-from llama_stack.distribution.stack import LlamaStack
+# this line needs to be here to ensure json_schema_type has been altered before
+# the imports use the annotation
+from llama_stack.distribution.stack import (  # noqa: E402
+    LLAMA_STACK_API_VERSION,
+    LlamaStack,
+)
 
 
 def main(output_dir: str):
@@ -50,7 +55,7 @@ def main(output_dir: str):
             server=Server(url="http://any-hosted-llama-stack.com"),
             info=Info(
                 title="[DRAFT] Llama Stack Specification",
-                version="0.0.1",
+                version=LLAMA_STACK_API_VERSION,
                 description="""This is the specification of the llama stack that provides
                 a set of endpoints and their corresponding interfaces that are tailored to
                 best leverage Llama Models. The specification is still in draft and subject to change.

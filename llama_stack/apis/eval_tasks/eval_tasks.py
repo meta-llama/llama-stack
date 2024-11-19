@@ -42,13 +42,13 @@ class EvalTaskInput(CommonEvalTaskFields, BaseModel):
 
 @runtime_checkable
 class EvalTasks(Protocol):
-    @webmethod(route="/eval_tasks/list", method="GET")
+    @webmethod(route="/eval-tasks/list", method="GET")
     async def list_eval_tasks(self) -> List[EvalTask]: ...
 
-    @webmethod(route="/eval_tasks/get", method="GET")
+    @webmethod(route="/eval-tasks/get", method="GET")
     async def get_eval_task(self, name: str) -> Optional[EvalTask]: ...
 
-    @webmethod(route="/eval_tasks/register", method="POST")
+    @webmethod(route="/eval-tasks/register", method="POST")
     async def register_eval_task(
         self,
         eval_task_id: str,

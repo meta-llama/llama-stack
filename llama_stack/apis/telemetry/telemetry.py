@@ -125,8 +125,8 @@ Event = Annotated[
 
 @runtime_checkable
 class Telemetry(Protocol):
-    @webmethod(route="/telemetry/log_event")
+    @webmethod(route="/telemetry/log-event")
     async def log_event(self, event: Event) -> None: ...
 
-    @webmethod(route="/telemetry/get_trace", method="GET")
+    @webmethod(route="/telemetry/get-trace", method="GET")
     async def get_trace(self, trace_id: str) -> Trace: ...
