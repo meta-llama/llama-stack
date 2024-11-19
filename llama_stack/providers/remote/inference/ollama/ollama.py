@@ -46,7 +46,7 @@ model_aliases = [
     ),
     build_model_alias(
         "llama3.1:8b",
-        CoreModelId.llama3_1_8b_instruct.value,
+        CoreModelId.llama3_1_8b.value,
     ),
     build_model_alias(
         "llama3.1:70b-instruct-fp16",
@@ -54,7 +54,7 @@ model_aliases = [
     ),
     build_model_alias(
         "llama3.1:70b",
-        CoreModelId.llama3_1_70b_instruct.value,
+        CoreModelId.llama3_1_70b.value,
     ),
     build_model_alias(
         "llama3.2:1b-instruct-fp16",
@@ -66,11 +66,11 @@ model_aliases = [
     ),
     build_model_alias(
         "llama3.2:1b",
-        CoreModelId.llama3_2_1b_instruct.value,
+        CoreModelId.llama3_2_1b.value,
     ),
     build_model_alias(
         "llama3.2:3b",
-        CoreModelId.llama3_2_3b_instruct.value,
+        CoreModelId.llama3_2_3b.value,
     ),
     build_model_alias(
         "llama-guard3:8b",
@@ -85,8 +85,8 @@ model_aliases = [
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(
-        "llama3.2-vision",
-        CoreModelId.llama3_2_11b_vision_instruct.value,
+        "llama3.2-vision:11b",
+        CoreModelId.llama3_2_11b_vision.value,
     ),
 ]
 
