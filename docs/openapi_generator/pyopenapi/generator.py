@@ -202,7 +202,9 @@ class ContentBuilder:
     ) -> MediaType:
         schema = self.schema_builder.classdef_to_ref(item_type)
         if self.schema_transformer:
-            schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = self.schema_transformer  # type: ignore
+            schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = (
+                self.schema_transformer
+            )  # type: ignore
             schema = schema_transformer(schema)
 
         if not examples:
@@ -630,6 +632,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)
             else:

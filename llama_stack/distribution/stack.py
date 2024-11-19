@@ -40,6 +40,9 @@ from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.providers.datatypes import Api
 
 
+LLAMA_STACK_API_VERSION = "alpha"
+
+
 class LlamaStack(
     MemoryBanks,
     Inference,

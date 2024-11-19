@@ -74,14 +74,14 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/run_eval", method="POST")
+    @webmethod(route="/eval/run-eval", method="POST")
     async def run_eval(
         self,
         task_id: str,
         task_config: EvalTaskConfig,
     ) -> Job: ...
 
-    @webmethod(route="/eval/evaluate_rows", method="POST")
+    @webmethod(route="/eval/evaluate-rows", method="POST")
     async def evaluate_rows(
         self,
         task_id: str,

@@ -46,7 +46,7 @@ class ShieldStore(Protocol):
 class Safety(Protocol):
     shield_store: ShieldStore
 
-    @webmethod(route="/safety/run_shield")
+    @webmethod(route="/safety/run-shield")
     async def run_shield(
         self,
         shield_id: str,
