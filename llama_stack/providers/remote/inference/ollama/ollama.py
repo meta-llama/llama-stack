@@ -58,16 +58,24 @@ model_aliases = [
         CoreModelId.llama3_1_70b_instruct.value,
     ),
     build_model_alias(
+        "llama3.1:405b-instruct-fp16",
+        CoreModelId.llama3_1_405b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.1:405b",
+        CoreModelId.llama3_1_405b_instruct.value,
+    ),
+    build_model_alias(
         "llama3.2:1b-instruct-fp16",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2:1b",
         CoreModelId.llama3_2_1b_instruct.value,
     ),
     build_model_alias(
         "llama3.2:3b-instruct-fp16",
         CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias_with_just_provider_model_id(
-        "llama3.2:1b",
-        CoreModelId.llama3_2_1b_instruct.value,
     ),
     build_model_alias_with_just_provider_model_id(
         "llama3.2:3b",
@@ -80,6 +88,14 @@ model_aliases = [
     build_model_alias_with_just_provider_model_id(
         "llama3.2-vision",
         CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2-vision:90b-instruct-fp16",
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2-vision:90b",
+        CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     # The Llama Guard models don't have their full fp16 versions
     # so we are going to alias their default version to the canonical SKU
