@@ -82,7 +82,7 @@ model_aliases = [
         CoreModelId.llama_guard_3_1b.value,
     ),
     build_model_alias(
-        "x/llama3.2-vision:11b-instruct-fp16",
+        "llama3.2-vision:11b-instruct-fp16",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias_with_just_provider_model_id(
