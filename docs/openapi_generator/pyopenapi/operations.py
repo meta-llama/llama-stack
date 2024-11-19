@@ -12,6 +12,8 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION
+
 from termcolor import colored
 
 from ..strong_typing.inspection import (
@@ -111,9 +113,12 @@ class EndpointOperation:
 
     def get_route(self) -> str:
         if self.route is not None:
-            return self.route
+            assert (
+                "_" not in self.route
+            ), f"route should not contain underscores: {self.route}"
+            return "/".join(["", LLAMA_STACK_API_VERSION, self.route.lstrip("/")])
 
-        route_parts = ["", self.name]
+        route_parts = ["", LLAMA_STACK_API_VERSION, self.name]
         for param_name, _ in self.path_params:
             route_parts.append("{" + param_name + "}")
         return "/".join(route_parts)

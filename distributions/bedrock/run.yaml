@@ -1,5 +1,4 @@
 version: '2'
-built_at: '2024-11-01T17:40:45.325529'
 image_name: local
 name: bedrock
 docker_image: null

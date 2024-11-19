@@ -22,6 +22,7 @@ async def get_provider_impl(
         deps[Api.datasets],
         deps[Api.scoring],
         deps[Api.inference],
+        deps[Api.agents],
     )
     await impl.initialize()
     return impl

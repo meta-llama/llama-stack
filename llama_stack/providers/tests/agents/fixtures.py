@@ -83,6 +83,6 @@ async def agents_stack(request, inference_model, safety_shield):
             )
             for model in inference_models
         ],
-        shields=[safety_shield],
+        shields=[safety_shield] if safety_shield else [],
     )
     return test_stack

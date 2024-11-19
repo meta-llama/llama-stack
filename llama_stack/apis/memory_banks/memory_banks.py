@@ -130,13 +130,13 @@ class MemoryBankInput(BaseModel):
 
 @runtime_checkable
 class MemoryBanks(Protocol):
-    @webmethod(route="/memory_banks/list", method="GET")
+    @webmethod(route="/memory-banks/list", method="GET")
     async def list_memory_banks(self) -> List[MemoryBank]: ...
 
-    @webmethod(route="/memory_banks/get", method="GET")
+    @webmethod(route="/memory-banks/get", method="GET")
     async def get_memory_bank(self, memory_bank_id: str) -> Optional[MemoryBank]: ...
 
-    @webmethod(route="/memory_banks/register", method="POST")
+    @webmethod(route="/memory-banks/register", method="POST")
     async def register_memory_bank(
         self,
         memory_bank_id: str,
@@ -145,5 +145,5 @@ class MemoryBanks(Protocol):
         provider_memory_bank_id: Optional[str] = None,
     ) -> MemoryBank: ...
 
-    @webmethod(route="/memory_banks/unregister", method="POST")
+    @webmethod(route="/memory-banks/unregister", method="POST")
     async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...

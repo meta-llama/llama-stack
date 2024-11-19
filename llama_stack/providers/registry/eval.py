@@ -22,6 +22,7 @@ def available_providers() -> List[ProviderSpec]:
                 Api.datasets,
                 Api.scoring,
                 Api.inference,
+                Api.agents,
             ],
         ),
     ]

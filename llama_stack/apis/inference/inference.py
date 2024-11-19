@@ -234,7 +234,7 @@ class Inference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
-    @webmethod(route="/inference/chat_completion")
+    @webmethod(route="/inference/chat-completion")
     async def chat_completion(
         self,
         model_id: str,

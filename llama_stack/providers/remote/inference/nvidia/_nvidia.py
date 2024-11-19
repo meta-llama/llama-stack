@@ -30,7 +30,7 @@ from llama_stack.apis.inference import (
     ResponseFormat,
 )
 from llama_stack.providers.utils.inference.model_registry import (
-    build_model_alias,
+    build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
 
@@ -43,39 +43,39 @@ from ._openai_utils import (
 from ._utils import check_health
 
 _MODEL_ALIASES = [
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama3-8b-instruct",
         CoreModelId.llama3_8b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama3-70b-instruct",
         CoreModelId.llama3_70b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.1-8b-instruct",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.1-70b-instruct",
         CoreModelId.llama3_1_70b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.1-405b-instruct",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.2-1b-instruct",
         CoreModelId.llama3_2_1b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.2-3b-instruct",
         CoreModelId.llama3_2_3b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.2-11b-vision-instruct",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "meta/llama-3.2-90b-vision-instruct",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),

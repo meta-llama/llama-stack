@@ -12,18 +12,19 @@ from pydantic import BaseModel, Field
 
 @json_schema_type
 class TGIImplConfig(BaseModel):
-    host: str = "localhost"
-    port: int = 8080
-    protocol: str = "http"
-
-    @property
-    def url(self) -> str:
-        return f"{self.protocol}://{self.host}:{self.port}"
-
+    url: str = Field(
+        description="The URL for the TGI serving endpoint",
+    )
     api_token: Optional[str] = Field(
         default=None,
         description="A bearer token if your TGI endpoint is protected.",
     )
+
+    @classmethod
+    def sample_run_config(cls, url: str = "${env.TGI_URL}", **kwargs):
+        return {
+            "url": url,
+        }
 
 
 @json_schema_type

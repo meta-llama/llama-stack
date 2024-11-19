@@ -3400,13 +3400,13 @@ info:
   description: "This is the specification of the llama stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-14 17:04:24.301559"
+    \ draft and subject to change.\n                Generated at 2024-11-18 23:37:24.867143"
   title: '[DRAFT] Llama Stack Specification'
-  version: 0.0.1
+  version: alpha
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
-  /agents/create:
+  /alpha/agents/create:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3431,7 +3431,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /agents/delete:
+  /alpha/agents/delete:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3452,7 +3452,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /agents/session/create:
+  /alpha/agents/session/create:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3477,7 +3477,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /agents/session/delete:
+  /alpha/agents/session/delete:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3498,7 +3498,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /agents/session/get:
+  /alpha/agents/session/get:
     post:
       parameters:
       - in: query
@@ -3533,7 +3533,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /agents/step/get:
+  /alpha/agents/step/get:
     get:
       parameters:
       - in: query
@@ -3572,7 +3572,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /agents/turn/create:
+  /alpha/agents/turn/create:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3600,7 +3600,7 @@ paths:
             streamed agent turn completion response.
       tags:
       - Agents
-  /agents/turn/get:
+  /alpha/agents/turn/get:
     get:
       parameters:
       - in: query
@@ -3634,7 +3634,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /batch_inference/chat_completion:
+  /alpha/batch-inference/chat-completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3659,7 +3659,7 @@ paths:
           description: OK
       tags:
       - BatchInference
-  /batch_inference/completion:
+  /alpha/batch-inference/completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3684,7 +3684,7 @@ paths:
           description: OK
       tags:
       - BatchInference
-  /datasetio/get_rows_paginated:
+  /alpha/datasetio/get-rows-paginated:
     get:
       parameters:
       - in: query
@@ -3723,7 +3723,7 @@ paths:
           description: OK
       tags:
       - DatasetIO
-  /datasets/get:
+  /alpha/datasets/get:
     get:
       parameters:
       - in: query
@@ -3749,7 +3749,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /datasets/list:
+  /alpha/datasets/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3768,7 +3768,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /datasets/register:
+  /alpha/datasets/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3789,7 +3789,73 @@ paths:
           description: OK
       tags:
       - Datasets
-  /eval/evaluate_rows:
+  /alpha/eval-tasks/get:
+    get:
+      parameters:
+      - in: query
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/EvalTask'
+                - type: 'null'
+          description: OK
+      tags:
+      - EvalTasks
+  /alpha/eval-tasks/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/EvalTask'
+          description: OK
+      tags:
+      - EvalTasks
+  /alpha/eval-tasks/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterEvalTaskRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - EvalTasks
+  /alpha/eval/evaluate-rows:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3814,7 +3880,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /eval/job/cancel:
+  /alpha/eval/job/cancel:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3835,7 +3901,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /eval/job/result:
+  /alpha/eval/job/result:
     get:
       parameters:
       - in: query
@@ -3864,7 +3930,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /eval/job/status:
+  /alpha/eval/job/status:
     get:
       parameters:
       - in: query
@@ -3895,7 +3961,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /eval/run_eval:
+  /alpha/eval/run-eval:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3920,73 +3986,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /eval_tasks/get:
-    get:
-      parameters:
-      - in: query
-        name: name
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/EvalTask'
-                - type: 'null'
-          description: OK
-      tags:
-      - EvalTasks
-  /eval_tasks/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/EvalTask'
-          description: OK
-      tags:
-      - EvalTasks
-  /eval_tasks/register:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterEvalTaskRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - EvalTasks
-  /health:
+  /alpha/health:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4005,7 +4005,7 @@ paths:
           description: OK
       tags:
       - Inspect
-  /inference/chat_completion:
+  /alpha/inference/chat-completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4032,7 +4032,7 @@ paths:
           description: Chat completion response. **OR** SSE-stream of these events.
       tags:
       - Inference
-  /inference/completion:
+  /alpha/inference/completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4059,7 +4059,7 @@ paths:
           description: Completion response. **OR** streamed completion response.
       tags:
       - Inference
-  /inference/embeddings:
+  /alpha/inference/embeddings:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4084,53 +4084,7 @@ paths:
           description: OK
       tags:
       - Inference
-  /memory/insert:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InsertDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Memory
-  /memory/query:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDocumentsRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryDocumentsResponse'
-          description: OK
-      tags:
-      - Memory
-  /memory_banks/get:
+  /alpha/memory-banks/get:
     get:
       parameters:
       - in: query
@@ -4160,7 +4114,7 @@ paths:
           description: OK
       tags:
       - MemoryBanks
-  /memory_banks/list:
+  /alpha/memory-banks/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4183,7 +4137,7 @@ paths:
           description: OK
       tags:
       - MemoryBanks
-  /memory_banks/register:
+  /alpha/memory-banks/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4202,7 +4156,7 @@ paths:
       responses: {}
       tags:
       - MemoryBanks
-  /memory_banks/unregister:
+  /alpha/memory-banks/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4223,7 +4177,53 @@ paths:
           description: OK
       tags:
       - MemoryBanks
-  /models/get:
+  /alpha/memory/insert:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Memory
+  /alpha/memory/query:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryDocumentsResponse'
+          description: OK
+      tags:
+      - Memory
+  /alpha/models/get:
     get:
       parameters:
       - in: query
@@ -4249,7 +4249,7 @@ paths:
           description: OK
       tags:
       - Models
-  /models/list:
+  /alpha/models/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4268,7 +4268,7 @@ paths:
           description: OK
       tags:
       - Models
-  /models/register:
+  /alpha/models/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4293,7 +4293,7 @@ paths:
           description: OK
       tags:
       - Models
-  /models/unregister:
+  /alpha/models/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4314,7 +4314,7 @@ paths:
           description: OK
       tags:
       - Models
-  /post_training/job/artifacts:
+  /alpha/post-training/job/artifacts:
     get:
       parameters:
       - in: query
@@ -4338,7 +4338,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/job/cancel:
+  /alpha/post-training/job/cancel:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4359,7 +4359,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/job/logs:
+  /alpha/post-training/job/logs:
     get:
       parameters:
       - in: query
@@ -4383,7 +4383,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/job/status:
+  /alpha/post-training/job/status:
     get:
       parameters:
       - in: query
@@ -4407,7 +4407,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/jobs:
+  /alpha/post-training/jobs:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4426,7 +4426,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/preference_optimize:
+  /alpha/post-training/preference-optimize:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4451,7 +4451,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /post_training/supervised_fine_tune:
+  /alpha/post-training/supervised-fine-tune:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4476,7 +4476,7 @@ paths:
           description: OK
       tags:
       - PostTraining
-  /providers/list:
+  /alpha/providers/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4497,7 +4497,7 @@ paths:
           description: OK
       tags:
       - Inspect
-  /routes/list:
+  /alpha/routes/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4520,7 +4520,7 @@ paths:
           description: OK
       tags:
       - Inspect
-  /safety/run_shield:
+  /alpha/safety/run-shield:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4545,57 +4545,7 @@ paths:
           description: OK
       tags:
       - Safety
-  /scoring/score:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScoreRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScoreResponse'
-          description: OK
-      tags:
-      - Scoring
-  /scoring/score_batch:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScoreBatchRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScoreBatchResponse'
-          description: OK
-      tags:
-      - Scoring
-  /scoring_functions/get:
+  /alpha/scoring-functions/get:
     get:
       parameters:
       - in: query
@@ -4621,7 +4571,7 @@ paths:
           description: OK
       tags:
       - ScoringFunctions
-  /scoring_functions/list:
+  /alpha/scoring-functions/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4640,7 +4590,7 @@ paths:
           description: OK
       tags:
       - ScoringFunctions
-  /scoring_functions/register:
+  /alpha/scoring-functions/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4661,7 +4611,57 @@ paths:
           description: OK
       tags:
       - ScoringFunctions
-  /shields/get:
+  /alpha/scoring/score:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+          description: OK
+      tags:
+      - Scoring
+  /alpha/scoring/score-batch:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreBatchRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreBatchResponse'
+          description: OK
+      tags:
+      - Scoring
+  /alpha/shields/get:
     get:
       parameters:
       - in: query
@@ -4687,7 +4687,7 @@ paths:
           description: OK
       tags:
       - Shields
-  /shields/list:
+  /alpha/shields/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4706,7 +4706,7 @@ paths:
           description: OK
       tags:
       - Shields
-  /shields/register:
+  /alpha/shields/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4731,7 +4731,7 @@ paths:
           description: OK
       tags:
       - Shields
-  /synthetic_data_generation/generate:
+  /alpha/synthetic-data-generation/generate:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4756,7 +4756,7 @@ paths:
           description: OK
       tags:
       - SyntheticDataGeneration
-  /telemetry/get_trace:
+  /alpha/telemetry/get-trace:
     get:
       parameters:
       - in: query
@@ -4780,7 +4780,7 @@ paths:
           description: OK
       tags:
       - Telemetry
-  /telemetry/log_event:
+  /alpha/telemetry/log-event:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the

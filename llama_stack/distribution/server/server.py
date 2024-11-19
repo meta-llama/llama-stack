@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import argparse
 import asyncio
 import functools
 import inspect
 import json
 import os
-import re
 import signal
 import sys
 import traceback
@@ -19,7 +19,6 @@ from contextlib import asynccontextmanager
 from ssl import SSLError
 from typing import Any, Dict, Optional
 
-import fire
 import httpx
 import yaml
 
@@ -41,7 +40,11 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import construct_stack
+from llama_stack.distribution.stack import (
+    construct_stack,
+    replace_env_vars,
+    validate_env_pair,
+)
 
 from .endpoints import get_all_api_endpoints
 
@@ -271,64 +274,36 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
-class EnvVarError(Exception):
-    def __init__(self, var_name: str, path: str = ""):
-        self.var_name = var_name
-        self.path = path
-        super().__init__(
-            f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
-        )
+def main():
+    """Start the LlamaStack server."""
+    parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
+    parser.add_argument(
+        "--yaml-config",
+        default="llamastack-run.yaml",
+        help="Path to YAML configuration file",
+    )
+    parser.add_argument("--port", type=int, default=5000, help="Port to listen on")
+    parser.add_argument(
+        "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
+    )
+    parser.add_argument(
+        "--env",
+        action="append",
+        help="Environment variables in KEY=value format. Can be specified multiple times.",
+    )
 
-
-def replace_env_vars(config: Any, path: str = "") -> Any:
-    if isinstance(config, dict):
-        result = {}
-        for k, v in config.items():
+    args = parser.parse_args()
+    if args.env:
+        for env_pair in args.env:
             try:
-                result[k] = replace_env_vars(v, f"{path}.{k}" if path else k)
-            except EnvVarError as e:
-                raise EnvVarError(e.var_name, e.path) from None
-        return result
+                key, value = validate_env_pair(env_pair)
+                print(f"Setting CLI environment variable {key} => {value}")
+                os.environ[key] = value
+            except ValueError as e:
+                print(f"Error: {str(e)}")
+                sys.exit(1)
 
-    elif isinstance(config, list):
-        result = []
-        for i, v in enumerate(config):
-            try:
-                result.append(replace_env_vars(v, f"{path}[{i}]"))
-            except EnvVarError as e:
-                raise EnvVarError(e.var_name, e.path) from None
-        return result
-
-    elif isinstance(config, str):
-        pattern = r"\${env\.([A-Z0-9_]+)(?::([^}]*))?}"
-
-        def get_env_var(match):
-            env_var = match.group(1)
-            default_val = match.group(2)
-
-            value = os.environ.get(env_var)
-            if not value:
-                if default_val is None:
-                    raise EnvVarError(env_var, path)
-                else:
-                    value = default_val
-
-            return value
-
-        try:
-            return re.sub(pattern, get_env_var, config)
-        except EnvVarError as e:
-            raise EnvVarError(e.var_name, e.path) from None
-
-    return config
-
-
-def main(
-    yaml_config: str = "llamastack-run.yaml",
-    port: int = 5000,
-    disable_ipv6: bool = False,
-):
-    with open(yaml_config, "r") as fp:
+    with open(args.yaml_config, "r") as fp:
         config = replace_env_vars(yaml.safe_load(fp))
         config = StackRunConfig(**config)
 
@@ -395,10 +370,10 @@ def main(
 
     # FYI this does not do hot-reloads
 
-    listen_host = ["::", "0.0.0.0"] if not disable_ipv6 else "0.0.0.0"
-    print(f"Listening on {listen_host}:{port}")
-    uvicorn.run(app, host=listen_host, port=port)
+    listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
+    print(f"Listening on {listen_host}:{args.port}")
+    uvicorn.run(app, host=listen_host, port=args.port)
 
 
 if __name__ == "__main__":
-    fire.Fire(main)
+    main()

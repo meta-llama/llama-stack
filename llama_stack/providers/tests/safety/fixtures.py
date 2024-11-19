@@ -47,6 +47,9 @@ def safety_shield(request):
     else:
         params = {}
 
+    if not shield_id:
+        return None
+
     return ShieldInput(
         shield_id=shield_id,
         params=params,

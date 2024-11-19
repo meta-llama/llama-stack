@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
@@ -20,3 +20,10 @@ class FireworksImplConfig(BaseModel):
         default=None,
         description="The Fireworks.ai API Key",
     )
+
+    @classmethod
+    def sample_run_config(cls) -> Dict[str, Any]:
+        return {
+            "url": "https://api.fireworks.ai/inference",
+            "api_key": "${env.FIREWORKS_API_KEY}",
+        }

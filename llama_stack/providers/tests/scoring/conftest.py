@@ -58,7 +58,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--inference-model",
         action="store",
-        default="Llama3.2-3B-Instruct",
+        default="meta-llama/Llama-3.2-3B-Instruct",
         help="Specify the inference model to use for testing",
     )
 
