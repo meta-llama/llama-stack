@@ -22,14 +22,22 @@ If you're looking for more specific topics like tool calling or agent setup, we 
    - Download and unzip `Ollama-darwin.zip`.
    - Run the `Ollama` application.
 
-2. **Download the Ollama CLI**:
+1. **Download the Ollama CLI**:
    - Ensure you have the `ollama` command line tool by downloading and installing it from the same website.
 
-3. **Verify Installation**:
+1. **Start ollama server**:
+   - Open the terminal and run:
+      ```
+      ollama serve
+      ```
+
+1. **Run the model**:
    - Open the terminal and run:
      ```bash
-     ollama run llama3.2:1b
+     ollama run llama3.2:3b-instruct-fp16
      ```
+     **Note**: The supported models for llama stack for now is listed in [here](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L43)
+
 
 ---
 
@@ -84,6 +92,8 @@ If you're looking for more specific topics like tool calling or agent setup, we 
      ```bash
      llama stack run /path/to/your/distro/llamastack-ollama/ollama-run.yaml --port 5050
      ```
+     Note:
+        1. Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
 
 The server will start and listen on `http://localhost:5050`.
 
@@ -97,7 +107,7 @@ After setting up the server, open a new terminal window and verify it's working 
 curl http://localhost:5050/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "llama3.2:1b",
+    "model": "Llama3.2-3B-Instruct",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2-sentence poem about the moon"}
@@ -105,6 +115,8 @@ curl http://localhost:5050/inference/chat_completion \
     "sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
 }'
 ```
+
+You can check the available models with the command `llama-stack-client models list`.
 
 **Expected Output:**
 ```json
