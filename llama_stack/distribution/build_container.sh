@@ -78,10 +78,6 @@ if [ -n "$special_pip_deps" ]; then
   done
 fi
 
-# This has been added to simplify UI development, but we likely need
-# to add this as a dependency to `llama-stack` itself
-add_to_docker "RUN pip install llama-stack-client"
-
 stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
 
