@@ -40,7 +40,7 @@ async def check_health(config: NVIDIAConfig) -> None:
     if not config.is_hosted:
         print("Checking NVIDIA NIM health...")
         try:
-            is_live, is_ready = await _get_health(config.base_url)
+            is_live, is_ready = await _get_health(config.url)
             if not is_live:
                 raise ConnectionError("NVIDIA NIM is not running")
             if not is_ready:
