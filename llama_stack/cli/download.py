@@ -408,7 +408,7 @@ def _meta_download(
 
     cprint(f"\nSuccessfully downloaded model to {output_dir}", "green")
     cprint(
-        f"\nView MD5 checksum files at following location: {output_dir / 'checklist.chk'}",
+        f"\nView MD5 checksum files at: {output_dir / 'checklist.chk'}",
         "white",
     )
     cprint(
