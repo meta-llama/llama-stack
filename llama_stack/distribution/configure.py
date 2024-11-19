@@ -186,6 +186,5 @@ def parse_and_maybe_upgrade_config(config_dict: Dict[str, Any]) -> StackRunConfi
         config_dict = upgrade_from_routing_table(config_dict)
 
     config_dict["version"] = LLAMA_STACK_RUN_CONFIG_VERSION
-    config_dict["built_at"] = datetime.now().isoformat()
 
     return StackRunConfig(**config_dict)
