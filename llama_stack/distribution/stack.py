@@ -183,7 +183,7 @@ async def construct_stack(
     return impls
 
 
-async def get_stack_run_config_from_template(template: str) -> StackRunConfig:
+def get_stack_run_config_from_template(template: str) -> StackRunConfig:
     template_path = pkg_resources.resource_filename(
         "llama_stack", f"templates/{template}/run.yaml"
     )
