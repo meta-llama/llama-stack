@@ -19,8 +19,6 @@ import httpx
 
 from llama_models.datatypes import Model
 from llama_models.sku_list import LlamaDownloadInfo
-
-from llama_stack.cli.subcommand import Subcommand
 from pydantic import BaseModel, ConfigDict
 
 from rich.console import Console
@@ -33,6 +31,8 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 from termcolor import cprint
+
+from llama_stack.cli.subcommand import Subcommand
 
 
 class Download(Subcommand):
