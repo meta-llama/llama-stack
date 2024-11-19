@@ -29,7 +29,6 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
     return ModelAlias(
         provider_model_id=provider_model_id,
         aliases=[
-            model_descriptor,
             get_huggingface_repo(model_descriptor),
         ],
         llama_model=model_descriptor,
@@ -55,6 +54,10 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                 self.alias_to_provider_id_map[alias] = alias_obj.provider_model_id
             # also add a mapping from provider model id to itself for easy lookup
             self.alias_to_provider_id_map[alias_obj.provider_model_id] = (
+                alias_obj.provider_model_id
+            )
+            # ensure we can go from llama model to provider model id
+            self.alias_to_provider_id_map[alias_obj.llama_model] = (
                 alias_obj.provider_model_id
             )
             self.provider_id_to_llama_model_map[alias_obj.provider_model_id] = (
