@@ -31,6 +31,19 @@ make html
 sphinx-autobuild source build/html
 ```
 
+## Pre-commit Hooks
+
+We use [pre-commit](https://pre-commit.com/) to run linting and formatting checks on your code. You can install the pre-commit hooks by running:
+
+```bash
+$ cd llama-stack
+$ conda activate <your-environment>
+$ pip install pre-commit
+$ pre-commit install
+```
+
+After that, pre-commit hooks will run automatically before each commit.
+
 ## Contributor License Agreement ("CLA")
 In order to accept your pull request, we need you to submit a CLA. You only need
 to do this once to work on any of Meta's open source projects.
