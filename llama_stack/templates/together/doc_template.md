@@ -45,7 +45,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env TOGETHER_API_KEY=$TOGETHER_API_KEY
 ```

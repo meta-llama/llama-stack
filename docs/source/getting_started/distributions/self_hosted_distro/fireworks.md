@@ -53,7 +53,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-fireworks \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
 ```

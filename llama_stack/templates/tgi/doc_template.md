@@ -73,7 +73,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT
@@ -87,7 +87,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT \

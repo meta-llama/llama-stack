@@ -85,7 +85,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-remote-vllm \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT/v1
@@ -102,7 +102,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-remote-vllm \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT/v1 \
