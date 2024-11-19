@@ -10,7 +10,6 @@ import functools
 import inspect
 import json
 import os
-import re
 import signal
 import sys
 import traceback
@@ -41,7 +40,11 @@ from llama_stack.providers.utils.telemetry.tracing import (
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import construct_stack
+from llama_stack.distribution.stack import (
+    construct_stack,
+    replace_env_vars,
+    validate_env_pair,
+)
 
 from .endpoints import get_all_api_endpoints
 
@@ -269,77 +272,6 @@ def create_dynamic_typed_route(func: Any, method: str):
     endpoint.__signature__ = sig.replace(parameters=new_params)
 
     return endpoint
-
-
-class EnvVarError(Exception):
-    def __init__(self, var_name: str, path: str = ""):
-        self.var_name = var_name
-        self.path = path
-        super().__init__(
-            f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
-        )
-
-
-def replace_env_vars(config: Any, path: str = "") -> Any:
-    if isinstance(config, dict):
-        result = {}
-        for k, v in config.items():
-            try:
-                result[k] = replace_env_vars(v, f"{path}.{k}" if path else k)
-            except EnvVarError as e:
-                raise EnvVarError(e.var_name, e.path) from None
-        return result
-
-    elif isinstance(config, list):
-        result = []
-        for i, v in enumerate(config):
-            try:
-                result.append(replace_env_vars(v, f"{path}[{i}]"))
-            except EnvVarError as e:
-                raise EnvVarError(e.var_name, e.path) from None
-        return result
-
-    elif isinstance(config, str):
-        pattern = r"\${env\.([A-Z0-9_]+)(?::([^}]*))?}"
-
-        def get_env_var(match):
-            env_var = match.group(1)
-            default_val = match.group(2)
-
-            value = os.environ.get(env_var)
-            if not value:
-                if default_val is None:
-                    raise EnvVarError(env_var, path)
-                else:
-                    value = default_val
-
-            # expand "~" from the values
-            return os.path.expanduser(value)
-
-        try:
-            return re.sub(pattern, get_env_var, config)
-        except EnvVarError as e:
-            raise EnvVarError(e.var_name, e.path) from None
-
-    return config
-
-
-def validate_env_pair(env_pair: str) -> tuple[str, str]:
-    """Validate and split an environment variable key-value pair."""
-    try:
-        key, value = env_pair.split("=", 1)
-        key = key.strip()
-        if not key:
-            raise ValueError(f"Empty key in environment variable pair: {env_pair}")
-        if not all(c.isalnum() or c == "_" for c in key):
-            raise ValueError(
-                f"Key must contain only alphanumeric characters and underscores: {key}"
-            )
-        return key, value
-    except ValueError as e:
-        raise ValueError(
-            f"Invalid environment variable format '{env_pair}': {str(e)}. Expected format: KEY=value"
-        ) from e
 
 
 def main():
