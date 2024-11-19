@@ -60,9 +60,8 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./run.yaml:/root/my-run.yaml \
-  --gpus=all \
   llamastack/distribution-ollama \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
@@ -76,9 +75,8 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   -v ./run-with-safety.yaml:/root/my-run.yaml \
-  --gpus=all \
   llamastack/distribution-ollama \
-  /root/my-run.yaml \
+  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env SAFETY_MODEL=$SAFETY_MODEL \

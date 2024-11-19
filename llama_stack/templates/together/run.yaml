@@ -78,7 +78,7 @@ models:
   provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
 shields:
 - params: null
-  shield_id: meta-llama/Llama-Guard-3-1B
+  shield_id: meta-llama/Llama-Guard-3-8B
   provider_id: null
   provider_shield_id: null
 memory_banks: []
