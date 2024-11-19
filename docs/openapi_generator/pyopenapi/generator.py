@@ -204,7 +204,7 @@ class ContentBuilder:
         if self.schema_transformer:
             schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = (
                 self.schema_transformer
-            )  # type: ignore
+            )
             schema = schema_transformer(schema)
 
         if not examples:

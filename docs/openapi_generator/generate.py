@@ -33,10 +33,8 @@ schema_utils.json_schema_type = json_schema_type
 
 # this line needs to be here to ensure json_schema_type has been altered before
 # the imports use the annotation
-from llama_stack.distribution.stack import (  # noqa: E402
-    LLAMA_STACK_API_VERSION,
-    LlamaStack,
-)
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION  # noqa: E402
+from llama_stack.distribution.stack import LlamaStack  # noqa: E402
 
 
 def main(output_dir: str):

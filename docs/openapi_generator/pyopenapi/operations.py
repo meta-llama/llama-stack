@@ -12,7 +12,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
-from llama_stack.distribution.stack import LLAMA_STACK_API_VERSION
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 
 from termcolor import colored
 
