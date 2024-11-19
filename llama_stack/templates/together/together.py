@@ -55,7 +55,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": [inference_provider],
                 },
                 default_models=default_models,
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-1B")],
+                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
         },
         run_config_env_vars={
