@@ -44,7 +44,7 @@ Finally, you can override the model completely by doing:
 ```bash
 pytest -s -v llama_stack/providers/tests/inference/test_text_inference.py \
   -m fireworks \
-  --inference-model "Llama3.1-70B-Instruct" \
+  --inference-model "meta-llama/Llama3.1-70B-Instruct" \
   --env FIREWORKS_API_KEY=<...>
 ```
 

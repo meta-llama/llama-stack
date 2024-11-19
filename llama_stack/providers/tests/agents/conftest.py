@@ -81,13 +81,13 @@ def pytest_addoption(parser):
     parser.addoption(
         "--inference-model",
         action="store",
-        default="Llama3.1-8B-Instruct",
+        default="meta-llama/Llama-3.1-8B-Instruct",
         help="Specify the inference model to use for testing",
     )
     parser.addoption(
         "--safety-shield",
         action="store",
-        default="Llama-Guard-3-8B",
+        default="meta-llama/Llama-Guard-3-8B",
         help="Specify the safety shield to use for testing",
     )
 
