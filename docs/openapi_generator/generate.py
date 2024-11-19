@@ -31,7 +31,12 @@ from .strong_typing.schema import json_schema_type
 
 schema_utils.json_schema_type = json_schema_type
 
-from llama_stack.distribution.stack import LLAMA_STACK_API_VERSION, LlamaStack  # noqa
+# this line needs to be here to ensure json_schema_type has been altered before
+# the imports use the annotation
+from llama_stack.distribution.stack import (  # noqa: E402
+    LLAMA_STACK_API_VERSION,
+    LlamaStack,
+)
 
 
 def main(output_dir: str):
