@@ -8,6 +8,7 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
+import importlib
 import os
 import shutil
 from functools import lru_cache
@@ -285,8 +286,17 @@ class StackBuild(Subcommand):
             os.makedirs(build_dir, exist_ok=True)
             run_config_file = build_dir / f"{build_config.name}-run.yaml"
             shutil.copy(template_path, run_config_file)
+            module_name = f"llama_stack.templates.{template_name}"
+            module = importlib.import_module(module_name)
+            distribution_template = module.get_distribution_template()
+            cprint("Build Successful! Next steps: ", color="green")
+            env_vars = ", ".join(distribution_template.run_config_env_vars.keys())
             cprint(
-                f"You can now edit {run_config_file} and run `llama stack run {run_config_file}`",
+                f"   1. Set the environment variables: {env_vars}",
+                color="green",
+            )
+            cprint(
+                f"   2. `llama stack run {run_config_file}`",
                 color="green",
             )
         else:
