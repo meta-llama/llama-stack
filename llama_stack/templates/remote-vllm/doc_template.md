@@ -34,6 +34,7 @@ docker run \
     -p $INFERENCE_PORT:$INFERENCE_PORT \
     --ipc=host \
     vllm/vllm-openai:latest \
+    --gpu-memory-utilization 0.7 \
     --model $INFERENCE_MODEL \
     --port $INFERENCE_PORT
 ```
@@ -53,6 +54,7 @@ docker run \
     -p $SAFETY_PORT:$SAFETY_PORT \
     --ipc=host \
     vllm/vllm-openai:latest \
+    --gpu-memory-utilization 0.7 \
     --model $SAFETY_MODEL \
     --port $SAFETY_PORT
 ```
@@ -66,7 +68,10 @@ Now you are ready to run Llama Stack with vLLM as the inference provider. You ca
 This method allows you to get started quickly without having to build the distribution code.
 
 ```bash
-LLAMA_STACK_PORT=5001
+export INFERENCE_PORT=8000
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export LLAMA_STACK_PORT=5001
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
@@ -81,6 +86,9 @@ docker run \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
+export SAFETY_PORT=8081
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
@@ -100,9 +108,15 @@ docker run \
 Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
+export INFERENCE_PORT=8000
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export LLAMA_STACK_PORT=5001
+
+cd distributions/remote-vllm
 llama stack build --template remote-vllm --image-type conda
+
 llama stack run ./run.yaml \
-  --port 5001 \
+  --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT
 ```
@@ -111,7 +125,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
 llama stack run ./run-with-safety.yaml \
-  --port 5001 \
+  --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env VLLM_URL=http://127.0.0.1:$INFERENCE_PORT \
   --env SAFETY_MODEL=$SAFETY_MODEL \
