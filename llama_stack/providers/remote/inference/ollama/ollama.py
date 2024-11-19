@@ -16,6 +16,7 @@ from ollama import AsyncClient
 
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
+    build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
 
@@ -44,7 +45,7 @@ model_aliases = [
         "llama3.1:8b-instruct-fp16",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama3.1:8b",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
@@ -52,7 +53,7 @@ model_aliases = [
         "llama3.1:70b-instruct-fp16",
         CoreModelId.llama3_1_70b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama3.1:70b",
         CoreModelId.llama3_1_70b_instruct.value,
     ),
@@ -64,27 +65,27 @@ model_aliases = [
         "llama3.2:3b-instruct-fp16",
         CoreModelId.llama3_2_3b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama3.2:1b",
         CoreModelId.llama3_2_1b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama3.2:3b",
         CoreModelId.llama3_2_3b_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama-guard3:8b",
         CoreModelId.llama_guard_3_8b.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama-guard3:1b",
         CoreModelId.llama_guard_3_1b.value,
     ),
     build_model_alias(
-        "x/llama3.2-vision:11b-instruct-fp16",
+        "llama3.2-vision:11b-instruct-fp16",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
-    build_model_alias(
+    build_model_alias_with_just_provider_model_id(
         "llama3.2-vision",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),

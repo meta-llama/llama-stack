@@ -36,6 +36,16 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
     )
 
 
+def build_model_alias_with_just_provider_model_id(
+    provider_model_id: str, model_descriptor: str
+) -> ModelAlias:
+    return ModelAlias(
+        provider_model_id=provider_model_id,
+        aliases=[],
+        llama_model=model_descriptor,
+    )
+
+
 class ModelRegistryHelper(ModelsProtocolPrivate):
     def __init__(self, model_aliases: List[ModelAlias]):
         self.alias_to_provider_id_map = {}
