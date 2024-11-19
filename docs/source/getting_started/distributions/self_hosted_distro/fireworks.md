@@ -25,7 +25,7 @@ The following models are available by default:
 - `meta-llama/Llama-3.1-8B-Instruct (fireworks/llama-v3p1-8b-instruct)`
 - `meta-llama/Llama-3.1-70B-Instruct (fireworks/llama-v3p1-70b-instruct)`
 - `meta-llama/Llama-3.1-405B-Instruct-FP8 (fireworks/llama-v3p1-405b-instruct)`
-- `meta-llama/Llama-3.2-3B-Instruct (fireworks/llama-v3p2-1b-instruct)`
+- `meta-llama/Llama-3.2-1B-Instruct (fireworks/llama-v3p2-1b-instruct)`
 - `meta-llama/Llama-3.2-3B-Instruct (fireworks/llama-v3p2-3b-instruct)`
 - `meta-llama/Llama-3.2-11B-Vision-Instruct (fireworks/llama-v3p2-11b-vision-instruct)`
 - `meta-llama/Llama-3.2-90B-Vision-Instruct (fireworks/llama-v3p2-90b-vision-instruct)`
