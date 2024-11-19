@@ -36,7 +36,7 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
     )
 
 
-def build_model_alias_with_just_llama_model(
+def build_model_alias_with_just_provider_model_id(
     provider_model_id: str, model_descriptor: str
 ) -> ModelAlias:
     return ModelAlias(
