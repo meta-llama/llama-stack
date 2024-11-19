@@ -16,6 +16,7 @@ from pydantic import BaseModel, parse_obj_as
 from llama_stack.apis.memory import *  # noqa: F403
 
 from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.memory.vector_store import (
     ALL_MINILM_L6_V2_DIMENSION,
     BankWithIndex,
@@ -23,6 +24,8 @@ from llama_stack.providers.utils.memory.vector_store import (
 )
 
 from .config import PGVectorConfig
+
+MEMORY_BANKS_PREFIX = "memory_banks:"
 
 
 def check_extension_version(cur):
@@ -122,6 +125,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         self.cursor = None
         self.conn = None
         self.cache = {}
+        self.kvstore = None
 
     async def initialize(self) -> None:
         print(f"Initializing PGVector memory adapter with config: {self.config}")
@@ -156,6 +160,19 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             traceback.print_exc()
             raise RuntimeError("Could not connect to PGVector database server") from e
 
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        # Load existing banks from kvstore
+        start_key = MEMORY_BANKS_PREFIX
+        end_key = f"{MEMORY_BANKS_PREFIX}\xff"
+        stored_banks = await self.kvstore.range(start_key, end_key)
+
+        for bank_data in stored_banks:
+            bank = VectorMemoryBank.model_validate_json(bank_data)
+            index = BankWithIndex(
+                bank=bank, index=PGVectorIndex(ALL_MINILM_L6_V2_DIMENSION)
+            )
+            self.cache[bank.identifier] = index
+
     async def shutdown(self) -> None:
         pass
 
@@ -167,6 +184,11 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             memory_bank.memory_bank_type == MemoryBankType.vector.value
         ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
+        print("Inregister_memory_bank()")
+        print(f"cursor: {self.cursor}")
+        print(f"connection: {self.cursor.connection}")
+        print(f"encoding: {self.cursor.connection.encoding.encode}")
+
         upsert_models(
             self.cursor,
             [
@@ -174,6 +196,14 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             ],
         )
 
+        # Store in kvstore
+        key = f"{MEMORY_BANKS_PREFIX}{memory_bank.identifier}"
+        await self.kvstore.set(
+            key=key,
+            value=memory_bank.json(),
+        )
+
+        # Store in cache
         index = BankWithIndex(
             bank=memory_bank,
             index=PGVectorIndex(memory_bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
