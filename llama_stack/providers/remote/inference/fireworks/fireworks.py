@@ -54,7 +54,7 @@ MODEL_ALIASES = [
     ),
     build_model_alias(
         "fireworks/llama-v3p2-3b-instruct",
-        CoreModelId.llama3_2_11b_vision_instruct.value,
+        CoreModelId.llama3_2_3b_instruct.value,
     ),
     build_model_alias(
         "fireworks/llama-v3p2-11b-vision-instruct",
