@@ -324,11 +324,40 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
     return config
 
 
+def validate_env_pair(env_pair: str) -> tuple[str, str]:
+    """Validate and split an environment variable key-value pair."""
+    try:
+        key, value = env_pair.split("=", 1)
+        key = key.strip()
+        if not key:
+            raise ValueError(f"Empty key in environment variable pair: {env_pair}")
+        if not all(c.isalnum() or c == "_" for c in key):
+            raise ValueError(
+                f"Key must contain only alphanumeric characters and underscores: {key}"
+            )
+        return key, value
+    except ValueError as e:
+        raise ValueError(
+            f"Invalid environment variable format '{env_pair}': {str(e)}. Expected format: KEY=value"
+        ) from e
+
+
 def main(
     yaml_config: str = "llamastack-run.yaml",
     port: int = 5000,
     disable_ipv6: bool = False,
+    env: list[str] = None,
 ):
+    # Process environment variables from command line
+    if env:
+        for env_pair in env:
+            try:
+                key, value = validate_env_pair(env_pair)
+                os.environ[key] = value
+            except ValueError as e:
+                print(f"Error: {str(e)}")
+                sys.exit(1)
+
     with open(yaml_config, "r") as fp:
         config = replace_env_vars(yaml.safe_load(fp))
         config = StackRunConfig(**config)
