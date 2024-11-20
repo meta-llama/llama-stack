@@ -16,8 +16,9 @@ from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
-from ..conftest import ProviderFixture, remote_stack_fixture
+from ..conftest import ProviderFixture, remote_stack_fixture, should_use_mock_overrides
 from ..env import get_env_or_fail
+from .mocks import *  # noqa F401
 
 
 @pytest.fixture(scope="session")
@@ -101,10 +102,21 @@ async def memory_stack(request):
     fixture_name = request.param
     fixture = request.getfixturevalue(f"memory_{fixture_name}")
 
+    # Setup mocks if they are specified via the command line and they are defined
+    if should_use_mock_overrides(
+        request, f"memory={fixture_name}", f"memory_{fixture_name}_mocks"
+    ):
+        try:
+            request.getfixturevalue(f"memory_{fixture_name}_mocks")
+        except pytest.FixtureLookupError:
+            print(
+                f"Fixture memory_{fixture_name}_mocks not implemented, skipping mocks."
+            )
+
     test_stack = await construct_stack_for_test(
         [Api.memory],
         {"memory": fixture.providers},
         fixture.provider_data,
     )
 
-    return test_stack.impls[Api.memory], test_stack.impls[Api.memory_banks]
+    yield test_stack.impls[Api.memory], test_stack.impls[Api.memory_banks]

@@ -73,6 +73,12 @@ def pytest_addoption(parser):
     parser.addoption(
         "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
     )
+    """Specify which providers will be set up as mocks"""
+    parser.addoption(
+        "--mock-overrides",
+        action="append",
+        help="Specify which providers will be set up as mocks, e.g. --mock-overrides memory=faiss,safety=meta-reference",
+    )
 
 
 def make_provider_id(providers: Dict[str, str]) -> str:
@@ -137,6 +143,17 @@ def parse_fixture_string(
                 f"{list(available_fixtures[api])}"
             )
     return fixtures
+
+
+def should_use_mock_overrides(request, api_with_provider: str, mock_name: str) -> bool:
+    enabled_api_provider_overrides = request.config.getoption("--mock-overrides")
+    if enabled_api_provider_overrides is None:
+        return False
+
+    if api_with_provider in enabled_api_provider_overrides:
+        print(f"Overriding {api_with_provider} with mocks from {mock_name}")
+        return True
+    return False
 
 
 def pytest_itemcollected(item):
