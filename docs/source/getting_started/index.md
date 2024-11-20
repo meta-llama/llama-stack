@@ -109,12 +109,13 @@ Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [firew
 
 ##### 1.1. Start the distribution
 
+::::{tab-set}
 :::{tab-item} meta-reference-gpu
-[Start Meta Reference GPU Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)
+- [Start Meta Reference GPU Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)
 :::
 
 :::{tab-item} vLLM
-[Start vLLM Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/remote-vllm.html)
+- [Start vLLM Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/remote-vllm.html)
 :::
 
 :::{tab-item} tgi
