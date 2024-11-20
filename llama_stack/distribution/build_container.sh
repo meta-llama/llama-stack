@@ -9,6 +9,7 @@
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
 if [ "$#" -lt 4 ]; then
   echo "Usage: $0 <build_name> <docker_base> <pip_dependencies> [<special_pip_deps>]" >&2
@@ -96,7 +97,7 @@ else
     add_to_docker "RUN pip install fastapi libcst"
     add_to_docker <<EOF
 RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
-  llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
+  llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
 EOF
   else
     add_to_docker "RUN pip install --no-cache llama-stack"
@@ -115,7 +116,6 @@ RUN pip install --no-cache $models_mount
 
 EOF
 fi
-
 
 add_to_docker <<EOF
 
@@ -158,7 +158,9 @@ image_tag="$image_name:$version_tag"
 
 # Detect platform architecture
 ARCH=$(uname -m)
-if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+if [ -n "$BUILD_PLATFORM" ]; then
+  PLATFORM="--platform $BUILD_PLATFORM"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
   PLATFORM="--platform linux/arm64"
 elif [ "$ARCH" = "x86_64" ]; then
   PLATFORM="--platform linux/amd64"

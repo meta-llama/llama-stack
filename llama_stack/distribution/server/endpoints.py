@@ -9,6 +9,8 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION
+
 from llama_stack.distribution.resolver import api_protocol_map
 
 from llama_stack.providers.datatypes import Api
@@ -33,7 +35,7 @@ def get_all_api_endpoints() -> Dict[Api, List[ApiEndpoint]]:
                 continue
 
             webmethod = method.__webmethod__
-            route = webmethod.route
+            route = f"/{LLAMA_STACK_API_VERSION}/{webmethod.route.lstrip('/')}"
 
             if webmethod.method == "GET":
                 method = "get"

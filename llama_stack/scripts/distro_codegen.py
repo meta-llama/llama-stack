@@ -6,6 +6,7 @@
 
 import concurrent.futures
 import importlib
+import json
 import subprocess
 import sys
 from functools import partial
@@ -13,6 +14,11 @@ from pathlib import Path
 from typing import Iterator
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+from llama_stack.distribution.build import (
+    get_provider_dependencies,
+    SERVER_DEPENDENCIES,
+)
 
 
 REPO_ROOT = Path(__file__).parent.parent.parent
@@ -67,6 +73,39 @@ def check_for_changes() -> bool:
     return result.returncode != 0
 
 
+def collect_template_dependencies(template_dir: Path) -> tuple[str, list[str]]:
+    try:
+        module_name = f"llama_stack.templates.{template_dir.name}"
+        module = importlib.import_module(module_name)
+
+        if template_func := getattr(module, "get_distribution_template", None):
+            template = template_func()
+            normal_deps, special_deps = get_provider_dependencies(template.providers)
+            # Combine all dependencies in order: normal deps, special deps, server deps
+            all_deps = sorted(list(set(normal_deps + SERVER_DEPENDENCIES))) + sorted(
+                list(set(special_deps))
+            )
+
+            return template.name, all_deps
+    except Exception:
+        return None, []
+    return None, []
+
+
+def generate_dependencies_file():
+    templates_dir = REPO_ROOT / "llama_stack" / "templates"
+    distribution_deps = {}
+
+    for template_dir in find_template_dirs(templates_dir):
+        name, deps = collect_template_dependencies(template_dir)
+        if name:
+            distribution_deps[name] = deps
+
+    deps_file = REPO_ROOT / "distributions" / "dependencies.json"
+    with open(deps_file, "w") as f:
+        json.dump(distribution_deps, f, indent=2)
+
+
 def main():
     templates_dir = REPO_ROOT / "llama_stack" / "templates"
 
@@ -87,6 +126,8 @@ def main():
             # Submit all tasks and wait for completion
             list(executor.map(process_func, template_dirs))
             progress.update(task, advance=len(template_dirs))
+
+    generate_dependencies_file()
 
     if check_for_changes():
         print(

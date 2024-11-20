@@ -53,6 +53,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self.client = None
 
     async def initialize(self) -> None:
+        print(f"Initializing VLLM client with base_url={self.config.url}")
         self.client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
 
     async def shutdown(self) -> None:

@@ -41,7 +41,7 @@ def get_distribution_template() -> DistributionTemplate:
         name="tgi",
         distro_type="self_hosted",
         description="Use (an external) TGI server for running LLM inference",
-        docker_image="llamastack/distribution-tgi:test-0.0.52rc3",
+        docker_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         default_models=[inference_model, safety_model],
