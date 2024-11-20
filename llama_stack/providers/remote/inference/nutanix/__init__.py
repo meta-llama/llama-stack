@@ -7,6 +7,7 @@
 from .config import NutanixImplConfig
 from .nutanix import NutanixInferenceAdapter
 
+
 async def get_adapter_impl(config: NutanixInferenceAdapter, _deps):
     assert isinstance(
         config, NutanixImplConfig
