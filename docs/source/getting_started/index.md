@@ -9,7 +9,7 @@ In this guide, we'll walk through using ollama as the inference provider and bui
 
 Llama stack consists of a distribution server and an accompanying client SDK. The distribution server can be configured for different providers for inference, memory, agents, evals etc. This configuration is defined in a yaml file called `run.yaml`.
 
-### Step 1. Start the ollama server
+### Step 1. Start the inference server
 ```bash
 export LLAMA_STACK_PORT=5001
 export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
@@ -18,7 +18,7 @@ export OLLAMA_INFERENCE_MODEL="llama3.2:3b-instruct-fp16"
 ollama run $OLLAMA_INFERENCE_MODEL --keepalive 60m
 ```
 
-### Step 2. Start the llama stack server
+### Step 2. Start the Llama Stack server
 
 ```bash
 export LLAMA_STACK_PORT=5001
@@ -39,6 +39,7 @@ pip install llama-stack-client
 ```
 
 #### Check the connectivity to the server
+We will use the `llama-stack-client` CLI to check the connectivity to the server. This should be installed in your environment if you installed the SDK.
 ```bash
 llama-stack-client --endpoint http://localhost:5001 models list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
@@ -48,7 +49,7 @@ llama-stack-client --endpoint http://localhost:5001 models list
 └──────────────────────────────────┴─────────────┴───────────────────────────┴──────────┘
 ```
 
-### Step 4. Sample app code
+### Step 4. Use the SDK
 ```python
 from llama_stack_client import LlamaStackClient
 
@@ -68,6 +69,9 @@ response = client.inference.chat_completion(
 )
 print(response.completion_message.content)
 ```
+
+### Step 5. Your first RAG agent
+Refer to [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/blob/main/examples/agents/rag_with_memory_bank.py) on an example of how to build a RAG agent with memory.
 
 ## Next Steps
 
