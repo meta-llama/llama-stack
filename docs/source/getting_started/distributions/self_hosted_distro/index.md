@@ -23,5 +23,6 @@ tgi
 dell-tgi
 together
 fireworks
+remote-vllm
 bedrock
 ```
