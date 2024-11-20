@@ -161,4 +161,4 @@ class DistributionTemplate(BaseModel):
 
         docs = self.generate_markdown_docs()
         with open(doc_output_dir / f"{self.name}.md", "w") as f:
-            f.write(docs)
+            f.write(docs if docs.endswith("\n") else docs + "\n")

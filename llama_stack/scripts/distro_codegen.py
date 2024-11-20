@@ -103,7 +103,7 @@ def generate_dependencies_file():
 
     deps_file = REPO_ROOT / "distributions" / "dependencies.json"
     with open(deps_file, "w") as f:
-        json.dump(distribution_deps, f, indent=2)
+        f.write(json.dumps(distribution_deps, indent=2) + "\n")
 
 
 def main():
