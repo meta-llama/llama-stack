@@ -315,13 +315,14 @@ def main():
         config_file = Path(args.yaml_config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
-
+        print(f"Using config file: {config_file}")
     elif args.template:
         config_file = (
             Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         )
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
+        print(f"Using template {args.template} config file: {config_file}")
     else:
         raise ValueError("Either --yaml-config or --template must be provided")
 
@@ -329,8 +330,8 @@ def main():
         config = replace_env_vars(yaml.safe_load(fp))
         config = StackRunConfig(**config)
 
-    print(f"Using config file: {config_file}")
-    print(f"Config: {yaml.dump(config.model_dump(), indent=2)}")
+    print("Run configuration:")
+    print(yaml.dump(config.model_dump(), indent=2))
 
     app = FastAPI()
 

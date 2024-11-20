@@ -5,8 +5,11 @@
 # the root directory of this source tree.
 
 import argparse
+from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
+
+REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
 
 class StackRun(Subcommand):
@@ -48,8 +51,6 @@ class StackRun(Subcommand):
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
-        from pathlib import Path
-
         import pkg_resources
         import yaml
 
@@ -66,19 +67,27 @@ class StackRun(Subcommand):
             return
 
         config_file = Path(args.config)
-        if not config_file.exists() and not args.config.endswith(".yaml"):
+        has_yaml_suffix = args.config.endswith(".yaml")
+
+        if not config_file.exists() and not has_yaml_suffix:
+            # check if this is a template
+            config_file = (
+                Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
+            )
+
+        if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to conda dir
             config_file = Path(
                 BUILDS_BASE_DIR / ImageType.conda.value / f"{args.config}-run.yaml"
             )
 
-        if not config_file.exists() and not args.config.endswith(".yaml"):
+        if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to docker dir
             config_file = Path(
                 BUILDS_BASE_DIR / ImageType.docker.value / f"{args.config}-run.yaml"
             )
 
-        if not config_file.exists() and not args.config.endswith(".yaml"):
+        if not config_file.exists() and not has_yaml_suffix:
             # check if it's a build config saved to ~/.llama dir
             config_file = Path(
                 DISTRIBS_BASE_DIR
@@ -92,6 +101,7 @@ class StackRun(Subcommand):
             )
             return
 
+        print(f"Using config file: {config_file}")
         config_dict = yaml.safe_load(config_file.read_text())
         config = parse_and_maybe_upgrade_config(config_dict)
 
