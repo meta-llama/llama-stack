@@ -8,7 +8,6 @@
 - Ability to persist memory banks created for FAISS
 - PostgreSQL KVStore implementation
 - Environment variable placeholder support in run.yaml files
-- Provider deprecation support
 - Comprehensive Zero-to-Hero notebooks and quickstart guides
 - Colab notebook integration for Llama Stack lesson
 - Support for quantized models in Ollama
