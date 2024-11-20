@@ -16,6 +16,7 @@ import traceback
 import warnings
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from ssl import SSLError
 from typing import Any, Dict, Optional
 
@@ -47,6 +48,9 @@ from llama_stack.distribution.stack import (
 )
 
 from .endpoints import get_all_api_endpoints
+
+
+REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -279,8 +283,11 @@ def main():
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
     parser.add_argument(
         "--yaml-config",
-        default="llamastack-run.yaml",
         help="Path to YAML configuration file",
+    )
+    parser.add_argument(
+        "--template",
+        help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
     )
     parser.add_argument("--port", type=int, default=5000, help="Port to listen on")
     parser.add_argument(
@@ -303,9 +310,28 @@ def main():
                 print(f"Error: {str(e)}")
                 sys.exit(1)
 
-    with open(args.yaml_config, "r") as fp:
+    if args.yaml_config:
+        # if the user provided a config file, use it, even if template was specified
+        config_file = Path(args.yaml_config)
+        if not config_file.exists():
+            raise ValueError(f"Config file {config_file} does not exist")
+        print(f"Using config file: {config_file}")
+    elif args.template:
+        config_file = (
+            Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
+        )
+        if not config_file.exists():
+            raise ValueError(f"Template {args.template} does not exist")
+        print(f"Using template {args.template} config file: {config_file}")
+    else:
+        raise ValueError("Either --yaml-config or --template must be provided")
+
+    with open(config_file, "r") as fp:
         config = replace_env_vars(yaml.safe_load(fp))
         config = StackRunConfig(**config)
+
+    print("Run configuration:")
+    print(yaml.dump(config.model_dump(), indent=2))
 
     app = FastAPI()
 
