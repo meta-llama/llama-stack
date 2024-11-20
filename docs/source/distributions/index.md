@@ -1,4 +1,4 @@
-# Building Distributions
+# Llama Stack Distributions
 
 
 ```{toctree}
@@ -9,6 +9,11 @@ self_hosted_distro/index
 remote_hosted_distro/index
 ondevice_distro/index
 ```
+## Introduction
+
+Llama Stack Distributions are pre-built Docker containers/Conda environments that assemble APIs and Providers to provide a consistent whole to the end application developer.
+These distributions allow you to mix-and-match providers - some could be backed by local code and some could be remote. This flexibility enables you to choose the optimal setup for your use case, such as serving a small model locally while using a cloud provider for larger models, all while maintaining a consistent API interface for your application.
+
 
 ## Decide Your Build Type
 There are two ways to start a Llama Stack:
@@ -53,7 +58,8 @@ Please see our pages in detail for the types of distributions we offer:
 $ git clone git@github.com:meta-llama/llama-stack.git
 ```
 
-### System Requirements
+
+### Starting the Distribution
 
 ::::{tab-set}
 
@@ -99,7 +105,6 @@ Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [firew
 
 ::::
 
-### Starting the Distribution
 
 ::::{tab-set}
 :::{tab-item} meta-reference-gpu
