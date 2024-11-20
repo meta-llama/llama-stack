@@ -11,10 +11,16 @@
 - Provider deprecation support
 - Comprehensive Zero-to-Hero notebooks and quickstart guides
 - Colab notebook integration for Llama Stack lesson
-- Remote::vllm provider with vision model support
 - Support for quantized models in Ollama
-- Vision models support for Together, Fireworks, Meta-Reference, and Ollama
+- Vision models support for Together, Fireworks, Meta-Reference, and Ollama, and vLLM
 - Bedrock distribution with safety shields support
+- Evals API with task registration and scoring functions
+- MMLU and SimpleQA benchmark scoring functions
+- Huggingface dataset provider integration for benchmarks
+- Support for custom dataset registration from local paths
+- Benchmark evaluation CLI tools with visualization tables
+- RAG evaluation scoring functions and metrics
+- Local persistence for datasets and eval tasks
 
 ### Changed
 - Split safety into distinct providers (llama-guard, prompt-guard, code-scanner)
@@ -25,6 +31,9 @@
 - Restructured folder organization for providers
 - Enhanced Docker build configuration
 - Added version prefixing for REST API routes
+- Enhanced evaluation task registration workflow
+- Improved benchmark evaluation output formatting
+- Restructured evals folder organization for better modularity
 
 ### Removed
 - `llama stack configure` command
