@@ -147,9 +147,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+        index = await self._get_and_cache_bank_index(bank_id)
 
         await index.insert_documents(documents)
 
@@ -159,16 +157,20 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            # if not in cache, try to get from chroma directly
-            bank = await self.memory_bank_store.get_memory_bank(bank_id)
-            if not bank:
-                raise ValueError(f"Bank {bank_id} not found in Llama Stack")
-            collection = await self.client.get_collection(bank_id)
-            if not collection:
-                raise ValueError(f"Bank {bank_id} not found in Chroma")
-            index = BankWithIndex(bank=bank, index=ChromaIndex(self.client, collection))
-            self.cache[bank_id] = index
+        index = await self._get_and_cache_bank_index(bank_id)
 
         return await index.query_documents(query, params)
+
+    async def _get_and_cache_bank_index(self, bank_id: str) -> BankWithIndex:
+        if bank_id in self.cache:
+            return self.cache[bank_id]
+
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        if not bank:
+            raise ValueError(f"Bank {bank_id} not found in Llama Stack")
+        collection = await self.client.get_collection(bank_id)
+        if not collection:
+            raise ValueError(f"Bank {bank_id} not found in Chroma")
+        index = BankWithIndex(bank=bank, index=ChromaIndex(self.client, collection))
+        self.cache[bank_id] = index
+        return index
