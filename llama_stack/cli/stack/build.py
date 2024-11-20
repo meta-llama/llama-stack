@@ -8,7 +8,6 @@ import argparse
 
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
-import importlib
 import os
 import shutil
 from functools import lru_cache
@@ -258,6 +257,7 @@ class StackBuild(Subcommand):
     ) -> None:
         import json
         import os
+        import re
 
         import yaml
         from termcolor import cprint
@@ -286,17 +286,19 @@ class StackBuild(Subcommand):
             os.makedirs(build_dir, exist_ok=True)
             run_config_file = build_dir / f"{build_config.name}-run.yaml"
             shutil.copy(template_path, run_config_file)
-            module_name = f"llama_stack.templates.{template_name}"
-            module = importlib.import_module(module_name)
-            distribution_template = module.get_distribution_template()
+
+            with open(template_path, "r") as f:
+                yaml_content = f.read()
+
+            # Find all ${env.VARIABLE} patterns
+            env_vars = set(re.findall(r"\${env\.([A-Za-z0-9_]+)}", yaml_content))
             cprint("Build Successful! Next steps: ", color="green")
-            env_vars = ", ".join(distribution_template.run_config_env_vars.keys())
             cprint(
-                f"   1. Set the environment variables: {env_vars}",
+                f"   1. Set the environment variables: {list(env_vars)}",
                 color="green",
             )
             cprint(
-                f"   2. `llama stack run {run_config_file}`",
+                f"   2. Run: `llama stack run {template_name}`",
                 color="green",
             )
         else:
