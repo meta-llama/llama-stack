@@ -89,7 +89,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # TODO(mf): filter by available models
         ModelRegistryHelper.__init__(self, model_aliases=_MODEL_ALIASES)
 
-        print(f"Initializing NVIDIAInferenceAdapter({config.base_url})...")
+        print(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 
         if config.is_hosted:
             if not config.api_key:
@@ -110,7 +110,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         self._config = config
         # make sure the client lives longer than any async calls
         self._client = AsyncOpenAI(
-            base_url=f"{self._config.base_url}/v1",
+            base_url=f"{self._config.url}/v1",
             api_key=self._config.api_key or "NO KEY",
             timeout=self._config.timeout,
         )
@@ -172,7 +172,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             response = await self._client.chat.completions.create(**request)
         except APIConnectionError as e:
             raise ConnectionError(
-                f"Failed to connect to NVIDIA NIM at {self._config.base_url}: {e}"
+                f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}"
             ) from e
 
         if stream:

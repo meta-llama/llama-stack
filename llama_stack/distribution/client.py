@@ -15,6 +15,8 @@ import httpx
 from pydantic import BaseModel, parse_obj_as
 from termcolor import cprint
 
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION
+
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 _CLIENT_CLASSES = {}
@@ -117,7 +119,7 @@ def create_api_client_class(protocol) -> Type:
                     break
                 kwargs[param.name] = args[i]
 
-            url = f"{self.base_url}{webmethod.route}"
+            url = f"{self.base_url}/{LLAMA_STACK_API_VERSION}/{webmethod.route.lstrip('/')}"
 
             def convert(value):
                 if isinstance(value, list):

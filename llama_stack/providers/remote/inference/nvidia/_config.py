@@ -17,7 +17,7 @@ class NVIDIAConfig(BaseModel):
     Configuration for the NVIDIA NIM inference endpoint.
 
     Attributes:
-        base_url (str): A base url for accessing the NVIDIA NIM, e.g. http://localhost:8000
+        url (str): A base url for accessing the NVIDIA NIM, e.g. http://localhost:8000
         api_key (str): The access key for the hosted NIM endpoints
 
     There are two ways to access NVIDIA NIMs -
@@ -30,11 +30,11 @@ class NVIDIAConfig(BaseModel):
     By default the configuration will attempt to read the NVIDIA_API_KEY environment
     variable to set the api_key. Please do not put your API key in code.
 
-    If you are using a self-hosted NVIDIA NIM, you can set the base_url to the
+    If you are using a self-hosted NVIDIA NIM, you can set the url to the
     URL of your running NVIDIA NIM and do not need to set the api_key.
     """
 
-    base_url: str = Field(
+    url: str = Field(
         default="https://integrate.api.nvidia.com",
         description="A base url for accessing the NVIDIA NIM",
     )
@@ -49,7 +49,7 @@ class NVIDIAConfig(BaseModel):
 
     @property
     def is_hosted(self) -> bool:
-        return "integrate.api.nvidia.com" in self.base_url
+        return "integrate.api.nvidia.com" in self.url
     
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:

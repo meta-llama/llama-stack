@@ -264,6 +264,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
 class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
+        print(f"Initializing TGI client with url={config.url}")
         self.client = AsyncInferenceClient(model=config.url, token=config.api_token)
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]

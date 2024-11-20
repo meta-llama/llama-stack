@@ -86,10 +86,13 @@ class PhotogenTool(SingleMessageBuiltinTool):
 class SearchTool(SingleMessageBuiltinTool):
     def __init__(self, engine: SearchEngineType, api_key: str, **kwargs) -> None:
         self.api_key = api_key
+        self.engine_type = engine
         if engine == SearchEngineType.bing:
             self.engine = BingSearch(api_key, **kwargs)
         elif engine == SearchEngineType.brave:
             self.engine = BraveSearch(api_key, **kwargs)
+        elif engine == SearchEngineType.tavily:
+            self.engine = TavilySearch(api_key, **kwargs)
         else:
             raise ValueError(f"Unknown search engine: {engine}")
 
@@ -255,6 +258,21 @@ class BraveSearch:
                 clean_response.append(cleaned)
 
         return {"query": query, "top_k": clean_response}
+
+
+class TavilySearch:
+    def __init__(self, api_key: str) -> None:
+        self.api_key = api_key
+
+    async def search(self, query: str) -> str:
+        response = requests.post(
+            "https://api.tavily.com/search",
+            json={"api_key": self.api_key, "query": query},
+        )
+        return json.dumps(self._clean_tavily_response(response.json()))
+
+    def _clean_tavily_response(self, search_response, top_k=3):
+        return {"query": search_response["query"], "top_k": search_response["results"]}
 
 
 class WolframAlphaTool(SingleMessageBuiltinTool):
