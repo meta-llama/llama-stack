@@ -54,6 +54,7 @@ class ToolDefinitionCommon(BaseModel):
 class SearchEngineType(Enum):
     bing = "bing"
     brave = "brave"
+    tavily = "tavily"
 
 
 @json_schema_type
