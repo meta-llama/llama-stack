@@ -35,18 +35,3 @@
 
 ### Removed
 - `llama stack configure` command
-
-### Fixed
-- Agent system instructions persistence after first turn
-- PostgreSQL config validation
-- vLLM adapter chat completion signature
-- Routing table lookup key for memory banks
-- Together inference validator
-- Exception handling for SSE connection closure
-
-### Development
-- Added new test migration system
-- Enhanced test setup with configurable model selection
-- Added support for remote providers in tests
-- Improved pre-commit hooks configuration
-- Updated OpenAPI generator and specifications
