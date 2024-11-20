@@ -24,8 +24,6 @@
 
 ### Changed
 - Split safety into distinct providers (llama-guard, prompt-guard, code-scanner)
-- Improved distribution registry with SQLite default storage
-- Enhanced test infrastructure with composable fixtures
 - Changed provider naming convention (`impls` → `inline`, `adapters` → `remote`)
 - Updated API signatures for dataset and eval task registration
 - Restructured folder organization for providers
