@@ -5,11 +5,9 @@
 # the root directory of this source tree.
 from typing import Optional
 
-from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel, Field
 
 
-@json_schema_type
 class BedrockBaseConfig(BaseModel):
     aws_access_key_id: Optional[str] = Field(
         default=None,
@@ -57,3 +55,7 @@ class BedrockBaseConfig(BaseModel):
         default=3600,
         description="The time in seconds till a session expires. The default is 3600 seconds (1 hour).",
     )
+
+    @classmethod
+    def sample_run_config(cls, **kwargs):
+        return {}

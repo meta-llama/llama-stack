@@ -1,0 +1,49 @@
+version: '2'
+image_name: bedrock
+docker_image: null
+conda_env: bedrock
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: bedrock
+    provider_type: remote::bedrock
+    config: {}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/faiss_store.db
+  safety:
+  - provider_id: bedrock
+    provider_type: remote::bedrock
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/registry.db
+models: []
+shields: []
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []

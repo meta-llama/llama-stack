@@ -43,9 +43,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env TOGETHER_API_KEY=$TOGETHER_API_KEY
 ```
@@ -53,8 +51,8 @@ docker run \
 ### Via Conda
 
 ```bash
-llama stack build --template together --image-type conda
+llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml \
-  --port 5001 \
+  --port $LLAMA_STACK_PORT \
   --env TOGETHER_API_KEY=$TOGETHER_API_KEY
 ```

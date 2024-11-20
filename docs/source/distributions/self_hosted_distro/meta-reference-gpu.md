@@ -54,9 +54,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-meta-reference-gpu \
-  /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
@@ -67,9 +65,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-meta-reference-gpu \
-  /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
@@ -81,7 +77,7 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 
 ```bash
 llama stack build --template meta-reference-gpu --image-type conda
-llama stack run ./run.yaml \
+llama stack run distributions/meta-reference-gpu/run.yaml \
   --port 5001 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
@@ -89,7 +85,7 @@ llama stack run ./run.yaml \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
-llama stack run ./run-with-safety.yaml \
+llama stack run distributions/meta-reference-gpu/run-with-safety.yaml \
   --port 5001 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B

@@ -27,7 +27,7 @@ from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 class RunConfigSettings(BaseModel):
     provider_overrides: Dict[str, List[Provider]] = Field(default_factory=dict)
-    default_models: List[ModelInput]
+    default_models: Optional[List[ModelInput]] = None
     default_shields: Optional[List[ShieldInput]] = None
 
     def run_config(
@@ -87,7 +87,7 @@ class RunConfigSettings(BaseModel):
                 __distro_dir__=f"distributions/{name}",
                 db_name="registry.db",
             ),
-            models=self.default_models,
+            models=self.default_models or [],
             shields=self.default_shields or [],
         )
 
@@ -104,7 +104,7 @@ class DistributionTemplate(BaseModel):
 
     providers: Dict[str, List[str]]
     run_configs: Dict[str, RunConfigSettings]
-    template_path: Path
+    template_path: Optional[Path] = None
 
     # Optional configuration
     run_config_env_vars: Optional[Dict[str, Tuple[str, str]]] = None
@@ -159,6 +159,7 @@ class DistributionTemplate(BaseModel):
             with open(yaml_output_dir / yaml_pth, "w") as f:
                 yaml.safe_dump(run_config.model_dump(), f, sort_keys=False)
 
-        docs = self.generate_markdown_docs()
-        with open(doc_output_dir / f"{self.name}.md", "w") as f:
-            f.write(docs if docs.endswith("\n") else docs + "\n")
+        if self.template_path:
+            docs = self.generate_markdown_docs()
+            with open(doc_output_dir / f"{self.name}.md", "w") as f:
+                f.write(docs if docs.endswith("\n") else docs + "\n")

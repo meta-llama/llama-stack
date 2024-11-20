@@ -1,29 +1,29 @@
 # Bedrock Distribution
-```{toctree}
-:maxdepth: 2
-:hidden:
 
-self
-```
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations:
 
-The `llamastack/distribution-bedrock` distribution consists of the following provider configurations:
-
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| inference | `remote::bedrock` |
-| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
-| safety | `remote::bedrock` |
-| telemetry | `inline::meta-reference` |
+{{ providers_table }}
 
 
-
+{% if run_config_env_vars %}
 ### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+{% for var, (default_value, description) in run_config_env_vars.items() %}
+- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
+{% endfor %}
+{% endif %}
 
+{% if default_models %}
+### Models
+
+The following models are available by default:
+
+{% for model in default_models %}
+- `{{ model.model_id }} ({{ model.provider_model_id }})`
+{% endfor %}
+{% endif %}
 
 
 ### Prerequisite: API Keys
@@ -44,7 +44,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  llamastack/distribution-bedrock \
+  llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
   --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
   --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
@@ -54,7 +54,7 @@ docker run \
 ### Via Conda
 
 ```bash
-llama stack build --template bedrock --image-type conda
+llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
   --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \

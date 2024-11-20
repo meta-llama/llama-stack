@@ -4,11 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_models.schema_utils import json_schema_type
-
 from llama_stack.providers.utils.bedrock.config import BedrockBaseConfig
 
 
-@json_schema_type
 class BedrockConfig(BedrockBaseConfig):
     pass
