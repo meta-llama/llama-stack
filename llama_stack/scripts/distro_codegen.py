@@ -82,7 +82,10 @@ def collect_template_dependencies(template_dir: Path) -> tuple[str, list[str]]:
             template = template_func()
             normal_deps, special_deps = get_provider_dependencies(template.providers)
             # Combine all dependencies in order: normal deps, special deps, server deps
-            all_deps = normal_deps + special_deps + SERVER_DEPENDENCIES
+            all_deps = sorted(list(set(normal_deps + SERVER_DEPENDENCIES))) + sorted(
+                list(set(special_deps))
+            )
+
             return template.name, all_deps
     except Exception:
         return None, []
