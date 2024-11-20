@@ -161,6 +161,14 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     ) -> QueryDocumentsResponse:
         index = self.cache.get(bank_id, None)
         if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+            # if not in cache, try to get from chroma directly
+            bank = await self.memory_bank_store.get_memory_bank(bank_id)
+            if not bank:
+                raise ValueError(f"Bank {bank_id} not found in Llama Stack")
+            collection = await self.client.get_collection(bank_id)
+            if not collection:
+                raise ValueError(f"Bank {bank_id} not found in Chroma")
+            index = BankWithIndex(bank=bank, index=ChromaIndex(self.client, collection))
+            self.cache[bank_id] = index
 
         return await index.query_documents(query, params)
