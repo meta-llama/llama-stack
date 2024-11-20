@@ -9,7 +9,6 @@
 - PostgreSQL KVStore implementation
 - Environment variable placeholder support in run.yaml files
 - Comprehensive Zero-to-Hero notebooks and quickstart guides
-- Colab notebook integration for Llama Stack lesson
 - Support for quantized models in Ollama
 - Vision models support for Together, Fireworks, Meta-Reference, and Ollama, and vLLM
 - Bedrock distribution with safety shields support
