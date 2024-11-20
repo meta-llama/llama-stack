@@ -122,7 +122,7 @@ add_to_docker <<EOF
 # This would be good in production but for debugging flexibility lets not add it right now
 # We need a more solid production ready entrypoint.sh anyway
 #
-ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$build_name"]
 
 EOF
 
