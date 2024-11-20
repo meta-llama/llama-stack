@@ -1,4 +1,10 @@
 # Bedrock Distribution
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 ### Connect to a Llama Stack Bedrock Endpoint
 - You may connect to Amazon Bedrock APIs for running LLM inference

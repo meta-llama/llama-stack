@@ -1,5 +1,12 @@
 # TGI Distribution
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 The `llamastack/distribution-tgi` distribution consists of the following provider configurations.
 
 | API | Provider(s) |

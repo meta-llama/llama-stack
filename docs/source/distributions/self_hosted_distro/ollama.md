@@ -1,5 +1,12 @@
 # Ollama Distribution
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 The `llamastack/distribution-ollama` distribution consists of the following provider configurations.
 
 | API | Provider(s) |

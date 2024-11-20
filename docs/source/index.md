@@ -86,6 +86,7 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 :maxdepth: 3
 
 getting_started/index
+distributions/index
 cli_reference/index
 cli_reference/download_models
 api_providers/index
