@@ -73,8 +73,9 @@ class NutanixInferenceAdapter(ModelRegistryHelper, Inference):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
