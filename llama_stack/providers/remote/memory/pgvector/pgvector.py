@@ -215,6 +215,13 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     ) -> QueryDocumentsResponse:
         index = self.cache.get(bank_id, None)
         if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+            bank = await self.memory_bank_store.get_memory_bank(bank_id)
+            if not bank:
+                raise ValueError(f"Bank {bank_id} not found in Llama Stack")
+            index = BankWithIndex(
+                bank=bank,
+                index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
+            )
+            self.cache[bank_id] = index
 
         return await index.query_documents(query, params)
