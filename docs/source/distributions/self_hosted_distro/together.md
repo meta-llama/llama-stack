@@ -1,4 +1,11 @@
-# Fireworks Distribution
+# Together Distribution
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 The `llamastack/distribution-together` distribution consists of the following provider configurations.
 

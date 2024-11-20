@@ -7,8 +7,7 @@ The Stack APIs are rapidly improving but still a work-in-progress. We invite fee
 
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
-:width: 600px
-:align: center
+:width: 400px
 ```
 
 ## APIs
@@ -86,8 +85,10 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 :maxdepth: 3
 
 getting_started/index
-cli_reference/index
-cli_reference/download_models
+distributions/index
+llama_cli_reference/index
+llama_cli_reference/download_models
+llama_stack_client_cli_reference/index
 api_providers/index
 distribution_dev/index
 ```
