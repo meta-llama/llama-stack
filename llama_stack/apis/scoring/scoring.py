@@ -37,22 +37,24 @@ class ScoreResponse(BaseModel):
 
 
 class ScoringFunctionStore(Protocol):
-    def get_scoring_function(self, name: str) -> ScoringFnDefWithProvider: ...
+    def get_scoring_function(self, scoring_fn_id: str) -> ScoringFn: ...
 
 
 @runtime_checkable
 class Scoring(Protocol):
     scoring_function_store: ScoringFunctionStore
 
-    @webmethod(route="/scoring/score_batch")
+    @webmethod(route="/scoring/score-batch")
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: List[str],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse: ...
 
     @webmethod(route="/scoring/score")
     async def score(
-        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
     ) -> ScoreResponse: ...

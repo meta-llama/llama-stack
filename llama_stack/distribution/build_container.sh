@@ -9,6 +9,7 @@
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
 if [ "$#" -lt 4 ]; then
   echo "Usage: $0 <build_name> <docker_base> <pip_dependencies> [<special_pip_deps>]" >&2
@@ -64,6 +65,19 @@ RUN apt-get update && apt-get install -y \
 
 EOF
 
+# Add pip dependencies first since llama-stack is what will change most often
+# so we can reuse layers.
+if [ -n "$pip_dependencies" ]; then
+  add_to_docker "RUN pip install --no-cache $pip_dependencies"
+fi
+
+if [ -n "$special_pip_deps" ]; then
+  IFS='#' read -ra parts <<<"$special_pip_deps"
+  for part in "${parts[@]}"; do
+    add_to_docker "RUN pip install --no-cache $part"
+  done
+fi
+
 stack_mount="/app/llama-stack-source"
 models_mount="/app/llama-models-source"
 
@@ -78,7 +92,16 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
   # rebuild. This is just for development convenience.
   add_to_docker "RUN pip install --no-cache -e $stack_mount"
 else
-  add_to_docker "RUN pip install --no-cache llama-stack"
+  if [ -n "$TEST_PYPI_VERSION" ]; then
+    # these packages are damaged in test-pypi, so install them first
+    add_to_docker "RUN pip install fastapi libcst"
+    add_to_docker <<EOF
+RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
+  llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
+EOF
+  else
+    add_to_docker "RUN pip install --no-cache llama-stack"
+  fi
 fi
 
 if [ -n "$LLAMA_MODELS_DIR" ]; then
@@ -94,23 +117,12 @@ RUN pip install --no-cache $models_mount
 EOF
 fi
 
-if [ -n "$pip_dependencies" ]; then
-  add_to_docker "RUN pip install --no-cache $pip_dependencies"
-fi
-
-if [ -n "$special_pip_deps" ]; then
-  IFS='#' read -ra parts <<<"$special_pip_deps"
-  for part in "${parts[@]}"; do
-    add_to_docker "RUN pip install --no-cache $part"
-  done
-fi
-
 add_to_docker <<EOF
 
 # This would be good in production but for debugging flexibility lets not add it right now
 # We need a more solid production ready entrypoint.sh anyway
 #
-ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server"]
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--template", "$build_name"]
 
 EOF
 
@@ -131,8 +143,34 @@ if command -v selinuxenabled &>/dev/null && selinuxenabled; then
   DOCKER_OPTS="$DOCKER_OPTS --security-opt label=disable"
 fi
 
+# Set version tag based on PyPI version
+if [ -n "$TEST_PYPI_VERSION" ]; then
+  version_tag="test-$TEST_PYPI_VERSION"
+elif [[ -n "$LLAMA_STACK_DIR" || -n "$LLAMA_MODELS_DIR" ]]; then
+  version_tag="dev"
+else
+  URL="https://pypi.org/pypi/llama-stack/json"
+  version_tag=$(curl -s $URL | jq -r '.info.version')
+fi
+
+# Add version tag to image name
+image_tag="$image_name:$version_tag"
+
+# Detect platform architecture
+ARCH=$(uname -m)
+if [ -n "$BUILD_PLATFORM" ]; then
+  PLATFORM="--platform $BUILD_PLATFORM"
+elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+  PLATFORM="--platform linux/arm64"
+elif [ "$ARCH" = "x86_64" ]; then
+  PLATFORM="--platform linux/amd64"
+else
+  echo "Unsupported architecture: $ARCH"
+  exit 1
+fi
+
 set -x
-$DOCKER_BINARY build $DOCKER_OPTS -t $image_name -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM -t $image_tag -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 
 # clean up tmp/configs
 set +x

@@ -52,7 +52,7 @@ def load_models(cur, cls):
 
 
 class PGVectorIndex(EmbeddingIndex):
-    def __init__(self, bank: MemoryBankDef, dimension: int, cursor):
+    def __init__(self, bank: VectorMemoryBank, dimension: int, cursor):
         self.cursor = cursor
         self.table_name = f"vector_store_{bank.identifier}"
 
@@ -112,6 +112,9 @@ class PGVectorIndex(EmbeddingIndex):
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
+    async def delete(self):
+        self.cursor.execute(f"DROP TABLE IF EXISTS {self.table_name}")
+
 
 class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: PGVectorConfig) -> None:
@@ -121,6 +124,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
+        print(f"Initializing PGVector memory adapter with config: {self.config}")
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -157,11 +161,11 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         upsert_models(
             self.cursor,
@@ -176,8 +180,12 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
-        banks = load_models(self.cursor, MemoryBankDef)
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None:
+        await self.cache[memory_bank_id].index.delete()
+        del self.cache[memory_bank_id]
+
+    async def list_memory_banks(self) -> List[MemoryBank]:
+        banks = load_models(self.cursor, VectorMemoryBank)
         for bank in banks:
             if bank.identifier not in self.cache:
                 index = BankWithIndex(
@@ -193,10 +201,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
-
+        index = await self._get_and_cache_bank_index(bank_id)
         await index.insert_documents(documents)
 
     async def query_documents(
@@ -205,8 +210,17 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
-
+        index = await self._get_and_cache_bank_index(bank_id)
         return await index.query_documents(query, params)
+
+    async def _get_and_cache_bank_index(self, bank_id: str) -> BankWithIndex:
+        if bank_id in self.cache:
+            return self.cache[bank_id]
+
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        index = BankWithIndex(
+            bank=bank,
+            index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
+        )
+        self.cache[bank_id] = index
+        return index

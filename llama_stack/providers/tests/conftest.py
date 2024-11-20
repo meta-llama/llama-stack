@@ -35,8 +35,8 @@ def remote_stack_fixture() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="remote",
-                provider_type="remote",
+                provider_id="test::remote",
+                provider_type="test::remote",
                 config=config.model_dump(),
             )
         ],
@@ -153,4 +153,7 @@ pytest_plugins = [
     "llama_stack.providers.tests.safety.fixtures",
     "llama_stack.providers.tests.memory.fixtures",
     "llama_stack.providers.tests.agents.fixtures",
+    "llama_stack.providers.tests.datasetio.fixtures",
+    "llama_stack.providers.tests.scoring.fixtures",
+    "llama_stack.providers.tests.eval.fixtures",
 ]

@@ -67,6 +67,9 @@ class ChromaIndex(EmbeddingIndex):
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
+    async def delete(self):
+        await self.client.delete_collection(self.collection.name)
+
 
 class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, url: str) -> None:
@@ -98,11 +101,11 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def register_memory_bank(
         self,
-        memory_bank: MemoryBankDef,
+        memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.type == MemoryBankType.vector.value
-        ), f"Only vector banks are supported {memory_bank.type}"
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
+        ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         collection = await self.client.get_or_create_collection(
             name=memory_bank.identifier,
@@ -113,12 +116,12 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         )
         self.cache[memory_bank.identifier] = bank_index
 
-    async def list_memory_banks(self) -> List[MemoryBankDef]:
+    async def list_memory_banks(self) -> List[MemoryBank]:
         collections = await self.client.list_collections()
         for collection in collections:
             try:
                 data = json.loads(collection.metadata["bank"])
-                bank = parse_obj_as(MemoryBankDef, data)
+                bank = parse_obj_as(VectorMemoryBank, data)
             except Exception:
                 import traceback
 
@@ -134,15 +137,17 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
         return [i.bank for i in self.cache.values()]
 
+    async def unregister_memory_bank(self, memory_bank_id: str) -> None:
+        await self.cache[memory_bank_id].index.delete()
+        del self.cache[memory_bank_id]
+
     async def insert_documents(
         self,
         bank_id: str,
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+        index = await self._get_and_cache_bank_index(bank_id)
 
         await index.insert_documents(documents)
 
@@ -152,8 +157,20 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+        index = await self._get_and_cache_bank_index(bank_id)
 
         return await index.query_documents(query, params)
+
+    async def _get_and_cache_bank_index(self, bank_id: str) -> BankWithIndex:
+        if bank_id in self.cache:
+            return self.cache[bank_id]
+
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        if not bank:
+            raise ValueError(f"Bank {bank_id} not found in Llama Stack")
+        collection = await self.client.get_collection(bank_id)
+        if not collection:
+            raise ValueError(f"Bank {bank_id} not found in Chroma")
+        index = BankWithIndex(bank=bank, index=ChromaIndex(self.client, collection))
+        self.cache[bank_id] = index
+        return index

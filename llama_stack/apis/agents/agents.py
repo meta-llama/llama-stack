@@ -54,6 +54,7 @@ class ToolDefinitionCommon(BaseModel):
 class SearchEngineType(Enum):
     bing = "bing"
     brave = "brave"
+    tavily = "tavily"
 
 
 @json_schema_type
@@ -271,7 +272,7 @@ class Session(BaseModel):
     turns: List[Turn]
     started_at: datetime
 
-    memory_bank: Optional[MemoryBankDef] = None
+    memory_bank: Optional[MemoryBank] = None
 
 
 class AgentConfigCommon(BaseModel):

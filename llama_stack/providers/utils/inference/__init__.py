@@ -31,3 +31,8 @@ def supported_inference_models() -> List[str]:
             or is_supported_safety_model(m)
         )
     ]
+
+
+ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR = {
+    m.huggingface_repo: m.descriptor() for m in all_registered_models()
+}

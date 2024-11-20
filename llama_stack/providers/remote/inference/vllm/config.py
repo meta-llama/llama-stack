@@ -24,3 +24,15 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default="fake",
         description="The API token",
     )
+
+    @classmethod
+    def sample_run_config(
+        cls,
+        url: str = "${env.VLLM_URL}",
+        **kwargs,
+    ):
+        return {
+            "url": url,
+            "max_tokens": "${env.VLLM_MAX_TOKENS:4096}",
+            "api_token": "${env.VLLM_API_TOKEN:fake}",
+        }

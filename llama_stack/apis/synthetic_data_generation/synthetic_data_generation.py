@@ -44,7 +44,7 @@ class SyntheticDataGenerationResponse(BaseModel):
 
 
 class SyntheticDataGeneration(Protocol):
-    @webmethod(route="/synthetic_data_generation/generate")
+    @webmethod(route="/synthetic-data-generation/generate")
     def synthetic_data_generate(
         self,
         dialogs: List[Message],

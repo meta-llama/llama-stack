@@ -16,15 +16,13 @@ from llama_stack.providers.datatypes import *  # noqa: F403
 # pytest -v -s llama_stack/providers/tests/agents/test_agents.py
 #   -m "meta_reference"
 
+from .fixtures import pick_inference_model
+from .utils import create_agent_session
+
 
 @pytest.fixture
 def common_params(inference_model):
-    # This is not entirely satisfactory. The fixture `inference_model` can correspond to
-    # multiple models when you need to run a safety model in addition to normal agent
-    # inference model. We filter off the safety model by looking for "Llama-Guard"
-    if isinstance(inference_model, list):
-        inference_model = next(m for m in inference_model if "Llama-Guard" not in m)
-        assert inference_model is not None
+    inference_model = pick_inference_model(inference_model)
 
     return dict(
         model=inference_model,
@@ -70,29 +68,86 @@ def query_attachment_messages():
     ]
 
 
-async def create_agent_session(agents_impl, agent_config):
-    create_response = await agents_impl.create_agent(agent_config)
-    agent_id = create_response.agent_id
+async def create_agent_turn_with_search_tool(
+    agents_stack: Dict[str, object],
+    search_query_messages: List[object],
+    common_params: Dict[str, str],
+    search_tool_definition: SearchToolDefinition,
+) -> None:
+    """
+    Create an agent turn with a search tool.
 
-    # Create a session
-    session_create_response = await agents_impl.create_agent_session(
-        agent_id, "Test Session"
+    Args:
+        agents_stack (Dict[str, object]): The agents stack.
+        search_query_messages (List[object]): The search query messages.
+        common_params (Dict[str, str]): The common parameters.
+        search_tool_definition (SearchToolDefinition): The search tool definition.
+    """
+
+    # Create an agent with the search tool
+    agent_config = AgentConfig(
+        **{
+            **common_params,
+            "tools": [search_tool_definition],
+        }
     )
-    session_id = session_create_response.session_id
-    return agent_id, session_id
+
+    agent_id, session_id = await create_agent_session(
+        agents_stack.impls[Api.agents], agent_config
+    )
+    turn_request = dict(
+        agent_id=agent_id,
+        session_id=session_id,
+        messages=search_query_messages,
+        stream=True,
+    )
+
+    turn_response = [
+        chunk
+        async for chunk in await agents_stack.impls[Api.agents].create_agent_turn(
+            **turn_request
+        )
+    ]
+
+    assert len(turn_response) > 0
+    assert all(
+        isinstance(chunk, AgentTurnResponseStreamChunk) for chunk in turn_response
+    )
+
+    check_event_types(turn_response)
+
+    # Check for tool execution events
+    tool_execution_events = [
+        chunk
+        for chunk in turn_response
+        if isinstance(chunk.event.payload, AgentTurnResponseStepCompletePayload)
+        and chunk.event.payload.step_details.step_type == StepType.tool_execution.value
+    ]
+    assert len(tool_execution_events) > 0, "No tool execution events found"
+
+    # Check the tool execution details
+    tool_execution = tool_execution_events[0].event.payload.step_details
+    assert isinstance(tool_execution, ToolExecutionStep)
+    assert len(tool_execution.tool_calls) > 0
+    assert tool_execution.tool_calls[0].tool_name == BuiltinTool.brave_search
+    assert len(tool_execution.tool_responses) > 0
+
+    check_turn_complete_event(turn_response, session_id, search_query_messages)
 
 
 class TestAgents:
     @pytest.mark.asyncio
-    async def test_agent_turns_with_safety(self, agents_stack, common_params):
-        agents_impl, _ = agents_stack
+    async def test_agent_turns_with_safety(
+        self, safety_shield, agents_stack, common_params
+    ):
+        agents_impl = agents_stack.impls[Api.agents]
         agent_id, session_id = await create_agent_session(
             agents_impl,
             AgentConfig(
                 **{
                     **common_params,
-                    "input_shields": ["llama_guard"],
-                    "output_shields": ["llama_guard"],
+                    "input_shields": [safety_shield.shield_id],
+                    "output_shields": [safety_shield.shield_id],
                 }
             ),
         )
@@ -128,7 +183,7 @@ class TestAgents:
     async def test_create_agent_turn(
         self, agents_stack, sample_messages, common_params
     ):
-        agents_impl, _ = agents_stack
+        agents_impl = agents_stack.impls[Api.agents]
 
         agent_id, session_id = await create_agent_session(
             agents_impl, AgentConfig(**common_params)
@@ -159,7 +214,7 @@ class TestAgents:
         query_attachment_messages,
         common_params,
     ):
-        agents_impl, _ = agents_stack
+        agents_impl = agents_stack.impls[Api.agents]
         urls = [
             "memory_optimizations.rst",
             "chat.rst",
@@ -227,62 +282,33 @@ class TestAgents:
     async def test_create_agent_turn_with_brave_search(
         self, agents_stack, search_query_messages, common_params
     ):
-        agents_impl, _ = agents_stack
-
         if "BRAVE_SEARCH_API_KEY" not in os.environ:
             pytest.skip("BRAVE_SEARCH_API_KEY not set, skipping test")
 
-        # Create an agent with Brave search tool
-        agent_config = AgentConfig(
-            **{
-                **common_params,
-                "tools": [
-                    SearchToolDefinition(
-                        type=AgentTool.brave_search.value,
-                        api_key=os.environ["BRAVE_SEARCH_API_KEY"],
-                        engine=SearchEngineType.brave,
-                    )
-                ],
-            }
+        search_tool_definition = SearchToolDefinition(
+            type=AgentTool.brave_search.value,
+            api_key=os.environ["BRAVE_SEARCH_API_KEY"],
+            engine=SearchEngineType.brave,
+        )
+        await create_agent_turn_with_search_tool(
+            agents_stack, search_query_messages, common_params, search_tool_definition
         )
 
-        agent_id, session_id = await create_agent_session(agents_impl, agent_config)
-        turn_request = dict(
-            agent_id=agent_id,
-            session_id=session_id,
-            messages=search_query_messages,
-            stream=True,
+    @pytest.mark.asyncio
+    async def test_create_agent_turn_with_tavily_search(
+        self, agents_stack, search_query_messages, common_params
+    ):
+        if "TAVILY_SEARCH_API_KEY" not in os.environ:
+            pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
+
+        search_tool_definition = SearchToolDefinition(
+            type=AgentTool.brave_search.value,  # place holder only
+            api_key=os.environ["TAVILY_SEARCH_API_KEY"],
+            engine=SearchEngineType.tavily,
         )
-
-        turn_response = [
-            chunk async for chunk in await agents_impl.create_agent_turn(**turn_request)
-        ]
-
-        assert len(turn_response) > 0
-        assert all(
-            isinstance(chunk, AgentTurnResponseStreamChunk) for chunk in turn_response
+        await create_agent_turn_with_search_tool(
+            agents_stack, search_query_messages, common_params, search_tool_definition
         )
-
-        check_event_types(turn_response)
-
-        # Check for tool execution events
-        tool_execution_events = [
-            chunk
-            for chunk in turn_response
-            if isinstance(chunk.event.payload, AgentTurnResponseStepCompletePayload)
-            and chunk.event.payload.step_details.step_type
-            == StepType.tool_execution.value
-        ]
-        assert len(tool_execution_events) > 0, "No tool execution events found"
-
-        # Check the tool execution details
-        tool_execution = tool_execution_events[0].event.payload.step_details
-        assert isinstance(tool_execution, ToolExecutionStep)
-        assert len(tool_execution.tool_calls) > 0
-        assert tool_execution.tool_calls[0].tool_name == BuiltinTool.brave_search
-        assert len(tool_execution.tool_responses) > 0
-
-        check_turn_complete_event(turn_response, session_id, search_query_messages)
 
 
 def check_event_types(turn_response):

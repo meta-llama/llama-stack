@@ -35,14 +35,14 @@ the provider types (implementations) you want to use for these APIs.
 
 Tip: use <TAB> to see options for the providers.
 
-> Enter provider for API inference: meta-reference
-> Enter provider for API safety: meta-reference
-> Enter provider for API agents: meta-reference
-> Enter provider for API memory: meta-reference
-> Enter provider for API datasetio: meta-reference
-> Enter provider for API scoring: meta-reference
-> Enter provider for API eval: meta-reference
-> Enter provider for API telemetry: meta-reference
+> Enter provider for API inference: inline::meta-reference
+> Enter provider for API safety: inline::llama-guard
+> Enter provider for API agents: inline::meta-reference
+> Enter provider for API memory: inline::faiss
+> Enter provider for API datasetio: inline::meta-reference
+> Enter provider for API scoring: inline::meta-reference
+> Enter provider for API eval: inline::meta-reference
+> Enter provider for API telemetry: inline::meta-reference
 
  > (Optional) Enter a short description for your Llama Stack:
 
@@ -203,8 +203,8 @@ distribution_spec:
   description: Like local, but use ollama for running LLM inference
   providers:
     inference: remote::ollama
-    memory: meta-reference
-    safety: meta-reference
+    memory: inline::faiss
+    safety: inline::llama-guard
     agents: meta-reference
     telemetry: meta-reference
 image_type: conda

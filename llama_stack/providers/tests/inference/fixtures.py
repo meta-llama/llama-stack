@@ -9,16 +9,19 @@ import os
 import pytest
 import pytest_asyncio
 
+from llama_stack.apis.models import ModelInput
+
 from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.meta_reference.inference import (
+from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
+from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
@@ -46,7 +49,7 @@ def inference_meta_reference(inference_model) -> ProviderFixture:
         providers=[
             Provider(
                 provider_id=f"meta-reference-{i}",
-                provider_type="meta-reference",
+                provider_type="inline::meta-reference",
                 config=MetaReferenceInferenceConfig(
                     model=m,
                     max_seq_len=4096,
@@ -126,6 +129,44 @@ def inference_together() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def inference_bedrock() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="bedrock",
+                provider_type="remote::bedrock",
+                config=BedrockConfig().model_dump(),
+            )
+        ],
+    )
+
+
+def get_model_short_name(model_name: str) -> str:
+    """Convert model name to a short test identifier.
+
+    Args:
+        model_name: Full model name like "Llama3.1-8B-Instruct"
+
+    Returns:
+        Short name like "llama_8b" suitable for test markers
+    """
+    model_name = model_name.lower()
+    if "vision" in model_name:
+        return "llama_vision"
+    elif "3b" in model_name:
+        return "llama_3b"
+    elif "8b" in model_name:
+        return "llama_8b"
+    else:
+        return model_name.replace(".", "_").replace("-", "_")
+
+
+@pytest.fixture(scope="session")
+def model_id(inference_model) -> str:
+    return get_model_short_name(inference_model)
+
+
 INFERENCE_FIXTURES = [
     "meta_reference",
     "ollama",
@@ -133,17 +174,19 @@ INFERENCE_FIXTURES = [
     "together",
     "vllm_remote",
     "remote",
+    "bedrock",
 ]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def inference_stack(request):
+async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.inference],
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
+        models=[ModelInput(model_id=inference_model)],
     )
 
-    return (impls[Api.inference], impls[Api.models])
+    return test_stack.impls[Api.inference], test_stack.impls[Api.models]

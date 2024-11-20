@@ -10,12 +10,11 @@ import tempfile
 import pytest
 import pytest_asyncio
 
-from llama_stack.distribution.datatypes import Api, Provider
-from llama_stack.providers.inline.meta_reference.memory import FaissImplConfig
+from llama_stack.distribution.datatypes import Api, Provider, RemoteProviderConfig
+from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
-
-from llama_stack.providers.tests.resolver import resolve_impls_for_test_v2
+from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
@@ -27,13 +26,13 @@ def memory_remote() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def memory_meta_reference() -> ProviderFixture:
+def memory_faiss() -> ProviderFixture:
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     return ProviderFixture(
         providers=[
             Provider(
-                provider_id="meta-reference",
-                provider_type="meta-reference",
+                provider_id="faiss",
+                provider_type="inline::faiss",
                 config=FaissImplConfig(
                     kvstore=SqliteKVStoreConfig(db_path=temp_file.name).model_dump(),
                 ).model_dump(),
@@ -78,7 +77,23 @@ def memory_weaviate() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["meta_reference", "pgvector", "weaviate", "remote"]
+@pytest.fixture(scope="session")
+def memory_chroma() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="chroma",
+                provider_type="remote::chromadb",
+                config=RemoteProviderConfig(
+                    host=get_env_or_fail("CHROMA_HOST"),
+                    port=get_env_or_fail("CHROMA_PORT"),
+                ).model_dump(),
+            )
+        ]
+    )
+
+
+MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -86,10 +101,10 @@ async def memory_stack(request):
     fixture_name = request.param
     fixture = request.getfixturevalue(f"memory_{fixture_name}")
 
-    impls = await resolve_impls_for_test_v2(
+    test_stack = await construct_stack_for_test(
         [Api.memory],
         {"memory": fixture.providers},
         fixture.provider_data,
     )
 
-    return impls[Api.memory], impls[Api.memory_banks]
+    return test_stack.impls[Api.memory], test_stack.impls[Api.memory_banks]

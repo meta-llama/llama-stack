@@ -10,4 +10,5 @@ from .config_dirs import DEFAULT_CHECKPOINT_DIR
 
 
 def model_local_dir(descriptor: str) -> str:
-    return os.path.join(DEFAULT_CHECKPOINT_DIR, descriptor)
+    path = os.path.join(DEFAULT_CHECKPOINT_DIR, descriptor)
+    return path.replace(":", "-")

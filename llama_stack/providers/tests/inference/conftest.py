@@ -32,8 +32,12 @@ def pytest_configure(config):
 
 
 MODEL_PARAMS = [
-    pytest.param("Llama3.1-8B-Instruct", marks=pytest.mark.llama_8b, id="llama_8b"),
-    pytest.param("Llama3.2-3B-Instruct", marks=pytest.mark.llama_3b, id="llama_3b"),
+    pytest.param(
+        "meta-llama/Llama-3.1-8B-Instruct", marks=pytest.mark.llama_8b, id="llama_8b"
+    ),
+    pytest.param(
+        "meta-llama/Llama-3.2-3B-Instruct", marks=pytest.mark.llama_3b, id="llama_3b"
+    ),
 ]
 
 VISION_MODEL_PARAMS = [

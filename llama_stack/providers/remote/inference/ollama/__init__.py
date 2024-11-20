@@ -4,14 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.distribution.datatypes import RemoteProviderConfig
+from .config import OllamaImplConfig
 
 
-class OllamaImplConfig(RemoteProviderConfig):
-    port: int = 11434
-
-
-async def get_adapter_impl(config: RemoteProviderConfig, _deps):
+async def get_adapter_impl(config: OllamaImplConfig, _deps):
     from .ollama import OllamaInferenceAdapter
 
     impl = OllamaInferenceAdapter(config.url)

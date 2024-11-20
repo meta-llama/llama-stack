@@ -4,18 +4,22 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import argparse
 import asyncio
 import functools
 import inspect
 import json
+import os
 import signal
+import sys
 import traceback
+import warnings
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from ssl import SSLError
 from typing import Any, Dict, Optional
 
-import fire
 import httpx
 import yaml
 
@@ -26,12 +30,7 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
-from llama_stack.distribution.distribution import (
-    builtin_automatically_routed_apis,
-    get_provider_registry,
-)
-
-from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
@@ -41,16 +40,32 @@ from llama_stack.providers.utils.telemetry.tracing import (
 )
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import resolve_impls
-from llama_stack.distribution.store import CachedDiskDistributionRegistry
-from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.stack import (
+    construct_stack,
+    replace_env_vars,
+    validate_env_pair,
+)
 
 from .endpoints import get_all_api_endpoints
 
 
+REPO_ROOT = Path(__file__).parent.parent.parent.parent
+
+
+def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    log = file if hasattr(file, "write") else sys.stderr
+    traceback.print_stack(file=log)
+    log.write(warnings.formatwarning(message, category, filename, lineno, line))
+
+
+if os.environ.get("LLAMA_STACK_TRACE_WARNINGS"):
+    warnings.showwarning = warn_with_traceback
+
+
 def create_sse_event(data: Any) -> str:
     if isinstance(data, BaseModel):
-        data = data.json()
+        data = data.model_dump_json()
     else:
         data = json.dumps(data)
 
@@ -187,15 +202,6 @@ async def lifespan(app: FastAPI):
         await impl.shutdown()
 
 
-def create_dynamic_passthrough(
-    downstream_url: str, downstream_headers: Optional[Dict[str, str]] = None
-):
-    async def endpoint(request: Request):
-        return await passthrough(request, downstream_url, downstream_headers)
-
-    return endpoint
-
-
 def is_streaming_request(func_name: str, request: Request, **kwargs):
     # TODO: pass the api method and punt it to the Protocol definition directly
     return kwargs.get("stream", False)
@@ -272,32 +278,68 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
-def main(
-    yaml_config: str = "llamastack-run.yaml",
-    port: int = 5000,
-    disable_ipv6: bool = False,
-):
-    with open(yaml_config, "r") as fp:
-        config = StackRunConfig(**yaml.safe_load(fp))
+def main():
+    """Start the LlamaStack server."""
+    parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
+    parser.add_argument(
+        "--yaml-config",
+        help="Path to YAML configuration file",
+    )
+    parser.add_argument(
+        "--template",
+        help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
+    )
+    parser.add_argument("--port", type=int, default=5000, help="Port to listen on")
+    parser.add_argument(
+        "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
+    )
+    parser.add_argument(
+        "--env",
+        action="append",
+        help="Environment variables in KEY=value format. Can be specified multiple times.",
+    )
+
+    args = parser.parse_args()
+    if args.env:
+        for env_pair in args.env:
+            try:
+                key, value = validate_env_pair(env_pair)
+                print(f"Setting CLI environment variable {key} => {value}")
+                os.environ[key] = value
+            except ValueError as e:
+                print(f"Error: {str(e)}")
+                sys.exit(1)
+
+    if args.yaml_config:
+        # if the user provided a config file, use it, even if template was specified
+        config_file = Path(args.yaml_config)
+        if not config_file.exists():
+            raise ValueError(f"Config file {config_file} does not exist")
+        print(f"Using config file: {config_file}")
+    elif args.template:
+        config_file = (
+            Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
+        )
+        if not config_file.exists():
+            raise ValueError(f"Template {args.template} does not exist")
+        print(f"Using template {args.template} config file: {config_file}")
+    else:
+        raise ValueError("Either --yaml-config or --template must be provided")
+
+    with open(config_file, "r") as fp:
+        config = replace_env_vars(yaml.safe_load(fp))
+        config = StackRunConfig(**config)
+
+    print("Run configuration:")
+    print(yaml.dump(config.model_dump(), indent=2))
 
     app = FastAPI()
-    # instantiate kvstore for storing and retrieving distribution metadata
-    if config.metadata_store:
-        dist_kvstore = asyncio.run(kvstore_impl(config.metadata_store))
-    else:
-        dist_kvstore = asyncio.run(
-            kvstore_impl(
-                SqliteKVStoreConfig(
-                    db_path=(
-                        DISTRIBS_BASE_DIR / config.image_name / "kvstore.db"
-                    ).as_posix()
-                )
-            )
-        )
 
-    dist_registry = CachedDiskDistributionRegistry(dist_kvstore)
+    try:
+        impls = asyncio.run(construct_stack(config))
+    except InvalidProviderError:
+        sys.exit(1)
 
-    impls = asyncio.run(resolve_impls(config, get_provider_registry(), dist_registry))
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
 
@@ -321,22 +363,17 @@ def main(
         endpoints = all_endpoints[api]
         impl = impls[api]
 
-        if is_passthrough(impl.__provider_spec__):
-            for endpoint in endpoints:
-                url = impl.__provider_config__.url.rstrip("/") + endpoint.route
-                getattr(app, endpoint.method)(endpoint.route)(
-                    create_dynamic_passthrough(url)
+        for endpoint in endpoints:
+            if not hasattr(impl, endpoint.name):
+                # ideally this should be a typing violation already
+                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
+
+            impl_method = getattr(impl, endpoint.name)
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore", category=UserWarning, module="pydantic._internal._fields"
                 )
-        else:
-            for endpoint in endpoints:
-                if not hasattr(impl, endpoint.name):
-                    # ideally this should be a typing violation already
-                    raise ValueError(
-                        f"Could not find method {endpoint.name} on {impl}!!"
-                    )
-
-                impl_method = getattr(impl, endpoint.name)
-
                 getattr(app, endpoint.method)(endpoint.route, response_model=None)(
                     create_dynamic_typed_route(
                         impl_method,
@@ -359,10 +396,10 @@ def main(
 
     # FYI this does not do hot-reloads
 
-    listen_host = ["::", "0.0.0.0"] if not disable_ipv6 else "0.0.0.0"
-    print(f"Listening on {listen_host}:{port}")
-    uvicorn.run(app, host=listen_host, port=port)
+    listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
+    print(f"Listening on {listen_host}:{args.port}")
+    uvicorn.run(app, host=listen_host, port=args.port)
 
 
 if __name__ == "__main__":
-    fire.Fire(main)
+    main()

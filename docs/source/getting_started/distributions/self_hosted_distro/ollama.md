@@ -2,111 +2,120 @@
 
 The `llamastack/distribution-ollama` distribution consists of the following provider configurations.
 
-| **API**         	| **Inference**  	| **Agents**     	| **Memory**                       	| **Safety**     	| **Telemetry**  	|
-|-----------------	|----------------	|----------------	|----------------------------------	|----------------	|----------------	|
-| **Provider(s)** 	| remote::ollama 	| meta-reference 	| remote::pgvector, remote::chroma 	| remote::ollama 	| meta-reference 	|
+| API | Provider(s) |
+|-----|-------------|
+| agents | `inline::meta-reference` |
+| inference | `remote::ollama` |
+| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard` |
+| telemetry | `inline::meta-reference` |
 
 
-### Docker: Start a Distribution (Single Node GPU)
+You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
 
-> [!NOTE]
-> This assumes you have access to GPU to start a Ollama server with access to your GPU.
+The following environment variables can be configured:
 
-```
-$ cd distributions/ollama/gpu
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
-```
+- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `OLLAMA_URL`: URL of the Ollama server (default: `http://127.0.0.1:11434`)
+- `INFERENCE_MODEL`: Inference model loaded into the Ollama server (default: `meta-llama/Llama-3.2-3B-Instruct`)
+- `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
 
-You will see outputs similar to following ---
-```
-[ollama]               | [GIN] 2024/10/18 - 21:19:41 | 200 |     226.841µs |             ::1 | GET      "/api/ps"
-[ollama]               | [GIN] 2024/10/18 - 21:19:42 | 200 |      60.908µs |             ::1 | GET      "/api/ps"
-INFO:     Started server process [1]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://[::]:5000 (Press CTRL+C to quit)
-[llamastack] | Resolved 12 providers
-[llamastack] |  inner-inference => ollama0
-[llamastack] |  models => __routing_table__
-[llamastack] |  inference => __autorouted__
-```
 
-To kill the server
-```
-docker compose down
+## Setting up Ollama server
+
+Please check the [Ollama Documentation](https://github.com/ollama/ollama) on how to install and run Ollama. After installing Ollama, you need to run `ollama serve` to start the server.
+
+In order to load models, you can run:
+
+```bash
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+
+# ollama names this model differently, and we must use the ollama name when loading the model
+export OLLAMA_INFERENCE_MODEL="llama3.2:3b-instruct-fp16"
+ollama run $OLLAMA_INFERENCE_MODEL --keepalive 60m
 ```
 
-### Docker: Start the Distribution (Single Node CPU)
+If you are using Llama Stack Safety / Shield APIs, you will also need to pull and run the safety model.
 
-> [!NOTE]
-> This will start an ollama server with CPU only, please see [Ollama Documentations](https://github.com/ollama/ollama) for serving models on CPU only.
+```bash
+export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 
-```
-$ cd distributions/ollama/cpu
-$ ls
-compose.yaml  run.yaml
-$ docker compose up
+# ollama names this model differently, and we must use the ollama name when loading the model
+export OLLAMA_SAFETY_MODEL="llama-guard3:1b"
+ollama run $OLLAMA_SAFETY_MODEL --keepalive 60m
 ```
 
-### Conda: ollama run + llama stack run
+## Running Llama Stack
 
-If you wish to separately spin up a Ollama server, and connect with Llama Stack, you may use the following commands.
+Now you are ready to run Llama Stack with Ollama as the inference provider. You can do this via Conda (build code) or Docker which has a pre-built image.
 
-#### Start Ollama server.
-- Please check the [Ollama Documentations](https://github.com/ollama/ollama) for more details.
+### Via Docker
 
-**Via Docker**
+This method allows you to get started quickly without having to build the distribution code.
+
+```bash
+export LLAMA_STACK_PORT=5001
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  -v ./run.yaml:/root/my-run.yaml \
+  llamastack/distribution-ollama \
+  --yaml-config /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://host.docker.internal:11434
 ```
-docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  -v ./run-with-safety.yaml:/root/my-run.yaml \
+  llamastack/distribution-ollama \
+  --yaml-config /root/my-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env SAFETY_MODEL=$SAFETY_MODEL \
+  --env OLLAMA_URL=http://host.docker.internal:11434
 ```
 
-**Via CLI**
-```
-ollama run <model_id>
-```
+### Via Conda
 
-#### Start Llama Stack server pointing to Ollama server
+Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
 
-**Via Conda**
+```bash
+export LLAMA_STACK_PORT=5001
 
-```
 llama stack build --template ollama --image-type conda
-llama stack run ./gpu/run.yaml
+llama stack run ./run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://localhost:11434
 ```
 
-**Via Docker**
-```
-docker run --network host -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./gpu/run.yaml:/root/llamastack-run-ollama.yaml --gpus=all llamastack/distribution-ollama --yaml_config /root/llamastack-run-ollama.yaml
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+llama stack run ./run-with-safety.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env SAFETY_MODEL=$SAFETY_MODEL \
+  --env OLLAMA_URL=http://localhost:11434
 ```
 
-Make sure in your `run.yaml` file, your inference provider is pointing to the correct Ollama endpoint. E.g.
-```
-inference:
-  - provider_id: ollama0
-    provider_type: remote::ollama
-    config:
-      url: http://127.0.0.1:14343
-```
 
 ### (Optional) Update Model Serving Configuration
-
-#### Downloading model via Ollama
-
-You can use ollama for managing model downloads.
-
-```
-ollama pull llama3.1:8b-instruct-fp16
-ollama pull llama3.1:70b-instruct-fp16
-```
 
 > [!NOTE]
 > Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers.remote/inference/ollama/ollama.py) for the supported Ollama models.
 
 
 To serve a new model with `ollama`
-```
+```bash
 ollama run <model_name>
 ```
 
@@ -119,7 +128,7 @@ llama3.1:8b-instruct-fp16    4aacac419454    17 GB    100% GPU     4 minutes fro
 ```
 
 To verify that the model served by ollama is correctly connected to Llama Stack server
-```
+```bash
 $ llama-stack-client models list
 +----------------------+----------------------+---------------+-----------------------------------------------+
 | identifier           | llama_model          | provider_id   | metadata                                      |

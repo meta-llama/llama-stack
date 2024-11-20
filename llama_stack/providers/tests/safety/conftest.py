@@ -16,7 +16,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "meta_reference",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="meta_reference",
         marks=pytest.mark.meta_reference,
@@ -24,7 +24,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "ollama",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="ollama",
         marks=pytest.mark.ollama,
@@ -32,10 +32,18 @@ DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
             "inference": "together",
-            "safety": "meta_reference",
+            "safety": "llama_guard",
         },
         id="together",
         marks=pytest.mark.together,
+    ),
+    pytest.param(
+        {
+            "inference": "bedrock",
+            "safety": "bedrock",
+        },
+        id="bedrock",
+        marks=pytest.mark.bedrock,
     ),
     pytest.param(
         {
@@ -49,7 +57,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 
 
 def pytest_configure(config):
-    for mark in ["meta_reference", "ollama", "together", "remote"]:
+    for mark in ["meta_reference", "ollama", "together", "remote", "bedrock"]:
         config.addinivalue_line(
             "markers",
             f"{mark}: marks tests as {mark} specific",
@@ -58,14 +66,14 @@ def pytest_configure(config):
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--safety-model",
+        "--safety-shield",
         action="store",
         default=None,
-        help="Specify the safety model to use for testing",
+        help="Specify the safety shield to use for testing",
     )
 
 
-SAFETY_MODEL_PARAMS = [
+SAFETY_SHIELD_PARAMS = [
     pytest.param("Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"),
 ]
 
@@ -75,13 +83,13 @@ def pytest_generate_tests(metafunc):
     # But a user can also pass in a custom combination via the CLI by doing
     #  `--providers inference=together,safety=meta_reference`
 
-    if "safety_model" in metafunc.fixturenames:
-        model = metafunc.config.getoption("--safety-model")
-        if model:
-            params = [pytest.param(model, id="")]
+    if "safety_shield" in metafunc.fixturenames:
+        shield_id = metafunc.config.getoption("--safety-shield")
+        if shield_id:
+            params = [pytest.param(shield_id, id="")]
         else:
-            params = SAFETY_MODEL_PARAMS
-        for fixture in ["inference_model", "safety_model"]:
+            params = SAFETY_SHIELD_PARAMS
+        for fixture in ["inference_model", "safety_shield"]:
             metafunc.parametrize(
                 fixture,
                 params,

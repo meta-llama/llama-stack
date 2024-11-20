@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import collections
 import hashlib
 import ipaddress
 import typing
@@ -176,9 +177,20 @@ class ContentBuilder:
     ) -> Dict[str, MediaType]:
         "Creates the content subtree for a request or response."
 
+        def has_iterator_type(t):
+            if typing.get_origin(t) is typing.Union:
+                return any(has_iterator_type(a) for a in typing.get_args(t))
+            else:
+                # TODO: needs a proper fix where we let all types correctly flow upwards
+                # and then test against AsyncIterator
+                return "StreamChunk" in str(t)
+
         if is_generic_list(payload_type):
             media_type = "application/jsonl"
             item_type = unwrap_generic_list(payload_type)
+        elif has_iterator_type(payload_type):
+            item_type = payload_type
+            media_type = "text/event-stream"
         else:
             media_type = "application/json"
             item_type = payload_type
@@ -190,7 +202,9 @@ class ContentBuilder:
     ) -> MediaType:
         schema = self.schema_builder.classdef_to_ref(item_type)
         if self.schema_transformer:
-            schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = self.schema_transformer  # type: ignore
+            schema_transformer: Callable[[SchemaOrRef], SchemaOrRef] = (
+                self.schema_transformer
+            )
             schema = schema_transformer(schema)
 
         if not examples:
@@ -618,6 +632,7 @@ class Generator:
                 raise NotImplementedError(f"unknown HTTP method: {op.http_method}")
 
             route = op.get_route()
+            print(f"route: {route}")
             if route in paths:
                 paths[route].update(pathItem)
             else:
@@ -670,6 +685,8 @@ class Generator:
         tags.extend(event_tags)
         for extra_tag_group in extra_tag_groups.values():
             tags.extend(extra_tag_group)
+
+        tags = sorted(tags, key=lambda t: t.name)
 
         tag_groups = []
         if operation_tags:

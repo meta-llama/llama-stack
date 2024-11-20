@@ -44,7 +44,7 @@ Finally, you can override the model completely by doing:
 ```bash
 pytest -s -v llama_stack/providers/tests/inference/test_text_inference.py \
   -m fireworks \
-  --inference-model "Llama3.1-70B-Instruct" \
+  --inference-model "meta-llama/Llama3.1-70B-Instruct" \
   --env FIREWORKS_API_KEY=<...>
 ```
 
@@ -66,4 +66,10 @@ pytest -s -m together llama_stack/providers/tests/agents/test_agents.py  \
  --env TOGETHER_API_KEY=<...>
  ```
 
-If you want to override the inference model or safety model used, you can use the `--inference-model` or `--safety-model` CLI options as appropriate.
+If you want to override the inference model or safety model used, you can use the `--inference-model` or `--safety-shield` CLI options as appropriate.
+
+If you wanted to test a remotely hosted stack, you can use `-m remote` as follows:
+```bash
+pytest -s -m remote llama_stack/providers/tests/agents/test_agents.py \
+  --env REMOTE_STACK_URL=<...>
+```

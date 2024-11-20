@@ -1,13 +1,19 @@
+version: '2'
 name: meta-reference-gpu
 distribution_spec:
-  docker_image: pytorch/pytorch:2.5.0-cuda12.4-cudnn9-runtime
-  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  description: Use Meta Reference for running LLM inference
+  docker_image: null
   providers:
-    inference: meta-reference
+    inference:
+    - inline::meta-reference
     memory:
-    - meta-reference
+    - inline::faiss
     - remote::chromadb
     - remote::pgvector
-    safety: meta-reference
-    agents: meta-reference
-    telemetry: meta-reference
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

@@ -7,12 +7,18 @@
 from typing import AsyncGenerator
 
 import httpx
+from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from ollama import AsyncClient
+
+from llama_stack.providers.utils.inference.model_registry import (
+    build_model_alias,
+    build_model_alias_with_just_provider_model_id,
+    ModelRegistryHelper,
+)
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
@@ -33,19 +39,64 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     request_has_media,
 )
 
-OLLAMA_SUPPORTED_MODELS = {
-    "Llama3.1-8B-Instruct": "llama3.1:8b-instruct-fp16",
-    "Llama3.1-70B-Instruct": "llama3.1:70b-instruct-fp16",
-    "Llama3.2-1B-Instruct": "llama3.2:1b-instruct-fp16",
-    "Llama3.2-3B-Instruct": "llama3.2:3b-instruct-fp16",
-    "Llama-Guard-3-8B": "llama-guard3:8b",
-    "Llama-Guard-3-1B": "llama-guard3:1b",
-    "Llama3.2-11B-Vision-Instruct": "x/llama3.2-vision:11b-instruct-fp16",
-}
+
+model_aliases = [
+    build_model_alias(
+        "llama3.1:8b-instruct-fp16",
+        CoreModelId.llama3_1_8b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.1:8b",
+        CoreModelId.llama3_1_8b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.1:70b-instruct-fp16",
+        CoreModelId.llama3_1_70b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.1:70b",
+        CoreModelId.llama3_1_70b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2:1b-instruct-fp16",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2:3b-instruct-fp16",
+        CoreModelId.llama3_2_3b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2:1b",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2:3b",
+        CoreModelId.llama3_2_3b_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2-vision:11b-instruct-fp16",
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2-vision",
+        CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+    # The Llama Guard models don't have their full fp16 versions
+    # so we are going to alias their default version to the canonical SKU
+    build_model_alias(
+        "llama-guard3:8b",
+        CoreModelId.llama_guard_3_8b.value,
+    ),
+    build_model_alias(
+        "llama-guard3:1b",
+        CoreModelId.llama_guard_3_1b.value,
+    ),
+]
 
 
 class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     def __init__(self, url: str) -> None:
+        self.register_helper = ModelRegistryHelper(model_aliases)
         self.url = url
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -54,7 +105,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
-        print("Initializing Ollama, checking connectivity to server...")
+        print(f"checking connectivity to Ollama at `{self.url}`...")
         try:
             await self.client.ps()
         except httpx.ConnectError as e:
@@ -65,43 +116,21 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_model(self, model: ModelDef) -> None:
-        raise ValueError("Dynamic model registration is not supported")
-
-    async def list_models(self) -> List[ModelDef]:
-        ollama_to_llama = {v: k for k, v in OLLAMA_SUPPORTED_MODELS.items()}
-
-        ret = []
-        res = await self.client.ps()
-        for r in res["models"]:
-            if r["model"] not in ollama_to_llama:
-                print(f"Ollama is running a model unknown to Llama Stack: {r['model']}")
-                continue
-
-            llama_model = ollama_to_llama[r["model"]]
-            ret.append(
-                ModelDef(
-                    identifier=llama_model,
-                    llama_model=llama_model,
-                    metadata={
-                        "ollama_model": r["model"],
-                    },
-                )
-            )
-
-        return ret
+    async def unregister_model(self, model_id: str) -> None:
+        pass
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             content=content,
             sampling_params=sampling_params,
             stream=stream,
@@ -147,7 +176,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
@@ -157,8 +186,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -196,7 +226,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             else:
                 input_dict["raw"] = True
                 input_dict["prompt"] = chat_completion_request_to_prompt(
-                    request, self.formatter
+                    request,
+                    self.register_helper.get_llama_model(request.model),
+                    self.formatter,
                 )
         else:
             assert (
@@ -206,7 +238,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             input_dict["raw"] = True
 
         return {
-            "model": OLLAMA_SUPPORTED_MODELS[request.model],
+            "model": request.model,
             **input_dict,
             "options": sampling_options,
             "stream": request.stream,
@@ -270,10 +302,22 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
+
+    async def register_model(self, model: Model) -> Model:
+        model = await self.register_helper.register_model(model)
+        models = await self.client.ps()
+        available_models = [m["model"] for m in models["models"]]
+        if model.provider_resource_id not in available_models:
+            raise ValueError(
+                f"Model '{model.provider_resource_id}' is not available in Ollama. "
+                f"Available models: {', '.join(available_models)}"
+            )
+
+        return model
 
 
 async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:

@@ -34,10 +34,18 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.memory,
-            provider_type="meta-reference",
+            provider_type="inline::meta-reference",
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
-            module="llama_stack.providers.inline.meta_reference.memory",
-            config_class="llama_stack.providers.inline.meta_reference.memory.FaissImplConfig",
+            module="llama_stack.providers.inline.memory.faiss",
+            config_class="llama_stack.providers.inline.memory.faiss.FaissImplConfig",
+            deprecation_warning="Please use the `inline::faiss` provider instead.",
+        ),
+        InlineProviderSpec(
+            api=Api.memory,
+            provider_type="inline::faiss",
+            pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
+            module="llama_stack.providers.inline.memory.faiss",
+            config_class="llama_stack.providers.inline.memory.faiss.FaissImplConfig",
         ),
         remote_provider_spec(
             Api.memory,
@@ -45,6 +53,7 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="chromadb",
                 pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
                 module="llama_stack.providers.remote.memory.chroma",
+                config_class="llama_stack.distribution.datatypes.RemoteProviderConfig",
             ),
         ),
         remote_provider_spec(

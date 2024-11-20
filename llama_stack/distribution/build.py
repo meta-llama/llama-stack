@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 import pkg_resources
 from pydantic import BaseModel
@@ -38,28 +38,19 @@ class ImageType(Enum):
     conda = "conda"
 
 
-class Dependencies(BaseModel):
-    pip_packages: List[str]
-    docker_image: Optional[str] = None
-
-
 class ApiInput(BaseModel):
     api: Api
     provider: str
 
 
-def build_image(build_config: BuildConfig, build_file_path: Path):
-    package_deps = Dependencies(
-        docker_image=build_config.distribution_spec.docker_image or "python:3.10-slim",
-        pip_packages=SERVER_DEPENDENCIES,
-    )
-
-    # extend package dependencies based on providers spec
+def get_provider_dependencies(
+    config_providers: Dict[str, List[Provider]]
+) -> tuple[list[str], list[str]]:
+    """Get normal and special dependencies from provider configuration."""
     all_providers = get_provider_registry()
-    for (
-        api_str,
-        provider_or_providers,
-    ) in build_config.distribution_spec.providers.items():
+    deps = []
+
+    for api_str, provider_or_providers in config_providers.items():
         providers_for_api = all_providers[Api(api_str)]
 
         providers = (
@@ -69,25 +60,50 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         )
 
         for provider in providers:
-            if provider not in providers_for_api:
+            # Providers from BuildConfig and RunConfig are subtly different – not great
+            provider_type = (
+                provider if isinstance(provider, str) else provider.provider_type
+            )
+
+            if provider_type not in providers_for_api:
                 raise ValueError(
                     f"Provider `{provider}` is not available for API `{api_str}`"
                 )
 
-            provider_spec = providers_for_api[provider]
-            package_deps.pip_packages.extend(provider_spec.pip_packages)
+            provider_spec = providers_for_api[provider_type]
+            deps.extend(provider_spec.pip_packages)
             if provider_spec.docker_image:
                 raise ValueError("A stack's dependencies cannot have a docker image")
 
+    normal_deps = []
     special_deps = []
-    deps = []
-    for package in package_deps.pip_packages:
+    for package in deps:
         if "--no-deps" in package or "--index-url" in package:
             special_deps.append(package)
         else:
-            deps.append(package)
-    deps = list(set(deps))
-    special_deps = list(set(special_deps))
+            normal_deps.append(package)
+
+    return list(set(normal_deps)), list(set(special_deps))
+
+
+def print_pip_install_help(providers: Dict[str, List[Provider]]):
+    normal_deps, special_deps = get_provider_dependencies(providers)
+
+    print(
+        f"Please install needed dependencies using the following commands:\n\n\tpip install {' '.join(normal_deps)}"
+    )
+    for special_dep in special_deps:
+        print(f"\tpip install {special_dep}")
+    print()
+
+
+def build_image(build_config: BuildConfig, build_file_path: Path):
+    docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
+
+    normal_deps, special_deps = get_provider_dependencies(
+        build_config.distribution_spec.providers
+    )
+    normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == ImageType.docker.value:
         script = pkg_resources.resource_filename(
@@ -96,10 +112,10 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
         args = [
             script,
             build_config.name,
-            package_deps.docker_image,
+            docker_image,
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
-            " ".join(deps),
+            " ".join(normal_deps),
         ]
     else:
         script = pkg_resources.resource_filename(
@@ -109,7 +125,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             script,
             build_config.name,
             str(build_file_path),
-            " ".join(deps),
+            " ".join(normal_deps),
         ]
 
     if special_deps:

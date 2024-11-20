@@ -1,0 +1,46 @@
+version: '2'
+image_name: local
+docker_image: null
+conda_env: local
+apis:
+- shields
+- agents
+- models
+- memory
+- memory_banks
+- inference
+- safety
+providers:
+  inference:
+  - provider_id: ollama
+    provider_type: remote::ollama
+    config:
+      url: ${env.OLLAMA_URL:http://127.0.0.1:11434}
+  safety:
+  - provider_id: meta0
+    provider_type: inline::llama-guard
+    config:
+      excluded_categories: []
+  memory:
+  - provider_id: meta0
+    provider_type: inline::meta-reference
+    config: {}
+  agents:
+  - provider_id: meta0
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        namespace: null
+        type: sqlite
+        db_path: ~/.llama/runtime/kvstore.db
+  telemetry:
+  - provider_id: meta0
+    provider_type: inline::meta-reference
+    config: {}
+models:
+  - model_id: ${env.INFERENCE_MODEL:Llama3.2-3B-Instruct}
+    provider_id: ollama
+  - model_id: ${env.SAFETY_MODEL:Llama-Guard-3-1B}
+    provider_id: ollama
+shields:
+  - shield_id: ${env.SAFETY_MODEL:Llama-Guard-3-1B}
