@@ -119,19 +119,19 @@ Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [firew
 :::
 
 :::{tab-item} tgi
-[Start TGI Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/tgi.html)
+- [Start TGI Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/tgi.html)
 :::
 
 :::{tab-item} ollama
-[Start Ollama Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)
+- [Start Ollama Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)
 :::
 
 :::{tab-item} together
-[Start Together Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/together.html)
+- [Start Together Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/together.html)
 :::
 
 :::{tab-item} fireworks
-[Start Fireworks Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/fireworks.html)
+- [Start Fireworks Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/fireworks.html)
 :::
 
 ::::
