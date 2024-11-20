@@ -97,6 +97,10 @@ def translate_exception(exc: Exception) -> Union[HTTPException, RequestValidatio
         )
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+    elif isinstance(exc, TypeError):
+        return HTTPException(status_code=400, detail=f"Type Error: {str(exc)}")
+    elif isinstance(exc, KeyError):
+        return HTTPException(status_code=400, detail=f"Key Error: {str(exc)}")
     elif isinstance(exc, PermissionError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, TimeoutError):

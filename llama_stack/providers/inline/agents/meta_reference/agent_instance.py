@@ -147,7 +147,8 @@ class ChatAgent(ShieldRunnerMixin):
     async def create_and_execute_turn(
         self, request: AgentTurnCreateRequest
     ) -> AsyncGenerator:
-        assert request.stream is True, "Non-streaming not supported"
+        if not request.stream:
+            raise NotImplementedError("Non-streaming not supported")
 
         session_info = await self.storage.get_session_info(request.session_id)
         if session_info is None:
@@ -561,9 +562,10 @@ class ChatAgent(ShieldRunnerMixin):
                             self.tools_dict,
                             [message],
                         )
-                        assert (
-                            len(result_messages) == 1
-                        ), "Currently not supporting multiple messages"
+                        if len(result_messages) != 1:
+                            raise ValueError(
+                                "Currently not supporting multiple messages"
+                            )
                         result_message = result_messages[0]
 
                     yield AgentTurnResponseStreamChunk(
@@ -682,7 +684,9 @@ class ChatAgent(ShieldRunnerMixin):
         bank_ids = []
 
         memory = self._memory_tool_definition()
-        assert memory is not None, "Memory tool not configured"
+        if memory is None:
+            raise KeyError("Memory tool not configured")
+
         bank_ids.extend(c.bank_id for c in memory.memory_bank_configs)
 
         if attachments:
@@ -813,16 +817,19 @@ async def execute_tool_call_maybe(
     # When this changes, we can drop this assert
     # Whether to call tools on each message and aggregate
     # or aggregate and call tool once, reamins to be seen.
-    assert len(messages) == 1, "Expected single message"
+    if len(messages) != 1:
+        raise ValueError("Expected single message")
     message = messages[0]
 
     tool_call = message.tool_calls[0]
     name = tool_call.tool_name
-    assert isinstance(name, BuiltinTool)
 
+    if not isinstance(name, BuiltinTool):
+        raise TypeError(f"Tool {name} is not an instance of BuiltinTool.")
     name = name.value
+    if name not in tools_dict:
+        raise KeyError(f"Tool {name} not found in agent config.")
 
-    assert name in tools_dict, f"Tool {name} not found"
     tool = tools_dict[name]
     result_messages = await tool.run(messages)
     return result_messages
