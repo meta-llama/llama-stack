@@ -4,7 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 from typing import Optional
+
+from .config import LogFormat
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 from .config import ConsoleConfig
@@ -38,7 +41,11 @@ class ConsoleTelemetryImpl(Telemetry):
 
         span_name = ".".join(names) if names else None
 
-        formatted = format_event(event, span_name)
+        if self.config.log_format == LogFormat.JSON:
+            formatted = format_event_json(event, span_name)
+        else:
+            formatted = format_event_text(event, span_name)
+
         if formatted:
             print(formatted)
 
@@ -69,7 +76,7 @@ SEVERITY_COLORS = {
 }
 
 
-def format_event(event: Event, span_name: str) -> Optional[str]:
+def format_event_text(event: Event, span_name: str) -> Optional[str]:
     timestamp = event.timestamp.strftime("%H:%M:%S.%f")[:-3]
     span = ""
     if span_name:
@@ -87,3 +94,23 @@ def format_event(event: Event, span_name: str) -> Optional[str]:
         return None
 
     return f"Unknown event type: {event}"
+
+
+def format_event_json(event: Event, span_name: str) -> Optional[str]:
+    base_data = {
+        "timestamp": event.timestamp.isoformat(),
+        "trace_id": event.trace_id,
+        "span_id": event.span_id,
+        "span_name": span_name,
+    }
+
+    if isinstance(event, UnstructuredLogEvent):
+        base_data.update(
+            {"type": "log", "severity": event.severity.name, "message": event.message}
+        )
+        return json.dumps(base_data)
+
+    elif isinstance(event, StructuredLogEvent):
+        return None
+
+    return json.dumps({"error": f"Unknown event type: {event}"})
