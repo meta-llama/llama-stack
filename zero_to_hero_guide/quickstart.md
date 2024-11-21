@@ -20,7 +20,7 @@ Prototype locally using Ollama, deploy to the cloud with your favorite provider 
 
 # Ollama Quickstart Guide
 
-This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-1B-Instruct` model. Follow these steps to get started quickly.
+This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-3B-Instruct` model. Follow these steps to get started quickly.
 
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
@@ -64,13 +64,13 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 ## Install Dependencies and Set Up Environment
 
 1. **Create a Conda Environment**:
-   - Create a new Conda environment with Python 3.11:
+   - Create a new Conda environment with Python 3.10:
      ```bash
-     conda create -n hack python=3.11
+     conda create -n ollama python=3.10
      ```
    - Activate the environment:
      ```bash
-     conda activate hack
+     conda activate ollama
      ```
 
 2. **Install ChromaDB**:
@@ -89,7 +89,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
    - Open a new terminal and install `llama-stack`:
      ```bash
      conda activate hack
-     pip install llama-stack
+     pip install llama-stack==0.0.53
      ```
 
 ---
@@ -110,10 +110,12 @@ Build Successful! Next steps:
    2. `llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml`
 ```
 
-2. **Edit Configuration**:
-   - Modify the `ollama-run.yaml` file located at `/Users/yourusername/.llama/distributions/llamastack-ollama/ollama-run.yaml`:
-     - Change the `chromadb` port to `8000`.
-     - Remove the `pgvector` section if present.
+2. **Set the ENV variables by exporting them to the terminal**:
+```bash
+
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
+```
 
 3. **Run the Llama Stack**:
    - Run the stack with the configured YAML file:
