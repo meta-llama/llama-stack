@@ -1,5 +1,12 @@
 # Meta Reference Quantized Distribution
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 The `llamastack/distribution-meta-reference-quantized-gpu` distribution consists of the following provider configurations.
 
 

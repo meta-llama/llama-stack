@@ -1,5 +1,12 @@
 # Remote vLLM Distribution
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 The `llamastack/distribution-remote-vllm` distribution consists of the following provider configurations:
 
 | API | Provider(s) |

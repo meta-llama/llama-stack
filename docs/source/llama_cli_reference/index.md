@@ -1,4 +1,4 @@
-# CLI Reference
+# llama CLI Reference
 
 The `llama` CLI tool helps you setup and use the Llama Stack. It should be available on your path after installing the `llama-stack` package.
 
@@ -119,7 +119,7 @@ You should see a table like this:
 
 To download models, you can use the llama download command.
 
-#### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
+### Downloading from [Meta](https://llama.meta.com/llama-downloads/)
 
 Here is an example download command to get the 3B-Instruct/11B-Vision-Instruct model. You will need META_URL which can be obtained from [here](https://llama.meta.com/docs/getting_the_models/meta/)
 
@@ -137,7 +137,7 @@ llama download --source meta --model-id Prompt-Guard-86M --meta-url META_URL
 llama download --source meta --model-id Llama-Guard-3-1B --meta-url META_URL
 ```
 
-#### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
+### Downloading from [Hugging Face](https://huggingface.co/meta-llama)
 
 Essentially, the same commands above work, just replace `--source meta` with `--source huggingface`.
 
