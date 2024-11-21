@@ -40,7 +40,7 @@ from ._openai_utils import (
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
 )
-from ._utils import check_health
+from ._utils import _is_nvidia_hosted, check_health
 
 _MODEL_ALIASES = [
     build_model_alias_with_just_provider_model_id(
@@ -91,7 +91,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
 
         print(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 
-        if config.is_hosted:
+        if _is_nvidia_hosted(config):
             if not config.api_key:
                 raise RuntimeError(
                     "API key is required for hosted NVIDIA NIM. "

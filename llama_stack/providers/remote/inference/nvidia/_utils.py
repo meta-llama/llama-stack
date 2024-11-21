@@ -11,6 +11,10 @@ import httpx
 from ._config import NVIDIAConfig
 
 
+def _is_nvidia_hosted(config: NVIDIAConfig) -> bool:
+    return "integrate.api.nvidia.com" in config.url
+
+
 async def _get_health(url: str) -> Tuple[bool, bool]:
     """
     Query {url}/v1/health/{live,ready} to check if the server is running and ready
@@ -37,7 +41,7 @@ async def check_health(config: NVIDIAConfig) -> None:
     Raises:
         RuntimeError: If the server is not running or ready
     """
-    if not config.is_hosted:
+    if not _is_nvidia_hosted(config):
         print("Checking NVIDIA NIM health...")
         try:
             is_live, is_ready = await _get_health(config.url)

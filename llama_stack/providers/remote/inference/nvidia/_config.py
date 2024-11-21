@@ -46,7 +46,3 @@ class NVIDIAConfig(BaseModel):
         default=60,
         description="Timeout for the HTTP requests",
     )
-
-    @property
-    def is_hosted(self) -> bool:
-        return "integrate.api.nvidia.com" in self.url
