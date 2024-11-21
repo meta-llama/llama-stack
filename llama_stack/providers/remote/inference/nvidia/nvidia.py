@@ -34,13 +34,13 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 
-from ._config import NVIDIAConfig
-from ._openai_utils import (
+from . import NVIDIAConfig
+from .openai_utils import (
     convert_chat_completion_request,
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
 )
-from ._utils import _is_nvidia_hosted, check_health
+from .utils import _is_nvidia_hosted, check_health
 
 _MODEL_ALIASES = [
     build_model_alias_with_just_provider_model_id(

@@ -8,7 +8,7 @@ from typing import Tuple
 
 import httpx
 
-from ._config import NVIDIAConfig
+from . import NVIDIAConfig
 
 
 def _is_nvidia_hosted(config: NVIDIAConfig) -> bool:

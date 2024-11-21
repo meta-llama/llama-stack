@@ -6,12 +6,12 @@
 
 from llama_stack.apis.inference import Inference
 
-from ._config import NVIDIAConfig
+from .config import NVIDIAConfig
 
 
 async def get_adapter_impl(config: NVIDIAConfig, _deps) -> Inference:
     # import dynamically so `llama stack build` does not fail due to missing dependencies
-    from ._nvidia import NVIDIAInferenceAdapter
+    from .nvidia import NVIDIAInferenceAdapter
 
     if not isinstance(config, NVIDIAConfig):
         raise RuntimeError(f"Unexpected config type: {type(config)}")
