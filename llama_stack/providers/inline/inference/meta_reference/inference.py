@@ -34,6 +34,8 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
     def __init__(self, config: MetaReferenceInferenceConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
+        if model is None:
+            raise RuntimeError(f"Unknown model: {config.model}, Run `llama model list`")
         ModelRegistryHelper.__init__(
             self,
             [
@@ -43,8 +45,6 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
                 )
             ],
         )
-        if model is None:
-            raise RuntimeError(f"Unknown model: {config.model}, Run `llama model list`")
         self.model = model
         # verify that the checkpoint actually is for this model lol
 

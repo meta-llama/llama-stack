@@ -179,7 +179,7 @@ def chat_completion_request_to_messages(
         return request.messages
 
     allowed_models = supported_inference_models()
-    descriptors = [m.descriptor() for m in allowed_models if m is not None]
+    descriptors = [m.descriptor() for m in allowed_models]
     if model.descriptor() not in descriptors:
         cprint(f"Unsupported inference model? {model.descriptor()}", color="red")
         return request.messages
