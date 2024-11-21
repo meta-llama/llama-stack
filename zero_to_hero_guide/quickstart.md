@@ -112,7 +112,8 @@ Build Successful! Next steps:
 
 2. **Set the ENV variables by exporting them to the terminal**:
 ```bash
-
+export OLLAMA_URL=""
+export LLAMA_STACK_PORT=5001
 export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
 export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 ```
