@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from llama_models.datatypes import *  # noqa: F403
 from llama_models.sku_list import resolve_model
@@ -37,8 +37,10 @@ class MetaReferenceInferenceConfig(BaseModel):
     @classmethod
     def validate_model(cls, model: str) -> str:
         permitted_models = supported_inference_models()
-        if model not in permitted_models:
-            model_list = "\n\t".join(permitted_models)
+        descriptors = [m.descriptor() for m in permitted_models]
+        repos = [m.huggingface_repo for m in permitted_models]
+        if model not in (descriptors + repos):
+            model_list = "\n\t".join(repos)
             raise ValueError(
                 f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]"
             )
@@ -54,6 +56,7 @@ class MetaReferenceInferenceConfig(BaseModel):
         cls,
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+        **kwargs,
     ) -> Dict[str, Any]:
         return {
             "model": model,
@@ -64,3 +67,16 @@ class MetaReferenceInferenceConfig(BaseModel):
 
 class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
     quantization: QuantizationConfig
+
+    @classmethod
+    def sample_run_config(
+        cls,
+        model: str = "Llama3.2-3B-Instruct",
+        checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+        **kwargs,
+    ) -> Dict[str, Any]:
+        config = super().sample_run_config(model, checkpoint_dir, **kwargs)
+        config["quantization"] = {
+            "type": "fp8",
+        }
+        return config

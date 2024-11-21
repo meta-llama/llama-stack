@@ -170,13 +170,6 @@ class CommonRoutingTableImpl(RoutingTable):
         # Get existing objects from registry
         existing_obj = await self.dist_registry.get(obj.type, obj.identifier)
 
-        # Check for existing registration
-        if existing_obj and existing_obj.provider_id == obj.provider_id:
-            print(
-                f"`{obj.identifier}` already registered with `{existing_obj.provider_id}`"
-            )
-            return existing_obj
-
         # if provider_id is not specified, pick an arbitrary one from existing entries
         if not obj.provider_id and len(self.impls_by_provider_id) > 0:
             obj.provider_id = list(self.impls_by_provider_id.keys())[0]

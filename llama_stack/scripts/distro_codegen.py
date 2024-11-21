@@ -50,7 +50,7 @@ def process_template(template_dir: Path, progress) -> None:
             template.save_distribution(
                 yaml_output_dir=REPO_ROOT / "llama_stack" / "templates" / template.name,
                 doc_output_dir=REPO_ROOT
-                / "docs/source/getting_started/distributions"
+                / "docs/source/distributions"
                 / f"{template.distro_type}_distro",
             )
         else:
@@ -103,7 +103,7 @@ def generate_dependencies_file():
 
     deps_file = REPO_ROOT / "distributions" / "dependencies.json"
     with open(deps_file, "w") as f:
-        json.dump(distribution_deps, f, indent=2)
+        f.write(json.dumps(distribution_deps, indent=2) + "\n")
 
 
 def main():

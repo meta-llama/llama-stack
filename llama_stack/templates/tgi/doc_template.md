@@ -1,5 +1,12 @@
 # TGI Distribution
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
 {{ providers_table }}
@@ -71,9 +78,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT
@@ -102,18 +107,18 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 ```bash
 llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml
-  --port 5001
-  --env INFERENCE_MODEL=$INFERENCE_MODEL
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env TGI_URL=http://127.0.0.1:$INFERENCE_PORT
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
-llama stack run ./run-with-safety.yaml
-  --port 5001
-  --env INFERENCE_MODEL=$INFERENCE_MODEL
-  --env TGI_URL=http://127.0.0.1:$INFERENCE_PORT
-  --env SAFETY_MODEL=$SAFETY_MODEL
+llama stack run ./run-with-safety.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env TGI_URL=http://127.0.0.1:$INFERENCE_PORT \
+  --env SAFETY_MODEL=$SAFETY_MODEL \
   --env TGI_SAFETY_URL=http://127.0.0.1:$SAFETY_PORT
 ```
