@@ -59,7 +59,7 @@ class ChromaIndex(EmbeddingIndex):
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
             except Exception:
-                log.error(f"Failed to parse document: {doc}", exc_info=True)
+                log.exception(f"Failed to parse document: {doc}")
                 continue
 
             chunks.append(chunk)
@@ -91,7 +91,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             log.info(f"Connecting to Chroma server at: {self.host}:{self.port}")
             self.client = await chromadb.AsyncHttpClient(host=self.host, port=self.port)
         except Exception as e:
-            log.error("Could not connect to Chroma server", exc_info=True)
+            log.exception("Could not connect to Chroma server")
             raise RuntimeError("Could not connect to Chroma server") from e
 
     async def shutdown(self) -> None:
@@ -121,7 +121,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
                 data = json.loads(collection.metadata["bank"])
                 bank = parse_obj_as(VectorMemoryBank, data)
             except Exception:
-                log.error(f"Failed to parse bank: {collection.metadata}", exc_info=True)
+                log.exception(f"Failed to parse bank: {collection.metadata}")
                 continue
 
             index = BankWithIndex(

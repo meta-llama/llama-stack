@@ -72,8 +72,7 @@ class WeaviateIndex(EmbeddingIndex):
                 chunk_dict = json.loads(chunk_json)
                 chunk = Chunk(**chunk_dict)
             except Exception:
-
-                log.error(f"Failed to parse document: {chunk_json}", exc_info=True)
+                log.exception(f"Failed to parse document: {chunk_json}")
                 continue
 
             chunks.append(chunk)

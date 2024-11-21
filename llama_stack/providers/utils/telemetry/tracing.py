@@ -51,7 +51,10 @@ class BackgroundLogger:
                 # figure out how to use a thread's native loop
                 asyncio.run(self.api.log_event(event))
             except Exception:
-                log.error("Error processing log event", exc_info=True)
+                import traceback
+
+                traceback.print_exc()
+                print("Error processing log event")
             finally:
                 self.log_queue.task_done()
 

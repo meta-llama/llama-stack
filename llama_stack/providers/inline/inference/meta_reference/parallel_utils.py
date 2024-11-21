@@ -194,10 +194,8 @@ def retrieve_requests(reply_socket_url: str):
                 if mp_rank_0():
                     send_obj(EndSentinel())
             except Exception as e:
-                log.error(f"[debug] got exception {e}")
-                import traceback
+                log.exception("exception in generation loop")
 
-                traceback.print_exc()
                 if mp_rank_0():
                     send_obj(ExceptionResponse(error=str(e)))
 

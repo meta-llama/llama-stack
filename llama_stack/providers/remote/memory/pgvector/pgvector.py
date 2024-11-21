@@ -154,7 +154,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             """
             )
         except Exception as e:
-            log.error("Could not connect to PGVector database server", exc_info=True)
+            log.exception("Could not connect to PGVector database server")
             raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:

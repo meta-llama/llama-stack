@@ -91,7 +91,7 @@ class QdrantIndex(EmbeddingIndex):
             try:
                 chunk = Chunk(**point.payload["chunk_content"])
             except Exception:
-                log.error("Failed to parse chunk", exc_info=True)
+                log.exception("Failed to parse chunk")
                 continue
 
             chunks.append(chunk)

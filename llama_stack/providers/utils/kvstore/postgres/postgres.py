@@ -47,7 +47,7 @@ class PostgresKVStoreImpl(KVStore):
             )
         except Exception as e:
 
-            log.error("Could not connect to PostgreSQL database server", exc_info=True)
+            log.exception("Could not connect to PostgreSQL database server")
             raise RuntimeError("Could not connect to PostgreSQL database server") from e
 
     def _namespaced_key(self, key: str) -> str:
