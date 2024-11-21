@@ -204,7 +204,8 @@ jobs:
           echo "[STEP] Installing 'llama-stack' models"
           pip install -U pip setuptools
           pip install -r requirements.txt
-          pip install -e .
+          #pip install -e .
+          pip install --extra-index-url https://test.pypi.org/simple/ llama-stack==0.0.54rc3
           pip install -U \
             torch torchvision \
             pytest pytest_asyncio \
