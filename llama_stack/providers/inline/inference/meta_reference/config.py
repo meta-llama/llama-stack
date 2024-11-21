@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from llama_models.datatypes import *  # noqa: F403
 from llama_models.sku_list import resolve_model
@@ -56,6 +56,7 @@ class MetaReferenceInferenceConfig(BaseModel):
         cls,
         model: str = "Llama3.2-3B-Instruct",
         checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+        **kwargs,
     ) -> Dict[str, Any]:
         return {
             "model": model,
@@ -66,3 +67,16 @@ class MetaReferenceInferenceConfig(BaseModel):
 
 class MetaReferenceQuantizedInferenceConfig(MetaReferenceInferenceConfig):
     quantization: QuantizationConfig
+
+    @classmethod
+    def sample_run_config(
+        cls,
+        model: str = "Llama3.2-3B-Instruct",
+        checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
+        **kwargs,
+    ) -> Dict[str, Any]:
+        config = super().sample_run_config(model, checkpoint_dir, **kwargs)
+        config["quantization"] = {
+            "type": "fp8",
+        }
+        return config

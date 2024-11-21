@@ -37,6 +37,18 @@ class InferenceEndpointImplConfig(BaseModel):
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
 
+    @classmethod
+    def sample_run_config(
+        cls,
+        endpoint_name: str = "${env.INFERENCE_ENDPOINT_NAME}",
+        api_token: str = "${env.HF_API_TOKEN}",
+        **kwargs,
+    ):
+        return {
+            "endpoint_name": endpoint_name,
+            "api_token": api_token,
+        }
+
 
 @json_schema_type
 class InferenceAPIImplConfig(BaseModel):
@@ -47,3 +59,15 @@ class InferenceAPIImplConfig(BaseModel):
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
+
+    @classmethod
+    def sample_run_config(
+        cls,
+        repo: str = "${env.INFERENCE_MODEL}",
+        api_token: str = "${env.HF_API_TOKEN}",
+        **kwargs,
+    ):
+        return {
+            "huggingface_repo": repo,
+            "api_token": api_token,
+        }

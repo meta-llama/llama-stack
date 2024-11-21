@@ -1,5 +1,12 @@
 # Ollama Distribution
 
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
 {{ providers_table }}
@@ -55,9 +62,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
-  -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
@@ -86,7 +91,7 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 ```bash
 export LLAMA_STACK_PORT=5001
 
-llama stack build --template ollama --image-type conda
+llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \

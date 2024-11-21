@@ -1,4 +1,4 @@
-# Fireworks Distribution
+# Bedrock Distribution
 
 ```{toctree}
 :maxdepth: 2
@@ -7,9 +7,10 @@
 self
 ```
 
-The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
+The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations:
 
 {{ providers_table }}
+
 
 {% if run_config_env_vars %}
 ### Environment Variables
@@ -34,10 +35,10 @@ The following models are available by default:
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a Fireworks API Key. You can get one by visiting [fireworks.ai](https://fireworks.ai/).
+Make sure you have access to a AWS Bedrock API Key. You can get one by visiting [AWS Bedrock](https://aws.amazon.com/bedrock/).
 
 
-## Running Llama Stack with Fireworks
+## Running Llama Stack with AWS Bedrock
 
 You can do this via Conda (build code) or Docker which has a pre-built image.
 
@@ -52,14 +53,18 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
-  --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
+  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+  --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+  --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
 ```
 
 ### Via Conda
 
 ```bash
-llama stack build --template fireworks --image-type conda
+llama stack build --template {{ name }} --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
-  --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
+  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+  --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+  --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
 ```

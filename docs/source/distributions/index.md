@@ -46,9 +46,9 @@ If so, we suggest:
 
 Please see our pages in detail for the types of distributions we offer:
 
-1. [Self-Hosted Distribution](./self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine.
-2. [Remote-Hosted Distribution](./remote_hosted_distro/index.md): If you want to connect to a remote hosted inference provider.
-3. [On-device Distribution](./ondevice_distro/index.md): If you want to run Llama Stack inference on your iOS / Android device.
+1. [Self-Hosted Distributions](./self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine.
+2. [Remote-Hosted Distributions](./remote_hosted_distro/index.md): If you want to connect to a remote hosted inference provider.
+3. [On-device Distributions](./ondevice_distro/index.md): If you want to run Llama Stack inference on your iOS / Android device.
 
 ## Building Your Own Distribution
 

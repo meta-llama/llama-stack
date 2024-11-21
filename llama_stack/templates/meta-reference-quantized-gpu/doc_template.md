@@ -1,4 +1,4 @@
-# Meta Reference Distribution
+# Meta Reference Quantized Distribution
 
 ```{toctree}
 :maxdepth: 2
@@ -10,6 +10,8 @@ self
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations:
 
 {{ providers_table }}
+
+The only difference vs. the `meta-reference-gpu` distribution is that it has support for more efficient inference -- with fp8, int4 quantization, etc.
 
 Note that you need access to nvidia GPUs to run this distribution. This distribution is not compatible with CPU-only machines or machines with AMD GPUs.
 
@@ -71,7 +73,7 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 ```bash
 llama stack build --template {{ name }} --image-type conda
 llama stack run distributions/{{ name }}/run.yaml \
-  --port 5001 \
+  --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
 
@@ -79,7 +81,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
 llama stack run distributions/{{ name }}/run-with-safety.yaml \
-  --port 5001 \
+  --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 ```

@@ -1,4 +1,4 @@
-# On-Device Distribution
+# On-Device Distributions
 
 On-device distributions are Llama Stack distributions that run locally on your iOS / Android device.
 
