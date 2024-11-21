@@ -3,7 +3,10 @@ distribution_spec:
   description: Use Nutanix AI Endpoint for running LLM inference
   providers:
     inference: remote::nutanix
-    memory: inline::faiss
+    memory:
+      - inline::faiss
+      - remote::chromadb
+      - remote::pgvector
     safety: inline::llama-guard
     agents: inline::meta-reference
     telemetry: inline::meta-reference

@@ -26,12 +26,12 @@ Please adjust the `NUTANIX_SUPPORTED_MODELS` variable at line 29 in `llama_stack
 3. Build the distrbution
 ```
 pip install -e .
-llama stack build --template nutanix --name ntnx --image-type conda
+llama stack build --template nutanix --image-type conda
 ```
 
-4. Set the endpoint URL and API Key
+4. Edit the yaml file
 ```
-llama stack configure ntnx
+vim
 ```
 
 5. Serve and enjoy!

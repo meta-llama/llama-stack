@@ -1,4 +1,4 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Nutanix, Inc. and affiliates.
 # All rights reserved.
 #
 # This source code is licensed under the terms described in the LICENSE file in
@@ -30,7 +30,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import NutanixImplConfig
 
 
-model_aliases = [
+MODEL_ALIASES = [
     build_model_alias(
         "vllm-llama-3-1",
         CoreModelId.llama3_1_8b_instruct.value,
@@ -40,7 +40,7 @@ model_aliases = [
 
 class NutanixInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: NutanixImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, model_aliases)
+        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self.config = config
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
@@ -49,6 +49,20 @@ class NutanixInferenceAdapter(ModelRegistryHelper, Inference):
 
     async def shutdown(self) -> None:
         pass
+
+    def _get_client(self) -> OpenAI:
+        nutanix_api_key = None
+        if self.config.api_key:
+            nutanix_api_key = self.config.api_key
+        else:
+            provider_data = self.get_request_provider_data()
+            if provider_data is None or not provider_data.nutanix_api_key:
+                raise ValueError(
+                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "nutanix_api_key": <your api key>}'
+                )
+            nutanix_api_key = provider_data.nutanix_api_key
+
+        return OpenAI(base_url=self.config.url, api_key=nutanix_api_key)
 
     async def completion(
         self,
@@ -85,7 +99,7 @@ class NutanixInferenceAdapter(ModelRegistryHelper, Inference):
             logprobs=logprobs,
         )
 
-        client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
+        client = self._get_client()
         if stream:
             return self._stream_chat_completion(request, client)
         else:

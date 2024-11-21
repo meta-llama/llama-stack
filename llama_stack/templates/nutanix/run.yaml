@@ -1,0 +1,54 @@
+version: '2'
+image_name: nutanix
+docker_image: null
+conda_env: nutanix
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: nutanix
+    provider_type: remote::nutanix
+    config: 
+      url: https://ai.nutanix.com/api/v1
+      api_key: ${env.NUTANIX_API_KEY}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nutanix}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nutanix}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/nutanix}/registry.db
+models:
+  - model_id: meta-llama/Llama-3.1-8B-Instruct
+    provider_id: null
+    provider_model_id: vllm-llama-3-1
+shields: []
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []
