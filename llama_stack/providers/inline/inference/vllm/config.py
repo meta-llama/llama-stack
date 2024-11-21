@@ -49,8 +49,8 @@ class VLLMConfig(BaseModel):
     def validate_model(cls, model: str) -> str:
         permitted_models = supported_inference_models()
 
-        descriptors = [m.descriptor() for m in permitted_models]
-        repos = [m.huggingface_repo for m in permitted_models]
+        descriptors = [m.descriptor() for m in permitted_models if m is not None] 
+        repos = [m.huggingface_repo for m in permitted_models if m is not None]
         if model not in (descriptors + repos):
             model_list = "\n\t".join(repos)
             raise ValueError(
