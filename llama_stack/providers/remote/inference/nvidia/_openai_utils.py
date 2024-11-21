@@ -118,7 +118,7 @@ def _convert_message(message: Message) -> Dict:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
     """
-    out_dict = message.dict()
+    out_dict = message.model_dump()
     # Llama Stack uses role="ipython" for tool call messages, OpenAI uses "tool"
     if out_dict["role"] == "ipython":
         out_dict.update(role="tool")
