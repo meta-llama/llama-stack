@@ -112,21 +112,25 @@ Build Successful! Next steps:
 
 2. **Set the ENV variables by exporting them to the terminal**:
 ```bash
-export OLLAMA_URL=""
+export OLLAMA_URL="http://localhost:11434"
 export LLAMA_STACK_PORT=5001
 export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
 export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 ```
 
 3. **Run the Llama Stack**:
-   - Run the stack with the configured YAML file:
+   - Run the stack with command shared by the API from earlier:
      ```bash
-     llama stack run /path/to/your/distro/llamastack-ollama/ollama-run.yaml --port 5050
+     llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml  \
+    --port $LLAMA_STACK_PORT \
+    --env INFERENCE_MODEL=$INFERENCE_MODEL \
+    --env SAFETY_MODEL=$SAFETY_MODEL \
+    --env OLLAMA_URL=http://localhost:11434
      ```
-     Note:
-        1. Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
 
-The server will start and listen on `http://localhost:5050`.
+Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
+
+The server will start and listen on `http://localhost:5051`.
 
 ---
 
@@ -135,7 +139,7 @@ The server will start and listen on `http://localhost:5050`.
 After setting up the server, open a new terminal window and verify it's working by sending a `POST` request using `curl`:
 
 ```bash
-curl http://localhost:5050/inference/chat_completion \
+curl http://localhost:5051/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
     "model": "Llama3.2-3B-Instruct",
@@ -173,8 +177,9 @@ The `llama-stack-client` library offers a robust and efficient python methods fo
 
 ```bash
 conda activate your-llama-stack-conda-env
-pip install llama-stack-client
 ```
+
+Note, the client library gets installed by default if you install the server library
 
 ### 2. Create Python Script (`test_llama_stack.py`)
 ```bash
@@ -187,17 +192,16 @@ touch test_llama_stack.py
 from llama_stack_client import LlamaStackClient
 
 # Initialize the client
-client = LlamaStackClient(base_url="http://localhost:5050")
+client = LlamaStackClient(base_url="http://localhost:5051")
 
 # Create a chat completion request
 response = client.inference.chat_completion(
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are a friendly assistant."},
         {"role": "user", "content": "Write a two-sentence poem about llama."}
     ],
-    model="llama3.2:1b",
+    model_id=MODEL_NAME,
 )
-
 # Print the response
 print(response.completion_message.content)
 ```
