@@ -102,6 +102,13 @@ If you're looking for more specific topics like tool calling or agent setup, we 
      llama stack build --template ollama --image-type conda
      ```
 
+After this step, you will see the console output:
+```
+Build Successful! Next steps: 
+   1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
+   2. `llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml`
+```
+
 2. **Edit Configuration**:
    - Modify the `ollama-run.yaml` file located at `/Users/yourusername/.llama/distributions/llamastack-ollama/ollama-run.yaml`:
      - Change the `chromadb` port to `8000`.
