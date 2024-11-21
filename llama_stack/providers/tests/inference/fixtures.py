@@ -18,6 +18,7 @@ from llama_stack.providers.inline.inference.meta_reference import (
 from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
+from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
@@ -142,6 +143,19 @@ def inference_bedrock() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def inference_nvidia() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="nvidia",
+                provider_type="remote::nvidia",
+                config=NVIDIAConfig().model_dump(),
+            )
+        ],
+    )
+
+
 def get_model_short_name(model_name: str) -> str:
     """Convert model name to a short test identifier.
 
@@ -175,6 +189,7 @@ INFERENCE_FIXTURES = [
     "vllm_remote",
     "remote",
     "bedrock",
+    "nvidia",
 ]
 
 

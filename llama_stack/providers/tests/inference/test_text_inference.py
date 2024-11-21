@@ -361,7 +361,10 @@ class TestInference:
                 for chunk in grouped[ChatCompletionResponseEventType.progress]
             )
             first = grouped[ChatCompletionResponseEventType.progress][0]
-            assert first.event.delta.parse_status == ToolCallParseStatus.started
+            if not isinstance(
+                first.event.delta.content, ToolCall
+            ):  # first chunk may contain entire call
+                assert first.event.delta.parse_status == ToolCallParseStatus.started
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason
