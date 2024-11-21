@@ -103,6 +103,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
      ```
 
 After this step, you will see the console output:
+
 ```
 Build Successful! Next steps: 
    1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
