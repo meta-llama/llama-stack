@@ -1,4 +1,4 @@
-# Remote-Hosted Distribution
+# Remote-Hosted Distributions
 
 ```{toctree}
 :maxdepth: 2

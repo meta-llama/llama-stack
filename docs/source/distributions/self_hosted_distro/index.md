@@ -1,4 +1,4 @@
-# Self-Hosted Distribution
+# Self-Hosted Distributions
 
 ```{toctree}
 :maxdepth: 2
