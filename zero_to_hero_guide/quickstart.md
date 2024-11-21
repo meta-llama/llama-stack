@@ -14,7 +14,9 @@ We also have a set of notebooks walking you through how to use Llama-Stack APIs:
 - Safety API
 - Agentic API
 
-Below, we will learn how to get started with Ollama as an inference provider, please note the steps for configuring your provider will vary a little depending on the service. However, the user experience will remain universal.
+Below, we will learn how to get started with Ollama as an inference provider, please note the steps for configuring your provider will vary a little depending on the service. However, the user experience will remain universal-this is the power of Llama-Stack. 
+
+Prototype locally using Ollama, deploy to the cloud with your favorite provider or own deployment. Use any API from any provider while focussing on development.
 
 # Ollama Quickstart Guide
 
