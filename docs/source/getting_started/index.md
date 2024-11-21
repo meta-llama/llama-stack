@@ -149,7 +149,6 @@ if __name__ == "__main__":
 
 ## Next Steps
 
-- You can mix and match different providers for inference, memory, agents, evals etc. See [Building custom distributions](../distributions/index.md)
-- [Developer Cookbook](developer_cookbook.md)
+You can mix and match different providers for inference, memory, agents, evals etc. See [Building Llama Stacks](../distributions/index.md)
 
 For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.

@@ -18,4 +18,4 @@ class LogFormat(Enum):
 
 @json_schema_type
 class ConsoleConfig(BaseModel):
-    log_format: LogFormat = LogFormat.JSON
+    log_format: LogFormat = LogFormat.TEXT
