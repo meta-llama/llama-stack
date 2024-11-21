@@ -11,7 +11,6 @@ import pytest
 #
 # pytest -v -s llama_stack/providers/tests/inference/test_model_registration.py
 #   -m "meta_reference"
-#   --env TOGETHER_API_KEY=<your_api_key>
 
 
 class TestModelRegistration:
