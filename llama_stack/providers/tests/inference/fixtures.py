@@ -23,8 +23,9 @@ from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 
-from ..conftest import ProviderFixture, remote_stack_fixture
+from ..conftest import ProviderFixture, remote_stack_fixture, should_use_mock_overrides
 from ..env import get_env_or_fail
+from .mocks import *  # noqa
 
 
 @pytest.fixture(scope="session")
@@ -182,6 +183,18 @@ INFERENCE_FIXTURES = [
 async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
+
+    # Setup mocks if they are specified via the command line and they are defined
+    if should_use_mock_overrides(
+        request, f"inference={fixture_name}", f"inference_{fixture_name}_mocks"
+    ):
+        try:
+            request.getfixturevalue(f"inference_{fixture_name}_mocks")
+        except pytest.FixtureLookupError:
+            print(
+                f"Fixture inference_{fixture_name}_mocks not implemented, skipping mocks."
+            )
+
     test_stack = await construct_stack_for_test(
         [Api.inference],
         {"inference": inference_fixture.providers},
@@ -189,4 +202,4 @@ async def inference_stack(request, inference_model):
         models=[ModelInput(model_id=inference_model)],
     )
 
-    return test_stack.impls[Api.inference], test_stack.impls[Api.models]
+    yield test_stack.impls[Api.inference], test_stack.impls[Api.models]
