@@ -8,14 +8,20 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import collections
+
+import logging
 from typing import Optional, Type
+
+log = logging.getLogger(__name__)
 
 try:
     import fbgemm_gpu.experimental.gen_ai  # noqa: F401
 
-    print("Using efficient FP8 operators in FBGEMM.")
+    log.info("Using efficient FP8 operators in FBGEMM.")
 except ImportError:
-    print("No efficient FP8 operators. Please install FBGEMM in fp8_requirements.txt.")
+    log.error(
+        "No efficient FP8 operators. Please install FBGEMM in fp8_requirements.txt."
+    )
     raise
 
 import torch

@@ -4,10 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import Any, Dict, List
 
 import torch
-from termcolor import cprint
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -20,6 +20,7 @@ from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 
 from .config import PromptGuardConfig, PromptGuardType
 
+log = logging.getLogger(__name__)
 
 PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
@@ -93,9 +94,8 @@ class PromptGuardShield:
         probabilities = torch.softmax(logits / self.temperature, dim=-1)
         score_embedded = probabilities[0, 1].item()
         score_malicious = probabilities[0, 2].item()
-        cprint(
+        log.info(
             f"Ran PromptGuardShield and got Scores: Embedded: {score_embedded}, Malicious: {score_malicious}",
-            color="magenta",
         )
 
         violation = None

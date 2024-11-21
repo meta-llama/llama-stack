@@ -17,6 +17,8 @@ from typing import Any, Callable, Dict, List
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
+log = logging.getLogger(__name__)
+
 
 def generate_short_uuid(len: int = 12):
     full_uuid = uuid.uuid4()
@@ -40,7 +42,7 @@ class BackgroundLogger:
         try:
             self.log_queue.put_nowait(event)
         except queue.Full:
-            print("Log queue is full, dropping event")
+            log.error("Log queue is full, dropping event")
 
     def _process_logs(self):
         while True:
@@ -125,7 +127,7 @@ async def start_trace(name: str, attributes: Dict[str, Any] = None):
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
-        print("No Telemetry implementation set. Skipping trace initialization...")
+        log.info("No Telemetry implementation set. Skipping trace initialization...")
         return
 
     trace_id = generate_short_uuid()

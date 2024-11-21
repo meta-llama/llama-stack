@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import errno
+import logging
 import os
 import pty
 import select
@@ -13,7 +14,7 @@ import subprocess
 import sys
 import termios
 
-from termcolor import cprint
+log = logging.getLogger(__name__)
 
 
 # run a command in a pseudo-terminal, with interrupt handling,
@@ -29,7 +30,7 @@ def run_with_pty(command):
     def sigint_handler(signum, frame):
         nonlocal ctrl_c_pressed
         ctrl_c_pressed = True
-        cprint("\nCtrl-C detected. Aborting...", "white", attrs=["bold"])
+        log.info("\nCtrl-C detected. Aborting...")
 
     try:
         # Set up the signal handler
@@ -100,6 +101,6 @@ def run_command(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = process.communicate()
     if process.returncode != 0:
-        print(f"Error: {error.decode('utf-8')}")
+        log.error(f"Error: {error.decode('utf-8')}")
         sys.exit(1)
     return output.decode("utf-8")

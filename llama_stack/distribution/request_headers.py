@@ -5,10 +5,13 @@
 # the root directory of this source tree.
 
 import json
+import logging
 import threading
 from typing import Any, Dict
 
 from .utils.dynamic import instantiate_class_type
+
+log = logging.getLogger(__name__)
 
 _THREAD_LOCAL = threading.local()
 
@@ -32,7 +35,7 @@ class NeedsRequestProviderData:
             provider_data = validator(**val)
             return provider_data
         except Exception as e:
-            print("Error parsing provider data", e)
+            log.error("Error parsing provider data", e)
 
 
 def set_request_provider_data(headers: Dict[str, str]):
@@ -51,7 +54,7 @@ def set_request_provider_data(headers: Dict[str, str]):
     try:
         val = json.loads(val)
     except json.JSONDecodeError:
-        print("Provider data not encoded as a JSON object!", val)
+        log.error("Provider data not encoded as a JSON object!", val)
         return
 
     _THREAD_LOCAL.provider_data_header_value = val
