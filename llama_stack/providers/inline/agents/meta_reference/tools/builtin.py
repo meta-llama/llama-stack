@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import json
+import logging
 import re
 import tempfile
 
@@ -12,7 +13,6 @@ from abc import abstractmethod
 from typing import List, Optional
 
 import requests
-from termcolor import cprint
 
 from .ipython_tool.code_execution import (
     CodeExecutionContext,
@@ -25,6 +25,9 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
 
 from .base import BaseTool
+
+
+log = logging.getLogger(__name__)
 
 
 def interpret_content_as_attachment(content: str) -> Optional[Attachment]:
@@ -383,7 +386,7 @@ class CodeInterpreterTool(BaseTool):
             if res_out != "":
                 pieces.extend([f"[{out_type}]", res_out, f"[/{out_type}]"])
                 if out_type == "stderr":
-                    cprint(f"ipython tool error: ↓\n{res_out}", color="red")
+                    log.error(f"ipython tool error: ↓\n{res_out}")
 
         message = ToolResponseMessage(
             call_id=tool_call.call_id,

@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
+import logging
 
 from typing import Any, Dict, List, Optional
 
@@ -21,6 +22,8 @@ from llama_stack.providers.utils.memory.vector_store import (
 )
 
 from .config import WeaviateConfig, WeaviateRequestProviderData
+
+log = logging.getLogger(__name__)
 
 
 class WeaviateIndex(EmbeddingIndex):
@@ -69,10 +72,8 @@ class WeaviateIndex(EmbeddingIndex):
                 chunk_dict = json.loads(chunk_json)
                 chunk = Chunk(**chunk_dict)
             except Exception:
-                import traceback
 
-                traceback.print_exc()
-                print(f"Failed to parse document: {chunk_json}")
+                log.error(f"Failed to parse document: {chunk_json}", exc_info=True)
                 continue
 
             chunks.append(chunk)

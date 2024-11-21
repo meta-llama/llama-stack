@@ -3,6 +3,8 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+
+import logging
 from typing import AsyncGenerator
 
 from llama_models.llama3.api.chat_format import ChatFormat
@@ -34,6 +36,9 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import VLLMInferenceAdapterConfig
 
 
+log = logging.getLogger(__name__)
+
+
 def build_model_aliases():
     return [
         build_model_alias(
@@ -53,7 +58,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self.client = None
 
     async def initialize(self) -> None:
-        print(f"Initializing VLLM client with base_url={self.config.url}")
+        log.info(f"Initializing VLLM client with base_url={self.config.url}")
         self.client = OpenAI(base_url=self.config.url, api_key=self.config.api_token)
 
     async def shutdown(self) -> None:

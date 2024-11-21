@@ -196,7 +196,6 @@ def handle_sigint(app, *args, **kwargs):
 async def lifespan(app: FastAPI):
     print("Starting up")
     yield
-
     print("Shutting down")
     for impl in app.__llama_stack_impls__.values():
         await impl.shutdown()
@@ -214,6 +213,7 @@ async def maybe_await(value):
 
 
 async def sse_generator(event_gen):
+    await start_trace("sse_generator")
     try:
         event_gen = await event_gen
         async for item in event_gen:
@@ -333,7 +333,7 @@ def main():
     print("Run configuration:")
     print(yaml.dump(config.model_dump(), indent=2))
 
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)
 
     try:
         impls = asyncio.run(construct_stack(config))

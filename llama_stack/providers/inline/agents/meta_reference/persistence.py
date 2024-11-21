@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-
+import logging
 import uuid
 from datetime import datetime
 
@@ -14,6 +14,8 @@ from llama_stack.apis.agents import *  # noqa: F403
 from pydantic import BaseModel
 
 from llama_stack.providers.utils.kvstore import KVStore
+
+log = logging.getLogger(__name__)
 
 
 class AgentSessionInfo(BaseModel):
@@ -78,7 +80,7 @@ class AgentPersistence:
                 turn = Turn(**json.loads(value))
                 turns.append(turn)
             except Exception as e:
-                print(f"Error parsing turn: {e}")
+                log.error(f"Error parsing turn: {e}")
                 continue
         turns.sort(key=lambda x: (x.completed_at or datetime.min))
         return turns

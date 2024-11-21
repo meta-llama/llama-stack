@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import logging
 
 from typing import AsyncGenerator, List
 
@@ -25,6 +26,7 @@ from .config import MetaReferenceInferenceConfig
 from .generation import Llama
 from .model_parallel import LlamaModelParallelGenerator
 
+log = logging.getLogger(__name__)
 # there's a single model parallel process running serving the model. for now,
 # we don't support multiple concurrent requests to this process.
 SEMAPHORE = asyncio.Semaphore(1)
@@ -49,7 +51,7 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
         # verify that the checkpoint actually is for this model lol
 
     async def initialize(self) -> None:
-        print(f"Loading model `{self.model.descriptor()}`")
+        log.info(f"Loading model `{self.model.descriptor()}`")
         if self.config.create_distributed_process_group:
             self.generator = LlamaModelParallelGenerator(self.config)
             self.generator.start()

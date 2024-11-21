@@ -11,6 +11,7 @@
 # the root directory of this source tree.
 
 import json
+import logging
 import multiprocessing
 import os
 import tempfile
@@ -36,6 +37,8 @@ from typing_extensions import Annotated
 from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
 
 from .generation import TokenResult
+
+log = logging.getLogger(__name__)
 
 
 class ProcessingMessageName(str, Enum):
@@ -183,13 +186,15 @@ def retrieve_requests(reply_socket_url: str):
                         group=get_model_parallel_group(),
                     )
                     if isinstance(updates[0], CancelSentinel):
-                        print("quitting generation loop because request was cancelled")
+                        log.info(
+                            "quitting generation loop because request was cancelled"
+                        )
                         break
 
                 if mp_rank_0():
                     send_obj(EndSentinel())
             except Exception as e:
-                print(f"[debug] got exception {e}")
+                log.error(f"[debug] got exception {e}")
                 import traceback
 
                 traceback.print_exc()
@@ -252,7 +257,7 @@ def worker_process_entrypoint(
         except StopIteration:
             break
 
-    print("[debug] worker process done")
+    log.info("[debug] worker process done")
 
 
 def launch_dist_group(
@@ -313,7 +318,7 @@ def start_model_parallel_process(
 
     request_socket.send(encode_msg(ReadyRequest()))
     response = request_socket.recv()
-    print("Loaded model...")
+    log.info("Loaded model...")
 
     return request_socket, process
 
@@ -361,7 +366,7 @@ class ModelParallelProcessGroup:
                     break
 
                 if isinstance(obj, ExceptionResponse):
-                    print(f"[debug] got exception {obj.error}")
+                    log.error(f"[debug] got exception {obj.error}")
                     raise Exception(obj.error)
 
                 if isinstance(obj, TaskResponse):

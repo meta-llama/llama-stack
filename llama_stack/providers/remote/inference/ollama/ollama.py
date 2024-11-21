@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import AsyncGenerator
 
 import httpx
@@ -39,6 +40,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     request_has_media,
 )
 
+log = logging.getLogger(__name__)
 
 model_aliases = [
     build_model_alias(
@@ -105,7 +107,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return AsyncClient(host=self.url)
 
     async def initialize(self) -> None:
-        print(f"checking connectivity to Ollama at `{self.url}`...")
+        log.info(f"checking connectivity to Ollama at `{self.url}`...")
         try:
             await self.client.ps()
         except httpx.ConnectError as e:

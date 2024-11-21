@@ -4,13 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from enum import Enum
 from typing import List
 
 import pkg_resources
 from pydantic import BaseModel
-
-from termcolor import cprint
 
 from llama_stack.distribution.utils.exec import run_with_pty
 
@@ -21,6 +20,8 @@ from llama_stack.distribution.distribution import get_provider_registry
 
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
+
+log = logging.getLogger(__name__)
 
 # These are the dependencies needed by the distribution server.
 # `llama-stack` is automatically installed by the installation script.
@@ -89,12 +90,12 @@ def get_provider_dependencies(
 def print_pip_install_help(providers: Dict[str, List[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
-    print(
+    log.info(
         f"Please install needed dependencies using the following commands:\n\n\tpip install {' '.join(normal_deps)}"
     )
     for special_dep in special_deps:
-        print(f"\tpip install {special_dep}")
-    print()
+        log.info(f"\tpip install {special_dep}")
+    log.info()
 
 
 def build_image(build_config: BuildConfig, build_file_path: Path):
@@ -133,9 +134,8 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
 
     return_code = run_with_pty(args)
     if return_code != 0:
-        cprint(
+        log.error(
             f"Failed to build target {build_config.name} with return code {return_code}",
-            color="red",
         )
 
     return return_code

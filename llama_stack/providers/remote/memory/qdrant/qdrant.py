@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import traceback
+import logging
 import uuid
 from typing import Any, Dict, List
 
@@ -23,6 +23,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
 )
 
+log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
 
 
@@ -90,7 +91,7 @@ class QdrantIndex(EmbeddingIndex):
             try:
                 chunk = Chunk(**point.payload["chunk_content"])
             except Exception:
-                traceback.print_exc()
+                log.error("Failed to parse chunk", exc_info=True)
                 continue
 
             chunks.append(chunk)

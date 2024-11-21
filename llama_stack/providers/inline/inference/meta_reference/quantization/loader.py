@@ -7,6 +7,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
+import logging
 import os
 from typing import Any, Dict, List, Optional
 
@@ -21,7 +22,6 @@ from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
 from llama_models.sku_list import resolve_model
 
-from termcolor import cprint
 from torch import nn, Tensor
 
 from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
@@ -29,6 +29,8 @@ from torchao.quantization.GPTQ import Int8DynActInt4WeightLinear
 from llama_stack.apis.inference import QuantizationType
 
 from ..config import MetaReferenceQuantizedInferenceConfig
+
+log = logging.getLogger(__name__)
 
 
 def swiglu_wrapper(
@@ -60,7 +62,7 @@ def convert_to_fp8_quantized_model(
 
     # Move weights to GPU with quantization
     if llama_model.quantization_format == CheckpointQuantizationFormat.fp8_mixed.value:
-        cprint("Loading fp8 scales...", "yellow")
+        log.info("Loading fp8 scales...")
         fp8_scales_path = os.path.join(
             checkpoint_dir, f"fp8_scales_{get_model_parallel_rank()}.pt"
         )
@@ -85,7 +87,7 @@ def convert_to_fp8_quantized_model(
                         fp8_activation_scale_ub,
                     )
     else:
-        cprint("Quantizing fp8 weights from bf16...", "yellow")
+        log.info("Quantizing fp8 weights from bf16...")
         for block in model.layers:
             if isinstance(block, TransformerBlock):
                 if block.layer_id == 0 or block.layer_id == (model.n_layers - 1):

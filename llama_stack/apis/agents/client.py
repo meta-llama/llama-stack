@@ -14,13 +14,17 @@ import httpx
 from dotenv import load_dotenv
 
 from pydantic import BaseModel
-from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from .agents import *  # noqa: F403
+import logging
+
 from .event_logger import EventLogger
+
+
+log = logging.getLogger(__name__)
 
 
 load_dotenv()
@@ -93,13 +97,12 @@ class AgentsClient(Agents):
                         try:
                             jdata = json.loads(data)
                             if "error" in jdata:
-                                cprint(data, "red")
+                                log.error(data)
                                 continue
 
                             yield AgentTurnResponseStreamChunk(**jdata)
                         except Exception as e:
-                            print(data)
-                            print(f"Error with parsing or validation: {e}")
+                            log.error(f"Error with parsing or validation: {e}")
 
     async def _nonstream_agent_turn(self, request: AgentTurnCreateRequest):
         raise NotImplementedError("Non-streaming not implemented yet")
@@ -125,7 +128,7 @@ async def _run_agent(
     )
 
     for content in user_prompts:
-        cprint(f"User> {content}", color="white", attrs=["bold"])
+        log.info(f"User> {content}", color="white", attrs=["bold"])
         iterator = await api.create_agent_turn(
             AgentTurnCreateRequest(
                 agent_id=create_response.agent_id,
@@ -138,9 +141,9 @@ async def _run_agent(
             )
         )
 
-        async for event, log in EventLogger().log(iterator):
-            if log is not None:
-                log.print()
+        async for event, logger in EventLogger().log(iterator):
+            if logger is not None:
+                log.info(logger)
 
 
 async def run_llama_3_1(host: str, port: int, model: str = "Llama3.1-8B-Instruct"):

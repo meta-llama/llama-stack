@@ -4,16 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import Any, Dict, List
 
 from llama_models.llama3.api.datatypes import interleaved_text_media_as_str, Message
-from termcolor import cprint
 
 from .config import CodeScannerConfig
 
 from llama_stack.apis.safety import *  # noqa: F403
 
-
+log = logging.getLogger(__name__)
 ALLOWED_CODE_SCANNER_MODEL_IDS = [
     "CodeScanner",
     "CodeShield",
@@ -49,7 +49,7 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
         from codeshield.cs import CodeShield
 
         text = "\n".join([interleaved_text_media_as_str(m.content) for m in messages])
-        cprint(f"Running CodeScannerShield on {text[50:]}", color="magenta")
+        log.info(f"Running CodeScannerShield on {text[50:]}")
         result = await CodeShield.scan_code(text)
 
         violation = None

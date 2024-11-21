@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import List, Tuple
 
 import psycopg2
@@ -23,6 +24,8 @@ from llama_stack.providers.utils.memory.vector_store import (
 )
 
 from .config import PGVectorConfig
+
+log = logging.getLogger(__name__)
 
 
 def check_extension_version(cur):
@@ -124,7 +127,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
-        print(f"Initializing PGVector memory adapter with config: {self.config}")
+        log.info(f"Initializing PGVector memory adapter with config: {self.config}")
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -138,7 +141,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
             version = check_extension_version(self.cursor)
             if version:
-                print(f"Vector extension version: {version}")
+                log.info(f"Vector extension version: {version}")
             else:
                 raise RuntimeError("Vector extension is not installed.")
 
@@ -151,9 +154,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             """
             )
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
+            log.error("Could not connect to PGVector database server", exc_info=True)
             raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:

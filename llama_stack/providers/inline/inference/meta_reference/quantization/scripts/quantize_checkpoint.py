@@ -8,6 +8,7 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import json
+import logging
 import os
 import shutil
 import sys
@@ -31,6 +32,8 @@ from torch.nn.parameter import Parameter
 from llama_stack.providers.inline.inference.meta_reference.quantization.fp8_impls import (
     quantize_fp8,
 )
+
+log = logging.getLogger(__name__)
 
 
 def main(
@@ -102,7 +105,7 @@ def main(
         else:
             torch.set_default_tensor_type(torch.cuda.HalfTensor)
 
-        print(ckpt_path)
+        log.info(ckpt_path)
         assert (
             quantized_ckpt_dir is not None
         ), "QUantized checkpoint directory should not be None"
