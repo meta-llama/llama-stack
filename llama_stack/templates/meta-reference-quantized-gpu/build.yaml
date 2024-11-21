@@ -1,13 +1,19 @@
+version: '2'
 name: meta-reference-quantized-gpu
 distribution_spec:
-  docker_image: pytorch/pytorch:2.5.0-cuda12.4-cudnn9-runtime
-  description: Use code from `llama_stack` itself to serve all llama stack APIs
+  description: Use Meta Reference with fp8, int4 quantization for running LLM inference
+  docker_image: null
   providers:
-    inference: meta-reference-quantized
+    inference:
+    - inline::meta-reference-quantized
     memory:
     - inline::faiss
     - remote::chromadb
     - remote::pgvector
-    safety: inline::llama-guard
-    agents: inline::meta-reference
-    telemetry: inline::meta-reference
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

@@ -7,55 +7,86 @@
 self
 ```
 
-The `llamastack/distribution-meta-reference-quantized-gpu` distribution consists of the following provider configurations.
+The `llamastack/distribution-meta-reference-quantized-gpu` distribution consists of the following provider configurations:
 
+| API | Provider(s) |
+|-----|-------------|
+| agents | `inline::meta-reference` |
+| inference | `inline::meta-reference-quantized` |
+| memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard` |
+| telemetry | `inline::meta-reference` |
 
-| **API**         	| **Inference**            	| **Agents**     	| **Memory**                                       	| **Safety**     	| **Telemetry**  	|
-|-----------------	|------------------------  	|----------------	|--------------------------------------------------	|----------------	|----------------	|
-| **Provider(s)** 	| meta-reference-quantized  | meta-reference 	| meta-reference, remote::pgvector, remote::chroma 	| meta-reference 	| meta-reference 	|
 
 The only difference vs. the `meta-reference-gpu` distribution is that it has support for more efficient inference -- with fp8, int4 quantization, etc.
 
-### Step 0. Prerequisite - Downloading Models
-Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
+Note that you need access to nvidia GPUs to run this distribution. This distribution is not compatible with CPU-only machines or machines with AMD GPUs.
+
+### Environment Variables
+
+The following environment variables can be configured:
+
+- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `INFERENCE_MODEL`: Inference model loaded into the Meta Reference server (default: `meta-llama/Llama-3.2-3B-Instruct`)
+- `INFERENCE_CHECKPOINT_DIR`: Directory containing the Meta Reference model checkpoint (default: `null`)
+
+
+## Prerequisite: Downloading Models
+
+Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models. Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
 
 ```
 $ ls ~/.llama/checkpoints
-Llama3.2-3B-Instruct:int4-qlora-eo8
+Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3.2-90B-Vision-Instruct  Llama-Guard-3-8B
+Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
 ```
 
-### Step 1. Start the Distribution
-#### (Option 1) Start with Docker
-```
-$ cd distributions/meta-reference-quantized-gpu && docker compose up
-```
+## Running the Distribution
 
-> [!NOTE]
-> This assumes you have access to GPU to start a local server with access to your GPU.
+You can do this via Conda (build code) or Docker which has a pre-built image.
 
+### Via Docker
 
-> [!NOTE]
-> `~/.llama` should be the path containing downloaded weights of Llama models.
+This method allows you to get started quickly without having to build the distribution code.
 
-
-This will download and start running a pre-built docker container. Alternatively, you may use the following commands:
-
-```
-docker run -it -p 5000:5000 -v ~/.llama:/root/.llama -v ./run.yaml:/root/my-run.yaml --gpus=all distribution-meta-reference-quantized-gpu --yaml_config /root/my-run.yaml
+```bash
+LLAMA_STACK_PORT=5001
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  llamastack/distribution-meta-reference-quantized-gpu \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
 
-#### (Option 2) Start with Conda
+If you are using Llama Stack Safety / Shield APIs, use:
 
-1. Install the `llama` CLI. See [CLI Reference](https://llama-stack.readthedocs.io/en/latest/cli_reference/index.html)
-
-2. Build the `meta-reference-quantized-gpu` distribution
-
+```bash
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  llamastack/distribution-meta-reference-quantized-gpu \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
+  --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 ```
-$ llama stack build --template meta-reference-quantized-gpu --image-type conda
+
+### Via Conda
+
+Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
+
+```bash
+llama stack build --template meta-reference-quantized-gpu --image-type conda
+llama stack run distributions/meta-reference-quantized-gpu/run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
 
-3. Start running distribution
-```
-$ cd distributions/meta-reference-quantized-gpu
-$ llama stack run ./run.yaml
+If you are using Llama Stack Safety / Shield APIs, use:
+
+```bash
+llama stack run distributions/meta-reference-quantized-gpu/run-with-safety.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
+  --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 ```

@@ -1,5 +1,4 @@
 # Remote vLLM Distribution
-
 ```{toctree}
 :maxdepth: 2
 :hidden:
