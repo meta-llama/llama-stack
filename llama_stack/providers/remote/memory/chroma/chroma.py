@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import json
+import logging
 from typing import List
 from urllib.parse import urlparse
 
@@ -20,6 +21,8 @@ from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
 )
+
+log = logging.getLogger(__name__)
 
 
 class ChromaIndex(EmbeddingIndex):
@@ -56,10 +59,7 @@ class ChromaIndex(EmbeddingIndex):
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
             except Exception:
-                import traceback
-
-                traceback.print_exc()
-                print(f"Failed to parse document: {doc}")
+                log.exception(f"Failed to parse document: {doc}")
                 continue
 
             chunks.append(chunk)
@@ -73,7 +73,7 @@ class ChromaIndex(EmbeddingIndex):
 
 class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, url: str) -> None:
-        print(f"Initializing ChromaMemoryAdapter with url: {url}")
+        log.info(f"Initializing ChromaMemoryAdapter with url: {url}")
         url = url.rstrip("/")
         parsed = urlparse(url)
 
@@ -88,12 +88,10 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def initialize(self) -> None:
         try:
-            print(f"Connecting to Chroma server at: {self.host}:{self.port}")
+            log.info(f"Connecting to Chroma server at: {self.host}:{self.port}")
             self.client = await chromadb.AsyncHttpClient(host=self.host, port=self.port)
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
+            log.exception("Could not connect to Chroma server")
             raise RuntimeError("Could not connect to Chroma server") from e
 
     async def shutdown(self) -> None:
@@ -123,10 +121,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
                 data = json.loads(collection.metadata["bank"])
                 bank = parse_obj_as(VectorMemoryBank, data)
             except Exception:
-                import traceback
-
-                traceback.print_exc()
-                print(f"Failed to parse bank: {collection.metadata}")
+                log.exception(f"Failed to parse bank: {collection.metadata}")
                 continue
 
             index = BankWithIndex(

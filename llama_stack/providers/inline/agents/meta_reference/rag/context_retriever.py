@@ -10,8 +10,6 @@ from jinja2 import Template
 from llama_models.llama3.api import *  # noqa: F403
 
 
-from termcolor import cprint  # noqa: F401
-
 from llama_stack.apis.agents import (
     DefaultMemoryQueryGeneratorConfig,
     LLMMemoryQueryGeneratorConfig,
@@ -36,7 +34,6 @@ async def generate_rag_query(
         query = await llm_rag_query_generator(config, messages, **kwargs)
     else:
         raise NotImplementedError(f"Unsupported memory query generator {config.type}")
-    # cprint(f"Generated query >>>: {query}", color="green")
     return query
 
 

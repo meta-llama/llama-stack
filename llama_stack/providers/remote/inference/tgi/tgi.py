@@ -34,7 +34,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class _HfAdapter(Inference, ModelsProtocolPrivate):
@@ -264,7 +264,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
 class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
-        print(f"Initializing TGI client with url={config.url}")
+        log.info(f"Initializing TGI client with url={config.url}")
         self.client = AsyncInferenceClient(model=config.url, token=config.api_token)
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]

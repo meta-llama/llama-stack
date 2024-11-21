@@ -6,6 +6,7 @@
 
 import asyncio
 import copy
+import logging
 import os
 import re
 import secrets
@@ -19,7 +20,6 @@ from urllib.parse import urlparse
 
 import httpx
 
-from termcolor import cprint
 
 from llama_stack.apis.agents import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
@@ -42,6 +42,8 @@ from .tools.builtin import (
     WolframAlphaTool,
 )
 from .tools.safety import SafeTool
+
+log = logging.getLogger(__name__)
 
 
 def make_random_string(length: int = 8):
@@ -137,7 +139,6 @@ class ChatAgent(ShieldRunnerMixin):
                             stop_reason=StopReason.end_of_turn,
                         )
                     )
-        # print_dialog(messages)
         return messages
 
     async def create_session(self, name: str) -> str:
@@ -185,10 +186,8 @@ class ChatAgent(ShieldRunnerMixin):
             stream=request.stream,
         ):
             if isinstance(chunk, CompletionMessage):
-                cprint(
+                log.info(
                     f"{chunk.role.capitalize()}: {chunk.content}",
-                    "white",
-                    attrs=["bold"],
                 )
                 output_message = chunk
                 continue
@@ -407,7 +406,7 @@ class ChatAgent(ShieldRunnerMixin):
                 msg_str = f"{str(msg)[:500]}...<more>...{str(msg)[-500:]}"
             else:
                 msg_str = str(msg)
-            cprint(f"{msg_str}", color=color)
+            log.info(f"{msg_str}")
 
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
@@ -506,12 +505,12 @@ class ChatAgent(ShieldRunnerMixin):
             )
 
             if n_iter >= self.agent_config.max_infer_iters:
-                cprint("Done with MAX iterations, exiting.")
+                log.info("Done with MAX iterations, exiting.")
                 yield message
                 break
 
             if stop_reason == StopReason.out_of_tokens:
-                cprint("Out of token budget, exiting.")
+                log.info("Out of token budget, exiting.")
                 yield message
                 break
 
@@ -525,10 +524,10 @@ class ChatAgent(ShieldRunnerMixin):
                             message.content = [message.content] + attachments
                     yield message
                 else:
-                    cprint(f"Partial message: {str(message)}", color="green")
+                    log.info(f"Partial message: {str(message)}", color="green")
                     input_messages = input_messages + [message]
             else:
-                cprint(f"{str(message)}", color="green")
+                log.info(f"{str(message)}", color="green")
                 try:
                     tool_call = message.tool_calls[0]
 
@@ -740,9 +739,8 @@ class ChatAgent(ShieldRunnerMixin):
         for c in chunks[: memory.max_chunks]:
             tokens += c.token_count
             if tokens > memory.max_tokens_in_context:
-                cprint(
+                log.error(
                     f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
-                    "red",
                 )
                 break
             picked.append(f"id:{c.document_id}; content:{c.content}")
@@ -786,7 +784,7 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
             path = urlparse(uri).path
             basename = os.path.basename(path)
             filepath = f"{tempdir}/{make_random_string() + basename}"
-            print(f"Downloading {url} -> {filepath}")
+            log.info(f"Downloading {url} -> {filepath}")
 
             async with httpx.AsyncClient() as client:
                 r = await client.get(uri)
@@ -826,20 +824,3 @@ async def execute_tool_call_maybe(
     tool = tools_dict[name]
     result_messages = await tool.run(messages)
     return result_messages
-
-
-def print_dialog(messages: List[Message]):
-    for i, m in enumerate(messages):
-        if m.role == Role.user.value:
-            color = "red"
-        elif m.role == Role.assistant.value:
-            color = "white"
-        elif m.role == Role.ipython.value:
-            color = "yellow"
-        elif m.role == Role.system.value:
-            color = "green"
-        else:
-            color = "white"
-
-        s = str(m)
-        cprint(f"{i} ::: {s[:100]}...", color=color)

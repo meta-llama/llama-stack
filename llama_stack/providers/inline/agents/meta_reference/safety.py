@@ -5,13 +5,15 @@
 # the root directory of this source tree.
 
 import asyncio
+import logging
 
 from typing import List
 
 from llama_models.llama3.api.datatypes import Message
-from termcolor import cprint
 
 from llama_stack.apis.safety import *  # noqa: F403
+
+log = logging.getLogger(__name__)
 
 
 class SafetyException(Exception):  # noqa: N818
@@ -51,7 +53,4 @@ class ShieldRunnerMixin:
             if violation.violation_level == ViolationLevel.ERROR:
                 raise SafetyException(violation)
             elif violation.violation_level == ViolationLevel.WARN:
-                cprint(
-                    f"[Warn]{identifier} raised a warning",
-                    color="red",
-                )
+                log.warning(f"[Warn]{identifier} raised a warning")

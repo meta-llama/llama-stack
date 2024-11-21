@@ -84,7 +84,7 @@ llm_as_judge_405b_simpleqa = ScoringFn(
     provider_id="llm-as-judge",
     provider_resource_id="llm-as-judge-405b-simpleqa",
     params=LLMAsJudgeScoringFnParams(
-        judge_model="Llama3.1-405B-Instruct",
+        judge_model="meta-llama/Llama-3.1-405B-Instruct",
         prompt_template=GRADER_TEMPLATE,
         judge_score_regexes=[r"(A|B|C)"],
     ),
