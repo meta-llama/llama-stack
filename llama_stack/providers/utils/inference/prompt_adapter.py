@@ -178,7 +178,9 @@ def chat_completion_request_to_messages(
         cprint(f"Could not resolve model {llama_model}", color="red")
         return request.messages
 
-    if model.descriptor() not in supported_inference_models():
+    allowed_models = supported_inference_models()
+    descriptors = [m.descriptor() for m in allowed_models]
+    if model.descriptor() not in descriptors:
         cprint(f"Unsupported inference model? {model.descriptor()}", color="red")
         return request.messages
 
