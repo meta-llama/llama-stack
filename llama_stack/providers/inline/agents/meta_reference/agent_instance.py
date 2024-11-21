@@ -524,10 +524,10 @@ class ChatAgent(ShieldRunnerMixin):
                             message.content = [message.content] + attachments
                     yield message
                 else:
-                    log.info(f"Partial message: {str(message)}", color="green")
+                    log.info(f"Partial message: {str(message)}")
                     input_messages = input_messages + [message]
             else:
-                log.info(f"{str(message)}", color="green")
+                log.info(f"{str(message)}")
                 try:
                     tool_call = message.tool_calls[0]
 
