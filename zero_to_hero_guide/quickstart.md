@@ -1,3 +1,23 @@
+# Quickstart Guide
+
+Llama-Stack allows you to configure your distribution from various providers, allowing you to focus on going from zero to production super fast. 
+
+This guide will walk you through how to build a local distribution, using ollama as an inference provider.
+
+We also have a set of notebooks walking you through how to use Llama-Stack APIs:
+
+- Inference
+- Prompt Engineering
+- Chatting with Images
+- Tool Calling
+- Memory API for RAG
+- Safety API
+- Agentic API
+
+Below, we will learn how to get started with Ollama as an inference provider, please note the steps for configuring your provider will vary a little depending on the service. However, the user experience will remain universal-this is the power of Llama-Stack. 
+
+Prototype locally using Ollama, deploy to the cloud with your favorite provider or own deployment. Use any API from any provider while focussing on development.
+
 # Ollama Quickstart Guide
 
 This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-1B-Instruct` model. Follow these steps to get started quickly.
@@ -81,6 +101,13 @@ If you're looking for more specific topics like tool calling or agent setup, we 
      ```bash
      llama stack build --template ollama --image-type conda
      ```
+
+After this step, you will see the console output:
+```
+Build Successful! Next steps: 
+   1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
+   2. `llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml`
+```
 
 2. **Edit Configuration**:
    - Modify the `ollama-run.yaml` file located at `/Users/yourusername/.llama/distributions/llamastack-ollama/ollama-run.yaml`:
