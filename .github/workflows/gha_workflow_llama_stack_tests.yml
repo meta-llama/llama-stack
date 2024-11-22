@@ -227,6 +227,9 @@ jobs:
                   new_file="result-${dir_name}-${test_name}.xml"
                   if torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "${PROVIDER_ID} and llama_3b" \
                      --junitxml="${{ github.workspace }}/${new_file}"; then
+                     echo "Test passed"
+                  else
+                    echo "Test failed"
                   fi
                   pattern+="${new_file} "
                 done
@@ -299,7 +302,7 @@ jobs:
         working-directory: "${{ github.workspace }}"
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${GITHUB_WORKSPACE} | path: ${{ github.workspace }}"
+          echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${{ github.workspace }}"
           # (Optional) Add more tests here.
 
           # Merge test results with 'merged-test-results.xml' from above.
