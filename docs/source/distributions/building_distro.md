@@ -1,15 +1,22 @@
-# Developer Guide: Assemble a Llama Stack Distribution
+# Build your own Distribution
 
 
-This guide will walk you through the steps to get started with building a Llama Stack distributiom from scratch with your choice of API providers. Please see the [Getting Started Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) if you just want the basic steps to start a Llama Stack distribution.
+This guide will walk you through the steps to get started with building a Llama Stack distributiom from scratch with your choice of API providers.
 
-## Step 1. Build
 
-### Llama Stack Build Options
+## Llama Stack Build
+
+In order to build your own distribution, we recommend you clone the `llama-stack` repository.
+
 
 ```
+git clone git@github.com:meta-llama/llama-stack.git
+cd llama-stack
+pip install -e .
+
 llama stack build -h
 ```
+
 We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `my-stack`)
 - `image_type`: our build image type (`conda | docker`)
@@ -240,7 +247,7 @@ After this step is successful, you should be able to find the built docker image
 ::::
 
 
-## Step 2. Run
+## Running your Stack server
 Now, let's start the Llama Stack Distribution Server. You will need the YAML configuration file which was written out at the end by the `llama stack build` step.
 
 ```
@@ -250,11 +257,6 @@ llama stack run ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-
 ```
 $ llama stack run ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-run.yaml
 
-Loaded model...
-Serving API datasets
- GET /datasets/get
- GET /datasets/list
- POST /datasets/register
 Serving API inspect
  GET /health
  GET /providers/list
@@ -263,41 +265,7 @@ Serving API inference
  POST /inference/chat_completion
  POST /inference/completion
  POST /inference/embeddings
-Serving API scoring_functions
- GET /scoring_functions/get
- GET /scoring_functions/list
- POST /scoring_functions/register
-Serving API scoring
- POST /scoring/score
- POST /scoring/score_batch
-Serving API memory_banks
- GET /memory_banks/get
- GET /memory_banks/list
- POST /memory_banks/register
-Serving API memory
- POST /memory/insert
- POST /memory/query
-Serving API safety
- POST /safety/run_shield
-Serving API eval
- POST /eval/evaluate
- POST /eval/evaluate_batch
- POST /eval/job/cancel
- GET /eval/job/result
- GET /eval/job/status
-Serving API shields
- GET /shields/get
- GET /shields/list
- POST /shields/register
-Serving API datasetio
- GET /datasetio/get_rows_paginated
-Serving API telemetry
- GET /telemetry/get_trace
- POST /telemetry/log_event
-Serving API models
- GET /models/get
- GET /models/list
- POST /models/register
+...
 Serving API agents
  POST /agents/create
  POST /agents/session/create
@@ -316,8 +284,6 @@ INFO:     Uvicorn running on http://['::', '0.0.0.0']:5000 (Press CTRL+C to quit
 INFO:     2401:db00:35c:2d2b:face:0:c9:0:54678 - "GET /models/list HTTP/1.1" 200 OK
 ```
 
-> [!IMPORTANT]
-> The "local" distribution inference server currently only supports CUDA. It will not work on Apple Silicon machines.
+### Troubleshooting
 
-> [!TIP]
-> You might need to use the flag `--disable-ipv6` to  Disable IPv6 support
+If you encounter any issues, search through our [GitHub Issues](https://github.com/meta-llama/llama-stack/issues), or file an new issue.
