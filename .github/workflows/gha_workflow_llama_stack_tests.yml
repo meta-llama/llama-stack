@@ -44,12 +44,12 @@ on:
       model_override_3b:
         description: 'Specify manual override for the <llama_3b> shorthand model'
         required: false
-        default: "Llama-3.2-3B-Instruct"
+        default: "Llama3.2-3B-Instruct"
 
       model_override_8b:
         description: 'Specify manual override for the <llama_8b> shorthand model'
         required: false
-        default: "Llama-3.1-8B-Instruct"
+        default: "Llama3.1-8B-Instruct"
 
 env:
   # ID used for each test's provider config
@@ -68,8 +68,8 @@ env:
   MODEL_ID: "${{ inputs.model_id || 'llama_3b' }}"
 
   # Set the llama 3b / 8b override for models if desired, else use the default.
-  LLAMA_3B_OVERRIDE: "${{ inputs.model_override_3b || 'Llama-3.2-3B-Instruct' }}"
-  LLAMA_8B_OVERRIDE: "${{ inputs.model_override_8b || 'Llama-3.1-8B-Instruct' }}"
+  LLAMA_3B_OVERRIDE: "${{ inputs.model_override_3b || 'Llama3.2-3B-Instruct' }}"
+  LLAMA_8B_OVERRIDE: "${{ inputs.model_override_8b || 'Llama3.1-8B-Instruct' }}"
 
   # Defines which directories in TESTS_PATH to exclude from the test loop
   EXCLUDED_DIRS: "__pycache__"
@@ -181,6 +181,7 @@ jobs:
       - name: "Update checkpoint directory"
         id: checkpoint_update
         run: |
+          echo "Checkpoint directory: ${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE"
           if ${MODEL_ID} == "llama_3b" &&  [ -d "${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE" ]; then
             echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE" >> "$GITHUB_ENV"
           elif ${MODEL_ID} == "llama_8b" && [ -d "${MODEL_CHECKPOINT_DIR}/$LLAMA_8B_OVERRIDE" ]; then
