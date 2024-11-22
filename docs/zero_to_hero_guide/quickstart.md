@@ -121,7 +121,7 @@ export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 3. **Run the Llama Stack**:
    - Run the stack with command shared by the API from earlier:
      ```bash
-     llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml  \
+     llama stack run ollama  \
     --port $LLAMA_STACK_PORT \
     --env INFERENCE_MODEL=$INFERENCE_MODEL \
     --env SAFETY_MODEL=$SAFETY_MODEL \
