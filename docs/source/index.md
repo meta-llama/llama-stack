@@ -1,8 +1,21 @@
 # Llama Stack
 
-Llama Stack defines and standardizes the building blocks needed to bring generative AI applications to market. It empowers developers building agentic applications by giving them options to operate in various environments (on-prem, cloud, single-node, on-device) while relying on a standard API interface and developer experience that's certified by Meta.
+Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Service Providers providing their implementations. The APIs can be roughly split into two categories:
 
-The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
+- APIs focused on Application development
+  - Inference
+  - Safety
+  - Memory
+  - Agents
+  - Agent Evaluation
+
+- APIs focused on Model development
+  - Model Evaluation
+  - Post Training
+  - Synthetic Data Generation
+  - Reward Scoring
+
+Our goal is to provide pre-packaged implementations which can be operated in a variety of deployment environments: developers start iterating with Desktops or their mobile devices and can seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
 
 
 ```{image} ../_static/llama-stack.png
@@ -10,40 +23,39 @@ The Stack APIs are rapidly improving but still a work-in-progress. We invite fee
 :width: 400px
 ```
 
-## APIs
+> [!NOTE]
+> The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
 
-The set of APIs in Llama Stack can be roughly split into two broad categories:
+## Philosophy
 
-- APIs focused on Application development
-  - Inference
-  - Safety
-  - Memory
-  - Agentic System
-  - Evaluation
+### Service-oriented design
 
-- APIs focused on Model development
-  - Evaluation
-  - Post Training
-  - Synthetic Data Generation
-  - Reward Scoring
+Unlike other frameworks, Llama Stack is built with a service-oriented, REST API-first approach. Such a design not only allows for seamless transitions from a local to remote deployments, but also forces the design to be more declarative. We believe this restriction can result in a much simpler, robust developer experience. This will necessarily trade-off against expressivity however if we get the APIs right, it can lead to a very powerful platform.
 
-Each API is a collection of REST endpoints.
+### Composability
 
-## API Providers
+We expect the set of APIs we design to be composable. An Agent abstractly depends on { Inference, Memory, Safety } APIs but does not care about the actual implementation details. Safety itself may require model inference and hence can depend on the Inference API.
 
-A Provider is what makes the API real – they provide the actual implementation backing the API.
+### Turnkey one-stop solutions
 
-As an example, for Inference, we could have the implementation be backed by open source libraries like [ torch | vLLM | TensorRT ] as possible options.
+We expect to provide turnkey solutions for popular deployment scenarios. It should be easy to deploy a Llama Stack server on AWS or on a private data center. Either of these should allow a developer to get started with powerful agentic apps, model evaluations or fine-tuning services in a matter of minutes. They should all result in the same uniform observability and developer experience.
 
-A provider can also be a relay to a remote REST service – ex. cloud providers or dedicated inference providers that serve these APIs.
+### Focus on Llama models
 
-## Distribution
+As a Meta initiated project, we have started by explicitly focusing on Meta's Llama series of models. Supporting the broad set of open models is no easy task and we want to start with models we understand best.
 
-A Distribution is where APIs and Providers are assembled together to provide a consistent whole to the end application developer. You can mix-and-match providers – some could be backed by local code and some could be remote. As a hobbyist, you can serve a small model locally, but can choose a cloud provider for a large model. Regardless, the higher level APIs your app needs to work with don't need to change at all. You can even imagine moving across the server / mobile-device boundary as well always using the same uniform set of APIs for developing Generative AI applications.
+### Supporting the Ecosystem
+
+There is a vibrant ecosystem of Providers which provide efficient inference or scalable vector stores or powerful observability solutions. We want to make sure it is easy for developers to pick and choose the best implementations for their use cases. We also want to make sure it is easy for new Providers to onboard and participate in the ecosystem.
+
+Additionally, we have designed every element of the Stack such that APIs as well as Resources (like Models) can be federated.
+
 
 ## Supported Llama Stack Implementations
-### API Providers
-|  **API Provider Builder** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
+
+Llama Stack already has a number of "adapters" available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide reference implementations you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
+
+|  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
 |  Meta Reference  |  Single Node | Y  |  Y  |  Y  |  Y  |  Y  |
 |  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
@@ -55,15 +67,20 @@ A Distribution is where APIs and Providers are assembled together to provide a c
 | PG Vector | Single Node |  |  | Y |  |  |
 | PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
 
-### Distributions
+## Getting Started with "Distributions"
+
+Distributions are pre-packaged (Docker) implementations of a specific set of Providers you can use to get started.
+
 | **Distribution** 	|           **Llama Stack Docker**           	| Start This Distribution 	|
 |:----------------:	|:------------------------------------------:	|:-----------------------:	|
-|  Meta Reference  	| [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general) 	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)       	|
-|  Meta Reference Quantized  	| [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) 	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-quantized-gpu.html)       	|
-|      Ollama      	|       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)       	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)       	|
-|        TGI       	|         [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/tgi.html)       	|
-|        Together       	|         [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)       	|
-|        Fireworks       	|         [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)       	|
+|  Meta Reference  	| [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general) 	|       [Guide](distributions/self_hosted_distro/meta-reference-gpu.html)       	|
+|  Meta Reference Quantized  	| [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) 	|       [Guide](distributions/self_hosted_distro/meta-reference-quantized-gpu.html)       	|
+|      Ollama      	|       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)       	|       [Guide](distributions/self_hosted_distro/ollama.html)       	|
+|        vLLM       	|         [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)        	|       [Guide](distributions/self_hosted_distro/vllm.html)       	|
+|        TGI       	|         [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)        	|       [Guide](distributions/self_hosted_distro/tgi.html)       	|
+|        Together       	|         [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)        	|       [Guide](distributions/remote_hosted_distro/together.html)       	|
+|        Fireworks       	|         [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)        	|       [Guide](distributions/remote_hosted_distro/fireworks.html)       	|
+
 
 ## Llama Stack Client SDK
 
