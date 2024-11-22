@@ -1,6 +1,26 @@
+# Quickstart Guide
+
+Llama-Stack allows you to configure your distribution from various providers, allowing you to focus on going from zero to production super fast.
+
+This guide will walk you through how to build a local distribution, using ollama as an inference provider.
+
+We also have a set of notebooks walking you through how to use Llama-Stack APIs:
+
+- Inference
+- Prompt Engineering
+- Chatting with Images
+- Tool Calling
+- Memory API for RAG
+- Safety API
+- Agentic API
+
+Below, we will learn how to get started with Ollama as an inference provider, please note the steps for configuring your provider will vary a little depending on the service. However, the user experience will remain universal-this is the power of Llama-Stack.
+
+Prototype locally using Ollama, deploy to the cloud with your favorite provider or own deployment. Use any API from any provider while focussing on development.
+
 # Ollama Quickstart Guide
 
-This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-1B-Instruct` model. Follow these steps to get started quickly.
+This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-3B-Instruct` model. Follow these steps to get started quickly.
 
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
@@ -44,13 +64,13 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 ## Install Dependencies and Set Up Environment
 
 1. **Create a Conda Environment**:
-   - Create a new Conda environment with Python 3.11:
+   - Create a new Conda environment with Python 3.10:
      ```bash
-     conda create -n hack python=3.11
+     conda create -n ollama python=3.10
      ```
    - Activate the environment:
      ```bash
-     conda activate hack
+     conda activate ollama
      ```
 
 2. **Install ChromaDB**:
@@ -69,7 +89,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
    - Open a new terminal and install `llama-stack`:
      ```bash
      conda activate hack
-     pip install llama-stack
+     pip install llama-stack==0.0.53
      ```
 
 ---
@@ -82,20 +102,35 @@ If you're looking for more specific topics like tool calling or agent setup, we 
      llama stack build --template ollama --image-type conda
      ```
 
-2. **Edit Configuration**:
-   - Modify the `ollama-run.yaml` file located at `/Users/yourusername/.llama/distributions/llamastack-ollama/ollama-run.yaml`:
-     - Change the `chromadb` port to `8000`.
-     - Remove the `pgvector` section if present.
+After this step, you will see the console output:
+
+```
+Build Successful! Next steps:
+   1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
+   2. `llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml`
+```
+
+2. **Set the ENV variables by exporting them to the terminal**:
+```bash
+export OLLAMA_URL="http://localhost:11434"
+export LLAMA_STACK_PORT=5001
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
+```
 
 3. **Run the Llama Stack**:
-   - Run the stack with the configured YAML file:
+   - Run the stack with command shared by the API from earlier:
      ```bash
-     llama stack run /path/to/your/distro/llamastack-ollama/ollama-run.yaml --port 5050
+     llama stack run ollama  \
+    --port $LLAMA_STACK_PORT \
+    --env INFERENCE_MODEL=$INFERENCE_MODEL \
+    --env SAFETY_MODEL=$SAFETY_MODEL \
+    --env OLLAMA_URL=http://localhost:11434
      ```
-     Note:
-        1. Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
 
-The server will start and listen on `http://localhost:5050`.
+Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
+
+The server will start and listen on `http://localhost:5051`.
 
 ---
 
@@ -104,7 +139,7 @@ The server will start and listen on `http://localhost:5050`.
 After setting up the server, open a new terminal window and verify it's working by sending a `POST` request using `curl`:
 
 ```bash
-curl http://localhost:5050/inference/chat_completion \
+curl http://localhost:5051/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
     "model": "Llama3.2-3B-Instruct",
@@ -142,8 +177,9 @@ The `llama-stack-client` library offers a robust and efficient python methods fo
 
 ```bash
 conda activate your-llama-stack-conda-env
-pip install llama-stack-client
 ```
+
+Note, the client library gets installed by default if you install the server library
 
 ### 2. Create Python Script (`test_llama_stack.py`)
 ```bash
@@ -156,17 +192,16 @@ touch test_llama_stack.py
 from llama_stack_client import LlamaStackClient
 
 # Initialize the client
-client = LlamaStackClient(base_url="http://localhost:5050")
+client = LlamaStackClient(base_url="http://localhost:5051")
 
 # Create a chat completion request
 response = client.inference.chat_completion(
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are a friendly assistant."},
         {"role": "user", "content": "Write a two-sentence poem about llama."}
     ],
-    model="llama3.2:1b",
+    model_id=MODEL_NAME,
 )
-
 # Print the response
 print(response.completion_message.content)
 ```
@@ -209,7 +244,7 @@ This command initializes the model to interact with your local Llama Stack insta
   - [Swift SDK](https://github.com/meta-llama/llama-stack-client-swift)
   - [Kotlin SDK](https://github.com/meta-llama/llama-stack-client-kotlin)
 
-**Advanced Configuration**: Learn how to customize your Llama Stack distribution by referring to the [Building a Llama Stack Distribution](./building_distro.md) guide.
+**Advanced Configuration**: Learn how to customize your Llama Stack distribution by referring to the [Building a Llama Stack Distribution](https://llama-stack.readthedocs.io/en/latest/distributions/index.html#building-your-own-distribution) guide.
 
 **Explore Example Apps**: Check out [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) for example applications built using Llama Stack.
 
