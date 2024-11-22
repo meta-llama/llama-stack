@@ -1,8 +1,8 @@
-# Quickstart Guide
+# Llama Stack: from Zero to Hero
 
 Llama-Stack allows you to configure your distribution from various providers, allowing you to focus on going from zero to production super fast.
 
-This guide will walk you through how to build a local distribution, using ollama as an inference provider.
+This guide will walk you through how to build a local distribution, using Ollama as an inference provider.
 
 We also have a set of notebooks walking you through how to use Llama-Stack APIs:
 
