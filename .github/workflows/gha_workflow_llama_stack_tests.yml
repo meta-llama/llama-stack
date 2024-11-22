@@ -39,12 +39,7 @@ on:
       provider_id:
         description: 'ID of your provider'
         required: true
-        default: "meta-reference"
-
-      api_key:
-        description: 'Provider API key'
-        required: false
-        default: "---"
+        default: "meta_reference"
 
 env:
   # Path to model checkpoints within EFS volume
@@ -57,13 +52,7 @@ env:
   MODEL_IDS: "${{ inputs.model_ids || 'Llama3.2-3B-Instruct' }}"
 
   # ID used for each test's provider config
-  #PROVIDER_ID: "${{ inputs.provider_id || 'meta-reference' }}"
-
-  # Defined dynamically when each test is run below
-  #PROVIDER_CONFIG: ""
-
-  # (Unused) API key that can be manually defined for workflow dispatch
-  API_KEY: "${{ inputs.api_key || '' }}"
+  PROVIDER_ID: "${{ inputs.provider_id || 'meta_reference' }}"
 
   # Defines which directories in TESTS_PATH to exclude from the test loop
   EXCLUDED_DIRS: "__pycache__"
@@ -78,7 +67,7 @@ jobs:
       pull-requests: write
     defaults:
       run:
-        shell: bash # default shell to run all steps for a given job.
+        shell: bash
     runs-on: ${{ inputs.runner != '' && inputs.runner || 'llama-stack-gha-runner-gpu' }}
     if: always()
     steps:
@@ -236,11 +225,8 @@ jobs:
                 for file in "$dir"/test_*.py; do
                   test_name=$(basename "$file")
                   new_file="result-${dir_name}-${test_name}.xml"
-                  if torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "meta_reference and llama_3b" \
+                  if torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "${PROVIDER_ID} and llama_3b" \
                      --junitxml="${{ github.workspace }}/${new_file}"; then
-                    echo "Test passed: $test_name"
-                  else
-                    echo "Test failed: $test_name"
                   fi
                   pattern+="${new_file} "
                 done
