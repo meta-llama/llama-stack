@@ -32,6 +32,7 @@ If so, we suggest:
 - **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
   - {dockerhub}`distribution-together` ([Guide](remote_hosted_distro/index))
   - {dockerhub}`distribution-fireworks` ([Guide](remote_hosted_distro/index))
+  - {dockerhub}`distribution-nutanix` ([Guide](remote_hosted_distro/index))
 
 - **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
   - [iOS SDK](ondevice_distro/ios_sdk)

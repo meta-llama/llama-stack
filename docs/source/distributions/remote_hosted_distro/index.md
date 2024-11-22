@@ -9,6 +9,7 @@ Remote-Hosted distributions are available endpoints serving Llama Stack API that
 |-------------|----------|-----------|---------|---------|---------|------------|
 | Together | [https://llama-stack.together.ai](https://llama-stack.together.ai) | remote::together | meta-reference | remote::weaviate | meta-reference | meta-reference |
 | Fireworks | [https://llamastack-preview.fireworks.ai](https://llamastack-preview.fireworks.ai) | remote::fireworks | meta-reference | remote::weaviate | meta-reference | meta-reference |
+| Nutanix | [https://llamastack-preview.nutanix.ai](https://llamastack-preview.nutanix.ai) | remote::nutanix | meta-reference | meta-reference  | meta-reference | meta-reference |
 
 ## Connecting to Remote-Hosted Distributions
 
