@@ -29,6 +29,7 @@ extensions = [
 myst_enable_extensions = ["colon_fence"]
 
 html_theme = "sphinx_rtd_theme"
+html_use_relative_paths = True
 
 # html_theme = "sphinx_pdj_theme"
 # html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]

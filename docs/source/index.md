@@ -23,8 +23,9 @@ Our goal is to provide pre-packaged implementations which can be operated in a v
 :width: 400px
 ```
 
-> [!NOTE]
-> The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
+```{note}
+The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
+```
 
 ## Philosophy
 
@@ -64,25 +65,17 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 |  Ollama  | Single Node   |    |  Y  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
 | Chroma | Single Node |  |  | Y |  |  |
-| PG Vector | Single Node |  |  | Y |  |  |
+| Postgres | Single Node |  |  | Y |  |  |
 | PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
 
-## Getting Started with "Distributions"
+## Dive In
 
-Distributions are pre-packaged (Docker) implementations of a specific set of Providers you can use to get started.
+- Look at [Quick Start](getting_started/index) section to get started with Llama Stack.
+- Learn more about Llama Stack Concepts to understand how different components fit together.
+- Check out [Zero to Hero](zero_to_hero_guide) guide to learn in details about how to build your first agent.
+- See how you can use [Llama Stack Distributions](distributions/index) to get started with popular inference and other service providers.
 
-| **Distribution** 	|           **Llama Stack Docker**           	| Start This Distribution 	|
-|:----------------:	|:------------------------------------------:	|:-----------------------:	|
-|  Meta Reference  	| [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general) 	|       [Guide](distributions/self_hosted_distro/meta-reference-gpu.html)       	|
-|  Meta Reference Quantized  	| [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) 	|       [Guide](distributions/self_hosted_distro/meta-reference-quantized-gpu.html)       	|
-|      Ollama      	|       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)       	|       [Guide](distributions/self_hosted_distro/ollama.html)       	|
-|        vLLM       	|         [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)        	|       [Guide](distributions/self_hosted_distro/vllm.html)       	|
-|        TGI       	|         [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)        	|       [Guide](distributions/self_hosted_distro/tgi.html)       	|
-|        Together       	|         [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)        	|       [Guide](distributions/remote_hosted_distro/together.html)       	|
-|        Fireworks       	|         [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)        	|       [Guide](distributions/remote_hosted_distro/fireworks.html)       	|
-
-
-## Llama Stack Client SDK
+We also provide a number of Client side SDKs to make it easier to connect to Llama Stack server in your preferred language.
 
 |  **Language** |  **Client SDK** | **Package** |
 | :----: | :----: | :----: |
@@ -90,8 +83,6 @@ Distributions are pre-packaged (Docker) implementations of a specific set of Pro
 | Swift  | [llama-stack-client-swift](https://github.com/meta-llama/llama-stack-client-swift) | [![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmeta-llama%2Fllama-stack-client-swift%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/meta-llama/llama-stack-client-swift)
 | Node   | [llama-stack-client-node](https://github.com/meta-llama/llama-stack-client-node) | [![NPM version](https://img.shields.io/npm/v/llama-stack-client.svg)](https://npmjs.org/package/llama-stack-client)
 | Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) | [![Maven version](https://img.shields.io/maven-central/v/com.llama.llamastack/llama-stack-client-kotlin)](https://central.sonatype.com/artifact/com.llama.llamastack/llama-stack-client-kotlin)
-
-Check out our client SDKs for connecting to Llama Stack server in your preferred language, you can choose from [python](https://github.com/meta-llama/llama-stack-client-python), [node](https://github.com/meta-llama/llama-stack-client-node), [swift](https://github.com/meta-llama/llama-stack-client-swift), and [kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) programming languages to quickly build your applications.
 
 You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
 
