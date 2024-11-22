@@ -198,6 +198,7 @@ class TestInference:
             "remote::fireworks",
             "remote::tgi",
             "remote::together",
+            "remote::nvidia",
         ):
             pytest.skip("Other inference providers don't support structured output yet")
 

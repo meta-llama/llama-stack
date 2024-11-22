@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
+    JsonSchemaResponseFormat,
     Message,
     ToolCallDelta,
     ToolCallParseStatus,
@@ -149,11 +150,21 @@ def convert_chat_completion_request(
     #  top_k -> nvext.top_k
     #  max_tokens -> max_tokens
     #  repetition_penalty -> nvext.repetition_penalty
+    # response_format -> GrammarResponseFormat TODO(mf)
+    # response_format -> JsonSchemaResponseFormat: response_format = "json_object" & nvext["guided_json"] = json_schema
     # tools -> tools
     # tool_choice ("auto", "required") -> tool_choice
     # tool_prompt_format -> TBD
     # stream -> stream
     # logprobs -> logprobs
+
+    if request.response_format and not isinstance(
+        request.response_format, JsonSchemaResponseFormat
+    ):
+        raise ValueError(
+            f"Unsupported response format: {request.response_format}. "
+            "Only JsonSchemaResponseFormat is supported."
+        )
 
     nvext = {}
     payload: Dict[str, Any] = dict(
@@ -166,6 +177,11 @@ def convert_chat_completion_request(
             b"User-Agent": b"llama-stack: nvidia-inference-adapter",
         },
     )
+
+    if request.response_format:
+        # server bug - setting guided_json changes the behavior of response_format resulting in an error
+        # payload.update(response_format="json_object")
+        nvext.update(guided_json=request.response_format.json_schema)
 
     if request.tools:
         payload.update(
