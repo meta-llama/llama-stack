@@ -16,8 +16,8 @@ from pathlib import Path
 import pkg_resources
 
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-
 
 TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
 
@@ -81,12 +81,12 @@ class StackBuild(Subcommand):
         import textwrap
 
         import yaml
+
+        from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
         from prompt_toolkit.completion import WordCompleter
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
-
-        from llama_stack.distribution.distribution import get_provider_registry
 
         if args.list_templates:
             self._run_template_list_cmd(args)
@@ -192,9 +192,9 @@ class StackBuild(Subcommand):
         import json
 
         import yaml
-        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
+        from termcolor import cprint
 
         apis = list(build_config.distribution_spec.providers.keys())
         run_config = StackRunConfig(
@@ -222,6 +222,10 @@ class StackBuild(Subcommand):
 
             for i, provider_type in enumerate(provider_types):
                 pid = provider_type.split("::")[-1]
+
+                p = provider_registry[Api(api)][provider_type]
+                if p.deprecation_error:
+                    raise InvalidProviderError(p.deprecation_error)
 
                 config_type = instantiate_class_type(
                     provider_registry[Api(api)][provider_type].config_class
@@ -260,10 +264,10 @@ class StackBuild(Subcommand):
         import re
 
         import yaml
-        from termcolor import cprint
 
         from llama_stack.distribution.build import build_image
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+        from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
         build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
