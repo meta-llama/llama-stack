@@ -75,8 +75,6 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 - Check out [Zero to Hero](zero_to_hero_guide) guide to learn in details about how to build your first agent.
 - See how you can use [Llama Stack Distributions](distributions/index) to get started with popular inference and other service providers.
 
-Kutta
-
 We also provide a number of Client side SDKs to make it easier to connect to Llama Stack server in your preferred language.
 
 |  **Language** |  **Client SDK** | **Package** |
