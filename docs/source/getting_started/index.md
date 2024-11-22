@@ -149,6 +149,7 @@ if __name__ == "__main__":
 
 ## Next Steps
 
-You can mix and match different providers for inference, memory, agents, evals etc. See [Building Llama Stacks](../distributions/index.md)
-
-For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.
+- Learn more about Llama Stack [Concepts](../concepts/index.md)
+- Learn how to [Build Llama Stacks](../distributions/index.md)
+- See [References](../references/index.md) for more details about the llama CLI and Python SDK
+- For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.

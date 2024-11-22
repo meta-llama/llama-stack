@@ -54,7 +54,7 @@ Additionally, we have designed every element of the Stack such that APIs as well
 
 ## Supported Llama Stack Implementations
 
-Llama Stack already has a number of "adapters" available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide reference implementations you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
+Llama Stack already has a number of "adapters" available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
 
 |  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
@@ -71,9 +71,11 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 ## Dive In
 
 - Look at [Quick Start](getting_started/index) section to get started with Llama Stack.
-- Learn more about Llama Stack Concepts to understand how different components fit together.
+- Learn more about [Llama Stack Concepts](concepts/index) to understand how different components fit together.
 - Check out [Zero to Hero](zero_to_hero_guide) guide to learn in details about how to build your first agent.
 - See how you can use [Llama Stack Distributions](distributions/index) to get started with popular inference and other service providers.
+
+Kutta
 
 We also provide a number of Client side SDKs to make it easier to connect to Llama Stack server in your preferred language.
 
@@ -86,16 +88,13 @@ We also provide a number of Client side SDKs to make it easier to connect to Lla
 
 You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
 
-
 ```{toctree}
 :hidden:
 :maxdepth: 3
 
 getting_started/index
+concepts/index
 distributions/index
-llama_cli_reference/index
-llama_cli_reference/download_models
-llama_stack_client_cli_reference/index
-api_providers/index
+contributing/index
 distribution_dev/index
 ```

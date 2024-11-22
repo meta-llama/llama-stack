@@ -1,20 +1,5 @@
 # Self-Hosted Distributions
 
-```{toctree}
-:maxdepth: 2
-:hidden:
-
-meta-reference-gpu
-meta-reference-quantized-gpu
-ollama
-tgi
-dell-tgi
-together
-fireworks
-remote-vllm
-bedrock
-```
-
 We offer deployable distributions where you can host your own Llama Stack server using local inference.
 
 | **Distribution** 	|           **Llama Stack Docker**           	| Start This Distribution 	|

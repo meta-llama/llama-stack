@@ -4,6 +4,11 @@
     max-width: 90%;
 }
 
-.wy-side-nav-search, .wy-nav-top {
-    background: #666666;
+.wy-nav-side {
+    /* background: linear-gradient(45deg, #2980B9, #16A085); */
+    background: linear-gradient(90deg, #332735, #1b263c);
+}
+
+.wy-side-nav-search {
+    background-color: transparent !important;
 }
