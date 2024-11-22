@@ -244,7 +244,7 @@ This command initializes the model to interact with your local Llama Stack insta
   - [Swift SDK](https://github.com/meta-llama/llama-stack-client-swift)
   - [Kotlin SDK](https://github.com/meta-llama/llama-stack-client-kotlin)
 
-**Advanced Configuration**: Learn how to customize your Llama Stack distribution by referring to the [Building a Llama Stack Distribution](./building_distro.md) guide.
+**Advanced Configuration**: Learn how to customize your Llama Stack distribution by referring to the [Building a Llama Stack Distribution](https://llama-stack.readthedocs.io/en/latest/distributions/index.html#building-your-own-distribution) guide.
 
 **Explore Example Apps**: Check out [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) for example applications built using Llama Stack.
 
