@@ -113,7 +113,7 @@ class ChatAgent(ShieldRunnerMixin):
         # May be this should be a parameter of the agentic instance
         # that can define its behavior in a custom way
         for m in turn.input_messages:
-            msg = m.copy()
+            msg = m.model_copy()
             if isinstance(msg, UserMessage):
                 msg.context = None
             messages.append(msg)

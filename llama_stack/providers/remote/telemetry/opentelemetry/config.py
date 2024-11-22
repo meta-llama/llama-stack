@@ -8,5 +8,5 @@ from pydantic import BaseModel
 
 
 class OpenTelemetryConfig(BaseModel):
-    jaeger_host: str = "localhost"
-    jaeger_port: int = 6831
+    otel_endpoint: str = "http://localhost:4318/v1/traces"
+    service_name: str = "llama-stack"
