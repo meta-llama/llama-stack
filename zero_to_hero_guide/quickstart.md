@@ -1,6 +1,6 @@
 # Ollama Quickstart Guide
 
-This guide will walk you through setting up an end-to-end workflow with Llama Stack with ollama, enabling you to perform text generation using the `Llama3.2-1B-Instruct` model. Follow these steps to get started quickly.
+This guide will walk you through setting up an end-to-end workflow with Llama Stack with [ollama](https://ollama.com/), enabling you to perform text generation using the `Llama3.2-1B-Instruct` model. Follow these steps to get started quickly.
 
 If you're looking for more specific topics like tool calling or agent setup, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
