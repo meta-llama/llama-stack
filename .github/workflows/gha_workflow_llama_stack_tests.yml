@@ -56,7 +56,7 @@ env:
   PROVIDER_ID: "${{ inputs.provider_id || 'meta_reference' }}"
 
   # Path to model checkpoints within EFS volume
-  MODEL_CHECKPOINT_DIR: "/data/llama/"
+  MODEL_CHECKPOINT_DIR: "/data/llama"
 
   # Path to directory to run tests from
   TESTS_PATH: "${{ github.workspace }}/llama_stack/providers/tests"
@@ -114,26 +114,11 @@ jobs:
         id: check_model_id
         run: |
           if [[ " ${AVAILABLE_MODEL_IDs[@]} " =~ " ${MODEL_ID} " ]]; then
-            echo "Model ID ${MODEL_ID} is valid"
+            echo "Model ID '${MODEL_ID}' is valid"
           else
-            echo "Model ID ${MODEL_ID} is invalid, Terminating workflow."
+            echo "Model ID '${MODEL_ID}' is invalid, Terminating workflow."
             exit 1
           fi
-
-      - name: "Check if models exist in EFS volume"
-        id: check_if_models_exist
-        run: |
-          MODEL_IDS="${LLAMA_3B_OVERRIDE},${LLAMA_8B_OVERRIDE}"
-          for model_id in ${MODEL_IDS//,/ }; do
-            model_path="${MODEL_CHECKPOINT_DIR}/${model_id}"
-            if [ ! -d "${model_path}" ]; then
-              echo "Model '${model_id}' does not exist in mounted EFS volume, Terminating workflow."
-              exit 1
-            else
-              echo "Content of '${model_id}' model"
-              ls -la "${model_path}"
-            fi
-          done
 
       #######################
       #### CODE CHECKOUT ####
@@ -196,12 +181,12 @@ jobs:
       - name: "Update checkpoint directory"
         id: checkpoint_update
         run: |
-          if ${MODEL_ID} == "llama_3b" ; then
+          if ${MODEL_ID} == "llama_3b" &&  [ -d "${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE" ]; then
             echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE" >> "$GITHUB_ENV"
-          elif ${MODEL_ID} == "llama_8b" ; then
+          elif ${MODEL_ID} == "llama_8b" && [ -d "${MODEL_CHECKPOINT_DIR}/$LLAMA_8B_OVERRIDE" ]; then
             echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/$LLAMA_8B_OVERRIDE" >> "$GITHUB_ENV"
           else
-            echo "MODEL_ID is not valid, Terminating workflow."
+            echo "MODEL_ID & LLAMA_*B_OVERRIDE are not a valid pairing, Terminating workflow."
             exit 1
           fi
 
