@@ -81,12 +81,12 @@ class StackBuild(Subcommand):
         import textwrap
 
         import yaml
-
-        from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
         from prompt_toolkit.completion import WordCompleter
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
+
+        from llama_stack.distribution.distribution import get_provider_registry
 
         if args.list_templates:
             self._run_template_list_cmd(args)
@@ -192,9 +192,9 @@ class StackBuild(Subcommand):
         import json
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import ImageType
-        from termcolor import cprint
 
         apis = list(build_config.distribution_spec.providers.keys())
         run_config = StackRunConfig(
@@ -264,10 +264,10 @@ class StackBuild(Subcommand):
         import re
 
         import yaml
+        from termcolor import cprint
 
         from llama_stack.distribution.build import build_image
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from termcolor import cprint
 
         # save build.yaml spec for building same distribution again
         build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
