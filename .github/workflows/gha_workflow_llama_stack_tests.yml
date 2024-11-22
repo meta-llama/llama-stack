@@ -134,14 +134,6 @@ jobs:
       ############################
       #### UPDATE SYSTEM PATH ####
       ############################
-      - name: "[DEBUG] Update path: before"
-        id: path_update_before
-        if: ${{ inputs.debug == 'true' }}
-        run: |
-          echo "System path before update:"
-          echo "PATH=$PATH"
-          echo "GITHUB_PATH=$GITHUB_PATH"
-
       - name: "Update path: execute"
         id: path_update_exec
         run: |
@@ -149,14 +141,6 @@ jobs:
           # when calling their executable to install sub-dependencies
           mkdir -p ${HOME}/.local/bin
           echo "${HOME}/.local/bin" >> "$GITHUB_PATH"
-
-      - name: "[DEBUG] Update path: after"
-        id: path_update_after
-        if: ${{ inputs.debug == 'true' }}
-        run: |
-          echo "System path after update:"
-          echo "PATH=$PATH"
-          echo "GITHUB_PATH=$GITHUB_PATH"
 
       ##################################
       #### DEPENDENCY INSTALLATIONS ####
@@ -218,6 +202,7 @@ jobs:
         working-directory: "${{ github.workspace }}"
         run: |
           pattern=""
+          echo "PROVIDER_ID = ${PROVIDER_ID}"
           for dir in llama_stack/providers/tests/*; do
             if [ -d "$dir" ]; then
               dir_name=$(basename "$dir")
