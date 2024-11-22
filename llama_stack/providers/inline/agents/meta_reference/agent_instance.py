@@ -396,12 +396,6 @@ class ChatAgent(ShieldRunnerMixin):
         n_iter = 0
         while True:
             msg = input_messages[-1]
-            if msg.role == Role.user.value:
-                color = "blue"
-            elif msg.role == Role.ipython.value:
-                color = "yellow"
-            else:
-                color = None
             if len(str(msg)) > 1000:
                 msg_str = f"{str(msg)[:500]}...<more>...{str(msg)[-500:]}"
             else:

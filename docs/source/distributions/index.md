@@ -1,5 +1,4 @@
-# Llama Stack Distributions
-
+# Building Llama Stacks
 
 ```{toctree}
 :maxdepth: 2
@@ -12,6 +11,7 @@ ondevice_distro/index
 ## Introduction
 
 Llama Stack Distributions are pre-built Docker containers/Conda environments that assemble APIs and Providers to provide a consistent whole to the end application developer.
+
 These distributions allow you to mix-and-match providers - some could be backed by local code and some could be remote. This flexibility enables you to choose the optimal setup for your use case, such as serving a small model locally while using a cloud provider for larger models, all while maintaining a consistent API interface for your application.
 
 
