@@ -1,6 +1,6 @@
 # Quickstart Guide
 
-Llama-Stack allows you to configure your distribution from various providers, allowing you to focus on going from zero to production super fast. 
+Llama-Stack allows you to configure your distribution from various providers, allowing you to focus on going from zero to production super fast.
 
 This guide will walk you through how to build a local distribution, using ollama as an inference provider.
 
@@ -14,7 +14,7 @@ We also have a set of notebooks walking you through how to use Llama-Stack APIs:
 - Safety API
 - Agentic API
 
-Below, we will learn how to get started with Ollama as an inference provider, please note the steps for configuring your provider will vary a little depending on the service. However, the user experience will remain universal-this is the power of Llama-Stack. 
+Below, we will learn how to get started with Ollama as an inference provider, please note the steps for configuring your provider will vary a little depending on the service. However, the user experience will remain universal-this is the power of Llama-Stack.
 
 Prototype locally using Ollama, deploy to the cloud with your favorite provider or own deployment. Use any API from any provider while focussing on development.
 
@@ -105,7 +105,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 After this step, you will see the console output:
 
 ```
-Build Successful! Next steps: 
+Build Successful! Next steps:
    1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
    2. `llama stack run /Users/username/.llama/distributions/llamastack-ollama/ollama-run.yaml`
 ```
