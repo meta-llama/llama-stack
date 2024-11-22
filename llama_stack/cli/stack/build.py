@@ -16,8 +16,8 @@ from pathlib import Path
 import pkg_resources
 
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-
 
 TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
 
@@ -222,6 +222,10 @@ class StackBuild(Subcommand):
 
             for i, provider_type in enumerate(provider_types):
                 pid = provider_type.split("::")[-1]
+
+                p = provider_registry[Api(api)][provider_type]
+                if p.deprecation_error:
+                    raise InvalidProviderError(p.deprecation_error)
 
                 config_type = instantiate_class_type(
                     provider_registry[Api(api)][provider_type].config_class
