@@ -123,7 +123,7 @@ def setup_logger(api: Telemetry, level: int = logging.INFO):
     logger.addHandler(TelemetryHandler())
 
 
-async def start_trace(name: str, attributes: Dict[str, Any] = None):
+async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceContext:
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
@@ -135,6 +135,7 @@ async def start_trace(name: str, attributes: Dict[str, Any] = None):
     context.push_span(name, {"__root__": True, **(attributes or {})})
 
     CURRENT_TRACE_CONTEXT = context
+    return context
 
 
 async def end_trace(status: SpanStatus = SpanStatus.OK):
