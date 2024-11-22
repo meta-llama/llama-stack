@@ -210,7 +210,7 @@ jobs:
                 for file in "$dir"/test_*.py; do
                   test_name=$(basename "$file")
                   new_file="result-${dir_name}-${test_name}.xml"
-                  if torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "${PROVIDER_ID} and llama_3b" \
+                  if torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "meta-reference and llama_3b" \
                      --junitxml="${{ github.workspace }}/${new_file}"; then
                     echo "Test passed: $test_name"
                   else
