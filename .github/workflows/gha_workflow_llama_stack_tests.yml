@@ -37,7 +37,7 @@ on:
         default: "meta_reference"
 
       model_id:
-        description: 'Shorthand name for model ID (llama_3b or llama_8b)'
+        description: 'Shorthand name for target model ID (llama_3b or llama_8b)'
         required: true
         default: "llama_3b"
 
@@ -67,7 +67,7 @@ env:
   # Shorthand name for model ID, used in pytest fixture marks
   MODEL_ID: "${{ inputs.model_id || 'llama_3b' }}"
 
-  # Set the llama 3b / 8b override for models if desired, else use the default.
+  # Override the `llama_3b` / `llama_8b' models, else use the default.
   LLAMA_3B_OVERRIDE: "${{ inputs.model_override_3b || 'Llama3.2-3B-Instruct' }}"
   LLAMA_8B_OVERRIDE: "${{ inputs.model_override_8b || 'Llama3.1-8B-Instruct' }}"
 
@@ -151,14 +151,6 @@ jobs:
       ############################
       #### UPDATE SYSTEM PATH ####
       ############################
-      - name: "[DEBUG] Update path: before"
-        id: path_update_before
-        if: ${{ inputs.debug == 'true' }}
-        run: |
-          echo "System path before update:"
-          echo "PATH=$PATH"
-          echo "GITHUB_PATH=$GITHUB_PATH"
-
       - name: "Update path: execute"
         id: path_update_exec
         run: |
@@ -167,14 +159,6 @@ jobs:
           mkdir -p ${HOME}/.local/bin
           echo "${HOME}/.local/bin" >> "$GITHUB_PATH"
 
-      - name: "[DEBUG] Update path: after"
-        id: path_update_after
-        if: ${{ inputs.debug == 'true' }}
-        run: |
-          echo "System path after update:"
-          echo "PATH=$PATH"
-          echo "GITHUB_PATH=$GITHUB_PATH"
-
       #####################################
       #### UPDATE CHECKPOINT DIRECTORY ####
       #####################################
@@ -182,10 +166,10 @@ jobs:
         id: checkpoint_update
         run: |
           echo "Checkpoint directory: ${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE"
-          if ${MODEL_ID} == "llama_3b" &&  [ -d "${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE" ]; then
-            echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/$LLAMA_3B_OVERRIDE" >> "$GITHUB_ENV"
-          elif ${MODEL_ID} == "llama_8b" && [ -d "${MODEL_CHECKPOINT_DIR}/$LLAMA_8B_OVERRIDE" ]; then
-            echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/$LLAMA_8B_OVERRIDE" >> "$GITHUB_ENV"
+          if [ "${MODEL_ID}" = "llama_3b" ] && [ -d "${MODEL_CHECKPOINT_DIR}/${LLAMA_3B_OVERRIDE}" ]; then
+            echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/${LLAMA_3B_OVERRIDE}" >> "$GITHUB_ENV"
+          elif [ "${MODEL_ID}" = "llama_8b" ] && [ -d "${MODEL_CHECKPOINT_DIR}/${LLAMA_8B_OVERRIDE}" ]; then
+            echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/${LLAMA_8B_OVERRIDE}" >> "$GITHUB_ENV"
           else
             echo "MODEL_ID & LLAMA_*B_OVERRIDE are not a valid pairing, Terminating workflow."
             exit 1
@@ -220,7 +204,7 @@ jobs:
         run: |
           sudo npm install -g junit-merge
 
-      - name: "Installing 'llama-stack' dependencies"
+      - name: "Installing pip dependencies"
         id: install_pip_generic
         run: |
           echo "[STEP] Installing 'llama-stack' models"
@@ -234,20 +218,16 @@ jobs:
             zmq chardet pypdf \
             pandas sentence_transformers together \
             aiosqlite
-          conda install -q -c pytorch -c nvidia faiss-gpu=1.9.0
-
-      - name: "Installing specific manual_dispatch dependencies"
-        id: manual_install_pip
-        if: github.event_name == 'workflow_dispatch'
+      - name: "Installing packages with conda"
+        id: install_conda_generic
         run: |
-          echo "[STEP] Installing specific dependencies for manual dispatch workflows"
-          # N.A.
+          conda install -q -c pytorch -c nvidia faiss-gpu=1.9.0
 
       #############################################################
       #### TESTING TO BE DONE FOR BOTH PRS AND MANUAL DISPATCH ####
       #############################################################
-      - name: "Manual - Run Tests: Loop"
-        id: manual_run_tests_loop
+      - name: "Run Tests: Loop"
+        id: run_tests_loop
         working-directory: "${{ github.workspace }}"
         run: |
           pattern=""
@@ -271,7 +251,7 @@ jobs:
           done
           echo "REPORTS_GEN=$pattern" >> "$GITHUB_ENV"
 
-      - name: "Manual - Test Summary: Merge"
+      - name: "Test Summary: Merge"
         id: test_summary_merge
         if: always()
         working-directory: "${{ github.workspace }}"
