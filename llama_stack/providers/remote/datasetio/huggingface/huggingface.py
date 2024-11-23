@@ -63,6 +63,11 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         )
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
+    async def unregister_dataset(self, dataset_id: str) -> None:
+        key = f"{DATASETS_PREFIX}{dataset_id}"
+        await self.kvstore.delete(key=key)
+        del self.dataset_infos[dataset_id]
+
     async def get_rows_paginated(
         self,
         dataset_id: str,

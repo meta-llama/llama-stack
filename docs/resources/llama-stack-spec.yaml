@@ -3252,6 +3252,14 @@ components:
       required:
       - model_id
       type: object
+    UnregisterDatasetRequest:
+      additionalProperties: false
+      properties:
+        dataset_id:
+          type: string
+      required:
+      - dataset_id
+      type: object
     UnstructuredLogEvent:
       additionalProperties: false
       properties:
@@ -3783,6 +3791,27 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterDatasetRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Datasets
+  /alpha/datasets/unregister:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnregisterDatasetRequest'
         required: true
       responses:
         '200':
@@ -5242,6 +5271,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterModelRequest"
     />
   name: UnregisterModelRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterDatasetRequest"
+    />
+  name: UnregisterDatasetRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
@@ -5418,6 +5450,7 @@ x-tagGroups:
   - URL
   - UnregisterMemoryBankRequest
   - UnregisterModelRequest
+  - UnregisterDatasetRequest
   - UnstructuredLogEvent
   - UserMessage
   - VectorMemoryBank

@@ -97,6 +97,9 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             dataset_impl=dataset_impl,
         )
 
+    async def unregister_dataset(self, dataset_id: str) -> None:
+        del self.dataset_infos[dataset_id]
+
     async def get_rows_paginated(
         self,
         dataset_id: str,

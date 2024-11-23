@@ -78,6 +78,21 @@ class DatasetsClient(Datasets):
 
             return [DatasetDefWithProvider(**x) for x in response.json()]
 
+    async def unregister_dataset(
+        self,
+        dataset_id: str,
+    ) -> None:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                f"{self.base_url}/datasets/unregister",
+                params={
+                    "dataset_id": json.loads(dataset_id),
+                },
+                headers={"Content-Type": "application/json"},
+                timeout=60,
+            )
+            response.raise_for_status()
+
 
 async def run_main(host: str, port: int):
     client = DatasetsClient(f"http://{host}:{port}")
