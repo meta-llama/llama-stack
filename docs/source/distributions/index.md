@@ -3,6 +3,7 @@
 :maxdepth: 3
 :hidden:
 
+importing_as_library
 self_hosted_distro/index
 remote_hosted_distro/index
 building_distro

@@ -1,7 +1,7 @@
 # Build your own Distribution
 
 
-This guide will walk you through the steps to get started with building a Llama Stack distributiom from scratch with your choice of API providers.
+This guide will walk you through the steps to get started with building a Llama Stack distribution from scratch with your choice of API providers.
 
 
 ## Llama Stack Build
