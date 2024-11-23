@@ -2,8 +2,7 @@
 
 The Llama Stack Evaluation flow allows you to run evaluations on your GenAI application datasets or pre-registered benchmarks.
 
-
-We introduce a new set of APIs in Llama Stack for supporting running evaluations of LLM applications.
+We introduce a set of APIs in Llama Stack for supporting running evaluations of LLM applications.
 - `/datasetio` + `/datasets` API
 - `/scoring` + `/scoring_functions` API
 - `/eval` + `/eval_tasks` API
