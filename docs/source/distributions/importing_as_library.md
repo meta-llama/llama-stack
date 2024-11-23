@@ -1,6 +1,6 @@
-# Importing Llama Stack as a Python Library
+# Using Llama Stack as a Library
 
-Llama Stack is typically utilized in a client-server configuration. To get started quickly, you can import Llama Stack as a library and call the APIs directly without needing to set up a server. For [example](https://github.com/meta-llama/llama-stack-client-python/blob/main/src/llama_stack_client/lib/direct/test.py):
+If you are planning to use an external service for Inference (even Ollama or TGI counts as external), it is often easier to use Llama Stack as a library. This avoids the overhead of setting up a server. For [example](https://github.com/meta-llama/llama-stack-client-python/blob/main/src/llama_stack_client/lib/direct/test.py):
 
 ```python
 from llama_stack_client.lib.direct.direct import LlamaStackDirectClient
