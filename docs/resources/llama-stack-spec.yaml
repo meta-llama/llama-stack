@@ -2629,6 +2629,7 @@ components:
           enum:
           - bing
           - brave
+          - tavily
           type: string
         input_shields:
           items:
@@ -3397,11 +3398,10 @@ components:
       - api_key
       type: object
 info:
-  description: "This is the specification of the llama stack that provides\n     \
+  description: "This is the specification of the Llama Stack that provides\n     \
     \           a set of endpoints and their corresponding interfaces that are tailored\
-    \ to\n                best leverage Llama Models. The specification is still in\
-    \ draft and subject to change.\n                Generated at 2024-11-19 09:14:01.145131"
-  title: '[DRAFT] Llama Stack Specification'
+    \ to\n                best leverage Llama Models. Generated at 2024-11-22 17:22:31.150049"
+  title: Llama Stack Specification
   version: alpha
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
@@ -3658,7 +3658,7 @@ paths:
                 $ref: '#/components/schemas/BatchChatCompletionResponse'
           description: OK
       tags:
-      - BatchInference
+      - (Coming Soon) BatchInference
   /alpha/batch-inference/completion:
     post:
       parameters:
@@ -3683,7 +3683,7 @@ paths:
                 $ref: '#/components/schemas/BatchCompletionResponse'
           description: OK
       tags:
-      - BatchInference
+      - (Coming Soon) BatchInference
   /alpha/datasetio/get-rows-paginated:
     get:
       parameters:
@@ -4337,7 +4337,7 @@ paths:
                 $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/post-training/job/cancel:
     post:
       parameters:
@@ -4358,7 +4358,7 @@ paths:
         '200':
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/post-training/job/logs:
     get:
       parameters:
@@ -4382,7 +4382,7 @@ paths:
                 $ref: '#/components/schemas/PostTrainingJobLogStream'
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/post-training/job/status:
     get:
       parameters:
@@ -4406,7 +4406,7 @@ paths:
                 $ref: '#/components/schemas/PostTrainingJobStatusResponse'
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/post-training/jobs:
     get:
       parameters:
@@ -4425,7 +4425,7 @@ paths:
                 $ref: '#/components/schemas/PostTrainingJob'
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/post-training/preference-optimize:
     post:
       parameters:
@@ -4450,7 +4450,7 @@ paths:
                 $ref: '#/components/schemas/PostTrainingJob'
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/post-training/supervised-fine-tune:
     post:
       parameters:
@@ -4475,7 +4475,7 @@ paths:
                 $ref: '#/components/schemas/PostTrainingJob'
           description: OK
       tags:
-      - PostTraining
+      - (Coming Soon) PostTraining
   /alpha/providers/list:
     get:
       parameters:
@@ -4755,7 +4755,7 @@ paths:
                 $ref: '#/components/schemas/SyntheticDataGenerationResponse'
           description: OK
       tags:
-      - SyntheticDataGeneration
+      - (Coming Soon) SyntheticDataGeneration
   /alpha/telemetry/get-trace:
     get:
       parameters:
@@ -4806,6 +4806,9 @@ security:
 servers:
 - url: http://any-hosted-llama-stack.com
 tags:
+- name: (Coming Soon) BatchInference
+- name: (Coming Soon) PostTraining
+- name: (Coming Soon) SyntheticDataGeneration
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentCandidate" />
   name: AgentCandidate
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentConfig" />
@@ -4863,7 +4866,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchCompletionResponse"
     />
   name: BatchCompletionResponse
-- name: BatchInference
 - description: <SchemaDefinition schemaRef="#/components/schemas/BenchmarkEvalTaskConfig"
     />
   name: BenchmarkEvalTaskConfig
@@ -5044,7 +5046,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/PhotogenToolDefinition"
     />
   name: PhotogenToolDefinition
-- name: PostTraining
 - description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJob"
     />
   name: PostTrainingJob
@@ -5179,7 +5180,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/SyntheticDataGenerateRequest"
     />
   name: SyntheticDataGenerateRequest
-- name: SyntheticDataGeneration
 - description: 'Response from the synthetic data generation. Batch of (prompt, response,
     score) tuples that pass the threshold.
 
@@ -5261,8 +5261,10 @@ tags:
 x-tagGroups:
 - name: Operations
   tags:
+  - (Coming Soon) BatchInference
+  - (Coming Soon) PostTraining
+  - (Coming Soon) SyntheticDataGeneration
   - Agents
-  - BatchInference
   - DatasetIO
   - Datasets
   - Eval
@@ -5272,12 +5274,10 @@ x-tagGroups:
   - Memory
   - MemoryBanks
   - Models
-  - PostTraining
   - Safety
   - Scoring
   - ScoringFunctions
   - Shields
-  - SyntheticDataGeneration
   - Telemetry
 - name: Types
   tags:

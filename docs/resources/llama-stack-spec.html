@@ -19,9 +19,9 @@
             spec = {
     "openapi": "3.1.0",
     "info": {
-        "title": "[DRAFT] Llama Stack Specification",
+        "title": "Llama Stack Specification",
         "version": "alpha",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-19 09:14:01.145131"
+        "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. Generated at 2024-11-22 17:22:31.150049"
     },
     "servers": [
         {
@@ -44,7 +44,7 @@
                     }
                 },
                 "tags": [
-                    "BatchInference"
+                    "(Coming Soon) BatchInference"
                 ],
                 "parameters": [
                     {
@@ -84,7 +84,7 @@
                     }
                 },
                 "tags": [
-                    "BatchInference"
+                    "(Coming Soon) BatchInference"
                 ],
                 "parameters": [
                     {
@@ -117,7 +117,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -1079,7 +1079,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -1117,7 +1117,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -1155,7 +1155,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -1193,7 +1193,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -1713,7 +1713,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -2161,7 +2161,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "(Coming Soon) PostTraining"
                 ],
                 "parameters": [
                     {
@@ -2201,7 +2201,7 @@
                     }
                 },
                 "tags": [
-                    "SyntheticDataGeneration"
+                    "(Coming Soon) SyntheticDataGeneration"
                 ],
                 "parameters": [
                     {
@@ -3861,7 +3861,8 @@
                         "type": "string",
                         "enum": [
                             "bing",
-                            "brave"
+                            "brave",
+                            "tavily"
                         ],
                         "default": "brave"
                     },
@@ -7927,6 +7928,15 @@
     ],
     "tags": [
         {
+            "name": "(Coming Soon) BatchInference"
+        },
+        {
+            "name": "(Coming Soon) PostTraining"
+        },
+        {
+            "name": "(Coming Soon) SyntheticDataGeneration"
+        },
+        {
             "name": "AgentCandidate",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentCandidate\" />"
         },
@@ -8000,9 +8010,6 @@
         {
             "name": "BatchCompletionResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionResponse\" />"
-        },
-        {
-            "name": "BatchInference"
         },
         {
             "name": "BenchmarkEvalTaskConfig",
@@ -8256,9 +8263,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PhotogenToolDefinition\" />"
         },
         {
-            "name": "PostTraining"
-        },
-        {
             "name": "PostTrainingJob",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
         },
@@ -8447,9 +8451,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequest\" />"
         },
         {
-            "name": "SyntheticDataGeneration"
-        },
-        {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         },
@@ -8557,8 +8558,10 @@
         {
             "name": "Operations",
             "tags": [
+                "(Coming Soon) BatchInference",
+                "(Coming Soon) PostTraining",
+                "(Coming Soon) SyntheticDataGeneration",
                 "Agents",
-                "BatchInference",
                 "DatasetIO",
                 "Datasets",
                 "Eval",
@@ -8568,12 +8571,10 @@
                 "Memory",
                 "MemoryBanks",
                 "Models",
-                "PostTraining",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",
                 "Shields",
-                "SyntheticDataGeneration",
                 "Telemetry"
             ]
         },
