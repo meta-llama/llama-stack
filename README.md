@@ -1,3 +1,5 @@
+<img src="https://github.com/user-attachments/assets/33d9576d-95ea-468d-95e2-8fa233205a50" width="480" title="Llama Stack" alt="Llama Stack"/>
+
 # Llama Stack
 
 [![PyPI version](https://img.shields.io/pypi/v/llama_stack.svg)](https://pypi.org/project/llama_stack/)

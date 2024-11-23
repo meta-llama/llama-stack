@@ -3,7 +3,6 @@
 The Llama Stack runtime configuration is specified as a YAML file. Here is a simplied version of an example configuration file for the Ollama distribution:
 
 ```{dropdown} Sample Configuration File
-:closed:
 
 ```yaml
 version: 2
@@ -85,6 +84,6 @@ models:
   provider_id: ollama
   provider_model_id: null
 ```
-A Model is an instance of a "Resource" (see [Concepts](../concepts)) and is associated with a specific inference provider (in this case, the provider with identifier `ollama`). This is an instance of a "pre-registered" model. While we always encourage the clients to always register models before using them, some Stack servers may come up a list of "already known and available" models.
+A Model is an instance of a "Resource" (see [Concepts](../concepts/index)) and is associated with a specific inference provider (in this case, the provider with identifier `ollama`). This is an instance of a "pre-registered" model. While we always encourage the clients to always register models before using them, some Stack servers may come up a list of "already known and available" models.
 
 What's with the `provider_model_id` field? This is an identifier for the model inside the provider's model catalog. Contrast it with `model_id` which is the identifier for the same model for Llama Stack's purposes. For example, you may want to name "llama3.2:vision-11b" as "image_captioning_model" when you use it in your Stack interactions. When omitted, the server will set `provider_model_id` to be the same as `model_id`.
