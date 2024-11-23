@@ -9,3 +9,5 @@
 llama_cli_reference/index
 llama_stack_client_cli_reference/index
 llama_cli_reference/download_models
+api_reference/index
+```

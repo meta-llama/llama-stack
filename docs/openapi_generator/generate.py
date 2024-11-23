@@ -56,8 +56,7 @@ def main(output_dir: str):
                 version=LLAMA_STACK_API_VERSION,
                 description="""This is the specification of the Llama Stack that provides
                 a set of endpoints and their corresponding interfaces that are tailored to
-                best leverage Llama Models. Generated at """
-                + now,
+                best leverage Llama Models.""",
             ),
         ),
     )

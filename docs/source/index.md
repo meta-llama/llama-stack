@@ -94,7 +94,5 @@ getting_started/index
 concepts/index
 distributions/index
 contributing/index
-distribution_dev/index
 references/index
-api_reference/index
 ```

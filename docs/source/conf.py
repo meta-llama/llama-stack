@@ -87,7 +87,7 @@ html_style = "../_static/css/my_theme.css"
 redoc = [
     {
         "name": "Llama Stack API",
-        "page": "api_reference/index",
+        "page": "references/api_reference/index",
         "spec": "../resources/llama-stack-spec.yaml",
         "opts": {
             "suppress-warnings": True,
