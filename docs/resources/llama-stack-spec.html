@@ -21,7 +21,7 @@
     "info": {
         "title": "Llama Stack Specification",
         "version": "alpha",
-        "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. Generated at 2024-11-22 17:22:31.150049"
+        "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. Generated at 2024-11-22 17:23:55.034164"
     },
     "servers": [
         {
@@ -44,7 +44,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) BatchInference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -84,7 +84,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) BatchInference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -117,7 +117,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1079,7 +1079,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1117,7 +1117,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1155,7 +1155,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1193,7 +1193,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1713,7 +1713,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -2161,7 +2161,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -2201,7 +2201,7 @@
                     }
                 },
                 "tags": [
-                    "(Coming Soon) SyntheticDataGeneration"
+                    "SyntheticDataGeneration (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -7928,15 +7928,6 @@
     ],
     "tags": [
         {
-            "name": "(Coming Soon) BatchInference"
-        },
-        {
-            "name": "(Coming Soon) PostTraining"
-        },
-        {
-            "name": "(Coming Soon) SyntheticDataGeneration"
-        },
-        {
             "name": "AgentCandidate",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentCandidate\" />"
         },
@@ -8010,6 +8001,9 @@
         {
             "name": "BatchCompletionResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionResponse\" />"
+        },
+        {
+            "name": "BatchInference (Coming Soon)"
         },
         {
             "name": "BenchmarkEvalTaskConfig",
@@ -8263,6 +8257,9 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PhotogenToolDefinition\" />"
         },
         {
+            "name": "PostTraining (Coming Soon)"
+        },
+        {
             "name": "PostTrainingJob",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJob\" />"
         },
@@ -8451,6 +8448,9 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequest\" />"
         },
         {
+            "name": "SyntheticDataGeneration (Coming Soon)"
+        },
+        {
             "name": "SyntheticDataGenerationResponse",
             "description": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerationResponse\" />"
         },
@@ -8558,10 +8558,8 @@
         {
             "name": "Operations",
             "tags": [
-                "(Coming Soon) BatchInference",
-                "(Coming Soon) PostTraining",
-                "(Coming Soon) SyntheticDataGeneration",
                 "Agents",
+                "BatchInference (Coming Soon)",
                 "DatasetIO",
                 "Datasets",
                 "Eval",
@@ -8571,10 +8569,12 @@
                 "Memory",
                 "MemoryBanks",
                 "Models",
+                "PostTraining (Coming Soon)",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",
                 "Shields",
+                "SyntheticDataGeneration (Coming Soon)",
                 "Telemetry"
             ]
         },

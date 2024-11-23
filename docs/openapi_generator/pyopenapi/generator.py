@@ -443,7 +443,7 @@ class Generator:
             "PostTraining",
             "BatchInference",
         ]:
-            op.defining_class.__name__ = f"(Coming Soon) {op.defining_class.__name__}"
+            op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
             print(op.defining_class.__name__)
 
         doc_string = parse_type(op.func_ref)
