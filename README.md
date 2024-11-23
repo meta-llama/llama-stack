@@ -1,12 +1,10 @@
-<img src="https://github.com/user-attachments/assets/2fedfe0f-6df7-4441-98b2-87a1fd95ee1c" width="300" title="Llama Stack Logo" alt="Llama Stack Logo"/>
-
 # Llama Stack
 
 [![PyPI version](https://img.shields.io/pypi/v/llama_stack.svg)](https://pypi.org/project/llama_stack/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
 
-[**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html)
+[**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Zero2Hero Guide**](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide)
 
 This repository contains the Llama Stack API specifications as well as API Providers and Llama Stack Distributions.
 
@@ -103,6 +101,7 @@ Please checkout our [Documentations](https://llama-stack.readthedocs.io/en/lates
     * Quick guide to start a Llama Stack server.
     * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
     * The complete Llama Stack lesson [Colab notebook](https://colab.research.google.com/drive/1dtVmxotBsI4cGZQNsJRYPrLiDeT0Wnwt) of the new [Llama 3.2 course on Deeplearning.ai](https://learn.deeplearning.ai/courses/introducing-multimodal-llama-3-2/lesson/8/llama-stack).
+    * The [Zero2Hero Guide](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide) that guide you through all the key components of llama stack with code samples.
 * [Contributing](CONTRIBUTING.md)
     * [Adding a new API Provider](https://llama-stack.readthedocs.io/en/latest/api_providers/new_api_provider.html) to walk-through how to add a new API provider.
 
