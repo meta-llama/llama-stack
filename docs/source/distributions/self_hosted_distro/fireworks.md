@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Fireworks Distribution
 
 ```{toctree}
