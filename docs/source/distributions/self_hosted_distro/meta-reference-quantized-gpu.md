@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Meta Reference Quantized Distribution
 
 ```{toctree}

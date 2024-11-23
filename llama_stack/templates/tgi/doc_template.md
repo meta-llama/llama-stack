@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # TGI Distribution
 
 ```{toctree}
