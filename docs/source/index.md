@@ -1,27 +1,13 @@
 # Llama Stack
 
-Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Service Providers providing their implementations. The APIs can be roughly split into two categories:
-
-- APIs focused on Application development
-  - Inference
-  - Safety
-  - Memory
-  - Agents
-  - Agent Evaluation
-
-- APIs focused on Model development
-  - Model Evaluation
-  - Post Training
-  - Synthetic Data Generation
-  - Reward Scoring
-
-Our goal is to provide pre-packaged implementations which can be operated in a variety of deployment environments: developers start iterating with Desktops or their mobile devices and can seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
-
+Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Service Providers providing their implementations.
 
 ```{image} ../_static/llama-stack.png
 :alt: Llama Stack
 :width: 400px
 ```
+
+Our goal is to provide pre-packaged implementations which can be operated in a variety of deployment environments: developers start iterating with Desktops or their mobile devices and can seamlessly transition to on-prem or public cloud deployments. At every point in this transition, the same set of APIs and the same developer experience is available.
 
 ```{note}
 The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
