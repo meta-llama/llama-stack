@@ -72,7 +72,7 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 
 - Look at [Quick Start](getting_started/index) section to get started with Llama Stack.
 - Learn more about [Llama Stack Concepts](concepts/index) to understand how different components fit together.
-- Check out [Zero to Hero](zero_to_hero_guide) guide to learn in details about how to build your first agent.
+- Check out [Zero to Hero](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide) guide to learn in details about how to build your first agent.
 - See how you can use [Llama Stack Distributions](distributions/index) to get started with popular inference and other service providers.
 
 We also provide a number of Client side SDKs to make it easier to connect to Llama Stack server in your preferred language.
@@ -94,4 +94,5 @@ getting_started/index
 concepts/index
 distributions/index
 contributing/index
+references/index
 ```

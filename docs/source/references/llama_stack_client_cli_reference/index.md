@@ -1,6 +1,6 @@
-# llama-stack-client CLI Reference
+# llama (client-side) CLI Reference
 
-You may use the `llama-stack-client` to query information about the distribution.
+The `llama-stack-client` CLI allows you to query information about the distribution.
 
 ## Basic Commands
 
