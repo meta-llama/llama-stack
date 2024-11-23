@@ -20,7 +20,7 @@ from llama_stack.apis.telemetry import *  # noqa: F403
 log = logging.getLogger(__name__)
 
 
-def generate_short_uuid(len: int = 12):
+def generate_short_uuid(len: int = 8):
     full_uuid = uuid.uuid4()
     uuid_bytes = full_uuid.bytes
     encoded = base64.urlsafe_b64encode(uuid_bytes)
@@ -123,18 +123,19 @@ def setup_logger(api: Telemetry, level: int = logging.INFO):
     logger.addHandler(TelemetryHandler())
 
 
-async def start_trace(name: str, attributes: Dict[str, Any] = None):
+async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceContext:
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
         log.info("No Telemetry implementation set. Skipping trace initialization...")
         return
 
-    trace_id = generate_short_uuid()
+    trace_id = generate_short_uuid(16)
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
     context.push_span(name, {"__root__": True, **(attributes or {})})
 
     CURRENT_TRACE_CONTEXT = context
+    return context
 
 
 async def end_trace(status: SpanStatus = SpanStatus.OK):

@@ -107,7 +107,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
         collection = await self.client.get_or_create_collection(
             name=memory_bank.identifier,
-            metadata={"bank": memory_bank.json()},
+            metadata={"bank": memory_bank.model_dump_json()},
         )
         bank_index = BankWithIndex(
             bank=memory_bank, index=ChromaIndex(self.client, collection)
