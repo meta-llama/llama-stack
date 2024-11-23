@@ -19,7 +19,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
-TEMPLATES_PATH = Path(os.path.relpath(__file__)).parent.parent.parent / "templates"
+TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
 
 @lru_cache()
