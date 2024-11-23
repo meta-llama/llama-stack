@@ -93,7 +93,23 @@ def memory_chroma() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
+@pytest.fixture(scope="session")
+def memory_redis() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="redis",
+                provider_type="remote::redis",
+                config=RemoteProviderConfig(
+                    host=get_env_or_fail("REDIS_HOST"),
+                    port=get_env_or_fail("REDIS_PORT"),
+                ).model_dump(),
+            )
+        ]
+    )
+
+
+MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma", "redis"]
 
 
 @pytest_asyncio.fixture(scope="session")
