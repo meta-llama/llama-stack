@@ -5,6 +5,7 @@
 
 importing_as_library
 building_distro
+configuration
 ```
 
 <!-- self_hosted_distro/index -->
@@ -33,7 +34,7 @@ If so, we suggest:
   - {dockerhub}`distribution-fireworks` ([Guide](remote_hosted_distro/index))
 
 - **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
-  - [iOS](ondevice_distro/ios_sdk)
+  - [iOS SDK](ondevice_distro/ios_sdk)
   - Android (coming soon)
 
 You can also build your own [custom distribution](building_distro).
