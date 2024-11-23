@@ -25,7 +25,6 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "sphinx_design",
-    # "sphinxcontrib.openapi",
     "sphinxcontrib.redoc",
 ]
 myst_enable_extensions = ["colon_fence"]
