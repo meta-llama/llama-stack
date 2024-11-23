@@ -28,15 +28,9 @@ print("\nChat completion response:")
 print(response)
 ```
 
-If you've created a [custom distribution](https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html), you can also import it with the `from_config` constructor:
+If you've created a [custom distribution](https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html), you can also use the run.yaml configuration file directly:
 
 ```python
-import yaml
-
-with open(config_path, "r") as f:
-    config_dict = yaml.safe_load(f)
-
-run_config = parse_and_maybe_upgrade_config(config_dict)
-
-client = await LlamaStackDirectClient.from_config(run_config)
+client = await LlamaStackDirectClient.from_config(config_path)
+await client.initialize()
 ```
