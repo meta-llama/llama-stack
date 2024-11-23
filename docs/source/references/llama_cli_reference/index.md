@@ -29,7 +29,7 @@ You have two ways to install Llama Stack:
 ## `llama` subcommands
 1. `download`: `llama` cli tools supports downloading the model from Meta or Hugging Face.
 2. `model`: Lists available models and their properties.
-3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](../distributions/building_distro).
+3. `stack`: Allows you to build and run a Llama Stack server. You can read more about this [here](../../distributions/building_distro).
 
 ### Sample Usage
 
@@ -228,7 +228,7 @@ You can even run `llama model prompt-format` see all of the templates and their 
 ```
 llama model prompt-format -m Llama3.2-3B-Instruct
 ```
-![alt text](../../resources/prompt-format.png)
+![alt text](../../../resources/prompt-format.png)
 
 
 
