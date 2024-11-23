@@ -1,3 +1,9 @@
 # Cookbooks
 
-- [(Experimental) Llama Stack Evaluations Flow](evals)
+- [Evaluations Flow](evals.md)
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+evals.md
+```

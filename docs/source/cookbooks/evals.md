@@ -1,4 +1,4 @@
-# (Experimental) Llama Stack Evaluations Flow
+# Evaluations
 
 The Llama Stack Evaluation flow allows you to run evaluations on your GenAI application datasets or pre-registered benchmarks.
 
