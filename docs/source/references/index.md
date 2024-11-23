@@ -3,7 +3,7 @@
 - [API Reference](api_reference/index) for the Llama Stack API specification
 - [Python SDK Reference](python_sdk_reference/index)
 - [Llama CLI](llama_cli_reference/index) for building and running your Llama Stack server
-- [Llama Stack Client CLI](llama_stack_client_cli_reference/index) for interacting with your Llama Stack server
+- [Llama Stack Client CLI](llama_stack_client_cli_reference) for interacting with your Llama Stack server
 
 ```{toctree}
 :maxdepth: 1
