@@ -95,4 +95,5 @@ concepts/index
 distributions/index
 contributing/index
 references/index
+cookbooks/index
 ```
