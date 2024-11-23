@@ -97,4 +97,4 @@ redoc = [
     },
 ]
 
-redoc_uri = "https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"
+redoc_uri = "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"
