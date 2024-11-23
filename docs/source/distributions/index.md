@@ -9,9 +9,7 @@ building_distro
 ondevice_distro/index
 ```
 
-As mentioned in the [Concepts](../concepts/index), Llama Stack Distributions are specific pre-packaged versions of the Llama Stack. These templates make it easy to get started quickly.
-
-A Llama Stack Distribution can be consumed in two ways:
+You can start a Llama Stack server using "distributions" (see [Concepts](../concepts/index)) in one of the following ways:
 - **Docker**: we provide a number of pre-built Docker containers allowing you to get started instantly. If you are focused on application development, we recommend this option. You can also build your own custom Docker container.
 - **Conda**: the `llama` CLI provides a simple set of commands to build, configure and run a Llama Stack server containing the exact combination of providers you wish. We have provided various templates to make getting started easier.
 
@@ -34,3 +32,5 @@ If so, we suggest:
 - **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
   - [iOS](ondevice_distro/ios_sdk)
   - Android (coming soon)
+
+You can also build your own [custom distribution](building_distro).
