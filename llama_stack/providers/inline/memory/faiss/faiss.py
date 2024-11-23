@@ -80,7 +80,9 @@ class FaissIndex(EmbeddingIndex):
         np.savetxt(buffer, np_index)
         data = {
             "id_by_index": self.id_by_index,
-            "chunk_by_index": {k: v.json() for k, v in self.chunk_by_index.items()},
+            "chunk_by_index": {
+                k: v.model_dump_json() for k, v in self.chunk_by_index.items()
+            },
             "faiss_index": base64.b64encode(buffer.getvalue()).decode("utf-8"),
         }
 
@@ -162,7 +164,7 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
         key = f"{MEMORY_BANKS_PREFIX}{memory_bank.identifier}"
         await self.kvstore.set(
             key=key,
-            value=memory_bank.json(),
+            value=memory_bank.model_dump_json(),
         )
 
         # Store in cache

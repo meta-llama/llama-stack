@@ -72,7 +72,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         key = f"{EVAL_TASKS_PREFIX}{task_def.identifier}"
         await self.kvstore.set(
             key=key,
-            value=task_def.json(),
+            value=task_def.model_dump_json(),
         )
         self.eval_tasks[task_def.identifier] = task_def
 

@@ -52,7 +52,7 @@ class MetaReferenceAgentsImpl(Agents):
 
         await self.persistence_store.set(
             key=f"agent:{agent_id}",
-            value=agent_config.json(),
+            value=agent_config.model_dump_json(),
         )
         return AgentCreateResponse(
             agent_id=agent_id,
