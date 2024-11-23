@@ -25,6 +25,8 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "sphinx_design",
+    # "sphinxcontrib.openapi",
+    "sphinxcontrib.redoc",
 ]
 myst_enable_extensions = ["colon_fence"]
 
@@ -82,3 +84,18 @@ html_theme_options = {
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
 html_style = "../_static/css/my_theme.css"
+
+redoc = [
+    {
+        "name": "Llama Stack API",
+        "page": "api_reference/index",
+        "spec": "../resources/llama-stack-spec.yaml",
+        "opts": {
+            "suppress-warnings": True,
+            # "expand-responses": ["200", "201"],
+        },
+        "embed": True,
+    },
+]
+
+redoc_uri = "https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"

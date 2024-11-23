@@ -97,4 +97,5 @@ concepts/index
 distributions/index
 contributing/index
 distribution_dev/index
+api_reference/index
 ```
