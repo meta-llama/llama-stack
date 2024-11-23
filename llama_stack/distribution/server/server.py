@@ -211,7 +211,6 @@ def create_dynamic_typed_route(func: Any, method: str):
     return endpoint
 
 
-# Add new middleware class
 class TracingMiddleware:
     def __init__(self, app):
         self.app = app

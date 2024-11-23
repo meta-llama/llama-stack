@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import threading
-from datetime import datetime
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -17,13 +16,11 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
-from llama_stack.providers.utils.telemetry.tracing import generate_short_uuid
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
 from .config import OpenTelemetryConfig
 
-# Add global storage
 _GLOBAL_STORAGE = {
     "active_spans": {},
     "counters": {},
@@ -209,88 +206,3 @@ class OpenTelemetryAdapter(Telemetry):
 
     async def get_trace(self, trace_id: str) -> Trace:
         raise NotImplementedError("Trace retrieval not implemented yet")
-
-
-# Usage example
-async def main():
-    telemetry = OpenTelemetryAdapter(OpenTelemetryConfig())
-    await telemetry.initialize()
-
-    # # Log a metric event
-    # await telemetry.log_event(
-    #     MetricEvent(
-    #         trace_id="trace123",
-    #         span_id="span456",
-    #         timestamp=datetime.now(),
-    #         metric="my_metric",
-    #         value=42,
-    #         unit="count",
-    #     )
-    # )
-
-    # Log a structured event (span start)
-    trace_id = generate_short_uuid(16)
-    span_id = generate_short_uuid(8)
-    span_id_2 = generate_short_uuid(8)
-    await telemetry.log_event(
-        StructuredLogEvent(
-            trace_id=trace_id,
-            span_id=span_id,
-            timestamp=datetime.now(),
-            payload=SpanStartPayload(name="my_operation"),
-        )
-    )
-
-    # Log an unstructured event
-    await telemetry.log_event(
-        UnstructuredLogEvent(
-            trace_id=trace_id,
-            span_id=span_id,
-            timestamp=datetime.now(),
-            message="This is a log message",
-            severity=LogSeverity.INFO,
-        )
-    )
-
-    await telemetry.log_event(
-        StructuredLogEvent(
-            trace_id=trace_id,
-            span_id=span_id_2,
-            timestamp=datetime.now(),
-            payload=SpanStartPayload(name="my_operation_2"),
-        )
-    )
-    await telemetry.log_event(
-        UnstructuredLogEvent(
-            trace_id=trace_id,
-            span_id=span_id_2,
-            timestamp=datetime.now(),
-            message="This is a log message 2",
-            severity=LogSeverity.INFO,
-        )
-    )
-
-    await telemetry.log_event(
-        StructuredLogEvent(
-            trace_id=trace_id,
-            span_id=span_id_2,
-            timestamp=datetime.now(),
-            payload=SpanEndPayload(status=SpanStatus.OK),
-        )
-    )
-    await telemetry.log_event(
-        StructuredLogEvent(
-            trace_id=trace_id,
-            span_id=span_id,
-            timestamp=datetime.now(),
-            payload=SpanEndPayload(status=SpanStatus.OK),
-        )
-    )
-
-    await telemetry.shutdown()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
