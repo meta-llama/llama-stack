@@ -93,6 +93,7 @@ You can find more example scripts with client SDKs to talk with the Llama Stack 
 getting_started/index
 concepts/index
 distributions/index
+building_applications/index
 contributing/index
 references/index
 cookbooks/index
