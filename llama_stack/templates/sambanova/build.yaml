@@ -16,4 +16,4 @@ distribution_spec:
     - inline::meta-reference
     telemetry:
     - inline::meta-reference
-image_type: conda 
+image_type: conda

@@ -45,15 +45,35 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
 models:
 - metadata: {}
-  model_id: Meta-Llama-3.1-8B-Instruct
+  model_id: meta-llama/Llama-3.2-1B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.2-1B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-3B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.2-3B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  provider_id: null
+  provider_model_id: Llama-3.2-11B-Vision-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
+  provider_id: null
+  provider_model_id: Llama-3.2-90B-Vision-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
   provider_id: null
   provider_model_id: Meta-Llama-3.1-8B-Instruct
-shields:
-- params: null
-  shield_id: meta-llama/Llama-Guard-3-8B
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-70B-Instruct
   provider_id: null
-  provider_shield_id: null
+  provider_model_id: Meta-Llama-3.1-70B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.1-405B-Instruct
+shields: []
 memory_banks: []
 datasets: []
 scoring_fns: []
-eval_tasks: [] 
+eval_tasks: []

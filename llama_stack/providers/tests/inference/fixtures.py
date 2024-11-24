@@ -22,6 +22,7 @@ from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
+from llama_stack.providers.remote.inference.sambanova import SambanovaImplConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 
 from ..conftest import ProviderFixture, remote_stack_fixture
@@ -155,6 +156,21 @@ def inference_nvidia() -> ProviderFixture:
         ],
     )
 
+@pytest.fixture(scope="session")
+def inference_sambanova() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sambanova",
+                provider_type="remote::sambanova",
+                config=SambanovaImplConfig().model_dump(),
+            )
+        ],
+        provider_data=dict(
+            sambanova_api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+        ),
+    )
+
 
 def get_model_short_name(model_name: str) -> str:
     """Convert model name to a short test identifier.
@@ -190,6 +206,7 @@ INFERENCE_FIXTURES = [
     "remote",
     "bedrock",
     "nvidia",
+    "sambanova",
 ]
 
 

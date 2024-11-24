@@ -1,11 +1,22 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 from pathlib import Path
 
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
 from llama_stack.providers.remote.inference.sambanova import SambanovaImplConfig
-from llama_stack.providers.remote.inference.sambanova.sambanova import MODEL_ALIASES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.providers.remote.inference.sambanova.sambanova import (
+    MODEL_ALIASES,
+)
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -26,6 +37,7 @@ def get_distribution_template() -> DistributionTemplate:
     core_model_to_hf_repo = {
         m.descriptor(): m.huggingface_repo for m in all_registered_models()
     }
+
     default_models = [
         ModelInput(
             model_id=core_model_to_hf_repo[m.llama_model],
@@ -48,7 +60,9 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": [inference_provider],
                 },
                 default_models=default_models,
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_shields=[
+                    ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")
+                ],
             ),
         },
         run_config_env_vars={
@@ -58,7 +72,7 @@ def get_distribution_template() -> DistributionTemplate:
             ),
             "SAMBANOVA_API_KEY": (
                 "",
-                "SambaNova API Key",
+                "SambaNova API Key for authentication",
             ),
         },
     )
