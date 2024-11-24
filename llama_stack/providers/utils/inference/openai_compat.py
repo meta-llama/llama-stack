@@ -47,7 +47,10 @@ def text_from_choice(choice) -> str:
         return choice.delta.content
 
     if hasattr(choice, "message"):
-        return choice.message.content
+        try:
+            return choice.message.content
+        except:
+            return choice.text
 
     return choice.text
 
