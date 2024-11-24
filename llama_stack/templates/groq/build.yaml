@@ -1,0 +1,19 @@
+version: '2'
+name: groq
+distribution_spec:
+  description: Use Groq for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::groq
+    memory:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda
