@@ -17,7 +17,7 @@ providers:
       provider_type: remote::ssambanova
       config:
         url: https://api.sambanova.ai/v1
-        api_key: ${env.SSAMBANOVA_API_KEY}
+        api_token: ${env.SSAMBANOVA_API_KEY}
   safety:
     - provider_id: llama-guard
       provider_type: inline::llama-guard
