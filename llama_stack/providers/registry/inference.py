@@ -173,4 +173,16 @@ def available_providers() -> List[ProviderSpec]:
                 provider_data_validator="llama_stack.providers.remote.inference.sambanova.SambanovaProviderDataValidator",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="groq",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.remote.inference.groq",
+                config_class="llama_stack.providers.remote.inference.groq.GroqImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.groq.GroqProviderDataValidator",
+            ),
+        ),
     ]
