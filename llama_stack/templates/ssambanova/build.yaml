@@ -1,0 +1,17 @@
+version: "2"
+name: ssambanova
+distribution_spec:
+  description: Use Ssambanova for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+      - remote::ssambanova
+    memory:
+      - inline::faiss
+    safety:
+      - inline::llama-guard
+    agents:
+      - inline::meta-reference
+    telemetry:
+      - inline::meta-reference
+image_type: conda
