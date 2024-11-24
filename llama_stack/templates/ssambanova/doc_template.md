@@ -43,6 +43,14 @@ Make sure you have access to a Ssambanova API Key. You can get one by visiting [
 
 You can do this via Conda (build code) or Docker which has a pre-built image.
 
+### Available INFERENCE_MODEL
+
+- Meta-Llama-3.1-8B-Instruct
+- Meta-Llama-3.1-70B-Instruct
+- Meta-Llama-3.1-405B-Instruct
+- Meta-Llama-3.2-1B-Instruct
+- Meta-Llama-3.2-3B-Instruct
+
 ### Via Docker
 
 This method allows you to get started quickly without having to build the distribution code.
@@ -54,7 +62,8 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
-  --env SSAMBANOVA_API_KEY=$SSAMBANOVA_API_KEY
+  --env SSAMBANOVA_API_KEY=$SSAMBANOVA_API_KEY \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
 
 ### Via Conda
@@ -63,5 +72,6 @@ docker run \
 llama stack build --template ssambanova --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
-  --env SSAMBANOVA_API_KEY=$SSAMBANOVA_API_KEY
+  --env SSAMBANOVA_API_KEY=$SSAMBANOVA_API_KEY \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
