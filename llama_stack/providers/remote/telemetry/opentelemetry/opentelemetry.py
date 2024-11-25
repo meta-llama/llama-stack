@@ -4,23 +4,30 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
+import threading
 
 from opentelemetry import metrics, trace
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
-    PeriodicExportingMetricReader,
-)
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
+
 from llama_stack.apis.telemetry import *  # noqa: F403
 
 from .config import OpenTelemetryConfig
+
+_GLOBAL_STORAGE = {
+    "active_spans": {},
+    "counters": {},
+    "gauges": {},
+    "up_down_counters": {},
+}
+_global_lock = threading.Lock()
 
 
 def string_to_trace_id(s: str) -> int:
@@ -42,33 +49,37 @@ class OpenTelemetryAdapter(Telemetry):
     def __init__(self, config: OpenTelemetryConfig):
         self.config = config
 
-        self.resource = Resource.create(
-            {ResourceAttributes.SERVICE_NAME: "foobar-service"}
+        resource = Resource.create(
+            {
+                ResourceAttributes.SERVICE_NAME: self.config.service_name,
+            }
         )
 
-        # Set up tracing with Jaeger exporter
-        jaeger_exporter = JaegerExporter(
-            agent_host_name=self.config.jaeger_host,
-            agent_port=self.config.jaeger_port,
+        provider = TracerProvider(resource=resource)
+        trace.set_tracer_provider(provider)
+        otlp_exporter = OTLPSpanExporter(
+            endpoint=self.config.otel_endpoint,
         )
-        trace_provider = TracerProvider(resource=self.resource)
-        trace_processor = BatchSpanProcessor(jaeger_exporter)
-        trace_provider.add_span_processor(trace_processor)
-        trace.set_tracer_provider(trace_provider)
-        self.tracer = trace.get_tracer(__name__)
-
+        span_processor = BatchSpanProcessor(otlp_exporter)
+        trace.get_tracer_provider().add_span_processor(span_processor)
         # Set up metrics
-        metric_reader = PeriodicExportingMetricReader(ConsoleMetricExporter())
+        metric_reader = PeriodicExportingMetricReader(
+            OTLPMetricExporter(
+                endpoint=self.config.otel_endpoint,
+            )
+        )
         metric_provider = MeterProvider(
-            resource=self.resource, metric_readers=[metric_reader]
+            resource=resource, metric_readers=[metric_reader]
         )
         metrics.set_meter_provider(metric_provider)
         self.meter = metrics.get_meter(__name__)
+        self._lock = _global_lock
 
     async def initialize(self) -> None:
         pass
 
     async def shutdown(self) -> None:
+        trace.get_tracer_provider().force_flush()
         trace.get_tracer_provider().shutdown()
         metrics.get_meter_provider().shutdown()
 
@@ -81,121 +92,117 @@ class OpenTelemetryAdapter(Telemetry):
             self._log_structured(event)
 
     def _log_unstructured(self, event: UnstructuredLogEvent) -> None:
-        span = trace.get_current_span()
-        span.add_event(
-            name=event.message,
-            attributes={"severity": event.severity.value, **event.attributes},
-            timestamp=event.timestamp,
-        )
+        with self._lock:
+            # Use global storage instead of instance storage
+            span_id = string_to_span_id(event.span_id)
+            span = _GLOBAL_STORAGE["active_spans"].get(span_id)
+
+            if span:
+                timestamp_ns = int(event.timestamp.timestamp() * 1e9)
+                span.add_event(
+                    name=event.type,
+                    attributes={
+                        "message": event.message,
+                        "severity": event.severity.value,
+                        **event.attributes,
+                    },
+                    timestamp=timestamp_ns,
+                )
+            else:
+                print(
+                    f"Warning: No active span found for span_id {span_id}. Dropping event: {event}"
+                )
+
+    def _get_or_create_counter(self, name: str, unit: str) -> metrics.Counter:
+        if name not in _GLOBAL_STORAGE["counters"]:
+            _GLOBAL_STORAGE["counters"][name] = self.meter.create_counter(
+                name=name,
+                unit=unit,
+                description=f"Counter for {name}",
+            )
+        return _GLOBAL_STORAGE["counters"][name]
+
+    def _get_or_create_gauge(self, name: str, unit: str) -> metrics.ObservableGauge:
+        if name not in _GLOBAL_STORAGE["gauges"]:
+            _GLOBAL_STORAGE["gauges"][name] = self.meter.create_gauge(
+                name=name,
+                unit=unit,
+                description=f"Gauge for {name}",
+            )
+        return _GLOBAL_STORAGE["gauges"][name]
 
     def _log_metric(self, event: MetricEvent) -> None:
         if isinstance(event.value, int):
-            self.meter.create_counter(
-                name=event.metric,
-                unit=event.unit,
-                description=f"Counter for {event.metric}",
-            ).add(event.value, attributes=event.attributes)
+            counter = self._get_or_create_counter(event.metric, event.unit)
+            counter.add(event.value, attributes=event.attributes)
         elif isinstance(event.value, float):
-            self.meter.create_gauge(
-                name=event.metric,
-                unit=event.unit,
-                description=f"Gauge for {event.metric}",
-            ).set(event.value, attributes=event.attributes)
+            up_down_counter = self._get_or_create_up_down_counter(
+                event.metric, event.unit
+            )
+            up_down_counter.add(event.value, attributes=event.attributes)
+
+    def _get_or_create_up_down_counter(
+        self, name: str, unit: str
+    ) -> metrics.UpDownCounter:
+        if name not in _GLOBAL_STORAGE["up_down_counters"]:
+            _GLOBAL_STORAGE["up_down_counters"][name] = (
+                self.meter.create_up_down_counter(
+                    name=name,
+                    unit=unit,
+                    description=f"UpDownCounter for {name}",
+                )
+            )
+        return _GLOBAL_STORAGE["up_down_counters"][name]
 
     def _log_structured(self, event: StructuredLogEvent) -> None:
-        if isinstance(event.payload, SpanStartPayload):
-            context = trace.set_span_in_context(
-                trace.NonRecordingSpan(
-                    trace.SpanContext(
-                        trace_id=string_to_trace_id(event.trace_id),
-                        span_id=string_to_span_id(event.span_id),
-                        is_remote=True,
-                    )
-                )
-            )
-            span = self.tracer.start_span(
-                name=event.payload.name,
-                kind=trace.SpanKind.INTERNAL,
-                context=context,
-                attributes=event.attributes,
-            )
+        with self._lock:
+            span_id = string_to_span_id(event.span_id)
+            trace_id = string_to_trace_id(event.trace_id)
+            tracer = trace.get_tracer(__name__)
 
-            if event.payload.parent_span_id:
-                span.set_parent(
-                    trace.SpanContext(
-                        trace_id=string_to_trace_id(event.trace_id),
-                        span_id=string_to_span_id(event.payload.parent_span_id),
-                        is_remote=True,
+            if isinstance(event.payload, SpanStartPayload):
+                # Check if span already exists to prevent duplicates
+                if span_id in _GLOBAL_STORAGE["active_spans"]:
+                    return
+
+                parent_span = None
+                if event.payload.parent_span_id:
+                    parent_span_id = string_to_span_id(event.payload.parent_span_id)
+                    parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
+
+                # Create a new trace context with the trace_id
+                context = trace.Context(trace_id=trace_id)
+                if parent_span:
+                    context = trace.set_span_in_context(parent_span, context)
+
+                span = tracer.start_span(
+                    name=event.payload.name,
+                    context=context,
+                    attributes=event.attributes or {},
+                    start_time=int(event.timestamp.timestamp() * 1e9),
+                )
+                _GLOBAL_STORAGE["active_spans"][span_id] = span
+
+                # Set as current span using context manager
+                with trace.use_span(span, end_on_exit=False):
+                    pass  # Let the span continue beyond this block
+
+            elif isinstance(event.payload, SpanEndPayload):
+                span = _GLOBAL_STORAGE["active_spans"].get(span_id)
+                if span:
+                    if event.attributes:
+                        span.set_attributes(event.attributes)
+
+                    status = (
+                        trace.Status(status_code=trace.StatusCode.OK)
+                        if event.payload.status == SpanStatus.OK
+                        else trace.Status(status_code=trace.StatusCode.ERROR)
                     )
-                )
-        elif isinstance(event.payload, SpanEndPayload):
-            span = trace.get_current_span()
-            span.set_status(
-                trace.Status(
-                    trace.StatusCode.OK
-                    if event.payload.status == SpanStatus.OK
-                    else trace.StatusCode.ERROR
-                )
-            )
-            span.end(end_time=event.timestamp)
+                    span.set_status(status)
+                    span.end(end_time=int(event.timestamp.timestamp() * 1e9))
+
+                    # Remove from active spans
+                    _GLOBAL_STORAGE["active_spans"].pop(span_id, None)
 
     async def get_trace(self, trace_id: str) -> Trace:
-        # we need to look up the root span id
-        raise NotImplementedError("not yet no")
-
-
-# Usage example
-async def main():
-    telemetry = OpenTelemetryTelemetry("my-service")
-    await telemetry.initialize()
-
-    # Log an unstructured event
-    await telemetry.log_event(
-        UnstructuredLogEvent(
-            trace_id="trace123",
-            span_id="span456",
-            timestamp=datetime.now(),
-            message="This is a log message",
-            severity=LogSeverity.INFO,
-        )
-    )
-
-    # Log a metric event
-    await telemetry.log_event(
-        MetricEvent(
-            trace_id="trace123",
-            span_id="span456",
-            timestamp=datetime.now(),
-            metric="my_metric",
-            value=42,
-            unit="count",
-        )
-    )
-
-    # Log a structured event (span start)
-    await telemetry.log_event(
-        StructuredLogEvent(
-            trace_id="trace123",
-            span_id="span789",
-            timestamp=datetime.now(),
-            payload=SpanStartPayload(name="my_operation"),
-        )
-    )
-
-    # Log a structured event (span end)
-    await telemetry.log_event(
-        StructuredLogEvent(
-            trace_id="trace123",
-            span_id="span789",
-            timestamp=datetime.now(),
-            payload=SpanEndPayload(status=SpanStatus.OK),
-        )
-    )
-
-    await telemetry.shutdown()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
+        raise NotImplementedError("Trace retrieval not implemented yet")

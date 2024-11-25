@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Bedrock Distribution
 
 ```{toctree}

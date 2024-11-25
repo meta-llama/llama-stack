@@ -52,13 +52,11 @@ def main(output_dir: str):
         Options(
             server=Server(url="http://any-hosted-llama-stack.com"),
             info=Info(
-                title="[DRAFT] Llama Stack Specification",
+                title="Llama Stack Specification",
                 version=LLAMA_STACK_API_VERSION,
-                description="""This is the specification of the llama stack that provides
+                description="""This is the specification of the Llama Stack that provides
                 a set of endpoints and their corresponding interfaces that are tailored to
-                best leverage Llama Models. The specification is still in draft and subject to change.
-                Generated at """
-                + now,
+                best leverage Llama Models.""",
             ),
         ),
     )

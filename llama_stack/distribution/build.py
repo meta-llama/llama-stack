@@ -90,12 +90,12 @@ def get_provider_dependencies(
 def print_pip_install_help(providers: Dict[str, List[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
-    log.info(
+    print(
         f"Please install needed dependencies using the following commands:\n\n\tpip install {' '.join(normal_deps)}"
     )
     for special_dep in special_deps:
         log.info(f"\tpip install {special_dep}")
-    log.info()
+    print()
 
 
 def build_image(build_config: BuildConfig, build_file_path: Path):

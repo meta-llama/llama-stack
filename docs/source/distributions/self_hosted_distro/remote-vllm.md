@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Remote vLLM Distribution
 ```{toctree}
 :maxdepth: 2

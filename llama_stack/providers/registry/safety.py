@@ -19,6 +19,16 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.safety,
+            provider_type="inline::prompt-guard",
+            pip_packages=[
+                "transformers",
+                "torch --index-url https://download.pytorch.org/whl/cpu",
+            ],
+            module="llama_stack.providers.inline.safety.prompt_guard",
+            config_class="llama_stack.providers.inline.safety.prompt_guard.PromptGuardConfig",
+        ),
+        InlineProviderSpec(
+            api=Api.safety,
             provider_type="inline::meta-reference",
             pip_packages=[
                 "transformers",
@@ -47,16 +57,6 @@ Provider `inline::meta-reference` for API `safety` does not work with the latest
             api_dependencies=[
                 Api.inference,
             ],
-        ),
-        InlineProviderSpec(
-            api=Api.safety,
-            provider_type="inline::prompt-guard",
-            pip_packages=[
-                "transformers",
-                "torch --index-url https://download.pytorch.org/whl/cpu",
-            ],
-            module="llama_stack.providers.inline.safety.prompt_guard",
-            config_class="llama_stack.providers.inline.safety.prompt_guard.PromptGuardConfig",
         ),
         InlineProviderSpec(
             api=Api.safety,

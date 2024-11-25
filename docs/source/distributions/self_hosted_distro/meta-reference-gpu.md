@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Meta Reference Distribution
 
 ```{toctree}

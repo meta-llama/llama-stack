@@ -1,11 +1,7 @@
+---
+orphan: true
+---
 # Remote-Hosted Distributions
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-
-remote
-```
 
 Remote-Hosted distributions are available endpoints serving Llama Stack API that you can directly connect to.
 
