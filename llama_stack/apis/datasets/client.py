@@ -86,7 +86,7 @@ class DatasetsClient(Datasets):
             response = await client.delete(
                 f"{self.base_url}/datasets/unregister",
                 params={
-                    "dataset_id": json.loads(dataset_id),
+                    "dataset_id": dataset_id,
                 },
                 headers={"Content-Type": "application/json"},
                 timeout=60,
