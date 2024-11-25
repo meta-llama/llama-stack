@@ -85,7 +85,7 @@ jobs:
     defaults:
       run:
         shell: bash
-    runs-on: ${{ inputs.runner != '' && inputs.runner || 'llama-stack-fork-gha-runner-gpu' }}
+    runs-on: ${{ inputs.runner != '' && inputs.runner || 'llama-stack-gha-runner-gpu' }}
     if: always()
     steps:
 
