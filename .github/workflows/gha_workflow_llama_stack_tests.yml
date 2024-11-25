@@ -188,6 +188,12 @@ jobs:
             exit 1
           fi
 
+      - name: "[DEBUG] Checkpoint update check"
+        id: debug_checkpoint_update
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+          echo "MODEL_CHECKPOINT_DIR (after update) = ${MODEL_CHECKPOINT_DIR}"
+
       ##################################
       #### DEPENDENCY INSTALLATIONS ####
       ##################################
