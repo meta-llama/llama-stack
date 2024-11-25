@@ -29,6 +29,11 @@ class Span(BaseModel):
     end_time: Optional[datetime] = None
     attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
+    def set_attribute(self, key: str, value: Any):
+        if self.attributes is None:
+            self.attributes = {}
+        self.attributes[key] = value
+
 
 @json_schema_type
 class Trace(BaseModel):
