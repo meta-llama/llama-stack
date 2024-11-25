@@ -42,12 +42,12 @@ on:
         default: "llama_3b"
 
       model_override_3b:
-        description: 'Specify manual override for the <llama_3b> shorthand model'
+        description: 'Specify shorthand model for <llama_3b> '
         required: false
         default: "Llama3.2-3B-Instruct"
 
       model_override_8b:
-        description: 'Specify manual override for the <llama_8b> shorthand model'
+        description: 'Specify shorthand model for <llama_8b> '
         required: false
         default: "Llama3.1-8B-Instruct"
 
@@ -106,6 +106,19 @@ jobs:
         run: |
             cat /etc/os-release
 
+      - name: "[DEBUG] Print environment variables"
+        id: debug_env_vars
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+            echo "PROVIDER_ID = ${PROVIDER_ID}"
+            echo "MODEL_CHECKPOINT_DIR = ${MODEL_CHECKPOINT_DIR}"
+            echo "AVAILABLE_MODEL_IDs = ${AVAILABLE_MODEL_IDs}"
+            echo "MODEL_ID = ${MODEL_ID}"
+            echo "LLAMA_3B_OVERRIDE = ${LLAMA_3B_OVERRIDE}"
+            echo "LLAMA_8B_OVERRIDE = ${LLAMA_8B_OVERRIDE}"
+            echo "EXCLUDED_DIRS = ${EXCLUDED_DIRS}"
+            echo "REPORTS_GEN = ${REPORTS_GEN}"
+
       ############################
       #### MODEL INPUT CHECKS ####
       ############################
@@ -114,9 +127,9 @@ jobs:
         id: check_model_id
         run: |
           if [[ " ${AVAILABLE_MODEL_IDs[@]} " =~ " ${MODEL_ID} " ]]; then
-            echo "Model ID '${MODEL_ID}' is valid"
+            echo "Model ID '${MODEL_ID}' is valid."
           else
-            echo "Model ID '${MODEL_ID}' is invalid, Terminating workflow."
+            echo "Model ID '${MODEL_ID}' is invalid. Terminating workflow."
             exit 1
           fi
 
@@ -171,7 +184,7 @@ jobs:
           elif [ "${MODEL_ID}" = "llama_8b" ] && [ -d "${MODEL_CHECKPOINT_DIR}/${LLAMA_8B_OVERRIDE}" ]; then
             echo "MODEL_CHECKPOINT_DIR=${MODEL_CHECKPOINT_DIR}/${LLAMA_8B_OVERRIDE}" >> "$GITHUB_ENV"
           else
-            echo "MODEL_ID & LLAMA_*B_OVERRIDE are not a valid pairing, Terminating workflow."
+            echo "MODEL_ID & LLAMA_*B_OVERRIDE are not a valid pairing. Terminating workflow."
             exit 1
           fi
 
