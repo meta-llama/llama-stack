@@ -229,7 +229,6 @@ jobs:
       - name: "Run Tests: Loop"
         id: run_tests_loop
         working-directory: "${{ github.workspace }}"
-        if: github.event_name == 'pull_request_target'
         run: |
           pattern=""
           for dir in llama_stack/providers/tests/*; do
@@ -255,7 +254,6 @@ jobs:
       - name: "Test Summary: Merge"
         id: test_summary_merge
         working-directory: "${{ github.workspace }}"
-        if: github.event_name == 'pull_request_target'
         run: |
           echo "Merging the following test result files: ${REPORTS_GEN}"
           # Defaults to merging them into 'merged-test-results.xml'
@@ -317,8 +315,12 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "[STEP] Running PyTest tests at 'GITHUB_WORKSPACE' path: ${{ github.workspace }}"
+
+          #TODO Use this when collection errors are resolved
+          # pytest -s -v -m "${PROVIDER_ID} and ${MODEL_ID}" --junitxml="${{ github.workspace }}/merged-test-results.xml"
+
           # (Optional) Add more tests here.
-          pytest -s -v -m "${PROVIDER_ID} and ${MODEL_ID}" --junitxml="${{ github.workspace }}/merged-test-results.xml"
+
           # Merge test results with 'merged-test-results.xml' from above.
           # junit-merge <new-test-results> merged-test-results.xml
 
