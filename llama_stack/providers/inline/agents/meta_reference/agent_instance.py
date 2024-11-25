@@ -356,10 +356,12 @@ class ChatAgent(ShieldRunnerMixin):
 
             # TODO: find older context from the session and either replace it
             # or append with a sliding window. this is really a very simplistic implementation
-            with tracing.span("retrieve_rag_context"):
+            with tracing.span("retrieve_rag_context") as span:
                 rag_context, bank_ids = await self._retrieve_context(
                     session_id, input_messages, attachments
                 )
+                span.set_attribute("rag_context", rag_context)
+                span.set_attribute("bank_ids", bank_ids)
 
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(

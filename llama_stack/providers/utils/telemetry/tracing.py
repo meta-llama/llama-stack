@@ -69,7 +69,7 @@ class TraceContext:
         self.logger = logger
         self.trace_id = trace_id
 
-    def push_span(self, name: str, attributes: Dict[str, Any] = None):
+    def push_span(self, name: str, attributes: Dict[str, Any] = None) -> Span:
         current_span = self.get_current_span()
         span = Span(
             span_id=generate_short_uuid(),
@@ -94,6 +94,7 @@ class TraceContext:
         )
 
         self.spans.append(span)
+        return span
 
     def pop_span(self, status: SpanStatus = SpanStatus.OK):
         span = self.spans.pop()
@@ -208,7 +209,7 @@ class SpanContextManager:
         global CURRENT_TRACE_CONTEXT
         context = CURRENT_TRACE_CONTEXT
         if context:
-            context.push_span(self.name, self.attributes)
+            self.span = context.push_span(self.name, self.attributes)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -216,6 +217,12 @@ class SpanContextManager:
         context = CURRENT_TRACE_CONTEXT
         if context:
             context.pop_span()
+
+    def set_attribute(self, key: str, value: Any):
+        if self.span:
+            if self.span.attributes is None:
+                self.span.attributes = {}
+            self.span.attributes[key] = value
 
     async def __aenter__(self):
         return self.__enter__()
