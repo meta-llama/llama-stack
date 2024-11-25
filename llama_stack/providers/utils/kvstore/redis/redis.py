@@ -49,4 +49,23 @@ class RedisKVStoreImpl(KVStore):
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
 
-        return await self.redis.zrangebylex(start_key, end_key)
+        result = []
+        cursor = 0
+        pattern = start_key + "*"  # Match all keys starting with start_key prefix
+
+        while True:
+            cursor, keys = await self.redis.scan(cursor, match=pattern)
+            for key in keys:
+                key_str = key.decode("utf-8") if isinstance(key, bytes) else key
+                if start_key <= key_str <= end_key:
+                    value = await self.redis.get(key)
+                    if value is not None:
+                        value_str = (
+                            value.decode("utf-8") if isinstance(value, bytes) else value
+                        )
+                        result.append(value_str)
+
+            if cursor == 0:
+                break
+
+        return result
