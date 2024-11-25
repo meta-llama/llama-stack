@@ -423,7 +423,7 @@ class ChatAgent(ShieldRunnerMixin):
             content = ""
             stop_reason = None
 
-            with tracing.span("inference"):
+            with tracing.span("inference") as span:
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
@@ -443,7 +443,6 @@ class ChatAgent(ShieldRunnerMixin):
                     if isinstance(delta, ToolCallDelta):
                         if delta.parse_status == ToolCallParseStatus.success:
                             tool_calls.append(delta.content)
-
                         if stream:
                             yield AgentTurnResponseStreamChunk(
                                 event=AgentTurnResponseEvent(
@@ -473,6 +472,11 @@ class ChatAgent(ShieldRunnerMixin):
 
                     if event.stop_reason is not None:
                         stop_reason = event.stop_reason
+                span.set_attribute("stop_reason", stop_reason)
+                span.set_attribute("content", content)
+                span.set_attribute(
+                    "tool_calls", [tc.model_dump_json() for tc in tool_calls]
+                )
 
             stop_reason = stop_reason or StopReason.out_of_tokens
 
