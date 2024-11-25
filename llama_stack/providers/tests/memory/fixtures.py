@@ -10,6 +10,7 @@ import tempfile
 import pytest
 import pytest_asyncio
 
+from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.datatypes import Api, Provider, RemoteProviderConfig
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
@@ -18,6 +19,48 @@ from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
+from .fakes import InlineMemoryFakeImpl
+
+
+@pytest.fixture(scope="session")
+def memory_fake() -> ProviderFixture:
+    InlineMemoryFakeImpl.stub_method(
+        method_name="query_documents",
+        return_value_matchers={
+            "programming language": QueryDocumentsResponse(
+                chunks=[Chunk(content="Python", token_count=1, document_id="")],
+                scores=[0.1],
+            ),
+            "AI and brain-inspired computing": QueryDocumentsResponse(
+                chunks=[
+                    Chunk(content="neural networks", token_count=2, document_id="")
+                ],
+                scores=[0.1],
+            ),
+            "computer": QueryDocumentsResponse(
+                chunks=[
+                    Chunk(content="test-chunk-1", token_count=1, document_id=""),
+                    Chunk(content="test-chunk-2", token_count=1, document_id=""),
+                ],
+                scores=[0.1, 0.5],
+            ),
+            "quantum computing": QueryDocumentsResponse(
+                chunks=[Chunk(content="Python", token_count=1, document_id="")],
+                scores=[0.5],
+            ),
+        },
+    )
+
+    fixture = ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="inline_memory_fake",
+                provider_type="test::fake",
+                config={},
+            )
+        ],
+    )
+    return fixture
 
 
 @pytest.fixture(scope="session")
@@ -93,7 +136,7 @@ def memory_chroma() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
+MEMORY_FIXTURES = ["fake", "faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")

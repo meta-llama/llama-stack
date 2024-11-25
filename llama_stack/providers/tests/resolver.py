@@ -4,8 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import importlib.util
 import json
 import tempfile
+
 from typing import Any, Dict, List, Optional
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
@@ -51,8 +53,11 @@ async def construct_stack_for_test(
     try:
         remote_config = remote_provider_config(run_config)
         if not remote_config:
-            # TODO: add to provider registry by creating interesting mocks or fakes
-            impls = await construct_stack(run_config, get_provider_registry())
+            # Here we create instance of registry with optional fake provider
+            provider_registry = setup_provider_registry_for_test(
+                run_config, get_provider_registry()
+            )
+            impls = await construct_stack(run_config, provider_registry)
         else:
             # we don't register resources for a remote stack as part of the fixture setup
             # because the stack is already "up". if a test needs to register resources, it
@@ -71,6 +76,60 @@ async def construct_stack_for_test(
         )
 
     return test_stack
+
+
+def setup_provider_registry_for_test(
+    run_config: StackRunConfig, provider_registry: Dict[Api, Dict[str, ProviderSpec]]
+) -> Dict[Api, Dict[str, ProviderSpec]]:
+    provider_registry = get_provider_registry()
+    for api_name, providers in run_config.providers.items():
+        for provider in providers:
+            if provider.provider_type == "test::fake":
+                # Check if the fake provider module exists for the API that is trying
+                # to use test::fake provider_type
+                provider_fake_module_name = (
+                    f"llama_stack.providers.tests.{api_name}.fakes"
+                )
+                provider_fake_module_spec = importlib.util.find_spec(
+                    provider_fake_module_name
+                )
+                if provider_fake_module_spec is None:
+                    raise ValueError(
+                        f"Fake provider module {provider_fake_module_name} does not exist. "
+                        f"The module must be defined inside the providers/tests/{api_name}/fakes.py file."
+                    )
+
+                # Import the module so we can validate that the config class exists
+                provider_fake_module = importlib.import_module(
+                    provider_fake_module_name
+                )
+
+                # Check if the fake provider config class exists
+                # The class name is derived from the provider type e.g.
+                #   provider_id: "example_provider" -> class_name: "ExampleProviderConfig"
+                provider_fake_config_class_name = (
+                    f"{provider.provider_id}_config".title().replace("_", "")
+                )
+                if not hasattr(provider_fake_module, provider_fake_config_class_name):
+                    raise ValueError(
+                        f"Fake provider config class {provider_fake_config_class_name} "
+                        f"does not exist in module {provider_fake_module_name}. "
+                        f"The config class must be defined inside the providers/tests/{api_name}/fakes.py file."
+                    )
+
+                provider_fake_config_class_path = f"llama_stack.providers.tests.{api_name}.fakes.{provider_fake_config_class_name}"
+
+                api = getattr(Api, api_name)
+                fake_api_spec = InlineProviderSpec(
+                    api=api,
+                    provider_type="test::fake",
+                    pip_packages=[],
+                    module=provider_fake_module_name,
+                    config_class=provider_fake_config_class_path,
+                )
+                provider_registry[api].update({"test::fake": fake_api_spec})
+
+    return provider_registry
 
 
 def remote_provider_config(
