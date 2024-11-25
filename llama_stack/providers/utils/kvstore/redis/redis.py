@@ -62,13 +62,13 @@ class RedisKVStoreImpl(KVStore):
             if cursor == 0:
                 break
 
-            # Then fetch all values in a single MGET call
-            if matching_keys:
-                values = await self.redis.mget(matching_keys)
-                return [
-                    value.decode("utf-8") if isinstance(value, bytes) else value
-                    for value in values
-                    if value is not None
-                ]
+        # Then fetch all values in a single MGET call
+        if matching_keys:
+            values = await self.redis.mget(matching_keys)
+            return [
+                value.decode("utf-8") if isinstance(value, bytes) else value
+                for value in values
+                if value is not None
+            ]
 
-            return []
+        return []
