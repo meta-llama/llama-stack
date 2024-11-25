@@ -166,7 +166,7 @@ def inference_tgi() -> ProviderFixture:
                 provider_type="remote::tgi",
                 config=TGIImplConfig(
                     url=get_env_or_fail("TGI_URL"),
-                    api_token=get_env_or_fail("TGI_API_TOKEN"),
+                    api_token=os.getenv("TGI_API_TOKEN", None),
                 ).model_dump(),
             )
         ],
