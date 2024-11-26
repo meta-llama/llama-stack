@@ -10,9 +10,10 @@ import pytest_asyncio
 from llama_stack.apis.models import ModelInput
 
 from llama_stack.distribution.datatypes import Api, Provider
-
+from llama_stack.providers.inline.scoring.braintrust import BraintrustScoringConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from ..conftest import ProviderFixture, remote_stack_fixture
+from ..env import get_env_or_fail
 
 
 @pytest.fixture(scope="session")
@@ -40,7 +41,9 @@ def scoring_braintrust() -> ProviderFixture:
             Provider(
                 provider_id="braintrust",
                 provider_type="inline::braintrust",
-                config={},
+                config=BraintrustScoringConfig(
+                    openai_api_key=get_env_or_fail("OPENAI_API_KEY"),
+                ).model_dump(),
             )
         ],
     )
