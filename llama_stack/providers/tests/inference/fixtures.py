@@ -20,6 +20,7 @@ from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.inference.groq import GroqImplConfig
@@ -172,6 +173,21 @@ def inference_groq() -> ProviderFixture:
         ),
     )
 
+@pytest.fixture(scope="session")
+def inference_tgi() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="tgi",
+                provider_type="remote::tgi",
+                config=TGIImplConfig(
+                    url=get_env_or_fail("TGI_URL"),
+                    api_token=os.getenv("TGI_API_TOKEN", None),
+                ).model_dump(),
+            )
+        ],
+    )
+
 
 def get_model_short_name(model_name: str) -> str:
     """Convert model name to a short test identifier.
@@ -208,6 +224,7 @@ INFERENCE_FIXTURES = [
     "bedrock",
     "nvidia",
     "groq",
+    "tgi",
 ]
 
 
