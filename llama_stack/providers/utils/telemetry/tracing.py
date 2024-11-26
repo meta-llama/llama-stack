@@ -204,6 +204,7 @@ class SpanContextManager:
     def __init__(self, name: str, attributes: Dict[str, Any] = None):
         self.name = name
         self.attributes = attributes
+        self.span = None
 
     def __enter__(self):
         global CURRENT_TRACE_CONTEXT
@@ -225,10 +226,17 @@ class SpanContextManager:
             self.span.attributes[key] = value
 
     async def __aenter__(self):
-        return self.__enter__()
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            self.span = context.push_span(self.name, self.attributes)
+        return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        self.__exit__(exc_type, exc_value, traceback)
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            context.pop_span()
 
     def __call__(self, func: Callable):
         @wraps(func)
