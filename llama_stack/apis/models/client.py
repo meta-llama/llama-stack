@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import json
 
 from typing import List, Optional
 
@@ -25,21 +26,32 @@ class ModelsClient(Models):
     async def shutdown(self) -> None:
         pass
 
-    async def list_models(self) -> List[ModelServingSpec]:
+    async def list_models(self) -> List[Model]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/models/list",
                 headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
-            return [ModelServingSpec(**x) for x in response.json()]
+            return [Model(**x) for x in response.json()]
 
-    async def get_model(self, core_model_id: str) -> Optional[ModelServingSpec]:
+    async def register_model(self, model: Model) -> None:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/models/register",
+                json={
+                    "model": json.loads(model.model_dump_json()),
+                },
+                headers={"Content-Type": "application/json"},
+            )
+            response.raise_for_status()
+
+    async def get_model(self, identifier: str) -> Optional[Model]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{self.base_url}/models/get",
                 params={
-                    "core_model_id": core_model_id,
+                    "identifier": identifier,
                 },
                 headers={"Content-Type": "application/json"},
             )
@@ -47,7 +59,16 @@ class ModelsClient(Models):
             j = response.json()
             if j is None:
                 return None
-            return ModelServingSpec(**j)
+            return Model(**j)
+
+    async def unregister_model(self, model_id: str) -> None:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                f"{self.base_url}/models/delete",
+                params={"model_id": model_id},
+                headers={"Content-Type": "application/json"},
+            )
+            response.raise_for_status()
 
 
 async def run_main(host: str, port: int, stream: bool):

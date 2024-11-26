@@ -6,7 +6,17 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -44,6 +54,7 @@ class ToolDefinitionCommon(BaseModel):
 class SearchEngineType(Enum):
     bing = "bing"
     brave = "brave"
+    tavily = "tavily"
 
 
 @json_schema_type
@@ -396,6 +407,8 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
 
 @json_schema_type
 class AgentTurnResponseStreamChunk(BaseModel):
+    """streamed agent turn completion response."""
+
     event: AgentTurnResponseEvent
 
 
@@ -404,6 +417,7 @@ class AgentStepResponse(BaseModel):
     step: Step
 
 
+@runtime_checkable
 class Agents(Protocol):
     @webmethod(route="/agents/create")
     async def create_agent(
@@ -424,18 +438,16 @@ class Agents(Protocol):
         ],
         attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
-    ) -> AgentTurnResponseStreamChunk: ...
+    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(route="/agents/turn/get")
     async def get_agents_turn(
-        self,
-        agent_id: str,
-        turn_id: str,
+        self, agent_id: str, session_id: str, turn_id: str
     ) -> Turn: ...
 
     @webmethod(route="/agents/step/get")
     async def get_agents_step(
-        self, agent_id: str, turn_id: str, step_id: str
+        self, agent_id: str, session_id: str, turn_id: str, step_id: str
     ) -> AgentStepResponse: ...
 
     @webmethod(route="/agents/session/create")

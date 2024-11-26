@@ -12,6 +12,8 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION
+
 from termcolor import colored
 
 from ..strong_typing.inspection import (
@@ -111,9 +113,12 @@ class EndpointOperation:
 
     def get_route(self) -> str:
         if self.route is not None:
-            return self.route
+            assert (
+                "_" not in self.route
+            ), f"route should not contain underscores: {self.route}"
+            return "/".join(["", LLAMA_STACK_API_VERSION, self.route.lstrip("/")])
 
-        route_parts = ["", self.name]
+        route_parts = ["", LLAMA_STACK_API_VERSION, self.name]
         for param_name, _ in self.path_params:
             route_parts.append("{" + param_name + "}")
         return "/".join(route_parts)
@@ -315,7 +320,20 @@ def get_endpoint_operations(
                 )
         else:
             event_type = None
-            response_type = return_type
+
+            def process_type(t):
+                if typing.get_origin(t) is collections.abc.AsyncIterator:
+                    # NOTE(ashwin): this is SSE and there is no way to represent it. either we make it a List
+                    # or the item type. I am choosing it to be the latter
+                    args = typing.get_args(t)
+                    return args[0]
+                elif typing.get_origin(t) is typing.Union:
+                    types = [process_type(a) for a in typing.get_args(t)]
+                    return typing._UnionGenericAlias(typing.Union, tuple(types))
+                else:
+                    return t
+
+            response_type = process_type(return_type)
 
         # set HTTP request method based on type of request and presence of payload
         if not request_params:

@@ -7,20 +7,24 @@
 import asyncio
 import json
 import os
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 import fire
 import httpx
 from dotenv import load_dotenv
 
 from pydantic import BaseModel
-from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from .agents import *  # noqa: F403
+import logging
+
 from .event_logger import EventLogger
+
+
+log = logging.getLogger(__name__)
 
 
 load_dotenv()
@@ -71,6 +75,14 @@ class AgentsClient(Agents):
         self,
         request: AgentTurnCreateRequest,
     ) -> AsyncGenerator:
+        if request.stream:
+            return self._stream_agent_turn(request)
+        else:
+            return await self._nonstream_agent_turn(request)
+
+    async def _stream_agent_turn(
+        self, request: AgentTurnCreateRequest
+    ) -> AsyncGenerator:
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 "POST",
@@ -85,13 +97,15 @@ class AgentsClient(Agents):
                         try:
                             jdata = json.loads(data)
                             if "error" in jdata:
-                                cprint(data, "red")
+                                log.error(data)
                                 continue
 
                             yield AgentTurnResponseStreamChunk(**jdata)
                         except Exception as e:
-                            print(data)
-                            print(f"Error with parsing or validation: {e}")
+                            log.error(f"Error with parsing or validation: {e}")
+
+    async def _nonstream_agent_turn(self, request: AgentTurnCreateRequest):
+        raise NotImplementedError("Non-streaming not implemented yet")
 
 
 async def _run_agent(
@@ -114,8 +128,8 @@ async def _run_agent(
     )
 
     for content in user_prompts:
-        cprint(f"User> {content}", color="white", attrs=["bold"])
-        iterator = api.create_agent_turn(
+        log.info(f"User> {content}", color="white", attrs=["bold"])
+        iterator = await api.create_agent_turn(
             AgentTurnCreateRequest(
                 agent_id=create_response.agent_id,
                 session_id=session_response.session_id,
@@ -127,13 +141,12 @@ async def _run_agent(
             )
         )
 
-        async for event, log in EventLogger().log(iterator):
-            if log is not None:
-                log.print()
+        async for event, logger in EventLogger().log(iterator):
+            if logger is not None:
+                log.info(logger)
 
 
-async def run_llama_3_1(host: str, port: int):
-    model = "Llama3.1-8B-Instruct"
+async def run_llama_3_1(host: str, port: int, model: str = "Llama3.1-8B-Instruct"):
     api = AgentsClient(f"http://{host}:{port}")
 
     tool_definitions = [
@@ -173,8 +186,7 @@ async def run_llama_3_1(host: str, port: int):
     await _run_agent(api, model, tool_definitions, ToolPromptFormat.json, user_prompts)
 
 
-async def run_llama_3_2_rag(host: str, port: int):
-    model = "Llama3.2-3B-Instruct"
+async def run_llama_3_2_rag(host: str, port: int, model: str = "Llama3.2-3B-Instruct"):
     api = AgentsClient(f"http://{host}:{port}")
 
     urls = [
@@ -215,8 +227,7 @@ async def run_llama_3_2_rag(host: str, port: int):
     )
 
 
-async def run_llama_3_2(host: str, port: int):
-    model = "Llama3.2-3B-Instruct"
+async def run_llama_3_2(host: str, port: int, model: str = "Llama3.2-3B-Instruct"):
     api = AgentsClient(f"http://{host}:{port}")
 
     # zero shot tools for llama3.2 text models
@@ -262,7 +273,7 @@ async def run_llama_3_2(host: str, port: int):
     )
 
 
-def main(host: str, port: int, run_type: str):
+def main(host: str, port: int, run_type: str, model: Optional[str] = None):
     assert run_type in [
         "tools_llama_3_1",
         "tools_llama_3_2",
@@ -274,7 +285,10 @@ def main(host: str, port: int, run_type: str):
         "tools_llama_3_2": run_llama_3_2,
         "rag_llama_3_2": run_llama_3_2_rag,
     }
-    asyncio.run(fn[run_type](host, port))
+    args = [host, port]
+    if model is not None:
+        args.append(model)
+    asyncio.run(fn[run_type](*args))
 
 
 if __name__ == "__main__":

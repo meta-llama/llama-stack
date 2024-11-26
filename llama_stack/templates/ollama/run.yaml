@@ -1,0 +1,54 @@
+version: '2'
+image_name: ollama
+docker_image: null
+conda_env: ollama
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: ollama
+    provider_type: remote::ollama
+    config:
+      url: ${env.OLLAMA_URL:http://localhost:11434}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: ollama
+  provider_model_id: null
+shields: []
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []

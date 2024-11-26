@@ -6,7 +6,15 @@
 
 from enum import Enum
 
-from typing import List, Literal, Optional, Protocol, Union
+from typing import (
+    AsyncIterator,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -14,6 +22,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
 
 
 class LogProbConfig(BaseModel):
@@ -24,6 +33,7 @@ class LogProbConfig(BaseModel):
 class QuantizationType(Enum):
     bf16 = "bf16"
     fp8 = "fp8"
+    int4 = "int4"
 
 
 @json_schema_type
@@ -36,8 +46,14 @@ class Bf16QuantizationConfig(BaseModel):
     type: Literal[QuantizationType.bf16.value] = QuantizationType.bf16.value
 
 
+@json_schema_type
+class Int4QuantizationConfig(BaseModel):
+    type: Literal[QuantizationType.int4.value] = QuantizationType.int4.value
+    scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
+
+
 QuantizationConfig = Annotated[
-    Union[Bf16QuantizationConfig, Fp8QuantizationConfig],
+    Union[Bf16QuantizationConfig, Fp8QuantizationConfig, Int4QuantizationConfig],
     Field(discriminator="type"),
 ]
 
@@ -73,11 +89,35 @@ class ChatCompletionResponseEvent(BaseModel):
     stop_reason: Optional[StopReason] = None
 
 
+class ResponseFormatType(Enum):
+    json_schema = "json_schema"
+    grammar = "grammar"
+
+
+class JsonSchemaResponseFormat(BaseModel):
+    type: Literal[ResponseFormatType.json_schema.value] = (
+        ResponseFormatType.json_schema.value
+    )
+    json_schema: Dict[str, Any]
+
+
+class GrammarResponseFormat(BaseModel):
+    type: Literal[ResponseFormatType.grammar.value] = ResponseFormatType.grammar.value
+    bnf: Dict[str, Any]
+
+
+ResponseFormat = Annotated[
+    Union[JsonSchemaResponseFormat, GrammarResponseFormat],
+    Field(discriminator="type"),
+]
+
+
 @json_schema_type
 class CompletionRequest(BaseModel):
     model: str
     content: InterleavedTextMedia
     sampling_params: Optional[SamplingParams] = SamplingParams()
+    response_format: Optional[ResponseFormat] = None
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -87,7 +127,8 @@ class CompletionRequest(BaseModel):
 class CompletionResponse(BaseModel):
     """Completion response."""
 
-    completion_message: CompletionMessage
+    content: str
+    stop_reason: StopReason
     logprobs: Optional[List[TokenLogProbs]] = None
 
 
@@ -105,6 +146,7 @@ class BatchCompletionRequest(BaseModel):
     model: str
     content_batch: List[InterleavedTextMedia]
     sampling_params: Optional[SamplingParams] = SamplingParams()
+    response_format: Optional[ResponseFormat] = None
     logprobs: Optional[LogProbConfig] = None
 
 
@@ -112,7 +154,7 @@ class BatchCompletionRequest(BaseModel):
 class BatchCompletionResponse(BaseModel):
     """Batch completion response."""
 
-    completion_message_batch: List[CompletionMessage]
+    batch: List[CompletionResponse]
 
 
 @json_schema_type
@@ -127,6 +169,7 @@ class ChatCompletionRequest(BaseModel):
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
+    response_format: Optional[ResponseFormat] = None
 
     stream: Optional[bool] = False
     logprobs: Optional[LogProbConfig] = None
@@ -164,7 +207,7 @@ class BatchChatCompletionRequest(BaseModel):
 
 @json_schema_type
 class BatchChatCompletionResponse(BaseModel):
-    completion_message_batch: List[CompletionMessage]
+    batch: List[ChatCompletionResponse]
 
 
 @json_schema_type
@@ -172,34 +215,45 @@ class EmbeddingsResponse(BaseModel):
     embeddings: List[List[float]]
 
 
+class ModelStore(Protocol):
+    def get_model(self, identifier: str) -> Model: ...
+
+
+@runtime_checkable
 class Inference(Protocol):
+    model_store: ModelStore
+
     @webmethod(route="/inference/completion")
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, CompletionResponseStreamChunk]: ...
+    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
-    @webmethod(route="/inference/chat_completion")
+    @webmethod(route="/inference/chat-completion")
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[ChatCompletionResponse, ChatCompletionResponseStreamChunk]: ...
+    ) -> Union[
+        ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
+    ]: ...
 
     @webmethod(route="/inference/embeddings")
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse: ...

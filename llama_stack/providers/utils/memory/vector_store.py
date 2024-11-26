@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 import base64
 import io
+import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -16,12 +17,13 @@ import httpx
 import numpy as np
 from numpy.typing import NDArray
 from pypdf import PdfReader
-from termcolor import cprint
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.memory import *  # noqa: F403
+
+log = logging.getLogger(__name__)
 
 ALL_MINILM_L6_V2_DIMENSION = 384
 
@@ -35,7 +37,7 @@ def get_embedding_model(model: str) -> "SentenceTransformer":
     if loaded_model is not None:
         return loaded_model
 
-    print(f"Loading sentence transformer for {model}...")
+    log.info(f"Loading sentence transformer for {model}...")
     from sentence_transformers import SentenceTransformer
 
     loaded_model = SentenceTransformer(model)
@@ -92,7 +94,7 @@ def content_from_data(data_url: str) -> str:
         return "\n".join([page.extract_text() for page in pdf_reader.pages])
 
     else:
-        cprint("Could not extract content from data_url properly.", color="red")
+        log.error("Could not extract content from data_url properly.")
         return ""
 
 
@@ -140,28 +142,34 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query(self, embedding: NDArray, k: int) -> QueryDocumentsResponse:
+    async def query(
+        self, embedding: NDArray, k: int, score_threshold: float
+    ) -> QueryDocumentsResponse:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def delete(self):
         raise NotImplementedError()
 
 
 @dataclass
 class BankWithIndex:
-    bank: MemoryBank
+    bank: VectorMemoryBank
     index: EmbeddingIndex
 
     async def insert_documents(
         self,
         documents: List[MemoryBankDocument],
     ) -> None:
-        model = get_embedding_model(self.bank.config.embedding_model)
+        model = get_embedding_model(self.bank.embedding_model)
         for doc in documents:
             content = await content_from_doc(doc)
             chunks = make_overlapped_chunks(
                 doc.document_id,
                 content,
-                self.bank.config.chunk_size_in_tokens,
-                self.bank.config.overlap_size_in_tokens
-                or (self.bank.config.chunk_size_in_tokens // 4),
+                self.bank.chunk_size_in_tokens,
+                self.bank.overlap_size_in_tokens
+                or (self.bank.chunk_size_in_tokens // 4),
             )
             if not chunks:
                 continue
@@ -177,6 +185,7 @@ class BankWithIndex:
         if params is None:
             params = {}
         k = params.get("max_chunks", 3)
+        score_threshold = params.get("score_threshold", 0.0)
 
         def _process(c) -> str:
             if isinstance(c, str):
@@ -189,6 +198,6 @@ class BankWithIndex:
         else:
             query_str = _process(query)
 
-        model = get_embedding_model(self.bank.config.embedding_model)
+        model = get_embedding_model(self.bank.embedding_model)
         query_vector = model.encode([query_str])[0].astype(np.float32)
-        return await self.index.query(query_vector, k)
+        return await self.index.query(query_vector, k, score_threshold)

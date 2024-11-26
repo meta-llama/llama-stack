@@ -1,4 +1,4 @@
-exclude: 'build'
+exclude: 'build/'
 
 default_language_version:
     python: python3
@@ -57,3 +57,17 @@ repos:
 #   hooks:
 #     - id: markdown-link-check
 #       args: ['--quiet']
+
+# -   repo: local
+#     hooks:
+#       - id: distro-codegen
+#         name: Distribution Template Codegen
+#         additional_dependencies:
+#           - rich
+#           - pydantic
+#         entry: python -m llama_stack.scripts.distro_codegen
+#         language: python
+#         pass_filenames: false
+#         require_serial: true
+#         files: ^llama_stack/templates/.*$
+#         stages: [manual]

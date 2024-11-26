@@ -4,35 +4,62 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from datetime import datetime
-
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
 from llama_stack.providers.datatypes import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.shields import *  # noqa: F403
+from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.scoring_functions import *  # noqa: F403
+from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTaskInput
+from llama_stack.apis.inference import Inference
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.safety import Safety
+from llama_stack.apis.scoring import Scoring
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
-
-LLAMA_STACK_BUILD_CONFIG_VERSION = "v1"
-LLAMA_STACK_RUN_CONFIG_VERSION = "v1"
+LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
+LLAMA_STACK_RUN_CONFIG_VERSION = "2"
 
 
 RoutingKey = Union[str, List[str]]
 
 
-class GenericProviderConfig(BaseModel):
-    provider_type: str
-    config: Dict[str, Any]
+RoutableObject = Union[
+    Model,
+    Shield,
+    MemoryBank,
+    Dataset,
+    ScoringFn,
+    EvalTask,
+]
 
 
-class RoutableProviderConfig(GenericProviderConfig):
-    routing_key: RoutingKey
+RoutableObjectWithProvider = Annotated[
+    Union[
+        Model,
+        Shield,
+        MemoryBank,
+        Dataset,
+        ScoringFn,
+        EvalTask,
+    ],
+    Field(discriminator="type"),
+]
 
-
-class PlaceholderProviderConfig(BaseModel):
-    """Placeholder provider config for API whose provider are defined in routing_table"""
-
-    providers: List[str]
+RoutedProtocol = Union[
+    Inference,
+    Safety,
+    Memory,
+    DatasetIO,
+    Scoring,
+    Eval,
+]
 
 
 # Example: /inference, /safety
@@ -53,18 +80,16 @@ class AutoRoutedProviderSpec(ProviderSpec):
 
 
 # Example: /models, /shields
-@json_schema_type
 class RoutingTableProviderSpec(ProviderSpec):
     provider_type: str = "routing_table"
     config_class: str = ""
     docker_image: Optional[str] = None
 
-    inner_specs: List[ProviderSpec]
+    router_api: Api
     module: str
     pip_packages: List[str] = Field(default_factory=list)
 
 
-@json_schema_type
 class DistributionSpec(BaseModel):
     description: Optional[str] = Field(
         default="",
@@ -80,10 +105,14 @@ in the runtime configuration to help route to the correct provider.""",
     )
 
 
-@json_schema_type
+class Provider(BaseModel):
+    provider_id: str
+    provider_type: str
+    config: Dict[str, Any]
+
+
 class StackRunConfig(BaseModel):
     version: str = LLAMA_STACK_RUN_CONFIG_VERSION
-    built_at: datetime
 
     image_name: str = Field(
         ...,
@@ -100,36 +129,34 @@ this could be just a hash
         default=None,
         description="Reference to the conda environment if this package refers to a conda environment",
     )
-    apis_to_serve: List[str] = Field(
+    apis: List[str] = Field(
+        default_factory=list,
         description="""
 The list of APIs to serve. If not specified, all APIs specified in the provider_map will be served""",
     )
 
-    api_providers: Dict[
-        str, Union[GenericProviderConfig, PlaceholderProviderConfig]
-    ] = Field(
+    providers: Dict[str, List[Provider]] = Field(
         description="""
-Provider configurations for each of the APIs provided by this package.
+One or more providers to use for each API. The same provider_type (e.g., meta-reference)
+can be instantiated multiple times (with different configs) if necessary.
 """,
     )
-    routing_table: Dict[str, List[RoutableProviderConfig]] = Field(
-        default_factory=dict,
+    metadata_store: Optional[KVStoreConfig] = Field(
+        default=None,
         description="""
-
-        E.g. The following is a ProviderRoutingEntry for models:
-        - routing_key: Llama3.1-8B-Instruct
-          provider_type: meta-reference
-          config:
-              model: Llama3.1-8B-Instruct
-              quantization: null
-              torch_seed: null
-              max_seq_len: 4096
-              max_batch_size: 1
-        """,
+Configuration for the persistence store used by the distribution registry. If not specified,
+a default SQLite store will be used.""",
     )
 
+    # registry of "resources" in the distribution
+    models: List[ModelInput] = Field(default_factory=list)
+    shields: List[ShieldInput] = Field(default_factory=list)
+    memory_banks: List[MemoryBankInput] = Field(default_factory=list)
+    datasets: List[DatasetInput] = Field(default_factory=list)
+    scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
+    eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
 
-@json_schema_type
+
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
     name: str

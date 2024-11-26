@@ -1,0 +1,66 @@
+version: '2'
+image_name: tgi
+docker_image: null
+conda_env: tgi
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: tgi-inference
+    provider_type: remote::tgi
+    config:
+      url: ${env.TGI_URL}
+  - provider_id: tgi-safety
+    provider_type: remote::tgi
+    config:
+      url: ${env.TGI_SAFETY_URL}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/registry.db
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: tgi-inference
+  provider_model_id: null
+- metadata: {}
+  model_id: ${env.SAFETY_MODEL}
+  provider_id: tgi-safety
+  provider_model_id: null
+shields:
+- params: null
+  shield_id: ${env.SAFETY_MODEL}
+  provider_id: null
+  provider_shield_id: null
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []

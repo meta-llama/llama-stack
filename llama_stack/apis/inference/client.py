@@ -53,6 +53,7 @@ class InferenceClient(Inference):
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
         tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
@@ -63,9 +64,33 @@ class InferenceClient(Inference):
             tools=tools or [],
             tool_choice=tool_choice,
             tool_prompt_format=tool_prompt_format,
+            response_format=response_format,
             stream=stream,
             logprobs=logprobs,
         )
+        if stream:
+            return self._stream_chat_completion(request)
+        else:
+            return self._nonstream_chat_completion(request)
+
+    async def _nonstream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> ChatCompletionResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/inference/chat_completion",
+                json=encodable_dict(request),
+                headers={"Content-Type": "application/json"},
+                timeout=20,
+            )
+
+            response.raise_for_status()
+            j = response.json()
+            return ChatCompletionResponse(**j)
+
+    async def _stream_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> AsyncGenerator:
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 "POST",
@@ -77,7 +102,8 @@ class InferenceClient(Inference):
                 if response.status_code != 200:
                     content = await response.aread()
                     cprint(
-                        f"Error: HTTP {response.status_code} {content.decode()}", "red"
+                        f"Error: HTTP {response.status_code} {content.decode()}",
+                        "red",
                     )
                     return
 
@@ -85,16 +111,11 @@ class InferenceClient(Inference):
                     if line.startswith("data:"):
                         data = line[len("data: ") :]
                         try:
-                            if request.stream:
-                                if "error" in data:
-                                    cprint(data, "red")
-                                    continue
+                            if "error" in data:
+                                cprint(data, "red")
+                                continue
 
-                                yield ChatCompletionResponseStreamChunk(
-                                    **json.loads(data)
-                                )
-                            else:
-                                yield ChatCompletionResponse(**json.loads(data))
+                            yield ChatCompletionResponseStreamChunk(**json.loads(data))
                         except Exception as e:
                             print(data)
                             print(f"Error with parsing or validation: {e}")
@@ -120,7 +141,8 @@ async def run_main(
     else:
         logprobs_config = None
 
-    iterator = client.chat_completion(
+    assert stream, "Non streaming not supported here"
+    iterator = await client.chat_completion(
         model=model,
         messages=[message],
         stream=stream,
@@ -150,7 +172,7 @@ async def run_mm_main(
         ],
     )
     cprint(f"User>{message.content}", "green")
-    iterator = client.chat_completion(
+    iterator = await client.chat_completion(
         model=model,
         messages=[message],
         stream=stream,

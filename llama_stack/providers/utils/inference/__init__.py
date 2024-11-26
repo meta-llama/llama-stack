@@ -22,12 +22,17 @@ def is_supported_safety_model(model: Model) -> bool:
     ]
 
 
-def supported_inference_models() -> List[str]:
+def supported_inference_models() -> List[Model]:
     return [
-        m.descriptor()
+        m
         for m in all_registered_models()
         if (
             m.model_family in {ModelFamily.llama3_1, ModelFamily.llama3_2}
             or is_supported_safety_model(m)
         )
     ]
+
+
+ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR = {
+    m.huggingface_repo: m.descriptor() for m in all_registered_models()
+}

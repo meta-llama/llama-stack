@@ -9,12 +9,17 @@ import argparse
 from llama_stack.cli.subcommand import Subcommand
 from llama_stack.distribution.datatypes import *  # noqa: F403
 import os
+import shutil
 from functools import lru_cache
 from pathlib import Path
 
-TEMPLATES_PATH = (
-    Path(os.path.relpath(__file__)).parent.parent.parent / "distribution" / "templates"
-)
+import pkg_resources
+
+from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
 
 @lru_cache()
@@ -22,11 +27,10 @@ def available_templates_specs() -> List[BuildConfig]:
     import yaml
 
     template_specs = []
-    for p in TEMPLATES_PATH.rglob("*.yaml"):
+    for p in TEMPLATES_PATH.rglob("*build.yaml"):
         with open(p, "r") as f:
             build_config = BuildConfig(**yaml.safe_load(f))
             template_specs.append(build_config)
-
     return template_specs
 
 
@@ -66,173 +70,56 @@ class StackBuild(Subcommand):
         )
 
         self.parser.add_argument(
-            "--name",
-            type=str,
-            help="Name of the Llama Stack build to override from template config. This name will be used as paths to store configuration files, build conda environments/docker images. If not specified, will use the name from the template config. ",
-        )
-
-        self.parser.add_argument(
             "--image-type",
             type=str,
             help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
             choices=["conda", "docker"],
-        )
-
-    def _get_build_config_from_name(self, args: argparse.Namespace) -> Optional[Path]:
-        if os.getenv("CONDA_PREFIX", ""):
-            conda_dir = (
-                Path(os.getenv("CONDA_PREFIX")).parent / f"llamastack-{args.name}"
-            )
-        else:
-            cprint(
-                "Cannot find CONDA_PREFIX. Trying default conda path ~/.conda/envs...",
-                color="green",
-            )
-            conda_dir = (
-                Path(os.path.expanduser("~/.conda/envs")) / f"llamastack-{args.name}"
-            )
-        build_config_file = Path(conda_dir) / f"{args.name}-build.yaml"
-        if build_config_file.exists():
-            return build_config_file
-
-        return None
-
-    def _run_stack_build_command_from_build_config(
-        self, build_config: BuildConfig
-    ) -> None:
-        import json
-        import os
-
-        import yaml
-
-        from llama_stack.distribution.build import ApiInput, build_image, ImageType
-
-        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-        from llama_stack.distribution.utils.serialize import EnumEncoder
-        from termcolor import cprint
-
-        # save build.yaml spec for building same distribution again
-        if build_config.image_type == ImageType.docker.value:
-            # docker needs build file to be in the llama-stack repo dir to be able to copy over to the image
-            llama_stack_path = Path(
-                os.path.abspath(__file__)
-            ).parent.parent.parent.parent
-            build_dir = llama_stack_path / "tmp/configs/"
-        else:
-            build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
-
-        os.makedirs(build_dir, exist_ok=True)
-        build_file_path = build_dir / f"{build_config.name}-build.yaml"
-
-        with open(build_file_path, "w") as f:
-            to_write = json.loads(json.dumps(build_config.dict(), cls=EnumEncoder))
-            f.write(yaml.dump(to_write, sort_keys=False))
-
-        return_code = build_image(build_config, build_file_path)
-        if return_code != 0:
-            return
-
-        configure_name = (
-            build_config.name
-            if build_config.image_type == "conda"
-            else (f"llamastack-{build_config.name}")
-        )
-        if build_config.image_type == "conda":
-            cprint(
-                f"You can now run `llama stack configure {configure_name}`",
-                color="green",
-            )
-        else:
-            cprint(
-                f"You can now run `llama stack run {build_config.name}`",
-                color="green",
-            )
-
-    def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
-        import json
-
-        import yaml
-
-        from llama_stack.cli.table import print_table
-
-        # eventually, this should query a registry at llama.meta.com/llamastack/distributions
-        headers = [
-            "Template Name",
-            "Providers",
-            "Description",
-        ]
-
-        rows = []
-        for spec in available_templates_specs():
-            rows.append(
-                [
-                    spec.name,
-                    json.dumps(spec.distribution_spec.providers, indent=2),
-                    spec.distribution_spec.description,
-                ]
-            )
-        print_table(
-            rows,
-            headers,
-            separate_rows=True,
+            default="conda",
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
+        import textwrap
+
         import yaml
-        from llama_stack.distribution.distribution import get_provider_registry
         from prompt_toolkit import prompt
+        from prompt_toolkit.completion import WordCompleter
         from prompt_toolkit.validation import Validator
         from termcolor import cprint
+
+        from llama_stack.distribution.distribution import get_provider_registry
 
         if args.list_templates:
             self._run_template_list_cmd(args)
             return
 
         if args.template:
-            if not args.name:
-                self.parser.error(
-                    "You must specify a name for the build using --name when using a template"
-                )
-                return
-            build_path = TEMPLATES_PATH / f"{args.template}-build.yaml"
-            if not build_path.exists():
-                self.parser.error(
-                    f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
-                )
-                return
-            with open(build_path, "r") as f:
-                build_config = BuildConfig(**yaml.safe_load(f))
-                build_config.name = args.name
-                if args.image_type:
-                    build_config.image_type = args.image_type
-                self._run_stack_build_command_from_build_config(build_config)
-
-            return
-
-        # try to see if we can find a pre-existing build config file through name
-        if args.name:
-            maybe_build_config = self._get_build_config_from_name(args)
-            if maybe_build_config:
-                cprint(
-                    f"Building from existing build config for {args.name} in {str(maybe_build_config)}...",
-                    "green",
-                )
-                with open(maybe_build_config, "r") as f:
-                    build_config = BuildConfig(**yaml.safe_load(f))
-                    self._run_stack_build_command_from_build_config(build_config)
+            available_templates = available_templates_specs()
+            for build_config in available_templates:
+                if build_config.name == args.template:
+                    if args.image_type:
+                        build_config.image_type = args.image_type
+                    else:
+                        self.parser.error(
+                            f"Please specify a image-type (docker | conda) for {args.template}"
+                        )
+                    self._run_stack_build_command_from_build_config(
+                        build_config, template_name=args.template
+                    )
                     return
 
+            self.parser.error(
+                f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates"
+            )
+            return
+
         if not args.config and not args.template:
-            if not args.name:
-                name = prompt(
-                    "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
-                    validator=Validator.from_callable(
-                        lambda x: len(x) > 0,
-                        error_message="Name cannot be empty, please enter a name",
-                    ),
-                )
-            else:
-                name = args.name
+            name = prompt(
+                "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
+                validator=Validator.from_callable(
+                    lambda x: len(x) > 0,
+                    error_message="Name cannot be empty, please enter a name",
+                ),
+            )
 
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
@@ -244,26 +131,31 @@ class StackBuild(Subcommand):
             )
 
             cprint(
-                "\n Llama Stack is composed of several APIs working together. Let's configure the providers (implementations) you want to use for these APIs.",
+                textwrap.dedent(
+                    """
+                Llama Stack is composed of several APIs working together. Let's select
+                the provider types (implementations) you want to use for these APIs.
+                """,
+                ),
                 color="green",
             )
 
+            print("Tip: use <TAB> to see options for the providers.\n")
+
             providers = dict()
             for api, providers_for_api in get_provider_registry().items():
+                available_providers = [
+                    x
+                    for x in providers_for_api.keys()
+                    if x not in ("remote", "remote::sample")
+                ]
                 api_provider = prompt(
-                    "> Enter provider for the {} API: (default=meta-reference): ".format(
-                        api.value
-                    ),
+                    "> Enter provider for API {}: ".format(api.value),
+                    completer=WordCompleter(available_providers),
+                    complete_while_typing=True,
                     validator=Validator.from_callable(
-                        lambda x: x in providers_for_api,
-                        error_message="Invalid provider, please enter one of the following: {}".format(
-                            list(providers_for_api.keys())
-                        ),
-                    ),
-                    default=(
-                        "meta-reference"
-                        if "meta-reference" in providers_for_api
-                        else list(providers_for_api.keys())[0]
+                        lambda x: x in available_providers,
+                        error_message="Invalid provider, use <TAB> to see options",
                     ),
                 )
 
@@ -292,3 +184,153 @@ class StackBuild(Subcommand):
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
             self._run_stack_build_command_from_build_config(build_config)
+
+    def _generate_run_config(self, build_config: BuildConfig, build_dir: Path) -> None:
+        """
+        Generate a run.yaml template file for user to edit from a build.yaml file
+        """
+        import json
+
+        import yaml
+        from termcolor import cprint
+
+        from llama_stack.distribution.build import ImageType
+
+        apis = list(build_config.distribution_spec.providers.keys())
+        run_config = StackRunConfig(
+            docker_image=(
+                build_config.name
+                if build_config.image_type == ImageType.docker.value
+                else None
+            ),
+            image_name=build_config.name,
+            conda_env=(
+                build_config.name
+                if build_config.image_type == ImageType.conda.value
+                else None
+            ),
+            apis=apis,
+            providers={},
+        )
+        # build providers dict
+        provider_registry = get_provider_registry()
+        for api in apis:
+            run_config.providers[api] = []
+            provider_types = build_config.distribution_spec.providers[api]
+            if isinstance(provider_types, str):
+                provider_types = [provider_types]
+
+            for i, provider_type in enumerate(provider_types):
+                pid = provider_type.split("::")[-1]
+
+                p = provider_registry[Api(api)][provider_type]
+                if p.deprecation_error:
+                    raise InvalidProviderError(p.deprecation_error)
+
+                config_type = instantiate_class_type(
+                    provider_registry[Api(api)][provider_type].config_class
+                )
+                if hasattr(config_type, "sample_run_config"):
+                    config = config_type.sample_run_config(
+                        __distro_dir__=f"distributions/{build_config.name}"
+                    )
+                else:
+                    config = {}
+
+                p_spec = Provider(
+                    provider_id=f"{pid}-{i}" if len(provider_types) > 1 else pid,
+                    provider_type=provider_type,
+                    config=config,
+                )
+                run_config.providers[api].append(p_spec)
+
+        os.makedirs(build_dir, exist_ok=True)
+        run_config_file = build_dir / f"{build_config.name}-run.yaml"
+
+        with open(run_config_file, "w") as f:
+            to_write = json.loads(run_config.model_dump_json())
+            f.write(yaml.dump(to_write, sort_keys=False))
+
+        cprint(
+            f"You can now edit {run_config_file} and run `llama stack run {run_config_file}`",
+            color="green",
+        )
+
+    def _run_stack_build_command_from_build_config(
+        self, build_config: BuildConfig, template_name: Optional[str] = None
+    ) -> None:
+        import json
+        import os
+        import re
+
+        import yaml
+        from termcolor import cprint
+
+        from llama_stack.distribution.build import build_image
+        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+
+        # save build.yaml spec for building same distribution again
+        build_dir = DISTRIBS_BASE_DIR / f"llamastack-{build_config.name}"
+        os.makedirs(build_dir, exist_ok=True)
+        build_file_path = build_dir / f"{build_config.name}-build.yaml"
+
+        with open(build_file_path, "w") as f:
+            to_write = json.loads(build_config.model_dump_json())
+            f.write(yaml.dump(to_write, sort_keys=False))
+
+        return_code = build_image(build_config, build_file_path)
+        if return_code != 0:
+            return
+
+        if template_name:
+            # copy run.yaml from template to build_dir instead of generating it again
+            template_path = pkg_resources.resource_filename(
+                "llama_stack", f"templates/{template_name}/run.yaml"
+            )
+            os.makedirs(build_dir, exist_ok=True)
+            run_config_file = build_dir / f"{build_config.name}-run.yaml"
+            shutil.copy(template_path, run_config_file)
+
+            with open(template_path, "r") as f:
+                yaml_content = f.read()
+
+            # Find all ${env.VARIABLE} patterns
+            env_vars = set(re.findall(r"\${env\.([A-Za-z0-9_]+)}", yaml_content))
+            cprint("Build Successful! Next steps: ", color="green")
+            cprint(
+                f"   1. Set the environment variables: {list(env_vars)}",
+                color="green",
+            )
+            cprint(
+                f"   2. Run: `llama stack run {template_name}`",
+                color="green",
+            )
+        else:
+            self._generate_run_config(build_config, build_dir)
+
+    def _run_template_list_cmd(self, args: argparse.Namespace) -> None:
+        import json
+
+        from llama_stack.cli.table import print_table
+
+        # eventually, this should query a registry at llama.meta.com/llamastack/distributions
+        headers = [
+            "Template Name",
+            "Providers",
+            "Description",
+        ]
+
+        rows = []
+        for spec in available_templates_specs():
+            rows.append(
+                [
+                    spec.name,
+                    json.dumps(spec.distribution_spec.providers, indent=2),
+                    spec.distribution_spec.description,
+                ]
+            )
+        print_table(
+            rows,
+            headers,
+            separate_rows=True,
+        )

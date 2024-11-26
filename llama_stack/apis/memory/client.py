@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 import os
 from pathlib import Path
 
@@ -13,11 +12,11 @@ from typing import Any, Dict, List, Optional
 
 import fire
 import httpx
-from termcolor import cprint
 
 from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks.client import MemoryBanksClient
 from llama_stack.providers.utils.memory.file_utils import data_url_from_file
 
 
@@ -34,45 +33,6 @@ class MemoryClient(Memory):
 
     async def shutdown(self) -> None:
         pass
-
-    async def get_memory_bank(self, bank_id: str) -> Optional[MemoryBank]:
-        async with httpx.AsyncClient() as client:
-            r = await client.get(
-                f"{self.base_url}/memory/get",
-                params={
-                    "bank_id": bank_id,
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=20,
-            )
-            r.raise_for_status()
-            d = r.json()
-            if not d:
-                return None
-            return MemoryBank(**d)
-
-    async def create_memory_bank(
-        self,
-        name: str,
-        config: MemoryBankConfig,
-        url: Optional[URL] = None,
-    ) -> MemoryBank:
-        async with httpx.AsyncClient() as client:
-            r = await client.post(
-                f"{self.base_url}/memory/create",
-                json={
-                    "name": name,
-                    "config": config.dict(),
-                    "url": url,
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=20,
-            )
-            r.raise_for_status()
-            d = r.json()
-            if not d:
-                return None
-            return MemoryBank(**d)
 
     async def insert_documents(
         self,
@@ -113,23 +73,28 @@ class MemoryClient(Memory):
 
 
 async def run_main(host: str, port: int, stream: bool):
-    client = MemoryClient(f"http://{host}:{port}")
+    banks_client = MemoryBanksClient(f"http://{host}:{port}")
 
-    # create a memory bank
-    bank = await client.create_memory_bank(
-        name="test_bank",
-        config=VectorMemoryBankConfig(
-            bank_id="test_bank",
+    bank = VectorMemoryBank(
+        identifier="test_bank",
+        provider_id="",
+        embedding_model="all-MiniLM-L6-v2",
+        chunk_size_in_tokens=512,
+        overlap_size_in_tokens=64,
+    )
+    await banks_client.register_memory_bank(
+        bank.identifier,
+        VectorMemoryBankParams(
             embedding_model="all-MiniLM-L6-v2",
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,
         ),
+        provider_resource_id=bank.identifier,
     )
-    cprint(json.dumps(bank.dict(), indent=4), "green")
 
-    retrieved_bank = await client.get_memory_bank(bank.bank_id)
+    retrieved_bank = await banks_client.get_memory_bank(bank.identifier)
     assert retrieved_bank is not None
-    assert retrieved_bank.config.embedding_model == "all-MiniLM-L6-v2"
+    assert retrieved_bank.embedding_model == "all-MiniLM-L6-v2"
 
     urls = [
         "memory_optimizations.rst",
@@ -160,15 +125,17 @@ async def run_main(host: str, port: int, stream: bool):
         for i, path in enumerate(files)
     ]
 
+    client = MemoryClient(f"http://{host}:{port}")
+
     # insert some documents
     await client.insert_documents(
-        bank_id=bank.bank_id,
+        bank_id=bank.identifier,
         documents=documents,
     )
 
     # query the documents
     response = await client.query_documents(
-        bank_id=bank.bank_id,
+        bank_id=bank.identifier,
         query=[
             "How do I use Lora?",
         ],
@@ -178,7 +145,7 @@ async def run_main(host: str, port: int, stream: bool):
         print(f"Chunk:\n========\n{chunk}\n========\n")
 
     response = await client.query_documents(
-        bank_id=bank.bank_id,
+        bank_id=bank.identifier,
         query=[
             "Tell me more about llama3 and torchtune",
         ],

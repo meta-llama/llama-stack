@@ -14,3 +14,7 @@ Package.resolved
 *.pte
 *.ipynb_checkpoints*
 .idea
+.venv/
+.vscode
+_build
+docs/src

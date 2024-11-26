@@ -14,7 +14,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.dataset import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.common.training_types import *  # noqa: F403
 
 
@@ -107,8 +107,8 @@ class PostTrainingSFTRequest(BaseModel):
     job_uuid: str
 
     model: str
-    dataset: TrainEvalDataset
-    validation_dataset: TrainEvalDataset
+    dataset_id: str
+    validation_dataset_id: str
 
     algorithm: FinetuningAlgorithm
     algorithm_config: Union[
@@ -131,8 +131,8 @@ class PostTrainingRLHFRequest(BaseModel):
 
     finetuned_model: URL
 
-    dataset: TrainEvalDataset
-    validation_dataset: TrainEvalDataset
+    dataset_id: str
+    validation_dataset_id: str
 
     algorithm: RLHFAlgorithm
     algorithm_config: Union[DPOAlignmentConfig]
@@ -176,13 +176,13 @@ class PostTrainingJobArtifactsResponse(BaseModel):
 
 
 class PostTraining(Protocol):
-    @webmethod(route="/post_training/supervised_fine_tune")
+    @webmethod(route="/post-training/supervised-fine-tune")
     def supervised_fine_tune(
         self,
         job_uuid: str,
         model: str,
-        dataset: TrainEvalDataset,
-        validation_dataset: TrainEvalDataset,
+        dataset_id: str,
+        validation_dataset_id: str,
         algorithm: FinetuningAlgorithm,
         algorithm_config: Union[
             LoraFinetuningConfig, QLoraFinetuningConfig, DoraFinetuningConfig
@@ -193,13 +193,13 @@ class PostTraining(Protocol):
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    @webmethod(route="/post_training/preference_optimize")
+    @webmethod(route="/post-training/preference-optimize")
     def preference_optimize(
         self,
         job_uuid: str,
         finetuned_model: URL,
-        dataset: TrainEvalDataset,
-        validation_dataset: TrainEvalDataset,
+        dataset_id: str,
+        validation_dataset_id: str,
         algorithm: RLHFAlgorithm,
         algorithm_config: Union[DPOAlignmentConfig],
         optimizer_config: OptimizerConfig,
@@ -208,22 +208,22 @@ class PostTraining(Protocol):
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    @webmethod(route="/post_training/jobs")
+    @webmethod(route="/post-training/jobs")
     def get_training_jobs(self) -> List[PostTrainingJob]: ...
 
     # sends SSE stream of logs
-    @webmethod(route="/post_training/job/logs")
+    @webmethod(route="/post-training/job/logs")
     def get_training_job_logstream(self, job_uuid: str) -> PostTrainingJobLogStream: ...
 
-    @webmethod(route="/post_training/job/status")
+    @webmethod(route="/post-training/job/status")
     def get_training_job_status(
         self, job_uuid: str
     ) -> PostTrainingJobStatusResponse: ...
 
-    @webmethod(route="/post_training/job/cancel")
+    @webmethod(route="/post-training/job/cancel")
     def cancel_training_job(self, job_uuid: str) -> None: ...
 
-    @webmethod(route="/post_training/job/artifacts")
+    @webmethod(route="/post-training/job/artifacts")
     def get_training_job_artifacts(
         self, job_uuid: str
     ) -> PostTrainingJobArtifactsResponse: ...

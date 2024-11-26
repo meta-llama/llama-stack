@@ -1,0 +1,19 @@
+version: '2'
+name: ollama
+distribution_spec:
+  description: Use (an external) Ollama server for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::ollama
+    memory:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

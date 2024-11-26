@@ -180,5 +180,5 @@ class EventLogger:
                     color="cyan",
                 )
 
-            preivous_event_type = event_type
+            previous_event_type = event_type
             previous_step_type = step_type

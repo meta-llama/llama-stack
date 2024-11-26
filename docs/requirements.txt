@@ -1,0 +1,11 @@
+sphinx
+myst-parser
+linkify
+-e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+sphinx-rtd-theme>=1.0.0
+sphinx-pdj-theme
+sphinx-copybutton
+sphinx-tabs
+sphinx-design
+sphinxcontrib-openapi
+sphinxcontrib-redoc
