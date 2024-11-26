@@ -155,17 +155,19 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
         traced_methods = {}
         for parent in cls_child.__mro__[1:]:  # Skip the class itself
             for name, method in vars(parent).items():
-                if inspect.isfunction(method) and method._trace_input:
-                    traced_methods[name] = method._trace_input
+                if inspect.isfunction(method) and getattr(
+                    method, "_trace_input", None
+                ):  # noqa: B009
+                    traced_methods[name] = getattr(method, "_trace_input")  # noqa: B009
 
         # Trace child class methods if their name matches a traced parent method
         for name, method in vars(cls_child).items():
             if inspect.isfunction(method) and not name.startswith("_"):
                 if name in traced_methods:
                     # Copy the trace configuration from the parent
-                    method._trace_input = traced_methods[name]
+                    setattr(method, "_trace_input", traced_methods[name])  # noqa: B010
 
-                cls_child.__dict__[name] = trace_method(method)
+                setattr(cls_child, name, trace_method(method))  # noqa: B010
 
     # Set the new __init_subclass__
     cls.__init_subclass__ = classmethod(__init_subclass__)

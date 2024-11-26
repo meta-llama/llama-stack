@@ -5,7 +5,9 @@
 # the root directory of this source tree.
 
 import json
-from typing import Optional
+from typing import List, Optional
+
+from llama_stack.apis.telemetry.telemetry import Trace
 
 from .config import LogFormat
 
@@ -50,6 +52,11 @@ class ConsoleTelemetryImpl(Telemetry):
             print(formatted)
 
     async def get_trace(self, trace_id: str) -> Trace:
+        raise NotImplementedError()
+
+    async def get_traces_for_session(
+        self, session_id: str, lookback: str = "1h", limit: int = 100
+    ) -> List[Trace]:
         raise NotImplementedError()
 
 

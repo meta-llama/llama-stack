@@ -568,7 +568,13 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
 
-                    with tracing.span("tool_execution"):
+                    with tracing.span(
+                        "tool_execution",
+                        {
+                            "tool_name": tool_call.tool_name,
+                            "input": message.model_dump_json(),
+                        },
+                    ) as span:
                         result_messages = await execute_tool_call_maybe(
                             self.tools_dict,
                             [message],
@@ -577,6 +583,7 @@ class ChatAgent(ShieldRunnerMixin):
                             len(result_messages) == 1
                         ), "Currently not supporting multiple messages"
                         result_message = result_messages[0]
+                        span.set_attribute("output", result_message.model_dump_json())
 
                     yield AgentTurnResponseStreamChunk(
                         event=AgentTurnResponseEvent(
