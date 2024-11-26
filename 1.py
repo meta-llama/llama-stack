@@ -15,6 +15,7 @@ client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_P
 
 class CompletionMessage(BaseModel):
     recipe_name: str
+    preamble: str
     ingredients: list[str]
     steps: list[str]
 
@@ -22,8 +23,14 @@ class CompletionMessage(BaseModel):
 response = client.inference.chat_completion(
     model_id=os.environ["INFERENCE_MODEL"],
     messages=[
-        {"role": "system", "content": "You are a chef."},
-        {"role": "user", "content": "Give me a recipe for spaghetti bolognaise"},
+        {
+            "role": "system",
+            "content": "You are a chef, passionate about educating the world about delicious home cooked meals.",
+        },
+        {
+            "role": "user",
+            "content": "Give me a recipe for spaghetti bolognaise. Start with the recipe name, a preamble describing your childhood stories about spaghetti bolognaise, an ingredients list, and then the recipe steps.",
+        },
     ],
     response_format={
         "type": "json_schema",
