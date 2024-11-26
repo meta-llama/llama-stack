@@ -30,15 +30,13 @@ BuildTokenizerCallable = Callable[..., Llama3Tokenizer]
 
 
 def get_model_type(
-    self,
     model_id: str,
 ) -> BuildLoraModelCallable:
     model = resolve_model(model_id)
     return LORA_MODEL_TYPES[model.core_model_id.value]
 
 
-def get_tokenizer(
-    self,
+def get_tokenizer_type(
     model_id: str,
 ) -> BuildTokenizerCallable:
     model = resolve_model(model_id)

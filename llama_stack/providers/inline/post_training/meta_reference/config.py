@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 from typing import Optional
-from pydantic import BaseModel, Field,
+
+from pydantic import BaseModel, Field
 
 
 class MetaReferencePostTrainingConfig(BaseModel):

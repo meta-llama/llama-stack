@@ -4,6 +4,8 @@ distribution_spec:
   description: Use Meta Reference for running LLM inference
   docker_image: null
   providers:
+    post_training:
+    - inline::meta-reference
     inference:
     - inline::meta-reference
     memory:
