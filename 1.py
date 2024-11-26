@@ -8,7 +8,15 @@ import os
 
 from llama_stack_client import LlamaStackClient
 
+from pydantic import BaseModel
+
 client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
+
+class CompletionMessage(BaseModel):
+    content: str
+    additional_info: str
+
 
 response = client.inference.chat_completion(
     model_id=os.environ["INFERENCE_MODEL"],
@@ -18,18 +26,7 @@ response = client.inference.chat_completion(
     ],
     response_format={
         "type": "json_schema",
-        "json_schema": {
-            "type": "object",
-            "properties": {
-                "completion_message": {
-                    "type": "object",
-                    "properties": {
-                        "content": {"type": "string"},
-                        "additional_info": {"type": "string"},
-                    },
-                }
-            },
-        },
+        "json_schema": CompletionMessage.model_json_schema(),
     },
 )
 print(response.completion_message.content)
