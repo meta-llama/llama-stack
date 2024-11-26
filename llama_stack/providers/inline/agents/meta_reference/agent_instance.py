@@ -285,8 +285,9 @@ class ChatAgent(ShieldRunnerMixin):
     ) -> AsyncGenerator:
         with tracing.span("run_shields") as span:
             span.set_attribute("turn_id", turn_id)
-            span.set_attribute("messages", [m.model_dump_json() for m in messages])
+            span.set_attribute("input", [m.model_dump_json() for m in messages])
             if len(shields) == 0:
+                span.set_attribute("output", "no shields")
                 return
 
             step_id = str(uuid.uuid4())
@@ -315,6 +316,7 @@ class ChatAgent(ShieldRunnerMixin):
                         )
                     )
                 )
+                span.set_attribute("output", e.violation.model_dump_json())
 
                 yield CompletionMessage(
                     content=str(e),
@@ -334,6 +336,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
             )
+            span.set_attribute("output", "no violations")
 
     async def _run(
         self,
@@ -365,7 +368,10 @@ class ChatAgent(ShieldRunnerMixin):
                 rag_context, bank_ids = await self._retrieve_context(
                     session_id, input_messages, attachments
                 )
-                span.set_attribute("rag_context", rag_context)
+                span.set_attribute(
+                    "input", [m.model_dump_json() for m in input_messages]
+                )
+                span.set_attribute("output", rag_context)
                 span.set_attribute("bank_ids", bank_ids)
 
             step_id = str(uuid.uuid4())
@@ -473,9 +479,11 @@ class ChatAgent(ShieldRunnerMixin):
                     if event.stop_reason is not None:
                         stop_reason = event.stop_reason
                 span.set_attribute("stop_reason", stop_reason)
-                span.set_attribute("content", content)
                 span.set_attribute(
-                    "tool_calls", [tc.model_dump_json() for tc in tool_calls]
+                    "input", [m.model_dump_json() for m in input_messages]
+                )
+                span.set_attribute(
+                    "output", f"content: {content} tool_calls: {tool_calls}"
                 )
 
             stop_reason = stop_reason or StopReason.out_of_tokens

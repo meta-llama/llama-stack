@@ -18,6 +18,10 @@ class OpenTelemetryConfig(BaseModel):
         default="llama-stack",
         description="The service name to use for telemetry",
     )
+    export_endpoint: str = Field(
+        default="http://localhost:16686/api/traces",
+        description="The Jaeger query endpoint URL",
+    )
 
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:

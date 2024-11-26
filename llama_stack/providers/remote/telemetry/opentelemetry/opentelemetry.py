@@ -5,6 +5,9 @@
 # the root directory of this source tree.
 
 import threading
+from typing import Any, Dict, List
+
+import aiohttp
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -206,3 +209,57 @@ class OpenTelemetryAdapter(Telemetry):
 
     async def get_trace(self, trace_id: str) -> Trace:
         raise NotImplementedError("Trace retrieval not implemented yet")
+
+    async def get_traces_for_session(
+        self, session_id: str, lookback: str = "1h", limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        params = {
+            "tags": f'{{"session_id":"{session_id}"}}',
+            "lookback": lookback,
+            "limit": limit,
+            "service": self.config.service_name,
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    self.config.export_endpoint, params=params
+                ) as response:
+                    if response.status != 200:
+                        raise Exception(
+                            f"Failed to query Jaeger: {response.status} {await response.text()}"
+                        )
+
+                    traces_data = await response.json()
+                    processed_traces = []
+
+                    for trace_data in traces_data.get("data", []):
+                        trace_steps = []
+                        for span in trace_data.get("spans", []):
+                            step_info = {
+                                "step": span.get("operationName"),
+                                "start_time": span.get("startTime"),
+                                "duration": span.get("duration"),
+                            }
+
+                            tags = span.get("tags", [])
+                            for tag in tags:
+                                if tag.get("key") == "input":
+                                    step_info["input"] = tag.get("value")
+                                elif tag.get("key") == "output":
+                                    step_info["output"] = tag.get("value")
+                            # we only want to return steps which have input and output
+                            if step_info.get("input") and step_info.get("output"):
+                                trace_steps.append(step_info)
+
+                        processed_traces.append(
+                            {
+                                "trace_id": trace_data.get("traceID"),
+                                "steps": trace_steps,
+                            }
+                        )
+
+                    return processed_traces
+
+        except Exception as e:
+            raise Exception(f"Error querying Jaeger traces: {str(e)}") from e

@@ -6,7 +6,16 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, Protocol, runtime_checkable, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    runtime_checkable,
+    Union,
+)
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
@@ -135,3 +144,8 @@ class Telemetry(Protocol):
 
     @webmethod(route="/telemetry/get-trace", method="GET")
     async def get_trace(self, trace_id: str) -> Trace: ...
+
+    @webmethod(route="/telemetry/get-traces-for-session", method="POST")
+    async def get_traces_for_session(
+        self, session_id: str, lookback: str = "1h", limit: int = 100
+    ) -> List[Trace]: ...
