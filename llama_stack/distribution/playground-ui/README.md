@@ -5,7 +5,7 @@
 ## Running Streamlit App
 
 ```
-cd llama-stack-apps/playground-ui
+cd llama_stack/distribution/playground-ui
 pip install -r requirements.txt
 streamlit run app.py
 ```
