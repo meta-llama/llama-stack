@@ -137,6 +137,13 @@ Event = Annotated[
 ]
 
 
+@json_schema_type
+class EvalTrace(BaseModel):
+    step: str
+    input: str
+    output: str
+
+
 @runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/log-event")
@@ -145,11 +152,11 @@ class Telemetry(Protocol):
     @webmethod(route="/telemetry/get-trace", method="POST")
     async def get_trace(self, trace_id: str) -> Trace: ...
 
-    @webmethod(route="/telemetry/get-traces-for-eval", method="POST")
-    async def get_traces_for_eval(
+    @webmethod(route="/telemetry/get-traces-for-agent-eval", method="POST")
+    async def get_traces_for_agent_eval(
         self,
         session_ids: List[str],
         lookback: str = "1h",
         limit: int = 100,
         dataset_id: Optional[str] = None,
-    ) -> List[Trace]: ...
+    ) -> List[EvalTrace]: ...

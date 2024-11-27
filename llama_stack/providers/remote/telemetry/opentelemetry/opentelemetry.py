@@ -199,13 +199,13 @@ class OpenTelemetryAdapter(Telemetry):
                     span.end()
                     _GLOBAL_STORAGE["active_spans"].pop(span_id, None)
 
-    async def get_traces_for_eval(
+    async def get_traces_for_agent_eval(
         self,
         session_ids: List[str],
         lookback: str = "1h",
         limit: int = 100,
         dataset_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[EvalTrace]:
         traces = []
 
         # Fetch traces for each session ID individually
@@ -311,7 +311,7 @@ class OpenTelemetryAdapter(Telemetry):
         except Exception as e:
             raise Exception(f"Error querying Jaeger trace structure: {str(e)}") from e
 
-    async def get_trace_for_eval(self, trace_id: str) -> List[Dict[str, Any]]:
+    async def get_trace_for_eval(self, trace_id: str) -> List[EvalTrace]:
         """
         Get simplified trace information focusing on first-level children of create_and_execute_turn operations.
         Returns a list of spans with name, input, and output information, sorted by start time.
@@ -320,21 +320,19 @@ class OpenTelemetryAdapter(Telemetry):
         if not trace_data:
             return []
 
-        def find_execute_turn_children(
-            spans: List[Dict[str, Any]]
-        ) -> List[Dict[str, Any]]:
-            results = []
+        def find_execute_turn_children(spans: List[Dict[str, Any]]) -> List[EvalTrace]:
+            results: List[EvalTrace] = []
             for span in spans:
                 if span["name"] == "create_and_execute_turn":
                     # Extract and format children spans
                     children = sorted(span["children"], key=lambda x: x["start_time"])
                     for child in children:
                         results.append(
-                            {
-                                "name": child["name"],
-                                "input": child["tags"].get("input", ""),
-                                "output": child["tags"].get("output", ""),
-                            }
+                            EvalTrace(
+                                step=child["name"],
+                                input=child["tags"].get("input", ""),
+                                output=child["tags"].get("output", ""),
+                            )
                         )
                 # Recursively search in children
                 results.extend(find_execute_turn_children(span["children"]))

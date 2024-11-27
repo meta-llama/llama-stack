@@ -54,9 +54,9 @@ class ConsoleTelemetryImpl(Telemetry):
     async def get_trace(self, trace_id: str) -> Trace:
         raise NotImplementedError()
 
-    async def get_traces_for_session(
-        self, session_id: str, lookback: str = "1h", limit: int = 100
-    ) -> List[Trace]:
+    async def get_traces_for_agent_eval(
+        self, session_ids: List[str], lookback: str = "1h", limit: int = 100
+    ) -> List[EvalTrace]:
         raise NotImplementedError()
 
 
