@@ -19,9 +19,13 @@ def main():
     chat_page = st.Page(
         "page/playground/chat.py", title="Chat", icon="💬", default=True
     )
+    rag_page = st.Page("page/playground/rag.py", title="RAG", icon="💬", default=False)
 
     pg = st.navigation(
-        {"Evaluations": [application_evaluation_page], "Playground": [chat_page]}
+        {
+            "Evaluations": [application_evaluation_page],
+            "Playground": [chat_page, rag_page],
+        }
     )
     pg.run()
 

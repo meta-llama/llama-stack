@@ -54,6 +54,11 @@ with st.sidebar:
     )
 
     stream = st.checkbox("Stream", value=True)
+    system_prompt = st.text_area(
+        "System Prompt",
+        value="You are a helpful AI assistant.",
+        help="Initial instructions given to the AI to set its behavior and context",
+    )
 
 
 # Main chat interface
@@ -83,7 +88,10 @@ if prompt := st.chat_input("Example: What is Llama Stack?"):
         full_response = ""
 
         response = llama_stack_api.client.inference.chat_completion(
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
             model_id=selected_model,
             stream=stream,
             sampling_params={
