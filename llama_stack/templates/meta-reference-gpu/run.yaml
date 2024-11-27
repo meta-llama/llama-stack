@@ -40,6 +40,13 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config: {}
+  post_training:
+  - provider_id: meta-reference-post-training
+    provider_type: inline::meta-reference
+    config:
+      model: ${env.INFERENCE_MODEL}
+      checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
+
 metadata_store:
   namespace: null
   type: sqlite
@@ -51,6 +58,23 @@ models:
   provider_model_id: null
 shields: []
 memory_banks: []
-datasets: []
+datasets:
+  - dataset_id: alpaca
+    provider_id: huggingface-0
+    url:
+      uri: https://huggingface.co/datasets/tatsu-lab/alpaca
+    metadata:
+      path: tatsu-lab/alpaca
+      name: post_training_alpaca
+      split: train
+    dataset_schema:
+      instruction:
+        type: string
+      input:
+        type: string
+      output:
+        type: string
+      text:
+        type: string
 scoring_fns: []
 eval_tasks: []
