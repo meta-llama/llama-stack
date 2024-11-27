@@ -11,7 +11,7 @@ from typing import Optional
 from llama_stack_client import LlamaStackClient
 
 
-class LlamaStackEvaluation:
+class LlamaStackApi:
     def __init__(self):
         self.client = LlamaStackClient(
             base_url=os.environ.get("LLAMA_STACK_ENDPOINT", "http://localhost:5000"),
@@ -39,3 +39,6 @@ class LlamaStackEvaluation:
         return self.client.scoring.score(
             input_rows=[row], scoring_functions=scoring_params
         )
+
+
+llama_stack_api = LlamaStackApi()
