@@ -1,4 +1,4 @@
-# LLama Stack Playground UI
+# LLama Stack UI
 
 [!NOTE] This is a work in progress.
 
