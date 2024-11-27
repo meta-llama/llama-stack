@@ -60,9 +60,15 @@ with st.sidebar:
         help="Initial instructions given to the AI to set its behavior and context",
     )
 
+    # Add clear chat button to sidebar
+    if st.button("Clear Chat", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
+
 
 # Main chat interface
 st.title("🦙 Chat")
+
 
 # Initialize chat history
 if "messages" not in st.session_state:
