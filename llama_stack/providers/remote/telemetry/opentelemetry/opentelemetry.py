@@ -19,6 +19,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
+from llama_stack.distribution.datatypes import Api
+
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
@@ -49,8 +51,9 @@ def is_tracing_enabled(tracer):
 
 
 class OpenTelemetryAdapter(Telemetry):
-    def __init__(self, config: OpenTelemetryConfig):
+    def __init__(self, config: OpenTelemetryConfig, deps) -> None:
         self.config = config
+        self.datasetio = deps[Api.datasetio]
 
         resource = Resource.create(
             {
@@ -230,18 +233,29 @@ class OpenTelemetryAdapter(Telemetry):
                         traces_data = await response.json()
                         seen_trace_ids = set()
 
-                        # For each trace ID, get the detailed trace information
                         for trace_data in traces_data.get("data", []):
                             trace_id = trace_data.get("traceID")
                             if trace_id and trace_id not in seen_trace_ids:
                                 seen_trace_ids.add(trace_id)
-                                trace_details = await self.get_trace_for_eval(trace_id)
-                                if trace_details:
-                                    traces.append(trace_details)
+                                trace_details = await self.get_trace_for_eval(
+                                    trace_id, session_id
+                                )
+                                traces.extend(trace_details)
 
             except Exception as e:
                 raise Exception(f"Error querying Jaeger traces: {str(e)}") from e
 
+        if dataset_id:
+            traces_dict = [
+                {
+                    "step": trace.step,
+                    "input": trace.input,
+                    "output": trace.output,
+                    "session_id": trace.session_id,
+                }
+                for trace in traces
+            ]
+            await self.datasetio.upload_rows(dataset_id, traces_dict)
         return traces
 
     async def get_trace(self, trace_id: str) -> Dict[str, Any]:
@@ -311,7 +325,9 @@ class OpenTelemetryAdapter(Telemetry):
         except Exception as e:
             raise Exception(f"Error querying Jaeger trace structure: {str(e)}") from e
 
-    async def get_trace_for_eval(self, trace_id: str) -> List[EvalTrace]:
+    async def get_trace_for_eval(
+        self, trace_id: str, session_id: str
+    ) -> List[EvalTrace]:
         """
         Get simplified trace information focusing on first-level children of create_and_execute_turn operations.
         Returns a list of spans with name, input, and output information, sorted by start time.
@@ -332,6 +348,7 @@ class OpenTelemetryAdapter(Telemetry):
                                 step=child["name"],
                                 input=child["tags"].get("input", ""),
                                 output=child["tags"].get("output", ""),
+                                session_id=session_id,
                             )
                         )
                 # Recursively search in children

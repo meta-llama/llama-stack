@@ -7,9 +7,10 @@
 from .config import OpenTelemetryConfig
 
 
-async def get_adapter_impl(config: OpenTelemetryConfig, _deps):
+async def get_adapter_impl(config: OpenTelemetryConfig, deps):
     from .opentelemetry import OpenTelemetryAdapter
 
-    impl = OpenTelemetryAdapter(config)
+    print(f"deps: {deps}")
+    impl = OpenTelemetryAdapter(config, deps)
     await impl.initialize()
     return impl

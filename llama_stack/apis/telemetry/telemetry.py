@@ -139,6 +139,7 @@ Event = Annotated[
 
 @json_schema_type
 class EvalTrace(BaseModel):
+    session_id: str
     step: str
     input: str
     output: str

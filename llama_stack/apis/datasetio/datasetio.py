@@ -37,3 +37,8 @@ class DatasetIO(Protocol):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult: ...
+
+    @webmethod(route="/datasetio/upload", method="POST")
+    async def upload_rows(
+        self, dataset_id: str, rows: List[Dict[str, Any]]
+    ) -> None: ...

@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.datasetio import *  # noqa: F403
 
@@ -95,3 +95,22 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             total_count=len(rows),
             next_page_token=str(end),
         )
+
+    async def upload_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+        dataset_def = self.dataset_infos[dataset_id]
+        loaded_dataset = load_hf_dataset(dataset_def)
+
+        # Convert rows to HF Dataset format
+        new_dataset = hf_datasets.Dataset.from_list(rows)
+
+        # Concatenate the new rows with existing dataset
+        updated_dataset = hf_datasets.concatenate_datasets(
+            [loaded_dataset, new_dataset]
+        )
+
+        if dataset_def.metadata.get("path", None):
+            updated_dataset.push_to_hub(dataset_def.metadata["path"])
+        else:
+            raise NotImplementedError(
+                "Uploading to URL-based datasets is not supported yet"
+            )
