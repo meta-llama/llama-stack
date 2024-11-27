@@ -30,6 +30,7 @@ class MetaReferencePostTrainingImpl:
     )
 
     OptimizerConfig(
+        optimizer_type=OptimizerType.adamw,
         lr=3e-4,
         lr_min=3e-5,
         weight_decay=0.1,
@@ -50,16 +51,16 @@ class MetaReferencePostTrainingImpl:
 
     def supervised_fine_tune(
         self,
-        job_uuid: str = "1234",
-        model: str = " meta-llama/Llama-3.2-3B-Instruct",
-        dataset_id: str = "alpaca",
-        validation_dataset_id: str = "alpaca",
-        algorithm: FinetuningAlgorithm = FinetuningAlgorithm.lora,
-        algorithm_config: LoraFinetuningConfig = LoraFinetuningConfig,
-        optimizer_config: OptimizerConfig = OptimizerConfig,
-        training_config: TrainingConfig = TrainingConfig,
-        hyperparam_search_config: Dict[str, Any] = {},
-        logger_config: Dict[str, Any] = {},
+        job_uuid: Optional[str] = "1234",
+        model: Optional[str] = " meta-llama/Llama-3.2-3B-Instruct",
+        dataset_id: Optional[str] = "alpaca",
+        validation_dataset_id: Optional[str] = "alpaca",
+        algorithm: Optional[FinetuningAlgorithm] = FinetuningAlgorithm.lora,
+        algorithm_config: Optional[LoraFinetuningConfig] = LoraFinetuningConfig,
+        optimizer_config: Optional[OptimizerConfig] = OptimizerConfig,
+        training_config: Optional[TrainingConfig] = TrainingConfig,
+        hyperparam_search_config: Optional[Dict[str, Any]] = {},
+        logger_config: Optional[Dict[str, Any]] = {},
     ) -> PostTrainingJob:
         # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = PostTrainingSFTRequest(
