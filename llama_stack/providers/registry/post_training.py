@@ -12,6 +12,7 @@ from llama_stack.distribution.datatypes import *  # noqa: F403
 META_REFERENCE_DEPS = [
     "torch",
     "torchtune",
+    "torchao",
     "numpy",
 ]
 
@@ -24,5 +25,8 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=META_REFERENCE_DEPS,
             module="llama_stack.providers.inline.post_training.meta_reference",
             config_class="llama_stack.providers.inline.post_training.meta_reference.MetaReferencePostTrainingConfig",
+            api_dependencies=[
+                Api.datasetio,
+            ],
         ),
     ]

@@ -38,7 +38,7 @@ from torchtune.modules.peft import (
     set_trainable_params,
     validate_missing_and_unexpected_for_lora,
 )
-from torchtune.training.lr_scheduler import get_cosine_schedule_with_warmup
+from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
 
 log = logging.getLogger(__name__)
 

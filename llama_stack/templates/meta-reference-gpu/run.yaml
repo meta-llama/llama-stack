@@ -8,6 +8,8 @@ apis:
 - memory
 - safety
 - telemetry
+- datasetio
+- post_training
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -16,6 +18,10 @@ providers:
       model: ${env.INFERENCE_MODEL}
       max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
+  datasetio:
+  - provider_id: huggingface-0
+    provider_type: remote::huggingface
+    config: {}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss
