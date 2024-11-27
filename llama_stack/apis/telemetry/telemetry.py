@@ -142,10 +142,14 @@ class Telemetry(Protocol):
     @webmethod(route="/telemetry/log-event")
     async def log_event(self, event: Event) -> None: ...
 
-    @webmethod(route="/telemetry/get-trace", method="GET")
+    @webmethod(route="/telemetry/get-trace", method="POST")
     async def get_trace(self, trace_id: str) -> Trace: ...
 
-    @webmethod(route="/telemetry/get-traces-for-session", method="POST")
-    async def get_traces_for_session(
-        self, session_id: str, lookback: str = "1h", limit: int = 100
+    @webmethod(route="/telemetry/get-traces-for-eval", method="POST")
+    async def get_traces_for_eval(
+        self,
+        session_ids: List[str],
+        lookback: str = "1h",
+        limit: int = 100,
+        dataset_id: Optional[str] = None,
     ) -> List[Trace]: ...
