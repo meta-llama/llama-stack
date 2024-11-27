@@ -16,7 +16,8 @@ from pydantic import BaseModel, Field
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.common.training_types import *  # noqa: F403
-import torch
+
+# import torch
 
 
 class OptimizerType(Enum):
@@ -36,7 +37,7 @@ class OptimizerConfig(BaseModel):
 
 @json_schema_type
 class TrainingConfig(BaseModel):
-    dtype: torch.dtype
+    dtype: str
     n_epochs: int
     max_steps_per_epoch: int
     gradient_accumulation_steps: int
@@ -116,9 +117,7 @@ class PostTrainingSFTRequest(BaseModel):
     validation_dataset_id: str
 
     algorithm: FinetuningAlgorithm
-    algorithm_config: Union[
-        LoraFinetuningConfig, QLoraFinetuningConfig, DoraFinetuningConfig
-    ]
+    algorithm_config: LoraFinetuningConfig
 
     optimizer_config: OptimizerConfig
     training_config: TrainingConfig
@@ -189,9 +188,7 @@ class PostTraining(Protocol):
         dataset_id: str,
         validation_dataset_id: str,
         algorithm: FinetuningAlgorithm,
-        algorithm_config: Union[
-            LoraFinetuningConfig, QLoraFinetuningConfig, DoraFinetuningConfig
-        ],
+        algorithm_config: LoraFinetuningConfig,
         optimizer_config: OptimizerConfig,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
@@ -206,7 +203,7 @@ class PostTraining(Protocol):
         dataset_id: str,
         validation_dataset_id: str,
         algorithm: RLHFAlgorithm,
-        algorithm_config: Union[DPOAlignmentConfig],
+        algorithm_config: DPOAlignmentConfig,
         optimizer_config: OptimizerConfig,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
