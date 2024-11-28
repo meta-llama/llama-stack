@@ -120,13 +120,13 @@ export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 
 3. **Run the Llama Stack**:
    - Run the stack with command shared by the API from earlier:
-     ```bash
-     llama stack run ollama  \
+```bash
+llama stack run ollama  \
     --port $LLAMA_STACK_PORT \
     --env INFERENCE_MODEL=$INFERENCE_MODEL \
     --env SAFETY_MODEL=$SAFETY_MODEL \
     --env OLLAMA_URL=http://localhost:11434
-     ```
+```
 
 Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
 
