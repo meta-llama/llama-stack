@@ -17,7 +17,7 @@ from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 class KVStoreType(Enum):
     redis = "redis"
     sqlite = "sqlite"
-    postgres = "postgres",
+    postgres = "postgres"
     mongodb = "mongodb"
 
 
@@ -110,7 +110,7 @@ class PostgresKVStoreConfig(CommonConfig):
 class MongoDBKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.mongodb.value] = KVStoreType.mongodb.value
     host: str = "localhost"
-    port: int = 5432
+    port: int = 27017
     db: str = "llamastack"
     user: str = None
     password: Optional[str] = None

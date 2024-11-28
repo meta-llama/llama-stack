@@ -1,4 +1,3 @@
-import datetime
 import logging
 from datetime import datetime
 from typing import Optional, List
@@ -25,11 +24,11 @@ class MongoDBKVStoreImpl(KVStore):
                 "username": self.config.user,
                 "password": self.config.password,
             }
-            conn_creds = {k: v for k, v in conn_creds if v is not None}
+            conn_creds = {k: v for k, v in conn_creds.items() if v is not None}
 
             try:
                 self.conn = MongoClient(**conn_creds)
-                self.collection = self.conn[self.config.db]
+                self.collection = self.conn[self.config.db][self.config.collection_name]
             except (ConnectionError, ConfigurationError) as e:
                 raise Exception(f"Failed to connect to MongoDB: {e}")
         except Exception as e:
@@ -60,11 +59,7 @@ class MongoDBKVStoreImpl(KVStore):
     async def get(self, key: str) -> Optional[str]:
         key = self._namespaced_key(key)
         query = {
-            "key": key,
-            "$or": [
-                {"expiration": {"$exists": False}},
-                {"expiration": {"$gt": datetime.now(datetime.UTC)}},
-            ],
+            "key": key
         }
         result = self.collection.find_one(query, {"value": 1, "_id": 0})
         return result["value"] if result else None
@@ -78,10 +73,6 @@ class MongoDBKVStoreImpl(KVStore):
         end_key = self._namespaced_key(end_key)
         query = {
             "key": {"$gte": start_key, "$lt": end_key},
-            "$or": [
-                {"expiration": {"$exists": False}},
-                {"expiration": {"$gt": datetime.now(datetime.UTC)}},
-            ],
         }
         cursor = self.collection.find(query, {"value": 1, "_id": 0}).sort("key", 1)
         return [doc["value"] for doc in cursor]
