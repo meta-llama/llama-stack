@@ -21,10 +21,16 @@ def main():
     )
     rag_page = st.Page("page/playground/rag.py", title="RAG", icon="💬", default=False)
 
+    # Distribution pages
+    distribution_page = st.Page(
+        "page/distribution/distro.py", title="Distribution", icon="🔍", default=False
+    )
+
     pg = st.navigation(
         {
             "Evaluations": [application_evaluation_page],
             "Playground": [chat_page, rag_page],
+            "Distribution": [distribution_page],
         }
     )
     pg.run()
