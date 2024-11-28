@@ -20,46 +20,18 @@ class MetaReferencePostTrainingImpl:
         self.config = config
         self.datasetio_api = datasetio_api
 
-    LoraFinetuningConfig(
-        lora_attn_modules=["q_proj", "v_proj", "output_proj"],
-        apply_lora_to_mlp=True,
-        apply_lora_to_output=False,
-        rank=8,
-        alpha=16,
-    )
-
-    OptimizerConfig(
-        optimizer_type=OptimizerType.adamw,
-        lr=3e-4,
-        lr_min=3e-5,
-        weight_decay=0.1,
-        num_warmup_steps=100,
-    )
-
-    TrainingConfig(
-        dtype="bf16",
-        n_epochs=1,
-        max_steps_per_epoch=10,
-        gradient_accumulation_steps=1,
-        batch_size=1,
-        shuffle=1,
-        enable_activation_checkpointing=False,
-        memory_efficient_fsdp_wrap=False,
-        fsdp_cpu_offload=False,
-    )
-
     def supervised_fine_tune(
         self,
-        job_uuid: Optional[str] = "1234",
-        model: Optional[str] = " meta-llama/Llama-3.2-3B-Instruct",
-        dataset_id: Optional[str] = "alpaca",
-        validation_dataset_id: Optional[str] = "alpaca",
-        algorithm: Optional[FinetuningAlgorithm] = FinetuningAlgorithm.lora,
-        algorithm_config: Optional[LoraFinetuningConfig] = LoraFinetuningConfig,
-        optimizer_config: Optional[OptimizerConfig] = OptimizerConfig,
-        training_config: Optional[TrainingConfig] = TrainingConfig,
-        hyperparam_search_config: Optional[Dict[str, Any]] = {},
-        logger_config: Optional[Dict[str, Any]] = {},
+        job_uuid: str,
+        model: str,
+        dataset_id: str,
+        validation_dataset_id: str,
+        algorithm: FinetuningAlgorithm,
+        algorithm_config: LoraFinetuningConfig,
+        optimizer_config: OptimizerConfig,
+        training_config: TrainingConfig,
+        hyperparam_search_config: Dict[str, Any],
+        logger_config: Dict[str, Any],
     ) -> PostTrainingJob:
         # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = PostTrainingSFTRequest(
@@ -71,6 +43,7 @@ class MetaReferencePostTrainingImpl:
             algorithm_config=algorithm_config,
             optimizer_config=optimizer_config,
             training_config=training_config,
+            hyperparam_search_config=hyperparam_search_config,
             logger_config=logger_config,
         )
         if request.algorithm == FinetuningAlgorithm.lora:

@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 from llama_stack.apis.datasetio import DatasetIO
 from torch import nn
+from torchtune import utils as torchtune_utils
 from llama_stack.apis.post_training import *  # noqa
 from llama_stack.apis.post_training import PostTrainingSFTRequest
 
@@ -56,14 +57,14 @@ class LoraFinetuningSingleDevice:
         # self._device = utils.get_device(device=cfg.device)
         self.config = config
         self.request = request
-        self._device = training.utils.get_device(device="cuda")
+        self._device = torchtune_utils.get_device(device="cuda")
         self._dtype = training.get_dtype(
             request.training_config.dtype, device=self._device
         )
-        self.model_id = request.model
+        self.model_id = config.model
 
         # hardcode it for now and see how it works with get_training_job_artifacts
-        self._output_dir = f"~/.llama/checkpoints/post_training/{request.model_id}"
+        self._output_dir = f"~/.llama/checkpoints/post_training/{self.model_id}"
 
         self._log_every_n_steps = 1
         self._log_peak_memory_stats = False
@@ -111,8 +112,8 @@ class LoraFinetuningSingleDevice:
                 return [f"Error: The directory '{checkpoint_dir}' does not exist."]
 
         self._checkpointer = training.FullModelMetaCheckpointer(
-            checkpoint_dir=self.config.checkpoint_dir,
-            checkpoint_files=get_checkpoint_files,
+            checkpoint_dir=self.checkpoint_dir,
+            checkpoint_files=get_checkpoint_files(self.checkpoint_dir),
             output_dir=self._output_dir,
             # todo: automatically get this info from model
             model_type="LLAMA3",
@@ -449,7 +450,7 @@ class LoraFinetuningSingleDevice:
                 # ):
                 #     torch.cuda.memory._record_memory_history()
 
-                training.utils.batch_to_device(batch, self._device)
+                torchtune_utils.batch_to_device(batch, self._device)
 
                 # Calculate the number of unmasked tokens in the current batch
                 # and increment the total number of tokens seen in the step
