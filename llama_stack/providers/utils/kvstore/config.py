@@ -56,15 +56,15 @@ class SqliteKVStoreConfig(CommonConfig):
 
     @classmethod
     def sample_run_config(
-            cls, __distro_dir__: str = "runtime", db_name: str = "kvstore.db"
+        cls, __distro_dir__: str = "runtime", db_name: str = "kvstore.db"
     ):
         return {
             "type": "sqlite",
             "namespace": None,
             "db_path": "${env.SQLITE_STORE_DIR:~/.llama/"
-                       + __distro_dir__
-                       + "}/"
-                       + db_name,
+            + __distro_dir__
+            + "}/"
+            + db_name,
         }
 
 
@@ -126,7 +126,7 @@ class MongoDBKVStoreConfig(CommonConfig):
             "db": "${env.MONGODB_DB}",
             "user": "${env.MONGODB_USER}",
             "password": "${env.MONGODB_PASSWORD}",
-            "table_name": "${env.MONGODB_COLLECTION_NAME:" + collection_name + "}",
+            "collection_name": "${env.MONGODB_COLLECTION_NAME:" + collection_name + "}",
         }
 
 
