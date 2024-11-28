@@ -166,18 +166,18 @@ def rag_chat_page():
 
         # Display assistant response
         with st.chat_message("assistant"):
-            message_placeholder = st.empty()
             retrieval_message_placeholder = st.empty()
+            message_placeholder = st.empty()
             full_response = ""
             retrieval_response = ""
             for log in EventLogger().log(response):
                 log.print()
                 if log.role == "memory_retrieval":
-                    retrieval_response += log.content.replace(">", "").strip()
+                    retrieval_response += log.content.replace("====", "").strip()
+                    retrieval_message_placeholder.info(retrieval_response)
                 else:
                     full_response += log.content
                     message_placeholder.markdown(full_response + "▌")
-            # retrieval_message_placeholder.info(retrieval_response)
             message_placeholder.markdown(full_response)
 
             st.session_state.messages.append(
