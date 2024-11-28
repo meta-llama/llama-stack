@@ -88,7 +88,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 4. **Install Llama Stack**:
    - Open a new terminal and install `llama-stack`:
      ```bash
-     conda activate ollama 
+     conda activate ollama
      pip install llama-stack==0.0.53
      ```
 
