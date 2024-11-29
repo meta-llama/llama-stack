@@ -1,9 +1,14 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 import logging
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
 from pymongo import MongoClient
-from pymongo.errors import ConfigurationError
 
 from llama_stack.providers.utils.kvstore import KVStore, MongoDBKVStoreConfig
 
@@ -25,12 +30,8 @@ class MongoDBKVStoreImpl(KVStore):
                 "password": self.config.password,
             }
             conn_creds = {k: v for k, v in conn_creds.items() if v is not None}
-
-            try:
-                self.conn = MongoClient(**conn_creds)
-                self.collection = self.conn[self.config.db][self.config.collection_name]
-            except (ConnectionError, ConfigurationError) as e:
-                raise Exception(f"Failed to connect to MongoDB: {e}")
+            self.conn = MongoClient(**conn_creds)
+            self.collection = self.conn[self.config.db][self.config.collection_name]
         except Exception as e:
             log.exception("Could not connect to MongoDB database server")
             raise RuntimeError("Could not connect to MongoDB database server") from e
@@ -41,26 +42,16 @@ class MongoDBKVStoreImpl(KVStore):
         return f"{self.config.namespace}:{key}"
 
     async def set(
-            self, key: str, value: str, expiration: Optional[datetime] = None
+        self, key: str, value: str, expiration: Optional[datetime] = None
     ) -> None:
+
         key = self._namespaced_key(key)
-        update_query = {
-            "$set": {
-                "value": value,
-                "expiration": expiration
-            }
-        }
-        self.collection.update_one(
-            {"key": key},
-            update_query,
-            upsert=True
-        )
+        update_query = {"$set": {"value": value, "expiration": expiration}}
+        self.collection.update_one({"key": key}, update_query, upsert=True)
 
     async def get(self, key: str) -> Optional[str]:
         key = self._namespaced_key(key)
-        query = {
-            "key": key
-        }
+        query = {"key": key}
         result = self.collection.find_one(query, {"value": 1, "_id": 0})
         return result["value"] if result else None
 
