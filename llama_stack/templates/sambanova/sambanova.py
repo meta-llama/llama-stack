@@ -9,15 +9,15 @@ from pathlib import Path
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
-from llama_stack.providers.remote.inference.ssambanova import SsambanovaImplConfig
-from llama_stack.providers.remote.inference.ssambanova.ssambanova import MODEL_ALIASES
+from llama_stack.providers.remote.inference.sambanova import SambanovaImplConfig
+from llama_stack.providers.remote.inference.sambanova.sambanova import MODEL_ALIASES
 
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::ssambanova"],
+        "inference": ["remote::sambanova"],
         "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -25,9 +25,9 @@ def get_distribution_template() -> DistributionTemplate:
     }
 
     inference_provider = Provider(
-        provider_id="ssambanova",
-        provider_type="remote::ssambanova",
-        config=SsambanovaImplConfig.sample_run_config(),
+        provider_id="sambanova",
+        provider_type="remote::sambanova",
+        config=SambanovaImplConfig.sample_run_config(),
     )
 
     core_model_to_hf_repo = {
@@ -42,9 +42,9 @@ def get_distribution_template() -> DistributionTemplate:
     ]
 
     return DistributionTemplate(
-        name="ssambanova",
+        name="sambanova",
         distro_type="self_hosted",
-        description="Use Ssambanova for running LLM inference",
+        description="Use Sambanova for running LLM inference",
         docker_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
@@ -63,9 +63,9 @@ def get_distribution_template() -> DistributionTemplate:
                 "5001",
                 "Port for the Llama Stack distribution server",
             ),
-            "SSAMBANOVA_API_KEY": (
+            "SAMBANOVA_API_KEY": (
                 "",
-                "ssambanova API Key",
+                "sambanova API Key",
             ),
         },
     )

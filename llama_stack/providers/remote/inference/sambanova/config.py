@@ -10,12 +10,12 @@ from pydantic import BaseModel, Field
 
 
 @json_schema_type
-class SsambanovaImplConfig(BaseModel):
+class SambanovaImplConfig(BaseModel):
     url: str = Field(
         default="https://api.sambanova.ai/v1",
-        description="The URL for the Ssambanova model serving endpoint",
+        description="The URL for the Sambanova model serving endpoint",
     )
     api_token: str = Field(
         default=None,
-        description="The Ssambanova API token",
+        description="The Sambanova API token",
     )

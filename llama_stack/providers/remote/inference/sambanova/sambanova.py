@@ -30,7 +30,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
 )
 
-from .config import SsambanovaImplConfig
+from .config import SambanovaImplConfig
 
 
 model_aliases = [
@@ -57,8 +57,8 @@ model_aliases = [
 ]
 
 
-class SsambanovaInferenceAdapter(ModelRegistryHelper, Inference):
-    def __init__(self, config: SsambanovaImplConfig) -> None:
+class SambanovaInferenceAdapter(ModelRegistryHelper, Inference):
+    def __init__(self, config: SambanovaImplConfig) -> None:
         ModelRegistryHelper.__init__(
             self,
             model_aliases=model_aliases,

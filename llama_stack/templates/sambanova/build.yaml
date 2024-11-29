@@ -1,11 +1,11 @@
 version: "2"
-name: ssambanova
+name: sambanova
 distribution_spec:
-  description: Use Ssambanova for running LLM inference
+  description: Use Sambanova for running LLM inference
   docker_image: null
   providers:
     inference:
-      - remote::ssambanova
+      - remote::sambanova
     memory:
       - inline::faiss
     safety:

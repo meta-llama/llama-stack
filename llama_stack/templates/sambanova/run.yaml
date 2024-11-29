@@ -1,7 +1,7 @@
 version: "2"
-image_name: ssambanova
+image_name: sambanova
 docker_image: null
-conda_env: ssambanova
+conda_env: sambanova
 apis:
   - inference
   - safety
@@ -13,11 +13,11 @@ apis:
   - telemetry
 providers:
   inference:
-    - provider_id: ssambanova
-      provider_type: remote::ssambanova
+    - provider_id: sambanova
+      provider_type: remote::sambanova
       config:
         url: https://api.sambanova.ai/v1
-        api_token: ${env.SSAMBANOVA_API_KEY}
+        api_token: ${env.SAMBANOVA_API_KEY}
   safety:
     - provider_id: llama-guard
       provider_type: inline::llama-guard
@@ -29,7 +29,7 @@ providers:
         persistence_store:
           type: sqlite
           namespace: null
-          db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ssambanova}/agents_store.db
+          db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/agents_store.db
   memory:
     - provider_id: faiss
       provider_type: inline::faiss
@@ -37,7 +37,7 @@ providers:
         kvstore:
           type: sqlite
           namespace: null
-          db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ssambanova}/faiss_store.db
+          db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/faiss_store.db
   datasetio:
     - provider_id: localfs
       provider_type: inline::localfs

@@ -4,14 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .config import SsambanovaImplConfig
-from .ssambanova import SsambanovaInferenceAdapter
+from .config import SambanovaImplConfig
+from .sambanova import SambanovaInferenceAdapter
 
 
-async def get_adapter_impl(config: SsambanovaImplConfig, _deps):
+async def get_adapter_impl(config: SambanovaImplConfig, _deps):
     assert isinstance(
-        config, SsambanovaImplConfig
+        config, SambanovaImplConfig
     ), f"Unexpected config type: {type(config)}"
-    impl = SsambanovaInferenceAdapter(config)
+    impl = SambanovaInferenceAdapter(config)
     await impl.initialize()
     return impl

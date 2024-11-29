@@ -1,4 +1,4 @@
-# Ssambanova Distribution
+# Sambanova Distribution
 
 ```{toctree}
 :maxdepth: 2
@@ -37,9 +37,9 @@ The following models are available by default:
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a Ssambanova API Key. You can get one by visiting [Ssambanova](https://cloud.sambanova.ai/apis).
+Make sure you have access to a Sambanova API Key. You can get one by visiting [Sambanova](https://cloud.sambanova.ai/apis).
 
-## Running Llama Stack with Ssambanova
+## Running Llama Stack with Sambanova
 
 You can do this via Conda (build code) or Docker which has a pre-built image.
 
@@ -62,16 +62,16 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
-  --env SSAMBANOVA_API_KEY=$SSAMBANOVA_API_KEY \
+  --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY \
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
 
 ### Via Conda
 
 ```bash
-llama stack build --template ssambanova --image-type conda
+llama stack build --template sambanova --image-type conda
 llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
-  --env SSAMBANOVA_API_KEY=$SSAMBANOVA_API_KEY \
+  --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY \
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
