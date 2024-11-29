@@ -229,13 +229,13 @@ This command initializes the model to interact with your local Llama Stack insta
 **Explore Other Guides**: Dive deeper into specific topics by following these guides:
 - [Understanding Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html#decide-your-inference-provider)
 - [Inference 101](00_Inference101.ipynb)
-- [Local and Cloud Model Toggling 101](00_Local_Cloud_Inference101.ipynb)
-- [Prompt Engineering](01_Prompt_Engineering101.ipynb)
-- [Chat with Image - LlamaStack Vision API](02_Image_Chat101.ipynb)
-- [Tool Calling: How to and Details](03_Tool_Calling101.ipynb)
-- [Memory API: Show Simple In-Memory Retrieval](04_Memory101.ipynb)
-- [Using Safety API in Conversation](05_Safety101.ipynb)
-- [Agents API: Explain Components](06_Agents101.ipynb)
+- [Local and Cloud Model Toggling 101](01_Local_Cloud_Inference101.ipynb)
+- [Prompt Engineering](02_Prompt_Engineering101.ipynb)
+- [Chat with Image - LlamaStack Vision API](03_Image_Chat101.ipynb)
+- [Tool Calling: How to and Details](04_Tool_Calling101.ipynb)
+- [Memory API: Show Simple In-Memory Retrieval](05_Memory101.ipynb)
+- [Using Safety API in Conversation](06_Safety101.ipynb)
+- [Agents API: Explain Components](07_Agents101.ipynb)
 
 
 **Explore Client SDKs**: Utilize our client SDKs for various languages to integrate Llama Stack into your applications:
