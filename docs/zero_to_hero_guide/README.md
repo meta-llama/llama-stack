@@ -39,7 +39,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 
 1. **Download Ollama App**:
    - Go to [https://ollama.com/download](https://ollama.com/download).
-   - Download and unzip `Ollama-darwin.zip`.
+   - Follow instructions based on the OS you are on. For example, if you are on a Mac, download and unzip `Ollama-darwin.zip`. 
    - Run the `Ollama` application.
 
 1. **Download the Ollama CLI**:
@@ -88,7 +88,7 @@ If you're looking for more specific topics like tool calling or agent setup, we 
 4. **Install Llama Stack**:
    - Open a new terminal and install `llama-stack`:
      ```bash
-     conda activate hack
+     conda activate ollama
      pip install llama-stack==0.0.53
      ```
 
@@ -113,7 +113,7 @@ Build Successful! Next steps:
 2. **Set the ENV variables by exporting them to the terminal**:
 ```bash
 export OLLAMA_URL="http://localhost:11434"
-export LLAMA_STACK_PORT=5001
+export LLAMA_STACK_PORT=5051
 export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
 export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
 ```
@@ -125,10 +125,10 @@ export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
         --port $LLAMA_STACK_PORT \
         --env INFERENCE_MODEL=$INFERENCE_MODEL \
         --env SAFETY_MODEL=$SAFETY_MODEL \
-        --env OLLAMA_URL=http://localhost:11434
+        --env OLLAMA_URL=$OLLAMA_URL
     ```
 
-Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model
+Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model.
 
 The server will start and listen on `http://localhost:5051`.
 
@@ -139,7 +139,7 @@ The server will start and listen on `http://localhost:5051`.
 After setting up the server, open a new terminal window and verify it's working by sending a `POST` request using `curl`:
 
 ```bash
-curl http://localhost:5051/inference/chat_completion \
+curl http://localhost:$LLAMA_STACK_PORT/inference/chat_completion \
 -H "Content-Type: application/json" \
 -d '{
     "model": "Llama3.2-3B-Instruct",
@@ -176,7 +176,7 @@ You can also interact with the Llama Stack server using a simple Python script. 
 The `llama-stack-client` library offers a robust and efficient python methods for interacting with the Llama Stack server.
 
 ```bash
-conda activate your-llama-stack-conda-env
+conda activate ollama
 ```
 
 Note, the client library gets installed by default if you install the server library
@@ -187,6 +187,8 @@ touch test_llama_stack.py
 ```
 
 ### 3. Create a Chat Completion Request in Python
+
+In `test_llama_stack.py`, write the following code:
 
 ```python
 from llama_stack_client import LlamaStackClient
