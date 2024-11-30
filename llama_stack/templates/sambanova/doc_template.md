@@ -41,37 +41,29 @@ Make sure you have access to a Sambanova API Key. You can get one by visiting [S
 
 ## Running Llama Stack with Sambanova
 
-You can do this via Conda (build code) or Docker which has a pre-built image.
+You can do this via Conda (build code).
 
 ### Available INFERENCE_MODEL
 
-- Meta-Llama-3.1-8B-Instruct
-- Meta-Llama-3.1-70B-Instruct
-- Meta-Llama-3.1-405B-Instruct
-- Meta-Llama-3.2-1B-Instruct
-- Meta-Llama-3.2-3B-Instruct
-
-### Via Docker
-
-This method allows you to get started quickly without having to build the distribution code.
-
-```bash
-LLAMA_STACK_PORT=5001
-docker run \
-  -it \
-  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  llamastack/distribution-{{ name }} \
-  --port $LLAMA_STACK_PORT \
-  --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL
-```
+- meta-llama/Llama-3.1-8B-Instruct
+- meta-llama/Llama-3.1-70B-Instruct
+- meta-llama/Llama-3.1-405B-Instruct
+- meta-llama/Llama-3.2-1B-Instruct
+- meta-llama/Llama-3.2-3B-Instruct
 
 ### Via Conda
 
 ```bash
 llama stack build --template sambanova --image-type conda
-llama stack run ./run.yaml \
+
+conda activate llamastack-sambanova
+
+export SAMBANOVA_API_KEY={YOUR_API_KEY}
+export INFERENCE_MODEL={CHOOSE_AND_FIND_AVAILABLE_MODEL_ABOVE}
+
+llama stack run \
   --port $LLAMA_STACK_PORT \
   --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  sambanova
 ```
