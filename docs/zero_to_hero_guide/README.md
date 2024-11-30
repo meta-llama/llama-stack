@@ -2,7 +2,7 @@
 
 Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Providers providing their implementations. These building blocks are assembled into Distributions which are easy for developers to get from zero to production.
 
-This guide will walk you through an end-to-end workflow with Llama Stack with Ollama as the inference provider and ChromaDB as the memory provider. Please note the steps for configuring your provider and distribution will vary a little depending on the services you use. However, the user experience will remain universal - this is the power of Llama-Stack. 
+This guide will walk you through an end-to-end workflow with Llama Stack with Ollama as the inference provider and ChromaDB as the memory provider. Please note the steps for configuring your provider and distribution will vary a little depending on the services you use. However, the user experience will remain universal - this is the power of Llama-Stack.
 
 If you're looking for more specific topics, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
