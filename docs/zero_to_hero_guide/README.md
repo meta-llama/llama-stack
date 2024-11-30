@@ -23,7 +23,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 
 1. **Download Ollama App**:
    - Go to [https://ollama.com/download](https://ollama.com/download).
-   - Follow instructions based on the OS you are on. For example, if you are on a Mac, download and unzip `Ollama-darwin.zip`. 
+   - Follow instructions based on the OS you are on. For example, if you are on a Mac, download and unzip `Ollama-darwin.zip`.
    - Run the `Ollama` application.
 
 1. **Download the Ollama CLI**:
