@@ -311,5 +311,11 @@
     "uvicorn",
     "sentence-transformers --no-deps",
     "torch --index-url https://download.pytorch.org/whl/cpu"
+  ],
+  "sambanova": [
+    "aiohttp",
+    "aiosqlite",
+    "fastapi",
+    "openai"
   ]
 }
