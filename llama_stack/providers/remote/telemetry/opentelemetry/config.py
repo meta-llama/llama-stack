@@ -18,7 +18,7 @@ class OpenTelemetryConfig(BaseModel):
         default="llama-stack",
         description="The service name to use for telemetry",
     )
-    export_endpoint: str = Field(
+    jaeger_query_endpoint: str = Field(
         default="http://localhost:16686/api/traces",
         description="The Jaeger query endpoint URL",
     )

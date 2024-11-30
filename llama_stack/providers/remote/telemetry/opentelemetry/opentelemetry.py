@@ -5,9 +5,7 @@
 # the root directory of this source tree.
 
 import threading
-from typing import Any, Dict, List, Optional
-
-import aiohttp
+from typing import List
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -51,9 +49,12 @@ def is_tracing_enabled(tracer):
 
 
 class OpenTelemetryAdapter(Telemetry):
-    def __init__(self, config: OpenTelemetryConfig, deps) -> None:
+    def __init__(
+        self, config: OpenTelemetryConfig, trace_store: TraceStore, deps
+    ) -> None:
         self.config = config
         self.datasetio = deps[Api.datasetio]
+        self.trace_store = trace_store
 
         resource = Resource.create(
             {
@@ -202,157 +203,67 @@ class OpenTelemetryAdapter(Telemetry):
                     span.end()
                     _GLOBAL_STORAGE["active_spans"].pop(span_id, None)
 
-    async def get_traces_for_agent_eval(
+    async def get_trace(self, trace_id: str) -> TraceTree:
+        return await self.trace_store.get_trace(trace_id)
+
+    async def get_agent_trace(
         self,
         session_ids: List[str],
-        lookback: str = "1h",
-        limit: int = 100,
-        dataset_id: Optional[str] = None,
     ) -> List[EvalTrace]:
         traces = []
-
-        # Fetch traces for each session ID individually
         for session_id in session_ids:
-            params = {
-                "service": self.config.service_name,
-                "lookback": lookback,
-                "limit": limit,
-                "tags": f'{{"session_id":"{session_id}"}}',
-            }
+            traces_for_session = await self.trace_store.get_traces_for_sessions(
+                [session_id]
+            )
+            for session_trace in traces_for_session:
+                trace_details = await self._get_simplified_agent_trace(
+                    session_trace.trace_id, session_id
+                )
+                traces.extend(trace_details)
 
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        self.config.export_endpoint, params=params
-                    ) as response:
-                        if response.status != 200:
-                            raise Exception(
-                                f"Failed to query Jaeger: {response.status} {await response.text()}"
-                            )
-
-                        traces_data = await response.json()
-                        seen_trace_ids = set()
-
-                        for trace_data in traces_data.get("data", []):
-                            trace_id = trace_data.get("traceID")
-                            if trace_id and trace_id not in seen_trace_ids:
-                                seen_trace_ids.add(trace_id)
-                                trace_details = await self.get_trace_for_eval(
-                                    trace_id, session_id
-                                )
-                                traces.extend(trace_details)
-
-            except Exception as e:
-                raise Exception(f"Error querying Jaeger traces: {str(e)}") from e
-
-        if dataset_id:
-            traces_dict = [
-                {
-                    "step": trace.step,
-                    "input": trace.input,
-                    "output": trace.output,
-                    "session_id": trace.session_id,
-                }
-                for trace in traces
-            ]
-            await self.datasetio.upload_rows(dataset_id, traces_dict)
         return traces
 
-    async def get_trace(self, trace_id: str) -> Dict[str, Any]:
-        params = {
-            "traceID": trace_id,
-        }
+    async def export_agent_trace(
+        self, session_ids: List[str], dataset_id: str = None
+    ) -> None:
+        traces = await self.get_agent_trace(session_ids)
+        traces_dict = [
+            {
+                "step": trace.step,
+                "input": trace.input,
+                "output": trace.output,
+                "session_id": trace.session_id,
+            }
+            for trace in traces
+        ]
+        await self.datasetio.upload_rows(dataset_id, traces_dict)
 
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self.config.export_endpoint}/{trace_id}", params=params
-                ) as response:
-                    if response.status != 200:
-                        raise Exception(
-                            f"Failed to query Jaeger: {response.status} {await response.text()}"
-                        )
-
-                    trace_data = await response.json()
-                    if not trace_data.get("data") or not trace_data["data"]:
-                        return None
-
-                    # First pass: Build span map
-                    span_map = {}
-                    for span in trace_data["data"][0]["spans"]:
-                        start_time = span["startTime"]
-                        end_time = start_time + span.get(
-                            "duration", 0
-                        )  # Get end time from duration if available
-
-                        # Some systems store end time directly in the span
-                        if "endTime" in span:
-                            end_time = span["endTime"]
-                            duration = end_time - start_time
-                        else:
-                            duration = span.get("duration", 0)
-
-                        span_map[span["spanID"]] = {
-                            "id": span["spanID"],
-                            "name": span["operationName"],
-                            "start_time": start_time,
-                            "end_time": end_time,
-                            "duration": duration,
-                            "tags": {
-                                tag["key"]: tag["value"] for tag in span.get("tags", [])
-                            },
-                            "children": [],
-                        }
-
-                    # Second pass: Build parent-child relationships
-                    root_spans = []
-                    for span in trace_data["data"][0]["spans"]:
-                        references = span.get("references", [])
-                        if references and references[0]["refType"] == "CHILD_OF":
-                            parent_id = references[0]["spanID"]
-                            if parent_id in span_map:
-                                span_map[parent_id]["children"].append(
-                                    span_map[span["spanID"]]
-                                )
-                        else:
-                            root_spans.append(span_map[span["spanID"]])
-
-                    return {
-                        "trace_id": trace_id,
-                        "spans": root_spans,
-                    }
-
-        except Exception as e:
-            raise Exception(f"Error querying Jaeger trace structure: {str(e)}") from e
-
-    async def get_trace_for_eval(
+    async def _get_simplified_agent_trace(
         self, trace_id: str, session_id: str
     ) -> List[EvalTrace]:
-        """
-        Get simplified trace information focusing on first-level children of create_and_execute_turn operations.
-        Returns a list of spans with name, input, and output information, sorted by start time.
-        """
-        trace_data = await self.get_trace(trace_id)
-        if not trace_data:
+        trace_tree = await self.get_trace(trace_id)
+        if not trace_tree or not trace_tree.root:
             return []
 
-        def find_execute_turn_children(spans: List[Dict[str, Any]]) -> List[EvalTrace]:
-            results: List[EvalTrace] = []
-            for span in spans:
-                if span["name"] == "create_and_execute_turn":
-                    # Extract and format children spans
-                    children = sorted(span["children"], key=lambda x: x["start_time"])
-                    for child in children:
-                        results.append(
-                            EvalTrace(
-                                step=child["name"],
-                                input=child["tags"].get("input", ""),
-                                output=child["tags"].get("output", ""),
-                                session_id=session_id,
-                            )
+        def find_execute_turn_children(node: SpanNode) -> List[EvalTrace]:
+            results = []
+            if node.span.name == "create_and_execute_turn":
+                # Sort children by start time
+                sorted_children = sorted(node.children, key=lambda x: x.span.start_time)
+                for child in sorted_children:
+                    results.append(
+                        EvalTrace(
+                            step=child.span.name,
+                            input=child.span.attributes.get("input", ""),
+                            output=child.span.attributes.get("output", ""),
+                            session_id=session_id,
+                            expected_output="",
                         )
-                # Recursively search in children
-                results.extend(find_execute_turn_children(span["children"]))
+                    )
+
+            # Recursively process children
+            for child in node.children:
+                results.extend(find_execute_turn_children(child))
             return results
 
-        return find_execute_turn_children(trace_data["spans"])
+        return find_execute_turn_children(trace_tree.root)

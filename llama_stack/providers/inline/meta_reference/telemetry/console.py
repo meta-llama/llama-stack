@@ -7,8 +7,6 @@
 import json
 from typing import List, Optional
 
-from llama_stack.apis.telemetry.telemetry import Trace
-
 from .config import LogFormat
 
 from llama_stack.apis.telemetry import *  # noqa: F403
@@ -51,13 +49,25 @@ class ConsoleTelemetryImpl(Telemetry):
         if formatted:
             print(formatted)
 
-    async def get_trace(self, trace_id: str) -> Trace:
-        raise NotImplementedError()
+    async def get_trace(self, trace_id: str) -> TraceTree:
+        raise NotImplementedError("Console telemetry does not support trace retrieval")
 
-    async def get_traces_for_agent_eval(
-        self, session_ids: List[str], lookback: str = "1h", limit: int = 100
+    async def get_agent_trace(
+        self,
+        session_ids: List[str],
     ) -> List[EvalTrace]:
-        raise NotImplementedError()
+        raise NotImplementedError(
+            "Console telemetry does not support agent trace retrieval"
+        )
+
+    async def export_agent_trace(
+        self,
+        session_ids: List[str],
+        dataset_id: str = None,
+    ) -> None:
+        raise NotImplementedError(
+            "Console telemetry does not support agent trace export"
+        )
 
 
 COLORS = {

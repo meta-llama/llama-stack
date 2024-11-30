@@ -143,21 +143,52 @@ class EvalTrace(BaseModel):
     step: str
     input: str
     output: str
+    expected_output: str
+
+
+@json_schema_type
+class SpanNode(BaseModel):
+    span: Span
+    children: List["SpanNode"] = Field(default_factory=list)
+    status: Optional[SpanStatus] = None
+
+
+@json_schema_type
+class TraceTree(BaseModel):
+    trace: Trace
+    root: Optional[SpanNode] = None
+
+
+class TraceStore(Protocol):
+    async def get_trace(
+        self,
+        trace_id: str,
+    ) -> TraceTree: ...
+
+    async def get_traces_for_sessions(
+        self,
+        session_ids: List[str],
+    ) -> [Trace]: ...
 
 
 @runtime_checkable
 class Telemetry(Protocol):
+
     @webmethod(route="/telemetry/log-event")
     async def log_event(self, event: Event) -> None: ...
 
     @webmethod(route="/telemetry/get-trace", method="POST")
-    async def get_trace(self, trace_id: str) -> Trace: ...
+    async def get_trace(self, trace_id: str) -> TraceTree: ...
 
-    @webmethod(route="/telemetry/get-traces-for-agent-eval", method="POST")
-    async def get_traces_for_agent_eval(
+    @webmethod(route="/telemetry/get-agent-trace", method="POST")
+    async def get_agent_trace(
         self,
         session_ids: List[str],
-        lookback: str = "1h",
-        limit: int = 100,
-        dataset_id: Optional[str] = None,
     ) -> List[EvalTrace]: ...
+
+    @webmethod(route="/telemetry/export-agent-trace", method="POST")
+    async def export_agent_trace(
+        self,
+        session_ids: List[str],
+        dataset_id: str = None,
+    ) -> None: ...
