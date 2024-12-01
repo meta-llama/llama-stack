@@ -223,9 +223,7 @@ class OpenTelemetryAdapter(Telemetry):
 
         return traces
 
-    async def export_agent_trace(
-        self, session_ids: List[str], dataset_id: str = None
-    ) -> None:
+    async def export_agent_trace(self, session_ids: List[str], dataset_id: str) -> None:
         traces = await self.get_agent_trace(session_ids)
         traces_dict = [
             {

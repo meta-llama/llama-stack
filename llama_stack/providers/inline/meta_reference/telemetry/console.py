@@ -63,7 +63,7 @@ class ConsoleTelemetryImpl(Telemetry):
     async def export_agent_trace(
         self,
         session_ids: List[str],
-        dataset_id: str = None,
+        dataset_id: str,
     ) -> None:
         raise NotImplementedError(
             "Console telemetry does not support agent trace export"
