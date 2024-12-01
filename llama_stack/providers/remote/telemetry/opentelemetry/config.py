@@ -18,9 +18,17 @@ class OpenTelemetryConfig(BaseModel):
         default="llama-stack",
         description="The service name to use for telemetry",
     )
+    trace_store: str = Field(
+        default="postgres",
+        description="The trace store to use for telemetry",
+    )
     jaeger_query_endpoint: str = Field(
         default="http://localhost:16686/api/traces",
         description="The Jaeger query endpoint URL",
+    )
+    postgres_conn_string: str = Field(
+        default="host=localhost dbname=llama_stack user=llama_stack password=llama_stack port=5432",
+        description="The PostgreSQL connection string to use for storing traces",
     )
 
     @classmethod
