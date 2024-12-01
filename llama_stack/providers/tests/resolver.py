@@ -13,7 +13,10 @@ from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import resolve_remote_stack_impls
+from llama_stack.distribution.resolver import (
+    resolve_remote_stack_impls,
+    resolve_test_fake_stack_impls,
+)
 from llama_stack.distribution.stack import construct_stack
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
 
@@ -49,16 +52,26 @@ async def construct_stack_for_test(
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
     try:
-        remote_config = remote_provider_config(run_config)
-        if not remote_config:
-            # TODO: add to provider registry by creating interesting mocks or fakes
-            impls = await construct_stack(run_config, get_provider_registry())
-        else:
-            # we don't register resources for a remote stack as part of the fixture setup
-            # because the stack is already "up". if a test needs to register resources, it
-            # can do so manually always.
+        impls = None
 
-            impls = await resolve_remote_stack_impls(remote_config, run_config.apis)
+        # "Resolve" implementations when using test::test-fake providers.
+        # This is actually injecting test fakes as resolved API implementations.
+        test_fake_config = test_fake_provider_config(run_config)
+        if test_fake_config:
+            impls = await resolve_test_fake_stack_impls(test_fake_config)
+
+        # Resolve implementations when using test::remove providers
+        if not impls:
+            remote_config = remote_provider_config(run_config)
+            if remote_config:
+                # we don't register resources for a remote stack as part of the fixture setup
+                # because the stack is already "up". if a test needs to register resources, it
+                # can do so manually always.
+                impls = await resolve_remote_stack_impls(remote_config, run_config.apis)
+
+        # In case none of the above happened, resolve implementations as normal providers
+        if not impls:
+            impls = await construct_stack(run_config, get_provider_registry())
 
         test_stack = TestStack(impls=impls, run_config=run_config)
     except ModuleNotFoundError as e:
@@ -71,6 +84,28 @@ async def construct_stack_for_test(
         )
 
     return test_stack
+
+
+# In case when we want to run multiple test fakes, then we need to
+# make sure the stack contains only test fake providers as after this
+# we will be calling resolve_test_fake_stack_impls() which cannot resolve
+# any other provider type. This could be refactored in case we need to change this.
+def test_fake_provider_config(
+    run_config: StackRunConfig,
+) -> Optional[RemoteProviderConfig]:
+    test_fake_config = None
+    has_non_test_fake = False
+    for api_providers in run_config.providers.values():
+        for provider in api_providers:
+            if provider.provider_type == "test::test-fake":
+                test_fake_config = TestFakeProviderConfig(**provider.config)
+            else:
+                has_non_test_fake = True
+
+    if test_fake_config:
+        assert not has_non_test_fake, "Test fake stack cannot have non-fake providers"
+
+    return test_fake_config
 
 
 def remote_provider_config(

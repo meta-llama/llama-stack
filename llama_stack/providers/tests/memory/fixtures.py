@@ -10,14 +10,62 @@ import tempfile
 import pytest
 import pytest_asyncio
 
+from llama_stack.apis.memory.memory import Chunk, QueryDocumentsResponse
 from llama_stack.distribution.datatypes import Api, Provider, RemoteProviderConfig
+from llama_stack.providers.datatypes import TestFakeProviderConfig
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
-from ..conftest import ProviderFixture, remote_stack_fixture
+from ..conftest import ProviderFixture, remote_stack_fixture, test_fake_stack_fixture
 from ..env import get_env_or_fail
+from .fakes import MemoryBanksTestFakeImpl, MemoryTestFakeImpl
+
+
+@pytest.fixture(scope="session")
+def query_documents_stubs():
+    # These are stubs for the method calls against MemoryTestFakeImpl fake
+    # so the tests inside test_memory will as with a real provider
+    return {
+        "programming language": QueryDocumentsResponse(
+            chunks=[Chunk(content="Python", token_count=1, document_id="")],
+            scores=[0.1],
+        ),
+        "AI and brain-inspired computing": QueryDocumentsResponse(
+            chunks=[Chunk(content="neural networks", token_count=2, document_id="")],
+            scores=[0.1],
+        ),
+        "computer": QueryDocumentsResponse(
+            chunks=[
+                Chunk(content="test-chunk-1", token_count=1, document_id=""),
+                Chunk(content="test-chunk-2", token_count=1, document_id=""),
+            ],
+            scores=[0.1, 0.5],
+        ),
+        "quantum computing": QueryDocumentsResponse(
+            chunks=[Chunk(content="Python", token_count=1, document_id="")],
+            scores=[0.5],
+        ),
+    }
+
+
+@pytest.fixture(scope="session")
+def memory_test_fake(query_documents_stubs) -> ProviderFixture:
+    # Prepare impl instances here, initiate fake objects and set up stubs
+    memory_banks_impl = MemoryBanksTestFakeImpl()
+    memory_impl = MemoryTestFakeImpl()
+    memory_impl.set_memory_banks(memory_banks_impl)
+    memory_impl.set_stubs("query_documents", query_documents_stubs)
+
+    config = TestFakeProviderConfig(
+        impls={
+            Api.memory: memory_impl,
+            Api.memory_banks: memory_banks_impl,
+        }
+    )
+
+    return test_fake_stack_fixture(config)
 
 
 @pytest.fixture(scope="session")
@@ -93,7 +141,7 @@ def memory_chroma() -> ProviderFixture:
     )
 
 
-MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
+MEMORY_FIXTURES = ["test_fake", "faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
