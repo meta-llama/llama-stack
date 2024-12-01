@@ -102,10 +102,12 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
 
             with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:
+                    count = 0
                     async for item in method(self, *args, **kwargs):
                         yield item
+                        count += 1
                 finally:
-                    span.set_attribute("output", "streaming output")
+                    span.set_attribute("chunk_count", count)
 
         @wraps(method)
         async def async_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
