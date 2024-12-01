@@ -269,7 +269,8 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if "messages" in params:
             r = await self.client.chat(**params)
         else:
-            r = await self.client.generate(**params)
+            r = await self.client.generate(**params)        
+        r = dict(r) #ad-hoc 
         assert isinstance(r, dict)
 
         if "message" in r:
