@@ -142,7 +142,7 @@ def native_evaluation_page():
             }
 
     with params_tab:
-        st.write("Define scoring function parameters here")
+        st.write("(Optional) Define scoring function parameters here")
 
     with run_tab:
         dataset_id = eval_tasks[selected_eval_task].dataset_id
