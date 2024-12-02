@@ -15,10 +15,6 @@ apis_providers_info = llama_stack_api.client.providers.list()
 selected_api = st.selectbox("Select an API", list(apis_providers_info.keys()))
 st.dataframe([p.to_dict() for p in apis_providers_info[selected_api]], width=500)
 
-# for api in apis_providers_info:
-#     st.write(api)
-#     st.dataframe([p.to_dict() for p in apis_providers_info[api]], width=500)
-
 # Models Section
 st.header("Models")
 models_info = {m.identifier: m.to_dict() for m in llama_stack_api.client.models.list()}
