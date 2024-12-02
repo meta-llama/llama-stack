@@ -15,7 +15,7 @@ from modules.utils import data_url_from_file
 
 
 def rag_chat_page():
-    st.title("RAG")
+    st.title("🦙 RAG")
 
     with st.sidebar:
         # File/Directory Upload Section

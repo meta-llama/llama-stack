@@ -16,7 +16,7 @@ from modules.utils import process_dataset
 def application_evaluation_page():
 
     st.set_page_config(page_title="Application Evaluation", page_icon="🦙")
-    st.title("🦙 Llama Stack Evaluations")
+    st.title("🦙 Llama Stack Application Evaluations")
 
     # File uploader
     uploaded_file = st.file_uploader("Upload Dataset", type=["csv", "xlsx", "xls"])

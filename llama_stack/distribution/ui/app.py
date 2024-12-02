@@ -11,7 +11,13 @@ def main():
     application_evaluation_page = st.Page(
         "page/evaluations/app_eval.py",
         title="Application Evaluation",
-        icon="🦙",
+        icon="📊",
+        default=False,
+    )
+    native_evaluation_page = st.Page(
+        "page/evaluations/native_eval.py",
+        title="Native Evaluation",
+        icon="📊",
         default=False,
     )
 
@@ -28,7 +34,7 @@ def main():
 
     pg = st.navigation(
         {
-            "Evaluations": [application_evaluation_page],
+            "Evaluations": [application_evaluation_page, native_evaluation_page],
             "Playground": [chat_page, rag_page],
             "Distribution": [distribution_page],
         }
