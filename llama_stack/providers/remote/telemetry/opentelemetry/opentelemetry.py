@@ -18,6 +18,11 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.remote.telemetry.opentelemetry.postgres_processor import (
+    PostgresSpanProcessor,
+)
+from llama_stack.providers.utils.telemetry.jaeger import JaegerTraceStore
+from llama_stack.providers.utils.telemetry.postgres import PostgresTraceStore
 
 
 from llama_stack.apis.telemetry import *  # noqa: F403
@@ -49,12 +54,18 @@ def is_tracing_enabled(tracer):
 
 
 class OpenTelemetryAdapter(Telemetry):
-    def __init__(
-        self, config: OpenTelemetryConfig, trace_store: TraceStore, deps
-    ) -> None:
+    def __init__(self, config: OpenTelemetryConfig, deps) -> None:
         self.config = config
         self.datasetio = deps[Api.datasetio]
-        self.trace_store = trace_store
+
+        if config.trace_store == "jaeger":
+            self.trace_store = JaegerTraceStore(
+                config.jaeger_query_endpoint, config.service_name
+            )
+        elif config.trace_store == "postgres":
+            self.trace_store = PostgresTraceStore(config.postgres_conn_string)
+        else:
+            raise ValueError(f"Invalid trace store: {config.trace_store}")
 
         resource = Resource.create(
             {
@@ -69,6 +80,9 @@ class OpenTelemetryAdapter(Telemetry):
         )
         span_processor = BatchSpanProcessor(otlp_exporter)
         trace.get_tracer_provider().add_span_processor(span_processor)
+        trace.get_tracer_provider().add_span_processor(
+            PostgresSpanProcessor(self.config.postgres_conn_string)
+        )
         # Set up metrics
         metric_reader = PeriodicExportingMetricReader(
             OTLPMetricExporter(
@@ -252,8 +266,8 @@ class OpenTelemetryAdapter(Telemetry):
                     results.append(
                         EvalTrace(
                             step=child.span.name,
-                            input=child.span.attributes.get("input", ""),
-                            output=child.span.attributes.get("output", ""),
+                            input=str(child.span.attributes.get("input", "")),
+                            output=str(child.span.attributes.get("output", "")),
                             session_id=session_id,
                             expected_output="",
                         )
