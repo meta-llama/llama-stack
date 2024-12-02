@@ -73,7 +73,7 @@ def rag_chat_page():
             {"bank_id": bank_id, "type": "vector"} for bank_id in selected_memory_banks
         ]
 
-        available_models = llama_stack_api.list_models()
+        available_models = llama_stack_api.client.models.list()
         available_models = [model.identifier for model in available_models]
         selected_model = st.selectbox(
             "Choose a model",
