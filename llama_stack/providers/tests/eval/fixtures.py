@@ -40,14 +40,30 @@ async def eval_stack(request):
 
     providers = {}
     provider_data = {}
-    for key in ["datasetio", "eval", "scoring", "inference"]:
+    for key in [
+        "datasetio",
+        "eval",
+        "scoring",
+        "inference",
+        "agents",
+        "safety",
+        "memory",
+    ]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = fixture.providers
         if fixture.provider_data:
             provider_data.update(fixture.provider_data)
 
     test_stack = await construct_stack_for_test(
-        [Api.eval, Api.datasetio, Api.inference, Api.scoring],
+        [
+            Api.eval,
+            Api.datasetio,
+            Api.inference,
+            Api.scoring,
+            Api.agents,
+            Api.safety,
+            Api.memory,
+        ],
         providers,
         provider_data,
     )
