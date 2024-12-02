@@ -17,8 +17,12 @@ from urllib.parse import urlparse
 
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
+from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import LocalFSDatasetIOConfig
+
+
+DATASETS_PREFIX = "locallfs_datasets:"
 
 
 class BaseDataset(ABC):
@@ -86,7 +90,20 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         # local registry for keeping track of datasets within the provider
         self.dataset_infos = {}
 
-    async def initialize(self) -> None: ...
+    async def initialize(self) -> None:
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        # Load existing datasets from kvstore
+        start_key = DATASETS_PREFIX
+        end_key = f"{DATASETS_PREFIX}\xff"
+        stored_datasets = await self.kvstore.range(start_key, end_key)
+
+        for dataset in stored_datasets:
+            dataset = Dataset.model_validate_json(dataset)
+            dataset_impl = PandasDataframeDataset(dataset)
+            self.dataset_infos[dataset.identifier] = DatasetInfo(
+                dataset_def=dataset,
+                dataset_impl=dataset_impl,
+            )
 
     async def shutdown(self) -> None: ...
 
@@ -94,8 +111,14 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset: Dataset,
     ) -> None:
+        # Store in kvstore
+        key = f"{DATASETS_PREFIX}{dataset.identifier}"
         dataset_impl = PandasDataframeDataset(dataset)
-        self.dataset_infos[dataset.identifier] = DatasetInfo(
+        await self.kvstore.set(
+            key=key,
+            value=dataset.json(),
+        )
+        self.dataset_infos[key] = DatasetInfo(
             dataset_def=dataset,
             dataset_impl=dataset_impl,
         )
