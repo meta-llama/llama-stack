@@ -40,7 +40,7 @@ def application_evaluation_page():
 
     # Select Scoring Functions to Run Evaluation On
     st.subheader("Select Scoring Functions")
-    scoring_functions = llama_stack_api.list_scoring_functions()
+    scoring_functions = llama_stack_api.client.scoring_functions.list()
     scoring_functions = {sf.identifier: sf for sf in scoring_functions}
     scoring_functions_names = list(scoring_functions.keys())
     selected_scoring_functions = st.multiselect(
@@ -49,7 +49,7 @@ def application_evaluation_page():
         help="Choose one or more scoring functions.",
     )
 
-    available_models = llama_stack_api.list_models()
+    available_models = llama_stack_api.client.models.list()
     available_models = [m.identifier for m in available_models]
 
     scoring_params = {}

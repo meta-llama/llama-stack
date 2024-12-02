@@ -22,14 +22,6 @@ class LlamaStackApi:
             },
         )
 
-    def list_scoring_functions(self):
-        """List all available scoring functions"""
-        return self.client.scoring_functions.list()
-
-    def list_models(self):
-        """List all available judge models"""
-        return self.client.models.list()
-
     def run_scoring(
         self, row, scoring_function_ids: list[str], scoring_params: Optional[dict]
     ):

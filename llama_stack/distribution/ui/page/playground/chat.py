@@ -10,7 +10,7 @@ from modules.api import llama_stack_api
 # Sidebar configurations
 with st.sidebar:
     st.header("Configuration")
-    available_models = llama_stack_api.list_models()
+    available_models = llama_stack_api.client.models.list()
     available_models = [model.identifier for model in available_models]
     selected_model = st.selectbox(
         "Choose a model",
