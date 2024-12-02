@@ -2,6 +2,12 @@
 
 [!NOTE] This is a work in progress.
 
+## Prerequisite
+- Start up Llama Stack Server
+```
+llama stack run
+```
+
 ## Running Streamlit App
 
 ```
