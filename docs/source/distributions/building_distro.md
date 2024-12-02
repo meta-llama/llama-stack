@@ -109,6 +109,14 @@ llama stack build --list-templates
 |                              |   "telemetry": "meta-reference"            |                                                                                  |
 |                              | }                                          |                                                                                  |
 +------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
+| sambanova                    | {                                          | Use SambaNova.ai for running LLM inference                                       |
+|                              |   "inference": "remote::sambanova",        |                                                                                  |
+|                              |   "memory": "meta-reference",              |                                                                                  |
+|                              |   "safety": "meta-reference",              |                                                                                  |
+|                              |   "agents": "meta-reference",              |                                                                                  |
+|                              |   "telemetry": "meta-reference"            |                                                                                  |
+|                              | }                                          |                                                                                  |
++------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
 | vllm                         | {                                          | Like local, but use vLLM for running LLM inference                               |
 |                              |   "inference": "vllm",                     |                                                                                  |
 |                              |   "memory": "meta-reference",              |                                                                                  |

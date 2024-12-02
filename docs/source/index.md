@@ -48,6 +48,7 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 |  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
 |  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
 |  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
+|  SambaNova  |  Hosted  |    |  Y  |   |   |  |
 |  Ollama  | Single Node   |    |  Y  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
 | Chroma | Single Node |  |  | Y |  |  |
