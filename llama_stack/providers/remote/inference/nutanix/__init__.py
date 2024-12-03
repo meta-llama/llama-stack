@@ -5,10 +5,11 @@
 # the root directory of this source tree.
 
 from .config import NutanixImplConfig
-from .nutanix import NutanixInferenceAdapter
 
 
-async def get_adapter_impl(config: NutanixInferenceAdapter, _deps):
+async def get_adapter_impl(config: NutanixImplConfig, _deps):
+    from .nutanix import NutanixInferenceAdapter
+
     assert isinstance(
         config, NutanixImplConfig
     ), f"Unexpected config type: {type(config)}"
