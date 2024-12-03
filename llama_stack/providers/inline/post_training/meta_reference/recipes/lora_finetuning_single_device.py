@@ -4,20 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import asyncio
 import logging
 import os
-import re
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from llama_models.sku_list import resolve_model
 from llama_stack.apis.datasetio import DatasetIO
 from torch import nn
 from torchtune import utils as torchtune_utils
-from torchtune.training.checkpointing._utils import ModelType
 from llama_stack.apis.post_training import *  # noqa
 from llama_stack.apis.post_training import PostTrainingSFTRequest
 from llama_stack.distribution.utils.model_utils import model_local_dir

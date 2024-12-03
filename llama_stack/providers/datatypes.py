@@ -9,7 +9,7 @@ from typing import Any, List, Optional, Protocol
 from urllib.parse import urlparse
 
 from llama_models.schema_utils import json_schema_type
-from llama_stack.apis import post_training
+from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import Dataset
 from llama_stack.apis.eval_tasks import EvalTask
@@ -17,7 +17,6 @@ from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
-from pydantic import BaseModel, Field
 
 
 @json_schema_type
