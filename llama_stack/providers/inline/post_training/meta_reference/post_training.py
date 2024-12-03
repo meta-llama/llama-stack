@@ -20,7 +20,7 @@ class MetaReferencePostTrainingImpl:
         self.config = config
         self.datasetio_api = datasetio_api
 
-    def supervised_fine_tune(
+    async def supervised_fine_tune(
         self,
         job_uuid: str,
         model: str,
@@ -28,11 +28,11 @@ class MetaReferencePostTrainingImpl:
         validation_dataset_id: str,
         algorithm: FinetuningAlgorithm,
         algorithm_config: LoraFinetuningConfig,
-        optimizer_config: OptimizerConfig,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob:
+
         # wrapper request to make it easier to pass around (internal only, not exposed to API)
         request = PostTrainingSFTRequest(
             job_uuid=job_uuid,
@@ -41,7 +41,6 @@ class MetaReferencePostTrainingImpl:
             validation_dataset_id=validation_dataset_id,
             algorithm=algorithm,
             algorithm_config=algorithm_config,
-            optimizer_config=optimizer_config,
             training_config=training_config,
             hyperparam_search_config=hyperparam_search_config,
             logger_config=logger_config,
@@ -50,14 +49,14 @@ class MetaReferencePostTrainingImpl:
             recipe = LoraFinetuningSingleDevice(
                 self.config, request, self.datasetio_api
             )
-            recipe.setup(self.config)
-            recipe.train()
+            await recipe.setup(self.config)
+            await recipe.train()
         else:
             raise NotImplementedError()
 
         return PostTrainingJob(job_uuid=job_uuid)
 
-    def preference_optimize(
+    async def preference_optimize(
         self,
         job_uuid: str,
         finetuned_model: URL,
@@ -71,21 +70,24 @@ class MetaReferencePostTrainingImpl:
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    def get_training_jobs(self) -> List[PostTrainingJob]: ...
+    # TODO @markchen1015 impelment below APIs
+    async def get_training_jobs(self) -> List[PostTrainingJob]: ...
 
     # sends SSE stream of logs
     @webmethod(route="/post-training/job/logs")
-    def get_training_job_logstream(self, job_uuid: str) -> PostTrainingJobLogStream: ...
+    async def get_training_job_logstream(
+        self, job_uuid: str
+    ) -> PostTrainingJobLogStream: ...
 
     @webmethod(route="/post-training/job/status")
-    def get_training_job_status(
+    async def get_training_job_status(
         self, job_uuid: str
     ) -> PostTrainingJobStatusResponse: ...
 
     @webmethod(route="/post-training/job/cancel")
-    def cancel_training_job(self, job_uuid: str) -> None: ...
+    async def cancel_training_job(self, job_uuid: str) -> None: ...
 
     @webmethod(route="/post-training/job/artifacts")
-    def get_training_job_artifacts(
+    async def get_training_job_artifacts(
         self, job_uuid: str
     ) -> PostTrainingJobArtifactsResponse: ...

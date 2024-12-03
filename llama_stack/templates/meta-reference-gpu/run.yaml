@@ -71,7 +71,7 @@ datasets:
       uri: https://huggingface.co/datasets/tatsu-lab/alpaca
     metadata:
       path: tatsu-lab/alpaca
-      name: post_training_alpaca
+      name:
       split: train
     dataset_schema:
       instruction:
