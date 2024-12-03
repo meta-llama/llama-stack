@@ -89,6 +89,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self.config = config
         # local registry for keeping track of datasets within the provider
         self.dataset_infos = {}
+        self.kvstore = None
 
     async def initialize(self) -> None:
         self.kvstore = await kvstore_impl(self.config.kvstore)
@@ -113,11 +114,11 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     ) -> None:
         # Store in kvstore
         key = f"{DATASETS_PREFIX}{dataset.identifier}"
-        dataset_impl = PandasDataframeDataset(dataset)
         await self.kvstore.set(
             key=key,
             value=dataset.json(),
         )
+        dataset_impl = PandasDataframeDataset(dataset)
         self.dataset_infos[key] = DatasetInfo(
             dataset_def=dataset,
             dataset_impl=dataset_impl,

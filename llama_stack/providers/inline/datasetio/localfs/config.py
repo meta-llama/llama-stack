@@ -15,4 +15,4 @@ from llama_stack.providers.utils.kvstore.config import (
 class LocalFSDatasetIOConfig(BaseModel):
     kvstore: KVStoreConfig = SqliteKVStoreConfig(
         db_path=(RUNTIME_BASE_DIR / "localfs_datasetio.db").as_posix()
-    )  # Uses SQLite config specific to HF storage
+    )  # Uses SQLite config specific to localfs storage
