@@ -28,16 +28,52 @@ def main():
     rag_page = st.Page("page/playground/rag.py", title="RAG", icon="💬", default=False)
 
     # Distribution pages
-    distribution_page = st.Page(
-        "page/distribution/distro.py", title="Distribution", icon="🔍", default=False
+    provider_page = st.Page(
+        "page/distribution/providers.py", title="Provider", icon="🔍", default=False
+    )
+    model_page = st.Page(
+        "page/distribution/models.py", title="Models", icon="🔍", default=False
+    )
+    memory_bank_page = st.Page(
+        "page/distribution/memory_banks.py",
+        title="Memory Banks",
+        icon="🔍",
+        default=False,
+    )
+    shield_page = st.Page(
+        "page/distribution/shields.py", title="Shields", icon="🔍", default=False
+    )
+    scoring_function_page = st.Page(
+        "page/distribution/scoring_functions.py",
+        title="Scoring Functions",
+        icon="🔍",
+        default=False,
+    )
+    eval_task_page = st.Page(
+        "page/distribution/eval_tasks.py",
+        title="Eval Tasks",
+        icon="🔍",
+        default=False,
     )
 
     pg = st.navigation(
         {
-            "Evaluations": [application_evaluation_page, native_evaluation_page],
-            "Playground": [chat_page, rag_page],
-            "Distribution": [distribution_page],
-        }
+            "Playground": [
+                chat_page,
+                rag_page,
+                application_evaluation_page,
+                native_evaluation_page,
+            ],
+            "Inspect": [
+                provider_page,
+                model_page,
+                memory_bank_page,
+                shield_page,
+                scoring_function_page,
+                eval_task_page,
+            ],
+        },
+        expanded=False,
     )
     pg.run()
 
