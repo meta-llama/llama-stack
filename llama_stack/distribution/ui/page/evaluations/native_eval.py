@@ -145,6 +145,13 @@ def native_evaluation_page():
         st.write("(Optional) Define scoring function parameters here")
 
     with run_tab:
+        # Add info box to explain configurations being used
+        st.info(
+            """
+        Review the configurations that will be used for this evaluation run, make any necessary changes, and then click the "Run Evaluation" button.
+        """
+        )
+
         dataset_id = eval_tasks[selected_eval_task].dataset_id
         rows = llama_stack_api.client.datasetio.get_rows_paginated(
             dataset_id=dataset_id,
@@ -165,11 +172,18 @@ def native_evaluation_page():
             "eval_candidate": eval_candidate,
             "scoring_params": {},
         }
+        st.markdown("##### Evaluation Task")
+        st.write("Go back to (1) Select Eval Task to make changes to the eval task. ")
         st.json(eval_tasks[selected_eval_task], expanded=True)
+        st.markdown("##### Evaluation Task Configuration")
+        st.write(
+            "Go back to (2) Define Eval Candidate and (3) Define Scoring Parameters to make changes to the configuration. "
+        )
         st.json(eval_task_config, expanded=True)
 
         # Add run button and handle evaluation
         if st.button("Run Evaluation"):
+
             progress_text = "Running evaluation..."
             progress_bar = st.progress(0, text=progress_text)
             rows = rows.rows
