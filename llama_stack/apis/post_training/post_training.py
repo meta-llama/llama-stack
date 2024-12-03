@@ -186,7 +186,6 @@ class PostTraining(Protocol):
         validation_dataset_id: str,
         algorithm: FinetuningAlgorithm,
         algorithm_config: LoraFinetuningConfig,
-        # optimizer_config: OptimizerConfig,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
