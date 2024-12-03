@@ -8,7 +8,7 @@ This guide contains references to walk you through adding a new API provider.
     - {repopath}`Remote Providers::llama_stack/providers/remote`
     - {repopath}`Inline Providers::llama_stack/providers/inline`
 
-3. [Build a Llama Stack distribution](https://llama-stack.readthedocs.io/en/latest/distribution_dev/building_distro.html) with your API provider.
+3. [Build a Llama Stack distribution](https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html) with your API provider.
 4. Test your code!
 
 ## Testing your newly added API providers

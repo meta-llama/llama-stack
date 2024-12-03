@@ -44,5 +44,6 @@ def available_providers() -> List[ProviderSpec]:
                 Api.datasetio,
                 Api.datasets,
             ],
+            provider_data_validator="llama_stack.providers.inline.scoring.braintrust.BraintrustProviderDataValidator",
         ),
     ]

@@ -6,8 +6,13 @@
 from typing import Dict
 
 from llama_stack.distribution.datatypes import Api, ProviderSpec
+from pydantic import BaseModel
 
 from .config import BraintrustScoringConfig
+
+
+class BraintrustProviderDataValidator(BaseModel):
+    openai_api_key: str
 
 
 async def get_provider_impl(

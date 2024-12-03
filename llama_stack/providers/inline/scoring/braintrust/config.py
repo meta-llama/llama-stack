@@ -6,4 +6,8 @@
 from llama_stack.apis.scoring import *  # noqa: F401, F403
 
 
-class BraintrustScoringConfig(BaseModel): ...
+class BraintrustScoringConfig(BaseModel):
+    openai_api_key: Optional[str] = Field(
+        default=None,
+        description="The OpenAI API Key",
+    )
