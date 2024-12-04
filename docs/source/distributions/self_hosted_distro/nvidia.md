@@ -53,7 +53,7 @@ docker run \
 ### Via Conda
 
 ```bash
-llama stack build --template fireworks --image-type conda
+llama stack build --template nvidia --image-type conda
 llama stack run ./run.yaml \
   --port 5001 \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
