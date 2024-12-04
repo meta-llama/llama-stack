@@ -94,6 +94,7 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::cerebras",
         ):
             pytest.skip("Other inference providers don't support completion() yet")
 
@@ -139,6 +140,7 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::cerebras",
         ):
             pytest.skip(
                 "Other inference providers don't support structured output in completions yet"
