@@ -43,9 +43,9 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
-from llama_stack.providers.inline.meta_reference.telemetry.console import (
-    ConsoleConfig,
-    ConsoleTelemetryImpl,
+from llama_stack.providers.inline.telemetry.meta_reference import (
+    TelemetryAdapter,
+    TelemetryConfig,
 )
 
 from .endpoints import get_all_api_endpoints
@@ -290,7 +290,7 @@ def main():
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
     else:
-        setup_logger(ConsoleTelemetryImpl(ConsoleConfig()))
+        setup_logger(TelemetryAdapter(TelemetryConfig()))
 
     all_endpoints = get_all_api_endpoints()
 

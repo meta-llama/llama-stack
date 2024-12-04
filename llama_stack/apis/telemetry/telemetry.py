@@ -147,48 +147,57 @@ class EvalTrace(BaseModel):
 
 
 @json_schema_type
-class SpanNode(BaseModel):
-    span: Span
-    children: List["SpanNode"] = Field(default_factory=list)
+class MaterializedSpan(Span):
+    children: List["MaterializedSpan"] = Field(default_factory=list)
     status: Optional[SpanStatus] = None
 
 
 @json_schema_type
-class TraceTree(BaseModel):
-    trace: Trace
-    root: Optional[SpanNode] = None
+class QueryCondition(BaseModel):
+    key: str
+    op: str
+    value: Any
 
 
 class TraceStore(Protocol):
-    async def get_trace(
-        self,
-        trace_id: str,
-    ) -> TraceTree: ...
 
-    async def get_traces_for_sessions(
+    async def query_traces(
         self,
-        session_ids: List[str],
-    ) -> [Trace]: ...
+        attribute_conditions: Optional[List[QueryCondition]] = None,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> List[Trace]: ...
+
+    async def get_materialized_span(
+        self,
+        span_id: str,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        max_depth: Optional[int] = None,
+    ) -> MaterializedSpan: ...
 
 
 @runtime_checkable
 class Telemetry(Protocol):
 
     @webmethod(route="/telemetry/log-event")
-    async def log_event(self, event: Event) -> None: ...
+    async def log_event(self, event: Event, ttl_seconds: int = 604800) -> None: ...
 
-    @webmethod(route="/telemetry/get-trace", method="POST")
-    async def get_trace(self, trace_id: str) -> TraceTree: ...
-
-    @webmethod(route="/telemetry/get-agent-trace", method="POST")
-    async def get_agent_trace(
+    @webmethod(route="/telemetry/query-traces", method="GET")
+    async def query_traces(
         self,
-        session_ids: List[str],
-    ) -> List[EvalTrace]: ...
+        attribute_conditions: Optional[List[QueryCondition]] = None,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> List[Trace]: ...
 
-    @webmethod(route="/telemetry/export-agent-trace", method="POST")
-    async def export_agent_trace(
+    @webmethod(route="/telemetry/get-materialized-span", method="GET")
+    async def get_materialized_span(
         self,
-        session_ids: List[str],
-        dataset_id: str,
-    ) -> None: ...
+        span_id: str,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        max_depth: Optional[int] = None,
+    ) -> MaterializedSpan: ...

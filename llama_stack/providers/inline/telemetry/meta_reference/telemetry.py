@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import threading
-from typing import List
+from typing import List, Optional
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -17,17 +17,18 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
-from llama_stack.distribution.datatypes import Api
-from llama_stack.providers.remote.telemetry.opentelemetry.postgres_processor import (
-    PostgresSpanProcessor,
+from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
+    ConsoleSpanProcessor,
 )
-from llama_stack.providers.utils.telemetry.jaeger import JaegerTraceStore
-from llama_stack.providers.utils.telemetry.postgres import PostgresTraceStore
 
+from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
+    SQLiteSpanProcessor,
+)
+from llama_stack.providers.utils.telemetry.sqlite import SQLiteTraceStore
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
-from .config import OpenTelemetryConfig
+from .config import TelemetryConfig, TelemetrySink
 
 _GLOBAL_STORAGE = {
     "active_spans": {},
@@ -53,19 +54,9 @@ def is_tracing_enabled(tracer):
         return span.is_recording()
 
 
-class OpenTelemetryAdapter(Telemetry):
-    def __init__(self, config: OpenTelemetryConfig, deps) -> None:
+class TelemetryAdapter(Telemetry):
+    def __init__(self, config: TelemetryConfig) -> None:
         self.config = config
-        self.datasetio = deps[Api.datasetio]
-
-        if config.trace_store == "jaeger":
-            self.trace_store = JaegerTraceStore(
-                config.jaeger_query_endpoint, config.service_name
-            )
-        elif config.trace_store == "postgres":
-            self.trace_store = PostgresTraceStore(config.postgres_conn_string)
-        else:
-            raise ValueError(f"Invalid trace store: {config.trace_store}")
 
         resource = Resource.create(
             {
@@ -75,25 +66,29 @@ class OpenTelemetryAdapter(Telemetry):
 
         provider = TracerProvider(resource=resource)
         trace.set_tracer_provider(provider)
-        otlp_exporter = OTLPSpanExporter(
-            endpoint=self.config.otel_endpoint,
-        )
-        span_processor = BatchSpanProcessor(otlp_exporter)
-        trace.get_tracer_provider().add_span_processor(span_processor)
-        trace.get_tracer_provider().add_span_processor(
-            PostgresSpanProcessor(self.config.postgres_conn_string)
-        )
-        # Set up metrics
-        metric_reader = PeriodicExportingMetricReader(
-            OTLPMetricExporter(
+        if TelemetrySink.JAEGER in self.config.sinks:
+            otlp_exporter = OTLPSpanExporter(
                 endpoint=self.config.otel_endpoint,
             )
-        )
-        metric_provider = MeterProvider(
-            resource=resource, metric_readers=[metric_reader]
-        )
-        metrics.set_meter_provider(metric_provider)
-        self.meter = metrics.get_meter(__name__)
+            span_processor = BatchSpanProcessor(otlp_exporter)
+            trace.get_tracer_provider().add_span_processor(span_processor)
+            metric_reader = PeriodicExportingMetricReader(
+                OTLPMetricExporter(
+                    endpoint=self.config.otel_endpoint,
+                )
+            )
+            metric_provider = MeterProvider(
+                resource=resource, metric_readers=[metric_reader]
+            )
+            metrics.set_meter_provider(metric_provider)
+            self.meter = metrics.get_meter(__name__)
+        if TelemetrySink.SQLITE in self.config.sinks:
+            trace.get_tracer_provider().add_span_processor(
+                SQLiteSpanProcessor(self.config.sqlite_db_path)
+            )
+            self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
+        if TelemetrySink.CONSOLE in self.config.sinks:
+            trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
         self._lock = _global_lock
 
     async def initialize(self) -> None:
@@ -104,15 +99,17 @@ class OpenTelemetryAdapter(Telemetry):
         trace.get_tracer_provider().shutdown()
         metrics.get_meter_provider().shutdown()
 
-    async def log_event(self, event: Event) -> None:
+    async def log_event(self, event: Event, ttl_seconds: int = 604800) -> None:
         if isinstance(event, UnstructuredLogEvent):
-            self._log_unstructured(event)
+            self._log_unstructured(event, ttl_seconds)
         elif isinstance(event, MetricEvent):
             self._log_metric(event)
         elif isinstance(event, StructuredLogEvent):
-            self._log_structured(event)
+            self._log_structured(event, ttl_seconds)
+        else:
+            raise ValueError(f"Unknown event type: {event}")
 
-    def _log_unstructured(self, event: UnstructuredLogEvent) -> None:
+    def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
             span_id = string_to_span_id(event.span_id)
@@ -125,6 +122,7 @@ class OpenTelemetryAdapter(Telemetry):
                     attributes={
                         "message": event.message,
                         "severity": event.severity.value,
+                        "__ttl__": ttl_seconds,
                         **event.attributes,
                     },
                     timestamp=timestamp_ns,
@@ -175,11 +173,14 @@ class OpenTelemetryAdapter(Telemetry):
             )
         return _GLOBAL_STORAGE["up_down_counters"][name]
 
-    def _log_structured(self, event: StructuredLogEvent) -> None:
+    def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             span_id = string_to_span_id(event.span_id)
             trace_id = string_to_trace_id(event.trace_id)
             tracer = trace.get_tracer(__name__)
+            if event.attributes is None:
+                event.attributes = {}
+            event.attributes["__ttl__"] = ttl_seconds
 
             if isinstance(event.payload, SpanStartPayload):
                 # Check if span already exists to prevent duplicates
@@ -216,66 +217,33 @@ class OpenTelemetryAdapter(Telemetry):
                     span.set_status(status)
                     span.end()
                     _GLOBAL_STORAGE["active_spans"].pop(span_id, None)
+            else:
+                raise ValueError(f"Unknown structured log event: {event}")
 
-    async def get_trace(self, trace_id: str) -> TraceTree:
-        return await self.trace_store.get_trace(trace_id)
-
-    async def get_agent_trace(
+    async def query_traces(
         self,
-        session_ids: List[str],
-    ) -> List[EvalTrace]:
-        traces = []
-        for session_id in session_ids:
-            traces_for_session = await self.trace_store.get_traces_for_sessions(
-                [session_id]
-            )
-            for session_trace in traces_for_session:
-                trace_details = await self._get_simplified_agent_trace(
-                    session_trace.trace_id, session_id
-                )
-                traces.extend(trace_details)
+        attribute_conditions: Optional[List[QueryCondition]] = None,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> List[Trace]:
+        return await self.trace_store.query_traces(
+            attribute_conditions=attribute_conditions,
+            attribute_keys_to_return=attribute_keys_to_return,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+        )
 
-        return traces
-
-    async def export_agent_trace(self, session_ids: List[str], dataset_id: str) -> None:
-        traces = await self.get_agent_trace(session_ids)
-        traces_dict = [
-            {
-                "step": trace.step,
-                "input": trace.input,
-                "output": trace.output,
-                "session_id": trace.session_id,
-            }
-            for trace in traces
-        ]
-        await self.datasetio.upload_rows(dataset_id, traces_dict)
-
-    async def _get_simplified_agent_trace(
-        self, trace_id: str, session_id: str
-    ) -> List[EvalTrace]:
-        trace_tree = await self.get_trace(trace_id)
-        if not trace_tree or not trace_tree.root:
-            return []
-
-        def find_execute_turn_children(node: SpanNode) -> List[EvalTrace]:
-            results = []
-            if node.span.name == "create_and_execute_turn":
-                # Sort children by start time
-                sorted_children = sorted(node.children, key=lambda x: x.span.start_time)
-                for child in sorted_children:
-                    results.append(
-                        EvalTrace(
-                            step=child.span.name,
-                            input=str(child.span.attributes.get("input", "")),
-                            output=str(child.span.attributes.get("output", "")),
-                            session_id=session_id,
-                            expected_output="",
-                        )
-                    )
-
-            # Recursively process children
-            for child in node.children:
-                results.extend(find_execute_turn_children(child))
-            return results
-
-        return find_execute_turn_children(trace_tree.root)
+    async def get_materialized_span(
+        self,
+        span_id: str,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        max_depth: Optional[int] = None,
+    ) -> MaterializedSpan:
+        return await self.trace_store.get_materialized_span(
+            span_id=span_id,
+            attribute_keys_to_return=attribute_keys_to_return,
+            max_depth=max_depth,
+        )

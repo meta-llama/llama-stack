@@ -15,8 +15,8 @@ def available_providers() -> List[ProviderSpec]:
             api=Api.telemetry,
             provider_type="inline::meta-reference",
             pip_packages=[],
-            module="llama_stack.providers.inline.meta_reference.telemetry",
-            config_class="llama_stack.providers.inline.meta_reference.telemetry.ConsoleConfig",
+            module="llama_stack.providers.inline.telemetry.meta_reference",
+            config_class="llama_stack.providers.inline.telemetry.meta_reference.config.TelemetryConfig",
         ),
         remote_provider_spec(
             api=Api.telemetry,
@@ -26,24 +26,5 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.telemetry.sample",
                 config_class="llama_stack.providers.remote.telemetry.sample.SampleConfig",
             ),
-        ),
-        RemoteProviderSpec(
-            api=Api.telemetry,
-            provider_type="remote::opentelemetry-jaeger",
-            config_class="llama_stack.providers.remote.telemetry.opentelemetry.OpenTelemetryConfig",
-            adapter=AdapterSpec(
-                adapter_type="opentelemetry-jaeger",
-                pip_packages=[
-                    "opentelemetry-api",
-                    "opentelemetry-sdk",
-                    "opentelemetry-exporter-jaeger",
-                    "opentelemetry-semantic-conventions",
-                ],
-                module="llama_stack.providers.remote.telemetry.opentelemetry",
-                config_class="llama_stack.providers.remote.telemetry.opentelemetry.OpenTelemetryConfig",
-            ),
-            api_dependencies=[
-                Api.datasetio,
-            ],
         ),
     ]
