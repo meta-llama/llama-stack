@@ -24,6 +24,7 @@ If so, we suggest:
   - {dockerhub}`distribution-remote-vllm` ([Guide](self_hosted_distro/remote-vllm))
   - {dockerhub}`distribution-meta-reference-gpu` ([Guide](self_hosted_distro/meta-reference-gpu))
   - {dockerhub}`distribution-tgi` ([Guide](self_hosted_distro/tgi))
+  - {dockerhub} `distribution-nvidia` ([Guide](self_hosted_distro/nvidia))
 
 - **Are you running on a "regular" desktop machine?**
 If so, we suggest:
