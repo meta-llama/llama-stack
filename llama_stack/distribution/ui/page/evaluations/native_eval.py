@@ -13,34 +13,27 @@ import streamlit as st
 from modules.api import llama_stack_api
 
 
-def native_evaluation_page():
-
-    st.set_page_config(page_title="Evaluations (Generation + Scoring)", page_icon="🦙")
-    st.title("📊 Evaluations (Generation + Scoring)")
-
-    # Create tabs
-    task_tab, candidate_tab, params_tab, run_tab = st.tabs(
-        [
-            "(1) Select Eval Task",
-            "(2) Define Eval Candidate",
-            "(3) Define Scoring Parameters",
-            "(4) Run Evaluation",
-        ]
+def select_eval_task_1():
+    # Select Eval Tasks
+    st.subheader("1. Choose An Eval Task")
+    eval_tasks = llama_stack_api.client.eval_tasks.list()
+    eval_tasks = {et.identifier: et for et in eval_tasks}
+    eval_tasks_names = list(eval_tasks.keys())
+    selected_eval_task = st.selectbox(
+        "Choose an eval task.",
+        options=eval_tasks_names,
+        help="Choose an eval task. Each eval task is parameterized by a dataset, and list of scoring functions.",
     )
-
-    with task_tab:
-        # Select Eval Tasks
-        eval_tasks = llama_stack_api.client.eval_tasks.list()
-        eval_tasks = {et.identifier: et for et in eval_tasks}
-        eval_tasks_names = list(eval_tasks.keys())
-        selected_eval_task = st.selectbox(
-            "Choose an eval task.",
-            options=eval_tasks_names,
-            help="Choose an eval task. Each eval task is parameterized by a dataset, and list of scoring functions.",
-        )
+    with st.expander("View Eval Task"):
         st.json(eval_tasks[selected_eval_task], expanded=True)
 
-    with candidate_tab:
+    st.session_state["selected_eval_task"] = selected_eval_task
+    st.session_state["eval_tasks"] = eval_tasks
+
+
+def define_eval_candidate_2():
+    st.subheader("2. Define Eval Candidate")
+    with st.expander("Define Eval Candidate"):
         # Define Eval Candidate
         candidate_type = st.radio("Candidate Type", ["model", "agent"])
 
@@ -140,100 +133,124 @@ def native_evaluation_page():
                     "enable_session_persistence": False,
                 },
             }
+        st.session_state["eval_candidate"] = eval_candidate
 
-    with params_tab:
-        st.write("(Optional) Define scoring function parameters here")
 
-    with run_tab:
-        # Add info box to explain configurations being used
-        st.info(
-            """
+def define_scoring_params_3():
+    if not st.session_state.get("selected_eval_candidate_2_next", None):
+        return
+    st.write("(Optional) Define scoring function parameters here")
+
+
+def run_evaluation_4():
+    st.subheader("3. Run Evaluation")
+    # Add info box to explain configurations being used
+    st.info(
+        """
         Review the configurations that will be used for this evaluation run, make any necessary changes, and then click the "Run Evaluation" button.
         """
-        )
+    )
+    selected_eval_task = st.session_state["selected_eval_task"]
+    eval_tasks = st.session_state["eval_tasks"]
+    eval_candidate = st.session_state["eval_candidate"]
 
-        dataset_id = eval_tasks[selected_eval_task].dataset_id
-        rows = llama_stack_api.client.datasetio.get_rows_paginated(
-            dataset_id=dataset_id,
-            rows_in_page=-1,
-        )
-        total_rows = len(rows.rows)
-        # Add number of examples control
-        num_rows = st.number_input(
-            "Number of Examples to Evaluate",
-            min_value=1,
-            max_value=total_rows,
-            value=5,
-            help="Number of examples from the dataset to evaluate. ",
-        )
+    dataset_id = eval_tasks[selected_eval_task].dataset_id
+    rows = llama_stack_api.client.datasetio.get_rows_paginated(
+        dataset_id=dataset_id,
+        rows_in_page=-1,
+    )
+    total_rows = len(rows.rows)
+    # Add number of examples control
+    num_rows = st.number_input(
+        "Number of Examples to Evaluate",
+        min_value=1,
+        max_value=total_rows,
+        value=5,
+        help="Number of examples from the dataset to evaluate. ",
+    )
 
-        eval_task_config = {
-            "type": "benchmark",
-            "eval_candidate": eval_candidate,
-            "scoring_params": {},
-        }
-        st.markdown("##### Evaluation Task")
-        st.write("Go back to (1) Select Eval Task to make changes to the eval task. ")
+    eval_task_config = {
+        "type": "benchmark",
+        "eval_candidate": eval_candidate,
+        "scoring_params": {},
+    }
+
+    with st.expander("View Evaluation Task"):
         st.json(eval_tasks[selected_eval_task], expanded=True)
-        st.markdown("##### Evaluation Task Configuration")
-        st.write(
-            "Go back to (2) Define Eval Candidate and (3) Define Scoring Parameters to make changes to the configuration. "
-        )
+    with st.expander("View Evaluation Task Configuration"):
         st.json(eval_task_config, expanded=True)
 
-        # Add run button and handle evaluation
-        if st.button("Run Evaluation"):
+    # Add run button and handle evaluation
+    if st.button("Run Evaluation"):
 
-            progress_text = "Running evaluation..."
-            progress_bar = st.progress(0, text=progress_text)
-            rows = rows.rows
-            if num_rows < total_rows:
-                rows = rows[:num_rows]
+        progress_text = "Running evaluation..."
+        progress_bar = st.progress(0, text=progress_text)
+        rows = rows.rows
+        if num_rows < total_rows:
+            rows = rows[:num_rows]
 
-            # Create separate containers for progress text and results
-            progress_text_container = st.empty()
-            results_container = st.empty()
-            output_res = {}
-            for i, r in enumerate(rows):
-                # Update progress
-                progress = i / len(rows)
-                progress_bar.progress(progress, text=progress_text)
-                # Run evaluation for current row
-                eval_res = llama_stack_api.client.eval.evaluate_rows(
-                    task_id=selected_eval_task,
-                    input_rows=[r],
-                    scoring_functions=eval_tasks[selected_eval_task].scoring_functions,
-                    task_config=eval_task_config,
-                )
+        # Create separate containers for progress text and results
+        progress_text_container = st.empty()
+        results_container = st.empty()
+        output_res = {}
+        for i, r in enumerate(rows):
+            # Update progress
+            progress = i / len(rows)
+            progress_bar.progress(progress, text=progress_text)
+            # Run evaluation for current row
+            eval_res = llama_stack_api.client.eval.evaluate_rows(
+                task_id=selected_eval_task,
+                input_rows=[r],
+                scoring_functions=eval_tasks[selected_eval_task].scoring_functions,
+                task_config=eval_task_config,
+            )
 
-                for k in r.keys():
-                    if k not in output_res:
-                        output_res[k] = []
-                    output_res[k].append(r[k])
+            for k in r.keys():
+                if k not in output_res:
+                    output_res[k] = []
+                output_res[k].append(r[k])
 
-                for k in eval_res.generations[0].keys():
-                    if k not in output_res:
-                        output_res[k] = []
-                    output_res[k].append(eval_res.generations[0][k])
+            for k in eval_res.generations[0].keys():
+                if k not in output_res:
+                    output_res[k] = []
+                output_res[k].append(eval_res.generations[0][k])
 
-                for scoring_fn in eval_tasks[selected_eval_task].scoring_functions:
-                    if scoring_fn not in output_res:
-                        output_res[scoring_fn] = []
-                    output_res[scoring_fn].append(
-                        eval_res.scores[scoring_fn].score_rows[0]
-                    )
+            for scoring_fn in eval_tasks[selected_eval_task].scoring_functions:
+                if scoring_fn not in output_res:
+                    output_res[scoring_fn] = []
+                output_res[scoring_fn].append(eval_res.scores[scoring_fn].score_rows[0])
 
-                progress_text_container.write(
-                    f"Expand to see current processed result ({i+1}/{len(rows)})"
-                )
-                results_container.json(eval_res, expanded=2)
+            progress_text_container.write(
+                f"Expand to see current processed result ({i+1}/{len(rows)})"
+            )
+            results_container.json(eval_res, expanded=2)
 
-            progress_bar.progress(1.0, text="Evaluation complete!")
-            # Display results in dataframe
-            if output_res:
-                output_df = pd.DataFrame(output_res)
-                st.subheader("Evaluation Results")
-                st.dataframe(output_df)
+        progress_bar.progress(1.0, text="Evaluation complete!")
+        # Display results in dataframe
+        if output_res:
+            output_df = pd.DataFrame(output_res)
+            st.subheader("Evaluation Results")
+            st.dataframe(output_df)
+
+
+def native_evaluation_page():
+
+    st.set_page_config(page_title="Evaluations (Generation + Scoring)", page_icon="🦙")
+    st.title("📊 Evaluations (Generation + Scoring)")
+
+    # Create tabs
+    # task_tab, candidate_tab, params_tab, run_tab = st.tabs(
+    #     [
+    #         "(1) Select Eval Task",
+    #         "(2) Define Eval Candidate",
+    #         "(3) Define Scoring Parameters",
+    #         "(4) Run Evaluation",
+    #     ]
+    # )
+    select_eval_task_1()
+    define_eval_candidate_2()
+    define_scoring_params_3()
+    run_evaluation_4()
 
 
 native_evaluation_page()
