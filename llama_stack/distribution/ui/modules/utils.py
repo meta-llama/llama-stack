@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 import os
 
 import pandas as pd
@@ -29,3 +30,13 @@ def process_dataset(file):
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
         return None
+
+
+def data_url_from_file(file) -> str:
+    file_content = file.getvalue()
+    base64_content = base64.b64encode(file_content).decode("utf-8")
+    mime_type = file.type
+
+    data_url = f"data:{mime_type};base64,{base64_content}"
+
+    return data_url
