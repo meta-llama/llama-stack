@@ -14,7 +14,10 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.telemetry,
             provider_type="inline::meta-reference",
-            pip_packages=[],
+            pip_packages=[
+                "opentelemetry-sdk",
+                "opentelemetry-exporter-otlp-proto-http",
+            ],
             module="llama_stack.providers.inline.telemetry.meta_reference",
             config_class="llama_stack.providers.inline.telemetry.meta_reference.config.TelemetryConfig",
         ),
