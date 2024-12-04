@@ -29,11 +29,22 @@ def select_eval_task_1():
 
     st.session_state["selected_eval_task"] = selected_eval_task
     st.session_state["eval_tasks"] = eval_tasks
+    if st.button("Confirm", key="confirm_1"):
+        st.session_state["selected_eval_task_1_next"] = True
 
 
 def define_eval_candidate_2():
+    if not st.session_state.get("selected_eval_task_1_next", None):
+        return
+
     st.subheader("2. Define Eval Candidate")
-    with st.expander("Define Eval Candidate"):
+    st.info(
+        """
+        Define the configurations for the evaluation candidate model or agent used for generation.
+        Select "model" if you want to run generation with inference API, or "agent" if you want to run generation with agent API through specifying AgentConfig.
+        """
+    )
+    with st.expander("Define Eval Candidate", expanded=True):
         # Define Eval Candidate
         candidate_type = st.radio("Candidate Type", ["model", "agent"])
 
@@ -135,14 +146,14 @@ def define_eval_candidate_2():
             }
         st.session_state["eval_candidate"] = eval_candidate
 
+    if st.button("Confirm", key="confirm_2"):
+        st.session_state["selected_eval_candidate_2_next"] = True
 
-def define_scoring_params_3():
+
+def run_evaluation_3():
     if not st.session_state.get("selected_eval_candidate_2_next", None):
         return
-    st.write("(Optional) Define scoring function parameters here")
 
-
-def run_evaluation_4():
     st.subheader("3. Run Evaluation")
     # Add info box to explain configurations being used
     st.info(
@@ -175,9 +186,9 @@ def run_evaluation_4():
         "scoring_params": {},
     }
 
-    with st.expander("View Evaluation Task"):
+    with st.expander("View Evaluation Task", expanded=True):
         st.json(eval_tasks[selected_eval_task], expanded=True)
-    with st.expander("View Evaluation Task Configuration"):
+    with st.expander("View Evaluation Task Configuration", expanded=True):
         st.json(eval_task_config, expanded=True)
 
     # Add run button and handle evaluation
@@ -238,19 +249,9 @@ def native_evaluation_page():
     st.set_page_config(page_title="Evaluations (Generation + Scoring)", page_icon="🦙")
     st.title("📊 Evaluations (Generation + Scoring)")
 
-    # Create tabs
-    # task_tab, candidate_tab, params_tab, run_tab = st.tabs(
-    #     [
-    #         "(1) Select Eval Task",
-    #         "(2) Define Eval Candidate",
-    #         "(3) Define Scoring Parameters",
-    #         "(4) Run Evaluation",
-    #     ]
-    # )
     select_eval_task_1()
     define_eval_candidate_2()
-    define_scoring_params_3()
-    run_evaluation_4()
+    run_evaluation_3()
 
 
 native_evaluation_page()
