@@ -7,7 +7,7 @@
 from datetime import datetime
 from enum import Enum
 
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Any, Dict, List, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -113,21 +113,6 @@ class DPOAlignmentConfig(BaseModel):
     reward_clip: float
     epsilon: float
     gamma: float
-
-
-@json_schema_type
-class PostTrainingSFTRequest(BaseModel):
-    """Request to finetune a model."""
-
-    job_uuid: str
-    model: str
-    algorithm: FinetuningAlgorithm
-    algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]] = None
-    training_config: TrainingConfig
-
-    # TODO: define these
-    hyperparam_search_config: Dict[str, Any]
-    logger_config: Dict[str, Any]
 
 
 @json_schema_type

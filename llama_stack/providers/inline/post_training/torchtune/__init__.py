@@ -8,16 +8,16 @@ from typing import Dict
 
 from llama_stack.distribution.datatypes import Api, ProviderSpec
 
-from .config import MetaReferencePostTrainingConfig
+from .config import TorchtunePostTrainingConfig
 
 
 async def get_provider_impl(
-    config: MetaReferencePostTrainingConfig,
+    config: TorchtunePostTrainingConfig,
     deps: Dict[Api, ProviderSpec],
 ):
-    from .post_training import MetaReferencePostTrainingImpl
+    from .post_training import TorchtunePostTrainingImpl
 
-    impl = MetaReferencePostTrainingImpl(
+    impl = TorchtunePostTrainingImpl(
         config,
         deps[Api.datasetio],
     )

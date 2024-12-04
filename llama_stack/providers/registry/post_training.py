@@ -9,22 +9,14 @@ from typing import List
 from llama_stack.distribution.datatypes import *  # noqa: F403
 
 
-META_REFERENCE_DEPS = [
-    "torch",
-    "torchtune",
-    "torchao",
-    "numpy",
-]
-
-
 def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.post_training,
-            provider_type="inline::meta-reference",
-            pip_packages=META_REFERENCE_DEPS,
-            module="llama_stack.providers.inline.post_training.meta_reference",
-            config_class="llama_stack.providers.inline.post_training.meta_reference.MetaReferencePostTrainingConfig",
+            provider_type="inline::torchtune",
+            pip_packages=["torch", "torchtune", "torchao", "numpy"],
+            module="llama_stack.providers.inline.post_training.torchtune",
+            config_class="llama_stack.providers.inline.post_training.torchtune.torchtunePostTrainingConfig",
             api_dependencies=[
                 Api.datasetio,
             ],

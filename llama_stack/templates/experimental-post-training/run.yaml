@@ -1,13 +1,15 @@
 version: '2'
-image_name: meta-reference-gpu
+image_name: experimental-post-training
 docker_image: null
-conda_env: meta-reference-gpu
+conda_env: experimental-post-training
 apis:
 - agents
 - inference
 - memory
 - safety
 - telemetry
+- datasetio
+- post_training
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -16,6 +18,10 @@ providers:
       model: ${env.INFERENCE_MODEL}
       max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
+  datasetio:
+  - provider_id: huggingface-0
+    provider_type: remote::huggingface
+    config: {}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -40,6 +46,12 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config: {}
+  post_training:
+  - provider_id: meta-reference-post-training
+    provider_type: inline::torchtune
+    config:
+      model: ${env.POST_TRAINING_MODEL}
+      checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
 
 metadata_store:
   namespace: null
@@ -52,5 +64,23 @@ models:
   provider_model_id: null
 shields: []
 memory_banks: []
+datasets:
+  - dataset_id: alpaca
+    provider_id: huggingface-0
+    url:
+      uri: https://huggingface.co/datasets/tatsu-lab/alpaca
+    metadata:
+      path: tatsu-lab/alpaca
+      name:
+      split: train
+    dataset_schema:
+      instruction:
+        type: string
+      input:
+        type: string
+      output:
+        type: string
+      text:
+        type: string
 scoring_fns: []
 eval_tasks: []

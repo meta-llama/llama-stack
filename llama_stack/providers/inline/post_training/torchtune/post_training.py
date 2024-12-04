@@ -4,18 +4,30 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.providers.inline.post_training.meta_reference.config import (
-    MetaReferencePostTrainingConfig,
+from llama_stack.providers.inline.post_training.torchtune.config import (
+    TorchtunePostTrainingConfig,
 )
 from llama_stack.apis.post_training import *  # noqa
-from llama_stack.providers.inline.post_training.meta_reference.recipes.lora_finetuning_single_device import (
+from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetuning_single_device import (
     LoraFinetuningSingleDevice,
 )
 
 
-class MetaReferencePostTrainingImpl:
+class PostTrainingSFTRequest(BaseModel):
+    job_uuid: str
+    model: str
+    algorithm: FinetuningAlgorithm
+    algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]] = None
+    training_config: TrainingConfig
+
+    # TODO: define these
+    hyperparam_search_config: Dict[str, Any]
+    logger_config: Dict[str, Any]
+
+
+class TorchtunePostTrainingImpl:
     def __init__(
-        self, config: MetaReferencePostTrainingConfig, datasetio_api: DatasetIO
+        self, config: TorchtunePostTrainingConfig, datasetio_api: DatasetIO
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api

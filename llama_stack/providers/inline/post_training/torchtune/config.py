@@ -9,7 +9,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-class MetaReferencePostTrainingConfig(BaseModel):
+class TorchtunePostTrainingConfig(BaseModel):
     model: str = Field(
         default="Llama3.2-3B-Instruct",
         description="Model descriptor from `llama model list`",

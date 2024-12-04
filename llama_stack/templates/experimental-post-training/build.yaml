@@ -1,9 +1,13 @@
 version: '2'
-name: meta-reference-gpu
+name: experimental-post-training
 distribution_spec:
-  description: Use Meta Reference for running LLM inference
+  description: Experimental template for post training
   docker_image: null
   providers:
+    post_training:
+    - inline::torchtune
+    datasetio:
+    - remote::huggingface
     inference:
     - inline::meta-reference
     memory:

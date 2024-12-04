@@ -18,15 +18,15 @@ from torch import nn
 from torchtune import utils as torchtune_utils
 from torchtune.training.metric_logging import DiskLogger
 from llama_stack.apis.post_training import *  # noqa
-from llama_stack.apis.post_training import PostTrainingSFTRequest
 from llama_stack.distribution.utils.model_utils import model_local_dir
 
-from llama_stack.providers.inline.post_training.meta_reference import utils
-from llama_stack.providers.inline.post_training.meta_reference.config import (
+from llama_stack.providers.inline.post_training.torchtune import utils
+from llama_stack.providers.inline.post_training.torchtune.config import (
     MetaReferencePostTrainingConfig,
 )
-from llama_stack.providers.inline.post_training.meta_reference.datasets.sft import (
-    SFTDataset,
+from llama_stack.providers.inline.post_training.torchtune.datasets.sft import SFTDataset
+from llama_stack.providers.inline.post_training.torchtune.post_training import (
+    PostTrainingSFTRequest,
 )
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
