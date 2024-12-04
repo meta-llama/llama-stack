@@ -13,13 +13,13 @@ from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
-from ollama import AsyncClient
 
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
+from ollama import AsyncClient
 
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
@@ -180,7 +180,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
         r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         choice = OpenAICompatCompletionChoice(
             finish_reason=r["done_reason"] if r["done"] else None,
