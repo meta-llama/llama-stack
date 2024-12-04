@@ -69,7 +69,8 @@ def get_distribution_template() -> DistributionTemplate:
                                 endpoint_name="${env.SAFETY_INFERENCE_ENDPOINT_NAME}",
                             ),
                         ),
-                    ]
+                    ],
+                    "memory": [memory_provider],
                 },
                 default_models=[
                     inference_model,

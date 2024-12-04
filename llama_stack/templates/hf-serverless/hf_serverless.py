@@ -70,7 +70,8 @@ def get_distribution_template() -> DistributionTemplate:
                                 repo="${env.SAFETY_MODEL}",
                             ),
                         ),
-                    ]
+                    ],
+                    "memory": [memory_provider],
                 },
                 default_models=[
                     inference_model,

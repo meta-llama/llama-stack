@@ -70,6 +70,7 @@ def get_distribution_template() -> DistributionTemplate:
                             ),
                         ),
                     ],
+                    "memory": [memory_provider],
                 },
                 default_models=[
                     inference_model,
