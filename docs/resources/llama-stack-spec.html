@@ -2291,6 +2291,39 @@
                     "required": true
                 }
             }
+        },
+        "/alpha/datasets/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
         }
     },
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
@@ -7917,6 +7950,18 @@
                 "required": [
                     "model_id"
                 ]
+            },
+            "UnregisterDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id"
+                ]
             }
         },
         "responses": {}
@@ -8530,6 +8575,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterModelRequest\" />"
         },
         {
+            "name": "UnregisterDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterDatasetRequest\" />"
+        },
+        {
             "name": "UnstructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
         },
@@ -8718,6 +8767,7 @@
                 "URL",
                 "UnregisterMemoryBankRequest",
                 "UnregisterModelRequest",
+                "UnregisterDatasetRequest",
                 "UnstructuredLogEvent",
                 "UserMessage",
                 "VectorMemoryBank",
