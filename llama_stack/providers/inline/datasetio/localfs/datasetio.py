@@ -3,14 +3,17 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import pandas
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.datasetio import *  # noqa: F403
+import base64
+import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
@@ -131,3 +134,41 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             total_count=len(rows),
             next_page_token=str(end),
         )
+
+    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+        dataset_info = self.dataset_infos.get(dataset_id)
+        if dataset_info is None:
+            raise ValueError(f"Dataset with id {dataset_id} not found")
+
+        dataset_impl = dataset_info.dataset_impl
+        dataset_impl.load()
+
+        new_rows_df = pandas.DataFrame(rows)
+        new_rows_df = dataset_impl._validate_dataset_schema(new_rows_df)
+        dataset_impl.df = pandas.concat(
+            [dataset_impl.df, new_rows_df], ignore_index=True
+        )
+
+        url = str(dataset_info.dataset_def.url)
+        parsed_url = urlparse(url)
+
+        if parsed_url.scheme == "file" or not parsed_url.scheme:
+            file_path = parsed_url.path
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            dataset_impl.df.to_csv(file_path, index=False)
+        elif parsed_url.scheme == "data":
+            # For data URLs, we need to update the base64-encoded content
+            if not parsed_url.path.startswith("text/csv;base64,"):
+                raise ValueError("Data URL must be a base64-encoded CSV")
+
+            csv_buffer = dataset_impl.df.to_csv(index=False)
+            base64_content = base64.b64encode(csv_buffer.encode("utf-8")).decode(
+                "utf-8"
+            )
+            dataset_info.dataset_def.url = URL(
+                uri=f"data:text/csv;base64,{base64_content}"
+            )
+        else:
+            raise ValueError(
+                f"Unsupported URL scheme: {parsed_url.scheme}. Only file:// and data: URLs are supported for writing."
+            )

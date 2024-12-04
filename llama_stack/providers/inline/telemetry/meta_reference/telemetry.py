@@ -7,15 +7,6 @@
 import threading
 from typing import List, Optional
 
-from llama_stack.distribution.datatypes import Api
-from llama_stack.providers.remote.telemetry.opentelemetry.console_span_processor import (
-    ConsoleSpanProcessor,
-)
-from llama_stack.providers.remote.telemetry.opentelemetry.sqlite_span_processor import (
-    SQLiteSpanProcessor,
-)
-from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
-
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -26,10 +17,18 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
+from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
+    ConsoleSpanProcessor,
+)
+
+from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
+    SQLiteSpanProcessor,
+)
+from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
-from .config import OpenTelemetryConfig, TelemetrySink
+from .config import TelemetryConfig, TelemetrySink
 
 _GLOBAL_STORAGE = {
     "active_spans": {},
@@ -55,10 +54,9 @@ def is_tracing_enabled(tracer):
         return span.is_recording()
 
 
-class OpenTelemetryAdapter(Telemetry):
-    def __init__(self, config: OpenTelemetryConfig, deps) -> None:
+class TelemetryAdapter(Telemetry):
+    def __init__(self, config: TelemetryConfig) -> None:
         self.config = config
-        self.datasetio = deps[Api.datasetio]
 
         resource = Resource.create(
             {
@@ -224,36 +222,26 @@ class OpenTelemetryAdapter(Telemetry):
 
     async def query_traces(
         self,
-        attribute_conditions: Optional[List[QueryCondition]] = None,
-        attribute_keys_to_return: Optional[List[str]] = None,
+        attribute_filters: Optional[List[QueryCondition]] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
     ) -> List[Trace]:
         return await self.trace_store.query_traces(
-            attribute_conditions=attribute_conditions,
-            attribute_keys_to_return=attribute_keys_to_return,
+            attribute_filters=attribute_filters,
             limit=limit,
             offset=offset,
             order_by=order_by,
         )
 
-    async def get_spans(
+    async def get_span_tree(
         self,
         span_id: str,
-        attribute_conditions: Optional[List[QueryCondition]] = None,
-        attribute_keys_to_return: Optional[List[str]] = None,
+        attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-        limit: Optional[int] = 100,
-        offset: Optional[int] = 0,
-        order_by: Optional[List[str]] = None,
     ) -> SpanWithChildren:
-        return await self.trace_store.get_spans(
+        return await self.trace_store.get_materialized_span(
             span_id=span_id,
-            attribute_conditions=attribute_conditions,
-            attribute_keys_to_return=attribute_keys_to_return,
+            attributes_to_return=attributes_to_return,
             max_depth=max_depth,
-            limit=limit,
-            offset=offset,
-            order_by=order_by,
         )

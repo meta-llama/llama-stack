@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.distribution.tracing import trace_protocol
 
 
 @json_schema_type
@@ -43,6 +44,7 @@ class MemoryBankStore(Protocol):
 
 
 @runtime_checkable
+@trace_protocol
 class Memory(Protocol):
     memory_bank_store: MemoryBankStore
 
