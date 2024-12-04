@@ -169,6 +169,7 @@ class ChatAgent(ShieldRunnerMixin):
             messages.extend(request.messages)
 
             turn_id = str(uuid.uuid4())
+            span.set_attribute("turn_id", turn_id)
             start_time = datetime.now()
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
