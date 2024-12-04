@@ -24,8 +24,6 @@ class MetaReferencePostTrainingImpl:
         self,
         job_uuid: str,
         model: str,
-        dataset_id: str,
-        validation_dataset_id: str,
         algorithm: FinetuningAlgorithm,
         algorithm_config: LoraFinetuningConfig,
         training_config: TrainingConfig,
@@ -37,8 +35,6 @@ class MetaReferencePostTrainingImpl:
         request = PostTrainingSFTRequest(
             job_uuid=job_uuid,
             model=model,
-            dataset_id=dataset_id,
-            validation_dataset_id=validation_dataset_id,
             algorithm=algorithm,
             algorithm_config=algorithm_config,
             training_config=training_config,
