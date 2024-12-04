@@ -47,14 +47,14 @@ docker run \
   llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
-  --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
+  --env NVIDIA_API_KEY=$NVIDIA_API_KEY
 ```
 
 ### Via Conda
 
 ```bash
-llama stack build --template fireworks --image-type conda
+llama stack build --template nvidia --image-type conda
 llama stack run ./run.yaml \
   --port 5001 \
-  --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
+  --env NVIDIA_API_KEY=$NVIDIA_API_KEY
 ```
