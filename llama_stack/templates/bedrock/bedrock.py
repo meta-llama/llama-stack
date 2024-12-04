@@ -16,6 +16,9 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["remote::bedrock"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
 
     return DistributionTemplate(
