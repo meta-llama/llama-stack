@@ -10,13 +10,13 @@ def main():
     # Evaluation pages
     application_evaluation_page = st.Page(
         "page/evaluations/app_eval.py",
-        title="Application Evaluation",
+        title="Evaluations (Scoring)",
         icon="📊",
         default=False,
     )
     native_evaluation_page = st.Page(
         "page/evaluations/native_eval.py",
-        title="Native Evaluation",
+        title="Evaluations (Generation + Scoring)",
         icon="📊",
         default=False,
     )
@@ -28,30 +28,12 @@ def main():
     rag_page = st.Page("page/playground/rag.py", title="RAG", icon="💬", default=False)
 
     # Distribution pages
+    resources_page = st.Page(
+        "page/distribution/resources.py", title="Resources", icon="🔍", default=False
+    )
     provider_page = st.Page(
-        "page/distribution/providers.py", title="Provider", icon="🔍", default=False
-    )
-    model_page = st.Page(
-        "page/distribution/models.py", title="Models", icon="🔍", default=False
-    )
-    memory_bank_page = st.Page(
-        "page/distribution/memory_banks.py",
-        title="Memory Banks",
-        icon="🔍",
-        default=False,
-    )
-    shield_page = st.Page(
-        "page/distribution/shields.py", title="Shields", icon="🔍", default=False
-    )
-    scoring_function_page = st.Page(
-        "page/distribution/scoring_functions.py",
-        title="Scoring Functions",
-        icon="🔍",
-        default=False,
-    )
-    eval_task_page = st.Page(
-        "page/distribution/eval_tasks.py",
-        title="Eval Tasks",
+        "page/distribution/providers.py",
+        title="API Providers",
         icon="🔍",
         default=False,
     )
@@ -64,14 +46,7 @@ def main():
                 application_evaluation_page,
                 native_evaluation_page,
             ],
-            "Inspect": [
-                provider_page,
-                model_page,
-                memory_bank_page,
-                shield_page,
-                scoring_function_page,
-                eval_task_page,
-            ],
+            "Inspect": [provider_page, resources_page],
         },
         expanded=False,
     )

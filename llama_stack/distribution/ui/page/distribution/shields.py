@@ -7,12 +7,14 @@
 import streamlit as st
 from modules.api import llama_stack_api
 
-# Shields Section
-st.header("Shields")
 
-shields_info = {
-    s.identifier: s.to_dict() for s in llama_stack_api.client.shields.list()
-}
+def shields():
+    # Shields Section
+    st.header("Shields")
 
-selected_shield = st.selectbox("Select a shield", list(shields_info.keys()))
-st.json(shields_info[selected_shield])
+    shields_info = {
+        s.identifier: s.to_dict() for s in llama_stack_api.client.shields.list()
+    }
+
+    selected_shield = st.selectbox("Select a shield", list(shields_info.keys()))
+    st.json(shields_info[selected_shield])

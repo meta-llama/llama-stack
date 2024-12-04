@@ -15,8 +15,8 @@ from modules.api import llama_stack_api
 
 def native_evaluation_page():
 
-    st.set_page_config(page_title="Native Evaluations", page_icon="🦙")
-    st.title("🦙 Llama Stack Native Evaluations")
+    st.set_page_config(page_title="Evaluations (Generation + Scoring)", page_icon="🦙")
+    st.title("📊 Evaluations (Generation + Scoring)")
 
     # Create tabs
     task_tab, candidate_tab, params_tab, run_tab = st.tabs(
