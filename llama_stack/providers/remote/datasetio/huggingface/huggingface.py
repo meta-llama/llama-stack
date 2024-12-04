@@ -96,7 +96,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             next_page_token=str(end),
         )
 
-    async def upload_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
         loaded_dataset = load_hf_dataset(dataset_def)
 

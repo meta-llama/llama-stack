@@ -21,6 +21,9 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
+# Add this constant near the top of the file, after the imports
+DEFAULT_TTL_DAYS = 7
+
 
 @json_schema_type
 class SpanStatus(Enum):
@@ -147,57 +150,39 @@ class EvalTrace(BaseModel):
 
 
 @json_schema_type
-class MaterializedSpan(Span):
-    children: List["MaterializedSpan"] = Field(default_factory=list)
+class SpanWithChildren(Span):
+    children: List["SpanWithChildren"] = Field(default_factory=list)
     status: Optional[SpanStatus] = None
 
 
 @json_schema_type
 class QueryCondition(BaseModel):
     key: str
-    op: str
+    op: Literal["eq", "ne", "gt", "lt"]
     value: Any
-
-
-class TraceStore(Protocol):
-
-    async def query_traces(
-        self,
-        attribute_conditions: Optional[List[QueryCondition]] = None,
-        attribute_keys_to_return: Optional[List[str]] = None,
-        limit: Optional[int] = 100,
-        offset: Optional[int] = 0,
-        order_by: Optional[List[str]] = None,
-    ) -> List[Trace]: ...
-
-    async def get_materialized_span(
-        self,
-        span_id: str,
-        attribute_keys_to_return: Optional[List[str]] = None,
-        max_depth: Optional[int] = None,
-    ) -> MaterializedSpan: ...
 
 
 @runtime_checkable
 class Telemetry(Protocol):
 
     @webmethod(route="/telemetry/log-event")
-    async def log_event(self, event: Event, ttl_seconds: int = 604800) -> None: ...
+    async def log_event(
+        self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400
+    ) -> None: ...
 
-    @webmethod(route="/telemetry/query-traces", method="GET")
+    @webmethod(route="/telemetry/query-traces", method="POST")
     async def query_traces(
         self,
-        attribute_conditions: Optional[List[QueryCondition]] = None,
-        attribute_keys_to_return: Optional[List[str]] = None,
+        attribute_filters: Optional[List[QueryCondition]] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
     ) -> List[Trace]: ...
 
-    @webmethod(route="/telemetry/get-materialized-span", method="GET")
-    async def get_materialized_span(
+    @webmethod(route="/telemetry/get-span-tree", method="POST")
+    async def get_span_tree(
         self,
         span_id: str,
-        attribute_keys_to_return: Optional[List[str]] = None,
+        attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> MaterializedSpan: ...
+    ) -> SpanWithChildren: ...

@@ -6,16 +6,29 @@
 
 import json
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Protocol
 
 import aiosqlite
 
-from llama_stack.apis.telemetry import (
-    QueryCondition,
-    SpanWithChildren,
-    Trace,
-    TraceStore,
-)
+from llama_stack.apis.telemetry import QueryCondition, SpanWithChildren, Trace
+
+
+class TraceStore(Protocol):
+
+    async def query_traces(
+        self,
+        attribute_filters: Optional[List[QueryCondition]] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> List[Trace]: ...
+
+    async def get_materialized_span(
+        self,
+        span_id: str,
+        attributes_to_return: Optional[List[str]] = None,
+        max_depth: Optional[int] = None,
+    ) -> SpanWithChildren: ...
 
 
 class SQLiteTraceStore(TraceStore):
@@ -25,27 +38,19 @@ class SQLiteTraceStore(TraceStore):
     async def query_traces(
         self,
         attribute_filters: Optional[List[QueryCondition]] = None,
-        attributes_to_return: Optional[List[str]] = None,
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
     ) -> List[Trace]:
-        print(attribute_filters, attributes_to_return, limit, offset, order_by)
-
-        def build_attribute_select() -> str:
-            if not attributes_to_return:
-                return ""
-            return "".join(
-                f", json_extract(s.attributes, '$.{key}') as attr_{key}"
-                for key in attributes_to_return
-            )
 
         def build_where_clause() -> tuple[str, list]:
             if not attribute_filters:
                 return "", []
 
+            ops_map = {"eq": "=", "ne": "!=", "gt": ">", "lt": "<"}
+
             conditions = [
-                f"json_extract(s.attributes, '$.{condition.key}') {condition.op} ?"
+                f"json_extract(s.attributes, '$.{condition.key}') {ops_map[condition.op]} ?"
                 for condition in attribute_filters
             ]
             params = [condition.value for condition in attribute_filters]
@@ -73,7 +78,6 @@ class SQLiteTraceStore(TraceStore):
             ),
             filtered_traces AS (
                 SELECT t.trace_id, t.root_span_id, t.start_time, t.end_time
-                {attribute_select}
                 FROM matching_traces mt
                 JOIN traces t ON mt.trace_id = t.trace_id
                 LEFT JOIN spans s ON t.trace_id = s.trace_id
@@ -86,7 +90,6 @@ class SQLiteTraceStore(TraceStore):
 
         where_clause, params = build_where_clause()
         query = base_query.format(
-            attribute_select=build_attribute_select(),
             where_clause=where_clause,
             order_clause=build_order_clause(),
             limit=limit,

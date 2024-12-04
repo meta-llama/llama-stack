@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.distribution.tracing import trace_protocol, traced
+from llama_stack.distribution.tracing import trace_protocol
 
 
 @json_schema_type
@@ -50,7 +50,6 @@ class Memory(Protocol):
 
     # this will just block now until documents are inserted, but it should
     # probably return a Job instance which can be polled for completion
-    @traced(input="documents")
     @webmethod(route="/memory/insert")
     async def insert_documents(
         self,
@@ -60,7 +59,6 @@ class Memory(Protocol):
     ) -> None: ...
 
     @webmethod(route="/memory/query")
-    @traced(input="query")
     async def query_documents(
         self,
         bank_id: str,

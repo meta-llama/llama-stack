@@ -132,7 +132,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             next_page_token=str(end),
         )
 
-    async def upload_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
         dataset_info = self.dataset_infos.get(dataset_id)
         if dataset_info is None:
             raise ValueError(f"Dataset with id {dataset_id} not found")

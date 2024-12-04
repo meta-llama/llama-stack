@@ -222,8 +222,8 @@ class DatasetIORouter(DatasetIO):
             filter_condition=filter_condition,
         )
 
-    async def upload_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
-        return await self.routing_table.get_provider_impl(dataset_id).upload_rows(
+    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+        return await self.routing_table.get_provider_impl(dataset_id).append_rows(
             dataset_id=dataset_id,
             rows=rows,
         )

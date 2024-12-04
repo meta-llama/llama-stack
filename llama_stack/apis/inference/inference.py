@@ -21,7 +21,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_stack.distribution.tracing import trace_protocol, traced
+from llama_stack.distribution.tracing import trace_protocol
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.models import *  # noqa: F403
@@ -227,7 +227,6 @@ class Inference(Protocol):
     model_store: ModelStore
 
     @webmethod(route="/inference/completion")
-    @traced(input="content")
     async def completion(
         self,
         model_id: str,
@@ -239,7 +238,6 @@ class Inference(Protocol):
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]: ...
 
     @webmethod(route="/inference/chat-completion")
-    @traced(input="messages")
     async def chat_completion(
         self,
         model_id: str,
@@ -257,7 +255,6 @@ class Inference(Protocol):
     ]: ...
 
     @webmethod(route="/inference/embeddings")
-    @traced(input="contents")
     async def embeddings(
         self,
         model_id: str,
