@@ -1,7 +1,5 @@
 # (Experimental) LLama Stack UI
 
-[!NOTE] This is a work in progress.
-
 ## Docker Setup
 
 :warning: This is a work in progress.
