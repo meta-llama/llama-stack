@@ -26,6 +26,12 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/hf-serverless}/faiss_store.db
+  - provider_id: chromadb
+    provider_type: remote::chromadb
+    config: {}
+  - provider_id: pgvector
+    provider_type: remote::pgvector
+    config: {}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -50,9 +56,18 @@ providers:
   - provider_id: huggingface
     provider_type: remote::huggingface
     config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
   scoring:
   - provider_id: basic
     provider_type: inline::basic
+    config: {}
+  - provider_id: llm-as-judge
+    provider_type: inline::llm-as-judge
+    config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
     config: {}
 metadata_store:
   namespace: null
