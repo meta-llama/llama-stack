@@ -9,6 +9,7 @@ from pathlib import Path
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
 
@@ -31,6 +32,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="together",
         provider_type="remote::together",
         config=TogetherImplConfig.sample_run_config(),
+    )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(),
     )
 
     core_model_to_hf_repo = {
@@ -56,6 +62,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "memory": [memory_provider],
                 },
                 default_models=default_models,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
