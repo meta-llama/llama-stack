@@ -27,7 +27,7 @@ def get_distribution_template() -> DistributionTemplate:
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
-
+    name = "together"
     inference_provider = Provider(
         provider_id="together",
         provider_type="remote::together",
@@ -36,7 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
     memory_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissImplConfig.sample_run_config(),
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
     )
 
     core_model_to_hf_repo = {
@@ -51,7 +51,7 @@ def get_distribution_template() -> DistributionTemplate:
     ]
 
     return DistributionTemplate(
-        name="together",
+        name=name,
         distro_type="self_hosted",
         description="Use Together.AI for running LLM inference",
         docker_image=None,
