@@ -7,7 +7,7 @@
 from datetime import datetime
 from enum import Enum
 
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
@@ -60,13 +60,6 @@ class TrainingConfig(BaseModel):
     optimizer_config: OptimizerConfig
     efficiency_config: Optional[EfficiencyConfig] = None
     dtype: Optional[str] = "bf16"
-
-
-@json_schema_type
-class FinetuningAlgorithm(Enum):
-    full = "full"
-    lora = "lora"
-    qat = "qat"
 
 
 @json_schema_type
@@ -172,12 +165,17 @@ class PostTraining(Protocol):
     async def supervised_fine_tune(
         self,
         job_uuid: str,
-        model: str,
-        algorithm: FinetuningAlgorithm,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
-        algorithm_config: Optional[LoraFinetuningConfig] = None,
+        model: str = Field(
+            default="Llama3.2-3B-Instruct",
+            description="Model descriptor from `llama model list`",
+        ),
+        checkpoint_dir: Optional[str] = None,
+        algorithm_config: Optional[
+            Union[LoraFinetuningConfig, QATFinetuningConfig]
+        ] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize")

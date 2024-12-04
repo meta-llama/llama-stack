@@ -6,15 +6,8 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class TorchtunePostTrainingConfig(BaseModel):
-    model: str = Field(
-        default="Llama3.2-3B-Instruct",
-        description="Model descriptor from `llama model list`",
-    )
     torch_seed: Optional[int] = None
-    # By default, the implementation will look at ~/.llama/checkpoints/<model> but you
-    # can override by specifying the directory explicitly
-    checkpoint_dir: Optional[str] = None

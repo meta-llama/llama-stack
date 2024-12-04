@@ -49,9 +49,7 @@ providers:
   post_training:
   - provider_id: meta-reference-post-training
     provider_type: inline::torchtune
-    config:
-      model: ${env.POST_TRAINING_MODEL}
-      checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
+    config: {}
 
 metadata_store:
   namespace: null

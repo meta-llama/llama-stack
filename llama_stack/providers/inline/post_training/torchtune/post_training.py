@@ -13,18 +13,6 @@ from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetunin
 )
 
 
-class PostTrainingSFTRequest(BaseModel):
-    job_uuid: str
-    model: str
-    algorithm: FinetuningAlgorithm
-    algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]] = None
-    training_config: TrainingConfig
-
-    # TODO: define these
-    hyperparam_search_config: Dict[str, Any]
-    logger_config: Dict[str, Any]
-
-
 class TorchtunePostTrainingImpl:
     def __init__(
         self, config: TorchtunePostTrainingConfig, datasetio_api: DatasetIO
@@ -35,29 +23,25 @@ class TorchtunePostTrainingImpl:
     async def supervised_fine_tune(
         self,
         job_uuid: str,
-        model: str,
-        algorithm: FinetuningAlgorithm,
-        algorithm_config: LoraFinetuningConfig,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
+        model: str,
+        checkpoint_dir: Optional[str],
+        algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
     ) -> PostTrainingJob:
-
-        # wrapper request to make it easier to pass around (internal only, not exposed to API)
-        request = PostTrainingSFTRequest(
-            job_uuid=job_uuid,
-            model=model,
-            algorithm=algorithm,
-            algorithm_config=algorithm_config,
-            training_config=training_config,
-            hyperparam_search_config=hyperparam_search_config,
-            logger_config=logger_config,
-        )
-        if request.algorithm == FinetuningAlgorithm.lora:
+        if isinstance(algorithm_config, LoraFinetuningConfig):
             recipe = LoraFinetuningSingleDevice(
-                self.config, request, self.datasetio_api
+                self.config,
+                training_config,
+                hyperparam_search_config,
+                logger_config,
+                model,
+                checkpoint_dir,
+                algorithm_config,
+                self.datasetio_api,
             )
-            await recipe.setup(self.config)
+            await recipe.setup()
             await recipe.train()
         else:
             raise NotImplementedError()

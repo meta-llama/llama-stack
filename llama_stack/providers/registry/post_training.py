@@ -16,7 +16,7 @@ def available_providers() -> List[ProviderSpec]:
             provider_type="inline::torchtune",
             pip_packages=["torch", "torchtune", "torchao", "numpy"],
             module="llama_stack.providers.inline.post_training.torchtune",
-            config_class="llama_stack.providers.inline.post_training.torchtune.torchtunePostTrainingConfig",
+            config_class="llama_stack.providers.inline.post_training.torchtune.TorchtunePostTrainingConfig",
             api_dependencies=[
                 Api.datasetio,
             ],
