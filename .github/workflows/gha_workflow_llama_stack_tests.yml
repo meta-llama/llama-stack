@@ -1,13 +1,15 @@
 name: "Run Llama-stack Tests"
 
 on:
-  pull_request_target:
-    types: ["opened"]
-    branches:
-      - 'main'
-    paths:
-      - 'llama_stack/**/*.py'
-      - 'tests/**/*.py'
+  #### Temporarily disable PR runs until tests run as intended within mainline.
+  #TODO Add this back.
+  #pull_request_target:
+  #  types: ["opened"]
+  #  branches:
+  #    - 'main'
+  #  paths:
+  #    - 'llama_stack/**/*.py'
+  #    - 'tests/**/*.py'
 
   workflow_dispatch:
     inputs:
@@ -16,8 +18,8 @@ on:
         required: true
         default: "llama-stack-gha-runner-gpu"
 
-      branch:
-        description: "Branch to checkout"
+      checkout_reference:
+        description: "The branch, tag, or SHA to checkout"
         required: true
         default: "main"
 
