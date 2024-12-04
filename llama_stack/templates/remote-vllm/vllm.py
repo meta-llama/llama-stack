@@ -7,6 +7,7 @@
 from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -19,13 +20,18 @@ def get_distribution_template() -> DistributionTemplate:
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
     }
-
+    name = "remote-vllm"
     inference_provider = Provider(
         provider_id="vllm-inference",
         provider_type="remote::vllm",
         config=VLLMInferenceAdapterConfig.sample_run_config(
             url="${env.VLLM_URL}",
         ),
+    )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
     )
 
     inference_model = ModelInput(
@@ -38,7 +44,7 @@ def get_distribution_template() -> DistributionTemplate:
     )
 
     return DistributionTemplate(
-        name="remote-vllm",
+        name=name,
         distro_type="self_hosted",
         description="Use (an external) vLLM server for running LLM inference",
         template_path=Path(__file__).parent / "doc_template.md",
@@ -48,6 +54,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "memory": [memory_provider],
                 },
                 default_models=[inference_model],
             ),

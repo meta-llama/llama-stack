@@ -9,6 +9,7 @@ from pathlib import Path
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.fireworks.fireworks import MODEL_ALIASES
 
@@ -27,10 +28,17 @@ def get_distribution_template() -> DistributionTemplate:
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
 
+    name = "fireworks"
+
     inference_provider = Provider(
         provider_id="fireworks",
         provider_type="remote::fireworks",
         config=FireworksImplConfig.sample_run_config(),
+    )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
     )
 
     core_model_to_hf_repo = {
@@ -45,7 +53,7 @@ def get_distribution_template() -> DistributionTemplate:
     ]
 
     return DistributionTemplate(
-        name="fireworks",
+        name=name,
         distro_type="self_hosted",
         description="Use Fireworks.AI for running LLM inference",
         docker_image=None,
@@ -56,6 +64,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "memory": [memory_provider],
                 },
                 default_models=default_models,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
