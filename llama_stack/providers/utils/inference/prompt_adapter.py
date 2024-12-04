@@ -7,14 +7,13 @@
 import base64
 import io
 import json
+import logging
 from typing import Tuple
 
 import httpx
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from PIL import Image as PIL_Image
-from termcolor import cprint
-
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_models.datatypes import ModelFamily
@@ -28,6 +27,8 @@ from llama_models.llama3.prompt_templates import (
 from llama_models.sku_list import resolve_model
 
 from llama_stack.providers.utils.inference import supported_inference_models
+
+log = logging.getLogger(__name__)
 
 
 def content_has_media(content: InterleavedTextMedia):
@@ -175,11 +176,13 @@ def chat_completion_request_to_messages(
     """
     model = resolve_model(llama_model)
     if model is None:
-        cprint(f"Could not resolve model {llama_model}", color="red")
+        log.error(f"Could not resolve model {llama_model}")
         return request.messages
 
-    if model.descriptor() not in supported_inference_models():
-        cprint(f"Unsupported inference model? {model.descriptor()}", color="red")
+    allowed_models = supported_inference_models()
+    descriptors = [m.descriptor() for m in allowed_models]
+    if model.descriptor() not in descriptors:
+        log.error(f"Unsupported inference model? {model.descriptor()}")
         return request.messages
 
     if model.model_family == ModelFamily.llama3_1 or (

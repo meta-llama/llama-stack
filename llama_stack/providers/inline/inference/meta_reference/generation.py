@@ -8,6 +8,7 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import json
+import logging
 import math
 import os
 import sys
@@ -31,7 +32,6 @@ from llama_models.llama3.reference_impl.multimodal.model import (
 )
 from llama_models.sku_list import resolve_model
 from pydantic import BaseModel
-from termcolor import cprint
 
 from llama_stack.apis.inference import *  # noqa: F403
 
@@ -49,6 +49,8 @@ from .config import (
     MetaReferenceInferenceConfig,
     MetaReferenceQuantizedInferenceConfig,
 )
+
+log = logging.getLogger(__name__)
 
 
 def model_checkpoint_dir(model) -> str:
@@ -185,7 +187,7 @@ class Llama:
                 model = Transformer(model_args)
             model.load_state_dict(state_dict, strict=False)
 
-        print(f"Loaded in {time.time() - start_time:.2f} seconds")
+        log.info(f"Loaded in {time.time() - start_time:.2f} seconds")
         return Llama(model, tokenizer, model_args, llama_model)
 
     def __init__(
@@ -221,7 +223,7 @@ class Llama:
                 self.formatter.vision_token if t == 128256 else t
                 for t in model_input.tokens
             ]
-            cprint("Input to model -> " + self.tokenizer.decode(input_tokens), "red")
+            log.info("Input to model -> " + self.tokenizer.decode(input_tokens))
         prompt_tokens = [model_input.tokens]
 
         bsz = 1
@@ -231,9 +233,7 @@ class Llama:
         max_prompt_len = max(len(t) for t in prompt_tokens)
 
         if max_prompt_len >= params.max_seq_len:
-            cprint(
-                f"Out of token budget {max_prompt_len} vs {params.max_seq_len}", "red"
-            )
+            log.error(f"Out of token budget {max_prompt_len} vs {params.max_seq_len}")
             return
 
         total_len = min(max_gen_len + max_prompt_len, params.max_seq_len)

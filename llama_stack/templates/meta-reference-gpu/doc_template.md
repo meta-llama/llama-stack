@@ -1,4 +1,14 @@
+---
+orphan: true
+---
 # Meta Reference Distribution
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations:
 
@@ -19,7 +29,7 @@ The following environment variables can be configured:
 
 ## Prerequisite: Downloading Models
 
-Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models. Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
+Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/references/llama_cli_reference/download_models.html) here to download the models. Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
 
 ```
 $ ls ~/.llama/checkpoints
@@ -40,9 +50,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
@@ -53,9 +61,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
@@ -66,8 +72,8 @@ docker run \
 Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-llama stack build --template meta-reference-gpu --image-type conda
-llama stack run ./run.yaml \
+llama stack build --template {{ name }} --image-type conda
+llama stack run distributions/{{ name }}/run.yaml \
   --port 5001 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 ```
@@ -75,7 +81,7 @@ llama stack run ./run.yaml \
 If you are using Llama Stack Safety / Shield APIs, use:
 
 ```bash
-llama stack run ./run-with-safety.yaml \
+llama stack run distributions/{{ name }}/run-with-safety.yaml \
   --port 5001 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B

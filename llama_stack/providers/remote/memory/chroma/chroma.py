@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import json
+import logging
 from typing import List
 from urllib.parse import urlparse
 
@@ -20,6 +21,8 @@ from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
 )
+
+log = logging.getLogger(__name__)
 
 
 class ChromaIndex(EmbeddingIndex):
@@ -56,10 +59,7 @@ class ChromaIndex(EmbeddingIndex):
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
             except Exception:
-                import traceback
-
-                traceback.print_exc()
-                print(f"Failed to parse document: {doc}")
+                log.exception(f"Failed to parse document: {doc}")
                 continue
 
             chunks.append(chunk)
@@ -73,7 +73,7 @@ class ChromaIndex(EmbeddingIndex):
 
 class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, url: str) -> None:
-        print(f"Initializing ChromaMemoryAdapter with url: {url}")
+        log.info(f"Initializing ChromaMemoryAdapter with url: {url}")
         url = url.rstrip("/")
         parsed = urlparse(url)
 
@@ -88,12 +88,10 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
     async def initialize(self) -> None:
         try:
-            print(f"Connecting to Chroma server at: {self.host}:{self.port}")
+            log.info(f"Connecting to Chroma server at: {self.host}:{self.port}")
             self.client = await chromadb.AsyncHttpClient(host=self.host, port=self.port)
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
+            log.exception("Could not connect to Chroma server")
             raise RuntimeError("Could not connect to Chroma server") from e
 
     async def shutdown(self) -> None:
@@ -109,7 +107,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
         collection = await self.client.get_or_create_collection(
             name=memory_bank.identifier,
-            metadata={"bank": memory_bank.json()},
+            metadata={"bank": memory_bank.model_dump_json()},
         )
         bank_index = BankWithIndex(
             bank=memory_bank, index=ChromaIndex(self.client, collection)
@@ -123,10 +121,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
                 data = json.loads(collection.metadata["bank"])
                 bank = parse_obj_as(VectorMemoryBank, data)
             except Exception:
-                import traceback
-
-                traceback.print_exc()
-                print(f"Failed to parse bank: {collection.metadata}")
+                log.exception(f"Failed to parse bank: {collection.metadata}")
                 continue
 
             index = BankWithIndex(
@@ -147,9 +142,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+        index = await self._get_and_cache_bank_index(bank_id)
 
         await index.insert_documents(documents)
 
@@ -159,8 +152,20 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
+        index = await self._get_and_cache_bank_index(bank_id)
 
         return await index.query_documents(query, params)
+
+    async def _get_and_cache_bank_index(self, bank_id: str) -> BankWithIndex:
+        if bank_id in self.cache:
+            return self.cache[bank_id]
+
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        if not bank:
+            raise ValueError(f"Bank {bank_id} not found in Llama Stack")
+        collection = await self.client.get_collection(bank_id)
+        if not collection:
+            raise ValueError(f"Bank {bank_id} not found in Chroma")
+        index = BankWithIndex(bank=bank, index=ChromaIndex(self.client, collection))
+        self.cache[bank_id] = index
+        return index

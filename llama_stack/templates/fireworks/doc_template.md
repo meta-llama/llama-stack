@@ -1,4 +1,14 @@
+---
+orphan: true
+---
 # Fireworks Distribution
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
@@ -43,9 +53,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
 ```
@@ -55,6 +63,6 @@ docker run \
 ```bash
 llama stack build --template fireworks --image-type conda
 llama stack run ./run.yaml \
-  --port 5001 \
+  --port $LLAMA_STACK_PORT \
   --env FIREWORKS_API_KEY=$FIREWORKS_API_KEY
 ```

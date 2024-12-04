@@ -89,7 +89,7 @@ class TestInference:
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
-            "meta-reference",
+            "inline::meta-reference",
             "remote::ollama",
             "remote::tgi",
             "remote::together",
@@ -135,7 +135,7 @@ class TestInference:
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
-            "meta-reference",
+            "inline::meta-reference",
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
@@ -194,10 +194,11 @@ class TestInference:
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
-            "meta-reference",
+            "inline::meta-reference",
             "remote::fireworks",
             "remote::tgi",
             "remote::together",
+            "remote::nvidia",
         ):
             pytest.skip("Other inference providers don't support structured output yet")
 
@@ -210,7 +211,15 @@ class TestInference:
         response = await inference_impl.chat_completion(
             model_id=inference_model,
             messages=[
-                SystemMessage(content="You are a helpful assistant."),
+                # we include context about Michael Jordan in the prompt so that the test is
+                # focused on the funtionality of the model and not on the information embedded
+                # in the model. Llama 3.2 3B Instruct tends to think MJ played for 14 seasons.
+                SystemMessage(
+                    content=(
+                        "You are a helpful assistant.\n\n"
+                        "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls for 15 seasons."
+                    )
+                ),
                 UserMessage(content="Please give me information about Michael Jordan."),
             ],
             stream=False,
@@ -361,7 +370,10 @@ class TestInference:
                 for chunk in grouped[ChatCompletionResponseEventType.progress]
             )
             first = grouped[ChatCompletionResponseEventType.progress][0]
-            assert first.event.delta.parse_status == ToolCallParseStatus.started
+            if not isinstance(
+                first.event.delta.content, ToolCall
+            ):  # first chunk may contain entire call
+                assert first.event.delta.parse_status == ToolCallParseStatus.started
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason

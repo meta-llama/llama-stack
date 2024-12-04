@@ -1,0 +1,55 @@
+version: '2'
+image_name: hf-endpoint
+docker_image: null
+conda_env: hf-endpoint
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: hf-endpoint
+    provider_type: remote::hf::endpoint
+    config:
+      endpoint_name: ${env.INFERENCE_ENDPOINT_NAME}
+      api_token: ${env.HF_API_TOKEN}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/hf-endpoint}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/hf-endpoint}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/hf-endpoint}/registry.db
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: hf-endpoint
+  provider_model_id: null
+shields: []
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []

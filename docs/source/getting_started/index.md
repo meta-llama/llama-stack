@@ -1,194 +1,155 @@
-# Getting Started
+# Quick Start
 
-```{toctree}
-:maxdepth: 2
-:hidden:
+In this guide, we'll through how you can use the Llama Stack client SDK to build a simple RAG agent.
 
-distributions/self_hosted_distro/index
-distributions/remote_hosted_distro/index
-distributions/ondevice_distro/index
-```
+The most critical requirement for running the agent is running inference on the underlying Llama model. Depending on what hardware (GPUs) you have available, you have various options. We will use `Ollama` for this purpose as it is the easiest to get started with and yet robust.
 
-At the end of the guide, you will have learned how to:
-- get a Llama Stack server up and running
-- set up an agent (with tool-calling and vector stores) that works with the above server
-
-To see more example apps built using Llama Stack, see [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main).
-
-## Step 1. Starting Up Llama Stack Server
-
-### Decide Your Build Type
-There are two ways to start a Llama Stack:
-
-- **Docker**: we provide a number of pre-built Docker containers allowing you to get started instantly. If you are focused on application development, we recommend this option.
-- **Conda**: the `llama` CLI provides a simple set of commands to build, configure and run a Llama Stack server containing the exact combination of providers you wish. We have provided various templates to make getting started easier.
-
-Both of these provide options to run model inference using our reference implementations, Ollama, TGI, vLLM or even remote providers like Fireworks, Together, Bedrock, etc.
-
-### Decide Your Inference Provider
-
-Running inference on the underlying Llama model is one of the most critical requirements. Depending on what hardware you have available, you have various options. Note that each option have different necessary prerequisites.
-
-- **Do you have access to a machine with powerful GPUs?**
-If so, we suggest:
-  - [distribution-meta-reference-gpu](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)
-  - [distribution-tgi](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/tgi.html)
-
-- **Are you running on a "regular" desktop machine?**
-If so, we suggest:
-  - [distribution-ollama](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)
-
-- **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
-  - [distribution-together](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/together.html)
-  - [distribution-fireworks](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/fireworks.html)
-
-- **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
-  - [iOS](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/ondevice_distro/ios_sdk.html)
-  - [Android](https://github.com/meta-llama/llama-stack-client-kotlin) (coming soon)
-
-Please see our pages in detail for the types of distributions we offer:
-
-1. [Self-Hosted Distribution](./distributions/self_hosted_distro/index.md): If you want to run Llama Stack inference on your local machine.
-2. [Remote-Hosted Distribution](./distributions/remote_hosted_distro/index.md): If you want to connect to a remote hosted inference provider.
-3. [On-device Distribution](./distributions/ondevice_distro/index.md): If you want to run Llama Stack inference on your iOS / Android device.
-
-
-### Table of Contents
-
-Once you have decided on the inference provider and distribution to use, use the following guides to get started.
-
-##### 1.0 Prerequisite
-
-```
-$ git clone git@github.com:meta-llama/llama-stack.git
-```
-
-::::{tab-set}
-
-:::{tab-item} meta-reference-gpu
-##### System Requirements
-Access to Single-Node GPU to start a local server.
-
-##### Downloading Models
-Please make sure you have Llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models.
-
-```
-$ ls ~/.llama/checkpoints
-Llama3.1-8B           Llama3.2-11B-Vision-Instruct  Llama3.2-1B-Instruct  Llama3.2-90B-Vision-Instruct  Llama-Guard-3-8B
-Llama3.1-8B-Instruct  Llama3.2-1B                   Llama3.2-3B-Instruct  Llama-Guard-3-1B              Prompt-Guard-86M
-```
-
-:::
-
-:::{tab-item} vLLM
-##### System Requirements
-Access to Single-Node GPU to start a vLLM server.
-:::
-
-:::{tab-item} tgi
-##### System Requirements
-Access to Single-Node GPU to start a TGI server.
-:::
-
-:::{tab-item} ollama
-##### System Requirements
-Access to Single-Node CPU/GPU able to run ollama.
-:::
-
-:::{tab-item} together
-##### System Requirements
-Access to Single-Node CPU with Together hosted endpoint via API_KEY from [together.ai](https://api.together.xyz/signin).
-:::
-
-:::{tab-item} fireworks
-##### System Requirements
-Access to Single-Node CPU with Fireworks hosted endpoint via API_KEY from [fireworks.ai](https://fireworks.ai/).
-:::
-
-::::
-
-##### 1.1. Start the distribution
-
-::::{tab-set}
-:::{tab-item} meta-reference-gpu
-- [Start Meta Reference GPU Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/meta-reference-gpu.html)
-:::
-
-:::{tab-item} vLLM
-- [Start vLLM Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/remote-vllm.html)
-:::
-
-:::{tab-item} tgi
-- [Start TGI Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/tgi.html)
-:::
-
-:::{tab-item} ollama
-- [Start Ollama Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/ollama.html)
-:::
-
-:::{tab-item} together
-- [Start Together Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/together.html)
-:::
-
-:::{tab-item} fireworks
-- [Start Fireworks Distribution](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/fireworks.html)
-:::
-
-::::
-
-##### Troubleshooting
-- If you encounter any issues, search through our [GitHub Issues](https://github.com/meta-llama/llama-stack/issues), or file an new issue.
-- Use `--port <PORT>` flag to use a different port number. For docker run, update the `-p <PORT>:<PORT>` flag.
-
-
-## Step 2. Run Llama Stack App
-
-### Chat Completion Test
-Once the server is set up, we can test it with a client to verify it's working correctly. The following command will send a chat completion request to the server's `/inference/chat_completion` API:
+First, let's set up some environment variables that we will use in the rest of the guide. Note that if you open up a new terminal, you will need to set these again.
 
 ```bash
-$ curl http://localhost:5000/alpha/inference/chat-completion \
--H "Content-Type: application/json" \
--d '{
-    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
-    "messages": [
+export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+# ollama names this model differently, and we must use the ollama name when loading the model
+export OLLAMA_INFERENCE_MODEL="llama3.2:3b-instruct-fp16"
+export LLAMA_STACK_PORT=5001
+```
+
+### 1. Start Ollama
+
+```bash
+ollama run $OLLAMA_INFERENCE_MODEL --keepalive 60m
+```
+
+By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to enspagents/agenure the model remains loaded for sometime.
+
+
+### 2. Start the Llama Stack server
+
+Llama Stack is based on a client-server architecture. It consists of a server which can be configured very flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Memory, Agents, Telemetry, Evals and so forth.
+
+```bash
+docker run \
+  -it \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  llamastack/distribution-ollama \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://host.docker.internal:11434
+```
+
+Configuration for this is available at `distributions/ollama/run.yaml`.
+
+
+### 3. Use the Llama Stack client SDK
+
+You can interact with the Llama Stack server using the `llama-stack-client` CLI or via the Python SDK.
+
+```bash
+pip install llama-stack-client
+```
+
+Let's use the `llama-stack-client` CLI to check the connectivity to the server.
+
+```bash
+llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
+┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
+│ meta-llama/Llama-3.2-3B-Instruct │ ollama      │ llama3.2:3b-instruct-fp16 │          │
+└──────────────────────────────────┴─────────────┴───────────────────────────┴──────────┘
+```
+
+You can test basic Llama inference completion using the CLI too.
+```bash
+llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT \
+  inference chat_completion \
+  --message "hello, what model are you?"
+```
+
+Here is a simple example to perform chat completions using Python instead of the CLI.
+```python
+import os
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
+# List available models
+models = client.models.list()
+print(models)
+
+response = client.inference.chat_completion(
+    model_id=os.environ["INFERENCE_MODEL"],
+    messages=[
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Write me a 2 sentence poem about the moon"}
-    ],
-    "sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
-}'
-
-Output:
-{'completion_message': {'role': 'assistant',
-  'content': 'The moon glows softly in the midnight sky, \nA beacon of wonder, as it catches the eye.',
-  'stop_reason': 'out_of_tokens',
-  'tool_calls': []},
- 'logprobs': null}
-
+        {"role": "user", "content": "Write a haiku about coding"}
+    ]
+)
+print(response.completion_message.content)
 ```
 
-### Run Agent App
+### 4. Your first RAG agent
 
-To run an agent app, check out examples demo scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo. To run a simple agent app:
+Here is an example of a simple RAG agent that uses the Llama Stack client SDK.
 
-```bash
-$ git clone git@github.com:meta-llama/llama-stack-apps.git
-$ cd llama-stack-apps
-$ pip install -r requirements.txt
+```python
+import asyncio
+import os
 
-$ python -m examples.agents.client <host> <port>
+from llama_stack_client import LlamaStackClient
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client.types import Attachment
+from llama_stack_client.types.agent_create_params import AgentConfig
+
+
+async def run_main():
+    urls = ["chat.rst", "llama3.rst", "datasets.rst", "lora_finetune.rst"]
+    attachments = [
+        Attachment(
+            content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
+            mime_type="text/plain",
+        )
+        for i, url in enumerate(urls)
+    ]
+
+    client = LlamaStackClient(base_url=f"http://localhost:{os.environ['LLAMA_STACK_PORT']}")
+
+    agent_config = AgentConfig(
+        model=os.environ["INFERENCE_MODEL"],
+        instructions="You are a helpful assistant",
+        tools=[{"type": "memory"}],  # enable Memory aka RAG
+    )
+
+    agent = Agent(client, agent_config)
+    session_id = agent.create_session("test-session")
+    print(f"Created session_id={session_id} for Agent({agent.agent_id})")
+    user_prompts = [
+        (
+            "I am attaching documentation for Torchtune. Help me answer questions I will ask next.",
+            attachments,
+        ),
+        (
+            "What are the top 5 topics that were explained? Only list succinct bullet points.",
+            None,
+        ),
+    ]
+    for prompt, attachments in user_prompts:
+        response = agent.create_turn(
+            messages=[{"role": "user", "content": prompt}],
+            attachments=attachments,
+            session_id=session_id,
+        )
+        async for log in EventLogger().log(response):
+            log.print()
+
+
+if __name__ == "__main__":
+    asyncio.run(run_main())
 ```
 
-You will see outputs of the form --
-```
-User> I am planning a trip to Switzerland, what are the top 3 places to visit?
-inference> Switzerland is a beautiful country with a rich history, stunning landscapes, and vibrant culture. Here are three must-visit places to add to your itinerary:
-...
+## Next Steps
 
-User> What is so special about #1?
-inference> Jungfraujoch, also known as the "Top of Europe," is a unique and special place for several reasons:
-...
-
-User> What other countries should I consider to club?
-inference> Considering your interest in Switzerland, here are some neighboring countries that you may want to consider visiting:
-```
+- Learn more about Llama Stack [Concepts](../concepts/index.md)
+- Learn how to [Build Llama Stacks](../distributions/index.md)
+- See [References](../references/index.md) for more details about the llama CLI and Python SDK
+- For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.

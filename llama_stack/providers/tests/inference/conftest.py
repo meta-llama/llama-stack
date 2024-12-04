@@ -6,6 +6,8 @@
 
 import pytest
 
+from ..conftest import get_provider_fixture_overrides
+
 from .fixtures import INFERENCE_FIXTURES
 
 
@@ -67,11 +69,12 @@ def pytest_generate_tests(metafunc):
             indirect=True,
         )
     if "inference_stack" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "inference_stack",
-            [
-                pytest.param(fixture_name, marks=getattr(pytest.mark, fixture_name))
-                for fixture_name in INFERENCE_FIXTURES
-            ],
-            indirect=True,
-        )
+        fixtures = INFERENCE_FIXTURES
+        if filtered_stacks := get_provider_fixture_overrides(
+            metafunc.config,
+            {
+                "inference": INFERENCE_FIXTURES,
+            },
+        ):
+            fixtures = [stack.values[0]["inference"] for stack in filtered_stacks]
+        metafunc.parametrize("inference_stack", fixtures, indirect=True)

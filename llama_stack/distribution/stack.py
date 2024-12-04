@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict
@@ -39,6 +40,8 @@ from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.providers.datatypes import Api
 
+
+log = logging.getLogger(__name__)
 
 LLAMA_STACK_API_VERSION = "alpha"
 
@@ -93,11 +96,11 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
 
         method = getattr(impls[api], list_method)
         for obj in await method():
-            print(
+            log.info(
                 f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",
             )
 
-    print("")
+    log.info("")
 
 
 class EnvVarError(Exception):

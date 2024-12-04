@@ -8,6 +8,7 @@
 # This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
 
 import json
+import logging
 import os
 import shutil
 import sys
@@ -22,11 +23,17 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from fp8.fp8_impls import FfnQuantizeMode, quantize_fp8
 
-from llama.model import ModelArgs, Transformer, TransformerBlock
-from llama.tokenizer import Tokenizer
+from llama_models.llama3.api.args import ModelArgs
+from llama_models.llama3.api.tokenizer import Tokenizer
+from llama_models.llama3.reference_impl.model import Transformer, TransformerBlock
 from torch.nn.parameter import Parameter
+
+from llama_stack.providers.inline.inference.meta_reference.quantization.fp8_impls import (
+    quantize_fp8,
+)
+
+log = logging.getLogger(__name__)
 
 
 def main(
@@ -36,7 +43,6 @@ def main(
     max_seq_len: Optional[int] = 512,
     max_batch_size: Optional[int] = 4,
     model_parallel_size: Optional[int] = None,
-    ffn_quantize_mode: Optional[FfnQuantizeMode] = FfnQuantizeMode.FP8_ROWWISE,
     fp8_activation_scale_ub: Optional[float] = 1200.0,
     seed: int = 1,
 ):
@@ -99,7 +105,7 @@ def main(
         else:
             torch.set_default_tensor_type(torch.cuda.HalfTensor)
 
-        print(ckpt_path)
+        log.info(ckpt_path)
         assert (
             quantized_ckpt_dir is not None
         ), "QUantized checkpoint directory should not be None"
@@ -112,7 +118,6 @@ def main(
                 fp8_weight = quantize_fp8(
                     block.feed_forward.w1.weight,
                     fp8_activation_scale_ub,
-                    ffn_quantize_mode,
                     output_device=torch.device("cpu"),
                 )
                 with torch.inference_mode():
@@ -124,7 +129,6 @@ def main(
                 fp8_weight = quantize_fp8(
                     block.feed_forward.w3.weight,
                     fp8_activation_scale_ub,
-                    ffn_quantize_mode,
                     output_device=torch.device("cpu"),
                 )
                 with torch.inference_mode():
@@ -136,7 +140,6 @@ def main(
                 fp8_weight = quantize_fp8(
                     block.feed_forward.w2.weight,
                     fp8_activation_scale_ub,
-                    ffn_quantize_mode,
                     output_device=torch.device("cpu"),
                 )
                 with torch.inference_mode():

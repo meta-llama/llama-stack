@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import List, Tuple
 
 import psycopg2
@@ -23,6 +24,8 @@ from llama_stack.providers.utils.memory.vector_store import (
 )
 
 from .config import PGVectorConfig
+
+log = logging.getLogger(__name__)
 
 
 def check_extension_version(cur):
@@ -124,7 +127,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         self.cache = {}
 
     async def initialize(self) -> None:
-        print(f"Initializing PGVector memory adapter with config: {self.config}")
+        log.info(f"Initializing PGVector memory adapter with config: {self.config}")
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -138,7 +141,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
             version = check_extension_version(self.cursor)
             if version:
-                print(f"Vector extension version: {version}")
+                log.info(f"Vector extension version: {version}")
             else:
                 raise RuntimeError("Vector extension is not installed.")
 
@@ -151,9 +154,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             """
             )
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
+            log.exception("Could not connect to PGVector database server")
             raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:
@@ -201,10 +202,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         documents: List[MemoryBankDocument],
         ttl_seconds: Optional[int] = None,
     ) -> None:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
-
+        index = await self._get_and_cache_bank_index(bank_id)
         await index.insert_documents(documents)
 
     async def query_documents(
@@ -213,8 +211,17 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         query: InterleavedTextMedia,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
-        index = self.cache.get(bank_id, None)
-        if not index:
-            raise ValueError(f"Bank {bank_id} not found")
-
+        index = await self._get_and_cache_bank_index(bank_id)
         return await index.query_documents(query, params)
+
+    async def _get_and_cache_bank_index(self, bank_id: str) -> BankWithIndex:
+        if bank_id in self.cache:
+            return self.cache[bank_id]
+
+        bank = await self.memory_bank_store.get_memory_bank(bank_id)
+        index = BankWithIndex(
+            bank=bank,
+            index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
+        )
+        self.cache[bank_id] = index
+        return index

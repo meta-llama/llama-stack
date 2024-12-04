@@ -1,4 +1,13 @@
+---
+orphan: true
+---
 # Remote vLLM Distribution
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations:
 

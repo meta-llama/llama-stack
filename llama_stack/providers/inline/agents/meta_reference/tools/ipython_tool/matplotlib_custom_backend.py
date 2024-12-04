@@ -11,12 +11,15 @@ A custom Matplotlib backend that overrides the show method to return image bytes
 import base64
 import io
 import json as _json
+import logging
 
 import matplotlib
 from matplotlib.backend_bases import FigureManagerBase
 
 # Import necessary components from Matplotlib
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+log = logging.getLogger(__name__)
 
 
 class CustomFigureCanvas(FigureCanvasAgg):
@@ -80,7 +83,7 @@ def show():
     )
     req_con.send_bytes(_json_dump.encode("utf-8"))
     resp = _json.loads(resp_con.recv_bytes().decode("utf-8"))
-    print(resp)
+    log.info(resp)
 
 
 FigureCanvas = CustomFigureCanvas

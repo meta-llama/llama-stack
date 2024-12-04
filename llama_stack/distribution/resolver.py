@@ -8,10 +8,11 @@ import inspect
 
 from typing import Any, Dict, List, Set
 
-from termcolor import cprint
 
 from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
+
+import logging
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
@@ -32,6 +33,8 @@ from llama_stack.distribution.client import get_client_impl
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+log = logging.getLogger(__name__)
 
 
 class InvalidProviderError(Exception):
@@ -115,14 +118,12 @@ async def resolve_impls(
 
             p = provider_registry[api][provider.provider_type]
             if p.deprecation_error:
-                cprint(p.deprecation_error, "red", attrs=["bold"])
+                log.error(p.deprecation_error, "red", attrs=["bold"])
                 raise InvalidProviderError(p.deprecation_error)
 
             elif p.deprecation_warning:
-                cprint(
+                log.warning(
                     f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
-                    "yellow",
-                    attrs=["bold"],
                 )
             p.deps__ = [a.value for a in p.api_dependencies]
             spec = ProviderWithSpec(
@@ -199,10 +200,10 @@ async def resolve_impls(
         )
     )
 
-    print(f"Resolved {len(sorted_providers)} providers")
+    log.info(f"Resolved {len(sorted_providers)} providers")
     for api_str, provider in sorted_providers:
-        print(f" {api_str} => {provider.provider_id}")
-    print("")
+        log.info(f" {api_str} => {provider.provider_id}")
+    log.info("")
 
     impls = {}
     inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
@@ -339,7 +340,7 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                 obj_params = set(obj_sig.parameters)
                 obj_params.discard("self")
                 if not (proto_params <= obj_params):
-                    print(
+                    log.error(
                         f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}"
                     )
                     missing_methods.append((name, "signature_mismatch"))
