@@ -40,7 +40,6 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config: {}
-
 metadata_store:
   namespace: null
   type: sqlite
@@ -52,5 +51,6 @@ models:
   provider_model_id: null
 shields: []
 memory_banks: []
+datasets: []
 scoring_fns: []
 eval_tasks: []
