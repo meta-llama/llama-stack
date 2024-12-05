@@ -25,6 +25,34 @@ The telemetry system supports three main types of events:
 - **SQLite**: Store events in a local SQLite database. This is needed if you want to query the events later through the Llama Stack API.
 - **Console**: Print events to the console.
 
+## APIs
+
+The telemetry system exposes the following HTTP endpoints:
+
+### Log Event
+```http
+POST /telemetry/log-event
+```
+Logs a telemetry event (unstructured log, metric, or structured log) with optional TTL.
+
+### Query Traces
+```http
+POST /telemetry/query-traces
+```
+Retrieves traces based on filters with pagination support. Parameters:
+- `attribute_filters`: List of conditions to filter traces
+- `limit`: Maximum number of traces to return (default: 100)
+- `offset`: Number of traces to skip (default: 0)
+- `order_by`: List of fields to sort by
+
+### Get Span Tree
+```http
+POST /telemetry/get-span-tree
+```
+Retrieves a hierarchical view of spans starting from a specific span. Parameters:
+- `span_id`: ID of the root span to retrieve
+- `attributes_to_return`: Optional list of specific attributes to include
+- `max_depth`: Optional maximum depth of the span tree to return
 
 ## Providers
 
