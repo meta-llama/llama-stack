@@ -54,6 +54,7 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 | Chroma | Single Node |  |  | Y |  |  |
 | Postgres | Single Node |  |  | Y |  |  |
 | PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
+| PyTorch ExecuTorch | On-device Android |  | Y  |  |  |
 
 ## Dive In
 
