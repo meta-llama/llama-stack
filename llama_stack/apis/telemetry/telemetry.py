@@ -233,8 +233,8 @@ class Telemetry(Protocol):
 
         return rows
 
-    @webmethod(route="/telemetry/save-traces-to-dataset", method="POST")
-    async def save_traces_to_dataset(
+    @webmethod(route="/telemetry/save-spans-to-dataset", method="POST")
+    async def save_spans_to_dataset(
         self,
         attribute_filters: List[QueryCondition],
         attributes_to_save: List[str],
