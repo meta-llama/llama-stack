@@ -74,6 +74,23 @@ Currently, only the meta-reference provider is implemented. It can be configured
       sqlite_db_path: "/path/to/telemetry.db"
 ```
 
+## Jaeger to visualize traces
+Start a Jaeger instance with the OTLP HTTP endpoint at 4318 and the Jaeger UI at 16686 using the following command:
+
+```bash
+docker run -d \
+  --name jaeger \
+  -p 6831:6831/udp \
+  -p 14268:14268 \
+  -p 16686:16686 \
+  -p 4317:4317 \
+  -p 4318:4318 \
+  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \
+  -e COLLECTOR_OTLP_ENABLED=true \
+  jaegertracing/all-in-one:latest
+```
+
+Once the Jaeger instance is running, you can visualize traces by navigating to http://localhost:16686.
 
 ## Querying Examples
 
