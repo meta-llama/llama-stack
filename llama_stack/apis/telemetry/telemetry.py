@@ -167,6 +167,7 @@ class QueryCondition(BaseModel):
 @runtime_checkable
 class Telemetry(Protocol):
 
+    # Each provider must initialize this dependency.
     datasetio_api: DatasetIO
 
     @webmethod(route="/telemetry/log-event")
