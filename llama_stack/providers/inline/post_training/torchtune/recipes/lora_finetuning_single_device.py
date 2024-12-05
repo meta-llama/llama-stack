@@ -163,7 +163,7 @@ class LoraFinetuningSingleDevice:
         log.info(f"Model is initialized with precision {self._dtype}.")
 
         self._tokenizer = await self._setup_tokenizer()
-        log.info("Tokenizer is initialized from file.")
+        log.info("Tokenizer is initialized.")
 
         self._optimizer = await self._setup_optimizer(
             optimizer_config=self.training_config.optimizer_config

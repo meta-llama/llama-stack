@@ -3,45 +3,14 @@ image_name: experimental-post-training
 docker_image: null
 conda_env: experimental-post-training
 apis:
-- agents
-- inference
-- memory
-- safety
 - telemetry
 - datasetio
 - post_training
 providers:
-  inference:
-  - provider_id: meta-reference-inference
-    provider_type: inline::meta-reference
-    config:
-      model: ${env.INFERENCE_MODEL}
-      max_seq_len: 4096
-      checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
   datasetio:
   - provider_id: huggingface-0
     provider_type: remote::huggingface
     config: {}
-  memory:
-  - provider_id: faiss
-    provider_type: inline::faiss
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
-  safety:
-  - provider_id: llama-guard
-    provider_type: inline::llama-guard
-    config: {}
-  agents:
-  - provider_id: meta-reference
-    provider_type: inline::meta-reference
-    config:
-      persistence_store:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/agents_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -57,7 +26,7 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
 models:
 - metadata: {}
-  model_id: ${env.INFERENCE_MODEL}
+  model_id: ${env.POST_TRAINING_MODEL}
   provider_id: meta-reference-inference
   provider_model_id: null
 shields: []
