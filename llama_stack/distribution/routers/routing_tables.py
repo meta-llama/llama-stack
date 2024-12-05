@@ -57,6 +57,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_memory_bank(obj.identifier)
     elif api == Api.inference:
         return await p.unregister_model(obj.identifier)
+    elif api == Api.datasetio:
+        return await p.unregister_dataset(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -353,6 +355,12 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
             metadata=metadata,
         )
         await self.register_object(dataset)
+
+    async def unregister_dataset(self, dataset_id: str) -> None:
+        dataset = await self.get_dataset(dataset_id)
+        if dataset is None:
+            raise ValueError(f"Dataset {dataset_id} not found")
+        await self.unregister_object(dataset)
 
 
 class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):

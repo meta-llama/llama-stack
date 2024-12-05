@@ -45,6 +45,7 @@ Llama Stack already has a number of "adapters" available for some popular Infere
 |  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
 |  Meta Reference  |  Single Node | Y  |  Y  |  Y  |  Y  |  Y  |
+|  Cerebras  |  Single Node  |   | Y  |    |    |   |
 |  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
 |  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
 |  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |

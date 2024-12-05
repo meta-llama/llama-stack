@@ -17,6 +17,7 @@ from llama_stack.providers.inline.inference.meta_reference import (
 )
 from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
+from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
@@ -62,6 +63,21 @@ def inference_meta_reference(inference_model) -> ProviderFixture:
             )
             for i, m in enumerate(inference_model)
         ]
+    )
+
+
+@pytest.fixture(scope="session")
+def inference_cerebras() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="cerebras",
+                provider_type="remote::cerebras",
+                config=CerebrasImplConfig(
+                    api_key=get_env_or_fail("CEREBRAS_API_KEY"),
+                ).model_dump(),
+            )
+        ],
     )
 
 
@@ -225,6 +241,7 @@ INFERENCE_FIXTURES = [
     "vllm_remote",
     "remote",
     "bedrock",
+    "cerebras",
     "nvidia",
     "tgi",
     "sambanova",
