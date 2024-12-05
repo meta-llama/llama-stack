@@ -54,6 +54,27 @@ Retrieves a hierarchical view of spans starting from a specific span. Parameters
 - `attributes_to_return`: Optional list of specific attributes to include
 - `max_depth`: Optional maximum depth of the span tree to return
 
+### Query Spans
+```http
+POST /telemetry/query-spans
+```
+Retrieves spans matching specified filters and returns selected attributes. Parameters:
+- `attribute_filters`: List of conditions to filter traces
+- `attributes_to_return`: List of specific attributes to include in results
+- `max_depth`: Optional maximum depth of spans to traverse (default: no limit)
+
+Returns a flattened list of spans with requested attributes.
+
+### Save Spans to Dataset
+```http
+POST /telemetry/save-spans-to-dataset
+```
+Queries spans and saves their attributes to a dataset. Parameters:
+- `attribute_filters`: List of conditions to filter traces
+- `attributes_to_save`: List of span attributes to save to the dataset
+- `dataset_id`: ID of the dataset to save to
+- `max_depth`: Optional maximum depth of spans to traverse (default: no limit)
+
 ## Providers
 
 ### Meta-Reference Provider
