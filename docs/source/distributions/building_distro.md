@@ -293,11 +293,13 @@ llama stack build --list-templates
 |                              |   "inference": [                       |                                                                             |
 |                              |     "remote::cerebras"                 |                                                                             |
 |                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
 |                              |   "safety": [                          |                                                                             |
 |                              |     "inline::llama-guard"              |                                                                             |
-|                              |   ],                                   |                                                                             |
-|                              |   "memory": [                          |                                                                             |
-|                              |     "inline::meta-reference"           |                                                                             |
 |                              |   ],                                   |                                                                             |
 |                              |   "agents": [                          |                                                                             |
 |                              |     "inline::meta-reference"           |                                                                             |
