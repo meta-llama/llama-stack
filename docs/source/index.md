@@ -84,4 +84,5 @@ building_applications/index
 contributing/index
 references/index
 cookbooks/index
+experimental/index
 ```
