@@ -66,7 +66,7 @@ class TelemetryAdapter(Telemetry):
 
         provider = TracerProvider(resource=resource)
         trace.set_tracer_provider(provider)
-        if TelemetrySink.JAEGER in self.config.sinks:
+        if TelemetrySink.OTEL in self.config.sinks:
             otlp_exporter = OTLPSpanExporter(
                 endpoint=self.config.otel_endpoint,
             )

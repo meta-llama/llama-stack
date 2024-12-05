@@ -13,7 +13,7 @@ from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 
 class TelemetrySink(str, Enum):
-    JAEGER = "jaeger"
+    OTEL = "otel"
     SQLITE = "sqlite"
     CONSOLE = "console"
 

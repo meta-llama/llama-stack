@@ -113,7 +113,8 @@ You have two ways to install this repository:
    ```
 
 2. **Install from source**:
-   If you prefer to install from the source code, follow these steps:
+   If you prefer to install from the source code, make sure you have [conda installed](https://docs.conda.io/projects/conda/en/stable).
+   Then, follow these steps:
    ```bash
     mkdir -p ~/local
     cd ~/local
