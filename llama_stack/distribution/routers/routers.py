@@ -322,14 +322,6 @@ class EvalRouter(Eval):
             task_config=task_config,
         )
 
-    async def create_annotation_dataset(self, session_id: str, dataset_id: str) -> None:
-        return await self.routing_table.get_provider_impl(
-            task_id
-        ).create_annotation_dataset(
-            session_id=session_id,
-            dataset_id=dataset_id,
-        )
-
     async def job_status(
         self,
         task_id: str,
