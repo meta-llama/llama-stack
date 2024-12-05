@@ -90,11 +90,6 @@ class Eval(Protocol):
         task_config: EvalTaskConfig,
     ) -> EvaluateResponse: ...
 
-    @webmethod(route="/eval/create-annotation-dataset", method="POST")
-    async def create_annotation_dataset(
-        self, session_id: str, dataset_id: str
-    ) -> None: ...
-
     @webmethod(route="/eval/job/status", method="GET")
     async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
 

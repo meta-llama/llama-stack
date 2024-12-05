@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import threading
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -27,6 +27,8 @@ from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor
 from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
 
 from llama_stack.apis.telemetry import *  # noqa: F403
+
+from llama_stack.distribution.datatypes import Api
 
 from .config import TelemetryConfig, TelemetrySink
 
@@ -55,8 +57,9 @@ def is_tracing_enabled(tracer):
 
 
 class TelemetryAdapter(Telemetry):
-    def __init__(self, config: TelemetryConfig) -> None:
+    def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
+        self.datasetio_api = deps[Api.datasetio]
 
         resource = Resource.create(
             {

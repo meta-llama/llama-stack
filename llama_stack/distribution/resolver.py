@@ -349,11 +349,14 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                     method_owner = next(
                         (cls for cls in mro if name in cls.__dict__), None
                     )
-                    if (
-                        method_owner is None
-                        or method_owner.__name__ == protocol.__name__
-                    ):
+                    proto_method = getattr(protocol, name)
+                    if method_owner is None:
                         missing_methods.append((name, "not_actually_implemented"))
+                    elif method_owner.__name__ == protocol.__name__:
+                        # Check if it's just a stub (...) or has real implementation
+                        proto_source = inspect.getsource(proto_method)
+                        if "..." in proto_source:
+                            missing_methods.append((name, "not_actually_implemented"))
 
     if missing_methods:
         raise ValueError(
