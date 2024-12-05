@@ -9,9 +9,10 @@ from enum import Enum
 from typing import List
 
 import pkg_resources
-from llama_stack.distribution.utils.exec import run_with_pty
 from pydantic import BaseModel
 from termcolor import cprint
+
+from llama_stack.distribution.utils.exec import run_with_pty
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from pathlib import Path
