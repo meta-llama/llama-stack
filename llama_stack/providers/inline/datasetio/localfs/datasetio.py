@@ -22,7 +22,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from .config import LocalFSDatasetIOConfig
 
 
-DATASETS_PREFIX = "datasets:"
+DATASETS_PREFIX = "localfs_datasets:"
 
 
 class BaseDataset(ABC):
