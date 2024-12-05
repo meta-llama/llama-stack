@@ -22,7 +22,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from .config import LocalFSDatasetIOConfig
 
 
-DATASETS_PREFIX = "locallfs_datasets:"
+DATASETS_PREFIX = "datasets:"
 
 
 class BaseDataset(ABC):
@@ -119,7 +119,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             value=dataset.json(),
         )
         dataset_impl = PandasDataframeDataset(dataset)
-        self.dataset_infos[key] = DatasetInfo(
+        self.dataset_infos[dataset.identifier] = DatasetInfo(
             dataset_def=dataset,
             dataset_impl=dataset_impl,
         )
