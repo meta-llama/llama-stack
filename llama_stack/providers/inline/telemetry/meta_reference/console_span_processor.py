@@ -71,6 +71,9 @@ class ConsoleSpanProcessor(SpanProcessor):
         # Print attributes indented
         if span.attributes:
             for key, value in span.attributes.items():
+                # Skip internal attributes; also rename these internal attributes to have underscores
+                if key in ("class", "method", "type", "__root__", "__ttl__"):
+                    continue
                 print(f"  {COLORS['dim']}{key}: {value}{COLORS['reset']}")
 
         # Print events indented
