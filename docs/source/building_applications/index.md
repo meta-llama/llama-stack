@@ -12,6 +12,7 @@
   - how does tool calling work
   - can you do evaluation?
 ```
+For details on how to use the telemetry system to debug your applications, export traces to a dataset, and run evaluations, see the [Telemetry](telemetry) section.
 
 ```{toctree}
 :hidden:
