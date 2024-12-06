@@ -4,9 +4,12 @@ docker_image: null
 conda_env: meta-reference-quantized-gpu
 apis:
 - agents
+- datasetio
+- eval
 - inference
 - memory
 - safety
+- scoring
 - telemetry
 providers:
   inference:
@@ -41,6 +44,27 @@ providers:
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
+    config: {}
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  datasetio:
+  - provider_id: huggingface
+    provider_type: remote::huggingface
+    config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+  - provider_id: llm-as-judge
+    provider_type: inline::llm-as-judge
+    config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
     config: {}
 metadata_store:
   namespace: null
