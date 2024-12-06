@@ -29,7 +29,7 @@ class TelemetryConfig(BaseModel):
     )
     sinks: List[TelemetrySink] = Field(
         default=[TelemetrySink.CONSOLE, TelemetrySink.SQLITE],
-        description="List of telemetry sinks to enable (possible values: jaeger, sqlite, console)",
+        description="List of telemetry sinks to enable (possible values: otel, sqlite, console)",
     )
     sqlite_db_path: str = Field(
         default=(RUNTIME_BASE_DIR / "trace_store.db").as_posix(),
