@@ -1,6 +1,6 @@
 # Llama Stack Client Kotlin API Library
 
-We are excited to share a guide for a Kotlin Library that brings front the benefits of Llama Stack to your Android device. This library is a set of SDKs that provide a simple and effective way to integrate AI capabilities into your Android app whether it is local (on-device) or remote inference.
+We are excited to share a guide for a Kotlin Library that brings front the benefits of Llama Stack to your Android device. This library is a set of SDKs that provide a simple and effective way to integrate AI capabilities into your Android app whether it is local (on-device) or remote inference. 
 
 Features:
 - Local Inferencing: Run Llama models purely on-device with real-time processing. We currently utilize ExecuTorch as the local inference distributor and may support others in the future.
@@ -8,11 +8,10 @@ Features:
 - Remote Inferencing: Perform inferencing tasks remotely with Llama models hosted on a remote connection (or serverless localhost).
 - Simple Integration: With easy-to-use APIs, a developer can quickly integrate Llama Stack in their Android app. The difference with local vs remote inferencing is also minimal.
 
-Latest release notes: TODO Add Release Notes
+Latest Release Notes: [v0.0.54](https://github.com/meta-llama/llama-stack-client-kotlin/releases/tag/v0.0.54)
 
 ## Android Demo App
-Check out our demo app to see how to integrate Llama Stack into your Android app:
- - TODO: Link to Demo App
+Check out our demo app to see how to integrate Llama Stack into your Android app: [Android Demo App](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/android_app)
 
 The key files in the app are `LlamaStackLocalInference.kt`, `LlamaStackRemoteInference.kts`, and `MainActivity.java`. With encompassed business logic, the app shows how to use Llama Stack for both the environments.
 
@@ -26,23 +25,22 @@ dependencies {
  implementation("com.llama.llamastack:llama-stack-client-kotlin:0.0.54")
 }
 ```
-This will download jar files in your gradle cache in a directory like `~/.gradle/caches/modules-2/files-2.1/com.llama.llamastack/`
+This will download jar files in your gradle cache in a directory like `~/.gradle/caches/modules-2/files-2.1/com.llama.llamastack/` 
 
 If you plan on doing remote inferencing this is sufficient to get started.
 
 #### Dependency for Local
 
-> [!IMPORTANT]
-> For local inferencing, it is required to include the ExecuTorch library into your app.
+For local inferencing, it is required to include the ExecuTorch library into your app.
 
 Include the ExecuTorch library by:
-1. Download the `download-prebuilt-et-lib.sh` script file from [Github](https://github.com/meta-llama/llama-stack-client-kotlin/blob/release/0.0.54/llama-stack-client-kotlin-client-local/download-prebuilt-et-lib.sh) to your local machine.
+1. Download the `download-prebuilt-et-lib.sh` script file from the [llama-stack-client-kotlin-client-local](https://github.com/meta-llama/llama-stack-client-kotlin/blob/release/0.0.54/llama-stack-client-kotlin-client-local/download-prebuilt-et-lib.sh) directory to your local machine.
 2. Move the script to the top level of your Android app where the app directory resides:
 <p align="center">
-<img src="doc/img/example_android_app_directory.png" style="width:300px">
+<img src="https://raw.githubusercontent.com/meta-llama/llama-stack-client-kotlin/refs/heads/release/0.0.54/doc/img/example_android_app_directory.png" style="width:300px">
 </p>
 
-3. Run `sh download-prebuilt-et-lib.sh` to create an `app/libs` directory and download the `executorch.aar` in that path. This generates an ExecuTorch library for the XNNPACK delegate.
+3. Run `sh download-prebuilt-et-lib.sh` to create an `app/libs` directory and download the `executorch.aar` in that path. This generates an ExecuTorch library for the XNNPACK delegate with commit: [0a12e33](https://github.com/pytorch/executorch/commit/0a12e33d22a3d44d1aa2af5f0d0673d45b962553).
 4. Add the `executorch.aar` dependency in your `build.gradle.kts` file:
 ```
 dependencies {
@@ -58,7 +56,7 @@ Breaking down the demo app, this section will show the core pieces that are used
 ### Setup Remote Inferencing
 Start a Llama Stack server on localhost. Here is an example of how you can do this using the firework.ai distribution:
 ```
-conda create -n stack-fireworks python=3.10
+conda create -n stack-fireworks python=3.10 
 conda activate stack-fireworks
 pip install llama-stack=0.0.54
 llama stack build --template fireworks --image-type conda
@@ -68,10 +66,10 @@ llama stack run /Users/<your_username>/.llama/distributions/llamastack-fireworks
 
 Other inference providers: [Table](https://llama-stack.readthedocs.io/en/latest/index.html#supported-llama-stack-implementations)
 
-TODO: Link to Demo App on how to set this remote localhost in the Settings.
+How to set remote localhost in Demo App: [Settings](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/android_app#settings)
 
 ### Initialize the Client
-A client serves as the primary interface for interacting with a specific inference type and its associated parameters. Only after client is initialized then you can configure and start inferences.
+A client serves as the primary interface for interacting with a specific inference type and its associated parameters. Only after client is initialized then you can configure and start inferences. 
 
 <table>
 <tr>
@@ -80,21 +78,23 @@ A client serves as the primary interface for interacting with a specific inferen
 </tr>
 <tr>
 <td>
-<pre>
+
+```
 client = LlamaStackClientLocalClient
                     .builder()
                     .modelPath(modelPath)
                     .tokenizerPath(tokenizerPath)
                     .temperature(temperature)
                     .build()
-</pre>
+```
 </td>
 <td>
 
-```// remoteURL is a string like "http://localhost:5050"
+```
+// remoteURL is a string like "http://localhost:5050"
 client = LlamaStackClientOkHttpClient
                 .builder()
-                .baseUrl(remoteURL)
+                .baseUrl(remoteURL) 
                 .build()
 ```
 </td>
@@ -120,8 +120,7 @@ var response = result.asChatCompletionResponse().completionMessage().content().s
 
 ### Setup Tool Calling
 
-TODO: Link to Android demo app readme for more details
-
+Android demo app for more details: [Tool Calling](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/android_app#tool-calling)
 
 ## Advanced Users
 
@@ -130,7 +129,7 @@ The purpose of this section is to share more details with users that would like 
 ### Prerequisite
 
 You must complete the following steps:
-1. Clone the repo
+1. Clone the repo (`git clone https://github.com/meta-llama/llama-stack-client-kotlin.git -b release/0.0.54`)
 2. Port the appropriate ExecuTorch libraries over into your Llama Stack Kotlin library environment.
 ```
 cd llama-stack-client-kotlin-client-local
@@ -231,15 +230,17 @@ This library throws exceptions in a single hierarchy for easy handling:
     - We failed to serialize the request body
     - We failed to parse the response body (has access to response code and body)
 
-
+## Reporting Issues
+If you encountered any bugs or issues following this guide please file a bug/issue on our [Github issue tracker](https://github.com/meta-llama/llama-stack-client-kotlin/issues).
 
 ## Known Issues
+We're aware of the following issues and are working to resolve them:
 1. Streaming response is a work-in-progress for local and remote inference
 2. Due to #1, agents are not supported at the time. LS agents only work in streaming mode
 3. Changing to another model is a work in progress for local and remote platforms
 
 ## Thanks
-- We'd like to extend our thanks to the ExecuTorch team for providing their support as we integrated ExecuTorch as one of the local inference distributors for Llama Stack. Checkout [ExecuTorch Github repo](https://github.com/pytorch/executorch/tree/main) for more information about Executorch.
+We'd like to extend our thanks to the ExecuTorch team for providing their support as we integrated ExecuTorch as one of the local inference distributors for Llama Stack. Checkout [ExecuTorch Github repo](https://github.com/pytorch/executorch/tree/main) for more information.
 
 ---
 
