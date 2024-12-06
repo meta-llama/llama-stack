@@ -62,7 +62,7 @@ llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
 You can test basic Llama inference completion using the CLI too.
 ```bash
 llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT \
-  inference chat_completion \
+  inference chat-completion \
   --message "hello, what model are you?"
 ```
 
