@@ -52,10 +52,11 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 "async_generator" if is_async_gen else "async" if is_async else "sync"
             )
             span_attributes = {
-                "class": class_name,
-                "method": method_name,
-                "type": span_type,
-                "args": serialize_value(args),
+                "__autotraced__": True,
+                "__class__": class_name,
+                "__method__": method_name,
+                "__type__": span_type,
+                "__args__": serialize_value(args),
             }
 
             return class_name, method_name, span_attributes
@@ -103,7 +104,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                     result = method(self, *args, **kwargs)
                     span.set_attribute("output", serialize_value(result))
                     return result
-                except Exception as e:
+                except Exception as _e:
                     raise
 
         if is_async_gen:

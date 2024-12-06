@@ -217,7 +217,7 @@ class TracingMiddleware:
 
     async def __call__(self, scope, receive, send):
         path = scope["path"]
-        await start_trace(path, {"location": "server"})
+        await start_trace(path, {"__location__": "server"})
         try:
             return await self.app(scope, receive, send)
         finally:

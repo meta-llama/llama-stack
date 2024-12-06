@@ -29,6 +29,9 @@ class ConsoleSpanProcessor(SpanProcessor):
 
     def on_start(self, span: ReadableSpan, parent_context=None) -> None:
         """Called when a span starts."""
+        if span.attributes and span.attributes.get("__autotraced__"):
+            return
+
         timestamp = datetime.utcfromtimestamp(span.start_time / 1e9).strftime(
             "%H:%M:%S.%f"
         )[:-3]
@@ -41,6 +44,9 @@ class ConsoleSpanProcessor(SpanProcessor):
 
     def on_end(self, span: ReadableSpan) -> None:
         """Called when a span ends."""
+        if span.attributes and span.attributes.get("__autotraced__"):
+            return
+
         timestamp = datetime.utcfromtimestamp(span.end_time / 1e9).strftime(
             "%H:%M:%S.%f"
         )[:-3]
@@ -71,8 +77,7 @@ class ConsoleSpanProcessor(SpanProcessor):
         # Print attributes indented
         if span.attributes:
             for key, value in span.attributes.items():
-                # Skip internal attributes; also rename these internal attributes to have underscores
-                if key in ("class", "method", "type", "__root__", "__ttl__"):
+                if key.startswith("__"):
                     continue
                 print(f"  {COLORS['dim']}{key}: {value}{COLORS['reset']}")
 
@@ -87,6 +92,8 @@ class ConsoleSpanProcessor(SpanProcessor):
             )
             if event.attributes:
                 for key, value in event.attributes.items():
+                    if key.startswith("__"):
+                        continue
                     print(f"    {COLORS['dim']}{key}: {value}{COLORS['reset']}")
 
     def shutdown(self) -> None:
