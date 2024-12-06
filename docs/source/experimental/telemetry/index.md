@@ -85,6 +85,7 @@ Currently, only the meta-reference provider is implemented. It can be configured
 
 ## Configuration
 
+Here's an example that sends telemetry signals to all three sink types. Your configuration might use only one.
 ```yaml
   telemetry:
   - provider_id: meta-reference
@@ -96,6 +97,9 @@ Currently, only the meta-reference provider is implemented. It can be configured
 ```
 
 ## Jaeger to visualize traces
+
+The `otel` sink works with any service compatible with the OpenTelemetry collector. Let's use Jaeger to visualize this data.
+
 Start a Jaeger instance with the OTLP HTTP endpoint at 4318 and the Jaeger UI at 16686 using the following command:
 
 ```bash
@@ -113,7 +117,9 @@ docker run -d \
 
 Once the Jaeger instance is running, you can visualize traces by navigating to http://localhost:16686.
 
-## Querying Examples
+## Querying Traces Stored in SQLIte
+
+The `sqlite` sink allows you to query traces without an external system. Here are some example queries:
 
 Querying Traces for a agent session
 
