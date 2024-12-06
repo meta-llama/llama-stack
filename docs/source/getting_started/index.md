@@ -140,7 +140,7 @@ async def run_main():
             attachments=attachments,
             session_id=session_id,
         )
-        async for log in EventLogger().log(response):
+        for log in EventLogger().log(response):
             log.print()
 
 
