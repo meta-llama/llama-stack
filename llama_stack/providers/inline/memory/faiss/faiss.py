@@ -27,7 +27,6 @@ from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
 )
-from llama_stack.providers.utils.telemetry import tracing
 
 from .config import FaissImplConfig
 
@@ -95,7 +94,6 @@ class FaissIndex(EmbeddingIndex):
 
         await self.kvstore.delete(f"faiss_index:v1::{self.bank_id}")
 
-    @tracing.span(name="add_chunks")
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
         indexlen = len(self.id_by_index)
         for i, chunk in enumerate(chunks):
