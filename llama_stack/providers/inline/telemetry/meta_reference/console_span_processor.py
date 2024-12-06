@@ -39,7 +39,9 @@ class ConsoleSpanProcessor(SpanProcessor):
         )[:-3]
 
         print(
-            f"{COLORS['dim']}{timestamp} " f"[START] " f"{span.name}{COLORS['reset']}"
+            f"{timestamp} "
+            f"{COLORS['bold']}[START]{COLORS['reset']} "
+            f"{COLORS['dim']}{span.name}{COLORS['reset']}"
         )
 
     def on_end(self, span: ReadableSpan) -> None:
@@ -50,15 +52,15 @@ class ConsoleSpanProcessor(SpanProcessor):
             "%H:%M:%S.%f"
         )[:-3]
 
-        span_context = f"{COLORS['dim']}{timestamp} [END] {span.name}"
+        span_context = f"{timestamp} {COLORS['bold']}[END]{COLORS['reset']} {COLORS['dim']}{span.name}"
 
         if span.status.status_code == 2:  # ERROR
-            span_context += f" {COLORS['red']}[ERROR]{COLORS['reset']}"
+            span_context += f"{COLORS['reset']} {COLORS['red']}[ERROR]{COLORS['reset']}"
         elif span.status.status_code != 0:  # UNSET
-            span_context += f" {COLORS['dim']}[{span.status.status_code}]"
+            span_context += f"{COLORS['reset']} [{span.status.status_code}]"
 
         duration_ms = (span.end_time - span.start_time) / 1e6
-        span_context += f" ({duration_ms:.2f}ms){COLORS['reset']}"
+        span_context += f"{COLORS['reset']} ({duration_ms:.2f}ms)"
 
         print(span_context)
 

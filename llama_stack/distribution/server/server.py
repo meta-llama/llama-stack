@@ -347,7 +347,7 @@ def main():
 
     listen_host = ["::", "0.0.0.0"] if not args.disable_ipv6 else "0.0.0.0"
     print(f"Listening on {listen_host}:{args.port}")
-    uvicorn.run(app, host=listen_host, port=args.port)
+    uvicorn.run(app, host=listen_host, port=args.port, access_log=False)
 
 
 if __name__ == "__main__":
