@@ -1,0 +1,83 @@
+version: '2'
+image_name: sambanova
+docker_image: null
+conda_env: sambanova
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: sambanova
+    provider_type: remote::sambanova
+    config:
+      url: https://api.sambanova.ai/v1/
+      api_key: ${env.SAMBANOVA_API_KEY}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
+models:
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.1-8B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-70B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.1-70B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.1-405B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-1B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.2-1B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-3B-Instruct
+  provider_id: null
+  provider_model_id: Meta-Llama-3.2-3B-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  provider_id: null
+  provider_model_id: Llama-3.2-11B-Vision-Instruct
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
+  provider_id: null
+  provider_model_id: Llama-3.2-90B-Vision-Instruct
+shields:
+- params: null
+  shield_id: meta-llama/Llama-Guard-3-8B
+  provider_id: null
+  provider_shield_id: null
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []
