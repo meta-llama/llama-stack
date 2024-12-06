@@ -22,27 +22,11 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
 
 ALL_MINILM_L6_V2_DIMENSION = 384
-
-EMBEDDING_MODELS = {}
-
-
-def get_embedding_model(model: str) -> "SentenceTransformer":
-    global EMBEDDING_MODELS
-
-    loaded_model = EMBEDDING_MODELS.get(model)
-    if loaded_model is not None:
-        return loaded_model
-
-    log.info(f"Loading sentence transformer for {model}...")
-    from sentence_transformers import SentenceTransformer
-
-    loaded_model = SentenceTransformer(model)
-    EMBEDDING_MODELS[model] = loaded_model
-    return loaded_model
 
 
 def parse_data_url(data_url: str):
@@ -152,16 +136,31 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
 
+class EmbeddingGenerator(ABC):
+    @abstractmethod
+    async def generate(self, contents: List[InterleavedTextMedia]) -> NDArray:
+        raise NotImplementedError()
+
+
+class InferenceApiEmbeddingGenerator(EmbeddingGenerator):
+    def __init__(self, inference_api: Api.inference):
+        self.inference_api = inference_api
+
+    async def generate(self, contents: List[InterleavedTextMedia]) -> NDArray:
+        response = await self.inference_api.embeddings(contents)
+        return np.array(response.embeddings)
+
+
 @dataclass
 class BankWithIndex:
     bank: VectorMemoryBank
     index: EmbeddingIndex
+    embedding_generator: EmbeddingGenerator
 
     async def insert_documents(
         self,
         documents: List[MemoryBankDocument],
     ) -> None:
-        model = get_embedding_model(self.bank.embedding_model)
         for doc in documents:
             content = await content_from_doc(doc)
             chunks = make_overlapped_chunks(
@@ -173,7 +172,9 @@ class BankWithIndex:
             )
             if not chunks:
                 continue
-            embeddings = model.encode([x.content for x in chunks]).astype(np.float32)
+            embeddings = await self.embedding_generator.generate(
+                [x.content for x in chunks]
+            )
 
             await self.index.add_chunks(chunks, embeddings)
 
@@ -198,6 +199,23 @@ class BankWithIndex:
         else:
             query_str = _process(query)
 
-        model = get_embedding_model(self.bank.embedding_model)
-        query_vector = model.encode([query_str])[0].astype(np.float32)
+        embeddings = await self.embedding_generator.generate([query_str])
+        query_vector = embeddings[0].astype(np.float32)
         return await self.index.query(query_vector, k, score_threshold)
+
+
+class InferenceEmbeddingMixin:
+    embedding_generator: EmbeddingGenerator
+
+    def __init__(self, inference_api: Api.inference):
+        self.embedding_generator = InferenceApiEmbeddingGenerator(inference_api)
+
+    def _create_bank_with_index(
+        self, bank: VectorMemoryBank, index: EmbeddingIndex
+    ) -> BankWithIndex:
+
+        return BankWithIndex(
+            bank=bank,
+            index=index,
+            embedding_generator=self.embedding_generator,
+        )

@@ -202,10 +202,13 @@ API responses, specify the adapter here.
         return self.adapter.provider_data_validator
 
 
-def remote_provider_spec(api: Api, adapter: AdapterSpec) -> RemoteProviderSpec:
+def remote_provider_spec(
+    api: Api, adapter: AdapterSpec, api_dependencies: List[Api]
+) -> RemoteProviderSpec:
     return RemoteProviderSpec(
         api=api,
         provider_type=f"remote::{adapter.adapter_type}",
         config_class=adapter.config_class,
         adapter=adapter,
+        api_dependencies=api_dependencies,
     )

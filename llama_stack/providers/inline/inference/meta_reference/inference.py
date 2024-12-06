@@ -16,12 +16,14 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.providers.utils.inference.model_registry import build_model_alias
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.utils.inference.embedding_mixin import (
+    SentenceTransformerEmbeddingMixin,
+)
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_media_to_url,
     request_has_media,
 )
-
 from .config import MetaReferenceInferenceConfig
 from .generation import Llama
 from .model_parallel import LlamaModelParallelGenerator
@@ -32,7 +34,12 @@ log = logging.getLogger(__name__)
 SEMAPHORE = asyncio.Semaphore(1)
 
 
-class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolPrivate):
+class MetaReferenceInferenceImpl(
+    SentenceTransformerEmbeddingMixin,
+    Inference,
+    ModelRegistryHelper,
+    ModelsProtocolPrivate,
+):
     def __init__(self, config: MetaReferenceInferenceConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
@@ -393,13 +400,6 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
         else:
             for x in impl():
                 yield x
-
-    async def embeddings(
-        self,
-        model_id: str,
-        contents: List[InterleavedTextMedia],
-    ) -> EmbeddingsResponse:
-        raise NotImplementedError()
 
 
 async def request_with_localized_media(
