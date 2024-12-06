@@ -186,3 +186,20 @@ class Telemetry(Protocol):
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
     ) -> SpanWithChildren: ...
+
+    @webmethod(route="/telemetry/query-spans", method="POST")
+    async def query_spans(
+        self,
+        attribute_filters: List[QueryCondition],
+        attributes_to_return: List[str],
+        max_depth: Optional[int] = None,
+    ) -> List[Span]: ...
+
+    @webmethod(route="/telemetry/save-spans-to-dataset", method="POST")
+    async def save_spans_to_dataset(
+        self,
+        attribute_filters: List[QueryCondition],
+        attributes_to_save: List[str],
+        dataset_id: str,
+        max_depth: Optional[int] = None,
+    ) -> None: ...

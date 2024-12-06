@@ -13,6 +13,6 @@ __all__ = ["TelemetryConfig", "TelemetryAdapter", "TelemetrySink"]
 
 
 async def get_provider_impl(config: TelemetryConfig, deps: Dict[str, Any]):
-    impl = TelemetryAdapter(config)
+    impl = TelemetryAdapter(config, deps)
     await impl.initialize()
     return impl
