@@ -13,8 +13,27 @@ The Llama Stack telemetry system provides comprehensive tracing, metrics, and lo
 The telemetry system supports three main types of events:
 
 - **Unstructured Log Events**: Free-form log messages with severity levels
+```python
+unstructured_log_event = UnstructuredLogEvent(
+    message="This is a log message",
+    severity=LogSeverity.INFO
+)
+```
 - **Metric Events**: Numerical measurements with units
-- **Structured Log Events**: System events like span start/end
+```python
+metric_event = MetricEvent(
+    metric="my_metric",
+    value=10,
+    unit="count"
+)
+```
+- **Structured Log Events**: System events like span start/end. Extensible to add more structured log types.
+```python
+structured_log_event = SpanStartPayload(
+    name="my_span",
+    parent_span_id="parent_span_id"
+)
+```
 
 ### Spans and Traces
 - **Spans**: Represent operations with timing and hierarchical relationships
@@ -27,6 +46,7 @@ The telemetry system supports three main types of events:
 
 ## APIs
 
+The telemetry API is designed to be flexible for different user flows like debugging/visualization in UI, monitoring, and saving traces to datasets.
 The telemetry system exposes the following HTTP endpoints:
 
 ### Log Event
@@ -66,6 +86,7 @@ Retrieves spans matching specified filters and returns selected attributes. Para
 Returns a flattened list of spans with requested attributes.
 
 ### Save Spans to Dataset
+This is useful for saving traces to a dataset for running evaluations. For example, you can save the input/output of each span that is part of an agent session/turn to a dataset and then run an eval task on it. See example in [Example: Save Spans to Dataset](#example-save-spans-to-dataset).
 ```http
 POST /telemetry/save-spans-to-dataset
 ```
@@ -103,16 +124,10 @@ The `otel` sink works with any service compatible with the OpenTelemetry collect
 Start a Jaeger instance with the OTLP HTTP endpoint at 4318 and the Jaeger UI at 16686 using the following command:
 
 ```bash
-docker run -d \
-  --name jaeger \
-  -p 6831:6831/udp \
-  -p 14268:14268 \
-  -p 16686:16686 \
-  -p 4317:4317 \
-  -p 4318:4318 \
-  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \
-  -e COLLECTOR_OTLP_ENABLED=true \
-  jaegertracing/all-in-one:latest
+$ docker run --rm \
+   --name jaeger jaegertracing/jaeger:2.0.0 \
+   -p 16686:16686 -p 4318:4318 \
+  --set receivers.otlp.protocols.http.endpoint=0.0.0.0:4318
 ```
 
 Once the Jaeger instance is running, you can visualize traces by navigating to http://localhost:16686.
@@ -122,6 +137,7 @@ Once the Jaeger instance is running, you can visualize traces by navigating to h
 The `sqlite` sink allows you to query traces without an external system. Here are some example queries:
 
 Querying Traces for a agent session
+The client SDK is not updated to support the new telemetry API. It will be updated soon. You can manually query traces using the following curl command:
 
 ``` bash
  curl -X POST 'http://localhost:5000/alpha/telemetry/query-traces' \
@@ -187,4 +203,41 @@ curl -X POST 'http://localhost:5000/alpha/telemetry/get-span-tree' \
   "status": "ok"
 }
 
+```
+
+## Example: Save Spans to Dataset
+Save all spans for a specific agent session to a dataset.
+``` bash
+curl -X POST 'http://localhost:5000/alpha/telemetry/save-spans-to-dataset' \
+-H 'Content-Type: application/json' \
+-d '{
+    "attribute_filters": [
+        {
+            "key": "session_id",
+            "op": "eq",
+            "value": "dd667b87-ca4b-4d30-9265-5a0de318fc65"
+        }
+    ],
+    "attributes_to_save": ["input", "output"],
+    "dataset_id": "my_dataset",
+    "max_depth": 10
+}'
+```
+
+Save all spans for a specific agent turn to a dataset.
+```bash
+curl -X POST 'http://localhost:5000/alpha/telemetry/save-spans-to-dataset' \
+-H 'Content-Type: application/json' \
+-d '{
+    "attribute_filters": [
+        {
+            "key": "turn_id",
+            "op": "eq",
+            "value": "123e4567-e89b-12d3-a456-426614174000"
+        }
+    ],
+    "attributes_to_save": ["input", "output"],
+    "dataset_id": "my_dataset",
+    "max_depth": 10
+}'
 ```
