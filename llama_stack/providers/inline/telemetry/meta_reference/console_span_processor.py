@@ -9,6 +9,7 @@ from datetime import datetime
 
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanProcessor
+from opentelemetry.trace.status import StatusCode
 
 # Colors for console output
 COLORS = {
@@ -39,8 +40,8 @@ class ConsoleSpanProcessor(SpanProcessor):
         )[:-3]
 
         print(
-            f"{timestamp} "
-            f"{COLORS['bold']}[START]{COLORS['reset']} "
+            f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
+            f"{COLORS['magenta']}[START]{COLORS['reset']} "
             f"{COLORS['dim']}{span.name}{COLORS['reset']}"
         )
 
@@ -52,11 +53,15 @@ class ConsoleSpanProcessor(SpanProcessor):
             "%H:%M:%S.%f"
         )[:-3]
 
-        span_context = f"{timestamp} {COLORS['bold']}[END]{COLORS['reset']} {COLORS['dim']}{span.name}"
+        span_context = (
+            f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
+            f"{COLORS['magenta']}[END]{COLORS['reset']} "
+            f"{COLORS['dim']}{span.name}{COLORS['reset']}"
+        )
 
-        if span.status.status_code == 2:  # ERROR
+        if span.status.status_code == StatusCode.ERROR:
             span_context += f"{COLORS['reset']} {COLORS['red']}[ERROR]{COLORS['reset']}"
-        elif span.status.status_code != 0:  # UNSET
+        elif span.status.status_code != StatusCode.UNSET:
             span_context += f"{COLORS['reset']} [{span.status.status_code}]"
 
         duration_ms = (span.end_time - span.start_time) / 1e6
