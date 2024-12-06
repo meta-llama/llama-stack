@@ -12,8 +12,6 @@ from typing import Any, AsyncGenerator, Callable, Type, TypeVar
 
 from pydantic import BaseModel
 
-from llama_stack.providers.utils.telemetry import tracing
-
 T = TypeVar("T")
 
 
@@ -41,6 +39,8 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
     """
 
     def trace_method(method: Callable) -> Callable:
+        from llama_stack.providers.utils.telemetry import tracing
+
         is_async = asyncio.iscoroutinefunction(method)
         is_async_gen = inspect.isasyncgenfunction(method)
 
