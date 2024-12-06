@@ -16,7 +16,7 @@ providers:
     provider_type: inline::meta-reference
     config: {}
   post_training:
-  - provider_id: meta-reference-post-training
+  - provider_id: torchtune-post-training
     provider_type: inline::torchtune
     config: {}
 
