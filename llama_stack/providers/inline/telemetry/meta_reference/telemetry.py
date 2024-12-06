@@ -24,7 +24,10 @@ from llama_stack.providers.inline.telemetry.meta_reference.console_span_processo
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
-from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
+from llama_stack.providers.utils.telemetry import (
+    SQLiteTraceStore,
+    TelemetryDatasetMixin,
+)
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
@@ -56,7 +59,7 @@ def is_tracing_enabled(tracer):
         return span.is_recording()
 
 
-class TelemetryAdapter(Telemetry):
+class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
         self.datasetio_api = deps[Api.datasetio]
@@ -243,7 +246,7 @@ class TelemetryAdapter(Telemetry):
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
     ) -> SpanWithChildren:
-        return await self.trace_store.get_materialized_span(
+        return await self.trace_store.get_span_tree(
             span_id=span_id,
             attributes_to_return=attributes_to_return,
             max_depth=max_depth,

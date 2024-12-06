@@ -23,7 +23,7 @@ class TraceStore(Protocol):
         order_by: Optional[List[str]] = None,
     ) -> List[Trace]: ...
 
-    async def get_materialized_span(
+    async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
@@ -111,7 +111,7 @@ class SQLiteTraceStore(TraceStore):
                     for row in rows
                 ]
 
-    async def get_materialized_span(
+    async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,

@@ -21,8 +21,6 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_stack.apis.datasetio import DatasetIO
-
 # Add this constant near the top of the file, after the imports
 DEFAULT_TTL_DAYS = 7
 
@@ -167,9 +165,6 @@ class QueryCondition(BaseModel):
 @runtime_checkable
 class Telemetry(Protocol):
 
-    # Each provider must initialize this dependency.
-    datasetio_api: DatasetIO
-
     @webmethod(route="/telemetry/log-event")
     async def log_event(
         self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400
@@ -198,41 +193,7 @@ class Telemetry(Protocol):
         attribute_filters: List[QueryCondition],
         attributes_to_return: List[str],
         max_depth: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
-        traces = await self.query_traces(attribute_filters=attribute_filters)
-
-        rows = []
-
-        for trace in traces:
-            span_tree = await self.get_span_tree(
-                span_id=trace.root_span_id,
-                attributes_to_return=attributes_to_return,
-                max_depth=max_depth,
-            )
-
-            def extract_spans(span: SpanWithChildren) -> List[Dict[str, Any]]:
-                rows = []
-                if span.attributes and all(
-                    attr in span.attributes and span.attributes[attr] is not None
-                    for attr in attributes_to_return
-                ):
-                    row = {
-                        "trace_id": trace.root_span_id,
-                        "span_id": span.span_id,
-                        "step_name": span.name,
-                    }
-                    for attr in attributes_to_return:
-                        row[attr] = str(span.attributes[attr])
-                    rows.append(row)
-
-                for child in span.children:
-                    rows.extend(extract_spans(child))
-
-                return rows
-
-            rows.extend(extract_spans(span_tree))
-
-        return rows
+    ) -> List[Span]: ...
 
     @webmethod(route="/telemetry/save-spans-to-dataset", method="POST")
     async def save_spans_to_dataset(
@@ -241,14 +202,4 @@ class Telemetry(Protocol):
         attributes_to_save: List[str],
         dataset_id: str,
         max_depth: Optional[int] = None,
-    ) -> None:
-        annotation_rows = await self.query_spans(
-            attribute_filters=attribute_filters,
-            attributes_to_return=attributes_to_save,
-            max_depth=max_depth,
-        )
-
-        if annotation_rows:
-            await self.datasetio_api.append_rows(
-                dataset_id=dataset_id, rows=annotation_rows
-            )
+    ) -> None: ...
