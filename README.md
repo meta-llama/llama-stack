@@ -89,6 +89,7 @@ Additionally, we have designed every element of the Stack such that APIs as well
 | Chroma | Single Node |  |  | :heavy_check_mark: |  |  |
 | PG Vector | Single Node |  |  | :heavy_check_mark: |  |  |
 | PyTorch ExecuTorch | On-device iOS | :heavy_check_mark:  | :heavy_check_mark:  |  |  |
+|  Nutanix AI  |  Hosted  |  | :heavy_check_mark:  |  |    |   |
 
 ### Distributions
 
@@ -101,6 +102,7 @@ Additionally, we have designed every element of the Stack such that APIs as well
 |        TGI       	|         [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/tgi.html)       	|
 |        Together       	|         [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/together.html)       	|
 |        Fireworks       	|         [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)       	|
+|        Nutanix       	|         [distribution-nutanix](https://hub.docker.com/repository/docker/jinanz/distribution-nutanix/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/remote_hosted_distro/nutanix.html)       	|
 
 ## Installation
 

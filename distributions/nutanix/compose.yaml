@@ -1,0 +1,15 @@
+services:
+  llamastack:
+    image: distribution-nutanix
+    volumes:
+      - ~/.llama:/root/.llama
+      - ./run.yaml:/root/llamastack-run-nutanix.yaml
+    ports:
+      - "5000:5000"
+    entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-nutanix.yaml"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
