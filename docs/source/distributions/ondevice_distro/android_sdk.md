@@ -1,6 +1,6 @@
 # Llama Stack Client Kotlin API Library
 
-We are excited to share a guide for a Kotlin Library that brings front the benefits of Llama Stack to your Android device. This library is a set of SDKs that provide a simple and effective way to integrate AI capabilities into your Android app whether it is local (on-device) or remote inference. 
+We are excited to share a guide for a Kotlin Library that brings front the benefits of Llama Stack to your Android device. This library is a set of SDKs that provide a simple and effective way to integrate AI capabilities into your Android app whether it is local (on-device) or remote inference.
 
 Features:
 - Local Inferencing: Run Llama models purely on-device with real-time processing. We currently utilize ExecuTorch as the local inference distributor and may support others in the future.
@@ -25,7 +25,7 @@ dependencies {
  implementation("com.llama.llamastack:llama-stack-client-kotlin:0.0.54")
 }
 ```
-This will download jar files in your gradle cache in a directory like `~/.gradle/caches/modules-2/files-2.1/com.llama.llamastack/` 
+This will download jar files in your gradle cache in a directory like `~/.gradle/caches/modules-2/files-2.1/com.llama.llamastack/`
 
 If you plan on doing remote inferencing this is sufficient to get started.
 
@@ -56,7 +56,7 @@ Breaking down the demo app, this section will show the core pieces that are used
 ### Setup Remote Inferencing
 Start a Llama Stack server on localhost. Here is an example of how you can do this using the firework.ai distribution:
 ```
-conda create -n stack-fireworks python=3.10 
+conda create -n stack-fireworks python=3.10
 conda activate stack-fireworks
 pip install llama-stack=0.0.54
 llama stack build --template fireworks --image-type conda
@@ -69,7 +69,7 @@ Other inference providers: [Table](https://llama-stack.readthedocs.io/en/latest/
 How to set remote localhost in Demo App: [Settings](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/android_app#settings)
 
 ### Initialize the Client
-A client serves as the primary interface for interacting with a specific inference type and its associated parameters. Only after client is initialized then you can configure and start inferences. 
+A client serves as the primary interface for interacting with a specific inference type and its associated parameters. Only after client is initialized then you can configure and start inferences.
 
 <table>
 <tr>
@@ -94,7 +94,7 @@ client = LlamaStackClientLocalClient
 // remoteURL is a string like "http://localhost:5050"
 client = LlamaStackClientOkHttpClient
                 .builder()
-                .baseUrl(remoteURL) 
+                .baseUrl(remoteURL)
                 .build()
 ```
 </td>
