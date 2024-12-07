@@ -81,11 +81,11 @@ class MetaReferenceInferenceImpl(
     async def unregister_model(self, model_id: str) -> None:
         pass
 
-    async def register_model(self, model_id: str) -> None:
-        model = await self.model_store.get_model(model_id)
-        model = self.model_registry_helper.register_model(model)
+    async def register_model(self, model: Model) -> Model:
+        model = await self.model_registry_helper.register_model(model)
         if model.model_type == ModelType.embedding_model:
             self._get_embedding_model(model.provider_resource_id)
+        return model
 
     async def completion(
         self,
