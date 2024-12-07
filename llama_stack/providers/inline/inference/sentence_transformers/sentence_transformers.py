@@ -18,7 +18,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
@@ -47,9 +47,9 @@ class SentenceTransformersInferenceImpl(
                 f"Model mismatch: {request.model} != {self.config.model}"
             )
 
-    async def register_model(self, model_id: str) -> None:
-        model = self.model_store.get_model(model_id)
+    async def register_model(self, model: Model) -> None:
         _ = self._get_embedding_model(model.provider_resource_id)
+        return model
 
     async def unregister_model(self, model_id: str) -> None:
         pass

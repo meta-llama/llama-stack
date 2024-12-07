@@ -25,7 +25,7 @@ class SentenceTransformerEmbeddingMixin:
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        model = self.model_store.get_model(model_id)
+        model = await self.model_store.get_model(model_id)
         embedding_model = self._get_embedding_model(model.provider_resource_id)
         embeddings = embedding_model.encode(contents)
         return EmbeddingsResponse(embeddings=embeddings)
