@@ -269,7 +269,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             r = await self.client.chat(**params)
         else:
             r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         if "message" in r:
             choice = OpenAICompatCompletionChoice(
