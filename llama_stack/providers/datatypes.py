@@ -203,8 +203,10 @@ API responses, specify the adapter here.
 
 
 def remote_provider_spec(
-    api: Api, adapter: AdapterSpec, api_dependencies: List[Api]
+    api: Api, adapter: AdapterSpec, api_dependencies: Optional[List[Api]] = None
 ) -> RemoteProviderSpec:
+    if api_dependencies is None:
+        api_dependencies = []
     return RemoteProviderSpec(
         api=api,
         provider_type=f"remote::{adapter.adapter_type}",

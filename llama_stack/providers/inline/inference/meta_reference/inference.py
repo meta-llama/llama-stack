@@ -37,14 +37,12 @@ SEMAPHORE = asyncio.Semaphore(1)
 class MetaReferenceInferenceImpl(
     SentenceTransformerEmbeddingMixin,
     Inference,
-    ModelRegistryHelper,
     ModelsProtocolPrivate,
 ):
     def __init__(self, config: MetaReferenceInferenceConfig) -> None:
         self.config = config
         model = resolve_model(config.model)
-        ModelRegistryHelper.__init__(
-            self,
+        self.model_registry_helper = ModelRegistryHelper(
             [
                 build_model_alias(
                     model.descriptor(),
@@ -82,6 +80,12 @@ class MetaReferenceInferenceImpl(
 
     async def unregister_model(self, model_id: str) -> None:
         pass
+
+    async def register_model(self, model_id: str) -> None:
+        model = self.model_store.get_model(model_id)
+        model = self.model_registry_helper.register_model(model)
+        if model.model_type == ModelType.embedding_model:
+            self._get_embedding_model(model.provider_resource_id)
 
     async def completion(
         self,

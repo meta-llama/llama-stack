@@ -19,11 +19,10 @@ from numpy.typing import NDArray
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from llama_stack.providers.utils.memory.vector_store import (
-    ALL_MINILM_L6_V2_DIMENSION,
     EmbeddingIndex,
     InferenceEmbeddingMixin,
 )
@@ -95,6 +94,15 @@ class FaissIndex(EmbeddingIndex):
         await self.kvstore.delete(f"faiss_index:v1::{self.bank_id}")
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+        # Add dimension check
+        embedding_dim = (
+            embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
+        )
+        if embedding_dim != self.index.d:
+            raise ValueError(
+                f"Embedding dimension mismatch. Expected {self.index.d}, got {embedding_dim}"
+            )
+
         indexlen = len(self.id_by_index)
         for i, chunk in enumerate(chunks):
             self.chunk_by_index[indexlen + i] = chunk
@@ -142,7 +150,7 @@ class FaissMemoryImpl(InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivat
             index = self._create_bank_with_index(
                 bank,
                 await FaissIndex.create(
-                    ALL_MINILM_L6_V2_DIMENSION, self.kvstore, bank.identifier
+                    bank.embedding_dimension, self.kvstore, bank.identifier
                 ),
             )
             self.cache[bank.identifier] = index
@@ -170,7 +178,7 @@ class FaissMemoryImpl(InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivat
         self.cache[memory_bank.identifier] = self._create_bank_with_index(
             memory_bank,
             await FaissIndex.create(
-                ALL_MINILM_L6_V2_DIMENSION, self.kvstore, memory_bank.identifier
+                memory_bank.embedding_dimension, self.kvstore, memory_bank.identifier
             ),
         )
 

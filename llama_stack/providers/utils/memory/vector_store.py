@@ -26,8 +26,6 @@ from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
 
-ALL_MINILM_L6_V2_DIMENSION = 384
-
 
 def parse_data_url(data_url: str):
     data_url_pattern = re.compile(
@@ -136,26 +134,11 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
 
-class EmbeddingGenerator(ABC):
-    @abstractmethod
-    async def generate(self, contents: List[InterleavedTextMedia]) -> NDArray:
-        raise NotImplementedError()
-
-
-class InferenceApiEmbeddingGenerator(EmbeddingGenerator):
-    def __init__(self, inference_api: Api.inference):
-        self.inference_api = inference_api
-
-    async def generate(self, contents: List[InterleavedTextMedia]) -> NDArray:
-        response = await self.inference_api.embeddings(contents)
-        return np.array(response.embeddings)
-
-
 @dataclass
 class BankWithIndex:
     bank: VectorMemoryBank
     index: EmbeddingIndex
-    embedding_generator: EmbeddingGenerator
+    inference_api: Api.inference
 
     async def insert_documents(
         self,
@@ -172,9 +155,10 @@ class BankWithIndex:
             )
             if not chunks:
                 continue
-            embeddings = await self.embedding_generator.generate(
-                [x.content for x in chunks]
+            embeddings_response = await self.inference_api.embeddings(
+                self.bank.embedding_model, [x.content for x in chunks]
             )
+            embeddings = np.array(embeddings_response.embeddings)
 
             await self.index.add_chunks(chunks, embeddings)
 
@@ -199,16 +183,18 @@ class BankWithIndex:
         else:
             query_str = _process(query)
 
-        embeddings = await self.embedding_generator.generate([query_str])
-        query_vector = embeddings[0].astype(np.float32)
+        embeddings_response = await self.inference_api.embeddings(
+            self.bank.embedding_model, [query_str]
+        )
+        query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         return await self.index.query(query_vector, k, score_threshold)
 
 
 class InferenceEmbeddingMixin:
-    embedding_generator: EmbeddingGenerator
+    inference_api: Api.inference
 
     def __init__(self, inference_api: Api.inference):
-        self.embedding_generator = InferenceApiEmbeddingGenerator(inference_api)
+        self.inference_api = inference_api
 
     def _create_bank_with_index(
         self, bank: VectorMemoryBank, index: EmbeddingIndex
@@ -217,5 +203,5 @@ class InferenceEmbeddingMixin:
         return BankWithIndex(
             bank=bank,
             index=index,
-            embedding_generator=self.embedding_generator,
+            inference_api=self.inference_api,
         )

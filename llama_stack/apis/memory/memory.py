@@ -47,7 +47,6 @@ class MemoryBankStore(Protocol):
 @trace_protocol
 class Memory(Protocol):
     memory_bank_store: MemoryBankStore
-    embedding_generator: EmbeddingGenerator
 
     # this will just block now until documents are inserted, but it should
     # probably return a Job instance which can be polled for completion

@@ -16,9 +16,9 @@ from pydantic import BaseModel, parse_obj_as
 
 from llama_stack.apis.memory import *  # noqa: F403
 
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
+
 from llama_stack.providers.utils.memory.vector_store import (
-    ALL_MINILM_L6_V2_DIMENSION,
     BankWithIndex,
     EmbeddingIndex,
     InferenceEmbeddingMixin,
@@ -170,7 +170,7 @@ class PGVectorMemoryAdapter(
         ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         upsert_models(self.cursor, [(memory_bank.identifier, memory_bank)])
-        index = PGVectorIndex(memory_bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor)
+        index = PGVectorIndex(memory_bank, memory_bank.embedding_dimension, self.cursor)
         self.cache[memory_bank.identifier] = self._create_bank_with_index(
             memory_bank, index
         )
@@ -185,7 +185,7 @@ class PGVectorMemoryAdapter(
             if bank.identifier not in self.cache:
                 index = self._create_bank_with_index(
                     bank,
-                    PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
+                    PGVectorIndex(bank, bank.embedding_dimension, self.cursor),
                 )
                 self.cache[bank.identifier] = index
         return banks
@@ -215,6 +215,6 @@ class PGVectorMemoryAdapter(
             return self.cache[bank_id]
 
         bank = await self.memory_bank_store.get_memory_bank(bank_id)
-        index = PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor)
+        index = PGVectorIndex(bank, bank.embedding_dimension, self.cursor)
         self.cache[bank_id] = self._create_bank_with_index(bank, index)
         return self.cache[bank_id]
