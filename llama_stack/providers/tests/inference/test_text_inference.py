@@ -140,6 +140,7 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::vllm",
             "remote::cerebras",
         ):
             pytest.skip(
@@ -200,6 +201,7 @@ class TestInference:
             "remote::fireworks",
             "remote::tgi",
             "remote::together",
+            "remote::vllm",
             "remote::nvidia",
         ):
             pytest.skip("Other inference providers don't support structured output yet")
