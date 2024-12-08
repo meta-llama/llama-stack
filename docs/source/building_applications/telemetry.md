@@ -40,7 +40,7 @@ structured_log_event = SpanStartPayload(
 - **Traces**: Collection of related spans forming a complete request flow
 
 ### Sinks
-- **OpenTelemetry**: Send events to an OpenTelemetry Collector. This is useful for visualizing traces in a service like Jaeger.
+- **OpenTelemetry**: Send events to an OpenTelemetry Collector. This is useful for visualizing traces in a tool like Jaeger.
 - **SQLite**: Store events in a local SQLite database. This is needed if you want to query the events later through the Llama Stack API.
 - **Console**: Print events to the console.
 
@@ -124,13 +124,12 @@ The `otel` sink works with any service compatible with the OpenTelemetry collect
 Start a Jaeger instance with the OTLP HTTP endpoint at 4318 and the Jaeger UI at 16686 using the following command:
 
 ```bash
-$ docker run --rm \
-   --name jaeger jaegertracing/jaeger:2.0.0 \
-   -p 16686:16686 -p 4318:4318 \
-  --set receivers.otlp.protocols.http.endpoint=0.0.0.0:4318
+$ docker run --rm --name jaeger \
+  -p 16686:16686 -p 4318:4318 \
+  jaegertracing/jaeger:2.1.0
 ```
 
-Once the Jaeger instance is running, you can visualize traces by navigating to http://localhost:16686.
+Once the Jaeger instance is running, you can visualize traces by navigating to http://localhost:16686/.
 
 ## Querying Traces Stored in SQLIte
 
