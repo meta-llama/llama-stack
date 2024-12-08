@@ -142,7 +142,6 @@ class TestInference:
             "remote::fireworks",
             "remote::vllm",
             "remote::cerebras",
-
         ):
             pytest.skip(
                 "Other inference providers don't support structured output in completions yet"
