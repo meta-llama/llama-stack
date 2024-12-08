@@ -10,6 +10,7 @@ from typing import List
 
 import pkg_resources
 from pydantic import BaseModel
+from termcolor import cprint
 
 from llama_stack.distribution.utils.exec import run_with_pty
 
@@ -45,7 +46,7 @@ class ApiInput(BaseModel):
 
 
 def get_provider_dependencies(
-    config_providers: Dict[str, List[Provider]]
+    config_providers: Dict[str, List[Provider]],
 ) -> tuple[list[str], list[str]]:
     """Get normal and special dependencies from provider configuration."""
     all_providers = get_provider_registry()
@@ -90,11 +91,12 @@ def get_provider_dependencies(
 def print_pip_install_help(providers: Dict[str, List[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
-    print(
-        f"Please install needed dependencies using the following commands:\n\n\tpip install {' '.join(normal_deps)}"
+    cprint(
+        f"Please install needed dependencies using the following commands:\n\npip install {' '.join(normal_deps)}",
+        "yellow",
     )
     for special_dep in special_deps:
-        log.info(f"\tpip install {special_dep}")
+        cprint(f"pip install {special_dep}", "yellow")
     print()
 
 

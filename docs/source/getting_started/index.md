@@ -62,7 +62,7 @@ llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
 You can test basic Llama inference completion using the CLI too.
 ```bash
 llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT \
-  inference chat_completion \
+  inference chat-completion \
   --message "hello, what model are you?"
 ```
 
@@ -118,6 +118,7 @@ async def run_main():
         model=os.environ["INFERENCE_MODEL"],
         instructions="You are a helpful assistant",
         tools=[{"type": "memory"}],  # enable Memory aka RAG
+        enable_session_persistence=True,
     )
 
     agent = Agent(client, agent_config)
@@ -139,7 +140,7 @@ async def run_main():
             attachments=attachments,
             session_id=session_id,
         )
-        async for log in EventLogger().log(response):
+        for log in EventLogger().log(response):
             log.print()
 
 

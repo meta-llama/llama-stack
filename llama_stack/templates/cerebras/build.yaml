@@ -1,0 +1,17 @@
+version: '2'
+name: cerebras
+distribution_spec:
+  description: Use Cerebras for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::cerebras
+    safety:
+    - inline::llama-guard
+    memory:
+    - inline::meta-reference
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

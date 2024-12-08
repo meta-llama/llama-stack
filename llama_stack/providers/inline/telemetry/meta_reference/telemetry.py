@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import threading
+from typing import Any, Dict, List, Optional
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -16,10 +17,23 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
+from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
+    ConsoleSpanProcessor,
+)
+
+from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
+    SQLiteSpanProcessor,
+)
+from llama_stack.providers.utils.telemetry import (
+    SQLiteTraceStore,
+    TelemetryDatasetMixin,
+)
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
-from .config import OpenTelemetryConfig
+from llama_stack.distribution.datatypes import Api
+
+from .config import TelemetryConfig, TelemetrySink
 
 _GLOBAL_STORAGE = {
     "active_spans": {},
@@ -45,9 +59,10 @@ def is_tracing_enabled(tracer):
         return span.is_recording()
 
 
-class OpenTelemetryAdapter(Telemetry):
-    def __init__(self, config: OpenTelemetryConfig):
+class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
+    def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
+        self.datasetio_api = deps[Api.datasetio]
 
         resource = Resource.create(
             {
@@ -57,22 +72,29 @@ class OpenTelemetryAdapter(Telemetry):
 
         provider = TracerProvider(resource=resource)
         trace.set_tracer_provider(provider)
-        otlp_exporter = OTLPSpanExporter(
-            endpoint=self.config.otel_endpoint,
-        )
-        span_processor = BatchSpanProcessor(otlp_exporter)
-        trace.get_tracer_provider().add_span_processor(span_processor)
-        # Set up metrics
-        metric_reader = PeriodicExportingMetricReader(
-            OTLPMetricExporter(
+        if TelemetrySink.OTEL in self.config.sinks:
+            otlp_exporter = OTLPSpanExporter(
                 endpoint=self.config.otel_endpoint,
             )
-        )
-        metric_provider = MeterProvider(
-            resource=resource, metric_readers=[metric_reader]
-        )
-        metrics.set_meter_provider(metric_provider)
-        self.meter = metrics.get_meter(__name__)
+            span_processor = BatchSpanProcessor(otlp_exporter)
+            trace.get_tracer_provider().add_span_processor(span_processor)
+            metric_reader = PeriodicExportingMetricReader(
+                OTLPMetricExporter(
+                    endpoint=self.config.otel_endpoint,
+                )
+            )
+            metric_provider = MeterProvider(
+                resource=resource, metric_readers=[metric_reader]
+            )
+            metrics.set_meter_provider(metric_provider)
+            self.meter = metrics.get_meter(__name__)
+        if TelemetrySink.SQLITE in self.config.sinks:
+            trace.get_tracer_provider().add_span_processor(
+                SQLiteSpanProcessor(self.config.sqlite_db_path)
+            )
+            self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
+        if TelemetrySink.CONSOLE in self.config.sinks:
+            trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
         self._lock = _global_lock
 
     async def initialize(self) -> None:
@@ -83,15 +105,17 @@ class OpenTelemetryAdapter(Telemetry):
         trace.get_tracer_provider().shutdown()
         metrics.get_meter_provider().shutdown()
 
-    async def log_event(self, event: Event) -> None:
+    async def log_event(self, event: Event, ttl_seconds: int = 604800) -> None:
         if isinstance(event, UnstructuredLogEvent):
-            self._log_unstructured(event)
+            self._log_unstructured(event, ttl_seconds)
         elif isinstance(event, MetricEvent):
             self._log_metric(event)
         elif isinstance(event, StructuredLogEvent):
-            self._log_structured(event)
+            self._log_structured(event, ttl_seconds)
+        else:
+            raise ValueError(f"Unknown event type: {event}")
 
-    def _log_unstructured(self, event: UnstructuredLogEvent) -> None:
+    def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
             span_id = string_to_span_id(event.span_id)
@@ -104,6 +128,7 @@ class OpenTelemetryAdapter(Telemetry):
                     attributes={
                         "message": event.message,
                         "severity": event.severity.value,
+                        "__ttl__": ttl_seconds,
                         **event.attributes,
                     },
                     timestamp=timestamp_ns,
@@ -154,11 +179,14 @@ class OpenTelemetryAdapter(Telemetry):
             )
         return _GLOBAL_STORAGE["up_down_counters"][name]
 
-    def _log_structured(self, event: StructuredLogEvent) -> None:
+    def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             span_id = string_to_span_id(event.span_id)
             trace_id = string_to_trace_id(event.trace_id)
             tracer = trace.get_tracer(__name__)
+            if event.attributes is None:
+                event.attributes = {}
+            event.attributes["__ttl__"] = ttl_seconds
 
             if isinstance(event.payload, SpanStartPayload):
                 # Check if span already exists to prevent duplicates
@@ -170,7 +198,6 @@ class OpenTelemetryAdapter(Telemetry):
                     parent_span_id = string_to_span_id(event.payload.parent_span_id)
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
 
-                # Create a new trace context with the trace_id
                 context = trace.Context(trace_id=trace_id)
                 if parent_span:
                     context = trace.set_span_in_context(parent_span, context)
@@ -179,13 +206,8 @@ class OpenTelemetryAdapter(Telemetry):
                     name=event.payload.name,
                     context=context,
                     attributes=event.attributes or {},
-                    start_time=int(event.timestamp.timestamp() * 1e9),
                 )
                 _GLOBAL_STORAGE["active_spans"][span_id] = span
-
-                # Set as current span using context manager
-                with trace.use_span(span, end_on_exit=False):
-                    pass  # Let the span continue beyond this block
 
             elif isinstance(event.payload, SpanEndPayload):
                 span = _GLOBAL_STORAGE["active_spans"].get(span_id)
@@ -199,10 +221,33 @@ class OpenTelemetryAdapter(Telemetry):
                         else trace.Status(status_code=trace.StatusCode.ERROR)
                     )
                     span.set_status(status)
-                    span.end(end_time=int(event.timestamp.timestamp() * 1e9))
-
-                    # Remove from active spans
+                    span.end()
                     _GLOBAL_STORAGE["active_spans"].pop(span_id, None)
+            else:
+                raise ValueError(f"Unknown structured log event: {event}")
 
-    async def get_trace(self, trace_id: str) -> Trace:
-        raise NotImplementedError("Trace retrieval not implemented yet")
+    async def query_traces(
+        self,
+        attribute_filters: Optional[List[QueryCondition]] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> List[Trace]:
+        return await self.trace_store.query_traces(
+            attribute_filters=attribute_filters,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+        )
+
+    async def get_span_tree(
+        self,
+        span_id: str,
+        attributes_to_return: Optional[List[str]] = None,
+        max_depth: Optional[int] = None,
+    ) -> SpanWithChildren:
+        return await self.trace_store.get_span_tree(
+            span_id=span_id,
+            attributes_to_return=attributes_to_return,
+            max_depth=max_depth,
+        )

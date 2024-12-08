@@ -69,7 +69,7 @@ class TraceContext:
         self.logger = logger
         self.trace_id = trace_id
 
-    def push_span(self, name: str, attributes: Dict[str, Any] = None):
+    def push_span(self, name: str, attributes: Dict[str, Any] = None) -> Span:
         current_span = self.get_current_span()
         span = Span(
             span_id=generate_short_uuid(),
@@ -94,6 +94,7 @@ class TraceContext:
         )
 
         self.spans.append(span)
+        return span
 
     def pop_span(self, status: SpanStatus = SpanStatus.OK):
         span = self.spans.pop()
@@ -203,12 +204,13 @@ class SpanContextManager:
     def __init__(self, name: str, attributes: Dict[str, Any] = None):
         self.name = name
         self.attributes = attributes
+        self.span = None
 
     def __enter__(self):
         global CURRENT_TRACE_CONTEXT
         context = CURRENT_TRACE_CONTEXT
         if context:
-            context.push_span(self.name, self.attributes)
+            self.span = context.push_span(self.name, self.attributes)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -217,11 +219,24 @@ class SpanContextManager:
         if context:
             context.pop_span()
 
+    def set_attribute(self, key: str, value: Any):
+        if self.span:
+            if self.span.attributes is None:
+                self.span.attributes = {}
+            self.span.attributes[key] = value
+
     async def __aenter__(self):
-        return self.__enter__()
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            self.span = context.push_span(self.name, self.attributes)
+        return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        self.__exit__(exc_type, exc_value, traceback)
+        global CURRENT_TRACE_CONTEXT
+        context = CURRENT_TRACE_CONTEXT
+        if context:
+            context.pop_span()
 
     def __call__(self, func: Callable):
         @wraps(func)
@@ -246,3 +261,11 @@ class SpanContextManager:
 
 def span(name: str, attributes: Dict[str, Any] = None):
     return SpanContextManager(name, attributes)
+
+
+def get_current_span() -> Optional[Span]:
+    global CURRENT_TRACE_CONTEXT
+    context = CURRENT_TRACE_CONTEXT
+    if context:
+        return context.get_current_span()
+    return None

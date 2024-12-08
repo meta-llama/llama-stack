@@ -17,9 +17,11 @@ from llama_stack.providers.inline.inference.meta_reference import (
 )
 from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
+from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
@@ -60,6 +62,21 @@ def inference_meta_reference(inference_model) -> ProviderFixture:
             )
             for i, m in enumerate(inference_model)
         ]
+    )
+
+
+@pytest.fixture(scope="session")
+def inference_cerebras() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="cerebras",
+                provider_type="remote::cerebras",
+                config=CerebrasImplConfig(
+                    api_key=get_env_or_fail("CEREBRAS_API_KEY"),
+                ).model_dump(),
+            )
+        ],
     )
 
 
@@ -156,6 +173,22 @@ def inference_nvidia() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def inference_tgi() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="tgi",
+                provider_type="remote::tgi",
+                config=TGIImplConfig(
+                    url=get_env_or_fail("TGI_URL"),
+                    api_token=os.getenv("TGI_API_TOKEN", None),
+                ).model_dump(),
+            )
+        ],
+    )
+
+
 def get_model_short_name(model_name: str) -> str:
     """Convert model name to a short test identifier.
 
@@ -189,7 +222,9 @@ INFERENCE_FIXTURES = [
     "vllm_remote",
     "remote",
     "bedrock",
+    "cerebras",
     "nvidia",
+    "tgi",
 ]
 
 

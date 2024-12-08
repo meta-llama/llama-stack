@@ -10,6 +10,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 class CommonModelFields(BaseModel):
@@ -43,6 +44,7 @@ class ModelInput(CommonModelFields):
 
 
 @runtime_checkable
+@trace_protocol
 class Models(Protocol):
     @webmethod(route="/models/list", method="GET")
     async def list_models(self) -> List[Model]: ...
