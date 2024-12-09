@@ -14,7 +14,6 @@ from llama_stack.apis.telemetry import QueryCondition, SpanWithChildren, Trace
 
 
 class TraceStore(Protocol):
-
     async def query_traces(
         self,
         attribute_filters: Optional[List[QueryCondition]] = None,
@@ -42,7 +41,6 @@ class SQLiteTraceStore(TraceStore):
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
     ) -> List[Trace]:
-
         def build_where_clause() -> tuple[str, list]:
             if not attribute_filters:
                 return "", []
@@ -50,7 +48,7 @@ class SQLiteTraceStore(TraceStore):
             ops_map = {"eq": "=", "ne": "!=", "gt": ">", "lt": "<"}
 
             conditions = [
-                f"json_extract(s.attributes, '$.{condition.key}') {ops_map[condition.op]} ?"
+                f"json_extract(s.attributes, '$.{condition.key}') {ops_map[condition.op.value]} ?"
                 for condition in attribute_filters
             ]
             params = [condition.value for condition in attribute_filters]

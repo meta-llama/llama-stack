@@ -156,15 +156,22 @@ class SpanWithChildren(Span):
 
 
 @json_schema_type
+class QueryConditionOp(Enum):
+    EQ = "eq"
+    NE = "ne"
+    GT = "gt"
+    LT = "lt"
+
+
+@json_schema_type
 class QueryCondition(BaseModel):
     key: str
-    op: Literal["eq", "ne", "gt", "lt"]
+    op: QueryConditionOp
     value: Any
 
 
 @runtime_checkable
 class Telemetry(Protocol):
-
     @webmethod(route="/telemetry/log-event")
     async def log_event(
         self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400
