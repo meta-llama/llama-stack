@@ -33,16 +33,17 @@ from llama_stack.distribution.stack import (
 T = TypeVar("T")
 
 
-def is_jupyter():
-    """Check if we're running in a Jupyter notebook"""
+def in_notebook():
     try:
-        shell = get_ipython().__class__.__name__  # type: ignore
-        if shell == "ZMQInteractiveShell":  # Jupyter notebook or qtconsole
-            return True
-        else:
+        from IPython import get_ipython
+
+        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
             return False
-    except NameError:  # Probably standard Python interpreter
+    except ImportError:
         return False
+    except AttributeError:
+        return False
+    return True
 
 
 def stream_across_asyncio_run_boundary(
@@ -115,7 +116,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
 
     def initialize(self):
-        if is_jupyter():
+        if in_notebook():
             import nest_asyncio
 
             nest_asyncio.apply()
