@@ -21,6 +21,7 @@ from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
 from llama_stack.providers.remote.inference.fireworks import FireworksImplConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
+from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
@@ -189,6 +190,24 @@ def inference_tgi() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def inference_sambanova() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sambanova",
+                provider_type="remote::sambanova",
+                config=SambaNovaImplConfig(
+                    api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+                ).model_dump(),
+            )
+        ],
+        provider_data=dict(
+            sambanova_api_key=get_env_or_fail("SAMBANOVA_API_KEY"),
+        ),
+    )
+
+
 def get_model_short_name(model_name: str) -> str:
     """Convert model name to a short test identifier.
 
@@ -225,6 +244,7 @@ INFERENCE_FIXTURES = [
     "cerebras",
     "nvidia",
     "tgi",
+    "sambanova",
 ]
 
 
