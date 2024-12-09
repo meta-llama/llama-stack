@@ -203,4 +203,14 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        kwargs = {}
+        if model.metadata.get("embedding_dimensions"):
+            kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        response = self.client.embeddings.create(
+            model=model.provider_resource_id, input=contents, **kwargs
+        )
+
+        embeddings = [data.embedding for data in response.data]
+        return EmbeddingsResponse(embeddings=embeddings)

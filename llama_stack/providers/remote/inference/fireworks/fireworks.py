@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
 from llama_models.datatypes import CoreModelId
@@ -12,6 +12,7 @@ from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
+from openai import OpenAI
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
@@ -89,18 +90,23 @@ class FireworksInferenceAdapter(
     async def shutdown(self) -> None:
         pass
 
-    def _get_client(self) -> Fireworks:
-        fireworks_api_key = None
+    def _get_api_key(self) -> str:
         if self.config.api_key is not None:
-            fireworks_api_key = self.config.api_key
+            return self.config.api_key
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.fireworks_api_key:
                 raise ValueError(
                     'Pass Fireworks API Key in the header X-LlamaStack-ProviderData as { "fireworks_api_key": <your api key>}'
                 )
-            fireworks_api_key = provider_data.fireworks_api_key
+            return provider_data.fireworks_api_key
+
+    def _get_client(self) -> Fireworks:
+        fireworks_api_key = self._get_api_key()
         return Fireworks(api_key=fireworks_api_key)
+
+    def _get_openai_client(self) -> OpenAI:
+        return OpenAI(base_url=self.config.url, api_key=self._get_api_key())
 
     async def completion(
         self,
@@ -264,4 +270,15 @@ class FireworksInferenceAdapter(
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        client = self._get_openai_client()
+        kwargs = {}
+        if model.metadata.get("embedding_dimensions"):
+            kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        response = client.embeddings.create(
+            model=model.provider_resource_id, input=contents, **kwargs
+        )
+
+        embeddings = [data.embedding for data in response.data]
+        return EmbeddingsResponse(embeddings=embeddings)
