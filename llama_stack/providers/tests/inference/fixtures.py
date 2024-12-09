@@ -9,9 +9,9 @@ import os
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.models import ModelInput
-
+from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
+
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
@@ -35,6 +35,13 @@ def inference_model(request):
     if hasattr(request, "param"):
         return request.param
     return request.config.getoption("--inference-model", None)
+
+
+@pytest.fixture(scope="session")
+def embedding_model(request):
+    if hasattr(request, "param"):
+        return request.param
+    return request.config.getoption("--embedding-model", None)
 
 
 @pytest.fixture(scope="session")
@@ -85,7 +92,7 @@ def inference_ollama(inference_model) -> ProviderFixture:
     inference_model = (
         [inference_model] if isinstance(inference_model, str) else inference_model
     )
-    if "Llama3.1-8B-Instruct" in inference_model:
+    if inference_model and "Llama3.1-8B-Instruct" in inference_model:
         pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
     return ProviderFixture(
@@ -237,6 +244,28 @@ async def inference_stack(request, inference_model):
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
         models=[ModelInput(model_id=inference_model)],
+    )
+
+    return test_stack.impls[Api.inference], test_stack.impls[Api.models]
+
+
+@pytest_asyncio.fixture(scope="session")
+async def embedding_stack(request, embedding_model):
+    fixture_name = request.param
+    inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
+    test_stack = await construct_stack_for_test(
+        [Api.inference],
+        {"inference": inference_fixture.providers},
+        inference_fixture.provider_data,
+        models=[
+            ModelInput(
+                model_id=embedding_model,
+                model_type=ModelType.embedding_model,
+                metadata={
+                    "embedding_dimension": get_env_or_fail("EMBEDDING_DIMENSION"),
+                },
+            )
+        ],
     )
 
     return test_stack.impls[Api.inference], test_stack.impls[Api.models]

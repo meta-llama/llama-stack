@@ -253,4 +253,9 @@ class TogetherInferenceAdapter(
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+        r = self._get_client().embeddings.create(
+            model=model.provider_resource_id, input=contents
+        )
+        embeddings = [item.embedding for item in r.data]
+        return EmbeddingsResponse(embeddings=embeddings)
