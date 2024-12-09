@@ -172,4 +172,15 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.inference.nvidia.NVIDIAConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="nutanix",
+                pip_packages=[
+                    "openai",
+                ],
+                module="llama_stack.providers.remote.inference.nutanix",
+                config_class="llama_stack.providers.remote.inference.nutanix.NutanixImplConfig",
+            ),
+        ),
     ]

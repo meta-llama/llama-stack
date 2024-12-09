@@ -169,10 +169,12 @@ def chat_completion_request_to_model_input_info(
 def chat_completion_request_to_messages(
     request: ChatCompletionRequest,
     llama_model: str,
-) -> List[Message]:
+    return_dict: bool = False,
+) -> Union[List[Message], List[Dict[str, str]]]:
     """Reads chat completion request and augments the messages to handle tools.
     For eg. for llama_3_1, add system message with the appropriate tools or
     add user messsage for custom tools, etc.
+    If return_dict is set, returns a list of the messages dictionaries instead of objects.
     """
     model = resolve_model(llama_model)
     if model is None:
@@ -199,7 +201,10 @@ def chat_completion_request_to_messages(
     if fmt_prompt := response_format_prompt(request.response_format):
         messages.append(UserMessage(content=fmt_prompt))
 
-    return messages
+    if return_dict:
+        return [{'role': m.role, 'content': m.content} for m in messages]
+    else:
+        return messages
 
 
 def response_format_prompt(fmt: Optional[ResponseFormat]):
