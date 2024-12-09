@@ -19,7 +19,6 @@ from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
-    InferenceEmbeddingMixin,
 )
 
 from .config import WeaviateConfig, WeaviateRequestProviderData
@@ -83,7 +82,6 @@ class WeaviateIndex(EmbeddingIndex):
 
 
 class WeaviateMemoryAdapter(
-    InferenceEmbeddingMixin,
     Memory,
     NeedsRequestProviderData,
     MemoryBanksProtocolPrivate,
@@ -140,9 +138,10 @@ class WeaviateMemoryAdapter(
                 ],
             )
 
-        self.cache[memory_bank.identifier] = self._create_bank_with_index(
+        self.cache[memory_bank.identifier] = BankWithIndex(
             memory_bank,
             WeaviateIndex(client=client, collection_name=memory_bank.identifier),
+            self.inference_api,
         )
 
     async def list_memory_banks(self) -> List[MemoryBank]:
@@ -164,9 +163,10 @@ class WeaviateMemoryAdapter(
         if not client.collections.exists(bank.identifier):
             raise ValueError(f"Collection with name `{bank.identifier}` not found")
 
-        index = self._create_bank_with_index(
+        index = BankWithIndex(
             bank=bank,
             index=WeaviateIndex(client=client, collection_name=bank_id),
+            inference_api=self.inference_api,
         )
         self.cache[bank_id] = index
         return index

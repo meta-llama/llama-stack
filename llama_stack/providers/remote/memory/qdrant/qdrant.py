@@ -21,7 +21,6 @@ from llama_stack.providers.remote.memory.qdrant.config import QdrantConfig
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
-    InferenceEmbeddingMixin,
 )
 
 log = logging.getLogger(__name__)
@@ -101,9 +100,7 @@ class QdrantIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class QdrantVectorMemoryAdapter(
-    InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivate
-):
+class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: QdrantConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
@@ -124,9 +121,10 @@ class QdrantVectorMemoryAdapter(
             memory_bank.memory_bank_type == MemoryBankType.vector
         ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
-        index = self._create_bank_with_index(
+        index = BankWithIndex(
             bank=memory_bank,
             index=QdrantIndex(self.client, memory_bank.identifier),
+            inference_api=self.inference_api,
         )
 
         self.cache[memory_bank.identifier] = index
@@ -144,9 +142,10 @@ class QdrantVectorMemoryAdapter(
         if not bank:
             raise ValueError(f"Bank {bank_id} not found")
 
-        index = self._create_bank_with_index(
+        index = BankWithIndex(
             bank=bank,
             index=QdrantIndex(client=self.client, collection_name=bank_id),
+            inference_api=self.inference_api,
         )
         self.cache[bank_id] = index
         return index

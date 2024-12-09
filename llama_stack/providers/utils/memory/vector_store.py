@@ -198,20 +198,3 @@ class BankWithIndex:
         )
         query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         return await self.index.query(query_vector, k, score_threshold)
-
-
-class InferenceEmbeddingMixin:
-    inference_api: Api.inference
-
-    def __init__(self, inference_api: Api.inference):
-        self.inference_api = inference_api
-
-    def _create_bank_with_index(
-        self, bank: VectorMemoryBank, index: EmbeddingIndex
-    ) -> BankWithIndex:
-
-        return BankWithIndex(
-            bank=bank,
-            index=index,
-            inference_api=self.inference_api,
-        )
