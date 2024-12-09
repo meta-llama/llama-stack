@@ -48,7 +48,6 @@ class ModelInput(CommonModelFields):
     provider_id: Optional[str] = None
     provider_model_id: Optional[str] = None
     model_type: Optional[ModelType] = ModelType.llm
-
     model_config = ConfigDict(protected_namespaces=())
 
 
