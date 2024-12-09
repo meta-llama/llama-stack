@@ -253,7 +253,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             body = self._convert_body(path, body)
             return await func(**body)
         finally:
-            end_trace()
+            await end_trace()
 
     async def _call_streaming(self, path: str, method: str, body: dict = None):
         await start_trace(path, {"__location__": "library_client"})
@@ -266,7 +266,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             async for chunk in await func(**body):
                 yield chunk
         finally:
-            end_trace()
+            await end_trace()
 
     def _convert_body(self, path: str, body: Optional[dict] = None) -> dict:
         if not body:
