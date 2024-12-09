@@ -340,9 +340,8 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
     step_type: StepType
     step_id: str
 
-    model_response_text_delta: Optional[str] = None
+    text_delta: Optional[str] = None
     tool_call_delta: Optional[ToolCallDelta] = None
-    tool_response_text_delta: Optional[str] = None
 
 
 @json_schema_type

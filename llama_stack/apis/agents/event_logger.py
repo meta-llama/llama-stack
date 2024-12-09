@@ -121,7 +121,7 @@ class EventLogger:
                         else:
                             yield event, LogEvent(
                                 role=None,
-                                content=event.payload.model_response_text_delta,
+                                content=event.payload.text_delta,
                                 end="",
                                 color="yellow",
                             )

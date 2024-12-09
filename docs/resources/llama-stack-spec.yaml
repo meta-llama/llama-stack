@@ -132,8 +132,6 @@ components:
           const: step_progress
           default: step_progress
           type: string
-        model_response_text_delta:
-          type: string
         step_id:
           type: string
         step_type:
@@ -143,10 +141,10 @@ components:
           - shield_call
           - memory_retrieval
           type: string
+        text_delta:
+          type: string
         tool_call_delta:
           $ref: '#/components/schemas/ToolCallDelta'
-        tool_response_text_delta:
-          type: string
       required:
       - event_type
       - step_type

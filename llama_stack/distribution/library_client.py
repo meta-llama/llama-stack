@@ -6,16 +6,18 @@
 
 import asyncio
 import inspect
+import json
 import os
 import queue
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from pathlib import Path
 from typing import Any, Generator, get_args, get_origin, Optional, TypeVar
 
 import yaml
 from llama_stack_client import AsyncLlamaStackClient, LlamaStackClient, NOT_GIVEN
-from pydantic import TypeAdapter
+from pydantic import BaseModel, TypeAdapter
 from rich.console import Console
 
 from termcolor import cprint
@@ -109,6 +111,18 @@ def stream_across_asyncio_run_boundary(
         future.result()
 
 
+def convert_pydantic_to_json_value(value: Any) -> dict:
+    if isinstance(value, BaseModel):
+        return json.loads(value.model_dump_json())
+    elif isinstance(value, Enum):
+        return value.value
+    elif isinstance(value, list):
+        return [convert_pydantic_to_json_value(item) for item in value]
+    elif isinstance(value, dict):
+        return {k: convert_pydantic_to_json_value(v) for k, v in value.items()}
+    return value
+
+
 class LlamaStackAsLibraryClient(LlamaStackClient):
     def __init__(
         self,
@@ -187,8 +201,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             if self.config_path_or_template_name.endswith(".yaml"):
                 print_pip_install_help(self.config.providers)
             else:
+                prefix = "!" if in_notebook() else ""
                 cprint(
-                    f"Please run:\n\nllama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
+                    f"Please run:\n\n{prefix}llama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
                     "yellow",
                 )
             return False
@@ -251,7 +266,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 raise ValueError(f"No endpoint found for {path}")
 
             body = self._convert_body(path, body)
-            return await func(**body)
+            return convert_pydantic_to_json_value(await func(**body))
         finally:
             await end_trace()
 
@@ -264,7 +279,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
             body = self._convert_body(path, body)
             async for chunk in await func(**body):
-                yield chunk
+                yield convert_pydantic_to_json_value(chunk)
         finally:
             await end_trace()
 
@@ -283,12 +298,12 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         for param_name, param in sig.parameters.items():
             if param_name in body:
                 value = body.get(param_name)
-                converted_body[param_name] = self._convert_param(
+                converted_body[param_name] = self._convert_to_pydantic(
                     param.annotation, value
                 )
         return converted_body
 
-    def _convert_param(self, annotation: Any, value: Any) -> Any:
+    def _convert_to_pydantic(self, annotation: Any, value: Any) -> Any:
         if isinstance(annotation, type) and annotation in {str, int, float, bool}:
             return value
 
@@ -296,7 +311,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if origin is list:
             item_type = get_args(annotation)[0]
             try:
-                return [self._convert_param(item_type, item) for item in value]
+                return [self._convert_to_pydantic(item_type, item) for item in value]
             except Exception:
                 print(f"Error converting list {value}")
                 return value
@@ -304,7 +319,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         elif origin is dict:
             key_type, val_type = get_args(annotation)
             try:
-                return {k: self._convert_param(val_type, v) for k, v in value.items()}
+                return {
+                    k: self._convert_to_pydantic(val_type, v) for k, v in value.items()
+                }
             except Exception:
                 print(f"Error converting dict {value}")
                 return value
