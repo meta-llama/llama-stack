@@ -24,10 +24,8 @@ from llama_stack.providers.inline.telemetry.meta_reference.console_span_processo
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
-from llama_stack.providers.utils.telemetry import (
-    SQLiteTraceStore,
-    TelemetryDatasetMixin,
-)
+from llama_stack.providers.utils.telemetry.dataset_mixin import TelemetryDatasetMixin
+from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
 
 from llama_stack.apis.telemetry import *  # noqa: F403
 
