@@ -15,5 +15,5 @@ class BraintrustScoringConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
         return {
-            "openai_api_key": "${env.OPENAI_API_KEY}",
+            "openai_api_key": "${env.OPENAI_API_KEY:}",
         }
