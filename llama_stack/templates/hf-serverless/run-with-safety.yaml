@@ -70,7 +70,8 @@ providers:
     config: {}
   - provider_id: braintrust
     provider_type: inline::braintrust
-    config: {}
+    config:
+      openai_api_key: ${env.OPENAI_API_KEY:}
 metadata_store:
   namespace: null
   type: sqlite

@@ -86,7 +86,7 @@ class BraintrustScoringImpl(
 
     async def set_api_key(self) -> None:
         # api key is in the request headers
-        if self.config.openai_api_key is None:
+        if self.config.openai_api_key is None or not self.config.openai_api_key:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.openai_api_key:
                 raise ValueError(
