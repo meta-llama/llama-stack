@@ -10,9 +10,7 @@ import logging
 import os
 import re
 import secrets
-import shutil
 import string
-import tempfile
 import uuid
 from datetime import datetime
 from typing import AsyncGenerator, List, Tuple
@@ -57,6 +55,7 @@ class ChatAgent(ShieldRunnerMixin):
         self,
         agent_id: str,
         agent_config: AgentConfig,
+        tempdir: str,
         inference_api: Inference,
         memory_api: Memory,
         memory_banks_api: MemoryBanks,
@@ -65,13 +64,12 @@ class ChatAgent(ShieldRunnerMixin):
     ):
         self.agent_id = agent_id
         self.agent_config = agent_config
+        self.tempdir = tempdir
         self.inference_api = inference_api
         self.memory_api = memory_api
         self.memory_banks_api = memory_banks_api
         self.safety_api = safety_api
         self.storage = AgentPersistence(agent_id, persistence_store)
-
-        self.tempdir = tempfile.mkdtemp()
 
         builtin_tools = []
         for tool_defn in agent_config.tools:
@@ -102,9 +100,6 @@ class ChatAgent(ShieldRunnerMixin):
             input_shields=agent_config.input_shields,
             output_shields=agent_config.output_shields,
         )
-
-    def __del__(self):
-        shutil.rmtree(self.tempdir)
 
     def turn_to_messages(self, turn: Turn) -> List[Message]:
         messages = []

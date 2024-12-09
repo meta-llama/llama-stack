@@ -11,7 +11,7 @@ from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger as AgentEventLogger
 from llama_stack_client.lib.inference.event_logger import EventLogger
-from llama_stack_client.types import UserMessage
+from llama_stack_client.types import Attachment, UserMessage
 from llama_stack_client.types.agent_create_params import AgentConfig
 
 
@@ -67,9 +67,15 @@ def main(config_path: str):
             ]
             if os.getenv("BRAVE_SEARCH_API_KEY")
             else []
+        )
+        + (
+            [
+                {
+                    "type": "code_interpreter",
+                }
+            ]
         ),
-        tool_choice="auto",
-        tool_prompt_format="json",
+        tool_choice="required",
         input_shields=[],
         output_shields=[],
         enable_session_persistence=False,
@@ -79,10 +85,27 @@ def main(config_path: str):
         "Hello",
         "Which players played in the winning team of the NBA western conference semifinals of 2024, please use tools",
     ]
+    user_prompts = [
+        (
+            "Here is a csv, can you describe it ?",
+            [
+                Attachment(
+                    content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
+                    mime_type="test/csv",
+                )
+            ],
+        ),
+        ("Which year ended with the highest inflation ?", None),
+        (
+            "What macro economic situations that led to such high inflation in that period?",
+            None,
+        ),
+        ("Plot average yearly inflation as a time series", None),
+    ]
 
     session_id = agent.create_session("test-session")
 
-    for prompt in user_prompts:
+    for prompt, attachments in user_prompts:
         response = agent.create_turn(
             messages=[
                 {
@@ -90,6 +113,7 @@ def main(config_path: str):
                     "content": prompt,
                 }
             ],
+            attachments=attachments,
             session_id=session_id,
         )
 

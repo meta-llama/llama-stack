@@ -7,6 +7,7 @@
 import json
 import logging
 import shutil
+import tempfile
 import uuid
 from typing import AsyncGenerator
 
@@ -43,6 +44,7 @@ class MetaReferenceAgentsImpl(Agents):
         self.memory_banks_api = memory_banks_api
 
         self.in_memory_store = InmemoryKVStoreImpl()
+        self.tempdir = tempfile.mkdtemp()
 
     async def initialize(self) -> None:
         self.persistence_store = await kvstore_impl(self.config.persistence_store)
@@ -94,6 +96,7 @@ class MetaReferenceAgentsImpl(Agents):
         return ChatAgent(
             agent_id=agent_id,
             agent_config=agent_config,
+            tempdir=self.tempdir,
             inference_api=self.inference_api,
             safety_api=self.safety_api,
             memory_api=self.memory_api,
