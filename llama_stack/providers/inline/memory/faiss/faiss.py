@@ -19,13 +19,12 @@ from numpy.typing import NDArray
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from llama_stack.providers.utils.memory.vector_store import (
-    ALL_MINILM_L6_V2_DIMENSION,
-    BankWithIndex,
     EmbeddingIndex,
+    InferenceEmbeddingMixin,
 )
 
 from .config import FaissImplConfig
@@ -95,6 +94,15 @@ class FaissIndex(EmbeddingIndex):
         await self.kvstore.delete(f"faiss_index:v1::{self.bank_id}")
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+        # Add dimension check
+        embedding_dim = (
+            embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
+        )
+        if embedding_dim != self.index.d:
+            raise ValueError(
+                f"Embedding dimension mismatch. Expected {self.index.d}, got {embedding_dim}"
+            )
+
         indexlen = len(self.id_by_index)
         for i, chunk in enumerate(chunks):
             self.chunk_by_index[indexlen + i] = chunk
@@ -123,9 +131,10 @@ class FaissIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
-    def __init__(self, config: FaissImplConfig) -> None:
+class FaissMemoryImpl(InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivate):
+    def __init__(self, config: FaissImplConfig, inference_api: Api.inference) -> None:
         self.config = config
+        self.inference_api = inference_api
         self.cache = {}
         self.kvstore = None
 
@@ -138,10 +147,10 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
 
         for bank_data in stored_banks:
             bank = VectorMemoryBank.model_validate_json(bank_data)
-            index = BankWithIndex(
-                bank=bank,
-                index=await FaissIndex.create(
-                    ALL_MINILM_L6_V2_DIMENSION, self.kvstore, bank.identifier
+            index = self._create_bank_with_index(
+                bank,
+                await FaissIndex.create(
+                    bank.embedding_dimension, self.kvstore, bank.identifier
                 ),
             )
             self.cache[bank.identifier] = index
@@ -166,13 +175,12 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
         )
 
         # Store in cache
-        index = BankWithIndex(
-            bank=memory_bank,
-            index=await FaissIndex.create(
-                ALL_MINILM_L6_V2_DIMENSION, self.kvstore, memory_bank.identifier
+        self.cache[memory_bank.identifier] = self._create_bank_with_index(
+            memory_bank,
+            await FaissIndex.create(
+                memory_bank.embedding_dimension, self.kvstore, memory_bank.identifier
             ),
         )
-        self.cache[memory_bank.identifier] = index
 
     async def list_memory_banks(self) -> List[MemoryBank]:
         return [i.bank for i in self.cache.values()]
