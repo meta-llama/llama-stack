@@ -18,6 +18,7 @@ META_REFERENCE_DEPS = [
     "transformers",
     "zmq",
     "lm-format-enforcer",
+    "sentence-transformers",
 ]
 
 
@@ -51,6 +52,13 @@ def available_providers() -> List[ProviderSpec]:
             ],
             module="llama_stack.providers.inline.inference.vllm",
             config_class="llama_stack.providers.inline.inference.vllm.VLLMConfig",
+        ),
+        InlineProviderSpec(
+            api=Api.inference,
+            provider_type="inline::sentence-transformers",
+            pip_packages=["sentence-transformers"],
+            module="llama_stack.providers.inline.inference.sentence_transformers",
+            config_class="llama_stack.providers.inline.inference.sentence_transformers.config.SentenceTransformersInferenceConfig",
         ),
         remote_provider_spec(
             api=Api.inference,
