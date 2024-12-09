@@ -45,12 +45,14 @@ def sample_documents():
     ]
 
 
-async def register_memory_bank(banks_impl: MemoryBanks) -> MemoryBank:
+async def register_memory_bank(
+    banks_impl: MemoryBanks, embedding_model: str
+) -> MemoryBank:
     bank_id = f"test_bank_{uuid.uuid4().hex}"
     return await banks_impl.register_memory_bank(
         memory_bank_id=bank_id,
         params=VectorMemoryBankParams(
-            embedding_model="all-MiniLM-L6-v2",
+            embedding_model=embedding_model,
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,
         ),
@@ -59,11 +61,11 @@ async def register_memory_bank(banks_impl: MemoryBanks) -> MemoryBank:
 
 class TestMemory:
     @pytest.mark.asyncio
-    async def test_banks_list(self, memory_stack):
+    async def test_banks_list(self, memory_stack, embedding_model):
         _, banks_impl = memory_stack
 
         # Register a test bank
-        registered_bank = await register_memory_bank(banks_impl)
+        registered_bank = await register_memory_bank(banks_impl, embedding_model)
 
         try:
             # Verify our bank shows up in list
@@ -84,7 +86,7 @@ class TestMemory:
         )
 
     @pytest.mark.asyncio
-    async def test_banks_register(self, memory_stack):
+    async def test_banks_register(self, memory_stack, embedding_model):
         _, banks_impl = memory_stack
 
         bank_id = f"test_bank_{uuid.uuid4().hex}"
@@ -94,7 +96,7 @@ class TestMemory:
             await banks_impl.register_memory_bank(
                 memory_bank_id=bank_id,
                 params=VectorMemoryBankParams(
-                    embedding_model="all-MiniLM-L6-v2",
+                    embedding_model=embedding_model,
                     chunk_size_in_tokens=512,
                     overlap_size_in_tokens=64,
                 ),
@@ -109,7 +111,7 @@ class TestMemory:
             await banks_impl.register_memory_bank(
                 memory_bank_id=bank_id,
                 params=VectorMemoryBankParams(
-                    embedding_model="all-MiniLM-L6-v2",
+                    embedding_model=embedding_model,
                     chunk_size_in_tokens=512,
                     overlap_size_in_tokens=64,
                 ),
@@ -126,13 +128,15 @@ class TestMemory:
             await banks_impl.unregister_memory_bank(bank_id)
 
     @pytest.mark.asyncio
-    async def test_query_documents(self, memory_stack, sample_documents):
+    async def test_query_documents(
+        self, memory_stack, embedding_model, sample_documents
+    ):
         memory_impl, banks_impl = memory_stack
 
         with pytest.raises(ValueError):
             await memory_impl.insert_documents("test_bank", sample_documents)
 
-        registered_bank = await register_memory_bank(banks_impl)
+        registered_bank = await register_memory_bank(banks_impl, embedding_model)
         await memory_impl.insert_documents(
             registered_bank.memory_bank_id, sample_documents
         )

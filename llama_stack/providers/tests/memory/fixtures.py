@@ -10,6 +10,8 @@ import tempfile
 import pytest
 import pytest_asyncio
 
+from llama_stack.apis.inference import ModelInput, ModelType
+
 from llama_stack.distribution.datatypes import Api, Provider, RemoteProviderConfig
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
@@ -97,14 +99,30 @@ MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def memory_stack(request):
-    fixture_name = request.param
-    fixture = request.getfixturevalue(f"memory_{fixture_name}")
+async def memory_stack(embedding_model, request):
+    fixture_dict = request.param
+
+    providers = {}
+    provider_data = {}
+    for key in ["inference", "memory"]:
+        fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
+        providers[key] = fixture.providers
+        if fixture.provider_data:
+            provider_data.update(fixture.provider_data)
 
     test_stack = await construct_stack_for_test(
-        [Api.memory],
-        {"memory": fixture.providers},
-        fixture.provider_data,
+        [Api.memory, Api.inference],
+        providers,
+        provider_data,
+        models=[
+            ModelInput(
+                model_id=embedding_model,
+                model_type=ModelType.embedding_model,
+                metadata={
+                    "embedding_dimension": get_env_or_fail("EMBEDDING_DIMENSION"),
+                },
+            )
+        ],
     )
 
     return test_stack.impls[Api.memory], test_stack.impls[Api.memory_banks]

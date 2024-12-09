@@ -23,8 +23,8 @@ from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from llama_stack.providers.utils.memory.vector_store import (
+    BankWithIndex,
     EmbeddingIndex,
-    InferenceEmbeddingMixin,
 )
 
 from .config import FaissImplConfig
@@ -131,7 +131,7 @@ class FaissIndex(EmbeddingIndex):
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
 
-class FaissMemoryImpl(InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivate):
+class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
     def __init__(self, config: FaissImplConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.inference_api = inference_api
@@ -147,11 +147,12 @@ class FaissMemoryImpl(InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivat
 
         for bank_data in stored_banks:
             bank = VectorMemoryBank.model_validate_json(bank_data)
-            index = self._create_bank_with_index(
+            index = BankWithIndex(
                 bank,
                 await FaissIndex.create(
                     bank.embedding_dimension, self.kvstore, bank.identifier
                 ),
+                self.inference_api,
             )
             self.cache[bank.identifier] = index
 
@@ -175,11 +176,12 @@ class FaissMemoryImpl(InferenceEmbeddingMixin, Memory, MemoryBanksProtocolPrivat
         )
 
         # Store in cache
-        self.cache[memory_bank.identifier] = self._create_bank_with_index(
+        self.cache[memory_bank.identifier] = BankWithIndex(
             memory_bank,
             await FaissIndex.create(
                 memory_bank.embedding_dimension, self.kvstore, memory_bank.identifier
             ),
+            self.inference_api,
         )
 
     async def list_memory_banks(self) -> List[MemoryBank]:

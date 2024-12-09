@@ -6,7 +6,63 @@
 
 import pytest
 
+from ..conftest import get_provider_fixture_overrides
+
+from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import MEMORY_FIXTURES
+
+
+DEFAULT_PROVIDER_COMBINATIONS = [
+    pytest.param(
+        {
+            "inference": "meta_reference",
+            "memory": "faiss",
+        },
+        id="meta_reference",
+        marks=pytest.mark.meta_reference,
+    ),
+    pytest.param(
+        {
+            "inference": "ollama",
+            "memory": "pgvector",
+        },
+        id="ollama",
+        marks=pytest.mark.ollama,
+    ),
+    pytest.param(
+        {
+            "inference": "together",
+            "memory": "chroma",
+        },
+        id="chroma",
+        marks=pytest.mark.chroma,
+    ),
+    pytest.param(
+        {
+            "inference": "bedrock",
+            "memory": "qdrant",
+        },
+        id="qdrant",
+        marks=pytest.mark.qdrant,
+    ),
+    pytest.param(
+        {
+            "inference": "fireworks",
+            "memory": "weaviate",
+        },
+        id="weaviate",
+        marks=pytest.mark.weaviate,
+    ),
+]
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--embedding-model",
+        action="store",
+        default=None,
+        help="Specify the embedding model to use for testing",
+    )
 
 
 def pytest_configure(config):
@@ -18,12 +74,22 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
+    if "embedding_model" in metafunc.fixturenames:
+        model = metafunc.config.getoption("--embedding-model")
+        if not model:
+            raise ValueError(
+                "No embedding model specified. Please provide a valid embedding model."
+            )
+        params = [pytest.param(model, id="")]
+
+        metafunc.parametrize("embedding_model", params, indirect=True)
     if "memory_stack" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "memory_stack",
-            [
-                pytest.param(fixture_name, marks=getattr(pytest.mark, fixture_name))
-                for fixture_name in MEMORY_FIXTURES
-            ],
-            indirect=True,
+        available_fixtures = {
+            "inference": INFERENCE_FIXTURES,
+            "memory": MEMORY_FIXTURES,
+        }
+        combinations = (
+            get_provider_fixture_overrides(metafunc.config, available_fixtures)
+            or DEFAULT_PROVIDER_COMBINATIONS
         )
+        metafunc.parametrize("memory_stack", combinations, indirect=True)
