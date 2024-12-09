@@ -361,6 +361,19 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
         )
 
 
+# Here we simply want to apply mapping from the config.
+# All test fakes before this point must be initialized
+# and properly setup (stubs, mocks, etc).
+async def resolve_test_fake_stack_impls(
+    config: TestFakeProviderConfig,
+) -> Dict[Api, Any]:
+    impls = {}
+    for api, impl in config.impls.items():
+        impls[api] = impl
+
+    return impls
+
+
 async def resolve_remote_stack_impls(
     config: RemoteProviderConfig,
     apis: List[str],

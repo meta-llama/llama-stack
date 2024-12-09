@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 from urllib.parse import urlparse
 
 from llama_models.schema_utils import json_schema_type
@@ -157,6 +157,16 @@ Fully-qualified name of the module to import. The module is expected to have:
     provider_data_validator: Optional[str] = Field(
         default=None,
     )
+
+
+# Here we need this config to be as simple as possible
+# to ensure we can set things up in a generic way.
+#
+# `impls``contains a simple Api to TestFake object mapping.
+#
+# Test fake objects must be initialized and properly setup beforehand.
+class TestFakeProviderConfig(BaseModel):
+    impls: Dict[Api, Any]
 
 
 class RemoteProviderConfig(BaseModel):
