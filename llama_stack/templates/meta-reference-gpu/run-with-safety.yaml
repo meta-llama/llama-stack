@@ -48,7 +48,10 @@ providers:
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/meta-reference-gpu/trace_store.db}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

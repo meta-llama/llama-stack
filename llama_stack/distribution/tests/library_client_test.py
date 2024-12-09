@@ -17,7 +17,8 @@ from llama_stack_client.types.agent_create_params import AgentConfig
 
 def main(config_path: str):
     client = LlamaStackAsLibraryClient(config_path)
-    client.initialize()
+    if not client.initialize():
+        return
 
     models = client.models.list()
     print("\nModels:")

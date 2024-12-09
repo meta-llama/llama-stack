@@ -6,6 +6,7 @@
 
 import asyncio
 import inspect
+import os
 import queue
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -30,6 +31,18 @@ from llama_stack.distribution.stack import (
 )
 
 T = TypeVar("T")
+
+
+def is_jupyter():
+    """Check if we're running in a Jupyter notebook"""
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore
+        if shell == "ZMQInteractiveShell":  # Jupyter notebook or qtconsole
+            return True
+        else:
+            return False
+    except NameError:  # Probably standard Python interpreter
+        return False
 
 
 def stream_across_asyncio_run_boundary(
@@ -102,7 +115,12 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
 
     def initialize(self):
-        asyncio.run(self.async_client.initialize())
+        if is_jupyter():
+            import nest_asyncio
+
+            nest_asyncio.apply()
+
+        return asyncio.run(self.async_client.initialize())
 
     def get(self, *args, **kwargs):
         if kwargs.get("stream"):
@@ -131,6 +149,10 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
     ):
         super().__init__()
 
+        # when using the library client, we should not log to console since many
+        # of our logs are intended for server-side usage
+        os.environ["TELEMETRY_SINKS"] = "sqlite"
+
         if config_path_or_template_name.endswith(".yaml"):
             config_path = Path(config_path_or_template_name)
             if not config_path.exists():
@@ -150,13 +172,19 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             self.impls = await construct_stack(
                 self.config, self.custom_provider_registry
             )
-        except ModuleNotFoundError as e:
+        except ModuleNotFoundError as _e:
             cprint(
                 "Using llama-stack as a library requires installing dependencies depending on the template (providers) you choose.\n",
                 "yellow",
             )
-            print_pip_install_help(self.config.providers)
-            raise e
+            if self.config_path_or_template_name.endswith(".yaml"):
+                print_pip_install_help(self.config.providers)
+            else:
+                cprint(
+                    f"Please run:\n\nllama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
+                    "yellow",
+                )
+            return False
 
         console = Console()
         console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
@@ -171,6 +199,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 endpoint_impls[endpoint.route] = func
 
         self.endpoint_impls = endpoint_impls
+        return True
 
     async def get(
         self,

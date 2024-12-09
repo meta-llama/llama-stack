@@ -7,7 +7,7 @@
 from enum import Enum
 from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
@@ -36,10 +36,23 @@ class TelemetryConfig(BaseModel):
         description="The path to the SQLite database to use for storing traces",
     )
 
+    @field_validator("sinks", mode="before")
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def validate_sinks(cls, v):
+        if isinstance(v, str):
+            return [TelemetrySink(sink.strip()) for sink in v.split(",")]
+        return v
+
+    @classmethod
+    def sample_run_config(
+        cls, __distro_dir__: str = "runtime", db_name: str = "trace_store.db"
+    ) -> Dict[str, Any]:
         return {
             "service_name": "${env.OTEL_SERVICE_NAME:llama-stack}",
-            "sinks": "${env.TELEMETRY_SINKS:['console', 'sqlite']}",
-            "sqlite_db_path": "${env.SQLITE_DB_PATH:${runtime.base_dir}/trace_store.db}",
+            "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
+            "sqlite_db_path": "${env.SQLITE_DB_PATH:~/.llama/"
+            + __distro_dir__
+            + "/"
+            + db_name
+            + "}",
         }

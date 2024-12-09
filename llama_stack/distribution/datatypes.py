@@ -165,5 +165,5 @@ class BuildConfig(BaseModel):
     )
     image_type: str = Field(
         default="conda",
-        description="Type of package to build (conda | container)",
+        description="Type of package to build (conda | docker | venv)",
     )

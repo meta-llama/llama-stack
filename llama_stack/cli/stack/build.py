@@ -73,7 +73,7 @@ class StackBuild(Subcommand):
             "--image-type",
             type=str,
             help="Image Type to use for the build. This can be either conda or docker. If not specified, will use the image type from the template config.",
-            choices=["conda", "docker"],
+            choices=["conda", "docker", "venv"],
             default="conda",
         )
 
@@ -124,8 +124,8 @@ class StackBuild(Subcommand):
             image_type = prompt(
                 "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
                 validator=Validator.from_callable(
-                    lambda x: x in ["docker", "conda"],
-                    error_message="Invalid image type, please enter conda or docker",
+                    lambda x: x in ["docker", "conda", "venv"],
+                    error_message="Invalid image type, please enter conda or docker or venv",
                 ),
                 default="conda",
             )

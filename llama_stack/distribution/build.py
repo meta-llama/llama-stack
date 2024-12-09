@@ -38,6 +38,7 @@ SERVER_DEPENDENCIES = [
 class ImageType(Enum):
     docker = "docker"
     conda = "conda"
+    venv = "venv"
 
 
 class ApiInput(BaseModel):
@@ -120,9 +121,19 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
         ]
-    else:
+    elif build_config.image_type == ImageType.conda.value:
         script = pkg_resources.resource_filename(
             "llama_stack", "distribution/build_conda_env.sh"
+        )
+        args = [
+            script,
+            build_config.name,
+            str(build_file_path),
+            " ".join(normal_deps),
+        ]
+    elif build_config.image_type == ImageType.venv.value:
+        script = pkg_resources.resource_filename(
+            "llama_stack", "distribution/build_venv.sh"
         )
         args = [
             script,
