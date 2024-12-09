@@ -182,12 +182,8 @@ class PostTraining(Protocol):
     async def preference_optimize(
         self,
         job_uuid: str,
-        finetuned_model: URL,
-        dataset_id: str,
-        validation_dataset_id: str,
-        algorithm: RLHFAlgorithm,
+        finetuned_model: str,
         algorithm_config: DPOAlignmentConfig,
-        optimizer_config: OptimizerConfig,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
