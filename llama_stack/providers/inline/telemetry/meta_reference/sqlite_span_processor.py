@@ -20,6 +20,7 @@ class SQLiteSpanProcessor(SpanProcessor):
         """Initialize the SQLite span processor with a connection string."""
         self.conn_string = conn_string
         self.ttl_days = ttl_days
+        self._shutdown_event = threading.Event()
         self.cleanup_task = None
         self._thread_local = threading.local()
         self._connections: Dict[int, sqlite3.Connection] = {}
@@ -144,9 +145,10 @@ class SQLiteSpanProcessor(SpanProcessor):
         """Run cleanup periodically."""
         import time
 
-        while True:
+        while not self._shutdown_event.is_set():
             time.sleep(3600)  # Sleep for 1 hour
-            self._cleanup_old_data()
+            if not self._shutdown_event.is_set():
+                self._cleanup_old_data()
 
     def on_start(self, span: Span, parent_context=None):
         """Called when a span starts."""
@@ -231,11 +233,23 @@ class SQLiteSpanProcessor(SpanProcessor):
 
     def shutdown(self):
         """Cleanup any resources."""
+        self._shutdown_event.set()
+
+        # Wait for cleanup thread to finish if it exists
+        if self.cleanup_task and self.cleanup_task.is_alive():
+            self.cleanup_task.join(timeout=5.0)
+        current_thread_id = threading.get_ident()
+
         with self._lock:
-            for conn in self._connections.values():
-                if conn:
-                    conn.close()
-            self._connections.clear()
+            # Close all connections from the current thread
+            for thread_id, conn in list(self._connections.items()):
+                if thread_id == current_thread_id:
+                    try:
+                        if conn:
+                            conn.close()
+                        del self._connections[thread_id]
+                    except sqlite3.Error:
+                        pass  # Ignore errors during shutdown
 
     def force_flush(self, timeout_millis=30000):
         """Force export of spans."""
