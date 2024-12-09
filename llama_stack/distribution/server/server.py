@@ -43,9 +43,9 @@ from llama_stack.distribution.stack import (
     replace_env_vars,
     validate_env_pair,
 )
-from llama_stack.providers.inline.telemetry.meta_reference import (
+from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
+from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
     TelemetryAdapter,
-    TelemetryConfig,
 )
 
 from .endpoints import get_all_api_endpoints
