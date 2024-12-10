@@ -2,8 +2,8 @@ blobfile
 fire
 httpx
 huggingface-hub
-llama-models>=0.0.59
-llama-stack-client>=0.0.59
+llama-models>=0.0.60
+llama-stack-client>=0.0.60
 prompt-toolkit
 python-dotenv
 pydantic>=2
