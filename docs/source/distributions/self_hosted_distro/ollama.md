@@ -15,9 +15,12 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::ollama` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 
 
@@ -118,9 +121,9 @@ llama stack run ./run-with-safety.yaml \
 
 ### (Optional) Update Model Serving Configuration
 
-> [!NOTE]
-> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers.remote/inference/ollama/ollama.py) for the supported Ollama models.
-
+```{note}
+Please check the [model_aliases](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
+```
 
 To serve a new model with `ollama`
 ```bash

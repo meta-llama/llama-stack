@@ -21,7 +21,7 @@ print(response)
 ```python
 response = await client.inference.chat_completion(
     messages=[UserMessage(content="What is the capital of France?", role="user")],
-    model="Llama3.1-8B-Instruct",
+    model_id="Llama3.1-8B-Instruct",
     stream=False,
 )
 print("\nChat completion response:")

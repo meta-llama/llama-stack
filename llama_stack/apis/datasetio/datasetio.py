@@ -37,3 +37,8 @@ class DatasetIO(Protocol):
         page_token: Optional[str] = None,
         filter_condition: Optional[str] = None,
     ) -> PaginatedRowsResult: ...
+
+    @webmethod(route="/datasetio/append-rows", method="POST")
+    async def append_rows(
+        self, dataset_id: str, rows: List[Dict[str, Any]]
+    ) -> None: ...

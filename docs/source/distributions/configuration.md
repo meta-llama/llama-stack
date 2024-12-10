@@ -81,6 +81,8 @@ A few things to note:
 - The configuration dictionary is provider-specific. Notice that configuration can reference environment variables (with default values), which are expanded at runtime. When you run a stack server (via docker or via `llama stack run`), you can specify `--env OLLAMA_URL=http://my-server:11434` to override the default value.
 
 ## Resources
+```
+
 Finally, let's look at the `models` section:
 ```yaml
 models:

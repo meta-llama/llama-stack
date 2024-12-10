@@ -5,9 +5,15 @@
 # the root directory of this source tree.
 from typing import Dict
 
+from pydantic import BaseModel
+
 from llama_stack.distribution.datatypes import Api, ProviderSpec
 
 from .config import BraintrustScoringConfig
+
+
+class BraintrustProviderDataValidator(BaseModel):
+    openai_api_key: str
 
 
 async def get_provider_impl(

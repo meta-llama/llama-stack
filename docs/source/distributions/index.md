@@ -35,6 +35,6 @@ If so, we suggest:
 
 - **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
   - [iOS SDK](ondevice_distro/ios_sdk)
-  - Android (coming soon)
+  - [Android](ondevice_distro/android_sdk)
 
 You can also build your own [custom distribution](building_distro).
