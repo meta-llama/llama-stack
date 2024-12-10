@@ -154,7 +154,7 @@ class PostTrainingJobArtifactsResponse(BaseModel):
 
 
 class PostTraining(Protocol):
-    @webmethod(route="/post-training/supervised-fine-tune")
+    @webmethod(route="/post-training/supervised-fine-tune", method="POST")
     async def supervised_fine_tune(
         self,
         job_uuid: str,
@@ -171,7 +171,7 @@ class PostTraining(Protocol):
         ] = None,
     ) -> PostTrainingJob: ...
 
-    @webmethod(route="/post-training/preference-optimize")
+    @webmethod(route="/post-training/preference-optimize", method="POST")
     async def preference_optimize(
         self,
         job_uuid: str,
@@ -182,18 +182,18 @@ class PostTraining(Protocol):
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    @webmethod(route="/post-training/jobs")
+    @webmethod(route="/post-training/jobs", method="GET")
     async def get_training_jobs(self) -> List[PostTrainingJob]: ...
 
-    @webmethod(route="/post-training/job/status")
+    @webmethod(route="/post-training/job/status", method="GET")
     async def get_training_job_status(
         self, job_uuid: str
     ) -> Optional[PostTrainingJobStatusResponse]: ...
 
-    @webmethod(route="/post-training/job/cancel")
+    @webmethod(route="/post-training/job/cancel", method="POST")
     async def cancel_training_job(self, job_uuid: str) -> None: ...
 
-    @webmethod(route="/post-training/job/artifacts")
+    @webmethod(route="/post-training/job/artifacts", method="GET")
     async def get_training_job_artifacts(
         self, job_uuid: str
     ) -> PostTrainingJobArtifactsResponse: ...

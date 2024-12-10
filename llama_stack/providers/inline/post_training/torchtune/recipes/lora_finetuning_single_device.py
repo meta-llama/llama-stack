@@ -68,6 +68,7 @@ class LoraFinetuningSingleDevice:
     def __init__(
         self,
         config: TorchtunePostTrainingConfig,
+        job_uuid: str,
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
@@ -76,6 +77,7 @@ class LoraFinetuningSingleDevice:
         algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
         datasetio_api: DatasetIO,
     ) -> None:
+        self.job_uuid = job_uuid
         self.training_config = training_config
         self.algorithm_config = algorithm_config
         self._device = torchtune_utils.get_device(device="cuda")
@@ -366,7 +368,7 @@ class LoraFinetuningSingleDevice:
         )
         return lr_scheduler
 
-    async def save_checkpoint(self, epoch: int) -> None:
+    async def save_checkpoint(self, epoch: int) -> str:
         ckpt_dict = {}
 
         adapter_state_dict = get_adapter_state_dict(self._model.state_dict())
@@ -396,7 +398,7 @@ class LoraFinetuningSingleDevice:
         }
         ckpt_dict.update({training.ADAPTER_CONFIG: adapter_config})
 
-        self._checkpointer.save_checkpoint(
+        return self._checkpointer.save_checkpoint(
             ckpt_dict,
             epoch=epoch,
         )
@@ -514,6 +516,7 @@ class LoraFinetuningSingleDevice:
                 identifier=f"{self.model_id}-sft-{curr_epoch}",
                 created_at=datetime.now(),
                 epoch=curr_epoch,
+                post_training_job_id=self.job_uuid,
                 path=checkpoint_path,
             )
             checkpoints.append(checkpoint)

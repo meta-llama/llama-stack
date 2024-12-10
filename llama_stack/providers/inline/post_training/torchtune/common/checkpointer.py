@@ -152,4 +152,6 @@ class TorchtuneCheckpointer:
                 "Adapter checkpoint not found in state_dict. Please ensure that the state_dict contains adapter weights."
             )
 
-        return model_file_path
+        print("model_file_path", str(model_file_path))
+
+        return str(model_file_path)

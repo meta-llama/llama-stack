@@ -35,6 +35,9 @@ class TorchtunePostTrainingImpl:
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
     ) -> PostTrainingJob:
+        if job_uuid in self.jobs_list:
+            raise ValueError(f"Job {job_uuid} already exists")
+
         post_training_job = PostTrainingJob(job_uuid=job_uuid)
 
         job_status_response = PostTrainingJobStatusResponse(
@@ -48,6 +51,7 @@ class TorchtunePostTrainingImpl:
             try:
                 recipe = LoraFinetuningSingleDevice(
                     self.config,
+                    job_uuid,
                     training_config,
                     hyperparam_search_config,
                     logger_config,

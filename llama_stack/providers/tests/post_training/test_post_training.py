@@ -59,3 +59,33 @@ class TestPostTraining:
         )
         assert isinstance(response, PostTrainingJob)
         assert response.job_uuid == "1234"
+
+    @pytest.mark.asyncio
+    async def test_get_training_jobs(self, post_training_stack):
+        post_training_impl = post_training_stack
+        jobs_list = await post_training_impl.get_training_jobs()
+        assert isinstance(jobs_list, List)
+        assert jobs_list[0].job_uuid == "1234"
+
+    @pytest.mark.asyncio
+    async def test_get_training_job_status(self, post_training_stack):
+        post_training_impl = post_training_stack
+        job_status = await post_training_impl.get_training_job_status("1234")
+        assert isinstance(job_status, PostTrainingJobStatusResponse)
+        assert job_status.job_uuid == "1234"
+        assert job_status.status == JobStatus.completed
+        assert isinstance(job_status.checkpoints[0], Checkpoint)
+
+    @pytest.mark.asyncio
+    async def test_get_training_job_artifacts(self, post_training_stack):
+        post_training_impl = post_training_stack
+        job_artifacts = await post_training_impl.get_training_job_artifacts("1234")
+        assert isinstance(job_artifacts, PostTrainingJobArtifactsResponse)
+        assert job_artifacts.job_uuid == "1234"
+        assert isinstance(job_artifacts.checkpoints[0], Checkpoint)
+        assert job_artifacts.checkpoints[0].identifier == "Llama3.2-3B-Instruct-sft-0"
+        assert job_artifacts.checkpoints[0].epoch == 0
+        assert (
+            "/.llama/checkpoints/Llama3.2-3B-Instruct-sft-0"
+            in job_artifacts.checkpoints[0].path
+        )
