@@ -295,7 +295,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             body = self._convert_body(path, body)
             return convert_pydantic_to_json_value(await func(**body), cast_to)
         finally:
-            await end_trace()
+            end_trace()
 
     async def _call_streaming(self, path: str, body: dict = None, cast_to: Any = None):
         await start_trace(path, {"__location__": "library_client"})
@@ -308,7 +308,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             async for chunk in await func(**body):
                 yield convert_pydantic_to_json_value(chunk, cast_to)
         finally:
-            await end_trace()
+            end_trace()
 
     def _convert_body(self, path: str, body: Optional[dict] = None) -> dict:
         if not body:
