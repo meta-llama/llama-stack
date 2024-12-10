@@ -111,8 +111,10 @@ class TorchtunePostTrainingImpl:
     @webmethod(route="/post-training/job/artifacts")
     async def get_training_job_artifacts(
         self, job_uuid: str
-    ) -> PostTrainingJobArtifactsResponse:
-        checkpoints = self.checkpoints_dict.get(job_uuid, [])
-        return PostTrainingJobArtifactsResponse(
-            job_uuid=job_uuid, checkpoints=checkpoints
-        )
+    ) -> Optional[PostTrainingJobArtifactsResponse]:
+        if job_uuid in self.checkpoints_dict:
+            checkpoints = self.checkpoints_dict.get(job_uuid, [])
+            return PostTrainingJobArtifactsResponse(
+                job_uuid=job_uuid, checkpoints=checkpoints
+            )
+        return None
