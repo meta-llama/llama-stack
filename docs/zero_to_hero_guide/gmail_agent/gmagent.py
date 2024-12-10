@@ -12,10 +12,10 @@ import pytz
 import base64
 import pickle
 from datetime import datetime, timezone
-import json
 import ollama
 from pypdf import PdfReader
 from pathlib import Path
+from shared import memory
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.compose']
 
@@ -84,9 +84,33 @@ def list_emails(query='', max_results=100):
     
     return emails
 
-def get_email_detail(detail, which=''):
+def get_email_detail(detail, which):
+    message_id = None
+    # pre-processing
+    if 'from ' in which:
+        sender = which.split('from ')[-1]
+        for email in memory['emails']:
+            if email['sender'].find(sender) != -1:
+                message_id = email['message_id']
+                break
+    elif 'subject:' in which:
+        subject = which.split('subject:')[-1]
+        # exact match beats substring
+        for email in memory['emails']:
+            if email['subject'].upper() == subject.upper():
+                message_id = email['message_id']
+                break
+            elif email['subject'].upper().find(subject.upper()) != -1:
+                message_id = email['message_id']
+
+    elif 'id_' in which:
+        message_id = which.split('id_')[-1]
+    else:
+        message_id = memory['emails'][-1]['message_id']
+
+
     if detail == 'body':
-        return get_email_body(which)
+        return get_email_body(message_id)
     elif detail == 'attachment':
         return get_email_attachments(which)
 

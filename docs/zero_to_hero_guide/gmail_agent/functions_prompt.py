@@ -3,6 +3,7 @@ from llama_stack_client.types.tool_param_definition_param import ToolParamDefini
 from llama_stack_client.types import CompletionMessage, ToolResponseMessage
 from llama_stack_client.lib.agents.custom_tool import CustomTool
 from gmagent import *
+import json
 
 class ListEmailsTool(CustomTool):
     """Custom tool for List Emails."""
@@ -49,15 +50,14 @@ class ListEmailsTool(CustomTool):
     async def run_impl(self, query: str, maxResults: int = 100) -> Dict[str, Any]:
         """Query to get a list of emails matching the query."""
         emails = list_emails(query)
-        print(emails)
-        return emails
+        return {"name": self.get_name(), "result": emails}
 
 
-class GetEmailTool(CustomTool):
+class GetEmailDetailTool(CustomTool):
     """Custom tool for Get Email Detail."""
 
     def get_name(self) -> str:
-        return "get_email"
+        return "get_email_detail"
 
     def get_description(self) -> str:
         return "Get detailed info about a specific email"
@@ -65,9 +65,9 @@ class GetEmailTool(CustomTool):
     def get_params_definition(self) -> Dict[str, ToolParamDefinitionParam]:
         return {
             "detail": ToolParamDefinitionParam(
-                param_type="string",
+                param_type="str",
                 description="what detail the user wants to know about - two possible values: body or attachment",
-                required=False
+                required=True
             ),
             "query": ToolParamDefinitionParam(
                 param_type="str",
@@ -95,12 +95,11 @@ class GetEmailTool(CustomTool):
         )
         return [message]
 
-    async def run_impl(self, query: str, maxResults: int = 100) -> Dict[str, Any]:
-        """Query to get a list of emails matching the query."""
+    async def run_impl(self, detail: str, query: str) -> Dict[str, Any]:
+        """Query to get the detail of an email."""
 
-        emails = []
-        return emails
-
+        detail = get_email_detail(detail, query)
+        return {"name": self.get_name(), "result": detail}
 
 
 class SendEmailTool(CustomTool):
