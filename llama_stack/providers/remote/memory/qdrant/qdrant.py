@@ -127,11 +127,6 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBank]:
-        # Qdrant doesn't have collection level metadata to store the bank properties
-        # So we only return from the cache value
-        return [i.bank for i in self.cache.values()]
-
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:
             return self.cache[bank_id]

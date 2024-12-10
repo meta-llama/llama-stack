@@ -141,13 +141,6 @@ class WeaviateMemoryAdapter(
         )
         self.cache[memory_bank.identifier] = index
 
-    async def list_memory_banks(self) -> List[MemoryBank]:
-        # TODO: right now the Llama Stack is the source of truth for these banks. That is
-        # not ideal. It should be Weaviate which is the source of truth. Unfortunately,
-        # list() happens at Stack startup when the Weaviate client (credentials) is not
-        # yet available. We need to figure out a way to make this work.
-        return [i.bank for i in self.cache.values()]
-
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:
             return self.cache[bank_id]
