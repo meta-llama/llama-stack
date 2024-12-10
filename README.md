@@ -86,6 +86,7 @@ Additionally, we have designed every element of the Stack such that APIs as well
 |  Together  |  Hosted  |  :heavy_check_mark:  |  :heavy_check_mark:  |   | :heavy_check_mark:  |  |
 |  Ollama  | Single Node   |    |  :heavy_check_mark:  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  :heavy_check_mark:  |    |   |
+|  [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama)  |  Hosted and Single Node  |    |  :heavy_check_mark:  |    |   |
 | Chroma | Single Node |  |  | :heavy_check_mark: |  |  |
 | PG Vector | Single Node |  |  | :heavy_check_mark: |  |  |
 | PyTorch ExecuTorch | On-device iOS | :heavy_check_mark:  | :heavy_check_mark:  |  |  |

@@ -44,6 +44,7 @@ A number of "adapters" are available for some popular Inference and Memory (Vect
 |  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
 |  Ollama  | Single Node   |    |  Y  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
+|  [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama)  |  Hosted and Single Node  |    |  Y  |    |   |
 | Chroma | Single Node |  |  | Y |  |  |
 | Postgres | Single Node |  |  | Y |  |  |
 | PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
