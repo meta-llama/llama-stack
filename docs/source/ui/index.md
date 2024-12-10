@@ -18,7 +18,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 - **Chat**: Chat with Llama models
 - **RAG**: Uploading documents to memory_banks and chat with RAG agent
 ```{eval-rst}
-.. video:: ../../resources/video/chat.mov
+.. video:: https://github.com/user-attachments/assets/6ca617e8-32ca-49b2-9774-185020ff5204
     :nocontrols:
     :autoplay:
     :playsinline:
@@ -31,7 +31,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 - **Evaluations (Scoring)**: Run evaluations on your AI application datasets
 
 ```{eval-rst}
-.. video:: ../../resources/video/scoring.mov
+.. video:: https://github.com/user-attachments/assets/6cc1659f-eba4-49ca-a0a5-7c243557b4f5
     :nocontrols:
     :autoplay:
     :playsinline:
@@ -43,7 +43,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 
 - **Evaluations (Generation + Scoring)**: Use pre-registered evaluation tasks to evaluate an model or agent candidate.
 ```{eval-rst}
-.. video:: ../../resources/video/gen_scoring.mov
+.. video:: https://github.com/user-attachments/assets/345845c7-2a2b-4095-960a-9ae40f6a93cf
     :nocontrols:
     :autoplay:
     :playsinline:
@@ -55,7 +55,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 ##### Inspect
 Inspect Llama Stack API providers and resources (models, datasets, memory_banks, eval_tasks, etc).
 ```{eval-rst}
-.. video:: ../../resources/video/inspect.mov
+.. video:: https://github.com/user-attachments/assets/01d52b2d-92af-4e3a-b623-a9b8ba22ba99
     :nocontrols:
     :autoplay:
     :playsinline:
