@@ -49,6 +49,7 @@ class TestVisionModelInference:
             "remote::fireworks",
             "remote::ollama",
             "remote::vllm",
+            "remote::sambanova",
         ):
             pytest.skip(
                 "Other inference providers don't support vision chat completion() yet"
@@ -83,6 +84,7 @@ class TestVisionModelInference:
             "remote::fireworks",
             "remote::ollama",
             "remote::vllm",
+            "remote::sambanova",
         ):
             pytest.skip(
                 "Other inference providers don't support vision chat completion() yet"
