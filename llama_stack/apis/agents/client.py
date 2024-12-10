@@ -45,7 +45,7 @@ class AgentsClient(Agents):
     async def create_agent(self, agent_config: AgentConfig) -> AgentCreateResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/agents/create",
+                f"{self.base_url}/alpha/agents/create",
                 json={
                     "agent_config": encodable_dict(agent_config),
                 },
@@ -61,7 +61,7 @@ class AgentsClient(Agents):
     ) -> AgentSessionCreateResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/agents/session/create",
+                f"{self.base_url}/alpha/agents/session/create",
                 json={
                     "agent_id": agent_id,
                     "session_name": session_name,
@@ -86,7 +86,7 @@ class AgentsClient(Agents):
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 "POST",
-                f"{self.base_url}/agents/turn/create",
+                f"{self.base_url}/alpha/agents/turn/create",
                 json=encodable_dict(request),
                 headers={"Content-Type": "application/json"},
                 timeout=20,
