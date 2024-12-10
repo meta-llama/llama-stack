@@ -10,3 +10,4 @@ sphinx-design
 sphinxcontrib-openapi
 sphinxcontrib-redoc
 sphinxcontrib-mermaid
+sphinxcontrib-video
