@@ -261,7 +261,6 @@ class StackBuild(Subcommand):
     ) -> None:
         import json
         import os
-        import re
 
         import yaml
         from termcolor import cprint
@@ -291,20 +290,8 @@ class StackBuild(Subcommand):
             run_config_file = build_dir / f"{build_config.name}-run.yaml"
             shutil.copy(template_path, run_config_file)
 
-            with open(template_path, "r") as f:
-                yaml_content = f.read()
-
             # Find all ${env.VARIABLE} patterns
-            env_vars = set(re.findall(r"\${env\.([A-Za-z0-9_]+)}", yaml_content))
-            cprint("Build Successful! Next steps: ", color="green")
-            cprint(
-                f"   1. Set the environment variables: {list(env_vars)}",
-                color="green",
-            )
-            cprint(
-                f"   2. Run: `llama stack run {template_name}`",
-                color="green",
-            )
+            cprint("Build Successful!", color="green")
         else:
             self._generate_run_config(build_config, build_dir)
 
