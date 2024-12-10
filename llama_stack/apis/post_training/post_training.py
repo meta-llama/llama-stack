@@ -14,6 +14,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.common.job_types import JobStatus
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.common.training_types import *  # noqa: F403
 
@@ -88,14 +89,6 @@ class PostTrainingJobLogStream(BaseModel):
 
 
 @json_schema_type
-class PostTrainingJobStatus(Enum):
-    running = "running"
-    completed = "completed"
-    failed = "failed"
-    scheduled = "scheduled"
-
-
-@json_schema_type
 class RLHFAlgorithm(Enum):
     dpo = "dpo"
 
@@ -139,7 +132,7 @@ class PostTrainingJobStatusResponse(BaseModel):
     """Status of a finetuning job."""
 
     job_uuid: str
-    status: PostTrainingJobStatus
+    status: JobStatus
 
     scheduled_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
@@ -161,7 +154,7 @@ class PostTrainingJobArtifactsResponse(BaseModel):
 
 
 class PostTraining(Protocol):
-    @webmethod(route="/post-training/supervised-fine-tune")
+    @webmethod(route="/post-training/supervised-fine-tune", method="POST")
     async def supervised_fine_tune(
         self,
         job_uuid: str,
@@ -178,7 +171,7 @@ class PostTraining(Protocol):
         ] = None,
     ) -> PostTrainingJob: ...
 
-    @webmethod(route="/post-training/preference-optimize")
+    @webmethod(route="/post-training/preference-optimize", method="POST")
     async def preference_optimize(
         self,
         job_uuid: str,
@@ -189,24 +182,18 @@ class PostTraining(Protocol):
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    @webmethod(route="/post-training/jobs")
+    @webmethod(route="/post-training/jobs", method="GET")
     async def get_training_jobs(self) -> List[PostTrainingJob]: ...
 
-    # sends SSE stream of logs
-    @webmethod(route="/post-training/job/logs")
-    async def get_training_job_logstream(
-        self, job_uuid: str
-    ) -> PostTrainingJobLogStream: ...
-
-    @webmethod(route="/post-training/job/status")
+    @webmethod(route="/post-training/job/status", method="GET")
     async def get_training_job_status(
         self, job_uuid: str
-    ) -> PostTrainingJobStatusResponse: ...
+    ) -> Optional[PostTrainingJobStatusResponse]: ...
 
-    @webmethod(route="/post-training/job/cancel")
+    @webmethod(route="/post-training/job/cancel", method="POST")
     async def cancel_training_job(self, job_uuid: str) -> None: ...
 
-    @webmethod(route="/post-training/job/artifacts")
+    @webmethod(route="/post-training/job/artifacts", method="GET")
     async def get_training_job_artifacts(
         self, job_uuid: str
-    ) -> PostTrainingJobArtifactsResponse: ...
+    ) -> Optional[PostTrainingJobArtifactsResponse]: ...
