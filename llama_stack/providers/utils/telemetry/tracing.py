@@ -259,10 +259,6 @@ class SpanContextManager:
         return wrapper
 
 
-def span(name: str, attributes: Dict[str, Any] = None):
-    return SpanContextManager(name, attributes)
-
-
 def get_current_span() -> Optional[Span]:
     global CURRENT_TRACE_CONTEXT
     context = CURRENT_TRACE_CONTEXT

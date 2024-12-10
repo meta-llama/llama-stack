@@ -6,29 +6,31 @@
 
 import asyncio
 import inspect
-import json
+from datetime import datetime
 from functools import wraps
 from typing import Any, AsyncGenerator, Callable, Type, TypeVar
+from uuid import UUID
 
 from pydantic import BaseModel
 
 T = TypeVar("T")
 
 
-def serialize_value(value: Any) -> str:
-    """Helper function to serialize values to string representation."""
-    try:
-        if isinstance(value, BaseModel):
-            return value.model_dump_json()
-        elif isinstance(value, list) and value and isinstance(value[0], BaseModel):
-            return json.dumps([item.model_dump_json() for item in value])
-        elif hasattr(value, "to_dict"):
-            return json.dumps(value.to_dict())
-        elif isinstance(value, (dict, list, int, float, str, bool)):
-            return json.dumps(value)
-        else:
-            return str(value)
-    except Exception:
+def serialize_value(value: Any) -> Any:
+    """Serialize a single value into JSON-compatible format."""
+    if value is None:
+        return None
+    elif isinstance(value, (str, int, float, bool)):
+        return value
+    elif isinstance(value, BaseModel):
+        return value.model_dump()
+    elif isinstance(value, (list, tuple, set)):
+        return [serialize_value(item) for item in value]
+    elif isinstance(value, dict):
+        return {str(k): serialize_value(v) for k, v in value.items()}
+    elif isinstance(value, (datetime, UUID)):
+        return str(value)
+    else:
         return str(value)
 
 
@@ -47,16 +49,26 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
         def create_span_context(self: Any, *args: Any, **kwargs: Any) -> tuple:
             class_name = self.__class__.__name__
             method_name = method.__name__
-
             span_type = (
                 "async_generator" if is_async_gen else "async" if is_async else "sync"
             )
+            sig = inspect.signature(method)
+            param_names = list(sig.parameters.keys())[1:]  # Skip 'self'
+            combined_args = {}
+            for i, arg in enumerate(args):
+                param_name = (
+                    param_names[i] if i < len(param_names) else f"position_{i+1}"
+                )
+                combined_args[param_name] = serialize_value(arg)
+            for k, v in kwargs.items():
+                combined_args[str(k)] = serialize_value(v)
+
             span_attributes = {
                 "__autotraced__": True,
                 "__class__": class_name,
                 "__method__": method_name,
                 "__type__": span_type,
-                "__args__": serialize_value(args),
+                "__args__": str(combined_args),
             }
 
             return class_name, method_name, span_attributes
@@ -69,7 +81,9 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 self, *args, **kwargs
             )
 
-            with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
+            with tracing.SpanContextManager(
+                f"{class_name}.{method_name}", span_attributes
+            ) as span:
                 try:
                     count = 0
                     async for item in method(self, *args, **kwargs):
@@ -84,7 +98,9 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 self, *args, **kwargs
             )
 
-            with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
+            with tracing.SpanContextManager(
+                f"{class_name}.{method_name}", span_attributes
+            ) as span:
                 try:
                     result = await method(self, *args, **kwargs)
                     span.set_attribute("output", serialize_value(result))
@@ -99,7 +115,9 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 self, *args, **kwargs
             )
 
-            with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
+            with tracing.SpanContextManager(
+                f"{class_name}.{method_name}", span_attributes
+            ) as span:
                 try:
                     result = method(self, *args, **kwargs)
                     span.set_attribute("output", serialize_value(result))
