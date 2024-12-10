@@ -451,7 +451,7 @@ class ChatAgent(ShieldRunnerMixin):
                                     payload=AgentTurnResponseStepProgressPayload(
                                         step_type=StepType.inference.value,
                                         step_id=step_id,
-                                        model_response_text_delta="",
+                                        text_delta="",
                                         tool_call_delta=delta,
                                     )
                                 )
@@ -465,7 +465,7 @@ class ChatAgent(ShieldRunnerMixin):
                                     payload=AgentTurnResponseStepProgressPayload(
                                         step_type=StepType.inference.value,
                                         step_id=step_id,
-                                        model_response_text_delta=event.delta,
+                                        text_delta=event.delta,
                                     )
                                 )
                             )
