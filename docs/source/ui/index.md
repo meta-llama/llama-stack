@@ -23,8 +23,11 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :loop:
     :width: 100%
 ```
-- **Chat**: Chat with Llama models
+- **Chat**: Chat with Llama models.
+  - This page is a simple chatbot that allows you to chat with Llama models. Under the hood, it uses the `/inference/chat_completion` streaming API to send messages to the model and receive responses.
 - **RAG**: Uploading documents to memory_banks and chat with RAG agent
+  - This page allows you to upload documents as a `memory_bank` and then chat with a RAG agent to query information about the uploaded documents.
+  - Under the hood, it uses Llama Stack's `/agents` API to define and create a RAG agent and chat with it in a session.
 
 ##### Evaluations
 ```{eval-rst}
@@ -35,8 +38,9 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :loop:
     :width: 100%
 ```
-- **Evaluations (Scoring)**: Run evaluations on your AI application datasets
-
+- **Evaluations (Scoring)**: Run evaluations on your AI application datasets.
+  - This page demonstrates the flow evaluation API to run evaluations on your custom AI application datasets. You may upload your own evaluation datasets and run evaluations using available scoring functions.
+  - Under the hood, it uses Llama Stack's `/scoring` API to run evaluations on selected scoring functions.
 
 ```{eval-rst}
 .. video:: https://github.com/user-attachments/assets/345845c7-2a2b-4095-960a-9ae40f6a93cf
@@ -47,8 +51,25 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :width: 100%
 ```
 - **Evaluations (Generation + Scoring)**: Use pre-registered evaluation tasks to evaluate an model or agent candidate
+  - This page demonstrates the flow for evaluation API to evaluate an model or agent candidate on pre-defined evaluation tasks. An evaluation task is a combination of dataset and scoring functions.
+  - Under the hood, it uses Llama Stack's `/eval` API to run generations and scorings on specified evaluation configs.
+  - In order to run this page, you may need to register evaluation tasks and datasets as resources first through the following commands.
+  ```bash
+    $ llama-stack-client datasets register \
+    --dataset-id "mmlu" \
+    --provider-id "huggingface" \
+    --url "https://huggingface.co/datasets/llamastack/evals" \
+    --metadata '{"path": "llamastack/evals", "name": "evals__mmlu__details", "split": "train"}' \
+    --schema '{"input_query": {"type": "string"}, "expected_answer": {"type": "string", "chat_completion_input": {"type": "string"}}}'
+    ```
 
-
+    ```bash
+    $ llama-stack-client eval_tasks register \
+    --eval-task-id meta-reference-mmlu \
+    --provider-id meta-reference \
+    --dataset-id mmlu \
+    --scoring-functions basic::regex_parser_multiple_choice_answer
+    ```
 
 
 ##### Inspect
@@ -60,8 +81,14 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :loop:
     :width: 100%
 ```
-- **Inspect** Llama Stack API providers and resources (models, datasets, memory_banks, eval_tasks, etc).
+- **API Providers**: Inspect Llama Stack API providers
+  - This page allows you to inspect Llama Stack API providers and resources.
+  - Under the hood, it uses Llama Stack's `/providers` API to get information about the providers.
 
+- **API Resources**: Inspect Llama Stack API resources
+  - This page allows you to inspect Llama Stack API resources (`models`, `datasets`, `memory_banks`, `eval_tasks`, `shields`).
+  - Under the hood, it uses Llama Stack's `/<resources>/list` API to get information about each resources.
+  - Please visit [Core Concepts](https://llama-stack.readthedocs.io/en/latest/concepts/index.html) for more details about the resources.
 
 ## Starting the Playground UI
 
@@ -74,25 +101,7 @@ llama stack build --template together --image-type conda
 llama stack run together
 ```
 
-2. (Optional) Register datasets and eval tasks as resources. If you want to run pre-configured evaluation flows (e.g. Evaluations (Generation + Scoring) Page).
-```bash
-$ llama-stack-client datasets register \
---dataset-id "mmlu" \
---provider-id "huggingface" \
---url "https://huggingface.co/datasets/llamastack/evals" \
---metadata '{"path": "llamastack/evals", "name": "evals__mmlu__details", "split": "train"}' \
---schema '{"input_query": {"type": "string"}, "expected_answer": {"type": "string", "chat_completion_input": {"type": "string"}}}'
-```
-
-```bash
-$ llama-stack-client eval_tasks register \
---eval-task-id meta-reference-mmlu \
---provider-id meta-reference \
---dataset-id mmlu \
---scoring-functions basic::regex_parser_multiple_choice_answer
-```
-
-3. Start Streamlit UI
+2. Start Streamlit UI
 ```bash
 cd llama_stack/distribution/ui
 pip install -r requirements.txt
