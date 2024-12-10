@@ -18,3 +18,5 @@ class Job(BaseModel):
 class JobStatus(Enum):
     completed = "completed"
     in_progress = "in_progress"
+    failed = "failed"
+    scheduled = "scheduled"
