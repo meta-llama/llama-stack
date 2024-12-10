@@ -60,6 +60,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-quantized-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
@@ -71,6 +72,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-quantized-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
