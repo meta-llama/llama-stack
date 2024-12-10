@@ -15,8 +15,6 @@ Llama Stack Playground UI is an simple interface aims to:
 Interactive pages for users to play with and explore Llama Stack API capabilities.
 
 ##### Chatbot
-- **Chat**: Chat with Llama models
-- **RAG**: Uploading documents to memory_banks and chat with RAG agent
 ```{eval-rst}
 .. video:: https://github.com/user-attachments/assets/6ca617e8-32ca-49b2-9774-185020ff5204
     :nocontrols:
@@ -26,10 +24,10 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :loop:
     :width: 100%
 ```
+- **Chat**: Chat with Llama models
+- **RAG**: Uploading documents to memory_banks and chat with RAG agent
 
 ##### Evaluations
-- **Evaluations (Scoring)**: Run evaluations on your AI application datasets
-
 ```{eval-rst}
 .. video:: https://github.com/user-attachments/assets/6cc1659f-eba4-49ca-a0a5-7c243557b4f5
     :nocontrols:
@@ -39,9 +37,9 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :loop:
     :width: 100%
 ```
+- **Evaluations (Scoring)**: Run evaluations on your AI application datasets
 
 
-- **Evaluations (Generation + Scoring)**: Use pre-registered evaluation tasks to evaluate an model or agent candidate.
 ```{eval-rst}
 .. video:: https://github.com/user-attachments/assets/345845c7-2a2b-4095-960a-9ae40f6a93cf
     :nocontrols:
@@ -51,9 +49,12 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :loop:
     :width: 100%
 ```
+- **Evaluations (Generation + Scoring)**: Use pre-registered evaluation tasks to evaluate an model or agent candidate
+
+
+
 
 ##### Inspect
-Inspect Llama Stack API providers and resources (models, datasets, memory_banks, eval_tasks, etc).
 ```{eval-rst}
 .. video:: https://github.com/user-attachments/assets/01d52b2d-92af-4e3a-b623-a9b8ba22ba99
     :nocontrols:
@@ -63,6 +64,8 @@ Inspect Llama Stack API providers and resources (models, datasets, memory_banks,
     :loop:
     :width: 100%
 ```
+- **Inspect** Llama Stack API providers and resources (models, datasets, memory_banks, eval_tasks, etc).
+
 
 ## Starting the Playground UI
 
