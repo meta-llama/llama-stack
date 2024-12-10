@@ -14,6 +14,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.common.job_types import JobStatus
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.common.training_types import *  # noqa: F403
 
@@ -88,14 +89,6 @@ class PostTrainingJobLogStream(BaseModel):
 
 
 @json_schema_type
-class PostTrainingJobStatus(Enum):
-    running = "running"
-    completed = "completed"
-    failed = "failed"
-    scheduled = "scheduled"
-
-
-@json_schema_type
 class RLHFAlgorithm(Enum):
     dpo = "dpo"
 
@@ -139,7 +132,7 @@ class PostTrainingJobStatusResponse(BaseModel):
     """Status of a finetuning job."""
 
     job_uuid: str
-    status: PostTrainingJobStatus
+    status: JobStatus
 
     scheduled_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
@@ -192,16 +185,10 @@ class PostTraining(Protocol):
     @webmethod(route="/post-training/jobs")
     async def get_training_jobs(self) -> List[PostTrainingJob]: ...
 
-    # sends SSE stream of logs
-    @webmethod(route="/post-training/job/logs")
-    async def get_training_job_logstream(
-        self, job_uuid: str
-    ) -> PostTrainingJobLogStream: ...
-
     @webmethod(route="/post-training/job/status")
     async def get_training_job_status(
         self, job_uuid: str
-    ) -> PostTrainingJobStatusResponse: ...
+    ) -> Optional[PostTrainingJobStatusResponse]: ...
 
     @webmethod(route="/post-training/job/cancel")
     async def cancel_training_job(self, job_uuid: str) -> None: ...

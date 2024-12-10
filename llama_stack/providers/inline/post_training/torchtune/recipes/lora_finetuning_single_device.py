@@ -13,14 +13,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from llama_models.sku_list import resolve_model
+
 from llama_stack.apis.datasetio import DatasetIO
+
+from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
+from llama_stack.providers.inline.post_training.torchtune.common.checkpointer import (
+    TorchtuneCheckpointer,
+)
 from torch import nn
 from torchtune import utils as torchtune_utils
 from torchtune.training.metric_logging import DiskLogger
 from llama_stack.apis.post_training import *  # noqa
 from llama_stack.distribution.utils.model_utils import model_local_dir
 
-from llama_stack.providers.inline.post_training.torchtune import utils
+from llama_stack.providers.inline.post_training.torchtune.common import utils
 from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
@@ -99,7 +105,7 @@ class LoraFinetuningSingleDevice:
             self.checkpoint_dir = model_checkpoint_dir(model)
 
         # TODO @markchen1015 make it work with get_training_job_artifacts
-        self._output_dir = self.checkpoint_dir + "/posting_training/"
+        self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
 
         self.seed = training.set_seed(seed=config.torch_seed)
         self.epochs_run = 0
@@ -138,7 +144,9 @@ class LoraFinetuningSingleDevice:
             except FileNotFoundError:
                 return [f"Error: The directory '{checkpoint_dir}' does not exist."]
 
-        self._checkpointer = training.FullModelMetaCheckpointer(
+        self._checkpointer = TorchtuneCheckpointer(
+            model_id=self.model_id,
+            training_algorithm="sft",
             checkpoint_dir=self.checkpoint_dir,
             checkpoint_files=get_checkpoint_files(self.checkpoint_dir),
             output_dir=self._output_dir,
@@ -148,8 +156,6 @@ class LoraFinetuningSingleDevice:
         return checkpoint_dict
 
     async def setup(self) -> None:
-        self._metric_logger = DiskLogger(log_dir=self._output_dir)
-
         checkpoint_dict = await self.load_checkpoint()
 
         self._model = await self._setup_model(
@@ -419,20 +425,26 @@ class LoraFinetuningSingleDevice:
 
         return loss
 
-    async def train(self) -> None:
+    async def train(self) -> Tuple[Dict[str, Any], List[Checkpoint]]:
         """
         The core training loop.
         """
         # Initialize tokens count and running loss (for grad accumulation)
-        # t0 = time.perf_counter()
         t0 = time.perf_counter()
         running_loss = 0
         num_tokens = 0
+
+        # training artifacts
+        checkpoints = []
+        memory_stats = {}
 
         # self.epochs_run should be non-zero when we're resuming from a checkpoint
         for curr_epoch in range(self.epochs_run, self.total_epochs):
             # Update the sampler to ensure data is correctly shuffled across epochs
             # in case shuffle is True
+            metric_logger = DiskLogger(
+                log_dir=self._output_dir + f"/{self.model_id}-sft-{curr_epoch}"
+            )
             self._sampler.set_epoch(curr_epoch)
 
             for idx, batch in enumerate(self._dataloader):
@@ -478,10 +490,14 @@ class LoraFinetuningSingleDevice:
                         "lr": self._optimizer.param_groups[0]["lr"],
                         "tokens_per_second_per_gpu": num_tokens / time_per_step,
                     }
-                    log_dict.update(training.get_memory_stats(device=self._device))
+
+                    memory_stats = training.get_memory_stats(device=self._device)
+                    log_dict.update(memory_stats)
+
                     if self._clip_grad_norm is not None:
                         log_dict.update({"grad_norm": grad_norm})
-                    self._metric_logger.log_dict(
+
+                    metric_logger.log_dict(
                         log_dict,
                         step=self.global_step,
                     )
@@ -493,4 +509,13 @@ class LoraFinetuningSingleDevice:
 
             self.epochs_run += 1
             log.info("Starting checkpoint save...")
-            await self.save_checkpoint(epoch=curr_epoch)
+            checkpoint_path = await self.save_checkpoint(epoch=curr_epoch)
+            checkpoint = Checkpoint(
+                identifier=f"{self.model_id}-sft-{curr_epoch}",
+                created_at=datetime.now(),
+                epoch=curr_epoch,
+                path=checkpoint_path,
+            )
+            checkpoints.append(checkpoint)
+
+        return (memory_stats, checkpoints)
