@@ -24,6 +24,7 @@ from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
+from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
@@ -58,6 +59,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.scoring_functions: ScoringFunctions,
         Api.eval: Eval,
         Api.eval_tasks: EvalTasks,
+        Api.post_training: PostTraining,
     }
 
 
