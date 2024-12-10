@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 import pytest
-from pytest_httpx import HTTPXMock
 
 from llama_stack.apis.memory.memory import MemoryBankDocument, URL
 from llama_stack.providers.utils.memory.vector_store import content_from_doc
@@ -35,7 +34,6 @@ def data_url_from_file(file_path: str) -> str:
     return data_url
 
 
-# Requires pytest-httpx - pip install pytest-httpx
 class TestVectorStore:
     @pytest.mark.asyncio
     async def test_returns_content_from_pdf_data_uri(self):
@@ -50,9 +48,9 @@ class TestVectorStore:
         assert content == "Dummy PDF file"
 
     @pytest.mark.asyncio
-    async def test_downloads_pdf_and_returns_content(self, httpx_mock: HTTPXMock):
-        url = "https://example.com/dummy.pdf"
-        httpx_mock.add_response(url=url, content=read_file(DUMMY_PDF_PATH))
+    async def test_downloads_pdf_and_returns_content(self):
+        # Using GitHub to host the PDF file
+        url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
         doc = MemoryBankDocument(
             document_id="dummy",
             content=url,
@@ -63,11 +61,9 @@ class TestVectorStore:
         assert content == "Dummy PDF file"
 
     @pytest.mark.asyncio
-    async def test_downloads_pdf_and_returns_content_with_url_object(
-        self, httpx_mock: HTTPXMock
-    ):
-        url = "https://example.com/dummy.pdf"
-        httpx_mock.add_response(url=url, content=read_file(DUMMY_PDF_PATH))
+    async def test_downloads_pdf_and_returns_content_with_url_object(self):
+        # Using GitHub to host the PDF file
+        url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
         doc = MemoryBankDocument(
             document_id="dummy",
             content=URL(
