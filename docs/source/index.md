@@ -58,6 +58,7 @@ getting_started/index
 concepts/index
 distributions/index
 building_applications/index
+ui/index
 contributing/index
 references/index
 cookbooks/index
