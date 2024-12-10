@@ -87,7 +87,10 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
         }
 
     async def aggregate(
-        self, scoring_results: List[ScoringResultRow]
+        self,
+        scoring_results: List[ScoringResultRow],
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> Dict[str, Any]:
+        print(f"scoring_params: {scoring_params}")
         # TODO: this needs to be config based aggregation, and only useful w/ Jobs API
         return {}

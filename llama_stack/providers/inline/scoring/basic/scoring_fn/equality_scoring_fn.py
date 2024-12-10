@@ -4,12 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
-from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
-from llama_stack.apis.scoring import *  # noqa: F401, F403
-from llama_stack.apis.common.type_system import *  # noqa: F403
+from typing import Any, Dict, List, Optional
 
-from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_accuracy
+from llama_stack.apis.scoring import ScoringResultRow
+
+from llama_stack.apis.scoring_functions import AggregationFunctionType, ScoringFnParams
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
+from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
 
 from .fn_defs.equality import equality
 
@@ -44,6 +45,15 @@ class EqualityScoringFn(BaseScoringFn):
         }
 
     async def aggregate(
-        self, scoring_results: List[ScoringResultRow]
+        self,
+        scoring_results: List[ScoringResultRow],
+        scoring_params: Optional[ScoringFnParams] = None,
     ) -> Dict[str, Any]:
-        return aggregate_accuracy(scoring_results)
+        aggregation_functions = [AggregationFunctionType.accuracy]
+        if (
+            scoring_params
+            and hasattr(scoring_params, "aggregation_functions")
+            and scoring_params.aggregation_functions
+        ):
+            aggregation_functions.extend(scoring_params.aggregation_functions)
+        return aggregate_metrics(scoring_results, aggregation_functions)
