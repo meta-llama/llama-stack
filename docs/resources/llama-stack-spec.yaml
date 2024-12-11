@@ -216,6 +216,13 @@ components:
       - event_type
       - turn_id
       type: object
+    AggregationFunctionType:
+      enum:
+      - average
+      - median
+      - categorical_count
+      - accuracy
+      type: string
     AppEvalTaskConfig:
       additionalProperties: false
       properties:
@@ -230,6 +237,7 @@ components:
             oneOf:
             - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
             - $ref: '#/components/schemas/RegexParserScoringFnParams'
+            - $ref: '#/components/schemas/BasicScoringFnParams'
           type: object
         type:
           const: app
@@ -279,6 +287,20 @@ components:
       required:
       - content
       - mime_type
+      type: object
+    BasicScoringFnParams:
+      additionalProperties: false
+      properties:
+        aggregation_functions:
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          type: array
+        type:
+          const: basic
+          default: basic
+          type: string
+      required:
+      - type
       type: object
     BatchChatCompletionRequest:
       additionalProperties: false
@@ -1280,6 +1302,10 @@ components:
     LLMAsJudgeScoringFnParams:
       additionalProperties: false
       properties:
+        aggregation_functions:
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          type: array
         judge_model:
           type: string
         judge_score_regexes:
@@ -1984,6 +2010,10 @@ components:
     RegexParserScoringFnParams:
       additionalProperties: false
       properties:
+        aggregation_functions:
+          items:
+            $ref: '#/components/schemas/AggregationFunctionType'
+          type: array
         parsing_regexes:
           items:
             type: string
@@ -2195,6 +2225,7 @@ components:
           oneOf:
           - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
           - $ref: '#/components/schemas/RegexParserScoringFnParams'
+          - $ref: '#/components/schemas/BasicScoringFnParams'
         provider_id:
           type: string
         provider_scoring_fn_id:
@@ -2515,6 +2546,7 @@ components:
             - oneOf:
               - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
               - $ref: '#/components/schemas/RegexParserScoringFnParams'
+              - $ref: '#/components/schemas/BasicScoringFnParams'
             - type: 'null'
           type: object
       required:
@@ -2555,6 +2587,7 @@ components:
             - oneOf:
               - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
               - $ref: '#/components/schemas/RegexParserScoringFnParams'
+              - $ref: '#/components/schemas/BasicScoringFnParams'
             - type: 'null'
           type: object
       required:
@@ -2592,6 +2625,7 @@ components:
           oneOf:
           - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
           - $ref: '#/components/schemas/RegexParserScoringFnParams'
+          - $ref: '#/components/schemas/BasicScoringFnParams'
         provider_id:
           type: string
         provider_resource_id:
@@ -5161,6 +5195,9 @@ tags:
     />
   name: AgentTurnResponseTurnStartPayload
 - name: Agents
+- description: <SchemaDefinition schemaRef="#/components/schemas/AggregationFunctionType"
+    />
+  name: AggregationFunctionType
 - description: <SchemaDefinition schemaRef="#/components/schemas/AppEvalTaskConfig"
     />
   name: AppEvalTaskConfig
@@ -5169,6 +5206,9 @@ tags:
   name: AppendRowsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
   name: Attachment
+- description: <SchemaDefinition schemaRef="#/components/schemas/BasicScoringFnParams"
+    />
+  name: BasicScoringFnParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/BatchChatCompletionRequest"
     />
   name: BatchChatCompletionRequest
@@ -5636,9 +5676,11 @@ x-tagGroups:
   - AgentTurnResponseStreamChunk
   - AgentTurnResponseTurnCompletePayload
   - AgentTurnResponseTurnStartPayload
+  - AggregationFunctionType
   - AppEvalTaskConfig
   - AppendRowsRequest
   - Attachment
+  - BasicScoringFnParams
   - BatchChatCompletionRequest
   - BatchChatCompletionResponse
   - BatchCompletionRequest

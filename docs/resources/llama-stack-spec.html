@@ -4926,6 +4926,15 @@
                     "config"
                 ]
             },
+            "AggregationFunctionType": {
+                "type": "string",
+                "enum": [
+                    "average",
+                    "median",
+                    "categorical_count",
+                    "accuracy"
+                ]
+            },
             "AppEvalTaskConfig": {
                 "type": "object",
                 "properties": {
@@ -4953,6 +4962,9 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/BasicScoringFnParams"
                                 }
                             ]
                         }
@@ -4966,6 +4978,26 @@
                     "type",
                     "eval_candidate",
                     "scoring_params"
+                ]
+            },
+            "BasicScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "basic",
+                        "default": "basic"
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "BenchmarkEvalTaskConfig": {
@@ -5015,6 +5047,12 @@
                         "items": {
                             "type": "string"
                         }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -5060,6 +5098,12 @@
                         "type": "array",
                         "items": {
                             "type": "string"
+                        }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
                         }
                     }
                 },
@@ -6014,6 +6058,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
                         ]
                     }
@@ -7771,6 +7818,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
                         ]
                     }
@@ -7998,6 +8048,9 @@
                                         },
                                         {
                                             "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
                                     ]
                                 },
@@ -8046,6 +8099,9 @@
                                         },
                                         {
                                             "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
                                     ]
                                 },
@@ -8492,6 +8548,10 @@
             "name": "Agents"
         },
         {
+            "name": "AggregationFunctionType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AggregationFunctionType\" />"
+        },
+        {
             "name": "AppEvalTaskConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppEvalTaskConfig\" />"
         },
@@ -8502,6 +8562,10 @@
         {
             "name": "Attachment",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
+        },
+        {
+            "name": "BasicScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BasicScoringFnParams\" />"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -9146,9 +9210,11 @@
                 "AgentTurnResponseStreamChunk",
                 "AgentTurnResponseTurnCompletePayload",
                 "AgentTurnResponseTurnStartPayload",
+                "AggregationFunctionType",
                 "AppEvalTaskConfig",
                 "AppendRowsRequest",
                 "Attachment",
+                "BasicScoringFnParams",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
