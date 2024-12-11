@@ -94,6 +94,7 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::nvidia",
             "remote::cerebras",
         ):
             pytest.skip("Other inference providers don't support completion() yet")
@@ -129,9 +130,7 @@ class TestInference:
 
     @pytest.mark.asyncio
     @pytest.mark.skip("This test is not quite robust")
-    async def test_completions_structured_output(
-        self, inference_model, inference_stack
-    ):
+    async def test_completion_structured_output(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
@@ -140,6 +139,7 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::nvidia",
             "remote::vllm",
             "remote::cerebras",
         ):
