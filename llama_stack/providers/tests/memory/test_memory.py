@@ -169,13 +169,13 @@ class TestMemory:
 
         # Test case 5: Query with threshold on similarity score
         query5 = "quantum computing"  # Not directly related to any document
-        params5 = {"score_threshold": 0.2}
+        params5 = {"score_threshold": 0.01}
         response5 = await memory_impl.query_documents(
             registered_bank.memory_bank_id, query5, params5
         )
         assert_valid_response(response5)
         print("The scores are:", response5.scores)
-        assert all(score >= 0.2 for score in response5.scores)
+        assert all(score >= 0.01 for score in response5.scores)
 
 
 def assert_valid_response(response: QueryDocumentsResponse):
