@@ -20,6 +20,7 @@ class BaseScoringFn(ABC):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.supported_fn_defs_registry = {}
 
     def __str__(self) -> str:
         return self.__class__.__name__
