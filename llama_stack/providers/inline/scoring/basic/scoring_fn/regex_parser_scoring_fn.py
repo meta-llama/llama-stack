@@ -5,11 +5,10 @@
 # the root directory of this source tree.
 import re
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams, ScoringFnParamsType
-from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
 
 from .fn_defs.regex_parser_multiple_choice_answer import (
@@ -61,22 +60,3 @@ class RegexParserScoringFn(BaseScoringFn):
         return {
             "score": score,
         }
-
-    async def aggregate(
-        self,
-        scoring_results: List[ScoringResultRow],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
-    ) -> Dict[str, Any]:
-        params = self.supported_fn_defs_registry[scoring_fn_identifier].params
-        if scoring_params is not None:
-            params = scoring_params
-
-        aggregation_functions = []
-        if (
-            params
-            and hasattr(params, "aggregation_functions")
-            and params.aggregation_functions
-        ):
-            aggregation_functions.extend(params.aggregation_functions)
-        return aggregate_metrics(scoring_results, aggregation_functions)

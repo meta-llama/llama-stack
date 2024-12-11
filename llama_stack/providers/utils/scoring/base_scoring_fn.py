@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.scoring import ScoringFnParams, ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFn
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 
 
 class BaseScoringFn(ABC):
@@ -44,14 +45,27 @@ class BaseScoringFn(ABC):
     ) -> ScoringResultRow:
         raise NotImplementedError()
 
-    @abstractmethod
     async def aggregate(
         self,
         scoring_results: List[ScoringResultRow],
         scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> Dict[str, Any]:
-        raise NotImplementedError()
+        params = self.supported_fn_defs_registry[scoring_fn_identifier].params
+        if scoring_params is not None:
+            if params is None:
+                params = scoring_params
+            else:
+                params.aggregation_functions = scoring_params.aggregation_functions
+
+        aggregation_functions = []
+        if (
+            params
+            and hasattr(params, "aggregation_functions")
+            and params.aggregation_functions
+        ):
+            aggregation_functions.extend(params.aggregation_functions)
+        return aggregate_metrics(scoring_results, aggregation_functions)
 
     async def score(
         self,

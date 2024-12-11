@@ -5,14 +5,12 @@
 # the root directory of this source tree.
 import re
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from llama_stack.apis.inference.inference import Inference
 
 from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
-
-from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 
 from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
 
@@ -47,7 +45,10 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
 
         # override params if scoring_params is provided
         if scoring_params is not None:
-            fn_def.params = scoring_params
+            for attr in scoring_params.__dict__:
+                override_attr = getattr(scoring_params, attr)
+                if override_attr is not None:
+                    setattr(fn_def.params, attr, override_attr)
 
         assert fn_def.params is not None, f"LLMAsJudgeparams not found for {fn_def}."
         assert (
@@ -90,22 +91,3 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
             "score": judge_rating,
             "judge_feedback": content,
         }
-
-    async def aggregate(
-        self,
-        scoring_results: List[ScoringResultRow],
-        scoring_fn_identifier: Optional[str] = None,
-        scoring_params: Optional[ScoringFnParams] = None,
-    ) -> Dict[str, Any]:
-        params = self.supported_fn_defs_registry[scoring_fn_identifier].params
-        if scoring_params is not None:
-            params = scoring_params
-
-        aggregation_functions = []
-        if (
-            params
-            and hasattr(params, "aggregation_functions")
-            and params.aggregation_functions
-        ):
-            aggregation_functions.extend(params.aggregation_functions)
-        return aggregate_metrics(scoring_results, aggregation_functions)
