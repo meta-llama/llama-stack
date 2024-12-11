@@ -5,7 +5,11 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.common.type_system import NumberType
-from llama_stack.apis.scoring_functions import ScoringFn
+from llama_stack.apis.scoring_functions import (
+    AggregationFunctionType,
+    BasicScoringFnParams,
+    ScoringFn,
+)
 
 
 subset_of = ScoringFn(
@@ -14,4 +18,7 @@ subset_of = ScoringFn(
     return_type=NumberType(),
     provider_id="basic",
     provider_resource_id="subset-of",
+    params=BasicScoringFnParams(
+        aggregation_functions=[AggregationFunctionType.accuracy]
+    ),
 )
