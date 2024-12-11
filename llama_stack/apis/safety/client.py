@@ -17,6 +17,8 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from pydantic import BaseModel
 from termcolor import cprint
 
+from llama_stack.apis.version import LLAMA_STACK_API_VERSION
+
 from llama_stack.distribution.datatypes import RemoteProviderConfig
 
 from llama_stack.apis.safety import *  # noqa: F403
@@ -45,7 +47,7 @@ class SafetyClient(Safety):
     ) -> RunShieldResponse:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/safety/run_shield",
+                f"{self.base_url}/{LLAMA_STACK_API_VERSION}/safety/run-shield",
                 json=dict(
                     shield_id=shield_id,
                     messages=[encodable_dict(m) for m in messages],
@@ -91,7 +93,7 @@ async def run_main(host: str, port: int, image_path: str = None):
     ]:
         cprint(f"User>{message.content}", "green")
         response = await client.run_shield(
-            shield_id="llama_guard",
+            shield_id="meta-llama/Llama-Guard-3-1B",
             messages=[message],
         )
         print(response)

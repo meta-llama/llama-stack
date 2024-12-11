@@ -100,6 +100,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            response_format=response_format,
         )
         if stream:
             return self._stream_chat_completion(request, self.client)
@@ -179,6 +180,16 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 self.register_helper.get_llama_model(request.model),
                 self.formatter,
             )
+
+        if fmt := request.response_format:
+            if fmt.type == ResponseFormatType.json_schema.value:
+                input_dict["extra_body"] = {
+                    "guided_json": request.response_format.json_schema
+                }
+            elif fmt.type == ResponseFormatType.grammar.value:
+                raise NotImplementedError("Grammar response format not supported yet")
+            else:
+                raise ValueError(f"Unknown response format {fmt.type}")
 
         return {
             "model": request.model,

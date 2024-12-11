@@ -180,7 +180,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
         r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         choice = OpenAICompatCompletionChoice(
             finish_reason=r["done_reason"] if r["done"] else None,
@@ -270,7 +269,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             r = await self.client.chat(**params)
         else:
             r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         if "message" in r:
             choice = OpenAICompatCompletionChoice(

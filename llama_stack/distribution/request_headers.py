@@ -35,7 +35,7 @@ class NeedsRequestProviderData:
             provider_data = validator(**val)
             return provider_data
         except Exception as e:
-            log.error("Error parsing provider data", e)
+            log.error(f"Error parsing provider data: {e}")
 
 
 def set_request_provider_data(headers: Dict[str, str]):
