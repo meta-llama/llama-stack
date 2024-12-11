@@ -23,7 +23,7 @@ class CommonModelFields(BaseModel):
 
 class ModelType(Enum):
     llm = "llm"
-    embedding_model = "embedding_model"
+    embedding_model = "embedding"
 
 
 @json_schema_type
