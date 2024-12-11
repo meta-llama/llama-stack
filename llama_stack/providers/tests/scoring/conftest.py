@@ -47,6 +47,7 @@ def pytest_configure(config):
     for fixture_name in [
         "basic_scoring_together_inference",
         "braintrust_scoring_together_inference",
+        "llm_as_judge_scoring_together_inference",
     ]:
         config.addinivalue_line(
             "markers",
@@ -61,9 +62,23 @@ def pytest_addoption(parser):
         default="meta-llama/Llama-3.2-3B-Instruct",
         help="Specify the inference model to use for testing",
     )
+    parser.addoption(
+        "--judge-model",
+        action="store",
+        default="meta-llama/Llama-3.1-8B-Instruct",
+        help="Specify the judge model to use for testing",
+    )
 
 
 def pytest_generate_tests(metafunc):
+    judge_model = metafunc.config.getoption("--judge-model")
+    if "judge_model" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "judge_model",
+            [pytest.param(judge_model, id="")],
+            indirect=True,
+        )
+
     if "scoring_stack" in metafunc.fixturenames:
         available_fixtures = {
             "scoring": SCORING_FIXTURES,

@@ -64,12 +64,6 @@ class TestScoring:
         response = await datasets_impl.list_datasets()
         assert len(response) == 1
 
-        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
-            await models_impl.register_model(
-                model_id=model_id,
-                provider_id="",
-            )
-
         # scoring individual rows
         rows = await datasetio_impl.get_rows_paginated(
             dataset_id="test_dataset",
@@ -103,7 +97,7 @@ class TestScoring:
 
     @pytest.mark.asyncio
     async def test_scoring_score_with_params_llm_as_judge(
-        self, scoring_stack, sample_judge_prompt_template
+        self, scoring_stack, sample_judge_prompt_template, judge_model
     ):
         (
             scoring_impl,
@@ -122,12 +116,6 @@ class TestScoring:
         response = await datasets_impl.list_datasets()
         assert len(response) == 1
 
-        for model_id in ["Llama3.1-405B-Instruct"]:
-            await models_impl.register_model(
-                model_id=model_id,
-                provider_id="",
-            )
-
         scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
         provider_id = scoring_fns_list[0].provider_id
         if provider_id == "braintrust" or provider_id == "basic":
@@ -142,7 +130,7 @@ class TestScoring:
 
         scoring_functions = {
             "llm-as-judge::base": LLMAsJudgeScoringFnParams(
-                judge_model="Llama3.1-405B-Instruct",
+                judge_model=judge_model,
                 prompt_template=sample_judge_prompt_template,
                 judge_score_regexes=[r"Score: (\d+)"],
                 aggregation_functions=[AggregationFunctionType.categorical_count],
@@ -170,7 +158,7 @@ class TestScoring:
 
     @pytest.mark.asyncio
     async def test_scoring_score_with_aggregation_functions(
-        self, scoring_stack, sample_judge_prompt_template
+        self, scoring_stack, sample_judge_prompt_template, judge_model
     ):
         (
             scoring_impl,
@@ -204,7 +192,7 @@ class TestScoring:
             if x.provider_id == "llm-as-judge":
                 aggr_fns = [AggregationFunctionType.categorical_count]
                 scoring_functions[x.identifier] = LLMAsJudgeScoringFnParams(
-                    judge_model="Llama3.1-405B-Instruct",
+                    judge_model=judge_model,
                     prompt_template=sample_judge_prompt_template,
                     judge_score_regexes=[r"Score: (\d+)"],
                     aggregation_functions=aggr_fns,
