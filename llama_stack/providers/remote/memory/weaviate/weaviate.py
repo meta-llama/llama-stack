@@ -12,10 +12,11 @@ import weaviate
 import weaviate.classes as wvc
 from numpy.typing import NDArray
 from weaviate.classes.init import Auth
+from weaviate.classes.query import Filter
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
@@ -80,6 +81,12 @@ class WeaviateIndex(EmbeddingIndex):
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
+    async def delete(self, chunk_ids: List[str]) -> None:
+        collection = self.client.collections.get(self.collection_name)
+        collection.data.delete_many(
+            where=Filter.by_property("id").contains_any(chunk_ids)
+        )
+
 
 class WeaviateMemoryAdapter(
     Memory,
@@ -120,7 +127,7 @@ class WeaviateMemoryAdapter(
         memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.memory_bank_type == MemoryBankType.vector
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
         ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         client = self._get_client()
