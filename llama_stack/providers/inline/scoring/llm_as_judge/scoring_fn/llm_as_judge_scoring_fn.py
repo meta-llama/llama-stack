@@ -45,10 +45,7 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
 
         # override params if scoring_params is provided
         if scoring_params is not None:
-            for attr in scoring_params.__dict__:
-                override_attr = getattr(scoring_params, attr)
-                if override_attr is not None:
-                    setattr(fn_def.params, attr, override_attr)
+            fn_def.params = scoring_params
 
         assert fn_def.params is not None, f"LLMAsJudgeparams not found for {fn_def}."
         assert (
