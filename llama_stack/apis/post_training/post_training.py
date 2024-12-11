@@ -6,12 +6,12 @@
 
 from datetime import datetime
 from enum import Enum
-
 from typing import Any, Dict, List, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
+from typing_extensions import Annotated
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
@@ -77,6 +77,11 @@ class LoraFinetuningConfig(BaseModel):
 class QATFinetuningConfig(BaseModel):
     quantizer_name: str
     group_size: int
+
+
+AlgorithmConfig = Annotated[
+    Union[LoraFinetuningConfig, LoraFinetuningConfig], Field(discriminator="type")
+]
 
 
 @json_schema_type
@@ -173,9 +178,7 @@ class PostTraining(Protocol):
             description="Model descriptor from `llama model list`",
         ),
         checkpoint_dir: Optional[str] = None,
-        algorithm_config: Optional[
-            Union[LoraFinetuningConfig, QATFinetuningConfig]
-        ] = None,
+        algorithm_config: Optional[AlgorithmConfig] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize")

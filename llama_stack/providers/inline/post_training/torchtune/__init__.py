@@ -22,5 +22,6 @@ async def get_provider_impl(
     impl = TorchtunePostTrainingImpl(
         config,
         deps[Api.datasetio],
+        deps[Api.datasets],
     )
     return impl

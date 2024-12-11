@@ -15,10 +15,14 @@ from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetunin
 
 class TorchtunePostTrainingImpl:
     def __init__(
-        self, config: TorchtunePostTrainingConfig, datasetio_api: DatasetIO
+        self,
+        config: TorchtunePostTrainingConfig,
+        datasetio_api: DatasetIO,
+        datasets: Datasets,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
+        self.datasets_api = datasets
 
     async def supervised_fine_tune(
         self,
@@ -40,6 +44,7 @@ class TorchtunePostTrainingImpl:
                 checkpoint_dir,
                 algorithm_config,
                 self.datasetio_api,
+                self.datasets_api,
             )
             await recipe.setup()
             await recipe.train()
@@ -58,7 +63,7 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    # TODO @markchen1015 impelment below APIs
+    # TODO @SLR722 impelment below APIs
     async def get_training_jobs(self) -> List[PostTrainingJob]: ...
 
     # sends SSE stream of logs
