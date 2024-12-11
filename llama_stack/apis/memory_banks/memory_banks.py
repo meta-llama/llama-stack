@@ -89,6 +89,7 @@ class VectorMemoryBank(MemoryBankResourceMixin):
     memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
+    embedding_dimension: Optional[int] = 384  # default to minilm-l6-v2
     overlap_size_in_tokens: Optional[int] = None
 
 
