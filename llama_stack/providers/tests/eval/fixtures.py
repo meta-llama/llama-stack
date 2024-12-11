@@ -7,7 +7,7 @@
 import pytest
 import pytest_asyncio
 
-from llama_stack.distribution.datatypes import Api, Provider
+from llama_stack.distribution.datatypes import Api, ModelInput, Provider
 
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from ..conftest import ProviderFixture, remote_stack_fixture
@@ -35,7 +35,7 @@ EVAL_FIXTURES = ["meta_reference", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def eval_stack(request):
+async def eval_stack(request, inference_model, judge_model):
     fixture_dict = request.param
 
     providers = {}
@@ -66,6 +66,13 @@ async def eval_stack(request):
         ],
         providers,
         provider_data,
+        models=[
+            ModelInput(model_id=model)
+            for model in [
+                inference_model,
+                judge_model,
+            ]
+        ],
     )
 
     return test_stack.impls
