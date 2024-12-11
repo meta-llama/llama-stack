@@ -160,11 +160,11 @@ class SendEmailTool(CustomTool):
         )
         return [message]
 
-    async def run_impl(self, query: str, maxResults: int = 100) -> Dict[str, Any]:
-        """Query to get a list of emails matching the query."""
+    async def run_impl(self, action, to, subject, body="", email_id="") -> Dict[str, Any]:
+        """Send an email."""
 
-        emails = []
-        return emails
+        result = send_email(action, to, subject, body, email_id)
+        return {"name": self.get_name(), "result": result}
 
 
 class GetPDFSummaryTool(CustomTool):
@@ -205,11 +205,11 @@ class GetPDFSummaryTool(CustomTool):
         )
         return [message]
 
-    async def run_impl(self, query: str, maxResults: int = 100) -> Dict[str, Any]:
-        """Query to get a list of emails matching the query."""
+    async def run_impl(self, file_name: str) -> Dict[str, Any]:
+        """Get the summary of a PDF file."""
 
-        emails = []
-        return emails
+        summary = get_pdf_summary(file_name)
+        return {"name": self.get_name(), "result": summary}
 
 
 class CreateDraftTool(CustomTool):
@@ -270,11 +270,11 @@ class CreateDraftTool(CustomTool):
         )
         return [message]
 
-    async def run_impl(self, query: str, maxResults: int = 100) -> Dict[str, Any]:
-        """Query to get a list of emails matching the query."""
+    async def run_impl(self, action, to, subject, body="", email_id="") -> Dict[str, Any]:
+        """Create an email draft."""
 
-        emails = []
-        return emails
+        result = create_draft(action, to, subject, body, email_id)
+        return {"name": self.get_name(), "result": result}
 
 
 class SendDraftTool(CustomTool):
@@ -315,11 +315,11 @@ class SendDraftTool(CustomTool):
         )
         return [message]
 
-    async def run_impl(self, query: str, maxResults: int = 100) -> Dict[str, Any]:
-        """Query to get a list of emails matching the query."""
+    async def run_impl(self, id: str) -> Dict[str, Any]:
+        """Send the last draft email."""
 
-        emails = []
-        return emails
+        result = send_draft(memory['draft_id'])
+        return {"name": self.get_name(), "result": result}
 
 
 examples = """

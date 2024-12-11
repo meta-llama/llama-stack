@@ -34,7 +34,7 @@ async def create_gmail_agent(client: LlamaStackClient) -> Agent:
             "temperature": 0.0,
             "top_p": 0.9,
         },
-        tools=[
+        tools = [
             listEmailsTool.get_tool_definition(),
             getEmailDetailTool.get_tool_definition(),
             sendEmailTool.get_tool_definition(),
@@ -43,26 +43,27 @@ async def create_gmail_agent(client: LlamaStackClient) -> Agent:
             sendDraftTool.get_tool_definition(),
 
         ],
-        tool_choice="auto",
-        tool_prompt_format="json",
-        input_shields=[],
-        output_shields=[],
-        enable_session_persistence=True
+        tool_choice = "auto",
+        tool_prompt_format = "json",
+        input_shields = [],
+        output_shields = [],
+        enable_session_persistence = True
     )
 
     agent = Agent(
-        client=client,
-        agent_config=agent_config,
-        custom_tools=[listEmailsTool,
-                      getEmailDetailTool,
-                      sendEmailTool,
-                      getPDFSummaryTool,
-                      createDraftTool,
-                      sendDraftTool]
+        client = client,
+        agent_config = agent_config,
+        custom_tools = (
+            listEmailsTool,
+            getEmailDetailTool,
+            sendEmailTool,
+            getPDFSummaryTool,
+            createDraftTool,
+            sendDraftTool
+        )
     )
 
     return agent
-
 
 async def main():
     parser = argparse.ArgumentParser(description="Set email address")
@@ -74,8 +75,9 @@ async def main():
     greeting = llama31("hello", "Your name is Gmagent, an assistant that can perform all Gmail related tasks for your user.")
     agent_response = f"{greeting}\n\nYour ask: "
 
-    # do i have emails with attachment larger than 5mb?
-    # what's the detail of the email with subject this is an interesting paper
+    client = LlamaStackClient(base_url=LLAMA_STACK_API_TOGETHER_URL)
+    agent = await create_gmail_agent(client)
+    session_id = agent.create_session("email-session")
 
     while True:
         ask = input(agent_response)
@@ -83,10 +85,6 @@ async def main():
             print(llama31("bye"))
             break
         print("\n-------------------------\nCalling Llama...")
-
-        client = LlamaStackClient(base_url=LLAMA_STACK_API_TOGETHER_URL)
-        agent = await create_gmail_agent(client)
-        session_id = agent.create_session("email-session")
 
         response = agent.create_turn(
             messages=[{"role": "user", "content": ask}],
@@ -97,8 +95,9 @@ async def main():
             if log.role == "CustomTool":
                 tool_name = json.loads(log.content)['name']
                 result = json.loads(log.content)['result']
+
+                # post processing
                 if tool_name == 'list_emails':
-                    # post processing
                     memory['emails'] = result
                     num = len(result)
                     if num == 0:
@@ -114,6 +113,15 @@ async def main():
 
                 elif tool_name == "get_email_detail":
                     output = result
+                elif tool_name == "create_draft":
+                    output = "Draft created."
+                    memory['draft_id'] = result
+                elif tool_name == "send_draft":
+                    output = result
+                elif tool_name == "send_email":
+                    output = "Email sent."
+                elif tool_name == "get_pdf_summary":
+                    output = result
 
                 print(f"\n-------------------------\n\nGmagent: {output}\n")
             elif log.role == "inference":
@@ -121,12 +129,7 @@ async def main():
             else:
                 print(log, end="")
 
-
-
-        agent_response = "\n\nYour ask: "
-
-
-
+        agent_response = "Your ask: "
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -18,6 +18,9 @@ from pathlib import Path
 from shared import memory
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.compose']
+user_email = None
+service = None
+user_id = 'me'
 
 def authenticate_gmail(user_email):
     creds = None
@@ -44,14 +47,12 @@ def authenticate_gmail(user_email):
     service = build('gmail', 'v1', credentials=creds)
     return service
 
-
 def num_of_emails(query=''):
     response = service.users().messages().list(
         userId='me', 
         q=query, 
         maxResults=1).execute()
     return response.get('resultSizeEstimate', 0)
-
 
 def list_emails(query='', max_results=100):
     emails = []
@@ -108,12 +109,10 @@ def get_email_detail(detail, which):
     else:
         message_id = memory['emails'][-1]['message_id']
 
-
     if detail == 'body':
         return get_email_body(message_id)
     elif detail == 'attachment':
-        return get_email_attachments(which)
-
+        return get_email_attachments(message_id)
 
 def get_email_body(message_id):
     try:
@@ -146,7 +145,6 @@ def get_email_body(message_id):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
-
 
 def parse_message(message):
     payload = message['payload']
@@ -184,8 +182,7 @@ def parse_message(message):
         # Single part message
         data = payload['body']['data']
         body = base64.urlsafe_b64decode(data).decode('utf-8')
-        return sender, subject, received_time, body    
-
+        return sender, subject, received_time, body
 
 def get_email_info(msg_id):
     message = service.users().messages().get(
@@ -196,7 +193,6 @@ def get_email_info(msg_id):
     sender, subject, received_time, body = parse_message(message)
     
     return sender, subject, received_time
-
 
 def reply_email(message_id, reply_text):
     # Fetch the original message
@@ -234,7 +230,6 @@ def reply_email(message_id, reply_text):
         userId=user_id, 
         body=body).execute()
     print("Reply sent. Message ID:", sent_message['id'])
-
 
 def forward_email(message_id, forward_to, email_body=None):
     """
@@ -326,7 +321,6 @@ def forward_email(message_id, forward_to, email_body=None):
 
     print(f"Message forwarded successfully! Message ID: {sent_message['id']}")
 
-
 def send_email(action, to, subject, body="", email_id=""):
     if action == "compose":
         message = MIMEText(body)
@@ -345,7 +339,6 @@ def send_email(action, to, subject, body="", email_id=""):
         reply_email(email_id, body)
     elif action == "forward":
         forward_email(email_id, to, body)
-
 
 def create_draft(action, to, subject, body="", email_id=""):
     if action == "new":
@@ -367,8 +360,6 @@ def create_draft(action, to, subject, body="", email_id=""):
         return create_forward_draft(email_id, to, body)
     else:
         return
-
-
 
 def create_reply_draft(message_id, reply_text):
     # Fetch the original message
@@ -403,7 +394,6 @@ def create_reply_draft(message_id, reply_text):
     draft = service.users().drafts().create(userId=user_id, body=draft_body).execute()
     return draft['id']
 
-
 def create_forward_draft(message_id, recipient_email, custom_message=None):
     # Get the original message
     original_message = service.users().messages().get(
@@ -430,14 +420,12 @@ def create_forward_draft(message_id, recipient_email, custom_message=None):
     print(f"Forward draft created with ID: {draft['id']}")
     return draft['id']
 
-
 def send_draft(id):
     sent_message = service.users().drafts().send(
         userId=user_id, 
         body={'id': id}
         ).execute()
     return f"Draft sent with email ID: {sent_message['id']}"
-    
 
 def get_pdf_summary(file_name):
     text = pdf2text(file_name)
@@ -445,7 +433,6 @@ def get_pdf_summary(file_name):
     response = llama31(text, "Generate a summary of the input text in 5 sentences.")
     return response
 
-    
 def get_email_attachments(message_id, mime_type='application/pdf'):
     attachments = []
 
@@ -496,7 +483,6 @@ def get_email_attachments(message_id, mime_type='application/pdf'):
         rslt += f"{a['filename']} - {a['size']} bytes\n"
     return rslt #attachments
 
-
 def pdf2text(file):
     text = ''
     try:
@@ -510,11 +496,6 @@ def pdf2text(file):
 
     return text
 
-
-user_email = None
-service = None
-user_id = 'me'
-
 def set_email_service(gmail):
     global user_email
     global service
@@ -522,122 +503,6 @@ def set_email_service(gmail):
     user_email = gmail
     service = authenticate_gmail(user_email)
 
-# class Agent:
-#     def __init__(self, system_prompt=""):
-#         self.system_prompt = system_prompt
-#         self.messages = []
-#
-#         # Gmagent-specific short term memory, used to answer follow up questions AFTER a list of emails is found matching user's query
-#         self.emails = []
-#         self.draft_id = None
-#
-#         if self.system_prompt:
-#             self.messages.append({"role": "system", "content": system_prompt})
-#
-#     def __call__(self, user_prompt_or_tool_result, is_tool_call=False):
-#         # if it's tool call result, use "ipython" instead of "user" for the role
-#         self.messages.append({"role": ("ipython" if is_tool_call else "user"), "content": user_prompt_or_tool_result})
-#         result = self.llama()
-#         print(f"\nLlama returned: {result}.")
-#         if type(result) == dict: # result is a dict only if it's a tool call spec
-#             function_name = result["function_name"]
-#             func = globals()[function_name]
-#             parameters = result["parameters"]
-#             if function_name == "get_email_detail":
-#                 # TODO: parse which - valid values are first, second,
-#                 # third, fourth, last, from xxx
-#                 if 'id' in parameters.keys():
-#                     parameters['which'] = parameters['id']
-#                     del parameters['id'] # per the function spec
-#                 elif 'which' in parameters.keys():
-#                     if 'from ' in parameters['which']:
-#                         sender = parameters['which'].split('from ')[-1]
-#                         for email in self.emails:
-#                             if email['sender'].find(sender) != -1:
-#                                 parameters['which'] = email['message_id']
-#                                 break
-#                     if 'subject ' in parameters['which']:
-#                         subject = parameters['which'].split('subject ')[-1]
-#                         # exact match beats substring
-#                         for email in self.emails:
-#                             if email['subject'].upper() == subject.upper():
-#                                 parameters['which'] = email['message_id']
-#                                 break
-#                             elif email['subject'].upper().find(subject.upper()) != -1:
-#                                 parameters['which'] = email['message_id']
-#
-#                     elif 'id_' in parameters['which']:
-#                         parameters['which'] = parameters['which'].split('id_')[-1]
-#                     else:
-#                         parameters['which'] = self.emails[-1]['message_id']
-#             elif function_name == "send_draft":
-#                 parameters['id'] = self.draft_id
-#
-#             print(f"\nCalling tool to access Gmail API: {function_name}, {parameters}...")
-#             result = func(**parameters)
-#             print(f"\nTool calling returned: {result}")
-#
-#             # convert function calling result to concise summary, offering interactive follow ups,
-#             # for smooth and user friendly experience
-#             if function_name == 'list_emails':
-#                 self.emails = result
-#                 num = len(result)
-#                 if num == 0:
-#                     output = "I couldn't find any such emails. What else would you like to do?"
-#                 elif num <= 5:
-#                     output = f"I found {num} email{'s' if num > 1 else ''} matching your query:\n"
-#                     for i, email in enumerate(result, start=1):
-#                         output += f"{i}. From: {email['sender']}, Subject: {email['subject']}, Received on: {email['received_time']}\n"
-#                 else:
-#                     output = f"I found {num} emails matching your query. Here are the first 5 emails:\n"
-#                     for i in range(1, 6):
-#                         output += f"{i}. From: {result[i-1]['sender']}, Subject: {result[i-1]['subject']}, Received on: {result[i-1]['received_time']}\n"
-#             elif function_name == "get_email_detail":
-#                 output = result
-#             elif function_name == "get_pdf_summary":
-#                 output = result
-#             elif function_name == "send_email":
-#                 output = "Email sent."
-#             elif function_name == "create_draft":
-#                 output = "Draft created."
-#                 self.draft_id = result
-#             elif function_name == "send_draft":
-#                 output = result
-#
-#             print(f"\n-------------------------\n\nGmagent: {output}\n")
-#         else:
-#             output = result # direct text, not JSON, response by Llama
-#
-#         # adding this may cause Llama to hallucinate when answering
-#         # follow up questions. e.g. "do i have emails with attachments
-#         # larger than 20mb" got right tool calling response, then
-#         # follow up "larger than 10mb" got hallucinated response.
-#         # self.messages.append({"role": "assistant", "content": output})
-#
-#         # this mitigates the hallucination
-#         self.messages.append({"role": "assistant", "content": str(result)})
-#
-#         return output
-#
-#     def llama(self):
-#         response = ollama.chat(model='llama3.1',
-#             messages = self.messages,
-#             options = {
-#                 "temperature": 0.0
-#             }
-#         )
-#         result = response['message']['content']
-#
-#         try:
-#           res = json.loads(result.split("<|python_tag|>")[-1])
-#           function_name = res['name']
-#           parameters = res['parameters']
-#           return {"function_name": function_name,
-#                   "parameters": parameters}
-#         except:
-#           return result
-#
-#
 def llama31(user_prompt: str, system_prompt = ""):
     response = ollama.chat(model='llama3.1',
         messages=[
