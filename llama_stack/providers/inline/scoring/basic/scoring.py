@@ -113,7 +113,9 @@ class BasicScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
             score_results = await scoring_fn.score(
                 input_rows, scoring_fn_id, scoring_fn_params
             )
-            agg_results = await scoring_fn.aggregate(score_results, scoring_fn_params)
+            agg_results = await scoring_fn.aggregate(
+                score_results, scoring_fn_id, scoring_fn_params
+            )
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,

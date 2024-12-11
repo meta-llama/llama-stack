@@ -41,13 +41,18 @@ class SubsetOfScoringFn(BaseScoringFn):
     async def aggregate(
         self,
         scoring_results: List[ScoringResultRow],
+        scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> Dict[str, Any]:
+        params = self.supported_fn_defs_registry[scoring_fn_identifier].params
+        if scoring_params is not None:
+            params = scoring_params
+
         aggregation_functions = [AggregationFunctionType.accuracy]
         if (
-            scoring_params
-            and hasattr(scoring_params, "aggregation_functions")
-            and scoring_params.aggregation_functions
+            params
+            and hasattr(params, "aggregation_functions")
+            and params.aggregation_functions
         ):
-            aggregation_functions.extend(scoring_params.aggregation_functions)
+            aggregation_functions.extend(params.aggregation_functions)
         return aggregate_metrics(scoring_results, aggregation_functions)

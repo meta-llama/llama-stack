@@ -3,13 +3,18 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import re
+
+from typing import Any, Dict, List, Optional
+
 from llama_stack.apis.inference.inference import Inference
 
+from llama_stack.apis.scoring import ScoringResultRow
+from llama_stack.apis.scoring_functions import ScoringFnParams
+
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
+
 from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
-from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
-from llama_stack.apis.scoring import *  # noqa: F401, F403
-from llama_stack.apis.common.type_system import *  # noqa: F403
-import re
 
 from .fn_defs.llm_as_judge_405b_simpleqa import llm_as_judge_405b_simpleqa
 
@@ -89,8 +94,18 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
     async def aggregate(
         self,
         scoring_results: List[ScoringResultRow],
+        scoring_fn_identifier: Optional[str] = None,
         scoring_params: Optional[ScoringFnParams] = None,
     ) -> Dict[str, Any]:
-        print(f"scoring_params: {scoring_params}")
-        # TODO: this needs to be config based aggregation, and only useful w/ Jobs API
-        return {}
+        params = self.supported_fn_defs_registry[scoring_fn_identifier].params
+        if scoring_params is not None:
+            params = scoring_params
+
+        aggregation_functions = []
+        if (
+            params
+            and hasattr(params, "aggregation_functions")
+            and params.aggregation_functions
+        ):
+            aggregation_functions.extend(params.aggregation_functions)
+        return aggregate_metrics(scoring_results, aggregation_functions)

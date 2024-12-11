@@ -23,6 +23,11 @@ from llama_stack.providers.tests.datasetio.test_datasetio import register_datase
 #   -v -s --tb=short --disable-warnings
 
 
+@pytest.fixture
+def sample_judge_prompt_template():
+    return "Output a number response in the following format: Score: <number>, where <number> is the number between 0 and 9."
+
+
 class TestScoring:
     @pytest.mark.asyncio
     async def test_scoring_functions_list(self, scoring_stack):
@@ -97,7 +102,9 @@ class TestScoring:
             assert len(response.results[x].score_rows) == 5
 
     @pytest.mark.asyncio
-    async def test_scoring_score_with_params(self, scoring_stack):
+    async def test_scoring_score_with_params_llm_as_judge(
+        self, scoring_stack, sample_judge_prompt_template
+    ):
         (
             scoring_impl,
             scoring_functions_impl,
@@ -136,8 +143,9 @@ class TestScoring:
         scoring_functions = {
             "llm-as-judge::base": LLMAsJudgeScoringFnParams(
                 judge_model="Llama3.1-405B-Instruct",
-                prompt_template="Output a number response in the following format: Score: <number>, where <number> is the number between 0 and 9.",
+                prompt_template=sample_judge_prompt_template,
                 judge_score_regexes=[r"Score: (\d+)"],
+                aggregation_functions=[AggregationFunctionType.categorical_count],
             )
         }
 
@@ -161,7 +169,9 @@ class TestScoring:
             assert len(response.results[x].score_rows) == 5
 
     @pytest.mark.asyncio
-    async def test_scoring_score_with_aggregation_functions(self, scoring_stack):
+    async def test_scoring_score_with_aggregation_functions(
+        self, scoring_stack, sample_judge_prompt_template
+    ):
         (
             scoring_impl,
             scoring_functions_impl,
@@ -183,7 +193,6 @@ class TestScoring:
         assert len(rows.rows) == 3
 
         scoring_fns_list = await scoring_functions_impl.list_scoring_functions()
-        provider_id = scoring_fns_list[0].provider_id
         scoring_functions = {}
         aggr_fns = [
             AggregationFunctionType.accuracy,
@@ -193,8 +202,12 @@ class TestScoring:
         ]
         for x in scoring_fns_list:
             if x.provider_id == "llm-as-judge":
+                aggr_fns = [AggregationFunctionType.categorical_count]
                 scoring_functions[x.identifier] = LLMAsJudgeScoringFnParams(
-                    aggregation_functions=[AggregationFunctionType.categorical_count],
+                    judge_model="Llama3.1-405B-Instruct",
+                    prompt_template=sample_judge_prompt_template,
+                    judge_score_regexes=[r"Score: (\d+)"],
+                    aggregation_functions=aggr_fns,
                 )
             elif x.provider_id == "basic":
                 if "regex_parser" in x.identifier:
@@ -212,6 +225,9 @@ class TestScoring:
             input_rows=rows.rows,
             scoring_functions=scoring_functions,
         )
-        from rich.pretty import pprint
 
-        pprint(response)
+        assert len(response.results) == len(scoring_functions)
+        for x in scoring_functions:
+            assert x in response.results
+            assert len(response.results[x].score_rows) == len(rows.rows)
+            assert len(response.results[x].aggregated_results) == len(aggr_fns)
