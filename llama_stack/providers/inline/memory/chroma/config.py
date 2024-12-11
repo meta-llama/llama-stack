@@ -9,9 +9,9 @@ from typing import Any, Dict
 from pydantic import BaseModel
 
 
-class ChromaRemoteImplConfig(BaseModel):
-    url: str
+class ChromaInlineImplConfig(BaseModel):
+    db_path: str
 
     @classmethod
     def sample_config(cls) -> Dict[str, Any]:
-        return {"url": "{env.CHROMADB_URL}"}
+        return {"db_path": "{env.CHROMADB_PATH}"}

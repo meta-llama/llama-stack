@@ -7,7 +7,6 @@ import asyncio
 import json
 import logging
 from typing import List
-from urllib.parse import urlparse
 
 import chromadb
 from numpy.typing import NDArray
@@ -15,11 +14,12 @@ from numpy.typing import NDArray
 from llama_stack.apis.memory import *  # noqa: F403
 
 from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.inline.memory.chroma import ChromaInlineImplConfig
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
 )
-from .config import ChromaConfig
+from .config import ChromaRemoteImplConfig
 
 log = logging.getLogger(__name__)
 
@@ -85,31 +85,21 @@ class ChromaIndex(EmbeddingIndex):
 
 
 class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
-    def __init__(self, config: ChromaConfig) -> None:
-        log.info(f"Initializing ChromaMemoryAdapter with url: {config.url}")
-        url = url.rstrip("/")
-        parsed = urlparse(url)
-
-        if parsed.path and parsed.path != "/":
-            raise ValueError("URL should not contain a path")
-
-        self.host = parsed.hostname
-        self.port = parsed.port
-
+    def __init__(
+        self, config: Union[ChromaRemoteImplConfig, ChromaInlineImplConfig]
+    ) -> None:
+        log.info(f"Initializing ChromaMemoryAdapter with url: {config}")
+        self.config = config
         self.client = None
         self.cache = {}
 
     async def initialize(self) -> None:
-        try:
-            if self.config.url:
-                log.info(f"Connecting to Chroma server at: {self.config.url}")
-                self.client = await chromadb.AsyncHttpClient(url=self.config.url)
-            else:
-                log.info(f"Connecting to Chroma local db at: {self.config.db_path}")
-                self.client = chromadb.PersistentClient(path=self.config.db_path)
-        except Exception as e:
-            log.exception("Could not connect to Chroma server")
-            raise RuntimeError("Could not connect to Chroma server") from e
+        if isinstance(self.config, ChromaRemoteImplConfig):
+            log.info(f"Connecting to Chroma server at: {self.config.url}")
+            self.client = await chromadb.AsyncHttpClient(url=self.config.url)
+        else:
+            log.info(f"Connecting to Chroma local db at: {self.config.db_path}")
+            self.client = chromadb.PersistentClient(path=self.config.db_path)
 
     async def shutdown(self) -> None:
         pass
