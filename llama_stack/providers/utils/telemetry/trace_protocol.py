@@ -81,9 +81,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 self, *args, **kwargs
             )
 
-            with tracing.SpanContextManager(
-                f"{class_name}.{method_name}", span_attributes
-            ) as span:
+            with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:
                     count = 0
                     async for item in method(self, *args, **kwargs):
@@ -98,9 +96,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 self, *args, **kwargs
             )
 
-            with tracing.SpanContextManager(
-                f"{class_name}.{method_name}", span_attributes
-            ) as span:
+            with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:
                     result = await method(self, *args, **kwargs)
                     span.set_attribute("output", serialize_value(result))
@@ -115,9 +111,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
                 self, *args, **kwargs
             )
 
-            with tracing.SpanContextManager(
-                f"{class_name}.{method_name}", span_attributes
-            ) as span:
+            with tracing.span(f"{class_name}.{method_name}", span_attributes) as span:
                 try:
                     result = method(self, *args, **kwargs)
                     span.set_attribute("output", serialize_value(result))
