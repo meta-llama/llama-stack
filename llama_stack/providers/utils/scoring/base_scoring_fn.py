@@ -12,7 +12,7 @@ from llama_stack.apis.scoring_functions import ScoringFn
 
 class BaseScoringFn(ABC):
     """
-    Base interface class for all meta-reference scoring_fns.
+    Base interface class for all native scoring_fns.
     Each scoring_fn needs to implement the following methods:
     - score_row(self, row)
     - aggregate(self, scoring_fn_results)
@@ -20,7 +20,6 @@ class BaseScoringFn(ABC):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.supported_fn_defs_registry = {}
 
     def __str__(self) -> str:
         return self.__class__.__name__

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.scoring import ScoringResultRow
 
-from llama_stack.apis.scoring_functions import AggregationFunctionType, ScoringFnParams
+from llama_stack.apis.scoring_functions import ScoringFnParams
 from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
 
@@ -54,7 +54,7 @@ class EqualityScoringFn(BaseScoringFn):
         if scoring_params is not None:
             params = scoring_params
 
-        aggregation_functions = [AggregationFunctionType.accuracy]
+        aggregation_functions = []
         if (
             params
             and hasattr(params, "aggregation_functions")
