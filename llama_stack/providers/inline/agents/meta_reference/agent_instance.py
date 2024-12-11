@@ -404,11 +404,6 @@ class ChatAgent(ShieldRunnerMixin):
         n_iter = 0
         while True:
             msg = input_messages[-1]
-            if len(str(msg)) > 1000:
-                msg_str = f"{str(msg)[:500]}...<more>...{str(msg)[-500:]}"
-            else:
-                msg_str = str(msg)
-            log.info(f"{msg_str}")
 
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
