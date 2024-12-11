@@ -22,6 +22,13 @@ def scoring_remote() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
+def judge_model(request):
+    if hasattr(request, "param"):
+        return request.param
+    return request.config.getoption("--judge-model", None)
+
+
+@pytest.fixture(scope="session")
 def scoring_basic() -> ProviderFixture:
     return ProviderFixture(
         providers=[
@@ -66,7 +73,7 @@ SCORING_FIXTURES = ["basic", "remote", "braintrust", "llm_as_judge"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def scoring_stack(request, inference_model):
+async def scoring_stack(request, inference_model, judge_model):
     fixture_dict = request.param
 
     providers = {}
@@ -85,8 +92,7 @@ async def scoring_stack(request, inference_model):
             ModelInput(model_id=model)
             for model in [
                 inference_model,
-                "Llama3.1-405B-Instruct",
-                "Llama3.1-8B-Instruct",
+                judge_model,
             ]
         ],
     )

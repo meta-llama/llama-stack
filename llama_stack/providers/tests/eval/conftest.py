@@ -80,6 +80,13 @@ def pytest_addoption(parser):
         help="Specify the inference model to use for testing",
     )
 
+    parser.addoption(
+        "--judge-model",
+        action="store",
+        default="meta-llama/Llama-3.1-8B-Instruct",
+        help="Specify the judge model to use for testing",
+    )
+
 
 def pytest_generate_tests(metafunc):
     if "eval_stack" in metafunc.fixturenames:
