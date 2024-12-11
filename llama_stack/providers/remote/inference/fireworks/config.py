@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 @json_schema_type
 class FireworksImplConfig(BaseModel):
     url: str = Field(
-        default="https://api.fireworks.ai/inference",
+        default="https://api.fireworks.ai/inference/v1",
         description="The URL for the Fireworks server",
     )
     api_key: Optional[str] = Field(
@@ -24,6 +24,6 @@ class FireworksImplConfig(BaseModel):
     @classmethod
     def sample_run_config(cls) -> Dict[str, Any]:
         return {
-            "url": "https://api.fireworks.ai/inference",
+            "url": "https://api.fireworks.ai/inference/v1",
             "api_key": "${env.FIREWORKS_API_KEY}",
         }
