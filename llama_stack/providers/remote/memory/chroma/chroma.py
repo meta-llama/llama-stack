@@ -7,6 +7,7 @@ import asyncio
 import json
 import logging
 from typing import List
+from urllib.parse import urlparse
 
 import chromadb
 from numpy.typing import NDArray
@@ -96,7 +97,15 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def initialize(self) -> None:
         if isinstance(self.config, ChromaRemoteImplConfig):
             log.info(f"Connecting to Chroma server at: {self.config.url}")
-            self.client = await chromadb.AsyncHttpClient(url=self.config.url)
+            url = self.config.url.rstrip("/")
+            parsed = urlparse(url)
+
+            if parsed.path and parsed.path != "/":
+                raise ValueError("URL should not contain a path")
+
+            self.client = await chromadb.AsyncHttpClient(
+                host=parsed.hostname, port=parsed.port
+            )
         else:
             log.info(f"Connecting to Chroma local db at: {self.config.db_path}")
             self.client = chromadb.PersistentClient(path=self.config.db_path)
