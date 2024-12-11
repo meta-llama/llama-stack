@@ -7,33 +7,24 @@
 import json
 import os
 import sqlite3
-import threading
-from datetime import datetime, timedelta
-from typing import Dict
+from datetime import datetime
 
 from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import Span
 
 
 class SQLiteSpanProcessor(SpanProcessor):
-    def __init__(self, conn_string, ttl_days=30):
+    def __init__(self, conn_string):
         """Initialize the SQLite span processor with a connection string."""
         self.conn_string = conn_string
-        self.ttl_days = ttl_days
-        self.cleanup_task = None
-        self._thread_local = threading.local()
-        self._connections: Dict[int, sqlite3.Connection] = {}
-        self._lock = threading.Lock()
+        self.conn = None
         self.setup_database()
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Get a thread-specific database connection."""
-        thread_id = threading.get_ident()
-        with self._lock:
-            if thread_id not in self._connections:
-                conn = sqlite3.connect(self.conn_string)
-                self._connections[thread_id] = conn
-            return self._connections[thread_id]
+        """Get the database connection."""
+        if self.conn is None:
+            self.conn = sqlite3.connect(self.conn_string, check_same_thread=False)
+        return self.conn
 
     def setup_database(self):
         """Create the necessary tables if they don't exist."""
@@ -93,60 +84,6 @@ class SQLiteSpanProcessor(SpanProcessor):
 
         conn.commit()
         cursor.close()
-
-        # Start periodic cleanup in a separate thread
-        self.cleanup_task = threading.Thread(target=self._periodic_cleanup, daemon=True)
-        self.cleanup_task.start()
-
-    def _cleanup_old_data(self):
-        """Delete records older than TTL."""
-        try:
-            conn = self._get_connection()
-            cutoff_date = (datetime.now() - timedelta(days=self.ttl_days)).isoformat()
-            cursor = conn.cursor()
-
-            # Delete old span events
-            cursor.execute(
-                """
-                DELETE FROM span_events
-                WHERE span_id IN (
-                    SELECT span_id FROM spans
-                    WHERE trace_id IN (
-                        SELECT trace_id FROM traces
-                        WHERE created_at < ?
-                    )
-                )
-            """,
-                (cutoff_date,),
-            )
-
-            # Delete old spans
-            cursor.execute(
-                """
-                DELETE FROM spans
-                WHERE trace_id IN (
-                    SELECT trace_id FROM traces
-                    WHERE created_at < ?
-                )
-            """,
-                (cutoff_date,),
-            )
-
-            # Delete old traces
-            cursor.execute("DELETE FROM traces WHERE created_at < ?", (cutoff_date,))
-
-            conn.commit()
-            cursor.close()
-        except Exception as e:
-            print(f"Error during cleanup: {e}")
-
-    def _periodic_cleanup(self):
-        """Run cleanup periodically."""
-        import time
-
-        while True:
-            time.sleep(3600)  # Sleep for 1 hour
-            self._cleanup_old_data()
 
     def on_start(self, span: Span, parent_context=None):
         """Called when a span starts."""
@@ -231,11 +168,9 @@ class SQLiteSpanProcessor(SpanProcessor):
 
     def shutdown(self):
         """Cleanup any resources."""
-        with self._lock:
-            for conn in self._connections.values():
-                if conn:
-                    conn.close()
-            self._connections.clear()
+        if self.conn:
+            self.conn.close()
+            self.conn = None
 
     def force_flush(self, timeout_millis=30000):
         """Force export of spans."""
