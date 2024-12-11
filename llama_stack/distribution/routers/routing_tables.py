@@ -224,7 +224,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         if metadata is None:
             metadata = {}
         if model_type is None:
-            model_type = ModelType.llm_model
+            model_type = ModelType.llm
         if (
             "embedding_dimension" not in metadata
             and model_type == ModelType.embedding_model

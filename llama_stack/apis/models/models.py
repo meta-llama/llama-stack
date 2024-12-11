@@ -22,7 +22,7 @@ class CommonModelFields(BaseModel):
 
 
 class ModelType(Enum):
-    llm_model = "llm_model"
+    llm = "llm"
     embedding_model = "embedding_model"
 
 
@@ -40,14 +40,14 @@ class Model(CommonModelFields, Resource):
 
     model_config = ConfigDict(protected_namespaces=())
 
-    model_type: ModelType = Field(default=ModelType.llm_model)
+    model_type: ModelType = Field(default=ModelType.llm)
 
 
 class ModelInput(CommonModelFields):
     model_id: str
     provider_id: Optional[str] = None
     provider_model_id: Optional[str] = None
-    model_type: Optional[ModelType] = ModelType.llm_model
+    model_type: Optional[ModelType] = ModelType.llm
 
     model_config = ConfigDict(protected_namespaces=())
 
