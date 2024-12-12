@@ -148,5 +148,5 @@ async def validate_input_dataset_schema(
 
     if dataset_def.dataset_schema not in getattr(EXPECTED_DATASET_SCHEMA, dataset_type):
         raise ValueError(
-            f"Dataset {dataset_id} does not have a correct input schema in {EXPECTED_DATASET_SCHEMA.dataset_type}"
+            f"Dataset {dataset_id} does not have a correct input schema in {getattr(EXPECTED_DATASET_SCHEMA, dataset_type)}"
         )
