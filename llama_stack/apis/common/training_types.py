@@ -26,4 +26,4 @@ class Checkpoint(BaseModel):
     epoch: int
     post_training_job_id: str
     path: str
-    training_metric: Optional[PostTrainingMetric] = None
+    training_metrics: Optional[PostTrainingMetric] = None

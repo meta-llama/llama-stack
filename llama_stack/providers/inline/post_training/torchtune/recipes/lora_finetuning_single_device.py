@@ -544,13 +544,13 @@ class LoraFinetuningSingleDevice:
             )
             if self.training_config.data_config.validation_dataset_id:
                 validation_loss, perplexity = await self.validation()
-                training_metreic = PostTrainingMetric(
+                training_metrics = PostTrainingMetric(
                     epoch=curr_epoch,
                     train_loss=loss_to_log,
                     validation_loss=validation_loss,
                     perplexity=perplexity,
                 )
-                checkpoint.training_metric = training_metreic
+                checkpoint.training_metrics = training_metrics
             checkpoints.append(checkpoint)
 
         return (memory_stats, checkpoints)
