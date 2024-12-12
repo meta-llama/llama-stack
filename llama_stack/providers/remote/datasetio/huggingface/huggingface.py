@@ -30,7 +30,7 @@ def load_hf_dataset(dataset_def: Dataset):
 
         dataset = hf_datasets.Dataset.from_pandas(df)
 
-    # drop rows not specified by schema
+    # drop columns not specified by schema
     if dataset_def.dataset_schema:
         dataset = dataset.select_columns(list(dataset_def.dataset_schema.keys()))
 
