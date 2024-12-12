@@ -351,6 +351,14 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
+        provider = inference_impl.routing_table.get_provider_impl(inference_model)
+        if provider.__provider_spec__.provider_type in ("remote::groq",):
+            pytest.skip(
+                provider.__provider_spec__.provider_type
+                + " doesn't support tool calling yet"
+            )
+
+        inference_impl, _ = inference_stack
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -390,6 +398,13 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
+        provider = inference_impl.routing_table.get_provider_impl(inference_model)
+        if provider.__provider_spec__.provider_type in ("remote::groq",):
+            pytest.skip(
+                provider.__provider_spec__.provider_type
+                + " doesn't support tool calling yet"
+            )
+
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
