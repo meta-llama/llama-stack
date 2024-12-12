@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from datetime import datetime
+from typing import Optional
 
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
@@ -25,4 +26,4 @@ class Checkpoint(BaseModel):
     epoch: int
     post_training_job_id: str
     path: str
-    training_metric: PostTrainingMetric
+    training_metric: Optional[PostTrainingMetric] = None

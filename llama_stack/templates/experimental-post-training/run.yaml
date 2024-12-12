@@ -49,20 +49,5 @@ datasets:
         type: string
       text:
         type: string
-  - dataset_id: alpaca_eval
-    provider_id: huggingface-0
-    url:
-      uri: https://huggingface.co/datasets/causal-lm/code_alpaca
-    metadata:
-      path: causal-lm/code_alpaca
-      name:
-      split: validation
-    dataset_schema:
-      instruction:
-        type: string
-      input:
-        type: string
-      output:
-        type: string
 scoring_fns: []
 eval_tasks: []
