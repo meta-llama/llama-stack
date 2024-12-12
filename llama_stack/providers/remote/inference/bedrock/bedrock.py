@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from typing import *  # noqa: F403
+import json
 
 from botocore.client import BaseClient
 from llama_models.datatypes import CoreModelId
@@ -19,8 +20,10 @@ from llama_stack.providers.utils.inference.model_registry import (
 
 from llama_stack.apis.inference import *  # noqa: F403
 
+
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
+from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 
 model_aliases = [
@@ -448,4 +451,21 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+        embeddings = []
+        for content in contents:
+            assert not content_has_media(
+                content
+            ), "Bedrock does not support media for embeddings"
+            input_text = interleaved_text_media_as_str(content)
+            input_body = {"inputText": input_text}
+            body = json.dumps(input_body)
+            response = self.client.invoke_model(
+                body=body,
+                modelId=model.provider_resource_id,
+                accept="application/json",
+                contentType="application/json",
+            )
+            response_body = json.loads(response.get("body").read())
+            embeddings.append(response_body.get("embedding"))
+        return EmbeddingsResponse(embeddings=embeddings)

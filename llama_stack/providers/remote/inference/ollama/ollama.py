@@ -36,6 +36,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    content_has_media,
     convert_image_media_to_url,
     request_has_media,
 )
@@ -321,9 +322,30 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Ollama does not support media for embeddings"
+        response = await self.client.embed(
+            model=model.provider_resource_id,
+            input=[interleaved_text_media_as_str(content) for content in contents],
+        )
+        embeddings = response["embeddings"]
+
+        return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
+        # ollama does not have embedding models running. Check if the model is in list of available models.
+        if model.model_type == ModelType.embedding_model:
+            response = await self.client.list()
+            available_models = [m["model"] for m in response["models"]]
+            if model.provider_resource_id not in available_models:
+                raise ValueError(
+                    f"Model '{model.provider_resource_id}' is not available in Ollama. "
+                    f"Available models: {', '.join(available_models)}"
+                )
+            return model
         model = await self.register_helper.register_model(model)
         models = await self.client.ps()
         available_models = [m["model"] for m in models["models"]]

@@ -4,12 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Dict
+
 from .config import ChromaRemoteImplConfig
+from llama_stack.providers.datatypes import Api, ProviderSpec
 
 
-async def get_adapter_impl(config: ChromaRemoteImplConfig, _deps):
+async def get_adapter_impl(config: ChromaRemoteImplConfig, deps: Dict[Api, ProviderSpec]):
     from .chroma import ChromaMemoryAdapter
 
-    impl = ChromaMemoryAdapter(config)
+    impl = ChromaMemoryAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl
