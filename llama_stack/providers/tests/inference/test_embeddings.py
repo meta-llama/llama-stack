@@ -14,15 +14,15 @@ from llama_stack.apis.inference import EmbeddingsResponse, ModelType
 
 class TestEmbeddings:
     @pytest.mark.asyncio
-    async def test_embeddings(self, embedding_model, embedding_stack):
-        inference_impl, models_impl = embedding_stack
-        model = await models_impl.get_model(embedding_model)
+    async def test_embeddings(self, inference_model, inference_stack):
+        inference_impl, models_impl = inference_stack
+        model = await models_impl.get_model(inference_model)
 
         if model.model_type != ModelType.embedding_model:
             pytest.skip("This test is only applicable for embedding models")
 
         response = await inference_impl.embeddings(
-            model_id=embedding_model,
+            model_id=inference_model,
             contents=["Hello, world!"],
         )
         assert isinstance(response, EmbeddingsResponse)
@@ -35,9 +35,9 @@ class TestEmbeddings:
         )
 
     @pytest.mark.asyncio
-    async def test_batch_embeddings(self, embedding_model, embedding_stack):
-        inference_impl, models_impl = embedding_stack
-        model = await models_impl.get_model(embedding_model)
+    async def test_batch_embeddings(self, inference_model, inference_stack):
+        inference_impl, models_impl = inference_stack
+        model = await models_impl.get_model(inference_model)
 
         if model.model_type != ModelType.embedding_model:
             pytest.skip("This test is only applicable for embedding models")
@@ -45,7 +45,7 @@ class TestEmbeddings:
         texts = ["Hello, world!", "This is a test", "Testing embeddings"]
 
         response = await inference_impl.embeddings(
-            model_id=embedding_model,
+            model_id=inference_model,
             contents=texts,
         )
 

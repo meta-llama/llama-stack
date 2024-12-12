@@ -29,6 +29,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    content_has_media,
     convert_message_to_dict,
     request_has_media,
 )
@@ -206,10 +207,16 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         model = await self.model_store.get_model(model_id)
 
         kwargs = {}
-        if model.metadata.get("embedding_dimensions"):
-            kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        assert model.model_type == ModelType.embedding_model
+        assert model.metadata.get("embedding_dimensions")
+        kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "VLLM does not support media for embeddings"
         response = self.client.embeddings.create(
-            model=model.provider_resource_id, input=contents, **kwargs
+            model=model.provider_resource_id,
+            input=[interleaved_text_media_as_str(content) for content in contents],
+            **kwargs,
         )
 
         embeddings = [data.embedding for data in response.data]

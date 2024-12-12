@@ -84,24 +84,3 @@ def pytest_generate_tests(metafunc):
         ):
             fixtures = [stack.values[0]["inference"] for stack in filtered_stacks]
         metafunc.parametrize("inference_stack", fixtures, indirect=True)
-
-    if "embedding_model" in metafunc.fixturenames:
-        model = metafunc.config.getoption("--embedding-model")
-        if not model:
-            raise ValueError(
-                "No embedding model specified. Please provide a valid embedding model."
-            )
-        params = [pytest.param(model, id="")]
-
-        metafunc.parametrize("embedding_model", params, indirect=True)
-
-    if "embedding_stack" in metafunc.fixturenames:
-        fixtures = INFERENCE_FIXTURES
-        if filtered_stacks := get_provider_fixture_overrides(
-            metafunc.config,
-            {
-                "inference": INFERENCE_FIXTURES,
-            },
-        ):
-            fixtures = [stack.values[0]["inference"] for stack in filtered_stacks]
-        metafunc.parametrize("embedding_stack", fixtures, indirect=True)

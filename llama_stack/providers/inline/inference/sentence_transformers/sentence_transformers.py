@@ -48,7 +48,7 @@ class SentenceTransformersInferenceImpl(
             )
 
     async def register_model(self, model: Model) -> None:
-        _ = self._get_embedding_model(model.provider_resource_id)
+        _ = self._load_sentence_transformer_model(model.provider_resource_id)
         return model
 
     async def unregister_model(self, model_id: str) -> None:
@@ -63,7 +63,7 @@ class SentenceTransformersInferenceImpl(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, AsyncGenerator]:
-        raise NotImplementedError("Sentence transformers don't support completion")
+        raise ValueError("Sentence transformers don't support completion")
 
     async def chat_completion(
         self,
@@ -77,4 +77,4 @@ class SentenceTransformersInferenceImpl(
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
-        raise NotImplementedError("Sentence transformers don't support chat completion")
+        raise ValueError("Sentence transformers don't support chat completion")

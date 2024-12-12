@@ -84,7 +84,7 @@ class MetaReferenceInferenceImpl(
     async def register_model(self, model: Model) -> Model:
         model = await self.model_registry_helper.register_model(model)
         if model.model_type == ModelType.embedding_model:
-            self._get_embedding_model(model.provider_resource_id)
+            self._load_sentence_transformer_model(model.provider_resource_id)
         return model
 
     async def completion(

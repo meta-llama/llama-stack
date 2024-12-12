@@ -36,6 +36,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    content_has_media,
     convert_image_media_to_url,
     request_has_media,
 )
@@ -323,8 +324,12 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Ollama does not support media for embeddings"
         response = await self.client.embed(
-            model=model.provider_resource_id, input=contents
+            model=model.provider_resource_id,
+            input=[interleaved_text_media_as_str(content) for content in contents],
         )
         embeddings = response["embeddings"]
 

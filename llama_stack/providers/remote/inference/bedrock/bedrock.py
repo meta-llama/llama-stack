@@ -20,8 +20,10 @@ from llama_stack.providers.utils.inference.model_registry import (
 
 from llama_stack.apis.inference import *  # noqa: F403
 
+
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
+from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 
 model_aliases = [
@@ -452,7 +454,10 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         model = await self.model_store.get_model(model_id)
         embeddings = []
         for content in contents:
-            input_text = str(content) if not isinstance(content, str) else content
+            assert not content_has_media(
+                content
+            ), "Bedrock does not support media for embeddings"
+            input_text = interleaved_text_media_as_str(content)
             input_body = {"inputText": input_text}
             body = json.dumps(input_body)
             response = self.client.invoke_model(
