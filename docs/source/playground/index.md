@@ -1,13 +1,13 @@
-# Playground UI
+# Llama Stack Playground
 
 ```{note}
-Playground UI is currently experimental and subject to change. We welcome feedback and contributions to help improve it.
+The Llama Stack Playground is currently experimental and subject to change. We welcome feedback and contributions to help improve it.
 ```
 
-Llama Stack Playground UI is an simple interface aims to:
+The Llama Stack Playground is an simple interface which aims to:
 - Showcase **capabilities** and **concepts** of Llama Stack in an interactive environment
 - Demo **end-to-end** application code to help users get started to build their own applications
-- Provide an **UI** to help users inspect and analyze Llama Stack API providers and resources
+- Provide an **UI** to help users inspect and understand Llama Stack API providers and resources
 
 ## Key Features
 
@@ -24,7 +24,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     :width: 100%
 ```
 - **Chat**: Chat with Llama models.
-  - This page is a simple chatbot that allows you to chat with Llama models. Under the hood, it uses the `/inference/chat_completion` streaming API to send messages to the model and receive responses.
+  - This page is a simple chatbot that allows you to chat with Llama models. Under the hood, it uses the `/inference/chat-completion` streaming API to send messages to the model and receive responses.
 - **RAG**: Uploading documents to memory_banks and chat with RAG agent
   - This page allows you to upload documents as a `memory_bank` and then chat with a RAG agent to query information about the uploaded documents.
   - Under the hood, it uses Llama Stack's `/agents` API to define and create a RAG agent and chat with it in a session.
@@ -60,7 +60,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
     --provider-id "huggingface" \
     --url "https://huggingface.co/datasets/llamastack/evals" \
     --metadata '{"path": "llamastack/evals", "name": "evals__mmlu__details", "split": "train"}' \
-    --schema '{"input_query": {"type": "string"}, "expected_answer": {"type": "string", "chat_completion_input": {"type": "string"}}}'
+    --schema '{"input_query": {"type": "string"}, "expected_answer": {"type": "string"}, "chat_completion_input": {"type": "string"}}'
     ```
 
     ```bash
@@ -90,9 +90,9 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
   - Under the hood, it uses Llama Stack's `/<resources>/list` API to get information about each resources.
   - Please visit [Core Concepts](https://llama-stack.readthedocs.io/en/latest/concepts/index.html) for more details about the resources.
 
-## Starting the Playground UI
+## Starting the Llama Stack Playground
 
-To start the Playground UI, run the following commands:
+To start the Llama Stack Playground, run the following commands:
 
 1. Start up the Llama Stack API server
 
