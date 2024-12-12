@@ -101,10 +101,11 @@ class QdrantIndex(EmbeddingIndex):
 
 
 class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
-    def __init__(self, config: QdrantConfig) -> None:
+    def __init__(self, config: QdrantConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}
+        self.inference_api = inference_api
 
     async def initialize(self) -> None:
         pass
@@ -123,6 +124,7 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         index = BankWithIndex(
             bank=memory_bank,
             index=QdrantIndex(self.client, memory_bank.identifier),
+            inference_api=self.inference_api,
         )
 
         self.cache[memory_bank.identifier] = index
@@ -138,6 +140,7 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         index = BankWithIndex(
             bank=bank,
             index=QdrantIndex(client=self.client, collection_name=bank_id),
+            inference_api=self.inference_api,
         )
         self.cache[bank_id] = index
         return index

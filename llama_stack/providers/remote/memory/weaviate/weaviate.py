@@ -12,10 +12,11 @@ import weaviate
 import weaviate.classes as wvc
 from numpy.typing import NDArray
 from weaviate.classes.init import Auth
+from weaviate.classes.query import Filter
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
@@ -80,12 +81,21 @@ class WeaviateIndex(EmbeddingIndex):
 
         return QueryDocumentsResponse(chunks=chunks, scores=scores)
 
+    async def delete(self, chunk_ids: List[str]) -> None:
+        collection = self.client.collections.get(self.collection_name)
+        collection.data.delete_many(
+            where=Filter.by_property("id").contains_any(chunk_ids)
+        )
+
 
 class WeaviateMemoryAdapter(
-    Memory, NeedsRequestProviderData, MemoryBanksProtocolPrivate
+    Memory,
+    NeedsRequestProviderData,
+    MemoryBanksProtocolPrivate,
 ):
-    def __init__(self, config: WeaviateConfig) -> None:
+    def __init__(self, config: WeaviateConfig, inference_api: Api.inference) -> None:
         self.config = config
+        self.inference_api = inference_api
         self.client_cache = {}
         self.cache = {}
 
@@ -117,7 +127,7 @@ class WeaviateMemoryAdapter(
         memory_bank: MemoryBank,
     ) -> None:
         assert (
-            memory_bank.memory_bank_type == MemoryBankType.vector
+            memory_bank.memory_bank_type == MemoryBankType.vector.value
         ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
         client = self._get_client()
@@ -135,11 +145,11 @@ class WeaviateMemoryAdapter(
                 ],
             )
 
-        index = BankWithIndex(
-            bank=memory_bank,
-            index=WeaviateIndex(client=client, collection_name=memory_bank.identifier),
+        self.cache[memory_bank.identifier] = BankWithIndex(
+            memory_bank,
+            WeaviateIndex(client=client, collection_name=memory_bank.identifier),
+            self.inference_api,
         )
-        self.cache[memory_bank.identifier] = index
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:
@@ -156,6 +166,7 @@ class WeaviateMemoryAdapter(
         index = BankWithIndex(
             bank=bank,
             index=WeaviateIndex(client=client, collection_name=bank_id),
+            inference_api=self.inference_api,
         )
         self.cache[bank_id] = index
         return index

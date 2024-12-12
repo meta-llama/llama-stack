@@ -18,6 +18,12 @@ def pytest_addoption(parser):
         default=None,
         help="Specify the inference model to use for testing",
     )
+    parser.addoption(
+        "--embedding-model",
+        action="store",
+        default=None,
+        help="Specify the embedding model to use for testing",
+    )
 
 
 def pytest_configure(config):
