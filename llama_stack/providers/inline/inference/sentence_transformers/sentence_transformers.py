@@ -41,12 +41,6 @@ class SentenceTransformersInferenceImpl(
     async def shutdown(self) -> None:
         pass
 
-    def check_model(self, request) -> None:
-        if request.model != self.config.model:
-            raise RuntimeError(
-                f"Model mismatch: {request.model} != {self.config.model}"
-            )
-
     async def register_model(self, model: Model) -> None:
         _ = self._load_sentence_transformer_model(model.provider_resource_id)
         return model
