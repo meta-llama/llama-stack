@@ -152,6 +152,16 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
+                adapter_type="groq",
+                pip_packages=["groq"],
+                module="llama_stack.providers.remote.inference.groq",
+                config_class="llama_stack.providers.remote.inference.groq.GroqConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.groq.GroqProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
                 adapter_type="bedrock",
                 pip_packages=["boto3"],
                 module="llama_stack.providers.remote.inference.bedrock",
