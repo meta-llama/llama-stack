@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import json
-from typing import Optional
+from typing import List, Optional
 
 from .config import LogFormat
 
@@ -49,8 +49,27 @@ class ConsoleTelemetryImpl(Telemetry):
         if formatted:
             print(formatted)
 
-    async def get_trace(self, trace_id: str) -> Trace:
-        raise NotImplementedError()
+    async def query_traces(
+        self,
+        attribute_conditions: Optional[List[QueryCondition]] = None,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> List[Trace]:
+        raise NotImplementedError("Console telemetry does not support trace querying")
+
+    async def get_spans(
+        self,
+        span_id: str,
+        attribute_conditions: Optional[List[QueryCondition]] = None,
+        attribute_keys_to_return: Optional[List[str]] = None,
+        max_depth: Optional[int] = None,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: Optional[List[str]] = None,
+    ) -> SpanWithChildren:
+        raise NotImplementedError("Console telemetry does not support span querying")
 
 
 COLORS = {

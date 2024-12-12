@@ -27,8 +27,6 @@ $ llama-stack-client configure
 Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5000
 ```
 
-## Provider Commands
-
 ### `llama-stack-client providers list`
 ```bash
 $ llama-stack-client providers list
@@ -119,8 +117,25 @@ $ llama-stack-client memory_banks list
 +--------------+----------------+--------+-------------------+------------------------+--------------------------+
 ```
 
-## Shield Management
+### `llama-stack-client memory_banks register`
+```bash
+$ llama-stack-client memory_banks register <memory-bank-id> --type <type> [--provider-id <provider-id>] [--provider-memory-bank-id <provider-memory-bank-id>] [--chunk-size <chunk-size>] [--embedding-model <embedding-model>] [--overlap-size <overlap-size>]
+```
 
+Options:
+- `--type`: Required. Type of memory bank. Choices: "vector", "keyvalue", "keyword", "graph"
+- `--provider-id`: Optional. Provider ID for the memory bank
+- `--provider-memory-bank-id`: Optional. Provider's memory bank ID
+- `--chunk-size`: Optional. Chunk size in tokens (for vector type). Default: 512
+- `--embedding-model`: Optional. Embedding model (for vector type). Default: "all-MiniLM-L6-v2"
+- `--overlap-size`: Optional. Overlap size in tokens (for vector type). Default: 64
+
+### `llama-stack-client memory_banks unregister`
+```bash
+$ llama-stack-client memory_banks unregister <memory-bank-id>
+```
+
+## Shield Management
 ### `llama-stack-client shields list`
 ```bash
 $ llama-stack-client shields list
@@ -134,16 +149,51 @@ $ llama-stack-client shields list
 +--------------+----------+----------------+-------------+
 ```
 
-## Evaluation Tasks
+### `llama-stack-client shields register`
+```bash
+$ llama-stack-client shields register --shield-id <shield-id> [--provider-id <provider-id>] [--provider-shield-id <provider-shield-id>] [--params <params>]
+```
+
+Options:
+- `--shield-id`: Required. ID of the shield
+- `--provider-id`: Optional. Provider ID for the shield
+- `--provider-shield-id`: Optional. Provider's shield ID
+- `--params`: Optional. JSON configuration parameters for the shield
+
+## Eval Task Management
 
 ### `llama-stack-client eval_tasks list`
 ```bash
-$ llama-stack-client eval run_benchmark <task_id1> <task_id2> --num-examples 10 --output-dir ./ --eval-task-config ~/eval_task_config.json
+$ llama-stack-client eval_tasks list
 ```
 
-where `eval_task_config.json` is the path to the eval task config file in JSON format. An example eval_task_config
+### `llama-stack-client eval_tasks register`
+```bash
+$ llama-stack-client eval_tasks register --eval-task-id <eval-task-id> --dataset-id <dataset-id> --scoring-functions <function1> [<function2> ...] [--provider-id <provider-id>] [--provider-eval-task-id <provider-eval-task-id>] [--metadata <metadata>]
 ```
-$ cat ~/eval_task_config.json
+
+Options:
+- `--eval-task-id`: Required. ID of the eval task
+- `--dataset-id`: Required. ID of the dataset to evaluate
+- `--scoring-functions`: Required. One or more scoring functions to use for evaluation
+- `--provider-id`: Optional. Provider ID for the eval task
+- `--provider-eval-task-id`: Optional. Provider's eval task ID
+- `--metadata`: Optional. Metadata for the eval task in JSON format
+
+## Eval execution
+### `llama-stack-client eval run-benchmark`
+```bash
+$ llama-stack-client eval run-benchmark <eval-task-id1> [<eval-task-id2> ...] --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
+```
+
+Options:
+- `--eval-task-config`: Required. Path to the eval task config file in JSON format
+- `--output-dir`: Required. Path to the directory where evaluation results will be saved
+- `--num-examples`: Optional. Number of examples to evaluate (useful for debugging)
+- `--visualize`: Optional flag. If set, visualizes evaluation results after completion
+
+Example eval_task_config.json:
+```json
 {
     "type": "benchmark",
     "eval_candidate": {
@@ -160,3 +210,14 @@ $ cat ~/eval_task_config.json
     }
 }
 ```
+
+### `llama-stack-client eval run-scoring`
+```bash
+$ llama-stack-client eval run-scoring <eval-task-id> --eval-task-config <config-file> --output-dir <output-dir> [--num-examples <num>] [--visualize]
+```
+
+Options:
+- `--eval-task-config`: Required. Path to the eval task config file in JSON format
+- `--output-dir`: Required. Path to the directory where scoring results will be saved
+- `--num-examples`: Optional. Number of examples to evaluate (useful for debugging)
+- `--visualize`: Optional flag. If set, visualizes scoring results after completion

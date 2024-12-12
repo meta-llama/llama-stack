@@ -94,6 +94,8 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::nvidia",
+            "remote::cerebras",
         ):
             pytest.skip("Other inference providers don't support completion() yet")
 
@@ -128,9 +130,7 @@ class TestInference:
 
     @pytest.mark.asyncio
     @pytest.mark.skip("This test is not quite robust")
-    async def test_completions_structured_output(
-        self, inference_model, inference_stack
-    ):
+    async def test_completion_structured_output(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
@@ -139,6 +139,9 @@ class TestInference:
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
+            "remote::nvidia",
+            "remote::vllm",
+            "remote::cerebras",
         ):
             pytest.skip(
                 "Other inference providers don't support structured output in completions yet"
@@ -198,6 +201,7 @@ class TestInference:
             "remote::fireworks",
             "remote::tgi",
             "remote::together",
+            "remote::vllm",
             "remote::nvidia",
         ):
             pytest.skip("Other inference providers don't support structured output yet")
@@ -211,7 +215,15 @@ class TestInference:
         response = await inference_impl.chat_completion(
             model_id=inference_model,
             messages=[
-                SystemMessage(content="You are a helpful assistant."),
+                # we include context about Michael Jordan in the prompt so that the test is
+                # focused on the funtionality of the model and not on the information embedded
+                # in the model. Llama 3.2 3B Instruct tends to think MJ played for 14 seasons.
+                SystemMessage(
+                    content=(
+                        "You are a helpful assistant.\n\n"
+                        "Michael Jordan was born in 1963. He played basketball for the Chicago Bulls for 15 seasons."
+                    )
+                ),
                 UserMessage(content="Please give me information about Michael Jordan."),
             ],
             stream=False,

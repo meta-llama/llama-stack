@@ -10,6 +10,7 @@ from llama_stack.distribution.datatypes import ModelInput, Provider
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceQuantizedInferenceConfig,
 )
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -20,8 +21,11 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
-
+    name = "meta-reference-quantized-gpu"
     inference_provider = Provider(
         provider_id="meta-reference-inference",
         provider_type="inline::meta-reference-quantized",
@@ -30,13 +34,18 @@ def get_distribution_template() -> DistributionTemplate:
             checkpoint_dir="${env.INFERENCE_CHECKPOINT_DIR:null}",
         ),
     )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+    )
 
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="meta-reference-inference",
     )
     return DistributionTemplate(
-        name="meta-reference-quantized-gpu",
+        name=name,
         distro_type="self_hosted",
         description="Use Meta Reference with fp8, int4 quantization for running LLM inference",
         template_path=Path(__file__).parent / "doc_template.md",
@@ -46,6 +55,7 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
+                    "memory": [memory_provider],
                 },
                 default_models=[inference_model],
             ),

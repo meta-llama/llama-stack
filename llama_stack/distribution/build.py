@@ -10,6 +10,7 @@ from typing import List
 
 import pkg_resources
 from pydantic import BaseModel
+from termcolor import cprint
 
 from llama_stack.distribution.utils.exec import run_with_pty
 
@@ -37,6 +38,7 @@ SERVER_DEPENDENCIES = [
 class ImageType(Enum):
     docker = "docker"
     conda = "conda"
+    venv = "venv"
 
 
 class ApiInput(BaseModel):
@@ -45,7 +47,7 @@ class ApiInput(BaseModel):
 
 
 def get_provider_dependencies(
-    config_providers: Dict[str, List[Provider]]
+    config_providers: Dict[str, List[Provider]],
 ) -> tuple[list[str], list[str]]:
     """Get normal and special dependencies from provider configuration."""
     all_providers = get_provider_registry()
@@ -90,11 +92,12 @@ def get_provider_dependencies(
 def print_pip_install_help(providers: Dict[str, List[Provider]]):
     normal_deps, special_deps = get_provider_dependencies(providers)
 
-    print(
-        f"Please install needed dependencies using the following commands:\n\n\tpip install {' '.join(normal_deps)}"
+    cprint(
+        f"Please install needed dependencies using the following commands:\n\npip install {' '.join(normal_deps)}",
+        "yellow",
     )
     for special_dep in special_deps:
-        log.info(f"\tpip install {special_dep}")
+        cprint(f"pip install {special_dep}", "yellow")
     print()
 
 
@@ -118,9 +121,19 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
         ]
-    else:
+    elif build_config.image_type == ImageType.conda.value:
         script = pkg_resources.resource_filename(
             "llama_stack", "distribution/build_conda_env.sh"
+        )
+        args = [
+            script,
+            build_config.name,
+            str(build_file_path),
+            " ".join(normal_deps),
+        ]
+    elif build_config.image_type == ImageType.venv.value:
+        script = pkg_resources.resource_filename(
+            "llama_stack", "distribution/build_venv.sh"
         )
         args = [
             script,

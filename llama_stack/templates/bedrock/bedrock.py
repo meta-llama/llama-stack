@@ -6,6 +6,9 @@
 
 from pathlib import Path
 
+from llama_stack.distribution.datatypes import Provider
+
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -16,10 +19,19 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["remote::bedrock"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
+    name = "bedrock"
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+    )
 
     return DistributionTemplate(
-        name="bedrock",
+        name=name,
         distro_type="self_hosted",
         description="Use AWS Bedrock for running LLM inference and safety",
         docker_image=None,
@@ -27,7 +39,11 @@ def get_distribution_template() -> DistributionTemplate:
         providers=providers,
         default_models=[],
         run_configs={
-            "run.yaml": RunConfigSettings(),
+            "run.yaml": RunConfigSettings(
+                provider_overrides={
+                    "memory": [memory_provider],
+                },
+            ),
         },
         run_config_env_vars={
             "LLAMASTACK_PORT": (

@@ -38,7 +38,7 @@ class Testeval:
         assert isinstance(response, list)
 
     @pytest.mark.asyncio
-    async def test_eval_evaluate_rows(self, eval_stack):
+    async def test_eval_evaluate_rows(self, eval_stack, inference_model, judge_model):
         eval_impl, eval_tasks_impl, datasetio_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
@@ -46,11 +46,7 @@ class Testeval:
             eval_stack[Api.datasets],
             eval_stack[Api.models],
         )
-        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
-            await models_impl.register_model(
-                model_id=model_id,
-                provider_id="",
-            )
+
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
@@ -77,12 +73,12 @@ class Testeval:
             scoring_functions=scoring_functions,
             task_config=AppEvalTaskConfig(
                 eval_candidate=ModelCandidate(
-                    model="Llama3.2-3B-Instruct",
+                    model=inference_model,
                     sampling_params=SamplingParams(),
                 ),
                 scoring_params={
                     "meta-reference::llm_as_judge_base": LLMAsJudgeScoringFnParams(
-                        judge_model="Llama3.1-8B-Instruct",
+                        judge_model=judge_model,
                         prompt_template=JUDGE_PROMPT,
                         judge_score_regexes=[
                             r"Total rating: (\d+)",
@@ -97,18 +93,14 @@ class Testeval:
         assert "basic::equality" in response.scores
 
     @pytest.mark.asyncio
-    async def test_eval_run_eval(self, eval_stack):
+    async def test_eval_run_eval(self, eval_stack, inference_model, judge_model):
         eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasets],
             eval_stack[Api.models],
         )
-        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
-            await models_impl.register_model(
-                model_id=model_id,
-                provider_id="",
-            )
+
         await register_dataset(
             datasets_impl, for_generation=True, dataset_id="test_dataset_for_eval"
         )
@@ -127,7 +119,7 @@ class Testeval:
             task_id=task_id,
             task_config=AppEvalTaskConfig(
                 eval_candidate=ModelCandidate(
-                    model="Llama3.2-3B-Instruct",
+                    model=inference_model,
                     sampling_params=SamplingParams(),
                 ),
             ),
@@ -142,18 +134,14 @@ class Testeval:
         assert "basic::subset_of" in eval_response.scores
 
     @pytest.mark.asyncio
-    async def test_eval_run_benchmark_eval(self, eval_stack):
+    async def test_eval_run_benchmark_eval(self, eval_stack, inference_model):
         eval_impl, eval_tasks_impl, datasets_impl, models_impl = (
             eval_stack[Api.eval],
             eval_stack[Api.eval_tasks],
             eval_stack[Api.datasets],
             eval_stack[Api.models],
         )
-        for model_id in ["Llama3.2-3B-Instruct", "Llama3.1-8B-Instruct"]:
-            await models_impl.register_model(
-                model_id=model_id,
-                provider_id="",
-            )
+
         response = await datasets_impl.list_datasets()
         assert len(response) > 0
         if response[0].provider_id != "huggingface":
@@ -192,7 +180,7 @@ class Testeval:
             task_id=benchmark_id,
             task_config=BenchmarkEvalTaskConfig(
                 eval_candidate=ModelCandidate(
-                    model="Llama3.2-3B-Instruct",
+                    model=inference_model,
                     sampling_params=SamplingParams(),
                 ),
                 num_examples=3,

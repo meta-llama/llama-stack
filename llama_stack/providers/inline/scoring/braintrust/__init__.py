@@ -5,8 +5,9 @@
 # the root directory of this source tree.
 from typing import Dict
 
-from llama_stack.distribution.datatypes import Api, ProviderSpec
 from pydantic import BaseModel
+
+from llama_stack.distribution.datatypes import Api, ProviderSpec
 
 from .config import BraintrustScoringConfig
 

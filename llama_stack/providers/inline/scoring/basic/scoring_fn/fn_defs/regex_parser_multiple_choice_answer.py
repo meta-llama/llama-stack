@@ -4,9 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
-from llama_stack.apis.scoring import *  # noqa: F401, F403
 from llama_stack.apis.common.type_system import NumberType
+from llama_stack.apis.scoring_functions import (
+    AggregationFunctionType,
+    RegexParserScoringFnParams,
+    ScoringFn,
+)
 
 MULTILINGUAL_ANSWER_REGEXES = [
     r"Answer\s*:",
@@ -67,5 +70,6 @@ regex_parser_multiple_choice_answer = ScoringFn(
             MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(x)
             for x in MULTILINGUAL_ANSWER_REGEXES
         ],
+        aggregation_functions=[AggregationFunctionType.accuracy],
     ),
 )

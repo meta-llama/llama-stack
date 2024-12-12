@@ -53,8 +53,6 @@ class ShieldsProtocolPrivate(Protocol):
 
 
 class MemoryBanksProtocolPrivate(Protocol):
-    async def list_memory_banks(self) -> List[MemoryBank]: ...
-
     async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
 
     async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...
@@ -62,6 +60,8 @@ class MemoryBanksProtocolPrivate(Protocol):
 
 class DatasetsProtocolPrivate(Protocol):
     async def register_dataset(self, dataset: Dataset) -> None: ...
+
+    async def unregister_dataset(self, dataset_id: str) -> None: ...
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):

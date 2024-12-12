@@ -4,12 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .config import OpenTelemetryConfig
+from .config import ChromaInlineImplConfig
 
 
-async def get_adapter_impl(config: OpenTelemetryConfig, _deps):
-    from .opentelemetry import OpenTelemetryAdapter
+async def get_provider_impl(config: ChromaInlineImplConfig, _deps):
+    from llama_stack.providers.remote.memory.chroma.chroma import ChromaMemoryAdapter
 
-    impl = OpenTelemetryAdapter(config)
+    impl = ChromaMemoryAdapter(config)
     await impl.initialize()
     return impl

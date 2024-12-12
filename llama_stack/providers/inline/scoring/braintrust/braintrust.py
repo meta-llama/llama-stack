@@ -16,6 +16,7 @@ import os
 
 from autoevals.llm import Factuality
 from autoevals.ragas import AnswerCorrectness
+
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
@@ -85,7 +86,7 @@ class BraintrustScoringImpl(
 
     async def set_api_key(self) -> None:
         # api key is in the request headers
-        if self.config.openai_api_key is None:
+        if not self.config.openai_api_key:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.openai_api_key:
                 raise ValueError(
@@ -146,7 +147,7 @@ class BraintrustScoringImpl(
                 await self.score_row(input_row, scoring_fn_id)
                 for input_row in input_rows
             ]
-
+            aggregation_functions = [AggregationFunctionType.average]
             agg_results = aggregate_average(score_results)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
