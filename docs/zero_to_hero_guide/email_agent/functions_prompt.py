@@ -2,7 +2,7 @@ from typing import List, Dict, Any
 from llama_stack_client.types.tool_param_definition_param import ToolParamDefinitionParam
 from llama_stack_client.types import CompletionMessage, ToolResponseMessage
 from llama_stack_client.lib.agents.custom_tool import CustomTool
-from gmagent import *
+from email_agent import *
 import json
 
 class ListEmailsTool(CustomTool):
@@ -349,7 +349,7 @@ examples = """
 """
 
 system_prompt = f"""
-Your name is Gmagent, an assistant that can perform all Gmail related tasks for your user.
+Your name is Email Agent, an assistant that can perform all email related tasks for your user.
 Respond to the user's ask by making use of the following functions if needed.
 If no available functions can be used, just say "I don't know" and don't make up facts.
 

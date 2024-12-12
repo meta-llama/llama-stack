@@ -1,5 +1,5 @@
 import argparse
-import gmagent
+import email_agent
 import asyncio
 import json
 from functions_prompt import *
@@ -16,7 +16,7 @@ from shared import memory
 LLAMA_STACK_API_TOGETHER_URL="https://llama-stack.together.ai"
 LLAMA31_8B_INSTRUCT = "Llama3.1-8B-Instruct"
 
-async def create_gmail_agent(client: LlamaStackClient) -> Agent:
+async def create_email_agent(client: LlamaStackClient) -> Agent:
     """Create an agent with gmail tool capabilities."""
 
     listEmailsTool = ListEmailsTool()
@@ -67,16 +67,16 @@ async def create_gmail_agent(client: LlamaStackClient) -> Agent:
 
 async def main():
     parser = argparse.ArgumentParser(description="Set email address")
-    parser.add_argument("--gmail", type=str, required=True, help="Your Gmail address")
+    parser.add_argument("--email", type=str, required=True, help="Your Gmail address")
     args = parser.parse_args()
 
-    gmagent.set_email_service(args.gmail)
+    email_agent.set_email_service(args.email)
 
-    greeting = llama31("hello", "Your name is Gmagent, an assistant that can perform all Gmail related tasks for your user.")
+    greeting = llama31("hello", "Your name is Email Agent, an assistant that can perform all email related tasks for your user.")
     agent_response = f"{greeting}\n\nYour ask: "
 
     client = LlamaStackClient(base_url=LLAMA_STACK_API_TOGETHER_URL)
-    agent = await create_gmail_agent(client)
+    agent = await create_email_agent(client)
     session_id = agent.create_session("email-session")
 
     while True:
