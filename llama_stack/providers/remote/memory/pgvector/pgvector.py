@@ -185,17 +185,6 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         await self.cache[memory_bank_id].index.delete()
         del self.cache[memory_bank_id]
 
-    async def list_memory_banks(self) -> List[MemoryBank]:
-        banks = load_models(self.cursor, VectorMemoryBank)
-        for bank in banks:
-            if bank.identifier not in self.cache:
-                index = BankWithIndex(
-                    bank=bank,
-                    index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
-                )
-                self.cache[bank.identifier] = index
-        return banks
-
     async def insert_documents(
         self,
         bank_id: str,

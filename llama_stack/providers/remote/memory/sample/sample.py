@@ -14,7 +14,7 @@ class SampleMemoryImpl(Memory):
     def __init__(self, config: SampleConfig):
         self.config = config
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
+    async def register_memory_bank(self, memory_bank: MemoryBank) -> None:
         # these are the memory banks the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
         pass
