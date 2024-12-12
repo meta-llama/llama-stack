@@ -15,8 +15,7 @@ from numpy.typing import NDArray
 from pydantic import parse_obj_as
 
 from llama_stack.apis.memory import *  # noqa: F403
-
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
@@ -72,7 +71,7 @@ class ChromaIndex(EmbeddingIndex):
 
 
 class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, inference_api: Api.inference) -> None:
         log.info(f"Initializing ChromaMemoryAdapter with url: {url}")
         url = url.rstrip("/")
         parsed = urlparse(url)
@@ -82,6 +81,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
 
         self.host = parsed.hostname
         self.port = parsed.port
+        self.inference_api = inference_api
 
         self.client = None
         self.cache = {}
@@ -109,10 +109,9 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
             name=memory_bank.identifier,
             metadata={"bank": memory_bank.model_dump_json()},
         )
-        bank_index = BankWithIndex(
-            bank=memory_bank, index=ChromaIndex(self.client, collection)
+        self.cache[memory_bank.identifier] = BankWithIndex(
+            memory_bank, ChromaIndex(self.client, collection), self.inference_api
         )
-        self.cache[memory_bank.identifier] = bank_index
 
     async def list_memory_banks(self) -> List[MemoryBank]:
         collections = await self.client.list_collections()
@@ -124,11 +123,11 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
                 log.exception(f"Failed to parse bank: {collection.metadata}")
                 continue
 
-            index = BankWithIndex(
-                bank=bank,
-                index=ChromaIndex(self.client, collection),
+            self.cache[bank.identifier] = BankWithIndex(
+                bank,
+                ChromaIndex(self.client, collection),
+                self.inference_api,
             )
-            self.cache[bank.identifier] = index
 
         return [i.bank for i in self.cache.values()]
 
@@ -166,6 +165,8 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         collection = await self.client.get_collection(bank_id)
         if not collection:
             raise ValueError(f"Bank {bank_id} not found in Chroma")
-        index = BankWithIndex(bank=bank, index=ChromaIndex(self.client, collection))
+        index = BankWithIndex(
+            bank, ChromaIndex(self.client, collection), self.inference_api
+        )
         self.cache[bank_id] = index
         return index
