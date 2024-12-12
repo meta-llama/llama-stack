@@ -21,6 +21,9 @@ providers:
       max_tokens: ${env.MAX_TOKENS:4096}
       enforce_eager: ${env.ENFORCE_EAGER:False}
       gpu_memory_utilization: ${env.GPU_MEMORY_UTILIZATION:0.7}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
   memory:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -79,6 +82,13 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: vllm
   provider_model_id: null
+  model_type: llm
+- metadata:
+    embedding_dim: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  provider_model_id: null
+  model_type: embedding
 shields: []
 memory_banks: []
 datasets: []

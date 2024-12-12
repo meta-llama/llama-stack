@@ -8,11 +8,15 @@ from pathlib import Path
 
 from llama_models.sku_list import all_registered_models
 
+from llama_stack.apis.models.models import ModelType
+
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
-
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -38,6 +42,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::faiss",
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
     )
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
 
     core_model_to_hf_repo = {
         m.descriptor(): m.huggingface_repo for m in all_registered_models()
@@ -49,6 +58,14 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in MODEL_ALIASES
     ]
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dim": 384,
+        },
+    )
 
     return DistributionTemplate(
         name=name,
@@ -61,10 +78,10 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
                     "memory": [memory_provider],
                 },
-                default_models=default_models,
+                default_models=default_models + [embedding_model],
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
         },

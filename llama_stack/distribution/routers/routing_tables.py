@@ -225,10 +225,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             metadata = {}
         if model_type is None:
             model_type = ModelType.llm
-        if (
-            "embedding_dimension" not in metadata
-            and model_type == ModelType.embedding_model
-        ):
+        if "embedding_dimension" not in metadata and model_type == ModelType.embedding:
             raise ValueError(
                 "Embedding model must have an embedding dimension in its metadata"
             )
@@ -312,7 +309,7 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
         model = await self.get_object_by_identifier("model", params.embedding_model)
         if model is None:
             raise ValueError(f"Model {params.embedding_model} not found")
-        if model.model_type != ModelType.embedding_model:
+        if model.model_type != ModelType.embedding:
             raise ValueError(
                 f"Model {params.embedding_model} is not an embedding model"
             )

@@ -18,6 +18,9 @@ providers:
     config:
       huggingface_repo: ${env.INFERENCE_MODEL}
       api_token: ${env.HF_API_TOKEN}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
   - provider_id: hf-serverless-safety
     provider_type: remote::hf::serverless
     config:
@@ -81,10 +84,18 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: hf-serverless
   provider_model_id: null
+  model_type: llm
 - metadata: {}
   model_id: ${env.SAFETY_MODEL}
   provider_id: hf-serverless-safety
   provider_model_id: null
+  model_type: llm
+- metadata:
+    embedding_dim: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  provider_model_id: null
+  model_type: embedding
 shields:
 - params: null
   shield_id: ${env.SAFETY_MODEL}

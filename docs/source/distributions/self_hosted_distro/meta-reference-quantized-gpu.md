@@ -17,7 +17,7 @@ The `llamastack/distribution-meta-reference-quantized-gpu` distribution consists
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
-| inference | `inline::meta-reference-quantized` |
+| inference | `inline::meta-reference-quantized`, `remote::sentence-transformers` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |

@@ -18,7 +18,7 @@ class TestEmbeddings:
         inference_impl, models_impl = inference_stack
         model = await models_impl.get_model(inference_model)
 
-        if model.model_type != ModelType.embedding_model:
+        if model.model_type != ModelType.embedding:
             pytest.skip("This test is only applicable for embedding models")
 
         response = await inference_impl.embeddings(
@@ -39,7 +39,7 @@ class TestEmbeddings:
         inference_impl, models_impl = inference_stack
         model = await models_impl.get_model(inference_model)
 
-        if model.model_type != ModelType.embedding_model:
+        if model.model_type != ModelType.embedding:
             pytest.skip("This test is only applicable for embedding models")
 
         texts = ["Hello, world!", "This is a test", "Testing embeddings"]

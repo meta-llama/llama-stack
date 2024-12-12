@@ -207,7 +207,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         model = await self.model_store.get_model(model_id)
 
         kwargs = {}
-        assert model.model_type == ModelType.embedding_model
+        assert model.model_type == ModelType.embedding
         assert model.metadata.get("embedding_dimensions")
         kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
         assert all(
