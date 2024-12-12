@@ -31,7 +31,8 @@ from .config import FaissImplConfig
 
 logger = logging.getLogger(__name__)
 
-MEMORY_BANKS_PREFIX = "memory_banks:v1::"
+MEMORY_BANKS_PREFIX = "memory_banks:v2::"
+FAISS_INDEX_PREFIX = "faiss_index:v2::"
 
 
 class FaissIndex(EmbeddingIndex):
@@ -55,7 +56,7 @@ class FaissIndex(EmbeddingIndex):
         if not self.kvstore:
             return
 
-        index_key = f"faiss_index:v1::{self.bank_id}"
+        index_key = f"{FAISS_INDEX_PREFIX}{self.bank_id}"
         stored_data = await self.kvstore.get(index_key)
 
         if stored_data:
@@ -84,14 +85,14 @@ class FaissIndex(EmbeddingIndex):
             "faiss_index": base64.b64encode(buffer.getvalue()).decode("utf-8"),
         }
 
-        index_key = f"faiss_index:v1::{self.bank_id}"
+        index_key = f"{FAISS_INDEX_PREFIX}{self.bank_id}"
         await self.kvstore.set(key=index_key, value=json.dumps(data))
 
     async def delete(self):
         if not self.kvstore or not self.bank_id:
             return
 
-        await self.kvstore.delete(f"faiss_index:v1::{self.bank_id}")
+        await self.kvstore.delete(f"{FAISS_INDEX_PREFIX}{self.bank_id}")
 
     async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
         # Add dimension check
