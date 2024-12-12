@@ -123,7 +123,7 @@ async def main():
                 elif tool_name == "get_pdf_summary":
                     output = result
 
-                print(f"\n-------------------------\n\nGmagent: {output}\n")
+                print(f"\n-------------------------\n\nAgent: {output}\n")
             elif log.role == "inference":
                 print("Llama returned: ", end="")
             else:

@@ -26,7 +26,11 @@ pip install -r requirements.txt
 
 # Run Email Agent
 
-The steps are also the same as the [original app]((https://github.com/meta-llama/llama-recipes/tree/gmagent/recipes/use_cases/email_agent).
+The steps are also the same as the [original app]((https://github.com/meta-llama/llama-recipes/tree/gmagent/recipes/use_cases/email_agent):
+
+```
+python main.py --gmail <your_gmail_address>
+```
 
 # Implementation Notes
 Notes here mainly cover how custom tools (functions) are defined and how the Llama Stack Agent class is used with the custom tools.

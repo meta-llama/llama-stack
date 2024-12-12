@@ -423,7 +423,7 @@ def create_forward_draft(message_id, recipient_email, custom_message=None):
 def send_draft(id):
     sent_message = service.users().drafts().send(
         userId=user_id, 
-        body={'id': id}
+        body={'id': memory['draft_id']}
         ).execute()
     return f"Draft sent with email ID: {sent_message['id']}"
 
