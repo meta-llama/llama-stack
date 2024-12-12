@@ -80,7 +80,7 @@ models:
   provider_model_id: null
   model_type: llm
 - metadata:
-    embedding_dim: 384
+    embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
   provider_id: sentence-transformers
   provider_model_id: null

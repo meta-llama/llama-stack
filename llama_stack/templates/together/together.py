@@ -55,6 +55,7 @@ def get_distribution_template() -> DistributionTemplate:
         ModelInput(
             model_id=core_model_to_hf_repo[m.llama_model],
             provider_model_id=m.provider_model_id,
+            provider_id="together",
         )
         for m in MODEL_ALIASES
     ]
@@ -63,7 +64,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="sentence-transformers",
         model_type=ModelType.embedding,
         metadata={
-            "embedding_dim": 384,
+            "embedding_dimension": 384,
         },
     )
 
