@@ -10,7 +10,7 @@ Currently implemented features of the agent include:
 * get summary of a PDF attachment
 * draft and send an email
 
-We'll mainly cover here how to port a Llama app using native custom tools supported in Llama 3.1 (and later) and an agent implementation from scratch to using Llama Stack APIs. See the link above for a comprehensive overview, definition, and resources of LLM agents.
+We'll mainly cover here how to port a Llama app using native custom tools supported in Llama 3.1 (and later) and an agent implementation from scratch to using Llama Stack APIs. See the link above for a comprehensive overview, definition, and resources of LLM agents, and a detailed list of TODOs for the email agent.
 
 # Setup and Installation
 
@@ -140,32 +140,3 @@ The `create_email_agent` in main.py creates a Llama Stack Agent with 6 custom to
 ## Memory
 
 In `shared.py` we define a simple dictionary `memory`, used to hold short-term results such as a list of found emails based on the user ask, or the draft id of a created email draft. They're needed to answer follow up user asks such as "what attachments does the email with subject xxx have" or "send the draft". 
-
-
-# TODOs
-
-1. Improve the search, reply, forward, create email draft, and query about types of attachments.
-2. Improve the fallback and error handling mechanism when the user asks don't lead to a correct function calling spec or the function calling fails. 
-3. Improve the user experience by showing progress when some Gmail search API calls take long (minutes) to complete.
-4. Implement the async behavior of the agent - schedule an email to be sent later.
-5. Implement the agent planning - decomposing a complicated ask into sub-tasks, using ReAct and other methods.
-6. Implement the agent long-term memory - longer context and memory across sessions (consider using Llama Stack/MemGPT/Letta)
-7. Implement reflection - on the tool calling spec and results.
-8. Introduce multiple-agent collaboration. 
-9. Implement the agent observability. 
-10. Compare different agent frameworks using the agent as the case study.
-11. Add and implement a test plan and productionize the email agent.
-
-
-# Resources
-1. Lilian Weng's blog [LLM Powered Autonomous Agents](https://lilianweng.github.io/posts/2023-06-23-agent/) 
-2. Andrew Ng's posts [Agentic Design Patterns](https://www.deeplearning.ai/the-batch/how-agents-can-improve-llm-performance/) with basic [implementations from scratch](https://github.com/neural-maze/agentic_patterns).
-3. LangChain's survey [State of AI Agents](https://www.langchain.com/stateofaiagents)
-4. Deloitte's report [AI agents and multiagent systems](https://www2.deloitte.com/content/dam/Deloitte/us/Documents/consulting/us-ai-institute-generative-ai-agents-multiagent-systems.pdf)
-5. Letta's blog [The AI agents stack](https://www.letta.com/blog/ai-agents-stack)
-6. Microsoft's multi-agent system [Magentic-One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks)
-7. Amazon's [Multi-Agent Orchestrator framework](https://awslabs.github.io/multi-agent-orchestrator/)
-8. Deeplearning.ai's [agent related courses](https://www.deeplearning.ai/courses/?courses_date_desc%5Bquery%5D=agents) (Meta, AWS, Microsoft, LangChain, LlamaIndex, crewAI, AutoGen, Letta) and some [lessons ported to using Llama](https://github.com/meta-llama/llama-recipes/tree/main/recipes/quickstart/agents/DeepLearningai_Course_Notebooks). 
-9. Felicis's [The Agentic Web](https://www.felicis.com/insight/the-agentic-web)
-10. A pretty complete [list of AI agents](https://github.com/e2b-dev/awesome-ai-agents), not including [/dev/agents](https://sdsa.ai/), a very new startup building the next-gen OS for AI agents, though.
-11. Sequoia's [post](https://www.linkedin.com/posts/konstantinebuhler_the-ai-landscape-is-shifting-from-simple-activity-7270111755710672897-ZHnr/) on 2024 being the year of AI agents and 2025 networks of AI agents.
