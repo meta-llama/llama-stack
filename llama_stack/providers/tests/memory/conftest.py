@@ -58,10 +58,10 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--embedding-model",
+        "--inference-model",
         action="store",
         default=None,
-        help="Specify the embedding model to use for testing",
+        help="Specify the inference model to use for testing",
     )
 
 
@@ -74,15 +74,15 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
-    if "embedding_model" in metafunc.fixturenames:
-        model = metafunc.config.getoption("--embedding-model")
+    if "inference_model" in metafunc.fixturenames:
+        model = metafunc.config.getoption("--inference-model")
         if not model:
             raise ValueError(
-                "No embedding model specified. Please provide a valid embedding model."
+                "No inference model specified. Please provide a valid inference model."
             )
         params = [pytest.param(model, id="")]
 
-        metafunc.parametrize("embedding_model", params, indirect=True)
+        metafunc.parametrize("inference_model", params, indirect=True)
     if "memory_stack" in metafunc.fixturenames:
         available_fixtures = {
             "inference": INFERENCE_FIXTURES,

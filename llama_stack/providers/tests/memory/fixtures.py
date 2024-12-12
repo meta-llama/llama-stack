@@ -107,7 +107,7 @@ MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def memory_stack(embedding_model, request):
+async def memory_stack(inference_model, request):
     fixture_dict = request.param
 
     providers = {}
@@ -124,7 +124,7 @@ async def memory_stack(embedding_model, request):
         provider_data,
         models=[
             ModelInput(
-                model_id=embedding_model,
+                model_id=inference_model,
                 model_type=ModelType.embedding_model,
                 metadata={
                     "embedding_dimension": get_env_or_fail("EMBEDDING_DIMENSION"),
