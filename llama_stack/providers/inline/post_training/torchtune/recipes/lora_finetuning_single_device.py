@@ -74,12 +74,16 @@ class LoraFinetuningSingleDevice:
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
+        algorithm_config: Optional[AlgorithmConfig],
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
     ) -> None:
         self.job_uuid = job_uuid
         self.training_config = training_config
+        if not isinstance(algorithm_config, LoraFinetuningConfig):
+            raise ValueError(
+                "You need to speicifc LoraFinetuningConfig for LoRA finetuning"
+            )
         self.algorithm_config = algorithm_config
         self._device = torchtune_utils.get_device(device="cuda")
         self._dtype = training.get_dtype(training_config.dtype, device=self._device)
@@ -134,6 +138,7 @@ class LoraFinetuningSingleDevice:
         )
 
         self.datasetio_api = datasetio_api
+        self.datasets_api = datasets_api
 
     async def load_checkpoint(self):
         def get_checkpoint_files(checkpoint_dir: str) -> List[str]:
@@ -152,7 +157,7 @@ class LoraFinetuningSingleDevice:
             checkpoint_dir=self.checkpoint_dir,
             checkpoint_files=get_checkpoint_files(self.checkpoint_dir),
             output_dir=self._output_dir,
-            model_type=utils.get_checkpointer_model_type(self.model_id),
+            model_type=await utils.get_checkpointer_model_type(self.model_id),
         )
         checkpoint_dict = self._checkpointer.load_checkpoint()
         return checkpoint_dict
@@ -297,7 +302,7 @@ class LoraFinetuningSingleDevice:
         self,
     ) -> Llama3Tokenizer:
         tokenizer_path = self.checkpoint_dir + "/tokenizer.model"
-        tokenizer_type = utils.get_tokenizer_type(self.model_id)
+        tokenizer_type = await utils.get_tokenizer_type(self.model_id)
         return tokenizer_type(path=tokenizer_path)
 
     async def _setup_optimizer(self, optimizer_config: OptimizerConfig) -> Optimizer:

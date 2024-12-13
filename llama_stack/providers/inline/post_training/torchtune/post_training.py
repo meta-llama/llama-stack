@@ -37,7 +37,7 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
+        algorithm_config: Optional[AlgorithmConfig],
     ) -> PostTrainingJob:
         if job_uuid in self.jobs_list:
             raise ValueError(f"Job {job_uuid} already exists")
@@ -63,6 +63,7 @@ class TorchtunePostTrainingImpl:
                     checkpoint_dir,
                     algorithm_config,
                     self.datasetio_api,
+                    self.datasets_api,
                 )
 
                 job_status_response.status = JobStatus.in_progress
