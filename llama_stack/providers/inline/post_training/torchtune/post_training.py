@@ -24,6 +24,11 @@ class TorchtunePostTrainingImpl:
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets
 
+        # TODO: assume sync job, will need jobs API for async scheduling
+        self.jobs_status = {}
+        self.jobs_list = []
+        self.checkpoints_dict = {}
+
     async def supervised_fine_tune(
         self,
         job_uuid: str,
@@ -32,26 +37,57 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
+        algorithm_config: Optional[AlgorithmConfig],
     ) -> PostTrainingJob:
+        for job in self.jobs_list:
+            if job_uuid == job.job_uuid:
+                raise ValueError(f"Job {job_uuid} already exists")
+
+        post_training_job = PostTrainingJob(job_uuid=job_uuid)
+
+        job_status_response = PostTrainingJobStatusResponse(
+            job_uuid=job_uuid,
+            status=JobStatus.scheduled,
+            scheduled_at=datetime.now(),
+        )
+
+        self.jobs_list.append(post_training_job)
         if isinstance(algorithm_config, LoraFinetuningConfig):
-            recipe = LoraFinetuningSingleDevice(
-                self.config,
-                training_config,
-                hyperparam_search_config,
-                logger_config,
-                model,
-                checkpoint_dir,
-                algorithm_config,
-                self.datasetio_api,
-                self.datasets_api,
-            )
-            await recipe.setup()
-            await recipe.train()
+            try:
+                recipe = LoraFinetuningSingleDevice(
+                    self.config,
+                    job_uuid,
+                    training_config,
+                    hyperparam_search_config,
+                    logger_config,
+                    model,
+                    checkpoint_dir,
+                    algorithm_config,
+                    self.datasetio_api,
+                    self.datasets_api,
+                )
+
+                job_status_response.status = JobStatus.in_progress
+                job_status_response.started_at = datetime.now()
+
+                await recipe.setup()
+                resources_allocated, checkpoints = await recipe.train()
+
+                self.checkpoints_dict[job_uuid] = checkpoints
+                job_status_response.resources_allocated = resources_allocated
+                job_status_response.checkpoints = checkpoints
+                job_status_response.status = JobStatus.completed
+                job_status_response.completed_at = datetime.now()
+
+            except Exception:
+                job_status_response.status = JobStatus.failed
+                raise
         else:
             raise NotImplementedError()
 
-        return PostTrainingJob(job_uuid=job_uuid)
+        self.jobs_status[job_uuid] = job_status_response
+
+        return post_training_job
 
     async def preference_optimize(
         self,
@@ -63,24 +99,28 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    # TODO @SLR722 impelment below APIs
-    async def get_training_jobs(self) -> List[PostTrainingJob]: ...
-
-    # sends SSE stream of logs
-    @webmethod(route="/post-training/job/logs")
-    async def get_training_job_logstream(
-        self, job_uuid: str
-    ) -> PostTrainingJobLogStream: ...
+    async def get_training_jobs(self) -> List[PostTrainingJob]:
+        return self.jobs_list
 
     @webmethod(route="/post-training/job/status")
     async def get_training_job_status(
         self, job_uuid: str
-    ) -> PostTrainingJobStatusResponse: ...
+    ) -> Optional[PostTrainingJobStatusResponse]:
+        if job_uuid in self.jobs_status:
+            return self.jobs_status[job_uuid]
+        return None
 
     @webmethod(route="/post-training/job/cancel")
-    async def cancel_training_job(self, job_uuid: str) -> None: ...
+    async def cancel_training_job(self, job_uuid: str) -> None:
+        raise NotImplementedError("Job cancel is not implemented yet")
 
     @webmethod(route="/post-training/job/artifacts")
     async def get_training_job_artifacts(
         self, job_uuid: str
-    ) -> PostTrainingJobArtifactsResponse: ...
+    ) -> Optional[PostTrainingJobArtifactsResponse]:
+        if job_uuid in self.checkpoints_dict:
+            checkpoints = self.checkpoints_dict.get(job_uuid, [])
+            return PostTrainingJobArtifactsResponse(
+                job_uuid=job_uuid, checkpoints=checkpoints
+            )
+        return None
