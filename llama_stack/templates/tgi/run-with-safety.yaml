@@ -79,10 +79,12 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: tgi-inference
   provider_model_id: null
+  model_type: llm
 - metadata: {}
   model_id: ${env.SAFETY_MODEL}
   provider_id: tgi-safety
   provider_model_id: null
+  model_type: llm
 shields:
 - params: null
   shield_id: ${env.SAFETY_MODEL}

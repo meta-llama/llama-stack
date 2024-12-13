@@ -109,7 +109,7 @@ class InferenceRouter(Inference):
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
-        if model.model_type == ModelType.embedding_model:
+        if model.model_type == ModelType.embedding:
             raise ValueError(
                 f"Model '{model_id}' is an embedding model and does not support chat completions"
             )
@@ -142,7 +142,7 @@ class InferenceRouter(Inference):
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ValueError(f"Model '{model_id}' not found")
-        if model.model_type == ModelType.embedding_model:
+        if model.model_type == ModelType.embedding:
             raise ValueError(
                 f"Model '{model_id}' is an embedding model and does not support chat completions"
             )

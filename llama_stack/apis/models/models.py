@@ -21,9 +21,10 @@ class CommonModelFields(BaseModel):
     )
 
 
-class ModelType(Enum):
+@json_schema_type
+class ModelType(str, Enum):
     llm = "llm"
-    embedding_model = "embedding"
+    embedding = "embedding"
 
 
 @json_schema_type

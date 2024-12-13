@@ -78,7 +78,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             return None
 
     async def register_model(self, model: Model) -> Model:
-        if model.model_type == ModelType.embedding_model:
+        if model.model_type == ModelType.embedding:
             # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
             provider_resource_id = model.provider_resource_id
         else:
