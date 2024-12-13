@@ -3,5 +3,8 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-#
-# from .distribution.library_client import LlamaStackAsLibraryClient, AsyncLlamaStackAsLibraryClient
+
+from llama_stack.distribution.library_client import (  # noqa: F401
+    AsyncLlamaStackAsLibraryClient,
+    LlamaStackAsLibraryClient,
+)
