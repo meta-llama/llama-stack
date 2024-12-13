@@ -66,6 +66,7 @@ class TrainingConfig(BaseModel):
 
 @json_schema_type
 class LoraFinetuningConfig(BaseModel):
+    type: Literal["LoRA"] = "LoRA"
     lora_attn_modules: List[str]
     apply_lora_to_mlp: bool
     apply_lora_to_output: bool
@@ -77,12 +78,13 @@ class LoraFinetuningConfig(BaseModel):
 
 @json_schema_type
 class QATFinetuningConfig(BaseModel):
+    type: Literal["QAT"] = "QAT"
     quantizer_name: str
     group_size: int
 
 
 AlgorithmConfig = Annotated[
-    Union[LoraFinetuningConfig, LoraFinetuningConfig], Field(discriminator="type")
+    Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
 ]
 
 
