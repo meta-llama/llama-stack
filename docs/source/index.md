@@ -59,9 +59,14 @@ getting_started/index
 concepts/index
 distributions/index
 building_applications/index
-getting_started/notebooks
 playground/index
 contributing/index
 references/index
 cookbooks/index
 ```
+
+<!-- ```{toctree}
+cookbooks/index
+building_applications/index
+getting_started/notebooks
+``` -->
