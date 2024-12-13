@@ -59,8 +59,8 @@ getting_started/index
 concepts/index
 distributions/index
 building_applications/index
+benchmark_evaluations/index
 playground/index
-cookbooks/index
 contributing/index
 references/index
 ```

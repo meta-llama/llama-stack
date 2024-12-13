@@ -1,6 +1,8 @@
 # Building AI Applications
 
-Llama Stack provides all the building blocks needed to create sophisticated AI applications. This guide will walk you through how to use these components effectively.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1F2ksmkoGQPa4pzRjMOE6BXWeOxWFIW6n?usp=sharing)
+
+Llama Stack provides all the building blocks needed to create sophisticated AI applications. This guide will walk you through how to use these components effectively. Check out our Colab notebook on to follow along working examples on how you can build LLM-powered agentic applications using Llama Stack.
 
 ## Basic Inference
 
