@@ -18,6 +18,7 @@ class ResourceType(Enum):
     dataset = "dataset"
     scoring_function = "scoring_function"
     eval_task = "eval_task"
+    tool = "tool"
 
 
 class Resource(BaseModel):
