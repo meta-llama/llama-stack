@@ -15,10 +15,14 @@ from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetunin
 
 class TorchtunePostTrainingImpl:
     def __init__(
-        self, config: TorchtunePostTrainingConfig, datasetio_api: DatasetIO
+        self,
+        config: TorchtunePostTrainingConfig,
+        datasetio_api: DatasetIO,
+        datasets: Datasets,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
+        self.datasets_api = datasets
 
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs_status = {}

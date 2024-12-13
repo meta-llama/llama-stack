@@ -19,6 +19,7 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.inline.post_training.torchtune.TorchtunePostTrainingConfig",
             api_dependencies=[
                 Api.datasetio,
+                Api.datasets,
             ],
         ),
     ]

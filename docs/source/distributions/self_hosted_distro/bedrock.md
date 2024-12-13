@@ -12,9 +12,12 @@ The `llamastack/distribution-bedrock` distribution consists of the following pro
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::bedrock` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `remote::bedrock` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 
 

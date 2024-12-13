@@ -23,6 +23,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.common.deployment_types import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
@@ -339,9 +340,8 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
     step_type: StepType
     step_id: str
 
-    model_response_text_delta: Optional[str] = None
+    text_delta: Optional[str] = None
     tool_call_delta: Optional[ToolCallDelta] = None
-    tool_response_text_delta: Optional[str] = None
 
 
 @json_schema_type
@@ -418,6 +418,7 @@ class AgentStepResponse(BaseModel):
 
 
 @runtime_checkable
+@trace_protocol
 class Agents(Protocol):
     @webmethod(route="/agents/create")
     async def create_agent(

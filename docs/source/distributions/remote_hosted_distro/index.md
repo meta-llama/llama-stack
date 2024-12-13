@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Remote-Hosted Distributions
 
 Remote-Hosted distributions are available endpoints serving Llama Stack API that you can directly connect to.

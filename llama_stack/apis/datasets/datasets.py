@@ -64,3 +64,9 @@ class Datasets(Protocol):
 
     @webmethod(route="/datasets/list", method="GET")
     async def list_datasets(self) -> List[Dataset]: ...
+
+    @webmethod(route="/datasets/unregister", method="POST")
+    async def unregister_dataset(
+        self,
+        dataset_id: str,
+    ) -> None: ...

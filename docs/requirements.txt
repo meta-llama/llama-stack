@@ -7,3 +7,7 @@ sphinx-pdj-theme
 sphinx-copybutton
 sphinx-tabs
 sphinx-design
+sphinxcontrib-openapi
+sphinxcontrib-redoc
+sphinxcontrib-mermaid
+sphinxcontrib-video

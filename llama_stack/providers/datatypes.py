@@ -54,8 +54,6 @@ class ShieldsProtocolPrivate(Protocol):
 
 
 class MemoryBanksProtocolPrivate(Protocol):
-    async def list_memory_banks(self) -> List[MemoryBank]: ...
-
     async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
 
     async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...
@@ -63,6 +61,8 @@ class MemoryBanksProtocolPrivate(Protocol):
 
 class DatasetsProtocolPrivate(Protocol):
     async def register_dataset(self, dataset: Dataset) -> None: ...
+
+    async def unregister_dataset(self, dataset_id: str) -> None: ...
 
 
 class ScoringFunctionsProtocolPrivate(Protocol):
@@ -201,10 +201,13 @@ API responses, specify the adapter here.
         return self.adapter.provider_data_validator
 
 
-def remote_provider_spec(api: Api, adapter: AdapterSpec) -> RemoteProviderSpec:
+def remote_provider_spec(
+    api: Api, adapter: AdapterSpec, api_dependencies: Optional[List[Api]] = None
+) -> RemoteProviderSpec:
     return RemoteProviderSpec(
         api=api,
         provider_type=f"remote::{adapter.adapter_type}",
         config_class=adapter.config_class,
         adapter=adapter,
+        api_dependencies=api_dependencies or [],
     )

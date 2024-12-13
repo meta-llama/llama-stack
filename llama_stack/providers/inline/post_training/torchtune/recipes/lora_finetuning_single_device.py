@@ -76,6 +76,7 @@ class LoraFinetuningSingleDevice:
         checkpoint_dir: Optional[str],
         algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
         datasetio_api: DatasetIO,
+        datasets_api: Datasets,
     ) -> None:
         self.job_uuid = job_uuid
         self.training_config = training_config
@@ -106,7 +107,6 @@ class LoraFinetuningSingleDevice:
             model = resolve_model(self.model_id)
             self.checkpoint_dir = model_checkpoint_dir(model)
 
-        # TODO @markchen1015 make it work with get_training_job_artifacts
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
 
         self.seed = training.set_seed(seed=config.torch_seed)
@@ -230,7 +230,7 @@ class LoraFinetuningSingleDevice:
         self._use_dora = self.algorithm_config.use_dora or False
 
         with training.set_default_dtype(self._dtype), self._device:
-            model_type = utils.get_model_type(self.model_id)
+            model_type = await utils.get_model_definition(self.model_id)
             model = model_type(
                 lora_attn_modules=self._lora_attn_modules,
                 apply_lora_to_mlp=self._apply_lora_to_mlp,
@@ -313,9 +313,11 @@ class LoraFinetuningSingleDevice:
     async def _setup_data(
         self, tokenizer: Llama3Tokenizer, shuffle: bool, batch_size: int
     ) -> Tuple[DistributedSampler, DataLoader]:
+        dataset_id = self.training_config.data_config.dataset_id
+
         async def fetch_rows():
             return await self.datasetio_api.get_rows_paginated(
-                dataset_id=self.training_config.data_config.dataset_id,
+                dataset_id=dataset_id,
                 rows_in_page=-1,
             )
 
@@ -323,7 +325,13 @@ class LoraFinetuningSingleDevice:
         rows = all_rows.rows
 
         # Curretly only support alpaca instruct dataset
-        # TODO @markchen1015 make the message_transform swappable and support more dataset types
+        # TODO @SLR722 make the message_transform swappable and support more dataset types
+        # TODO @SLR722 make the input dataset schema more flexible by exposing column_map
+        await utils.validate_input_dataset_schema(
+            datasets_api=self.datasets_api,
+            dataset_id=dataset_id,
+            dataset_type="alpaca",
+        )
         ds = SFTDataset(
             rows,
             message_transform=AlpacaToMessages(train_on_input=False),

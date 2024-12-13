@@ -1,0 +1,66 @@
+version: '2'
+image_name: cerebras
+docker_image: null
+conda_env: cerebras
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: cerebras
+    provider_type: remote::cerebras
+    config:
+      base_url: https://api.cerebras.ai
+      api_key: ${env.CEREBRAS_API_KEY}
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  memory:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/cerebras}/faiss_store.db
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/cerebras}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/cerebras/trace_store.db}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/cerebras}/registry.db
+models:
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: null
+  provider_model_id: llama3.1-8b
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-70B-Instruct
+  provider_id: null
+  provider_model_id: llama3.1-70b
+shields:
+- params: null
+  shield_id: meta-llama/Llama-Guard-3-8B
+  provider_id: null
+  provider_shield_id: null
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []

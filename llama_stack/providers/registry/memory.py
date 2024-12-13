@@ -39,6 +39,7 @@ def available_providers() -> List[ProviderSpec]:
             module="llama_stack.providers.inline.memory.faiss",
             config_class="llama_stack.providers.inline.memory.faiss.FaissImplConfig",
             deprecation_warning="Please use the `inline::faiss` provider instead.",
+            api_dependencies=[Api.inference],
         ),
         InlineProviderSpec(
             api=Api.memory,
@@ -46,6 +47,7 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=EMBEDDING_DEPS + ["faiss-cpu"],
             module="llama_stack.providers.inline.memory.faiss",
             config_class="llama_stack.providers.inline.memory.faiss.FaissImplConfig",
+            api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
             Api.memory,
@@ -53,8 +55,16 @@ def available_providers() -> List[ProviderSpec]:
                 adapter_type="chromadb",
                 pip_packages=EMBEDDING_DEPS + ["chromadb-client"],
                 module="llama_stack.providers.remote.memory.chroma",
-                config_class="llama_stack.distribution.datatypes.RemoteProviderConfig",
+                config_class="llama_stack.providers.remote.memory.chroma.ChromaRemoteImplConfig",
             ),
+            api_dependencies=[Api.inference],
+        ),
+        InlineProviderSpec(
+            api=Api.memory,
+            provider_type="inline::chromadb",
+            pip_packages=EMBEDDING_DEPS + ["chromadb"],
+            module="llama_stack.providers.inline.memory.chroma",
+            config_class="llama_stack.providers.inline.memory.chroma.ChromaInlineImplConfig",
         ),
         remote_provider_spec(
             Api.memory,
@@ -64,6 +74,7 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.memory.pgvector",
                 config_class="llama_stack.providers.remote.memory.pgvector.PGVectorConfig",
             ),
+            api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
             Api.memory,
@@ -74,6 +85,7 @@ def available_providers() -> List[ProviderSpec]:
                 config_class="llama_stack.providers.remote.memory.weaviate.WeaviateConfig",
                 provider_data_validator="llama_stack.providers.remote.memory.weaviate.WeaviateRequestProviderData",
             ),
+            api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
             api=Api.memory,
@@ -83,6 +95,7 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.memory.sample",
                 config_class="llama_stack.providers.remote.memory.sample.SampleConfig",
             ),
+            api_dependencies=[],
         ),
         remote_provider_spec(
             Api.memory,
@@ -92,5 +105,6 @@ def available_providers() -> List[ProviderSpec]:
                 module="llama_stack.providers.remote.memory.qdrant",
                 config_class="llama_stack.providers.remote.memory.qdrant.QdrantConfig",
             ),
+            api_dependencies=[Api.inference],
         ),
     ]
