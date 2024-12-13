@@ -38,7 +38,7 @@ Alongside these APIs, we also related APIs for operating with associated resourc
 - Models
 - Shields
 - Memory Banks
-- EvalTasks
+- Eval Tasks
 - Datasets
 - Scoring Functions
 
