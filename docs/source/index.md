@@ -60,13 +60,7 @@ concepts/index
 distributions/index
 building_applications/index
 playground/index
+cookbooks/index
 contributing/index
 references/index
-cookbooks/index
 ```
-
-<!-- ```{toctree}
-cookbooks/index
-building_applications/index
-getting_started/notebooks
-``` -->
