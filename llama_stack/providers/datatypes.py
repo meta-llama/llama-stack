@@ -17,6 +17,7 @@ from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
+from llama_stack.apis.tools import Tool
 
 
 @json_schema_type
@@ -73,6 +74,10 @@ class ScoringFunctionsProtocolPrivate(Protocol):
 
 class EvalTasksProtocolPrivate(Protocol):
     async def register_eval_task(self, eval_task: EvalTask) -> None: ...
+
+
+class ToolsProtocolPrivate(Protocol):
+    async def register_tool(self, tool: Tool) -> None: ...
 
 
 @json_schema_type
