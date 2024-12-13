@@ -21,10 +21,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": [
-            "inline::meta-reference-quantized",
-            "remote::sentence-transformers",
-        ],
+        "inference": ["inline::meta-reference-quantized"],
         "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],

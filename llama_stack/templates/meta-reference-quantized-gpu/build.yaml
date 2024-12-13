@@ -6,7 +6,6 @@ distribution_spec:
   providers:
     inference:
     - inline::meta-reference-quantized
-    - remote::sentence-transformers
     memory:
     - inline::faiss
     - remote::chromadb
