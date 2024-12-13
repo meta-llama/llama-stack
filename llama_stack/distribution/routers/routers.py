@@ -90,6 +90,7 @@ class InferenceRouter(Inference):
         metadata: Optional[Dict[str, Any]] = None,
         model_type: Optional[ModelType] = None,
     ) -> None:
+        print("inference router")
         await self.routing_table.register_model(
             model_id, provider_model_id, provider_id, metadata, model_type
         )

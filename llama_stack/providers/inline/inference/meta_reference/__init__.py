@@ -15,6 +15,10 @@ async def get_provider_impl(
 ):
     from .inference import MetaReferenceInferenceImpl
 
+    print("get_provider_impl")
+
     impl = MetaReferenceInferenceImpl(config)
-    await impl.initialize()
+    if config.model:
+        # pre-load the model if the model is in the config
+        await impl.initialize()
     return impl

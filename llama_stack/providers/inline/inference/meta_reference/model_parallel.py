@@ -7,7 +7,7 @@
 import os
 from copy import deepcopy
 from functools import partial
-from typing import Any, Generator
+from typing import Any, Generator, Optional, Union
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -34,8 +34,11 @@ class ModelRunner:
             raise ValueError(f"Unexpected task type {type(req)}")
 
 
-def init_model_cb(config: MetaReferenceInferenceConfig):
-    llama = Llama.build(config)
+def init_model_cb(
+    config: MetaReferenceInferenceConfig,
+    request: Optional[Union[CompletionRequest, ChatCompletionRequest]] = None,
+):
+    llama = Llama.build(config, request)
     return ModelRunner(llama)
 
 
@@ -50,9 +53,21 @@ class LlamaModelParallelGenerator:
     clear at the callsite why we need to use a context manager.
     """
 
-    def __init__(self, config: MetaReferenceInferenceConfig):
+    def __init__(
+        self,
+        config: MetaReferenceInferenceConfig,
+        request: Optional[Union[CompletionRequest, ChatCompletionRequest]] = None,
+    ):
+        print("LlamaModelParallelGenerator init")
         self.config = config
-        self.model = resolve_model(self.config.model)
+        self.request = request
+        if config.model:
+            self.model = resolve_model(config.model)
+        elif request:
+            self.model = resolve_model(request.model)
+        else:
+            raise RuntimeError("you need to provide a model for inference")
+
         # this is a hack because Agent's loop uses this to tokenize and check if input is too long
         # while the tool-use loop is going
         checkpoint_dir = model_checkpoint_dir(self.model)
@@ -66,9 +81,15 @@ class LlamaModelParallelGenerator:
         self.__exit__(None, None, None)
 
     def __enter__(self):
+        print("enter LlamaModelParallelGenerator")
+        if self.config.model_parallel_size:
+            model_parallel_size = self.config.model_parallel_size
+        else:
+            model_parallel_size = resolve_model(self.model).pth_file_count
+
         self.group = ModelParallelProcessGroup(
-            self.config.model_parallel_size,
-            init_model_cb=partial(init_model_cb, self.config),
+            model_parallel_size,
+            init_model_cb=partial(init_model_cb, self.config, self.request),
         )
         self.group.start()
         return self

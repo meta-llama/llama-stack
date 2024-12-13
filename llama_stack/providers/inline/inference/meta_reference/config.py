@@ -10,16 +10,13 @@ from llama_models.datatypes import *  # noqa: F403
 from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import *  # noqa: F401, F403
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 from llama_stack.providers.utils.inference import supported_inference_models
 
 
 class MetaReferenceInferenceConfig(BaseModel):
-    model: str = Field(
-        default="Llama3.2-3B-Instruct",
-        description="Model descriptor from `llama model list`",
-    )
+    model: Optional[str] = None
     torch_seed: Optional[int] = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
