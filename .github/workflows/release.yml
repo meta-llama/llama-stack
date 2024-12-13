@@ -34,7 +34,9 @@ jobs:
   pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: pypi
+      url: https://pypi.org/p/llama-stack
 
     needs:
       - build
@@ -51,7 +53,6 @@ jobs:
           path: dist/
 
       - name: publish
-        if: github.event_name == 'push'
         uses: pypa/gh-action-pypi-publish@67339c736fd9354cd4f8cb0b744f2b82a74b5c70 # v1.12.3
         with:
           attestations: true
