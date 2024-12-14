@@ -20,6 +20,11 @@ class CommonModelFields(BaseModel):
         description="Any additional metadata for this model",
     )
 
+    tags: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Tags associated with this model as a dictionary",
+    )
+
 
 @json_schema_type
 class ModelType(str, Enum):
@@ -69,6 +74,7 @@ class Models(Protocol):
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
         model_type: Optional[ModelType] = None,
+        tags: Optional[Dict[str, str]] = None,
     ) -> Model: ...
 
     @webmethod(route="/models/unregister", method="POST")
