@@ -169,6 +169,12 @@ class PostTraining(Protocol):
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
+        model: str = Field(
+            default="Llama3.2-3B-Instruct",
+            description="Model descriptor from `llama model list`",
+        ),
+        checkpoint_dir: Optional[str] = None,
+        algorithm_config: Optional[AlgorithmConfig] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")
