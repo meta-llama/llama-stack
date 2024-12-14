@@ -115,7 +115,7 @@ def _map_finish_reason_to_stop_reason(
     if finish_reason == "stop":
         return StopReason.end_of_turn
     elif finish_reason == "length":
-        return StopReason.end_of_message
+        return StopReason.out_of_tokens
     elif finish_reason == "tool_calls":
         raise NotImplementedError("tool_calls is not supported yet")
     else:
