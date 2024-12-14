@@ -5,12 +5,14 @@
 # the root directory of this source tree.
 
 import uuid
+from datetime import datetime, timedelta
 
 import pytest
 
 from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.apis.memory_banks.memory_banks import VectorMemoryBankParams
+from llama_stack.providers.utils.kvstore import RedisKVStoreConfig, kvstore_impl
 
 # How to run this test:
 #
@@ -43,6 +45,18 @@ def sample_documents():
             metadata={"category": "AI", "difficulty": "advanced"},
         ),
     ]
+
+
+@pytest.fixture
+def redis_config():
+    return RedisKVStoreConfig(host="localhost", port=6379)
+
+
+@pytest_asyncio.fixture
+async def redis_kvstore(redis_config):
+    kvstore = await kvstore_impl(redis_config)
+    await kvstore.initialize()
+    return kvstore
 
 
 async def register_memory_bank(
@@ -176,6 +190,84 @@ class TestMemory:
         assert_valid_response(response5)
         print("The scores are:", response5.scores)
         assert all(score >= 0.01 for score in response5.scores)
+
+    @pytest.mark.asyncio
+    async def test_redis_kvstore_initialization(self, redis_kvstore):
+        # Test empty Redis KVStore
+        result = await redis_kvstore.get("nonexistent")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_redis_kvstore_crud_operations(self, redis_kvstore):
+        # Test set and get operations
+        await redis_kvstore.set("key1", "value1")
+        result = await redis_kvstore.get("key1")
+        assert result == "value1"
+
+        # Test delete operation
+        await redis_kvstore.delete("key1")
+        result = await redis_kvstore.get("key1")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_redis_kvstore_namespaced_keys(self, redis_config):
+        redis_config.namespace = "test_namespace"
+        kvstore = await kvstore_impl(redis_config)
+        await kvstore.initialize()
+
+        # Test namespaced set and get operations
+        await kvstore.set("key1", "value1")
+        result = await kvstore.get("key1")
+        assert result == "value1"
+
+        # Test delete operation with namespaced key
+        await kvstore.delete("key1")
+        result = await kvstore.get("key1")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_redis_kvstore_expiration_handling(self, redis_kvstore):
+        # Test set operation with expiration
+        expiration = datetime.now() + timedelta(seconds=1)
+        await redis_kvstore.set("key1", "value1", expiration=expiration)
+
+        # Verify key is retrievable before expiration
+        result = await redis_kvstore.get("key1")
+        assert result == "value1"
+
+        # Wait for expiration and verify key is no longer retrievable
+        await asyncio.sleep(2)
+        result = await redis_kvstore.get("key1")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_redis_kvstore_error_handling(self, redis_config):
+        # Test connection to invalid Redis server
+        invalid_config = RedisKVStoreConfig(host="invalid_host", port=6379)
+        with pytest.raises(RuntimeError):
+            await kvstore_impl(invalid_config)
+
+    @pytest.mark.asyncio
+    async def test_redis_kvstore_concurrency(self, redis_kvstore):
+        # Test concurrent access to Redis KVStore
+        async def set_value(key, value):
+            await redis_kvstore.set(key, value)
+
+        async def get_value(key):
+            return await redis_kvstore.get(key)
+
+        tasks = []
+        for i in range(10):
+            tasks.append(set_value(f"key{i}", f"value{i}"))
+        await asyncio.gather(*tasks)
+
+        tasks = []
+        for i in range(10):
+            tasks.append(get_value(f"key{i}"))
+        results = await asyncio.gather(*tasks)
+
+        for i in range(10):
+            assert results[i] == f"value{i}"
 
 
 def assert_valid_response(response: QueryDocumentsResponse):
