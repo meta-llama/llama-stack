@@ -186,7 +186,7 @@ class TestConvertNonStreamChatCompletionResponse:
 
         converted = convert_chat_completion_response(response)
 
-        assert converted.completion_message.stop_reason == StopReason.end_of_message
+        assert converted.completion_message.stop_reason == StopReason.out_of_tokens
 
     def _dummy_chat_completion_response(self):
         return ChatCompletion(
