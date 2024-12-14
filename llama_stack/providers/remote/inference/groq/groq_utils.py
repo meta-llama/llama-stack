@@ -52,7 +52,7 @@ def convert_chat_completion_request(
         # Groq's JSON mode is beta at the time of writing
         warnings.warn("response_format is not supported yet")
 
-    if request.sampling_params.repetition_penalty:
+    if request.sampling_params.repetition_penalty != 1.0:
         # groq supports frequency_penalty, but frequency_penalty and sampling_params.repetition_penalty
         # seem to have different semantics
         # frequency_penalty defaults to 0 is a float between -2.0 and 2.0
