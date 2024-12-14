@@ -225,7 +225,7 @@ response = client.inference.chat_completion(
 print(response.completion_message.content)
 ```
 
-### 4. Run the Python Scrip
+### 4. Run the Python Script
 
 ```bash
 python test_llama_stack.py
