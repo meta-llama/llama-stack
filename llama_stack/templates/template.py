@@ -11,6 +11,7 @@ import jinja2
 import yaml
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     Api,
     BuildConfig,
@@ -44,35 +45,36 @@ class RunConfigSettings(BaseModel):
                 provider_configs[api_str] = api_providers
                 continue
 
-            provider_type = provider_types[0]
-            provider_id = provider_type.split("::")[-1]
+            provider_configs[api_str] = []
+            for provider_type in provider_types:
+                provider_id = provider_type.split("::")[-1]
 
-            api = Api(api_str)
-            if provider_type not in provider_registry[api]:
-                raise ValueError(
-                    f"Unknown provider type: {provider_type} for API: {api_str}"
+                api = Api(api_str)
+                if provider_type not in provider_registry[api]:
+                    raise ValueError(
+                        f"Unknown provider type: {provider_type} for API: {api_str}"
+                    )
+
+                config_class = provider_registry[api][provider_type].config_class
+                assert (
+                    config_class is not None
+                ), f"No config class for provider type: {provider_type} for API: {api_str}"
+
+                config_class = instantiate_class_type(config_class)
+                if hasattr(config_class, "sample_run_config"):
+                    config = config_class.sample_run_config(
+                        __distro_dir__=f"distributions/{name}"
+                    )
+                else:
+                    config = {}
+
+                provider_configs[api_str].append(
+                    Provider(
+                        provider_id=provider_id,
+                        provider_type=provider_type,
+                        config=config,
+                    )
                 )
-
-            config_class = provider_registry[api][provider_type].config_class
-            assert (
-                config_class is not None
-            ), f"No config class for provider type: {provider_type} for API: {api_str}"
-
-            config_class = instantiate_class_type(config_class)
-            if hasattr(config_class, "sample_run_config"):
-                config = config_class.sample_run_config(
-                    __distro_dir__=f"distributions/{name}"
-                )
-            else:
-                config = {}
-
-            provider_configs[api_str] = [
-                Provider(
-                    provider_id=provider_id,
-                    provider_type=provider_type,
-                    config=config,
-                )
-            ]
 
         # Get unique set of APIs from providers
         apis = list(sorted(providers.keys()))
@@ -145,6 +147,13 @@ class DistributionTemplate(BaseModel):
         )
 
     def save_distribution(self, yaml_output_dir: Path, doc_output_dir: Path) -> None:
+        def enum_representer(dumper, data):
+            return dumper.represent_scalar("tag:yaml.org,2002:str", data.value)
+
+        # Register YAML representer for ModelType
+        yaml.add_representer(ModelType, enum_representer)
+        yaml.SafeDumper.add_representer(ModelType, enum_representer)
+
         for output_dir in [yaml_output_dir, doc_output_dir]:
             output_dir.mkdir(parents=True, exist_ok=True)
 

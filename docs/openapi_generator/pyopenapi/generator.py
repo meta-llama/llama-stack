@@ -438,6 +438,14 @@ class Generator:
         return extra_tags
 
     def _build_operation(self, op: EndpointOperation) -> Operation:
+        if op.defining_class.__name__ in [
+            "SyntheticDataGeneration",
+            "PostTraining",
+            "BatchInference",
+        ]:
+            op.defining_class.__name__ = f"{op.defining_class.__name__} (Coming Soon)"
+            print(op.defining_class.__name__)
+
         doc_string = parse_type(op.func_ref)
         doc_params = dict(
             (param.name, param.description) for param in doc_string.params.values()

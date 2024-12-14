@@ -40,7 +40,7 @@ class ModelsClient(Models):
             response = await client.post(
                 f"{self.base_url}/models/register",
                 json={
-                    "model": json.loads(model.json()),
+                    "model": json.loads(model.model_dump_json()),
                 },
                 headers={"Content-Type": "application/json"},
             )

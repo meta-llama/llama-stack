@@ -19,6 +19,7 @@ class TestPostTraining:
     @pytest.mark.asyncio
     async def test_supervised_fine_tune(self, post_training_stack):
         algorithm_config = LoraFinetuningConfig(
+            type="LoRA",
             lora_attn_modules=["q_proj", "v_proj", "output_proj"],
             apply_lora_to_mlp=True,
             apply_lora_to_output=False,

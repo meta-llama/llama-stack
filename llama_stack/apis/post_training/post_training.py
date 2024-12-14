@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Protocol, Union
 from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
+from typing_extensions import Annotated
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.common.job_types import JobStatus
@@ -65,6 +66,7 @@ class TrainingConfig(BaseModel):
 
 @json_schema_type
 class LoraFinetuningConfig(BaseModel):
+    type: Literal["LoRA"] = "LoRA"
     lora_attn_modules: List[str]
     apply_lora_to_mlp: bool
     apply_lora_to_output: bool
@@ -76,8 +78,14 @@ class LoraFinetuningConfig(BaseModel):
 
 @json_schema_type
 class QATFinetuningConfig(BaseModel):
+    type: Literal["QAT"] = "QAT"
     quantizer_name: str
     group_size: int
+
+
+AlgorithmConfig = Annotated[
+    Union[LoraFinetuningConfig, QATFinetuningConfig], Field(discriminator="type")
+]
 
 
 @json_schema_type
@@ -161,14 +169,6 @@ class PostTraining(Protocol):
         training_config: TrainingConfig,
         hyperparam_search_config: Dict[str, Any],
         logger_config: Dict[str, Any],
-        model: str = Field(
-            default="Llama3.2-3B-Instruct",
-            description="Model descriptor from `llama model list`",
-        ),
-        checkpoint_dir: Optional[str] = None,
-        algorithm_config: Optional[
-            Union[LoraFinetuningConfig, QATFinetuningConfig]
-        ] = None,
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/preference-optimize", method="POST")

@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Ollama Distribution
 
 ```{toctree}
@@ -111,9 +114,9 @@ llama stack run ./run-with-safety.yaml \
 
 ### (Optional) Update Model Serving Configuration
 
-> [!NOTE]
-> Please check the [OLLAMA_SUPPORTED_MODELS](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers.remote/inference/ollama/ollama.py) for the supported Ollama models.
-
+```{note}
+Please check the [model_aliases](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
+```
 
 To serve a new model with `ollama`
 ```bash

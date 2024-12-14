@@ -39,7 +39,7 @@ class AgentPersistence:
         )
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}",
-            value=session_info.json(),
+            value=session_info.model_dump_json(),
         )
         return session_id
 
@@ -60,13 +60,13 @@ class AgentPersistence:
         session_info.memory_bank_id = bank_id
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}",
-            value=session_info.json(),
+            value=session_info.model_dump_json(),
         )
 
     async def add_turn_to_session(self, session_id: str, turn: Turn):
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}:{turn.turn_id}",
-            value=turn.json(),
+            value=turn.model_dump_json(),
         )
 
     async def get_session_turns(self, session_id: str) -> List[Turn]:

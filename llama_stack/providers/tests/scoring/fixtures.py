@@ -10,14 +10,22 @@ import pytest_asyncio
 from llama_stack.apis.models import ModelInput
 
 from llama_stack.distribution.datatypes import Api, Provider
-
+from llama_stack.providers.inline.scoring.braintrust import BraintrustScoringConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from ..conftest import ProviderFixture, remote_stack_fixture
+from ..env import get_env_or_fail
 
 
 @pytest.fixture(scope="session")
 def scoring_remote() -> ProviderFixture:
     return remote_stack_fixture()
+
+
+@pytest.fixture(scope="session")
+def judge_model(request):
+    if hasattr(request, "param"):
+        return request.param
+    return request.config.getoption("--judge-model", None)
 
 
 @pytest.fixture(scope="session")
@@ -40,7 +48,9 @@ def scoring_braintrust() -> ProviderFixture:
             Provider(
                 provider_id="braintrust",
                 provider_type="inline::braintrust",
-                config={},
+                config=BraintrustScoringConfig(
+                    openai_api_key=get_env_or_fail("OPENAI_API_KEY"),
+                ).model_dump(),
             )
         ],
     )
@@ -63,7 +73,7 @@ SCORING_FIXTURES = ["basic", "remote", "braintrust", "llm_as_judge"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def scoring_stack(request, inference_model):
+async def scoring_stack(request, inference_model, judge_model):
     fixture_dict = request.param
 
     providers = {}
@@ -82,8 +92,7 @@ async def scoring_stack(request, inference_model):
             ModelInput(model_id=model)
             for model in [
                 inference_model,
-                "Llama3.1-405B-Instruct",
-                "Llama3.1-8B-Instruct",
+                judge_model,
             ]
         ],
     )

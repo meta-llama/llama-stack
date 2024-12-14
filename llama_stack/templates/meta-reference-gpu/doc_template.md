@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Meta Reference Distribution
 
 ```{toctree}
@@ -26,7 +29,7 @@ The following environment variables can be configured:
 
 ## Prerequisite: Downloading Models
 
-Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/cli_reference/download_models.html) here to download the models. Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
+Please make sure you have llama model checkpoints downloaded in `~/.llama` before proceeding. See [installation guide](https://llama-stack.readthedocs.io/en/latest/references/llama_cli_reference/download_models.html) here to download the models. Run `llama model list` to see the available models to download, and `llama model download` to download the checkpoints.
 
 ```
 $ ls ~/.llama/checkpoints
@@ -47,6 +50,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
   llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
@@ -58,6 +62,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
   llamastack/distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \

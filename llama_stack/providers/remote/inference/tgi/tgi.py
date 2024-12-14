@@ -17,6 +17,10 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.models import *  # noqa: F403
 
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+from llama_stack.providers.utils.inference.model_registry import (
+    build_model_alias,
+    ModelRegistryHelper,
+)
 
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
@@ -37,6 +41,17 @@ from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImpl
 log = logging.getLogger(__name__)
 
 
+def build_model_aliases():
+    return [
+        build_model_alias(
+            model.huggingface_repo,
+            model.descriptor(),
+        )
+        for model in all_registered_models()
+        if model.huggingface_repo
+    ]
+
+
 class _HfAdapter(Inference, ModelsProtocolPrivate):
     client: AsyncInferenceClient
     max_tokens: int
@@ -44,45 +59,39 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
     def __init__(self) -> None:
         self.formatter = ChatFormat(Tokenizer.get_instance())
+        self.register_helper = ModelRegistryHelper(build_model_aliases())
         self.huggingface_repo_to_llama_model_id = {
             model.huggingface_repo: model.descriptor()
             for model in all_registered_models()
             if model.huggingface_repo
         }
 
-    async def register_model(self, model: Model) -> None:
-        pass
-
-    async def list_models(self) -> List[Model]:
-        repo = self.model_id
-        identifier = self.huggingface_repo_to_llama_model_id[repo]
-        return [
-            Model(
-                identifier=identifier,
-                llama_model=identifier,
-                metadata={
-                    "huggingface_repo": repo,
-                },
-            )
-        ]
-
     async def shutdown(self) -> None:
         pass
+
+    async def register_model(self, model: Model) -> None:
+        model = await self.register_helper.register_model(model)
+        if model.provider_resource_id != self.model_id:
+            raise ValueError(
+                f"Model {model.provider_resource_id} does not match the model {self.model_id} served by TGI."
+            )
+        return model
 
     async def unregister_model(self, model_id: str) -> None:
         pass
 
     async def completion(
         self,
-        model: str,
+        model_id: str,
         content: InterleavedTextMedia,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = CompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             content=content,
             sampling_params=sampling_params,
             response_format=response_format,
@@ -176,7 +185,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
     async def chat_completion(
         self,
-        model: str,
+        model_id: str,
         messages: List[Message],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
@@ -186,8 +195,9 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
+        model = await self.model_store.get_model(model_id)
         request = ChatCompletionRequest(
-            model=model,
+            model=model.provider_resource_id,
             messages=messages,
             sampling_params=sampling_params,
             tools=tools or [],
@@ -241,7 +251,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
     def _get_params(self, request: ChatCompletionRequest) -> dict:
         prompt, input_tokens = chat_completion_request_to_model_input_info(
-            request, self.formatter
+            request, self.register_helper.get_llama_model(request.model), self.formatter
         )
         return dict(
             prompt=prompt,
@@ -256,7 +266,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
     async def embeddings(
         self,
-        model: str,
+        model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

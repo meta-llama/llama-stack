@@ -36,6 +36,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    content_has_media,
     convert_image_media_to_url,
     request_has_media,
 )
@@ -60,16 +61,24 @@ model_aliases = [
         CoreModelId.llama3_1_70b_instruct.value,
     ),
     build_model_alias(
+        "llama3.1:405b-instruct-fp16",
+        CoreModelId.llama3_1_405b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.1:405b",
+        CoreModelId.llama3_1_405b_instruct.value,
+    ),
+    build_model_alias(
         "llama3.2:1b-instruct-fp16",
+        CoreModelId.llama3_2_1b_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2:1b",
         CoreModelId.llama3_2_1b_instruct.value,
     ),
     build_model_alias(
         "llama3.2:3b-instruct-fp16",
         CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias_with_just_provider_model_id(
-        "llama3.2:1b",
-        CoreModelId.llama3_2_1b_instruct.value,
     ),
     build_model_alias_with_just_provider_model_id(
         "llama3.2:3b",
@@ -82,6 +91,14 @@ model_aliases = [
     build_model_alias_with_just_provider_model_id(
         "llama3.2-vision",
         CoreModelId.llama3_2_11b_vision_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.2-vision:90b-instruct-fp16",
+        CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    build_model_alias_with_just_provider_model_id(
+        "llama3.2-vision:90b",
+        CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     # The Llama Guard models don't have their full fp16 versions
     # so we are going to alias their default version to the canonical SKU
@@ -164,7 +181,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
         r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         choice = OpenAICompatCompletionChoice(
             finish_reason=r["done_reason"] if r["done"] else None,
@@ -254,7 +270,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             r = await self.client.chat(**params)
         else:
             r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         if "message" in r:
             choice = OpenAICompatCompletionChoice(
@@ -307,9 +322,30 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Ollama does not support media for embeddings"
+        response = await self.client.embed(
+            model=model.provider_resource_id,
+            input=[interleaved_text_media_as_str(content) for content in contents],
+        )
+        embeddings = response["embeddings"]
+
+        return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
+        # ollama does not have embedding models running. Check if the model is in list of available models.
+        if model.model_type == ModelType.embedding:
+            response = await self.client.list()
+            available_models = [m["model"] for m in response["models"]]
+            if model.provider_resource_id not in available_models:
+                raise ValueError(
+                    f"Model '{model.provider_resource_id}' is not available in Ollama. "
+                    f"Available models: {', '.join(available_models)}"
+                )
+            return model
         model = await self.register_helper.register_model(model)
         models = await self.client.ps()
         available_models = [m["model"] for m in models["models"]]

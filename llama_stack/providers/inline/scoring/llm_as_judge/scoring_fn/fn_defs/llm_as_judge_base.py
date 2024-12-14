@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.common.type_system import NumberType
-from llama_stack.apis.scoring_functions import ScoringFn
+from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams, ScoringFn
 
 
 llm_as_judge_base = ScoringFn(
@@ -14,4 +14,8 @@ llm_as_judge_base = ScoringFn(
     return_type=NumberType(),
     provider_id="llm-as-judge",
     provider_resource_id="llm-as-judge-base",
+    params=LLMAsJudgeScoringFnParams(
+        judge_model="meta-llama/Llama-3.1-405B-Instruct",
+        prompt_template="Enter custom LLM as Judge Prompt Template",
+    ),
 )

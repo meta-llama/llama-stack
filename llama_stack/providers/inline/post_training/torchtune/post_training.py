@@ -15,10 +15,14 @@ from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetunin
 
 class TorchtunePostTrainingImpl:
     def __init__(
-        self, config: TorchtunePostTrainingConfig, datasetio_api: DatasetIO
+        self,
+        config: TorchtunePostTrainingConfig,
+        datasetio_api: DatasetIO,
+        datasets: Datasets,
     ) -> None:
         self.config = config
         self.datasetio_api = datasetio_api
+        self.datasets_api = datasets
 
         # TODO: assume sync job, will need jobs API for async scheduling
         self.jobs_status = {}
@@ -33,10 +37,11 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
+        algorithm_config: Optional[AlgorithmConfig],
     ) -> PostTrainingJob:
-        if job_uuid in self.jobs_list:
-            raise ValueError(f"Job {job_uuid} already exists")
+        for job in self.jobs_list:
+            if job_uuid == job.job_uuid:
+                raise ValueError(f"Job {job_uuid} already exists")
 
         post_training_job = PostTrainingJob(job_uuid=job_uuid)
 
@@ -59,6 +64,7 @@ class TorchtunePostTrainingImpl:
                     checkpoint_dir,
                     algorithm_config,
                     self.datasetio_api,
+                    self.datasets_api,
                 )
 
                 job_status_response.status = JobStatus.in_progress

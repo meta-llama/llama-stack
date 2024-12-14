@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Dell-TGI Distribution
 
 ```{toctree}

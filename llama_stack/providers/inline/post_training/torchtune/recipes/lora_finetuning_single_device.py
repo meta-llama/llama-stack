@@ -75,11 +75,16 @@ class LoraFinetuningSingleDevice:
         logger_config: Dict[str, Any],
         model: str,
         checkpoint_dir: Optional[str],
-        algorithm_config: Optional[Union[LoraFinetuningConfig, QATFinetuningConfig]],
+        algorithm_config: Optional[AlgorithmConfig],
         datasetio_api: DatasetIO,
+        datasets_api: Datasets,
     ) -> None:
         self.job_uuid = job_uuid
         self.training_config = training_config
+        if not isinstance(algorithm_config, LoraFinetuningConfig):
+            raise ValueError(
+                "You need to speicifc LoraFinetuningConfig for LoRA finetuning"
+            )
         self.algorithm_config = algorithm_config
         self._device = torchtune_utils.get_device(device="cuda")
         self._dtype = training.get_dtype(training_config.dtype, device=self._device)
@@ -107,7 +112,6 @@ class LoraFinetuningSingleDevice:
             model = resolve_model(self.model_id)
             self.checkpoint_dir = model_checkpoint_dir(model)
 
-        # TODO @markchen1015 make it work with get_training_job_artifacts
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
 
         self.seed = training.set_seed(seed=config.torch_seed)
@@ -135,6 +139,7 @@ class LoraFinetuningSingleDevice:
         )
 
         self.datasetio_api = datasetio_api
+        self.datasets_api = datasets_api
 
     async def load_checkpoint(self):
         def get_checkpoint_files(checkpoint_dir: str) -> List[str]:
@@ -153,7 +158,7 @@ class LoraFinetuningSingleDevice:
             checkpoint_dir=self.checkpoint_dir,
             checkpoint_files=get_checkpoint_files(self.checkpoint_dir),
             output_dir=self._output_dir,
-            model_type=utils.get_checkpointer_model_type(self.model_id),
+            model_type=await utils.get_checkpointer_model_type(self.model_id),
         )
         checkpoint_dict = self._checkpointer.load_checkpoint()
         return checkpoint_dict
@@ -241,7 +246,7 @@ class LoraFinetuningSingleDevice:
         self._use_dora = self.algorithm_config.use_dora or False
 
         with training.set_default_dtype(self._dtype), self._device:
-            model_type = utils.get_model_type(self.model_id)
+            model_type = await utils.get_model_definition(self.model_id)
             model = model_type(
                 lora_attn_modules=self._lora_attn_modules,
                 apply_lora_to_mlp=self._apply_lora_to_mlp,
@@ -308,7 +313,7 @@ class LoraFinetuningSingleDevice:
         self,
     ) -> Llama3Tokenizer:
         tokenizer_path = self.checkpoint_dir + "/tokenizer.model"
-        tokenizer_type = utils.get_tokenizer_type(self.model_id)
+        tokenizer_type = await utils.get_tokenizer_type(self.model_id)
         return tokenizer_type(path=tokenizer_path)
 
     async def _setup_optimizer(self, optimizer_config: OptimizerConfig) -> Optimizer:
@@ -338,7 +343,13 @@ class LoraFinetuningSingleDevice:
         rows = all_rows.rows
 
         # Curretly only support alpaca instruct dataset
-        # TODO @markchen1015 make the message_transform swappable and support more dataset types
+        # TODO @SLR722 make the message_transform swappable and support more dataset types
+        # TODO @SLR722 make the input dataset schema more flexible by exposing column_map
+        await utils.validate_input_dataset_schema(
+            datasets_api=self.datasets_api,
+            dataset_id=dataset_id,
+            dataset_type="alpaca",
+        )
         ds = SFTDataset(
             rows,
             message_transform=AlpacaToMessages(train_on_input=False),

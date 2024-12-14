@@ -12,6 +12,8 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+from docutils import nodes
+
 project = "llama-stack"
 copyright = "2024, Meta"
 author = "Meta"
@@ -25,6 +27,9 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "sphinx_design",
+    "sphinxcontrib.redoc",
+    "sphinxcontrib.mermaid",
+    "sphinxcontrib.video",
 ]
 myst_enable_extensions = ["colon_fence"]
 
@@ -44,6 +49,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 myst_enable_extensions = [
     "amsmath",
     "attrs_inline",
+    "attrs_block",
     "colon_fence",
     "deflist",
     "dollarmath",
@@ -57,6 +63,11 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+
+myst_substitutions = {
+    "docker_hub": "https://hub.docker.com/repository/docker/llamastack",
+}
+
 
 # Copy button settings
 copybutton_prompt_text = "$ "  # for bash prompts
@@ -82,3 +93,41 @@ html_theme_options = {
 html_static_path = ["../_static"]
 # html_logo = "../_static/llama-stack-logo.png"
 html_style = "../_static/css/my_theme.css"
+
+redoc = [
+    {
+        "name": "Llama Stack API",
+        "page": "references/api_reference/index",
+        "spec": "../resources/llama-stack-spec.yaml",
+        "opts": {
+            "suppress-warnings": True,
+            # "expand-responses": ["200", "201"],
+        },
+        "embed": True,
+    },
+]
+
+redoc_uri = "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"
+
+
+def setup(app):
+    def dockerhub_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+        url = f"https://hub.docker.com/r/llamastack/{text}"
+        node = nodes.reference(rawtext, text, refuri=url, **options)
+        return [node], []
+
+    def repopath_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+        parts = text.split("::")
+        if len(parts) == 2:
+            link_text = parts[0]
+            url_path = parts[1]
+        else:
+            link_text = text
+            url_path = text
+
+        url = f"https://github.com/meta-llama/llama-stack/tree/main/{url_path}"
+        node = nodes.reference(rawtext, link_text, refuri=url, **options)
+        return [node], []
+
+    app.add_role("dockerhub", dockerhub_role)
+    app.add_role("repopath", repopath_role)

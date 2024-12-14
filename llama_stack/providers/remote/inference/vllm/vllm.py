@@ -29,6 +29,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    content_has_media,
     convert_message_to_dict,
     request_has_media,
 )
@@ -100,6 +101,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            response_format=response_format,
         )
         if stream:
             return self._stream_chat_completion(request, self.client)
@@ -180,6 +182,16 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                 self.formatter,
             )
 
+        if fmt := request.response_format:
+            if fmt.type == ResponseFormatType.json_schema.value:
+                input_dict["extra_body"] = {
+                    "guided_json": request.response_format.json_schema
+                }
+            elif fmt.type == ResponseFormatType.grammar.value:
+                raise NotImplementedError("Grammar response format not supported yet")
+            else:
+                raise ValueError(f"Unknown response format {fmt.type}")
+
         return {
             "model": request.model,
             **input_dict,
@@ -192,4 +204,20 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        kwargs = {}
+        assert model.model_type == ModelType.embedding
+        assert model.metadata.get("embedding_dimensions")
+        kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "VLLM does not support media for embeddings"
+        response = self.client.embeddings.create(
+            model=model.provider_resource_id,
+            input=[interleaved_text_media_as_str(content) for content in contents],
+            **kwargs,
+        )
+
+        embeddings = [data.embedding for data in response.data]
+        return EmbeddingsResponse(embeddings=embeddings)

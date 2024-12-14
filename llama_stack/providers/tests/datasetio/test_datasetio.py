@@ -81,6 +81,18 @@ class TestDatasetIO:
         assert len(response) == 1
         assert response[0].identifier == "test_dataset"
 
+        with pytest.raises(Exception) as exc_info:
+            # unregister a dataset that does not exist
+            await datasets_impl.unregister_dataset("test_dataset2")
+
+        await datasets_impl.unregister_dataset("test_dataset")
+        response = await datasets_impl.list_datasets()
+        assert isinstance(response, list)
+        assert len(response) == 0
+
+        with pytest.raises(Exception) as exc_info:
+            await datasets_impl.unregister_dataset("test_dataset")
+
     @pytest.mark.asyncio
     async def test_get_rows_paginated(self, datasetio_stack):
         datasetio_impl, datasets_impl = datasetio_stack

@@ -9,6 +9,7 @@ from typing import List, Optional
 
 from llama_models.sku_list import all_registered_models
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference import (
@@ -29,7 +30,6 @@ def build_model_alias(provider_model_id: str, model_descriptor: str) -> ModelAli
     return ModelAlias(
         provider_model_id=provider_model_id,
         aliases=[
-            model_descriptor,
             get_huggingface_repo(model_descriptor),
         ],
         llama_model=model_descriptor,
@@ -57,6 +57,10 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             self.alias_to_provider_id_map[alias_obj.provider_model_id] = (
                 alias_obj.provider_model_id
             )
+            # ensure we can go from llama model to provider model id
+            self.alias_to_provider_id_map[alias_obj.llama_model] = (
+                alias_obj.provider_model_id
+            )
             self.provider_id_to_llama_model_map[alias_obj.provider_model_id] = (
                 alias_obj.llama_model
             )
@@ -74,7 +78,13 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             return None
 
     async def register_model(self, model: Model) -> Model:
-        provider_resource_id = self.get_provider_model_id(model.provider_resource_id)
+        if model.model_type == ModelType.embedding:
+            # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
+            provider_resource_id = model.provider_resource_id
+        else:
+            provider_resource_id = self.get_provider_model_id(
+                model.provider_resource_id
+            )
         if provider_resource_id:
             model.provider_resource_id = provider_resource_id
         else:

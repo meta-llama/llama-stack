@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # Fireworks Distribution
 
 ```{toctree}
@@ -12,9 +15,12 @@ The `llamastack/distribution-fireworks` distribution consists of the following p
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::fireworks` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
 
 

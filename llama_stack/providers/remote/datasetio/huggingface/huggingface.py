@@ -3,12 +3,13 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from llama_stack.apis.datasetio import *  # noqa: F403
 
 
 import datasets as hf_datasets
+
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
 from llama_stack.providers.utils.kvstore import kvstore_impl
@@ -20,14 +21,19 @@ DATASETS_PREFIX = "datasets:"
 
 def load_hf_dataset(dataset_def: Dataset):
     if dataset_def.metadata.get("path", None):
-        return hf_datasets.load_dataset(**dataset_def.metadata)
+        dataset = hf_datasets.load_dataset(**dataset_def.metadata)
+    else:
+        df = get_dataframe_from_url(dataset_def.url)
 
-    df = get_dataframe_from_url(dataset_def.url)
+        if df is None:
+            raise ValueError(f"Failed to load dataset from {dataset_def.url}")
 
-    if df is None:
-        raise ValueError(f"Failed to load dataset from {dataset_def.url}")
+        dataset = hf_datasets.Dataset.from_pandas(df)
 
-    dataset = hf_datasets.Dataset.from_pandas(df)
+    # drop columns not specified by schema
+    if dataset_def.dataset_schema:
+        dataset = dataset.select_columns(list(dataset_def.dataset_schema.keys()))
+
     return dataset
 
 
@@ -63,6 +69,11 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         )
         self.dataset_infos[dataset_def.identifier] = dataset_def
 
+    async def unregister_dataset(self, dataset_id: str) -> None:
+        key = f"{DATASETS_PREFIX}{dataset_id}"
+        await self.kvstore.delete(key=key)
+        del self.dataset_infos[dataset_id]
+
     async def get_rows_paginated(
         self,
         dataset_id: str,
@@ -94,3 +105,22 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
             total_count=len(rows),
             next_page_token=str(end),
         )
+
+    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+        dataset_def = self.dataset_infos[dataset_id]
+        loaded_dataset = load_hf_dataset(dataset_def)
+
+        # Convert rows to HF Dataset format
+        new_dataset = hf_datasets.Dataset.from_list(rows)
+
+        # Concatenate the new rows with existing dataset
+        updated_dataset = hf_datasets.concatenate_datasets(
+            [loaded_dataset, new_dataset]
+        )
+
+        if dataset_def.metadata.get("path", None):
+            updated_dataset.push_to_hub(dataset_def.metadata["path"])
+        else:
+            raise NotImplementedError(
+                "Uploading to URL-based datasets is not supported yet"
+            )

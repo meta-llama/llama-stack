@@ -19,9 +19,9 @@
             spec = {
     "openapi": "3.1.0",
     "info": {
-        "title": "[DRAFT] Llama Stack Specification",
+        "title": "Llama Stack Specification",
         "version": "alpha",
-        "description": "This is the specification of the llama stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. The specification is still in draft and subject to change.\n                Generated at 2024-11-19 09:14:01.145131"
+        "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models."
     },
     "servers": [
         {
@@ -29,6 +29,39 @@
         }
     ],
     "paths": {
+        "/alpha/datasetio/append-rows": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AppendRowsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/batch-inference/chat-completion": {
             "post": {
                 "responses": {
@@ -44,7 +77,7 @@
                     }
                 },
                 "tags": [
-                    "BatchInference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -84,7 +117,7 @@
                     }
                 },
                 "tags": [
-                    "BatchInference"
+                    "BatchInference (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -117,7 +150,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1026,15 +1059,15 @@
                 ]
             }
         },
-        "/alpha/telemetry/get-trace": {
-            "get": {
+        "/alpha/telemetry/get-span-tree": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Trace"
+                                    "$ref": "#/components/schemas/SpanWithChildren"
                                 }
                             }
                         }
@@ -1045,11 +1078,19 @@
                 ],
                 "parameters": [
                     {
-                        "name": "trace_id",
+                        "name": "span_id",
                         "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "max_depth",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     },
                     {
@@ -1061,7 +1102,17 @@
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GetSpanTreeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/alpha/post-training/job/artifacts": {
@@ -1079,7 +1130,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1117,7 +1168,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1155,7 +1206,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1193,7 +1244,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1713,7 +1764,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -1771,6 +1822,86 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/QueryDocumentsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/alpha/telemetry/query-spans": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Span"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QuerySpansRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/alpha/telemetry/query-traces": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Trace"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QueryTracesRequest"
                             }
                         }
                     },
@@ -2066,6 +2197,39 @@
                 }
             }
         },
+        "/alpha/telemetry/save-spans-to-dataset": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SaveSpansToDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/scoring/score": {
             "post": {
                 "responses": {
@@ -2161,7 +2325,7 @@
                     }
                 },
                 "tags": [
-                    "PostTraining"
+                    "PostTraining (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -2201,7 +2365,7 @@
                     }
                 },
                 "tags": [
-                    "SyntheticDataGeneration"
+                    "SyntheticDataGeneration (Coming Soon)"
                 ],
                 "parameters": [
                     {
@@ -2219,6 +2383,39 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/SyntheticDataGenerateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/alpha/datasets/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterDatasetRequest"
                             }
                         }
                     },
@@ -2296,6 +2493,47 @@
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
+            "AppendRowsRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "rows"
+                ]
+            },
             "BuiltinTool": {
                 "type": "string",
                 "enum": [
@@ -3861,7 +4099,8 @@
                         "type": "string",
                         "enum": [
                             "bing",
-                            "brave"
+                            "brave",
+                            "tavily"
                         ],
                         "default": "brave"
                     },
@@ -4129,14 +4368,11 @@
                     "step_id": {
                         "type": "string"
                     },
-                    "model_response_text_delta": {
+                    "text_delta": {
                         "type": "string"
                     },
                     "tool_call_delta": {
                         "$ref": "#/components/schemas/ToolCallDelta"
-                    },
-                    "tool_response_text_delta": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -4690,6 +4926,15 @@
                     "config"
                 ]
             },
+            "AggregationFunctionType": {
+                "type": "string",
+                "enum": [
+                    "average",
+                    "median",
+                    "categorical_count",
+                    "accuracy"
+                ]
+            },
             "AppEvalTaskConfig": {
                 "type": "object",
                 "properties": {
@@ -4717,6 +4962,9 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/BasicScoringFnParams"
                                 }
                             ]
                         }
@@ -4730,6 +4978,26 @@
                     "type",
                     "eval_candidate",
                     "scoring_params"
+                ]
+            },
+            "BasicScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "basic",
+                        "default": "basic"
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "BenchmarkEvalTaskConfig": {
@@ -4779,6 +5047,12 @@
                         "items": {
                             "type": "string"
                         }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4824,6 +5098,12 @@
                         "type": "array",
                         "items": {
                             "type": "string"
+                        }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
                         }
                     }
                 },
@@ -5778,6 +6058,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
                         ]
                     }
@@ -5844,13 +6127,38 @@
                 ],
                 "title": "A safety shield resource that can be used to check content"
             },
-            "Trace": {
+            "GetSpanTreeRequest": {
                 "type": "object",
                 "properties": {
+                    "attributes_to_return": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "SpanStatus": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "error"
+                ]
+            },
+            "SpanWithChildren": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
                     "trace_id": {
                         "type": "string"
                     },
-                    "root_span_id": {
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     },
                     "start_time": {
@@ -5860,13 +6168,49 @@
                     "end_time": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SpanWithChildren"
+                        }
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SpanStatus"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "span_id",
                     "trace_id",
-                    "root_span_id",
-                    "start_time"
+                    "name",
+                    "start_time",
+                    "children"
                 ]
             },
             "Checkpoint": {
@@ -6279,13 +6623,6 @@
                     "name"
                 ]
             },
-            "SpanStatus": {
-                "type": "string",
-                "enum": [
-                    "ok",
-                    "error"
-                ]
-            },
             "StructuredLogEvent": {
                 "type": "object",
                 "properties": {
@@ -6424,11 +6761,15 @@
                                 "$ref": "#/components/schemas/StructuredLogEvent"
                             }
                         ]
+                    },
+                    "ttl_seconds": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "event"
+                    "event",
+                    "ttl_seconds"
                 ]
             },
             "DPOAlignmentConfig": {
@@ -6736,6 +7077,185 @@
                 "required": [
                     "chunks",
                     "scores"
+                ]
+            },
+            "QueryCondition": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "op": {
+                        "$ref": "#/components/schemas/QueryConditionOp"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "key",
+                    "op",
+                    "value"
+                ]
+            },
+            "QueryConditionOp": {
+                "type": "string",
+                "enum": [
+                    "eq",
+                    "ne",
+                    "gt",
+                    "lt"
+                ]
+            },
+            "QuerySpansRequest": {
+                "type": "object",
+                "properties": {
+                    "attribute_filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QueryCondition"
+                        }
+                    },
+                    "attributes_to_return": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "max_depth": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attribute_filters",
+                    "attributes_to_return"
+                ]
+            },
+            "Span": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "span_id",
+                    "trace_id",
+                    "name",
+                    "start_time"
+                ]
+            },
+            "QueryTracesRequest": {
+                "type": "object",
+                "properties": {
+                    "attribute_filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QueryCondition"
+                        }
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "offset": {
+                        "type": "integer"
+                    },
+                    "order_by": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "Trace": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "root_span_id": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "root_span_id",
+                    "start_time"
                 ]
             },
             "RegisterDatasetRequest": {
@@ -7298,6 +7818,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
                         ]
                     }
@@ -7454,6 +7977,35 @@
                 },
                 "additionalProperties": false
             },
+            "SaveSpansToDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "attribute_filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QueryCondition"
+                        }
+                    },
+                    "attributes_to_save": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "max_depth": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attribute_filters",
+                    "attributes_to_save",
+                    "dataset_id"
+                ]
+            },
             "ScoreRequest": {
                 "type": "object",
                 "properties": {
@@ -7496,6 +8048,9 @@
                                         },
                                         {
                                             "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
                                     ]
                                 },
@@ -7544,6 +8099,9 @@
                                         },
                                         {
                                             "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
                                     ]
                                 },
@@ -7893,6 +8451,18 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
+            "UnregisterDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id"
+                ]
+            },
             "UnregisterMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -7978,12 +8548,24 @@
             "name": "Agents"
         },
         {
+            "name": "AggregationFunctionType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AggregationFunctionType\" />"
+        },
+        {
             "name": "AppEvalTaskConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppEvalTaskConfig\" />"
         },
         {
+            "name": "AppendRowsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppendRowsRequest\" />"
+        },
+        {
             "name": "Attachment",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
+        },
+        {
+            "name": "BasicScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BasicScoringFnParams\" />"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -8002,7 +8584,7 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BatchCompletionResponse\" />"
         },
         {
-            "name": "BatchInference"
+            "name": "BatchInference (Coming Soon)"
         },
         {
             "name": "BenchmarkEvalTaskConfig",
@@ -8137,6 +8719,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgentsSessionRequest\" />"
         },
         {
+            "name": "GetSpanTreeRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetSpanTreeRequest\" />"
+        },
+        {
             "name": "GraphMemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBank\" />"
         },
@@ -8256,7 +8842,7 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PhotogenToolDefinition\" />"
         },
         {
-            "name": "PostTraining"
+            "name": "PostTraining (Coming Soon)"
         },
         {
             "name": "PostTrainingJob",
@@ -8291,12 +8877,28 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
         },
         {
+            "name": "QueryCondition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryCondition\" />"
+        },
+        {
+            "name": "QueryConditionOp",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryConditionOp\" />"
+        },
+        {
             "name": "QueryDocumentsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsRequest\" />"
         },
         {
             "name": "QueryDocumentsResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
+        },
+        {
+            "name": "QuerySpansRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpansRequest\" />"
+        },
+        {
+            "name": "QueryTracesRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryTracesRequest\" />"
         },
         {
             "name": "RLHFAlgorithm",
@@ -8370,6 +8972,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingStrategy\" />"
         },
         {
+            "name": "SaveSpansToDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SaveSpansToDatasetRequest\" />"
+        },
+        {
             "name": "ScoreBatchRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoreBatchRequest\" />"
         },
@@ -8419,6 +9025,10 @@
             "name": "Shields"
         },
         {
+            "name": "Span",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Span\" />"
+        },
+        {
             "name": "SpanEndPayload",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanEndPayload\" />"
         },
@@ -8429,6 +9039,10 @@
         {
             "name": "SpanStatus",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanStatus\" />"
+        },
+        {
+            "name": "SpanWithChildren",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanWithChildren\" />"
         },
         {
             "name": "StopReason",
@@ -8447,7 +9061,7 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SyntheticDataGenerateRequest\" />"
         },
         {
-            "name": "SyntheticDataGeneration"
+            "name": "SyntheticDataGeneration (Coming Soon)"
         },
         {
             "name": "SyntheticDataGenerationResponse",
@@ -8521,6 +9135,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
+            "name": "UnregisterDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterDatasetRequest\" />"
+        },
+        {
             "name": "UnregisterMemoryBankRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterMemoryBankRequest\" />"
         },
@@ -8558,7 +9176,7 @@
             "name": "Operations",
             "tags": [
                 "Agents",
-                "BatchInference",
+                "BatchInference (Coming Soon)",
                 "DatasetIO",
                 "Datasets",
                 "Eval",
@@ -8568,12 +9186,12 @@
                 "Memory",
                 "MemoryBanks",
                 "Models",
-                "PostTraining",
+                "PostTraining (Coming Soon)",
                 "Safety",
                 "Scoring",
                 "ScoringFunctions",
                 "Shields",
-                "SyntheticDataGeneration",
+                "SyntheticDataGeneration (Coming Soon)",
                 "Telemetry"
             ]
         },
@@ -8592,8 +9210,11 @@
                 "AgentTurnResponseStreamChunk",
                 "AgentTurnResponseTurnCompletePayload",
                 "AgentTurnResponseTurnStartPayload",
+                "AggregationFunctionType",
                 "AppEvalTaskConfig",
+                "AppendRowsRequest",
                 "Attachment",
+                "BasicScoringFnParams",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
@@ -8628,6 +9249,7 @@
                 "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
+                "GetSpanTreeRequest",
                 "GraphMemoryBank",
                 "GraphMemoryBankParams",
                 "HealthInfo",
@@ -8662,8 +9284,12 @@
                 "PreferenceOptimizeRequest",
                 "ProviderInfo",
                 "QLoraFinetuningConfig",
+                "QueryCondition",
+                "QueryConditionOp",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
+                "QuerySpansRequest",
+                "QueryTracesRequest",
                 "RLHFAlgorithm",
                 "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
@@ -8681,6 +9307,7 @@
                 "SafetyViolation",
                 "SamplingParams",
                 "SamplingStrategy",
+                "SaveSpansToDatasetRequest",
                 "ScoreBatchRequest",
                 "ScoreBatchResponse",
                 "ScoreRequest",
@@ -8691,9 +9318,11 @@
                 "Session",
                 "Shield",
                 "ShieldCallStep",
+                "Span",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
+                "SpanWithChildren",
                 "StopReason",
                 "StructuredLogEvent",
                 "SupervisedFineTuneRequest",
@@ -8715,6 +9344,7 @@
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UnregisterDatasetRequest",
                 "UnregisterMemoryBankRequest",
                 "UnregisterModelRequest",
                 "UnstructuredLogEvent",

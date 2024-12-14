@@ -31,6 +31,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
+    content_has_media,
     convert_message_to_dict,
     request_has_media,
 )
@@ -253,4 +254,13 @@ class TogetherInferenceAdapter(
         model_id: str,
         contents: List[InterleavedTextMedia],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Together does not support media for embeddings"
+        r = self._get_client().embeddings.create(
+            model=model.provider_resource_id,
+            input=[interleaved_text_media_as_str(content) for content in contents],
+        )
+        embeddings = [item.embedding for item in r.data]
+        return EmbeddingsResponse(embeddings=embeddings)
