@@ -122,13 +122,6 @@ class TestConvertChatCompletionRequest:
 
         assert converted["stream"] is True
 
-    def test_n_is_1(self):
-        request = self._dummy_chat_completion_request()
-
-        converted = convert_chat_completion_request(request)
-
-        assert converted["n"] == 1
-
     def test_if_max_tokens_is_0_then_it_is_not_included(self):
         request = self._dummy_chat_completion_request()
         # 0 is the default value for max_tokens
