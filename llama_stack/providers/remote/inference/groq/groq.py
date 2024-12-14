@@ -104,7 +104,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper):
     ) -> Union[
         ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]
     ]:
-
+model_id = self.get_provider_model_id(model_id)
         if model_id == "llama-3.2-3b-preview":
             warnings.warn(
                 "Groq only contains a preview version for llama-3.2-3b-instruct. "
@@ -112,7 +112,6 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper):
                 "They can be discontinued on short notice."
             )
 
-        model_id = self.get_provider_model_id(model_id)
         request = convert_chat_completion_request(
             request=ChatCompletionRequest(
                 model=model_id,
