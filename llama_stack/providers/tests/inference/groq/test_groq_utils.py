@@ -468,7 +468,6 @@ class TestConvertStreamChatCompletionResponse:
 
         iter = converted.__aiter__()
         chunk = await iter.__anext__()
-        print(chunk)
         assert chunk.event.event_type == ChatCompletionResponseEventType.start
         assert chunk.event.delta.content == ToolCall(
             call_id="tool_call_id",

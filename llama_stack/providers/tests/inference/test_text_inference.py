@@ -422,7 +422,6 @@ class TestInference:
                 **common_params,
             )
         ]
-
         assert len(response) > 0
         assert all(
             isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response
