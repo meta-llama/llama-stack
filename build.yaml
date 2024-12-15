@@ -1,0 +1,23 @@
+version: '2'
+name: groq
+distribution_spec:
+  description: Use (an external) Groq server for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::groq
+    memory:
+    - inline::faiss
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+    eval:
+    - inline::meta-reference
+    datasetio:
+    - inline::localfs
+    scoring:
+    - inline::basic
+image_type: conda

@@ -1,0 +1,80 @@
+version: '2'
+image_name: groq
+docker_image: null
+conda_env: groq
+apis:
+- agents
+- datasetio
+- eval
+- inference
+- memory
+- safety
+- scoring
+- telemetry
+providers:
+  inference:
+  - provider_id: groq
+    provider_type: remote::groq
+    config:
+      api_key: ${env.GROQ_API_KEY}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/faiss_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/groq/trace_store.db}
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  datasetio:
+  - provider_id: localfs
+    provider_type: inline::localfs
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/registry.db
+models:
+- metadata: {}
+  model_id: Llama3.2-3B-Instruct
+  provider_id: groq
+  provider_model_id: null
+- metadata: {}
+  model_id: Llama3.1-8B-Instruct
+  provider_id: groq
+  provider_model_id: null
+- metadata: {}
+  model_id: Llama-3-70B-Instruct
+  provider_id: groq
+  provider_model_id: null
+shields: []
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []
