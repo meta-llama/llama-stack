@@ -16,14 +16,23 @@ from typing import (
     Union,
 )
 
+from llama_models.llama3.api.datatypes import (
+    BuiltinTool,
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+
 from llama_models.schema_utils import json_schema_type, webmethod
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
-from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
+from llama_stack.apis.common.deployment_types import URL
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.apis.models import *  # noqa: F403
 
 
@@ -40,17 +49,17 @@ class QuantizationType(Enum):
 
 @json_schema_type
 class Fp8QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.fp8.value] = QuantizationType.fp8.value
+    type: Literal["fp8"] = "fp8"
 
 
 @json_schema_type
 class Bf16QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.bf16.value] = QuantizationType.bf16.value
+    type: Literal["bf16"] = "bf16"
 
 
 @json_schema_type
 class Int4QuantizationConfig(BaseModel):
-    type: Literal[QuantizationType.int4.value] = QuantizationType.int4.value
+    type: Literal["int4"] = "int4"
     scheme: Optional[str] = "int4_weight_int8_dynamic_activation"
 
 
@@ -58,6 +67,98 @@ QuantizationConfig = Annotated[
     Union[Bf16QuantizationConfig, Fp8QuantizationConfig, Int4QuantizationConfig],
     Field(discriminator="type"),
 ]
+
+
+@json_schema_type
+class ImageContentItem(BaseModel):
+    type: Literal["image"] = "image"
+    data: Union[bytes, URL]
+
+
+@json_schema_type
+class TextContentItem(BaseModel):
+    type: Literal["text"] = "text"
+    text: str
+
+
+# other modalities can be added here
+InterleavedContentItem = Annotated[
+    Union[ImageContentItem, TextContentItem],
+    Field(discriminator="type"),
+]
+
+# accept a single "str" as a special case since it is common
+InterleavedContent = str | InterleavedContentItem | List[InterleavedContentItem]
+
+
+@json_schema_type
+class UserMessage(BaseModel):
+    role: Literal["user"] = "user"
+    content: InterleavedContent
+    context: Optional[InterleavedContent] = None
+
+
+@json_schema_type
+class SystemMessage(BaseModel):
+    role: Literal["system"] = "system"
+    content: InterleavedContent
+
+
+@json_schema_type
+class ToolResponseMessage(BaseModel):
+    role: Literal["ipython"] = "ipython"
+    # it was nice to re-use the ToolResponse type, but having all messages
+    # have a `content` type makes things nicer too
+    call_id: str
+    tool_name: Union[BuiltinTool, str]
+    content: InterleavedContent
+
+
+@json_schema_type
+class CompletionMessage(BaseModel):
+    role: Literal["assistant"] = "assistant"
+    content: InterleavedContent
+    stop_reason: StopReason
+    tool_calls: List[ToolCall] = Field(default_factory=list)
+
+
+Message = Annotated[
+    Union[
+        UserMessage,
+        SystemMessage,
+        ToolResponseMessage,
+        CompletionMessage,
+    ],
+    Field(discriminator="role"),
+]
+
+
+@json_schema_type
+class ToolResponse(BaseModel):
+    call_id: str
+    tool_name: Union[BuiltinTool, str]
+    content: InterleavedContent
+
+    @field_validator("tool_name", mode="before")
+    @classmethod
+    def validate_field(cls, v):
+        if isinstance(v, str):
+            try:
+                return BuiltinTool(v)
+            except ValueError:
+                return v
+        return v
+
+
+@json_schema_type
+class ToolChoice(Enum):
+    auto = "auto"
+    required = "required"
+
+
+@json_schema_type
+class TokenLogProbs(BaseModel):
+    logprobs_by_token: Dict[str, float]
 
 
 @json_schema_type
@@ -117,7 +218,7 @@ ResponseFormat = Annotated[
 @json_schema_type
 class CompletionRequest(BaseModel):
     model: str
-    content: InterleavedTextMedia
+    content: InterleavedContent
     sampling_params: Optional[SamplingParams] = SamplingParams()
     response_format: Optional[ResponseFormat] = None
 
@@ -230,7 +331,7 @@ class Inference(Protocol):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -258,5 +359,5 @@ class Inference(Protocol):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse: ...

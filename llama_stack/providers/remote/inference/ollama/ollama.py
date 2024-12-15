@@ -37,7 +37,8 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
     content_has_media,
-    convert_image_media_to_url,
+    convert_image_content_to_url,
+    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -141,7 +142,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -234,7 +235,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 contents = [
-                    await convert_message_to_dict_for_ollama(m)
+                    await convert_message_to_openai_dict_for_ollama(m)
                     for m in request.messages
                 ]
                 # flatten the list of lists
@@ -320,7 +321,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
@@ -329,7 +330,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         ), "Ollama does not support media for embeddings"
         response = await self.client.embed(
             model=model.provider_resource_id,
-            input=[interleaved_text_media_as_str(content) for content in contents],
+            input=[interleaved_content_as_str(content) for content in contents],
         )
         embeddings = response["embeddings"]
 
@@ -358,21 +359,23 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return model
 
 
-async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
+async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:
     async def _convert_content(content) -> dict:
-        if isinstance(content, ImageMedia):
+        if isinstance(content, ImageContentItem):
             return {
                 "role": message.role,
                 "images": [
-                    await convert_image_media_to_url(
+                    await convert_image_content_to_url(
                         content, download=True, include_format=False
                     )
                 ],
             }
         else:
+            text = content.text if isinstance(content, TextContentItem) else content
+            assert isinstance(text, str)
             return {
                 "role": message.role,
-                "content": content,
+                "content": text,
             }
 
     if isinstance(message.content, list):

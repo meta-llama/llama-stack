@@ -11,8 +11,11 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import StopReason
 
 from llama_stack.apis.inference import *  # noqa: F403
-
 from pydantic import BaseModel
+
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    convert_image_content_to_url,
+)
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):
@@ -246,3 +249,32 @@ async def process_chat_completion_stream_response(
             stop_reason=stop_reason,
         )
     )
+
+
+async def convert_message_to_openai_dict(
+    message: Message, download: bool = False
+) -> dict:
+    async def _convert_content(content) -> dict:
+        if isinstance(content, ImageContentItem):
+            return {
+                "type": "image_url",
+                "image_url": {
+                    "url": await convert_image_content_to_url(
+                        content, download=download
+                    ),
+                },
+            }
+        else:
+            text = content.text if isinstance(content, TextContentItem) else content
+            assert isinstance(text, str)
+            return {"type": "text", "text": text}
+
+    if isinstance(message.content, list):
+        content = [await _convert_content(c) for c in message.content]
+    else:
+        content = [await _convert_content(message.content)]
+
+    return {
+        "role": message.role,
+        "content": content,
+    }
