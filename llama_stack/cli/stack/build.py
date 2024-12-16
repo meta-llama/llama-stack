@@ -80,6 +80,7 @@ class StackBuild(Subcommand):
         self.parser.add_argument(
             "--platform",
             type=str,
+            default=None,
             help="Platform to use for the build. Required when using docker as image type, defaults to host if no platform is specified",
         )
 
@@ -139,12 +140,7 @@ class StackBuild(Subcommand):
             )
 
             platform = prompt(
-                "> Enter the target platform you want your Llama Stack to be built for: ",
-                validator=Validator.from_callable(
-                    lambda x: len(x) > 0,
-                    error_message="Platform cannot be empty, please enter a platform",
-                ),
-                default="linux/arm64",
+                "> Enter the target platform you want your Llama Stack to be built for: "
             )
 
             cprint(
@@ -189,11 +185,10 @@ class StackBuild(Subcommand):
             )
 
             build_config = BuildConfig(
-                name=name,
-                image_type=image_type,
-                distribution_spec=distribution_spec,
-                platform=platform,
+                name=name, image_type=image_type, distribution_spec=distribution_spec
             )
+            if platform.strip():
+                build_config.platform = platform
             self._run_stack_build_command_from_build_config(build_config)
             return
 

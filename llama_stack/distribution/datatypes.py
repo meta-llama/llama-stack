@@ -25,7 +25,6 @@ from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
-LLAMA_STACK_DEFAULT_PLATFORM = "linux/arm64"
 
 
 RoutingKey = Union[str, List[str]]
@@ -168,7 +167,7 @@ class BuildConfig(BaseModel):
         default="conda",
         description="Type of package to build (conda | docker | venv)",
     )
-    platform: str = Field(
-        default=LLAMA_STACK_DEFAULT_PLATFORM,
-        description="The platform for docker image, defaults to linux/arm64",
+    platform: Optional[str] = Field(
+        default=None,
+        description="The platform for docker image",
     )

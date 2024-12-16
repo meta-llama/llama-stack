@@ -121,6 +121,8 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
         ]
+        if build_config.platform is not None:
+            args.append(build_config.platform)
     elif build_config.image_type == ImageType.conda.value:
         script = pkg_resources.resource_filename(
             "llama_stack", "distribution/build_conda_env.sh"

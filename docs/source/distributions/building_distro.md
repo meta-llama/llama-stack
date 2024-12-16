@@ -37,7 +37,7 @@ llama stack build
 
 > Enter a name for your Llama Stack (e.g. my-local-stack): my-stack
 > Enter the image type you want your Llama Stack to be built as (docker or conda): conda
-> Enter the target platform you want your Llama Stack to be built for: linux/arm64
+> Enter the target platform you want your Llama Stack to be built for:
 
 Llama Stack is composed of several APIs working together. Let's select
 the provider types (implementations) you want to use for these APIs.
