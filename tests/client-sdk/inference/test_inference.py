@@ -10,7 +10,11 @@ from llama_stack_client.lib.inference.event_logger import EventLogger
 
 def test_text_chat_completion(llama_stack_client):
     # non-streaming
-    available_models = [model.identifier for model in llama_stack_client.models.list()]
+    available_models = [
+        model.identifier
+        for model in llama_stack_client.models.list()
+        if model.identifier.startswith("meta-llama")
+    ]
     assert len(available_models) > 0
     model_id = available_models[0]
     response = llama_stack_client.inference.chat_completion(
