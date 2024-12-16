@@ -247,7 +247,7 @@ class CompletionResponseStreamChunk(BaseModel):
 @json_schema_type
 class BatchCompletionRequest(BaseModel):
     model: str
-    content_batch: List[InterleavedTextMedia]
+    content_batch: List[InterleavedContent]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     response_format: Optional[ResponseFormat] = None
     logprobs: Optional[LogProbConfig] = None

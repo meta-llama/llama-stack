@@ -93,11 +93,15 @@ def process_chat_completion_response(
 ) -> ChatCompletionResponse:
     choice = response.choices[0]
 
-    completion_message = formatter.decode_assistant_message_from_content(
+    raw_message = formatter.decode_assistant_message_from_content(
         text_from_choice(choice), get_stop_reason(choice.finish_reason)
     )
     return ChatCompletionResponse(
-        completion_message=completion_message,
+        completion_message=CompletionMessage(
+            content=raw_message.content,
+            stop_reason=raw_message.stop_reason,
+            tool_calls=raw_message.tool_calls,
+        ),
         logprobs=None,
     )
 

@@ -7,8 +7,8 @@
 import pytest
 import pytest_asyncio
 
-from llama_models.llama3.api.datatypes import URL
 from llama_stack.apis.common.type_system import *  # noqa: F403
+from llama_stack.apis.common.deployment_types import URL
 from llama_stack.apis.datasets import DatasetInput
 from llama_stack.apis.models import ModelInput
 

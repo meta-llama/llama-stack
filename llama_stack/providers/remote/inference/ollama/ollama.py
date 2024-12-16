@@ -11,7 +11,6 @@ import httpx
 from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
@@ -90,7 +89,7 @@ model_aliases = [
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias_with_just_provider_model_id(
-        "llama3.2-vision",
+        "llama3.2-vision:latest",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(

@@ -10,7 +10,6 @@ from cerebras.cloud.sdk import AsyncCerebras
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.inference import *  # noqa: F403
