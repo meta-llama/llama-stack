@@ -482,6 +482,7 @@ class ToolsRoutingTable(CommonRoutingTableImpl, Tools):
         parameters: List[ToolParameter],
         returns: ToolReturn,
         provider_id: Optional[str] = None,
+        provider_resource_id: Optional[str] = None,
         provider_metadata: Optional[Dict[str, Any]] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
     ) -> None:
@@ -496,6 +497,9 @@ class ToolsRoutingTable(CommonRoutingTableImpl, Tools):
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
+        if provider_resource_id is None:
+            provider_resource_id = tool_id
+
         tool = Tool(
             identifier=tool_id,
             name=name,
@@ -503,6 +507,7 @@ class ToolsRoutingTable(CommonRoutingTableImpl, Tools):
             parameters=parameters,
             returns=returns,
             provider_id=provider_id,
+            provider_resource_id=provider_resource_id,
             provider_metadata=provider_metadata,
             tool_prompt_format=tool_prompt_format,
         )

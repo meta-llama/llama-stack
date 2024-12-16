@@ -21,6 +21,7 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
+from llama_stack.apis.tools import Tool, ToolRuntime
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
@@ -37,6 +38,7 @@ RoutableObject = Union[
     Dataset,
     ScoringFn,
     EvalTask,
+    Tool,
 ]
 
 
@@ -48,6 +50,7 @@ RoutableObjectWithProvider = Annotated[
         Dataset,
         ScoringFn,
         EvalTask,
+        Tool,
     ],
     Field(discriminator="type"),
 ]
@@ -59,6 +62,7 @@ RoutedProtocol = Union[
     DatasetIO,
     Scoring,
     Eval,
+    ToolRuntime,
 ]
 
 
