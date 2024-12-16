@@ -18,10 +18,6 @@ import yaml
 
 from llama_models import schema_utils
 
-from .pyopenapi.options import Options
-from .pyopenapi.specification import Info, Server
-from .pyopenapi.utility import Specification
-
 # We do some monkey-patching to ensure our definitions only use the minimal
 # (json_schema_type, webmethod) definitions from the llama_models package. For
 # generation though, we need the full definitions and implementations from the
@@ -31,10 +27,12 @@ from .strong_typing.schema import json_schema_type
 
 schema_utils.json_schema_type = json_schema_type
 
-# this line needs to be here to ensure json_schema_type has been altered before
-# the imports use the annotation
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION  # noqa: E402
 from llama_stack.distribution.stack import LlamaStack  # noqa: E402
+
+from .pyopenapi.options import Options  # noqa: E402
+from .pyopenapi.specification import Info, Server  # noqa: E402
+from .pyopenapi.utility import Specification  # noqa: E402
 
 
 def main(output_dir: str):

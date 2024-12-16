@@ -1067,7 +1067,10 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/SpanWithChildren"
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/SpanWithStatus"
+                                    }
                                 }
                             }
                         }
@@ -1123,45 +1126,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "PostTraining (Coming Soon)"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/alpha/post-training/job/logs": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJobLogStream"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -1199,7 +1171,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -5459,6 +5438,10 @@
                     "chunk_size_in_tokens": {
                         "type": "integer"
                     },
+                    "embedding_dimension": {
+                        "type": "integer",
+                        "default": 384
+                    },
                     "overlap_size_in_tokens": {
                         "type": "integer"
                     }
@@ -5807,6 +5790,10 @@
                                 }
                             ]
                         }
+                    },
+                    "model_type": {
+                        "$ref": "#/components/schemas/ModelType",
+                        "default": "llm"
                     }
                 },
                 "additionalProperties": false,
@@ -5815,7 +5802,15 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "metadata"
+                    "metadata",
+                    "model_type"
+                ]
+            },
+            "ModelType": {
+                "type": "string",
+                "enum": [
+                    "llm",
+                    "embedding"
                 ]
             },
             "PaginatedRowsResult": {
@@ -6146,7 +6141,7 @@
                     "error"
                 ]
             },
-            "SpanWithChildren": {
+            "SpanWithStatus": {
                 "type": "object",
                 "properties": {
                     "span_id": {
@@ -6194,12 +6189,6 @@
                             ]
                         }
                     },
-                    "children": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/SpanWithChildren"
-                        }
-                    },
                     "status": {
                         "$ref": "#/components/schemas/SpanStatus"
                     }
@@ -6209,8 +6198,7 @@
                     "span_id",
                     "trace_id",
                     "name",
-                    "start_time",
-                    "children"
+                    "start_time"
                 ]
             },
             "Checkpoint": {
@@ -6236,31 +6224,11 @@
                 ],
                 "title": "Artifacts of a finetuning job."
             },
-            "PostTrainingJobLogStream": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    },
-                    "log_lines": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid",
-                    "log_lines"
-                ],
-                "title": "Stream of logs from a finetuning job."
-            },
-            "PostTrainingJobStatus": {
+            "JobStatus": {
                 "type": "string",
                 "enum": [
-                    "running",
                     "completed",
+                    "in_progress",
                     "failed",
                     "scheduled"
                 ]
@@ -6272,7 +6240,7 @@
                         "type": "string"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/PostTrainingJobStatus"
+                        "$ref": "#/components/schemas/JobStatus"
                     },
                     "scheduled_at": {
                         "type": "string",
@@ -6454,13 +6422,6 @@
                 "required": [
                     "task_id",
                     "job_id"
-                ]
-            },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress"
                 ]
             },
             "ProviderInfo": {
@@ -6796,39 +6757,89 @@
                     "gamma"
                 ]
             },
+            "DataConfig": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "batch_size": {
+                        "type": "integer"
+                    },
+                    "shuffle": {
+                        "type": "boolean"
+                    },
+                    "validation_dataset_id": {
+                        "type": "string"
+                    },
+                    "packed": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "train_on_input": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "batch_size",
+                    "shuffle"
+                ]
+            },
+            "EfficiencyConfig": {
+                "type": "object",
+                "properties": {
+                    "enable_activation_checkpointing": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "enable_activation_offloading": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "memory_efficient_fsdp_wrap": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "fsdp_cpu_offload": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false
+            },
             "OptimizerConfig": {
                 "type": "object",
                 "properties": {
                     "optimizer_type": {
-                        "type": "string",
-                        "enum": [
-                            "adam",
-                            "adamw",
-                            "sgd"
-                        ]
+                        "$ref": "#/components/schemas/OptimizerType"
                     },
                     "lr": {
                         "type": "number"
                     },
-                    "lr_min": {
-                        "type": "number"
-                    },
                     "weight_decay": {
                         "type": "number"
+                    },
+                    "num_warmup_steps": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "optimizer_type",
                     "lr",
-                    "lr_min",
-                    "weight_decay"
+                    "weight_decay",
+                    "num_warmup_steps"
                 ]
             },
-            "RLHFAlgorithm": {
+            "OptimizerType": {
                 "type": "string",
                 "enum": [
-                    "dpo"
+                    "adam",
+                    "adamw",
+                    "sgd"
                 ]
             },
             "TrainingConfig": {
@@ -6837,34 +6848,33 @@
                     "n_epochs": {
                         "type": "integer"
                     },
-                    "batch_size": {
+                    "max_steps_per_epoch": {
                         "type": "integer"
                     },
-                    "shuffle": {
-                        "type": "boolean"
-                    },
-                    "n_iters": {
+                    "gradient_accumulation_steps": {
                         "type": "integer"
                     },
-                    "enable_activation_checkpointing": {
-                        "type": "boolean"
+                    "data_config": {
+                        "$ref": "#/components/schemas/DataConfig"
                     },
-                    "memory_efficient_fsdp_wrap": {
-                        "type": "boolean"
+                    "optimizer_config": {
+                        "$ref": "#/components/schemas/OptimizerConfig"
                     },
-                    "fsdp_cpu_offload": {
-                        "type": "boolean"
+                    "efficiency_config": {
+                        "$ref": "#/components/schemas/EfficiencyConfig"
+                    },
+                    "dtype": {
+                        "type": "string",
+                        "default": "bf16"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "n_epochs",
-                    "batch_size",
-                    "shuffle",
-                    "n_iters",
-                    "enable_activation_checkpointing",
-                    "memory_efficient_fsdp_wrap",
-                    "fsdp_cpu_offload"
+                    "max_steps_per_epoch",
+                    "gradient_accumulation_steps",
+                    "data_config",
+                    "optimizer_config"
                 ]
             },
             "PreferenceOptimizeRequest": {
@@ -6874,22 +6884,10 @@
                         "type": "string"
                     },
                     "finetuned_model": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "dataset_id": {
                         "type": "string"
-                    },
-                    "validation_dataset_id": {
-                        "type": "string"
-                    },
-                    "algorithm": {
-                        "$ref": "#/components/schemas/RLHFAlgorithm"
                     },
                     "algorithm_config": {
                         "$ref": "#/components/schemas/DPOAlignmentConfig"
-                    },
-                    "optimizer_config": {
-                        "$ref": "#/components/schemas/OptimizerConfig"
                     },
                     "training_config": {
                         "$ref": "#/components/schemas/TrainingConfig"
@@ -6949,11 +6947,7 @@
                 "required": [
                     "job_uuid",
                     "finetuned_model",
-                    "dataset_id",
-                    "validation_dataset_id",
-                    "algorithm",
                     "algorithm_config",
-                    "optimizer_config",
                     "training_config",
                     "hyperparam_search_config",
                     "logger_config"
@@ -7645,6 +7639,9 @@
                                 }
                             ]
                         }
+                    },
+                    "model_type": {
+                        "$ref": "#/components/schemas/ModelType"
                     }
                 },
                 "additionalProperties": false,
@@ -8140,49 +8137,14 @@
                     "results"
                 ]
             },
-            "DoraFinetuningConfig": {
-                "type": "object",
-                "properties": {
-                    "lora_attn_modules": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "apply_lora_to_mlp": {
-                        "type": "boolean"
-                    },
-                    "apply_lora_to_output": {
-                        "type": "boolean"
-                    },
-                    "rank": {
-                        "type": "integer"
-                    },
-                    "alpha": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "lora_attn_modules",
-                    "apply_lora_to_mlp",
-                    "apply_lora_to_output",
-                    "rank",
-                    "alpha"
-                ]
-            },
-            "FinetuningAlgorithm": {
-                "type": "string",
-                "enum": [
-                    "full",
-                    "lora",
-                    "qlora",
-                    "dora"
-                ]
-            },
             "LoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "LoRA",
+                        "default": "LoRA"
+                    },
                     "lora_attn_modules": {
                         "type": "array",
                         "items": {
@@ -8200,10 +8162,19 @@
                     },
                     "alpha": {
                         "type": "integer"
+                    },
+                    "use_dora": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "quantize_base": {
+                        "type": "boolean",
+                        "default": false
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "type",
                     "lora_attn_modules",
                     "apply_lora_to_mlp",
                     "apply_lora_to_output",
@@ -8211,35 +8182,26 @@
                     "alpha"
                 ]
             },
-            "QLoraFinetuningConfig": {
+            "QATFinetuningConfig": {
                 "type": "object",
                 "properties": {
-                    "lora_attn_modules": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                    "type": {
+                        "type": "string",
+                        "const": "QAT",
+                        "default": "QAT"
                     },
-                    "apply_lora_to_mlp": {
-                        "type": "boolean"
+                    "quantizer_name": {
+                        "type": "string"
                     },
-                    "apply_lora_to_output": {
-                        "type": "boolean"
-                    },
-                    "rank": {
-                        "type": "integer"
-                    },
-                    "alpha": {
+                    "group_size": {
                         "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "lora_attn_modules",
-                    "apply_lora_to_mlp",
-                    "apply_lora_to_output",
-                    "rank",
-                    "alpha"
+                    "type",
+                    "quantizer_name",
+                    "group_size"
                 ]
             },
             "SupervisedFineTuneRequest": {
@@ -8247,34 +8209,6 @@
                 "properties": {
                     "job_uuid": {
                         "type": "string"
-                    },
-                    "model": {
-                        "type": "string"
-                    },
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "validation_dataset_id": {
-                        "type": "string"
-                    },
-                    "algorithm": {
-                        "$ref": "#/components/schemas/FinetuningAlgorithm"
-                    },
-                    "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QLoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/DoraFinetuningConfig"
-                            }
-                        ]
-                    },
-                    "optimizer_config": {
-                        "$ref": "#/components/schemas/OptimizerConfig"
                     },
                     "training_config": {
                         "$ref": "#/components/schemas/TrainingConfig"
@@ -8328,20 +8262,31 @@
                                 }
                             ]
                         }
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "checkpoint_dir": {
+                        "type": "string"
+                    },
+                    "algorithm_config": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/LoraFinetuningConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/QATFinetuningConfig"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "job_uuid",
-                    "model",
-                    "dataset_id",
-                    "validation_dataset_id",
-                    "algorithm",
-                    "algorithm_config",
-                    "optimizer_config",
                     "training_config",
                     "hyperparam_search_config",
-                    "logger_config"
+                    "logger_config",
+                    "model"
                 ]
             },
             "SyntheticDataGenerateRequest": {
@@ -8659,6 +8604,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DPOAlignmentConfig\" />"
         },
         {
+            "name": "DataConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DataConfig\" />"
+        },
+        {
             "name": "Dataset",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
         },
@@ -8677,8 +8626,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
         },
         {
-            "name": "DoraFinetuningConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DoraFinetuningConfig\" />"
+            "name": "EfficiencyConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EfficiencyConfig\" />"
         },
         {
             "name": "EmbeddingsRequest",
@@ -8705,10 +8654,6 @@
         {
             "name": "EvaluateRowsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
-        },
-        {
-            "name": "FinetuningAlgorithm",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningAlgorithm\" />"
         },
         {
             "name": "FunctionCallToolDefinition",
@@ -8827,11 +8772,19 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelCandidate\" />"
         },
         {
+            "name": "ModelType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelType\" />"
+        },
+        {
             "name": "Models"
         },
         {
             "name": "OptimizerConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerConfig\" />"
+        },
+        {
+            "name": "OptimizerType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerType\" />"
         },
         {
             "name": "PaginatedRowsResult",
@@ -8853,14 +8806,6 @@
             "description": "Artifacts of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobArtifactsResponse\" />"
         },
         {
-            "name": "PostTrainingJobLogStream",
-            "description": "Stream of logs from a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobLogStream\" />"
-        },
-        {
-            "name": "PostTrainingJobStatus",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobStatus\" />"
-        },
-        {
             "name": "PostTrainingJobStatusResponse",
             "description": "Status of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobStatusResponse\" />"
         },
@@ -8873,8 +8818,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ProviderInfo\" />"
         },
         {
-            "name": "QLoraFinetuningConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
+            "name": "QATFinetuningConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QATFinetuningConfig\" />"
         },
         {
             "name": "QueryCondition",
@@ -8899,10 +8844,6 @@
         {
             "name": "QueryTracesRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryTracesRequest\" />"
-        },
-        {
-            "name": "RLHFAlgorithm",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RLHFAlgorithm\" />"
         },
         {
             "name": "RegexParserScoringFnParams",
@@ -9041,8 +8982,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanStatus\" />"
         },
         {
-            "name": "SpanWithChildren",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanWithChildren\" />"
+            "name": "SpanWithStatus",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanWithStatus\" />"
         },
         {
             "name": "StopReason",
@@ -9237,16 +9178,16 @@
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
                 "DPOAlignmentConfig",
+                "DataConfig",
                 "Dataset",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
-                "DoraFinetuningConfig",
+                "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvalTask",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
-                "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
                 "GetSpanTreeRequest",
@@ -9273,24 +9214,23 @@
                 "MetricEvent",
                 "Model",
                 "ModelCandidate",
+                "ModelType",
                 "OptimizerConfig",
+                "OptimizerType",
                 "PaginatedRowsResult",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
-                "PostTrainingJobLogStream",
-                "PostTrainingJobStatus",
                 "PostTrainingJobStatusResponse",
                 "PreferenceOptimizeRequest",
                 "ProviderInfo",
-                "QLoraFinetuningConfig",
+                "QATFinetuningConfig",
                 "QueryCondition",
                 "QueryConditionOp",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
                 "QuerySpansRequest",
                 "QueryTracesRequest",
-                "RLHFAlgorithm",
                 "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
                 "RegisterEvalTaskRequest",
@@ -9322,7 +9262,7 @@
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
-                "SpanWithChildren",
+                "SpanWithStatus",
                 "StopReason",
                 "StructuredLogEvent",
                 "SupervisedFineTuneRequest",

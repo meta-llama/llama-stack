@@ -150,8 +150,7 @@ class EvalTrace(BaseModel):
 
 
 @json_schema_type
-class SpanWithChildren(Span):
-    children: List["SpanWithChildren"] = Field(default_factory=list)
+class SpanWithStatus(Span):
     status: Optional[SpanStatus] = None
 
 
@@ -192,7 +191,7 @@ class Telemetry(Protocol):
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> SpanWithChildren: ...
+    ) -> Dict[str, SpanWithStatus]: ...
 
     @webmethod(route="/telemetry/query-spans", method="POST")
     async def query_spans(

@@ -7,7 +7,7 @@
 from typing import List, Optional
 
 from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.apis.telemetry import QueryCondition, Span, SpanWithChildren
+from llama_stack.apis.telemetry import QueryCondition, Span
 
 
 class TelemetryDatasetMixin:
@@ -53,19 +53,18 @@ class TelemetryDatasetMixin:
         spans = []
 
         for trace in traces:
-            span_tree = await self.get_span_tree(
+            spans_by_id = await self.get_span_tree(
                 span_id=trace.root_span_id,
                 attributes_to_return=attributes_to_return,
                 max_depth=max_depth,
             )
 
-            def extract_spans(span: SpanWithChildren) -> List[Span]:
-                result = []
+            for span in spans_by_id.values():
                 if span.attributes and all(
                     attr in span.attributes and span.attributes[attr] is not None
                     for attr in attributes_to_return
                 ):
-                    result.append(
+                    spans.append(
                         Span(
                             trace_id=trace.root_span_id,
                             span_id=span.span_id,
@@ -76,12 +75,5 @@ class TelemetryDatasetMixin:
                             attributes=span.attributes,
                         )
                     )
-
-                for child in span.children:
-                    result.extend(extract_spans(child))
-
-                return result
-
-            spans.extend(extract_spans(span_tree))
 
         return spans

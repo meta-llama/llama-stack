@@ -404,8 +404,9 @@ traces = client.telemetry.query_traces(
     }]
 )
 
-# Get detailed span information
-span_tree = client.telemetry.get_span_tree(
+# Get spans within the root span; indexed by ID
+# Use parent_span_id to build a tree out of it
+spans_by_id = client.telemetry.get_span_tree(
     span_id=traces[0].root_span_id
 )
 ```
