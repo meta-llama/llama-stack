@@ -6,11 +6,11 @@
 
 import json
 from datetime import datetime
-from typing import List, Optional, Protocol
+from typing import Dict, List, Optional, Protocol
 
 import aiosqlite
 
-from llama_stack.apis.telemetry import QueryCondition, SpanWithChildren, Trace
+from llama_stack.apis.telemetry import QueryCondition, SpanWithStatus, Trace
 
 
 class TraceStore(Protocol):
@@ -27,7 +27,7 @@ class TraceStore(Protocol):
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> SpanWithChildren: ...
+    ) -> Dict[str, SpanWithStatus]: ...
 
 
 class SQLiteTraceStore(TraceStore):
@@ -114,7 +114,7 @@ class SQLiteTraceStore(TraceStore):
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> SpanWithChildren:
+    ) -> Dict[str, SpanWithStatus]:
         # Build the attributes selection
         attributes_select = "s.attributes"
         if attributes_to_return:
@@ -143,6 +143,7 @@ class SQLiteTraceStore(TraceStore):
         ORDER BY depth, start_time
         """
 
+        spans_by_id = {}
         async with aiosqlite.connect(self.conn_string) as conn:
             conn.row_factory = aiosqlite.Row
             async with conn.execute(query, (span_id, max_depth, max_depth)) as cursor:
@@ -151,12 +152,8 @@ class SQLiteTraceStore(TraceStore):
                 if not rows:
                     raise ValueError(f"Span {span_id} not found")
 
-                # Build span tree
-                spans_by_id = {}
-                root_span = None
-
                 for row in rows:
-                    span = SpanWithChildren(
+                    span = SpanWithStatus(
                         span_id=row["span_id"],
                         trace_id=row["trace_id"],
                         parent_span_id=row["parent_span_id"],
@@ -165,14 +162,8 @@ class SQLiteTraceStore(TraceStore):
                         end_time=datetime.fromisoformat(row["end_time"]),
                         attributes=json.loads(row["filtered_attributes"]),
                         status=row["status"].lower(),
-                        children=[],
                     )
 
                     spans_by_id[span.span_id] = span
 
-                    if span.span_id == span_id:
-                        root_span = span
-                    elif span.parent_span_id in spans_by_id:
-                        spans_by_id[span.parent_span_id].children.append(span)
-
-                return root_span
+                return spans_by_id

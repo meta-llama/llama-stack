@@ -41,8 +41,6 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
     """
 
     def trace_method(method: Callable) -> Callable:
-        from llama_stack.providers.utils.telemetry import tracing
-
         is_async = asyncio.iscoroutinefunction(method)
         is_async_gen = inspect.isasyncgenfunction(method)
 
@@ -77,6 +75,8 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
         async def async_gen_wrapper(
             self: Any, *args: Any, **kwargs: Any
         ) -> AsyncGenerator:
+            from llama_stack.providers.utils.telemetry import tracing
+
             class_name, method_name, span_attributes = create_span_context(
                 self, *args, **kwargs
             )
@@ -92,6 +92,8 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
 
         @wraps(method)
         async def async_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
+            from llama_stack.providers.utils.telemetry import tracing
+
             class_name, method_name, span_attributes = create_span_context(
                 self, *args, **kwargs
             )
@@ -107,6 +109,8 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
 
         @wraps(method)
         def sync_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
+            from llama_stack.providers.utils.telemetry import tracing
+
             class_name, method_name, span_attributes = create_span_context(
                 self, *args, **kwargs
             )
