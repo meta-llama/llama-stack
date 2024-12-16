@@ -10,8 +10,6 @@ from typing import Optional
 from llama_models.schema_utils import json_schema_type
 from pydantic import BaseModel
 
-from llama_stack.apis.common.deployment_types import URL
-
 
 @json_schema_type
 class PostTrainingMetric(BaseModel):
