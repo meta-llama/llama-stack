@@ -25,7 +25,7 @@ from llama_models.llama3.api.datatypes import (
     ToolPromptFormat,
 )
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
@@ -82,13 +82,19 @@ class TextContentItem(BaseModel):
 
 
 # other modalities can be added here
-InterleavedContentItem = Annotated[
-    Union[ImageContentItem, TextContentItem],
-    Field(discriminator="type"),
-]
+InterleavedContentItem = register_schema(
+    Annotated[
+        Union[ImageContentItem, TextContentItem],
+        Field(discriminator="type"),
+    ],
+    name="InterleavedContentItem",
+)
 
 # accept a single "str" as a special case since it is common
-InterleavedContent = str | InterleavedContentItem | List[InterleavedContentItem]
+InterleavedContent = register_schema(
+    Union[str, InterleavedContentItem, List[InterleavedContentItem]],
+    name="InterleavedContent",
+)
 
 
 @json_schema_type
