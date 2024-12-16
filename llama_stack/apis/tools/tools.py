@@ -7,12 +7,11 @@
 from typing import Any, Dict, List, Literal, Optional
 
 from llama_models.llama3.api.datatypes import ToolPromptFormat
-
-from llama_models.schema_utils import json_schema_type
+from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Protocol, runtime_checkable
 
-from llama_stack.apis.resource import Resource
+from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
@@ -39,7 +38,7 @@ class ToolReturn(BaseModel):
 class Tool(Resource):
     """Represents a tool that can be provided by different providers"""
 
-    resource_type: Literal["tool"] = "tool"
+    type: Literal[ResourceType.tool.value] = ResourceType.tool.value
     name: str
     description: str
     parameters: List[ToolParameter]
@@ -53,6 +52,7 @@ class Tool(Resource):
 @runtime_checkable
 @trace_protocol
 class Tools(Protocol):
+    @webmethod(route="/tools/register", method="POST")
     async def register_tool(
         self,
         tool_id: str,
@@ -60,27 +60,33 @@ class Tools(Protocol):
         description: str,
         parameters: List[ToolParameter],
         returns: ToolReturn,
+        provider_id: Optional[str] = None,
         provider_metadata: Optional[Dict[str, Any]] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
     ) -> Tool:
         """Register a tool with provider-specific metadata"""
         ...
 
+    @webmethod(route="/tools/get", method="GET")
     async def get_tool(
         self,
-        identifier: str,
+        tool_id: str,
     ) -> Tool: ...
 
-    async def list_tools(
-        self,
-        provider_id: Optional[str] = None,
-    ) -> List[Tool]:
+    @webmethod(route="/tools/list", method="GET")
+    async def list_tools(self) -> List[Tool]:
         """List tools with optional provider"""
+
+    @webmethod(route="/tools/unregister", method="POST")
+    async def unregister_tool(self, tool_id: str) -> None:
+        """Unregister a tool"""
+        ...
 
 
 @runtime_checkable
 @trace_protocol
 class ToolRuntime(Protocol):
-    def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
+    @webmethod(route="/tool-runtime/invoke", method="POST")
+    async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
         """Run a tool with the given arguments"""
         ...

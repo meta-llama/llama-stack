@@ -30,6 +30,7 @@ class Api(Enum):
     scoring = "scoring"
     eval = "eval"
     post_training = "post_training"
+    tool_runtime = "tool_runtime"
 
     telemetry = "telemetry"
 
@@ -39,6 +40,7 @@ class Api(Enum):
     datasets = "datasets"
     scoring_functions = "scoring_functions"
     eval_tasks = "eval_tasks"
+    tools = "tools"
 
     # built-in API
     inspect = "inspect"
@@ -78,6 +80,8 @@ class EvalTasksProtocolPrivate(Protocol):
 
 class ToolsProtocolPrivate(Protocol):
     async def register_tool(self, tool: Tool) -> None: ...
+
+    async def unregister_tool(self, tool_id: str) -> None: ...
 
 
 @json_schema_type

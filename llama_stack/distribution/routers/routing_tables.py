@@ -15,7 +15,7 @@ from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
-
+from llama_stack.apis.tools import *  # noqa: F403
 from llama_stack.apis.common.content_types import URL
 
 from llama_stack.apis.common.type_system import ParamType
@@ -45,6 +45,8 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
         return await p.register_scoring_function(obj)
     elif api == Api.eval:
         return await p.register_eval_task(obj)
+    elif api == Api.tool_runtime:
+        return await p.register_tool(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -57,6 +59,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_model(obj.identifier)
     elif api == Api.datasetio:
         return await p.unregister_dataset(obj.identifier)
+    elif api == Api.tool_runtime:
+        return await p.unregister_tool(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -461,3 +465,51 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
             provider_resource_id=provider_eval_task_id,
         )
         await self.register_object(eval_task)
+
+
+class ToolsRoutingTable(CommonRoutingTableImpl, Tools):
+    async def list_tools(self) -> List[Tool]:
+        return await self.get_all_with_type("tool")
+
+    async def get_tool(self, tool_id: str) -> Tool:
+        return await self.get_object_by_identifier("tool", tool_id)
+
+    async def register_tool(
+        self,
+        tool_id: str,
+        name: str,
+        description: str,
+        parameters: List[ToolParameter],
+        returns: ToolReturn,
+        provider_id: Optional[str] = None,
+        provider_metadata: Optional[Dict[str, Any]] = None,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
+    ) -> None:
+        if provider_metadata is None:
+            provider_metadata = {}
+        if tool_prompt_format is None:
+            tool_prompt_format = ToolPromptFormat.json
+        if provider_id is None:
+            if len(self.impls_by_provider_id) == 1:
+                provider_id = list(self.impls_by_provider_id.keys())[0]
+            else:
+                raise ValueError(
+                    "No provider specified and multiple providers available. Please specify a provider_id."
+                )
+        tool = Tool(
+            identifier=tool_id,
+            name=name,
+            description=description,
+            parameters=parameters,
+            returns=returns,
+            provider_id=provider_id,
+            provider_metadata=provider_metadata,
+            tool_prompt_format=tool_prompt_format,
+        )
+        await self.register_object(tool)
+
+    async def unregister_tool(self, tool_id: str) -> None:
+        tool = await self.get_tool(tool_id)
+        if tool is None:
+            raise ValueError(f"Tool {tool_id} not found")
+        await self.unregister_object(tool)

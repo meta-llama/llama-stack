@@ -7,5 +7,5 @@
 from pydantic import BaseModel
 
 
-class MetaReferenceToolConfig(BaseModel):
+class MetaReferenceToolRuntimeConfig(BaseModel):
     pass
