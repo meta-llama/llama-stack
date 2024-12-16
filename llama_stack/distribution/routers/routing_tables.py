@@ -15,7 +15,7 @@ from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
-from llama_stack.apis.tools import *  # noqa: F403
+from llama_stack.apis.tools import *  # noqa: F403from llama_stack.apis.tools import *  # noqa: F403
 from llama_stack.apis.common.content_types import URL
 
 from llama_stack.apis.common.type_system import ParamType
