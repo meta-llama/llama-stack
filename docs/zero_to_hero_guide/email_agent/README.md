@@ -1,6 +1,6 @@
 # A Llama and Llama Stack Powered Email Agent
 
-This is a Llama Stack port of the [Llama Powered Email Agent](https://github.com/meta-llama/llama-recipes/tree/gmagent/recipes/use_cases/email_agent) app that shows how to build an email agent app powered by Llama 3.1 8B and Llama Stack, using Llama Stack custom tool and agent APIs. 
+This is a Llama Stack port of the [Llama Powered Email Agent](https://github.com/meta-llama/llama-recipes/tree/main/recipes/use_cases/email_agent) app that shows how to build an email agent app powered by Llama 3.1 8B and Llama Stack, using Llama Stack custom tool and agent APIs. 
 
 Currently implemented features of the agent include:
 * search for emails and attachments
@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 # Run Email Agent
 
-The steps are also the same as the [original app]((https://github.com/meta-llama/llama-recipes/tree/gmagent/recipes/use_cases/email_agent):
+The steps are also the same as the [original app](https://github.com/meta-llama/llama-recipes/tree/main/recipes/use_cases/email_agent):
 
 ```
 python main.py --gmail <your_gmail_address>
