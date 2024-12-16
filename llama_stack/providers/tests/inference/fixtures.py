@@ -192,6 +192,19 @@ def inference_tgi() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def inference_sentence_transformers() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sentence_transformers",
+                provider_type="inline::sentence-transformers",
+                config={},
+            )
+        ]
+    )
+
+
 def get_model_short_name(model_name: str) -> str:
     """Convert model name to a short test identifier.
 

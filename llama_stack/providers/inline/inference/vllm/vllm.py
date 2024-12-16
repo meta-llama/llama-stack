@@ -114,7 +114,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -218,8 +218,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def embeddings(
-        self, model_id: str, contents: list[InterleavedTextMedia]
+        self, model_id: str, contents: List[InterleavedContent]
     ) -> EmbeddingsResponse:
-        log.info("vLLM embeddings")
-        # TODO
         raise NotImplementedError()

@@ -62,7 +62,7 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     async def completion(
         self,
         model: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -135,6 +135,6 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

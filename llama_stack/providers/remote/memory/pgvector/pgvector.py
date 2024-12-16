@@ -15,7 +15,7 @@ from psycopg2.extras import execute_values, Json
 from pydantic import BaseModel, parse_obj_as
 
 from llama_stack.apis.memory import *  # noqa: F403
-
+from llama_stack.apis.memory_banks import MemoryBankType, VectorMemoryBank
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 
 from llama_stack.providers.utils.memory.vector_store import (
@@ -188,7 +188,7 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = await self._get_and_cache_bank_index(bank_id)

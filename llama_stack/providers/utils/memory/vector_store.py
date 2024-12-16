@@ -22,7 +22,11 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks import VectorMemoryBank
 from llama_stack.providers.datatypes import Api
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
 log = logging.getLogger(__name__)
 
@@ -108,7 +112,7 @@ async def content_from_doc(doc: MemoryBankDocument) -> str:
             else:
                 return r.text
 
-    return interleaved_text_media_as_str(doc.content)
+    return interleaved_content_as_str(doc.content)
 
 
 def make_overlapped_chunks(
@@ -174,7 +178,7 @@ class BankWithIndex:
 
     async def query_documents(
         self,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         if params is None:
