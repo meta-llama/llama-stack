@@ -48,10 +48,10 @@ model_aliases = [
         "llama3.1:8b-instruct-fp16",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias_with_just_provider_model_id(
-        "llama3.1:8b",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
+    # build_model_alias_with_just_provider_model_id(
+    #     "llama3.1:8b",
+    #     CoreModelId.llama3_1_8b_instruct.value,
+    # ),
     build_model_alias(
         "llama3.1:70b-instruct-fp16",
         CoreModelId.llama3_1_70b_instruct.value,
