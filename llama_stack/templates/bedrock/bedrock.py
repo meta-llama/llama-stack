@@ -6,11 +6,13 @@
 
 from pathlib import Path
 
+from llama_models.sku_list import all_registered_models
 from llama_stack.distribution.datatypes import Provider
 
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
-
+from llama_stack.providers.remote.inference.bedrock.bedrock import MODEL_ALIASES
+from llama_stack.apis.models import ModelInput
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
@@ -30,6 +32,19 @@ def get_distribution_template() -> DistributionTemplate:
         config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
     )
 
+    core_model_to_hf_repo = {
+        m.descriptor(): m.huggingface_repo for m in all_registered_models()
+    }
+
+    default_models = [
+        ModelInput(
+            model_id=core_model_to_hf_repo[m.llama_model],
+            provider_model_id=m.provider_model_id,
+            provider_id="bedrock",
+        )
+        for m in MODEL_ALIASES
+    ]
+
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -37,12 +52,13 @@ def get_distribution_template() -> DistributionTemplate:
         docker_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=[],
+        default_models=default_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "memory": [memory_provider],
                 },
+                default_models=default_models,
             ),
         },
         run_config_env_vars={
