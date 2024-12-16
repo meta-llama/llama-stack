@@ -79,6 +79,11 @@ models:
   provider_id: ollama
   provider_model_id: null
   model_type: llm
+- metadata: {}
+  model_id: Llama-3.2-3B-Instruct
+  provider_id: ollama
+  provider_model_id: null
+  model_type: llm
 - metadata:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2

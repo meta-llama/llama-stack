@@ -18,3 +18,7 @@ Package.resolved
 .vscode
 _build
 docs/src
+
+env/
+envs/
+.envrc

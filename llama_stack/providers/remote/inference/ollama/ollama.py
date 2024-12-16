@@ -48,10 +48,10 @@ model_aliases = [
         "llama3.1:8b-instruct-fp16",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias_with_just_provider_model_id(
-        "llama3.1:8b",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
+    # build_model_alias_with_just_provider_model_id(
+    #     "llama3.1:8b",
+    #     CoreModelId.llama3_1_8b_instruct.value,
+    # ),
     build_model_alias(
         "llama3.1:70b-instruct-fp16",
         CoreModelId.llama3_1_70b_instruct.value,
@@ -347,7 +347,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 )
             return model
         model = await self.register_helper.register_model(model)
-        models = await self.client.ps()
+        models = await self.client.list()
         available_models = [m["model"] for m in models["models"]]
         if model.provider_resource_id not in available_models:
             raise ValueError(
