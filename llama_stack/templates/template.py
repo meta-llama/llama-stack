@@ -11,6 +11,7 @@ import jinja2
 import yaml
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     Api,
     BuildConfig,
@@ -146,6 +147,13 @@ class DistributionTemplate(BaseModel):
         )
 
     def save_distribution(self, yaml_output_dir: Path, doc_output_dir: Path) -> None:
+        def enum_representer(dumper, data):
+            return dumper.represent_scalar("tag:yaml.org,2002:str", data.value)
+
+        # Register YAML representer for ModelType
+        yaml.add_representer(ModelType, enum_representer)
+        yaml.SafeDumper.add_representer(ModelType, enum_representer)
+
         for output_dir in [yaml_output_dir, doc_output_dir]:
             output_dir.mkdir(parents=True, exist_ok=True)
 

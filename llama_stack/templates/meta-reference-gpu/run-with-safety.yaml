@@ -19,6 +19,9 @@ providers:
       model: ${env.INFERENCE_MODEL}
       max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
   - provider_id: meta-reference-safety
     provider_type: inline::meta-reference
     config:
@@ -83,10 +86,18 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: meta-reference-inference
   provider_model_id: null
+  model_type: llm
 - metadata: {}
   model_id: ${env.SAFETY_MODEL}
   provider_id: meta-reference-safety
   provider_model_id: null
+  model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  provider_model_id: null
+  model_type: embedding
 shields:
 - params: null
   shield_id: ${env.SAFETY_MODEL}

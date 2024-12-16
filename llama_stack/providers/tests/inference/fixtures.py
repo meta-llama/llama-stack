@@ -9,9 +9,9 @@ import os
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.models import ModelInput
-
+from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
+
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
@@ -47,6 +47,9 @@ def inference_meta_reference(inference_model) -> ProviderFixture:
     inference_model = (
         [inference_model] if isinstance(inference_model, str) else inference_model
     )
+    # If embedding dimension is set, use the 8B model for testing
+    if os.getenv("EMBEDDING_DIMENSION"):
+        inference_model = ["meta-llama/Llama-3.1-8B-Instruct"]
 
     return ProviderFixture(
         providers=[
@@ -85,7 +88,7 @@ def inference_ollama(inference_model) -> ProviderFixture:
     inference_model = (
         [inference_model] if isinstance(inference_model, str) else inference_model
     )
-    if "Llama3.1-8B-Instruct" in inference_model:
+    if inference_model and "Llama3.1-8B-Instruct" in inference_model:
         pytest.skip("Ollama only supports Llama3.2-3B-Instruct for testing")
 
     return ProviderFixture(
@@ -232,11 +235,23 @@ INFERENCE_FIXTURES = [
 async def inference_stack(request, inference_model):
     fixture_name = request.param
     inference_fixture = request.getfixturevalue(f"inference_{fixture_name}")
+    model_type = ModelType.llm
+    metadata = {}
+    if os.getenv("EMBEDDING_DIMENSION"):
+        model_type = ModelType.embedding
+        metadata["embedding_dimension"] = get_env_or_fail("EMBEDDING_DIMENSION")
+
     test_stack = await construct_stack_for_test(
         [Api.inference],
         {"inference": inference_fixture.providers},
         inference_fixture.provider_data,
-        models=[ModelInput(model_id=inference_model)],
+        models=[
+            ModelInput(
+                model_id=inference_model,
+                model_type=model_type,
+                metadata=metadata,
+            )
+        ],
     )
 
     return test_stack.impls[Api.inference], test_stack.impls[Api.models]

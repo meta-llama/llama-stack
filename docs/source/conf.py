@@ -29,6 +29,7 @@ extensions = [
     "sphinx_design",
     "sphinxcontrib.redoc",
     "sphinxcontrib.mermaid",
+    "sphinxcontrib.video",
 ]
 myst_enable_extensions = ["colon_fence"]
 

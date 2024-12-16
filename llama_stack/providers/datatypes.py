@@ -28,6 +28,7 @@ class Api(Enum):
     datasetio = "datasetio"
     scoring = "scoring"
     eval = "eval"
+    post_training = "post_training"
 
     telemetry = "telemetry"
 
@@ -200,10 +201,13 @@ API responses, specify the adapter here.
         return self.adapter.provider_data_validator
 
 
-def remote_provider_spec(api: Api, adapter: AdapterSpec) -> RemoteProviderSpec:
+def remote_provider_spec(
+    api: Api, adapter: AdapterSpec, api_dependencies: Optional[List[Api]] = None
+) -> RemoteProviderSpec:
     return RemoteProviderSpec(
         api=api,
         provider_type=f"remote::{adapter.adapter_type}",
         config_class=adapter.config_class,
         adapter=adapter,
+        api_dependencies=api_dependencies or [],
     )

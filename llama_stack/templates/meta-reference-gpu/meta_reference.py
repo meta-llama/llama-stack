@@ -6,9 +6,14 @@
 
 from pathlib import Path
 
+from llama_stack.apis.models.models import ModelType
+
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
+)
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -34,6 +39,11 @@ def get_distribution_template() -> DistributionTemplate:
             checkpoint_dir="${env.INFERENCE_CHECKPOINT_DIR:null}",
         ),
     )
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
     memory_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
@@ -43,6 +53,14 @@ def get_distribution_template() -> DistributionTemplate:
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="meta-reference-inference",
+    )
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
     )
     safety_model = ModelInput(
         model_id="${env.SAFETY_MODEL}",
@@ -59,15 +77,16 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
                     "memory": [memory_provider],
                 },
-                default_models=[inference_model],
+                default_models=[inference_model, embedding_model],
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [
                         inference_provider,
+                        embedding_provider,
                         Provider(
                             provider_id="meta-reference-safety",
                             provider_type="inline::meta-reference",
@@ -82,6 +101,7 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=[
                     inference_model,
                     safety_model,
+                    embedding_model,
                 ],
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
             ),

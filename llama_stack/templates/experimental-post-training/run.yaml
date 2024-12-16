@@ -1,0 +1,53 @@
+version: '2'
+image_name: experimental-post-training
+docker_image: null
+conda_env: experimental-post-training
+apis:
+- telemetry
+- datasetio
+- post_training
+providers:
+  datasetio:
+  - provider_id: huggingface-0
+    provider_type: remote::huggingface
+    config: {}
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  post_training:
+  - provider_id: torchtune-post-training
+    provider_type: inline::torchtune
+    config: {}
+
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
+models:
+- metadata: {}
+  model_id: ${env.POST_TRAINING_MODEL}
+  provider_id: meta-reference-inference
+  provider_model_id: null
+shields: []
+memory_banks: []
+datasets:
+  - dataset_id: alpaca
+    provider_id: huggingface-0
+    url:
+      uri: https://huggingface.co/datasets/tatsu-lab/alpaca
+    metadata:
+      path: tatsu-lab/alpaca
+      name:
+      split: train
+    dataset_schema:
+      instruction:
+        type: string
+      input:
+        type: string
+      output:
+        type: string
+      text:
+        type: string
+scoring_fns: []
+eval_tasks: []
