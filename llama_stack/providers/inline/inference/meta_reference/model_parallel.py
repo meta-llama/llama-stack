@@ -77,12 +77,7 @@ class LlamaModelParallelGenerator:
         self.__exit__(None, None, None)
 
     def __enter__(self):
-        if self.config.model_parallel_size:
-            model_parallel_size = self.config.model_parallel_size
-        else:
-            model_parallel_size = self.llama_model.pth_file_count
-
-        print(f"model_parallel_size: {model_parallel_size}")
+        model_parallel_size = self.llama_model.pth_file_count
 
         self.group = ModelParallelProcessGroup(
             model_parallel_size,

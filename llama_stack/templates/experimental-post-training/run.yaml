@@ -32,10 +32,6 @@ metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
 models: []
-# - metadata: {}
-#   model_id: ${env.POST_TRAINING_MODEL}
-#   provider_id: meta-reference-inference
-#   provider_model_id: null
 shields: []
 memory_banks: []
 datasets:

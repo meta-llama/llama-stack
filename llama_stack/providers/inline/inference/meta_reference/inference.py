@@ -11,7 +11,7 @@ from typing import AsyncGenerator, List
 
 from llama_models.sku_list import resolve_model
 
-from llama_stack.apis.models import Model as LlamaStackModel
+from llama_stack.apis.models import Model
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
@@ -49,7 +49,6 @@ class MetaReferenceInferenceImpl(
     async def initialize(self, model_id, llama_model) -> None:
         log.info(f"Loading model `{model_id}`")
         if self.config.create_distributed_process_group:
-            print("I reach create_distributed_process_group")
             self.generator = LlamaModelParallelGenerator(
                 self.config, model_id, llama_model
             )
@@ -66,19 +65,17 @@ class MetaReferenceInferenceImpl(
     def check_model(self, request) -> None:
         if self.model is None:
             raise RuntimeError(
-                "Inference model hasn't been initialized yet, please register your requested model or add your model in the resouces first"
-            )
-        if request.model is None:
-            raise RuntimeError(
-                f"Unknown model: {request.model}, Run `llama model list`"
+                "No avaible model yet, please register your requested model or add your model in the resouces first"
             )
         elif request.model != self.model:
-            raise RuntimeError(f"Model mismatch: {request.model} != {self.model}")
+            raise RuntimeError(
+                f"Model mismatch: request model: {request.model} != loaded model: {self.model}"
+            )
 
     async def unregister_model(self, model_id: str) -> None:
         pass
 
-    async def register_model(self, model: LlamaStackModel) -> LlamaStackModel:
+    async def register_model(self, model: Model) -> Model:
         llama_model = (
             resolve_model(model.metadata["llama_model"])
             if "llama_model" in model.metadata
@@ -102,11 +99,7 @@ class MetaReferenceInferenceImpl(
         if model.model_type == ModelType.embedding:
             self._load_sentence_transformer_model(model.provider_resource_id)
 
-        if (
-            model.metadata
-            and "skip_initialize" in model.metadata
-            and model.metadata["skip_initialize"]
-        ):
+        if "skip_initialize" in model.metadata and model.metadata["skip_initialize"]:
             return model
         await self.initialize(model.identifier, llama_model)
         return model
