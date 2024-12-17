@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 from contextlib import asynccontextmanager
 from typing import Dict, List, Optional, Protocol, Tuple
 
@@ -54,10 +53,7 @@ def _parse_registry_values(values: List[str]) -> List[RoutableObjectWithProvider
     """Utility function to parse registry values into RoutableObjectWithProvider objects."""
     all_objects = []
     for value in values:
-        obj = pydantic.parse_obj_as(
-            RoutableObjectWithProvider,
-            json.loads(value),
-        )
+        obj = pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(value)
         all_objects.append(obj)
     return all_objects
 
@@ -89,14 +85,7 @@ class DiskDistributionRegistry(DistributionRegistry):
         if not json_str:
             return None
 
-        objects_data = json.loads(json_str)
-        # Return only the first object if any exist
-        if objects_data:
-            return pydantic.parse_obj_as(
-                RoutableObjectWithProvider,
-                json.loads(objects_data),
-            )
-        return None
+        return pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(json_str)
 
     async def update(self, obj: RoutableObjectWithProvider) -> None:
         await self.kvstore.set(
