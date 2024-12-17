@@ -11,7 +11,7 @@ import pytest
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem, URL
 
 from .utils import group_chunks
 
@@ -32,7 +32,7 @@ class TestVisionModelInference:
             ),
             (
                 ImageContentItem(
-                    data=URL(
+                    url=URL(
                         uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
                     )
                 ),
@@ -98,7 +98,7 @@ class TestVisionModelInference:
 
         images = [
             ImageContentItem(
-                data=URL(
+                url=URL(
                     uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
                 )
             ),

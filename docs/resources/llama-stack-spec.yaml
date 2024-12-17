@@ -1043,17 +1043,16 @@ components:
       additionalProperties: false
       properties:
         data:
-          oneOf:
-          - contentEncoding: base64
-            type: string
-          - $ref: '#/components/schemas/URL'
+          contentEncoding: base64
+          type: string
         type:
           const: image
           default: image
           type: string
+        url:
+          $ref: '#/components/schemas/URL'
       required:
       - type
-      - data
       type: object
     InferenceStep:
       additionalProperties: false

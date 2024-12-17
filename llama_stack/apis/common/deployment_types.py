@@ -11,6 +11,8 @@ from llama_models.schema_utils import json_schema_type
 
 from pydantic import BaseModel
 
+from llama_stack.apis.common.content_types import URL
+
 
 @json_schema_type
 class RestAPIMethod(Enum):

@@ -4,11 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Annotated, List, Literal, Union
+from typing import Annotated, List, Literal, Optional, Union
 
 from llama_models.schema_utils import json_schema_type, register_schema
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 @json_schema_type(
@@ -21,10 +21,21 @@ class URL(BaseModel):
         return self.uri
 
 
+class _URLOrData(BaseModel):
+    url: Optional[URL] = None
+    data: Optional[bytes] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validator(cls, values):
+        if isinstance(values, dict):
+            return values
+        return {"url": values}
+
+
 @json_schema_type
-class ImageContentItem(BaseModel):
+class ImageContentItem(_URLOrData):
     type: Literal["image"] = "image"
-    data: Union[bytes, URL]
 
 
 @json_schema_type

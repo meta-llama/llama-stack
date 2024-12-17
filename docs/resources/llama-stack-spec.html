@@ -2554,27 +2554,22 @@
             "ImageContentItem": {
                 "type": "object",
                 "properties": {
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "data": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
                     "type": {
                         "type": "string",
                         "const": "image",
                         "default": "image"
-                    },
-                    "data": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "contentEncoding": "base64"
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "data"
+                    "type"
                 ]
             },
             "InterleavedContent": {

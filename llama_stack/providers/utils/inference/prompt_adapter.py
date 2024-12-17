@@ -139,9 +139,9 @@ def request_has_media(request: Union[ChatCompletionRequest, CompletionRequest]):
 
 
 async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
-    if isinstance(media.data, URL) and media.data.uri.startswith("http"):
+    if media.url and media.url.uri.startswith("http"):
         async with httpx.AsyncClient() as client:
-            r = await client.get(media.data.uri)
+            r = await client.get(media.url.uri)
             content = r.content
             content_type = r.headers.get("content-type")
             if content_type:
@@ -157,8 +157,8 @@ async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
 async def convert_image_content_to_url(
     media: ImageContentItem, download: bool = False, include_format: bool = True
 ) -> str:
-    if isinstance(media.data, URL) and not download:
-        return media.data.uri
+    if media.url and not download:
+        return media.url.uri
 
     content, format = await localize_image_content(media)
     if include_format:
