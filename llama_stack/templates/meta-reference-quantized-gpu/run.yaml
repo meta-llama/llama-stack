@@ -16,7 +16,7 @@ providers:
   - provider_id: meta-reference-inference
     provider_type: inline::meta-reference-quantized
     config:
-      model: ${env.INFERENCE_MODEL} # please make sure your inference model here is added as resource
+      model: ${env.INFERENCE_MODEL}
       max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
       quantization:
