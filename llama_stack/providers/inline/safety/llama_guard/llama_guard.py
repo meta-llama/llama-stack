@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 from llama_stack.distribution.datatypes import Api
 
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate

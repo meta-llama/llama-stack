@@ -21,8 +21,8 @@ from llama_stack.providers.utils.inference.model_registry import (
 )
 
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
-
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,

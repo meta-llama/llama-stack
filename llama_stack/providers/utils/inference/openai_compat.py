@@ -13,6 +13,8 @@ from llama_models.llama3.api.datatypes import StopReason
 from llama_stack.apis.inference import *  # noqa: F403
 from pydantic import BaseModel
 
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
+
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,
 )

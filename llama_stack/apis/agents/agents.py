@@ -29,8 +29,7 @@ from llama_stack.apis.common.deployment_types import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.common.deployment_types import URL
-from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, URL
 
 
 @json_schema_type

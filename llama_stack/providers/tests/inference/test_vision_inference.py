@@ -11,6 +11,7 @@ import pytest
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 
 from .utils import group_chunks
 

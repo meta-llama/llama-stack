@@ -34,19 +34,21 @@ from llama_models.llama3.prompt_templates import (
 from llama_models.sku_list import resolve_model
 from PIL import Image as PIL_Image
 
-from llama_stack.apis.common.deployment_types import URL
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    InterleavedContentItem,
+    TextContentItem,
+    URL,
+)
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     CompletionRequest,
-    ImageContentItem,
-    InterleavedContent,
-    InterleavedContentItem,
     Message,
     ResponseFormat,
     ResponseFormatType,
     SystemMessage,
-    TextContentItem,
     ToolChoice,
     UserMessage,
 )

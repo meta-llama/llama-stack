@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.common.deployment_types import URL
+from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.memory_banks import MemoryBank
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol

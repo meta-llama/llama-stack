@@ -25,12 +25,12 @@ from llama_models.llama3.api.datatypes import (
     ToolPromptFormat,
 )
 
-from llama_models.schema_utils import json_schema_type, register_schema, webmethod
+from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.deployment_types import URL
+from llama_stack.apis.common.content_types import InterleavedContent
 
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.apis.models import *  # noqa: F403
@@ -67,34 +67,6 @@ QuantizationConfig = Annotated[
     Union[Bf16QuantizationConfig, Fp8QuantizationConfig, Int4QuantizationConfig],
     Field(discriminator="type"),
 ]
-
-
-@json_schema_type
-class ImageContentItem(BaseModel):
-    type: Literal["image"] = "image"
-    data: Union[bytes, URL]
-
-
-@json_schema_type
-class TextContentItem(BaseModel):
-    type: Literal["text"] = "text"
-    text: str
-
-
-# other modalities can be added here
-InterleavedContentItem = register_schema(
-    Annotated[
-        Union[ImageContentItem, TextContentItem],
-        Field(discriminator="type"),
-    ],
-    name="InterleavedContentItem",
-)
-
-# accept a single "str" as a special case since it is common
-InterleavedContent = register_schema(
-    Union[str, InterleavedContentItem, List[InterleavedContentItem]],
-    name="InterleavedContent",
-)
 
 
 @json_schema_type

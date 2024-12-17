@@ -10,7 +10,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.common.deployment_types import URL
+from llama_stack.apis.common.content_types import URL
 
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
