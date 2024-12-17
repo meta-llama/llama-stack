@@ -9,8 +9,8 @@ import pytest
 
 # How to run this test:
 #
-# pytest -v -s llama_stack/providers/tests/inference/test_model_registration.py
-#   -m "meta_reference"
+# torchrun $CONDA_PREFIX/bin/pytest -v -s -k "meta_reference" --inference-model="Llama3.1-8B-Instruct"
+#  ./llama_stack/providers/tests/inference/test_model_registration.py
 
 
 class TestModelRegistration:

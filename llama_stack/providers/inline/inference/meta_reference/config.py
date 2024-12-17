@@ -46,8 +46,10 @@ class MetaReferenceInferenceConfig(BaseModel):
         return model
 
     @property
-    def model_parallel_size(self) -> int:
+    def model_parallel_size(self) -> Optional[int]:
         resolved = resolve_model(self.model)
+        if resolved is None:
+            return None
         return resolved.pth_file_count
 
     @classmethod

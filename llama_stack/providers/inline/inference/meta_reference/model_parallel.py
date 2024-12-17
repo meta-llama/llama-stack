@@ -10,8 +10,8 @@ from functools import partial
 from typing import Any, Generator
 
 from llama_models.llama3.api.chat_format import ChatFormat
+from llama_models.llama3.api.datatypes import Model
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
 
@@ -37,8 +37,9 @@ class ModelRunner:
 def init_model_cb(
     config: MetaReferenceInferenceConfig,
     model_id: str,
+    llama_model: Model,
 ):
-    llama = Llama.build(config, model_id)
+    llama = Llama.build(config, model_id, llama_model)
     return ModelRunner(llama)
 
 
@@ -57,14 +58,15 @@ class LlamaModelParallelGenerator:
         self,
         config: MetaReferenceInferenceConfig,
         model_id: str,
+        llama_model: Model,
     ):
         self.config = config
         self.model_id = model_id
-        self.model = resolve_model(model_id)
+        self.llama_model = llama_model
 
         # this is a hack because Agent's loop uses this to tokenize and check if input is too long
         # while the tool-use loop is going
-        checkpoint_dir = model_checkpoint_dir(self.model)
+        checkpoint_dir = model_checkpoint_dir(self.model_id)
         tokenizer_path = os.path.join(checkpoint_dir, "tokenizer.model")
         self.formatter = ChatFormat(Tokenizer(tokenizer_path))
 
@@ -78,11 +80,15 @@ class LlamaModelParallelGenerator:
         if self.config.model_parallel_size:
             model_parallel_size = self.config.model_parallel_size
         else:
-            model_parallel_size = resolve_model(self.model).pth_file_count
+            model_parallel_size = self.llama_model.pth_file_count
+
+        print(f"model_parallel_size: {model_parallel_size}")
 
         self.group = ModelParallelProcessGroup(
             model_parallel_size,
-            init_model_cb=partial(init_model_cb, self.config, self.model_id),
+            init_model_cb=partial(
+                init_model_cb, self.config, self.model_id, self.llama_model
+            ),
         )
         self.group.start()
         return self
