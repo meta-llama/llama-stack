@@ -26,6 +26,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
+    CompletionMessage,
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
@@ -315,11 +316,15 @@ class MetaReferenceInferenceImpl(
             if stop_reason is None:
                 stop_reason = StopReason.out_of_tokens
 
-            message = self.generator.formatter.decode_assistant_message(
+            raw_message = self.generator.formatter.decode_assistant_message(
                 tokens, stop_reason
             )
             return ChatCompletionResponse(
-                completion_message=message,
+                completion_message=CompletionMessage(
+                    content=raw_message.content,
+                    stop_reason=raw_message.stop_reason,
+                    tool_calls=raw_message.tool_calls,
+                ),
                 logprobs=logprobs if request.logprobs else None,
             )
 
@@ -454,7 +459,9 @@ async def convert_request_to_raw(
         messages = []
         for m in request.messages:
             content = await interleaved_content_convert_to_raw(m.content)
-            messages.append(RawMessage(**m.model_dump(), content=content))
+            d = m.model_dump()
+            d["content"] = content
+            messages.append(RawMessage(**d))
         request.messages = messages
     else:
         request.content = await interleaved_content_convert_to_raw(request.content)

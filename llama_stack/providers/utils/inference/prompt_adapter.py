@@ -103,6 +103,8 @@ async def interleaved_content_convert_to_raw(
                         data = response.content
                 else:
                     raise ValueError("Unsupported URL type")
+            else:
+                data = c.data
             return RawMediaItem(data=data)
         else:
             raise ValueError(f"Unsupported content type: {type(c)}")
