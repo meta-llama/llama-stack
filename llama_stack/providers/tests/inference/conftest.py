@@ -69,6 +69,7 @@ def pytest_generate_tests(metafunc):
             else:
                 params = MODEL_PARAMS
 
+        # print("params", params)
         metafunc.parametrize(
             "inference_model",
             params,
@@ -82,5 +83,7 @@ def pytest_generate_tests(metafunc):
                 "inference": INFERENCE_FIXTURES,
             },
         ):
+            # print("I reach here")
             fixtures = [stack.values[0]["inference"] for stack in filtered_stacks]
+        print("fixtures", fixtures)
         metafunc.parametrize("inference_stack", fixtures, indirect=True)

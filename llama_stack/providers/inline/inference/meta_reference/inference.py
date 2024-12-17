@@ -94,7 +94,6 @@ class MetaReferenceInferenceImpl(
             ],
         )
         model = await self.model_registry_helper.register_model(model)
-        print("model type", type(model))
         if model.model_type == ModelType.embedding:
             self._load_sentence_transformer_model(model.provider_resource_id)
 
@@ -304,7 +303,6 @@ class MetaReferenceInferenceImpl(
 
         if self.config.create_distributed_process_group:
             async with SEMAPHORE:
-                print("after SEMAPHORE")
                 return impl()
         else:
             return impl()

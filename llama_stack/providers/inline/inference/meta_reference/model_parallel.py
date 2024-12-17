@@ -58,7 +58,6 @@ class LlamaModelParallelGenerator:
         config: MetaReferenceInferenceConfig,
         model_id: str,
     ):
-        print("LlamaModelParallelGenerator init")
         self.config = config
         self.model_id = model_id
         self.model = resolve_model(model_id)
@@ -76,7 +75,6 @@ class LlamaModelParallelGenerator:
         self.__exit__(None, None, None)
 
     def __enter__(self):
-        print("enter LlamaModelParallelGenerator")
         if self.config.model_parallel_size:
             model_parallel_size = self.config.model_parallel_size
         else:

@@ -3,10 +3,17 @@ image_name: experimental-post-training
 docker_image: null
 conda_env: experimental-post-training
 apis:
+- inference
 - telemetry
 - datasetio
 - post_training
 providers:
+  inference:
+  - provider_id: meta-reference-inference
+    provider_type: inline::meta-reference
+    config:
+      max_seq_len: 4096
+      checkpoint_dir: null
   datasetio:
   - provider_id: huggingface-0
     provider_type: remote::huggingface
@@ -24,11 +31,11 @@ metadata_store:
   namespace: null
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
-models:
-- metadata: {}
-  model_id: ${env.POST_TRAINING_MODEL}
-  provider_id: meta-reference-inference
-  provider_model_id: null
+models: []
+# - metadata: {}
+#   model_id: ${env.POST_TRAINING_MODEL}
+#   provider_id: meta-reference-inference
+#   provider_model_id: null
 shields: []
 memory_banks: []
 datasets:

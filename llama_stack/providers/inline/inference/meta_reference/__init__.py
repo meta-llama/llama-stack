@@ -15,9 +15,6 @@ async def get_provider_impl(
 ):
     from .inference import MetaReferenceInferenceImpl
 
-    print("get_provider_impl")
-
     impl = MetaReferenceInferenceImpl(config)
 
-    print("after MetaReferenceInferenceImpl")
     return impl
