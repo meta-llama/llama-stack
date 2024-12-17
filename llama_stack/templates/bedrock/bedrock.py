@@ -7,12 +7,14 @@
 from pathlib import Path
 
 from llama_models.sku_list import all_registered_models
+
+from llama_stack.apis.models import ModelInput
 from llama_stack.distribution.datatypes import Provider
 
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 from llama_stack.providers.remote.inference.bedrock.bedrock import MODEL_ALIASES
-from llama_stack.apis.models import ModelInput
+from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
