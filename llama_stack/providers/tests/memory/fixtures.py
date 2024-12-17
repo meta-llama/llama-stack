@@ -125,7 +125,7 @@ async def memory_stack(inference_model, request):
         models=[
             ModelInput(
                 model_id=inference_model,
-                model_type=ModelType.embedding_model,
+                model_type=ModelType.embedding,
                 metadata={
                     "embedding_dimension": get_env_or_fail("EMBEDDING_DIMENSION"),
                 },

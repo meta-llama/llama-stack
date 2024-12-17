@@ -761,6 +761,28 @@ components:
       - epsilon
       - gamma
       type: object
+    DataConfig:
+      additionalProperties: false
+      properties:
+        batch_size:
+          type: integer
+        dataset_id:
+          type: string
+        packed:
+          default: false
+          type: boolean
+        shuffle:
+          type: boolean
+        train_on_input:
+          default: false
+          type: boolean
+        validation_dataset_id:
+          type: string
+      required:
+      - dataset_id
+      - batch_size
+      - shuffle
+      type: object
     Dataset:
       additionalProperties: false
       properties:
@@ -908,27 +930,21 @@ components:
       - agent_id
       - session_id
       type: object
-    DoraFinetuningConfig:
+    EfficiencyConfig:
       additionalProperties: false
       properties:
-        alpha:
-          type: integer
-        apply_lora_to_mlp:
+        enable_activation_checkpointing:
+          default: false
           type: boolean
-        apply_lora_to_output:
+        enable_activation_offloading:
+          default: false
           type: boolean
-        lora_attn_modules:
-          items:
-            type: string
-          type: array
-        rank:
-          type: integer
-      required:
-      - lora_attn_modules
-      - apply_lora_to_mlp
-      - apply_lora_to_output
-      - rank
-      - alpha
+        fsdp_cpu_offload:
+          default: false
+          type: boolean
+        memory_efficient_fsdp_wrap:
+          default: false
+          type: boolean
       type: object
     EmbeddingsRequest:
       additionalProperties: false
@@ -1054,13 +1070,6 @@ components:
       - scoring_functions
       - task_config
       type: object
-    FinetuningAlgorithm:
-      enum:
-      - full
-      - lora
-      - qlora
-      - dora
-      type: string
     FunctionCallToolDefinition:
       additionalProperties: false
       properties:
@@ -1230,6 +1239,8 @@ components:
       enum:
       - completed
       - in_progress
+      - failed
+      - scheduled
       type: string
     KeyValueMemoryBank:
       additionalProperties: false
@@ -1358,9 +1369,20 @@ components:
           items:
             type: string
           type: array
+        quantize_base:
+          default: false
+          type: boolean
         rank:
           type: integer
+        type:
+          const: LoRA
+          default: LoRA
+          type: string
+        use_dora:
+          default: false
+          type: boolean
       required:
+      - type
       - lora_attn_modules
       - apply_lora_to_mlp
       - apply_lora_to_output
@@ -1621,6 +1643,9 @@ components:
             - type: array
             - type: object
           type: object
+        model_type:
+          $ref: '#/components/schemas/ModelType'
+          default: llm
         provider_id:
           type: string
         provider_resource_id:
@@ -1635,6 +1660,7 @@ components:
       - provider_id
       - type
       - metadata
+      - model_type
       type: object
     ModelCandidate:
       additionalProperties: false
@@ -1654,27 +1680,34 @@ components:
       - model
       - sampling_params
       type: object
+    ModelType:
+      enum:
+      - llm
+      - embedding
+      type: string
     OptimizerConfig:
       additionalProperties: false
       properties:
         lr:
           type: number
-        lr_min:
-          type: number
+        num_warmup_steps:
+          type: integer
         optimizer_type:
-          enum:
-          - adam
-          - adamw
-          - sgd
-          type: string
+          $ref: '#/components/schemas/OptimizerType'
         weight_decay:
           type: number
       required:
       - optimizer_type
       - lr
-      - lr_min
       - weight_decay
+      - num_warmup_steps
       type: object
+    OptimizerType:
+      enum:
+      - adam
+      - adamw
+      - sgd
+      type: string
     PaginatedRowsResult:
       additionalProperties: false
       properties:
@@ -1740,27 +1773,6 @@ components:
       - checkpoints
       title: Artifacts of a finetuning job.
       type: object
-    PostTrainingJobLogStream:
-      additionalProperties: false
-      properties:
-        job_uuid:
-          type: string
-        log_lines:
-          items:
-            type: string
-          type: array
-      required:
-      - job_uuid
-      - log_lines
-      title: Stream of logs from a finetuning job.
-      type: object
-    PostTrainingJobStatus:
-      enum:
-      - running
-      - completed
-      - failed
-      - scheduled
-      type: string
     PostTrainingJobStatusResponse:
       additionalProperties: false
       properties:
@@ -1790,7 +1802,7 @@ components:
           format: date-time
           type: string
         status:
-          $ref: '#/components/schemas/PostTrainingJobStatus'
+          $ref: '#/components/schemas/JobStatus'
       required:
       - job_uuid
       - status
@@ -1800,14 +1812,10 @@ components:
     PreferenceOptimizeRequest:
       additionalProperties: false
       properties:
-        algorithm:
-          $ref: '#/components/schemas/RLHFAlgorithm'
         algorithm_config:
           $ref: '#/components/schemas/DPOAlignmentConfig'
-        dataset_id:
-          type: string
         finetuned_model:
-          $ref: '#/components/schemas/URL'
+          type: string
         hyperparam_search_config:
           additionalProperties:
             oneOf:
@@ -1830,20 +1838,12 @@ components:
             - type: array
             - type: object
           type: object
-        optimizer_config:
-          $ref: '#/components/schemas/OptimizerConfig'
         training_config:
           $ref: '#/components/schemas/TrainingConfig'
-        validation_dataset_id:
-          type: string
       required:
       - job_uuid
       - finetuned_model
-      - dataset_id
-      - validation_dataset_id
-      - algorithm
       - algorithm_config
-      - optimizer_config
       - training_config
       - hyperparam_search_config
       - logger_config
@@ -1859,27 +1859,21 @@ components:
       - provider_id
       - provider_type
       type: object
-    QLoraFinetuningConfig:
+    QATFinetuningConfig:
       additionalProperties: false
       properties:
-        alpha:
+        group_size:
           type: integer
-        apply_lora_to_mlp:
-          type: boolean
-        apply_lora_to_output:
-          type: boolean
-        lora_attn_modules:
-          items:
-            type: string
-          type: array
-        rank:
-          type: integer
+        quantizer_name:
+          type: string
+        type:
+          const: QAT
+          default: QAT
+          type: string
       required:
-      - lora_attn_modules
-      - apply_lora_to_mlp
-      - apply_lora_to_output
-      - rank
-      - alpha
+      - type
+      - quantizer_name
+      - group_size
       type: object
     QueryCondition:
       additionalProperties: false
@@ -2003,10 +1997,6 @@ components:
             type: string
           type: array
       type: object
-    RLHFAlgorithm:
-      enum:
-      - dpo
-      type: string
     RegexParserScoringFnParams:
       additionalProperties: false
       properties:
@@ -2209,6 +2199,8 @@ components:
           type: object
         model_id:
           type: string
+        model_type:
+          $ref: '#/components/schemas/ModelType'
         provider_id:
           type: string
         provider_model_id:
@@ -2941,7 +2933,7 @@ components:
       - ok
       - error
       type: string
-    SpanWithChildren:
+    SpanWithStatus:
       additionalProperties: false
       properties:
         attributes:
@@ -2954,10 +2946,6 @@ components:
             - type: array
             - type: object
           type: object
-        children:
-          items:
-            $ref: '#/components/schemas/SpanWithChildren'
-          type: array
         end_time:
           format: date-time
           type: string
@@ -2979,7 +2967,6 @@ components:
       - trace_id
       - name
       - start_time
-      - children
       type: object
     StopReason:
       enum:
@@ -3025,14 +3012,11 @@ components:
     SupervisedFineTuneRequest:
       additionalProperties: false
       properties:
-        algorithm:
-          $ref: '#/components/schemas/FinetuningAlgorithm'
         algorithm_config:
           oneOf:
           - $ref: '#/components/schemas/LoraFinetuningConfig'
-          - $ref: '#/components/schemas/QLoraFinetuningConfig'
-          - $ref: '#/components/schemas/DoraFinetuningConfig'
-        dataset_id:
+          - $ref: '#/components/schemas/QATFinetuningConfig'
+        checkpoint_dir:
           type: string
         hyperparam_search_config:
           additionalProperties:
@@ -3058,23 +3042,14 @@ components:
           type: object
         model:
           type: string
-        optimizer_config:
-          $ref: '#/components/schemas/OptimizerConfig'
         training_config:
           $ref: '#/components/schemas/TrainingConfig'
-        validation_dataset_id:
-          type: string
       required:
       - job_uuid
-      - model
-      - dataset_id
-      - validation_dataset_id
-      - algorithm
-      - algorithm_config
-      - optimizer_config
       - training_config
       - hyperparam_search_config
       - logger_config
+      - model
       type: object
     SyntheticDataGenerateRequest:
       additionalProperties: false
@@ -3384,28 +3359,27 @@ components:
     TrainingConfig:
       additionalProperties: false
       properties:
-        batch_size:
+        data_config:
+          $ref: '#/components/schemas/DataConfig'
+        dtype:
+          default: bf16
+          type: string
+        efficiency_config:
+          $ref: '#/components/schemas/EfficiencyConfig'
+        gradient_accumulation_steps:
           type: integer
-        enable_activation_checkpointing:
-          type: boolean
-        fsdp_cpu_offload:
-          type: boolean
-        memory_efficient_fsdp_wrap:
-          type: boolean
+        max_steps_per_epoch:
+          type: integer
         n_epochs:
           type: integer
-        n_iters:
-          type: integer
-        shuffle:
-          type: boolean
+        optimizer_config:
+          $ref: '#/components/schemas/OptimizerConfig'
       required:
       - n_epochs
-      - batch_size
-      - shuffle
-      - n_iters
-      - enable_activation_checkpointing
-      - memory_efficient_fsdp_wrap
-      - fsdp_cpu_offload
+      - max_steps_per_epoch
+      - gradient_accumulation_steps
+      - data_config
+      - optimizer_config
       type: object
     Turn:
       additionalProperties: false
@@ -3547,6 +3521,9 @@ components:
       additionalProperties: false
       properties:
         chunk_size_in_tokens:
+          type: integer
+        embedding_dimension:
+          default: 384
           type: integer
         embedding_model:
           type: string
@@ -4601,7 +4578,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
+                oneOf:
+                - $ref: '#/components/schemas/PostTrainingJobArtifactsResponse'
+                - type: 'null'
           description: OK
       tags:
       - PostTraining (Coming Soon)
@@ -4626,30 +4605,6 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/post-training/job/logs:
-    get:
-      parameters:
-      - in: query
-        name: job_uuid
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-ProviderData
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PostTrainingJobLogStream'
-          description: OK
-      tags:
-      - PostTraining (Coming Soon)
   /alpha/post-training/job/status:
     get:
       parameters:
@@ -4670,7 +4625,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostTrainingJobStatusResponse'
+                oneOf:
+                - $ref: '#/components/schemas/PostTrainingJobStatusResponse'
+                - type: 'null'
           description: OK
       tags:
       - PostTraining (Coming Soon)
@@ -5054,7 +5011,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpanWithChildren'
+                additionalProperties:
+                  $ref: '#/components/schemas/SpanWithStatus'
+                type: object
           description: OK
       tags:
       - Telemetry
@@ -5290,6 +5249,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/DataConfig" />
+  name: DataConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/Dataset" />
   name: Dataset
 - name: DatasetIO
@@ -5300,9 +5261,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
   name: DeleteAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DoraFinetuningConfig"
+- description: <SchemaDefinition schemaRef="#/components/schemas/EfficiencyConfig"
     />
-  name: DoraFinetuningConfig
+  name: EfficiencyConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/EmbeddingsRequest"
     />
   name: EmbeddingsRequest
@@ -5319,9 +5280,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateRowsRequest"
     />
   name: EvaluateRowsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/FinetuningAlgorithm"
-    />
-  name: FinetuningAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/FunctionCallToolDefinition"
     />
   name: FunctionCallToolDefinition
@@ -5395,10 +5353,14 @@ tags:
   name: Model
 - description: <SchemaDefinition schemaRef="#/components/schemas/ModelCandidate" />
   name: ModelCandidate
+- description: <SchemaDefinition schemaRef="#/components/schemas/ModelType" />
+  name: ModelType
 - name: Models
 - description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerConfig"
     />
   name: OptimizerConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/OptimizerType" />
+  name: OptimizerType
 - description: <SchemaDefinition schemaRef="#/components/schemas/PaginatedRowsResult"
     />
   name: PaginatedRowsResult
@@ -5415,14 +5377,6 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJobArtifactsResponse"
     />'
   name: PostTrainingJobArtifactsResponse
-- description: 'Stream of logs from a finetuning job.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJobLogStream" />'
-  name: PostTrainingJobLogStream
-- description: <SchemaDefinition schemaRef="#/components/schemas/PostTrainingJobStatus"
-    />
-  name: PostTrainingJobStatus
 - description: 'Status of a finetuning job.
 
 
@@ -5434,9 +5388,9 @@ tags:
   name: PreferenceOptimizeRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/ProviderInfo" />
   name: ProviderInfo
-- description: <SchemaDefinition schemaRef="#/components/schemas/QLoraFinetuningConfig"
+- description: <SchemaDefinition schemaRef="#/components/schemas/QATFinetuningConfig"
     />
-  name: QLoraFinetuningConfig
+  name: QATFinetuningConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryCondition" />
   name: QueryCondition
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryConditionOp"
@@ -5454,8 +5408,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryTracesRequest"
     />
   name: QueryTracesRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/RLHFAlgorithm" />
-  name: RLHFAlgorithm
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegexParserScoringFnParams"
     />
   name: RegexParserScoringFnParams
@@ -5545,9 +5497,8 @@ tags:
   name: SpanStartPayload
 - description: <SchemaDefinition schemaRef="#/components/schemas/SpanStatus" />
   name: SpanStatus
-- description: <SchemaDefinition schemaRef="#/components/schemas/SpanWithChildren"
-    />
-  name: SpanWithChildren
+- description: <SchemaDefinition schemaRef="#/components/schemas/SpanWithStatus" />
+  name: SpanWithStatus
 - description: <SchemaDefinition schemaRef="#/components/schemas/StopReason" />
   name: StopReason
 - description: <SchemaDefinition schemaRef="#/components/schemas/StructuredLogEvent"
@@ -5703,16 +5654,16 @@ x-tagGroups:
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
   - DPOAlignmentConfig
+  - DataConfig
   - Dataset
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
-  - DoraFinetuningConfig
+  - EfficiencyConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvalTask
   - EvaluateResponse
   - EvaluateRowsRequest
-  - FinetuningAlgorithm
   - FunctionCallToolDefinition
   - GetAgentsSessionRequest
   - GetSpanTreeRequest
@@ -5739,24 +5690,23 @@ x-tagGroups:
   - MetricEvent
   - Model
   - ModelCandidate
+  - ModelType
   - OptimizerConfig
+  - OptimizerType
   - PaginatedRowsResult
   - PhotogenToolDefinition
   - PostTrainingJob
   - PostTrainingJobArtifactsResponse
-  - PostTrainingJobLogStream
-  - PostTrainingJobStatus
   - PostTrainingJobStatusResponse
   - PreferenceOptimizeRequest
   - ProviderInfo
-  - QLoraFinetuningConfig
+  - QATFinetuningConfig
   - QueryCondition
   - QueryConditionOp
   - QueryDocumentsRequest
   - QueryDocumentsResponse
   - QuerySpansRequest
   - QueryTracesRequest
-  - RLHFAlgorithm
   - RegexParserScoringFnParams
   - RegisterDatasetRequest
   - RegisterEvalTaskRequest
@@ -5788,7 +5738,7 @@ x-tagGroups:
   - SpanEndPayload
   - SpanStartPayload
   - SpanStatus
-  - SpanWithChildren
+  - SpanWithStatus
   - StopReason
   - StructuredLogEvent
   - SupervisedFineTuneRequest

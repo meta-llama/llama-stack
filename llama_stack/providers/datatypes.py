@@ -28,6 +28,7 @@ class Api(Enum):
     datasetio = "datasetio"
     scoring = "scoring"
     eval = "eval"
+    post_training = "post_training"
 
     telemetry = "telemetry"
 

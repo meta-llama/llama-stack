@@ -337,7 +337,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def register_model(self, model: Model) -> Model:
         # ollama does not have embedding models running. Check if the model is in list of available models.
-        if model.model_type == ModelType.embedding_model:
+        if model.model_type == ModelType.embedding:
             response = await self.client.list()
             available_models = [m["model"] for m in response["models"]]
             if model.provider_resource_id not in available_models:

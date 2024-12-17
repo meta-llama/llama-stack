@@ -238,7 +238,7 @@ async def inference_stack(request, inference_model):
     model_type = ModelType.llm
     metadata = {}
     if os.getenv("EMBEDDING_DIMENSION"):
-        model_type = ModelType.embedding_model
+        model_type = ModelType.embedding
         metadata["embedding_dimension"] = get_env_or_fail("EMBEDDING_DIMENSION")
 
     test_stack = await construct_stack_for_test(

@@ -1,0 +1,13 @@
+version: '2'
+name: experimental-post-training
+distribution_spec:
+  description: Experimental template for post training
+  docker_image: null
+  providers:
+    post_training:
+    - inline::torchtune
+    datasetio:
+    - remote::huggingface
+    telemetry:
+    - inline::meta-reference
+image_type: conda

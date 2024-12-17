@@ -257,6 +257,8 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         endpoints = get_all_api_endpoints()
         endpoint_impls = {}
         for api, api_endpoints in endpoints.items():
+            if api not in self.impls:
+                continue
             for endpoint in api_endpoints:
                 impl = self.impls[api]
                 func = getattr(impl, endpoint.name)

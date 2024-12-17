@@ -243,7 +243,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> SpanWithChildren:
+    ) -> Dict[str, SpanWithStatus]:
         return await self.trace_store.get_span_tree(
             span_id=span_id,
             attributes_to_return=attributes_to_return,

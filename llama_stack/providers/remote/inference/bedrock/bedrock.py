@@ -6,7 +6,7 @@
 
 from typing import *  # noqa: F403
 import json
-
+import uuid
 from botocore.client import BaseClient
 from llama_models.datatypes import CoreModelId
 
@@ -26,7 +26,7 @@ from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 
-model_aliases = [
+MODEL_ALIASES = [
     build_model_alias(
         "meta.llama3-1-8b-instruct-v1:0",
         CoreModelId.llama3_1_8b_instruct.value,
@@ -45,7 +45,7 @@ model_aliases = [
 # NOTE: this is not quite tested after the recent refactors
 class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: BedrockConfig) -> None:
-        ModelRegistryHelper.__init__(self, model_aliases)
+        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self._config = config
 
         self._client = create_bedrock_client(config)
@@ -146,7 +146,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
                         [
                             {
                                 "toolResult": {
-                                    "toolUseId": message.call_id,
+                                    "toolUseId": message.call_id or str(uuid.uuid4()),
                                     "content": [
                                         {"text": content} for content in content_list
                                     ],

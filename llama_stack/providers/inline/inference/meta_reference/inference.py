@@ -95,7 +95,7 @@ class MetaReferenceInferenceImpl(
         )
         model = await self.model_registry_helper.register_model(model)
         print("model type", type(model))
-        if model.model_type == ModelType.embedding_model:
+        if model.model_type == ModelType.embedding:
             self._load_sentence_transformer_model(model.provider_resource_id)
 
         if (
