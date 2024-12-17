@@ -18,6 +18,7 @@ class KVStoreType(Enum):
     redis = "redis"
     sqlite = "sqlite"
     postgres = "postgres"
+    mongodb = "mongodb"
 
 
 class CommonConfig(BaseModel):
@@ -106,7 +107,30 @@ class PostgresKVStoreConfig(CommonConfig):
         return v
 
 
+class MongoDBKVStoreConfig(CommonConfig):
+    type: Literal[KVStoreType.mongodb.value] = KVStoreType.mongodb.value
+    host: str = "localhost"
+    port: int = 27017
+    db: str = "llamastack"
+    user: str = None
+    password: Optional[str] = None
+    collection_name: str = "llamastack_kvstore"
+
+    @classmethod
+    def sample_run_config(cls, collection_name: str = "llamastack_kvstore"):
+        return {
+            "type": "mongodb",
+            "namespace": None,
+            "host": "${env.MONGODB_HOST:localhost}",
+            "port": "${env.MONGODB_PORT:5432}",
+            "db": "${env.MONGODB_DB}",
+            "user": "${env.MONGODB_USER}",
+            "password": "${env.MONGODB_PASSWORD}",
+            "collection_name": "${env.MONGODB_COLLECTION_NAME:" + collection_name + "}",
+        }
+
+
 KVStoreConfig = Annotated[
-    Union[RedisKVStoreConfig, SqliteKVStoreConfig, PostgresKVStoreConfig],
+    Union[RedisKVStoreConfig, SqliteKVStoreConfig, PostgresKVStoreConfig, MongoDBKVStoreConfig],
     Field(discriminator="type", default=KVStoreType.sqlite.value),
 ]
