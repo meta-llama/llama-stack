@@ -17,5 +17,6 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[],
             module="llama_stack.providers.inline.tool_runtime.meta_reference",
             config_class="llama_stack.providers.inline.tool_runtime.meta_reference.MetaReferenceToolRuntimeConfig",
+            provider_data_validator="llama_stack.providers.inline.tool_runtime.meta_reference.MetaReferenceProviderDataValidator",
         ),
     ]

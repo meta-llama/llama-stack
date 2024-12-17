@@ -49,6 +49,10 @@ class Tool(Resource):
     )
 
 
+class ToolStore(Protocol):
+    def get_tool(self, identifier: str) -> Tool: ...
+
+
 @runtime_checkable
 @trace_protocol
 class Tools(Protocol):
@@ -88,6 +92,8 @@ class Tools(Protocol):
 @runtime_checkable
 @trace_protocol
 class ToolRuntime(Protocol):
+    tool_store: ToolStore
+
     @webmethod(route="/tool-runtime/invoke", method="POST")
     async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
         """Run a tool with the given arguments"""
