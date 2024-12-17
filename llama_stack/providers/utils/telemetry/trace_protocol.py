@@ -6,10 +6,8 @@
 
 import asyncio
 import inspect
-from datetime import datetime
 from functools import wraps
 from typing import Any, AsyncGenerator, Callable, Type, TypeVar
-from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -19,17 +17,17 @@ T = TypeVar("T")
 def serialize_value(value: Any) -> Any:
     """Serialize a single value into JSON-compatible format."""
     if value is None:
-        return None
+        return ""
     elif isinstance(value, (str, int, float, bool)):
         return value
+    elif hasattr(value, "_name_"):
+        return value._name_
     elif isinstance(value, BaseModel):
-        return value.model_dump()
+        return value.model_dump_json()
     elif isinstance(value, (list, tuple, set)):
         return [serialize_value(item) for item in value]
     elif isinstance(value, dict):
         return {str(k): serialize_value(v) for k, v in value.items()}
-    elif isinstance(value, (datetime, UUID)):
-        return str(value)
     else:
         return str(value)
 
