@@ -59,7 +59,7 @@ class MemoryRouter(Memory):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         return await self.routing_table.get_provider_impl(bank_id).query_documents(
@@ -133,7 +133,7 @@ class InferenceRouter(Inference):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -163,7 +163,7 @@ class InferenceRouter(Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.routing_table.get_model(model_id)
         if model is None:

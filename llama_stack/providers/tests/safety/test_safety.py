@@ -10,6 +10,7 @@ from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.apis.inference import UserMessage
 
 # How to run this test:
 #

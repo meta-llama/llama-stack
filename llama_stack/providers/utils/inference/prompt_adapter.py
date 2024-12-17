@@ -4,19 +4,26 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import base64
 import io
 import json
 import logging
-from typing import Tuple
+import re
+from typing import List, Optional, Tuple, Union
 
 import httpx
+from llama_models.datatypes import is_multimodal, ModelFamily
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from PIL import Image as PIL_Image
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_models.datatypes import ModelFamily
+from llama_models.llama3.api.datatypes import (
+    RawContent,
+    RawContentItem,
+    RawMediaItem,
+    RawTextItem,
+    Role,
+    ToolPromptFormat,
+)
 from llama_models.llama3.prompt_templates import (
     BuiltinToolGenerator,
     FunctionTagCustomToolGenerator,
@@ -25,15 +32,94 @@ from llama_models.llama3.prompt_templates import (
     SystemDefaultGenerator,
 )
 from llama_models.sku_list import resolve_model
+from PIL import Image as PIL_Image
+
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    InterleavedContentItem,
+    TextContentItem,
+    URL,
+)
+
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    CompletionRequest,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SystemMessage,
+    ToolChoice,
+    UserMessage,
+)
 
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = logging.getLogger(__name__)
 
 
-def content_has_media(content: InterleavedTextMedia):
+def interleaved_content_as_str(content: InterleavedContent, sep: str = " ") -> str:
+    def _process(c) -> str:
+        if isinstance(c, str):
+            return c
+        elif isinstance(c, ImageContentItem):
+            return "<image>"
+        elif isinstance(c, TextContentItem):
+            return c.text
+        else:
+            raise ValueError(f"Unsupported content type: {type(c)}")
+
+    if isinstance(content, list):
+        return sep.join(_process(c) for c in content)
+    else:
+        return _process(content)
+
+
+async def interleaved_content_convert_to_raw(
+    content: InterleavedContent,
+) -> RawContent:
+    """Download content from URLs / files etc. so plain bytes can be sent to the model"""
+
+    async def _localize_single(c: str | InterleavedContentItem) -> str | RawContentItem:
+        if isinstance(c, str):
+            return RawTextItem(text=c)
+        elif isinstance(c, TextContentItem):
+            return RawTextItem(text=c.text)
+        elif isinstance(c, ImageContentItem):
+            # load image and return PIL version
+            img = c.data
+            if isinstance(img, URL):
+                if img.uri.startswith("data"):
+                    match = re.match(r"data:image/(\w+);base64,(.+)", img.uri)
+                    if not match:
+                        raise ValueError("Invalid data URL format")
+                    _, image_data = match.groups()
+                    data = base64.b64decode(image_data)
+                elif img.uri.startswith("file://"):
+                    path = img.uri[len("file://") :]
+                    with open(path, "rb") as f:
+                        data = f.read()  # type: ignore
+                elif img.uri.startswith("http"):
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(img.uri)
+                        data = response.content
+                else:
+                    raise ValueError("Unsupported URL type")
+            else:
+                data = c.data
+            return RawMediaItem(data=data)
+        else:
+            raise ValueError(f"Unsupported content type: {type(c)}")
+
+    if isinstance(content, list):
+        return await asyncio.gather(*(_localize_single(c) for c in content))
+    else:
+        return await _localize_single(content)
+
+
+def content_has_media(content: InterleavedContent):
     def _has_media_content(c):
-        return isinstance(c, ImageMedia)
+        return isinstance(c, ImageContentItem)
 
     if isinstance(content, list):
         return any(_has_media_content(c) for c in content)
@@ -52,69 +138,35 @@ def request_has_media(request: Union[ChatCompletionRequest, CompletionRequest]):
         return content_has_media(request.content)
 
 
-async def convert_image_media_to_url(
-    media: ImageMedia, download: bool = False, include_format: bool = True
-) -> str:
-    if isinstance(media.image, PIL_Image.Image):
-        if media.image.format == "PNG":
-            format = "png"
-        elif media.image.format == "GIF":
-            format = "gif"
-        elif media.image.format == "JPEG":
-            format = "jpeg"
-        else:
-            raise ValueError(f"Unsupported image format {media.image.format}")
-
-        bytestream = io.BytesIO()
-        media.image.save(bytestream, format=media.image.format)
-        bytestream.seek(0)
-        content = bytestream.getvalue()
+async def localize_image_content(media: ImageContentItem) -> Tuple[bytes, str]:
+    if media.url and media.url.uri.startswith("http"):
+        async with httpx.AsyncClient() as client:
+            r = await client.get(media.url.uri)
+            content = r.content
+            content_type = r.headers.get("content-type")
+            if content_type:
+                format = content_type.split("/")[-1]
+            else:
+                format = "png"
+        return content, format
     else:
-        if not download:
-            return media.image.uri
-        else:
-            assert isinstance(media.image, URL)
-            async with httpx.AsyncClient() as client:
-                r = await client.get(media.image.uri)
-                content = r.content
-                content_type = r.headers.get("content-type")
-                if content_type:
-                    format = content_type.split("/")[-1]
-                else:
-                    format = "png"
+        image = PIL_Image.open(io.BytesIO(media.data))
+        return media.data, image.format
 
+
+async def convert_image_content_to_url(
+    media: ImageContentItem, download: bool = False, include_format: bool = True
+) -> str:
+    if media.url and not download:
+        return media.url.uri
+
+    content, format = await localize_image_content(media)
     if include_format:
         return f"data:image/{format};base64," + base64.b64encode(content).decode(
             "utf-8"
         )
     else:
         return base64.b64encode(content).decode("utf-8")
-
-
-# TODO: name this function better! this is about OpenAI compatibile image
-# media conversion of the message. this should probably go in openai_compat.py
-async def convert_message_to_dict(message: Message, download: bool = False) -> dict:
-    async def _convert_content(content) -> dict:
-        if isinstance(content, ImageMedia):
-            return {
-                "type": "image_url",
-                "image_url": {
-                    "url": await convert_image_media_to_url(content, download=download),
-                },
-            }
-        else:
-            assert isinstance(content, str)
-            return {"type": "text", "text": content}
-
-    if isinstance(message.content, list):
-        content = [await _convert_content(c) for c in message.content]
-    else:
-        content = [await _convert_content(message.content)]
-
-    return {
-        "role": message.role,
-        "content": content,
-    }
 
 
 def completion_request_to_prompt(
@@ -330,7 +382,7 @@ def augment_messages_for_tools_llama_3_2(
         sys_content += "\n"
 
     if existing_system_message:
-        sys_content += interleaved_text_media_as_str(
+        sys_content += interleaved_content_as_str(
             existing_system_message.content, sep="\n"
         )
 

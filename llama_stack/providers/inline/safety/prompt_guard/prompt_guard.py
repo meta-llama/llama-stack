@@ -17,6 +17,9 @@ from llama_stack.apis.safety import *  # noqa: F403
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
 from .config import PromptGuardConfig, PromptGuardType
 
@@ -83,7 +86,7 @@ class PromptGuardShield:
 
     async def run(self, messages: List[Message]) -> RunShieldResponse:
         message = messages[-1]
-        text = interleaved_text_media_as_str(message.content)
+        text = interleaved_content_as_str(message.content)
 
         # run model on messages and return response
         inputs = self.tokenizer(text, return_tensors="pt")

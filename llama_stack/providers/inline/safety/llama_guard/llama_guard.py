@@ -12,9 +12,13 @@ from typing import Any, Dict, List, Optional
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 from llama_stack.distribution.datatypes import Api
 
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
 from .config import LlamaGuardConfig
 
@@ -258,18 +262,18 @@ class LlamaGuardShield:
         most_recent_img = None
 
         for m in messages[::-1]:
-            if isinstance(m.content, str):
+            if isinstance(m.content, str) or isinstance(m.content, TextContentItem):
                 conversation.append(m)
-            elif isinstance(m.content, ImageMedia):
+            elif isinstance(m.content, ImageContentItem):
                 if most_recent_img is None and m.role == Role.user.value:
                     most_recent_img = m.content
                     conversation.append(m)
             elif isinstance(m.content, list):
                 content = []
                 for c in m.content:
-                    if isinstance(c, str):
+                    if isinstance(c, str) or isinstance(c, TextContentItem):
                         content.append(c)
-                    elif isinstance(c, ImageMedia):
+                    elif isinstance(c, ImageContentItem):
                         if most_recent_img is None and m.role == Role.user.value:
                             most_recent_img = c
                             content.append(c)
@@ -292,7 +296,7 @@ class LlamaGuardShield:
         categories_str = "\n".join(categories)
         conversations_str = "\n\n".join(
             [
-                f"{m.role.capitalize()}: {interleaved_text_media_as_str(m.content)}"
+                f"{m.role.capitalize()}: {interleaved_content_as_str(m.content)}"
                 for m in messages
             ]
         )

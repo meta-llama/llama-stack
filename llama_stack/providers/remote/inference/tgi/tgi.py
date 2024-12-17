@@ -83,7 +83,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -267,7 +267,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

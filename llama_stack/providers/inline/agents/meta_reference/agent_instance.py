@@ -26,6 +26,7 @@ from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 
 from llama_stack.providers.utils.kvstore import KVStore
+from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
 
 from .persistence import AgentPersistence
@@ -389,7 +390,7 @@ class ChatAgent(ShieldRunnerMixin):
 
             if rag_context:
                 last_message = input_messages[-1]
-                last_message.context = "\n".join(rag_context)
+                last_message.context = rag_context
 
         elif attachments and AgentTool.code_interpreter.value in enabled_tools:
             urls = [a.content for a in attachments if isinstance(a.content, URL)]
@@ -655,7 +656,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _retrieve_context(
         self, session_id: str, messages: List[Message], attachments: List[Attachment]
-    ) -> Tuple[Optional[List[str]], Optional[List[int]]]:  # (rag_context, bank_ids)
+    ) -> Tuple[Optional[InterleavedContent], List[int]]:  # (rag_context, bank_ids)
         bank_ids = []
 
         memory = self._memory_tool_definition()
@@ -723,11 +724,16 @@ class ChatAgent(ShieldRunnerMixin):
                 break
             picked.append(f"id:{c.document_id}; content:{c.content}")
 
-        return [
-            "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
-            *picked,
-            "\n=== END-RETRIEVED-CONTEXT ===\n",
-        ], bank_ids
+        return (
+            concat_interleaved_content(
+                [
+                    "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
+                    *picked,
+                    "\n=== END-RETRIEVED-CONTEXT ===\n",
+                ]
+            ),
+            bank_ids,
+        )
 
     def _get_tools(self) -> List[ToolDefinition]:
         ret = []

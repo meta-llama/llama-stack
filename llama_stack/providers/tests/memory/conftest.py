@@ -15,23 +15,23 @@ from .fixtures import MEMORY_FIXTURES
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
         {
-            "inference": "meta_reference",
+            "inference": "sentence_transformers",
             "memory": "faiss",
         },
-        id="meta_reference",
-        marks=pytest.mark.meta_reference,
+        id="sentence_transformers",
+        marks=pytest.mark.sentence_transformers,
     ),
     pytest.param(
         {
             "inference": "ollama",
-            "memory": "pgvector",
+            "memory": "faiss",
         },
         id="ollama",
         marks=pytest.mark.ollama,
     ),
     pytest.param(
         {
-            "inference": "together",
+            "inference": "sentence_transformers",
             "memory": "chroma",
         },
         id="chroma",
@@ -58,10 +58,10 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--inference-model",
+        "--embedding-model",
         action="store",
         default=None,
-        help="Specify the inference model to use for testing",
+        help="Specify the embedding model to use for testing",
     )
 
 
@@ -74,15 +74,15 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
-    if "inference_model" in metafunc.fixturenames:
-        model = metafunc.config.getoption("--inference-model")
-        if not model:
-            raise ValueError(
-                "No inference model specified. Please provide a valid inference model."
-            )
-        params = [pytest.param(model, id="")]
+    if "embedding_model" in metafunc.fixturenames:
+        model = metafunc.config.getoption("--embedding-model")
+        if model:
+            params = [pytest.param(model, id="")]
+        else:
+            params = [pytest.param("all-MiniLM-L6-v2", id="")]
 
-        metafunc.parametrize("inference_model", params, indirect=True)
+        metafunc.parametrize("embedding_model", params, indirect=True)
+
     if "memory_stack" in metafunc.fixturenames:
         available_fixtures = {
             "inference": INFERENCE_FIXTURES,

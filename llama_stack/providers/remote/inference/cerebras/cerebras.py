@@ -10,7 +10,6 @@ from cerebras.cloud.sdk import AsyncCerebras
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.inference import *  # noqa: F403
@@ -70,7 +69,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -167,11 +166,11 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
             raise ValueError("`top_k` not supported by Cerebras")
 
         prompt = ""
-        if type(request) == ChatCompletionRequest:
+        if isinstance(request, ChatCompletionRequest):
             prompt = chat_completion_request_to_prompt(
                 request, self.get_llama_model(request.model), self.formatter
             )
-        elif type(request) == CompletionRequest:
+        elif isinstance(request, CompletionRequest):
             prompt = completion_request_to_prompt(request, self.formatter)
         else:
             raise ValueError(f"Unknown request type {type(request)}")
@@ -186,6 +185,6 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

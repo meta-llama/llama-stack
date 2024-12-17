@@ -10,7 +10,6 @@ from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from together import Together
@@ -22,6 +21,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    convert_message_to_openai_dict,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -32,7 +32,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
     content_has_media,
-    convert_message_to_dict,
+    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -92,7 +92,7 @@ class TogetherInferenceAdapter(
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -230,7 +230,7 @@ class TogetherInferenceAdapter(
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    await convert_message_to_dict(m) for m in request.messages
+                    await convert_message_to_openai_dict(m) for m in request.messages
                 ]
             else:
                 input_dict["prompt"] = chat_completion_request_to_prompt(
@@ -252,7 +252,7 @@ class TogetherInferenceAdapter(
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
         assert all(
@@ -260,7 +260,7 @@ class TogetherInferenceAdapter(
         ), "Together does not support media for embeddings"
         r = self._get_client().embeddings.create(
             model=model.provider_resource_id,
-            input=[interleaved_text_media_as_str(content) for content in contents],
+            input=[interleaved_content_as_str(content) for content in contents],
         )
         embeddings = [item.embedding for item in r.data]
         return EmbeddingsResponse(embeddings=embeddings)
