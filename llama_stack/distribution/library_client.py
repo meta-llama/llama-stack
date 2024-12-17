@@ -25,7 +25,6 @@ from llama_stack_client import (
     AsyncStream,
     LlamaStackClient,
     NOT_GIVEN,
-    Stream,
 )
 from pydantic import BaseModel, TypeAdapter
 from rich.console import Console
@@ -370,8 +369,10 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                     json=options.json_data,
                 ),
             )
-            origin = get_origin(stream_cls)
-            assert origin is Stream
+
+            # we use asynchronous impl always internally and channel all requests to AsyncLlamaStackClient
+            # however, the top-level caller may be a SyncAPIClient -- so its stream_cls might be a Stream (SyncStream)
+            # so we need to convert it to AsyncStream
             args = get_args(stream_cls)
             stream_cls = AsyncStream[args[0]]
             response = AsyncAPIResponse(
