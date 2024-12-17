@@ -84,7 +84,7 @@ def get_distribution_template() -> DistributionTemplate:
                 "Port for the Llama Stack distribution server",
             ),
             "INFERENCE_MODEL": (
-                "meta-llama/Llama-3.2-3B-Instruct",
+                "Llama3.2-3B-Instruct",
                 "Inference model loaded into the Meta Reference server",
             ),
             "INFERENCE_CHECKPOINT_DIR": (

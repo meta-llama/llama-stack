@@ -31,9 +31,9 @@ Note that you need access to nvidia GPUs to run this distribution. This distribu
 The following environment variables can be configured:
 
 - `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
-- `INFERENCE_MODEL`: Inference model loaded into the Meta Reference server (default: `meta-llama/Llama-3.2-3B-Instruct`)
+- `INFERENCE_MODEL`: Inference model loaded into the Meta Reference server (default: `Llama3.2-3B-Instruct`)
 - `INFERENCE_CHECKPOINT_DIR`: Directory containing the Meta Reference model checkpoint (default: `null`)
-- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
+- `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `Llama-Guard-3-1B`)
 - `SAFETY_CHECKPOINT_DIR`: Directory containing the Llama-Guard model checkpoint (default: `null`)
 
 
@@ -63,7 +63,7 @@ docker run \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
   --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+  --env INFERENCE_MODEL=Llama3.2-3B-Instruct
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
@@ -75,8 +75,8 @@ docker run \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
   --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
-  --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+  --env INFERENCE_MODEL=Llama3.2-3B-Instruct \
+  --env SAFETY_MODEL=Llama-Guard-3-1B
 ```
 
 ### Via Conda
@@ -87,7 +87,7 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 llama stack build --template meta-reference-gpu --image-type conda
 llama stack run distributions/meta-reference-gpu/run.yaml \
   --port 5001 \
-  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+  --env INFERENCE_MODEL=Llama3.2-3B-Instruct
 ```
 
 If you are using Llama Stack Safety / Shield APIs, use:
@@ -95,6 +95,6 @@ If you are using Llama Stack Safety / Shield APIs, use:
 ```bash
 llama stack run distributions/meta-reference-gpu/run-with-safety.yaml \
   --port 5001 \
-  --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \
-  --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
+  --env INFERENCE_MODEL=Llama3.2-3B-Instruct \
+  --env SAFETY_MODEL=meta-Llama-Guard-3-1B
 ```
