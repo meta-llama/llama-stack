@@ -16,7 +16,7 @@ providers:
   - provider_id: meta-reference-inference
     provider_type: inline::meta-reference
     config:
-      # model: ${env.INFERENCE_MODEL}
+      model: ${env.INFERENCE_MODEL} # please make sure your inference model here is added as resource
       max_seq_len: 4096
       checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:null}
   memory:
@@ -73,10 +73,10 @@ metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
 models: []
-# - metadata: {}
-#   model_id: ${env.INFERENCE_MODEL}
-#   provider_id: meta-reference-inference
-#   provider_model_id: null
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: meta-reference-inference
+  provider_model_id: null
 shields: []
 memory_banks: []
 datasets: []

@@ -7,7 +7,7 @@
 import os
 from copy import deepcopy
 from functools import partial
-from typing import Any, Generator, Optional, Union
+from typing import Any, Generator
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -36,9 +36,9 @@ class ModelRunner:
 
 def init_model_cb(
     config: MetaReferenceInferenceConfig,
-    request: Optional[Union[CompletionRequest, ChatCompletionRequest]] = None,
+    model_id: str,
 ):
-    llama = Llama.build(config, request)
+    llama = Llama.build(config, model_id)
     return ModelRunner(llama)
 
 
@@ -56,17 +56,12 @@ class LlamaModelParallelGenerator:
     def __init__(
         self,
         config: MetaReferenceInferenceConfig,
-        request: Optional[Union[CompletionRequest, ChatCompletionRequest]] = None,
+        model_id: str,
     ):
         print("LlamaModelParallelGenerator init")
         self.config = config
-        self.request = request
-        if config.model:
-            self.model = resolve_model(config.model)
-        elif request:
-            self.model = resolve_model(request.model)
-        else:
-            raise RuntimeError("you need to provide a model for inference")
+        self.model_id = model_id
+        self.model = resolve_model(model_id)
 
         # this is a hack because Agent's loop uses this to tokenize and check if input is too long
         # while the tool-use loop is going
@@ -89,7 +84,7 @@ class LlamaModelParallelGenerator:
 
         self.group = ModelParallelProcessGroup(
             model_parallel_size,
-            init_model_cb=partial(init_model_cb, self.config, self.request),
+            init_model_cb=partial(init_model_cb, self.config, self.model_id),
         )
         self.group.start()
         return self

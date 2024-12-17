@@ -79,7 +79,7 @@ class Llama:
         config: Union[
             MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
         ],
-        request: Optional[Union[CompletionRequest, ChatCompletionRequest]] = None,
+        model_id: str,
     ):
         """
         Build a Llama instance by initializing and loading a model checkpoint.
@@ -88,12 +88,7 @@ class Llama:
             This method initializes the distributed process group, sets the device to CUDA,
             and loads the pre-trained model and tokenizer.
         """
-        if config.model:
-            model = resolve_model(config.model)
-        elif request:
-            model = resolve_model(request.model)
-        else:
-            raise RuntimeError("you need to provide a model for inference")
+        model = resolve_model(model_id)
 
         llama_model = model.core_model_id.value
 

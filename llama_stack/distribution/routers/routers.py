@@ -74,6 +74,7 @@ class InferenceRouter(Inference):
         self,
         routing_table: RoutingTable,
     ) -> None:
+        print("InferenceRouter init")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:

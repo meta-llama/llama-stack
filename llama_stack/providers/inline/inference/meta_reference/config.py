@@ -16,7 +16,9 @@ from llama_stack.providers.utils.inference import supported_inference_models
 
 
 class MetaReferenceInferenceConfig(BaseModel):
-    model: Optional[str] = None
+    model: Optional[str] = (
+        None  # this is a placeholder to indicate inference model id, not actually being used
+    )
     torch_seed: Optional[int] = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
