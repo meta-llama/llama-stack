@@ -85,7 +85,7 @@ class MetaReferenceInferenceImpl(
             else resolve_model(model.identifier)
         )
         if llama_model is None:
-            raise RuntimeError(
+            raise ValueError(
                 "Please make sure your llama_model in model metadata or model identifier is in llama-models SKU list"
             )
 

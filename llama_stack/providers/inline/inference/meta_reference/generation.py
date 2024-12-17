@@ -119,7 +119,7 @@ class Llama:
         if config.checkpoint_dir and config.checkpoint_dir != "null":
             ckpt_dir = config.checkpoint_dir
         else:
-            ckpt_dir = model_checkpoint_dir(model_id)  # true model id
+            ckpt_dir = model_checkpoint_dir(model_id)
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
