@@ -77,7 +77,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
-        raise NotImplementedError()
+        raise NotImplementedError("Completion not implemented for vLLM")
 
     async def chat_completion(
         self,
@@ -167,7 +167,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
                     for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
                     self.formatter,
@@ -176,7 +176,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             assert (
                 not media_present
             ), "Together does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(
+            input_dict["prompt"] = await completion_request_to_prompt(
                 request,
                 self.register_helper.get_llama_model(request.model),
                 self.formatter,

@@ -25,6 +25,8 @@ from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 
+from llama_stack.apis.common.content_types import InterleavedContent, TextContentItem
+
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
@@ -778,7 +780,11 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
         else:
             raise ValueError(f"Unsupported URL {url}")
 
-        content.append(f'# There is a file accessible to you at "{filepath}"\n')
+        content.append(
+            TextContentItem(
+                text=f'# There is a file accessible to you at "{filepath}"\n'
+            )
+        )
 
     return ToolResponseMessage(
         call_id="",

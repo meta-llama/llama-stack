@@ -12,7 +12,6 @@ from typing import AsyncGenerator, List, Optional, Union
 from llama_models.datatypes import Model
 
 from llama_models.llama3.api.datatypes import (
-    RawMessage,
     SamplingParams,
     StopReason,
     ToolDefinition,
@@ -53,14 +52,10 @@ from llama_stack.providers.utils.inference.model_registry import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     augment_content_with_response_format_prompt,
     chat_completion_request_to_messages,
-    interleaved_content_convert_to_raw,
+    convert_request_to_raw,
 )
 from .config import MetaReferenceInferenceConfig
-from .generation import (
-    ChatCompletionRequestWithRawContent,
-    CompletionRequestWithRawContent,
-    Llama,
-)
+from .generation import Llama
 from .model_parallel import LlamaModelParallelGenerator
 
 log = logging.getLogger(__name__)
@@ -450,20 +445,3 @@ class MetaReferenceInferenceImpl(
         else:
             for x in impl():
                 yield x
-
-
-async def convert_request_to_raw(
-    request: Union[ChatCompletionRequest, CompletionRequest],
-) -> Union[ChatCompletionRequestWithRawContent, CompletionRequestWithRawContent]:
-    if isinstance(request, ChatCompletionRequest):
-        messages = []
-        for m in request.messages:
-            content = await interleaved_content_convert_to_raw(m.content)
-            d = m.model_dump()
-            d["content"] = content
-            messages.append(RawMessage(**d))
-        request.messages = messages
-    else:
-        request.content = await interleaved_content_convert_to_raw(request.content)
-
-    return request

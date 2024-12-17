@@ -233,14 +233,16 @@ class TogetherInferenceAdapter(
                     await convert_message_to_openai_dict(m) for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request, self.get_llama_model(request.model), self.formatter
                 )
         else:
             assert (
                 not media_present
             ), "Together does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(
+                request, self.formatter
+            )
 
         return {
             "model": request.model,

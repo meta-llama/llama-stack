@@ -243,7 +243,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 ]
             else:
                 input_dict["raw"] = True
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
                     self.formatter,
@@ -252,7 +252,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             assert (
                 not media_present
             ), "Ollama does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(
+                request, self.formatter
+            )
             input_dict["raw"] = True
 
         return {

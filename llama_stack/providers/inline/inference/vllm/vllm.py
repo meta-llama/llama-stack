@@ -120,15 +120,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> CompletionResponse | CompletionResponseStreamChunk:
-        log.info("vLLM completion")
-        messages = [UserMessage(content=content)]
-        return self.chat_completion(
-            model=model_id,
-            messages=messages,
-            sampling_params=sampling_params,
-            stream=stream,
-            logprobs=logprobs,
-        )
+        raise NotImplementedError("Completion not implemented for vLLM")
 
     async def chat_completion(
         self,
@@ -142,8 +134,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
-        log.info("vLLM chat completion")
-
         assert self.engine is not None
 
         request = ChatCompletionRequest(
@@ -160,7 +150,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = chat_completion_request_to_prompt(request, self.formatter)
+        prompt = await chat_completion_request_to_prompt(request, self.formatter)
         vllm_sampling_params = self._sampling_params(request.sampling_params)
         results_generator = self.engine.generate(
             prompt, vllm_sampling_params, request_id

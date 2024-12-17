@@ -25,7 +25,6 @@ from fairscale.nn.model_parallel.initialize import (
 )
 from llama_models.llama3.api.args import ModelArgs
 from llama_models.llama3.api.chat_format import ChatFormat, LLMInput
-from llama_models.llama3.api.datatypes import RawContent, RawMessage
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.llama3.reference_impl.model import Transformer
 from llama_models.llama3.reference_impl.multimodal.model import (
@@ -39,6 +38,10 @@ from llama_stack.apis.inference import *  # noqa: F403
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    ChatCompletionRequestWithRawContent,
+    CompletionRequestWithRawContent,
+)
 
 from .config import (
     Fp8QuantizationConfig,
@@ -48,14 +51,6 @@ from .config import (
 )
 
 log = logging.getLogger(__name__)
-
-
-class ChatCompletionRequestWithRawContent(ChatCompletionRequest):
-    messages: List[RawMessage]
-
-
-class CompletionRequestWithRawContent(CompletionRequest):
-    content: RawContent
 
 
 def model_checkpoint_dir(model) -> str:
