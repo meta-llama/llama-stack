@@ -240,7 +240,6 @@ class ChatAgent(ShieldRunnerMixin):
         # final boolean (to see whether an exception happened) and then explicitly testing for it.
 
         if len(self.input_shields) > 0:
-            print("input shields", self.input_shields)
             async for res in self.run_multiple_shields_wrapper(
                 turn_id, input_messages, self.input_shields, "user-input"
             ):
@@ -282,7 +281,6 @@ class ChatAgent(ShieldRunnerMixin):
         shields: List[str],
         touchpoint: str,
     ) -> AsyncGenerator:
-        print("!!! HI run_multiple_shields_wrapper")
         with tracing.span("run_shields") as span:
             span.set_attribute("input", [m.model_dump_json() for m in messages])
             if len(shields) == 0:
