@@ -313,11 +313,7 @@ components:
         messages_batch:
           items:
             items:
-              oneOf:
-              - $ref: '#/components/schemas/UserMessage'
-              - $ref: '#/components/schemas/SystemMessage'
-              - $ref: '#/components/schemas/ToolResponseMessage'
-              - $ref: '#/components/schemas/CompletionMessage'
+              $ref: '#/components/schemas/Message'
             type: array
           type: array
         model:
@@ -422,56 +418,12 @@ components:
           type: object
         messages:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/Message'
           type: array
         model_id:
           type: string
         response_format:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              json_schema:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: json_schema
-                default: json_schema
-                type: string
-            required:
-            - type
-            - json_schema
-            type: object
-          - additionalProperties: false
-            properties:
-              bnf:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: grammar
-                default: grammar
-                type: string
-            required:
-            - type
-            - bnf
-            type: object
+          $ref: '#/components/schemas/ResponseFormat'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -598,47 +550,7 @@ components:
         model_id:
           type: string
         response_format:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              json_schema:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: json_schema
-                default: json_schema
-                type: string
-            required:
-            - type
-            - json_schema
-            type: object
-          - additionalProperties: false
-            properties:
-              bnf:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: grammar
-                default: grammar
-                type: string
-            required:
-            - type
-            - bnf
-            type: object
+          $ref: '#/components/schemas/ResponseFormat'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -1467,6 +1379,12 @@ components:
       - max_tokens_in_context
       - max_chunks
       type: object
+    Message:
+      oneOf:
+      - $ref: '#/components/schemas/UserMessage'
+      - $ref: '#/components/schemas/SystemMessage'
+      - $ref: '#/components/schemas/ToolResponseMessage'
+      - $ref: '#/components/schemas/CompletionMessage'
     MetricEvent:
       additionalProperties: false
       properties:
@@ -2121,6 +2039,48 @@ components:
       required:
       - shield_id
       type: object
+    ResponseFormat:
+      oneOf:
+      - additionalProperties: false
+        properties:
+          json_schema:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type:
+            const: json_schema
+            default: json_schema
+            type: string
+        required:
+        - type
+        - json_schema
+        type: object
+      - additionalProperties: false
+        properties:
+          bnf:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type:
+            const: grammar
+            default: grammar
+            type: string
+        required:
+        - type
+        - bnf
+        type: object
     RestAPIExecutionConfig:
       additionalProperties: false
       properties:
@@ -2203,11 +2163,7 @@ components:
       properties:
         messages:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/Message'
           type: array
         params:
           additionalProperties:
@@ -2744,11 +2700,7 @@ components:
       properties:
         dialogs:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/Message'
           type: array
         filtering_function:
           enum:
@@ -5024,6 +4976,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
     />
   name: MemoryToolDefinition
+- description: <SchemaDefinition schemaRef="#/components/schemas/Message" />
+  name: Message
 - description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
   name: MetricEvent
 - description: <SchemaDefinition schemaRef="#/components/schemas/Model" />
@@ -5108,6 +5062,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterShieldRequest"
     />
   name: RegisterShieldRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ResponseFormat" />
+  name: ResponseFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIExecutionConfig"
     />
   name: RestAPIExecutionConfig
@@ -5371,6 +5327,7 @@ x-tagGroups:
   - MemoryBankDocument
   - MemoryRetrievalStep
   - MemoryToolDefinition
+  - Message
   - MetricEvent
   - Model
   - ModelCandidate
@@ -5399,6 +5356,7 @@ x-tagGroups:
   - RegisterModelRequest
   - RegisterScoringFunctionRequest
   - RegisterShieldRequest
+  - ResponseFormat
   - RestAPIExecutionConfig
   - RestAPIMethod
   - RouteInfo

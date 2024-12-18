@@ -2598,6 +2598,22 @@
                     }
                 ]
             },
+            "Message": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/UserMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SystemMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ToolResponseMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    }
+                ]
+            },
             "SamplingParams": {
                 "type": "object",
                 "properties": {
@@ -2936,20 +2952,7 @@
                         "items": {
                             "type": "array",
                             "items": {
-                                "oneOf": [
-                                    {
-                                        "$ref": "#/components/schemas/UserMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/SystemMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/ToolResponseMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/CompletionMessage"
-                                    }
-                                ]
+                                "$ref": "#/components/schemas/Message"
                             }
                         }
                     },
@@ -3059,6 +3062,90 @@
                     "job_uuid"
                 ]
             },
+            "ResponseFormat": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "json_schema",
+                                "default": "json_schema"
+                            },
+                            "json_schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "json_schema"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "grammar",
+                                "default": "grammar"
+                            },
+                            "bnf": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "bnf"
+                        ]
+                    }
+                ]
+            },
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -3068,20 +3155,7 @@
                     "messages": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "sampling_params": {
@@ -3100,88 +3174,7 @@
                         "$ref": "#/components/schemas/ToolPromptFormat"
                     },
                     "response_format": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json_schema",
-                                        "default": "json_schema"
-                                    },
-                                    "json_schema": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "json_schema"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "grammar",
-                                        "default": "grammar"
-                                    },
-                                    "bnf": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "bnf"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ResponseFormat"
                     },
                     "stream": {
                         "type": "boolean"
@@ -3336,88 +3329,7 @@
                         "$ref": "#/components/schemas/SamplingParams"
                     },
                     "response_format": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json_schema",
-                                        "default": "json_schema"
-                                    },
-                                    "json_schema": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "json_schema"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "grammar",
-                                        "default": "grammar"
-                                    },
-                                    "bnf": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "bnf"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ResponseFormat"
                     },
                     "stream": {
                         "type": "boolean"
@@ -7285,20 +7197,7 @@
                     "messages": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "params": {
@@ -7664,20 +7563,7 @@
                     "dialogs": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "filtering_function": {
@@ -8137,6 +8023,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryToolDefinition\" />"
         },
         {
+            "name": "Message",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Message\" />"
+        },
+        {
             "name": "MetricEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MetricEvent\" />"
         },
@@ -8253,6 +8143,10 @@
         {
             "name": "RegisterShieldRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterShieldRequest\" />"
+        },
+        {
+            "name": "ResponseFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ResponseFormat\" />"
         },
         {
             "name": "RestAPIExecutionConfig",
@@ -8598,6 +8492,7 @@
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
+                "Message",
                 "MetricEvent",
                 "Model",
                 "ModelCandidate",
@@ -8626,6 +8521,7 @@
                 "RegisterModelRequest",
                 "RegisterScoringFunctionRequest",
                 "RegisterShieldRequest",
+                "ResponseFormat",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
                 "RouteInfo",
