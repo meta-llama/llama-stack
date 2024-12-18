@@ -55,7 +55,7 @@ class TestModelRegistration:
             model_id="custom-model",
             metadata={
                 "llama_model": "meta-llama/Llama-2-7b",
-                "skip_initialize": True,
+                "skip_load": True,
             },
         )
 
@@ -73,16 +73,16 @@ class TestModelRegistration:
         _, models_impl = inference_stack
 
         with patch(
-            "llama_stack.providers.inline.inference.meta_reference.inference.MetaReferenceInferenceImpl.initialize",
+            "llama_stack.providers.inline.inference.meta_reference.inference.MetaReferenceInferenceImpl.load_model",
             new_callable=AsyncMock,
-        ) as mock_initialize:
+        ) as mock_load_model:
             _ = await models_impl.register_model(
                 model_id="Llama3.1-8B-Instruct",
                 metadata={
                     "llama_model": "meta-llama/Llama-3.1-8B-Instruct",
                 },
             )
-            mock_initialize.assert_called_once()
+            mock_load_model.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_register_with_invalid_llama_model(self, inference_stack):

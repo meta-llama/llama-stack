@@ -73,7 +73,7 @@ class MetaReferenceInferenceImpl(
         self.model_id = None
         self.llama_model = None
 
-    async def initialize(self, model_id, llama_model) -> None:
+    async def load_model(self, model_id, llama_model) -> None:
         log.info(f"Loading model `{model_id}`")
         if self.config.create_distributed_process_group:
             self.generator = LlamaModelParallelGenerator(
@@ -127,9 +127,9 @@ class MetaReferenceInferenceImpl(
         if model.model_type == ModelType.embedding:
             self._load_sentence_transformer_model(model.provider_resource_id)
 
-        if "skip_initialize" in model.metadata and model.metadata["skip_initialize"]:
+        if "skip_load" in model.metadata and model.metadata["skip_load"]:
             return model
-        await self.initialize(model.identifier, llama_model)
+        await self.load_model(model.identifier, llama_model)
         return model
 
     async def completion(
