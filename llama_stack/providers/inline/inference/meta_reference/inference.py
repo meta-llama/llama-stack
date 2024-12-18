@@ -73,6 +73,9 @@ class MetaReferenceInferenceImpl(
         self.model_id = None
         self.llama_model = None
 
+    async def initialize(self) -> None:
+        pass
+
     async def load_model(self, model_id, llama_model) -> None:
         log.info(f"Loading model `{model_id}`")
         if self.config.create_distributed_process_group:
