@@ -41,8 +41,8 @@ model_aliases = [
         CoreModelId.llama3_1_8b_instruct.value,
     ),
     build_model_alias(
-        "llama3.1-70b",
-        CoreModelId.llama3_1_70b_instruct.value,
+        "llama-3.3-70b",
+        CoreModelId.llama3_3_70b_instruct.value,
     ),
 ]
 
