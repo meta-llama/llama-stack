@@ -107,7 +107,6 @@ class MetaReferenceInferenceImpl(
         pass
 
     async def register_model(self, model: Model) -> Model:
-        print("model metadata", model.metadata["llama_model"])
         llama_model = (
             resolve_model(model.metadata["llama_model"])
             if "llama_model" in model.metadata
