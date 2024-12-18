@@ -11,14 +11,9 @@ from llama_models.schema_utils import json_schema_type, register_schema
 from pydantic import BaseModel, Field, model_validator
 
 
-@json_schema_type(
-    schema={"type": "string", "format": "uri", "pattern": "^(https?://|file://|data:)"}
-)
+@json_schema_type
 class URL(BaseModel):
     uri: str
-
-    def __str__(self) -> str:
-        return self.uri
 
 
 class _URLOrData(BaseModel):

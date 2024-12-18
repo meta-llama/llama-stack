@@ -144,7 +144,7 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
                 if default_val is None:
                     raise EnvVarError(env_var, path)
                 else:
-                    value = default_val if default_val != "null" else None
+                    value = default_val
 
             # expand "~" from the values
             return os.path.expanduser(value)
