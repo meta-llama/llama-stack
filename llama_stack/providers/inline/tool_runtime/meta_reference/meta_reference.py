@@ -25,7 +25,6 @@ class MetaReferenceToolRuntimeImpl(
     def __init__(self, config: MetaReferenceToolRuntimeConfig):
         self.config = config
         self.tools: Dict[str, Type[BaseTool]] = {}
-        self.tool_instances: Dict[str, BaseTool] = {}
         self._discover_tools()
 
     def _discover_tools(self):
@@ -43,6 +42,33 @@ class MetaReferenceToolRuntimeImpl(
                     and attr != BaseTool
                 ):
                     self.tools[attr.tool_id()] = attr
+
+    async def initialize(self):
+        pass
+
+    async def register_tool(self, tool: Tool):
+        if tool.identifier not in self.tools:
+            raise ValueError(f"Tool {tool.identifier} not found in available tools")
+
+        # Validate provider_metadata against tool's config type if specified
+        tool_class = self.tools[tool.identifier]
+        config_type = tool_class.get_provider_config_type()
+        if (
+            config_type
+            and tool.provider_metadata
+            and tool.provider_metadata.get("config")
+        ):
+            config_type(**tool.provider_metadata.get("config"))
+
+    async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
+        if tool_id not in self.tools:
+            raise ValueError(f"Tool {tool_id} not found")
+
+        tool_instance = await self._create_tool_instance(tool_id)
+        return await tool_instance.execute(**args)
+
+    async def unregister_tool(self, tool_id: str) -> None:
+        raise NotImplementedError("Meta Reference does not support unregistering tools")
 
     async def _create_tool_instance(
         self, tool_id: str, tool_def: Optional[Tool] = None
@@ -63,41 +89,6 @@ class MetaReferenceToolRuntimeImpl(
             config["api_key"] = self._get_api_key()
 
         return tool_class(config=config)
-
-    async def initialize(self):
-        pass
-
-    async def register_tool(self, tool: Tool):
-        if tool.identifier not in self.tools:
-            raise ValueError(f"Tool {tool.identifier} not found in available tools")
-
-        # Validate provider_metadata against tool's config type if specified
-        tool_class = self.tools[tool.identifier]
-        config_type = tool_class.get_provider_config_type()
-        if (
-            config_type
-            and tool.provider_metadata
-            and tool.provider_metadata.get("config")
-        ):
-            config_type(**tool.provider_metadata.get("config"))
-
-        self.tool_instances[tool.identifier] = await self._create_tool_instance(
-            tool.identifier, tool
-        )
-
-    async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
-        if tool_id not in self.tools:
-            raise ValueError(f"Tool {tool_id} not found")
-
-        if tool_id not in self.tool_instances:
-            self.tool_instances[tool_id] = await self._create_tool_instance(tool_id)
-
-        return await self.tool_instances[tool_id].execute(**args)
-
-    async def unregister_tool(self, tool_id: str) -> None:
-        if tool_id in self.tool_instances:
-            del self.tool_instances[tool_id]
-        raise NotImplementedError("Meta Reference does not support unregistering tools")
 
     def _get_api_key(self) -> str:
         provider_data = self.get_request_provider_data()
