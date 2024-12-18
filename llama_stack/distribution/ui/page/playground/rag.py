@@ -75,9 +75,7 @@ def rag_chat_page():
 
         available_models = llama_stack_api.client.models.list()
         available_models = [
-            model.identifier
-            for model in available_models
-            if model.identifier.startswith("meta-llama")
+            model.identifier for model in available_models if model.model_type == "llm"
         ]
         selected_model = st.selectbox(
             "Choose a model",
