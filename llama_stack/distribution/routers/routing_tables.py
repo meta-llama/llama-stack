@@ -15,7 +15,7 @@ from llama_stack.apis.shields import *  # noqa: F403
 from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
-from llama_stack.apis.tools import *  # noqa: F403
+from llama_stack.apis.tools import *  # noqa: F403from llama_stack.apis.tools import *  # noqa: F403
 from llama_stack.apis.common.content_types import URL
 
 from llama_stack.apis.common.type_system import ParamType
@@ -108,6 +108,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 await add_objects(scoring_functions, pid, ScoringFn)
             elif api == Api.eval:
                 p.eval_task_store = self
+            elif api == Api.tool_runtime:
+                p.tool_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
@@ -129,6 +131,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("Scoring", "scoring_function")
             elif isinstance(self, EvalTasksRoutingTable):
                 return ("Eval", "eval_task")
+            elif isinstance(self, ToolsRoutingTable):
+                return ("Tools", "tool")
             else:
                 raise ValueError("Unknown routing table type")
 
