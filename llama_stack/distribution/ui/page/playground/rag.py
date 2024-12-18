@@ -74,7 +74,9 @@ def rag_chat_page():
         ]
 
         available_models = llama_stack_api.client.models.list()
-        available_models = [model.identifier for model in available_models]
+        available_models = [
+            model.identifier for model in available_models if model.model_type == "llm"
+        ]
         selected_model = st.selectbox(
             "Choose a model",
             available_models,
@@ -115,8 +117,6 @@ def rag_chat_page():
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
-    selected_model = llama_stack_api.client.models.list()[0].identifier
 
     agent_config = AgentConfig(
         model=selected_model,

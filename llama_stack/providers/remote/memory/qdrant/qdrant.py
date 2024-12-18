@@ -13,8 +13,7 @@ from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
 from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
-
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.apis.memory import *  # noqa: F403
 
 from llama_stack.providers.remote.memory.qdrant.config import QdrantConfig
@@ -160,7 +159,7 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = await self._get_and_cache_bank_index(bank_id)

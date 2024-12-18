@@ -8,7 +8,6 @@ import logging
 from typing import AsyncGenerator
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import all_registered_models
 
@@ -22,6 +21,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    convert_message_to_openai_dict,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -30,7 +30,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
     content_has_media,
-    convert_message_to_dict,
+    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -71,13 +71,13 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
-        raise NotImplementedError()
+        raise NotImplementedError("Completion not implemented for vLLM")
 
     async def chat_completion(
         self,
@@ -163,11 +163,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             if media_present:
                 # vllm does not seem to work well with image urls, so we download the images
                 input_dict["messages"] = [
-                    await convert_message_to_dict(m, download=True)
+                    await convert_message_to_openai_dict(m, download=True)
                     for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
                     self.formatter,
@@ -176,7 +176,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             assert (
                 not media_present
             ), "Together does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(
+            input_dict["prompt"] = await completion_request_to_prompt(
                 request,
                 self.register_helper.get_llama_model(request.model),
                 self.formatter,
@@ -202,7 +202,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
@@ -215,7 +215,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         ), "VLLM does not support media for embeddings"
         response = self.client.embeddings.create(
             model=model.provider_resource_id,
-            input=[interleaved_text_media_as_str(content) for content in contents],
+            input=[interleaved_content_as_str(content) for content in contents],
             **kwargs,
         )
 

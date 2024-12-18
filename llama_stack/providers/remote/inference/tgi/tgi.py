@@ -83,7 +83,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -130,8 +130,8 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
         return options
 
-    def _get_params_for_completion(self, request: CompletionRequest) -> dict:
-        prompt, input_tokens = completion_request_to_prompt_model_input_info(
+    async def _get_params_for_completion(self, request: CompletionRequest) -> dict:
+        prompt, input_tokens = await completion_request_to_prompt_model_input_info(
             request, self.formatter
         )
 
@@ -147,7 +147,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         )
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params_for_completion(request)
 
         async def _generate_and_convert_to_openai_compat():
             s = await self.client.text_generation(**params)
@@ -169,7 +169,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params_for_completion(request)
         r = await self.client.text_generation(**params)
 
         choice = OpenAICompatCompletionChoice(
@@ -216,7 +216,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
         r = await self.client.text_generation(**params)
 
         choice = OpenAICompatCompletionChoice(
@@ -231,7 +231,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
             s = await self.client.text_generation(**params)
@@ -249,8 +249,8 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         ):
             yield chunk
 
-    def _get_params(self, request: ChatCompletionRequest) -> dict:
-        prompt, input_tokens = chat_completion_request_to_model_input_info(
+    async def _get_params(self, request: ChatCompletionRequest) -> dict:
+        prompt, input_tokens = await chat_completion_request_to_model_input_info(
             request, self.register_helper.get_llama_model(request.model), self.formatter
         )
         return dict(
@@ -267,7 +267,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

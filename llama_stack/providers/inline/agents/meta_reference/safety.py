@@ -9,8 +9,6 @@ import logging
 
 from typing import List
 
-from llama_models.llama3.api.datatypes import Message
-
 from llama_stack.apis.safety import *  # noqa: F403
 
 log = logging.getLogger(__name__)

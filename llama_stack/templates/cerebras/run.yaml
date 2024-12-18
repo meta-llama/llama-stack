@@ -56,9 +56,9 @@ models:
   provider_model_id: llama3.1-8b
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3.1-70B-Instruct
+  model_id: meta-llama/Llama-3.3-70B-Instruct
   provider_id: cerebras
-  provider_model_id: llama3.1-70b
+  provider_model_id: llama-3.3-70b
   model_type: llm
 - metadata:
     embedding_dimension: 384

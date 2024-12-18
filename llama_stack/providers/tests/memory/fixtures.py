@@ -25,6 +25,13 @@ from ..env import get_env_or_fail
 
 
 @pytest.fixture(scope="session")
+def embedding_model(request):
+    if hasattr(request, "param"):
+        return request.param
+    return request.config.getoption("--embedding-model", None)
+
+
+@pytest.fixture(scope="session")
 def memory_remote() -> ProviderFixture:
     return remote_stack_fixture()
 
@@ -107,7 +114,7 @@ MEMORY_FIXTURES = ["faiss", "pgvector", "weaviate", "remote", "chroma"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def memory_stack(inference_model, request):
+async def memory_stack(embedding_model, request):
     fixture_dict = request.param
 
     providers = {}
@@ -124,7 +131,7 @@ async def memory_stack(inference_model, request):
         provider_data,
         models=[
             ModelInput(
-                model_id=inference_model,
+                model_id=embedding_model,
                 model_type=ModelType.embedding,
                 metadata={
                     "embedding_dimension": get_env_or_fail("EMBEDDING_DIMENSION"),

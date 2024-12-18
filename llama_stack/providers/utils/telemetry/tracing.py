@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List
 
 
 from llama_stack.apis.telemetry import *  # noqa: F403
+from llama_stack.providers.utils.telemetry.trace_protocol import serialize_value
 
 log = logging.getLogger(__name__)
 
@@ -223,7 +224,7 @@ class SpanContextManager:
         if self.span:
             if self.span.attributes is None:
                 self.span.attributes = {}
-            self.span.attributes[key] = value
+            self.span.attributes[key] = serialize_value(value)
 
     async def __aenter__(self):
         global CURRENT_TRACE_CONTEXT

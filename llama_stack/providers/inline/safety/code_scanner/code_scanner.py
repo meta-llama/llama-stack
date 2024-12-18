@@ -7,13 +7,17 @@
 import logging
 from typing import Any, Dict, List
 
-from llama_models.llama3.api.datatypes import interleaved_text_media_as_str, Message
+from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.inference import Message
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
 from .config import CodeScannerConfig
 
-from llama_stack.apis.safety import *  # noqa: F403
 
 log = logging.getLogger(__name__)
+
 ALLOWED_CODE_SCANNER_MODEL_IDS = [
     "CodeScanner",
     "CodeShield",
@@ -48,7 +52,7 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
 
         from codeshield.cs import CodeShield
 
-        text = "\n".join([interleaved_text_media_as_str(m.content) for m in messages])
+        text = "\n".join([interleaved_content_as_str(m.content) for m in messages])
         log.info(f"Running CodeScannerShield on {text[50:]}")
         result = await CodeShield.scan_code(text)
 

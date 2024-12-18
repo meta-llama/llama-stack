@@ -2531,27 +2531,7 @@
                         "default": "assistant"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "stop_reason": {
                         "$ref": "#/components/schemas/StopReason"
@@ -2571,33 +2551,51 @@
                     "tool_calls"
                 ]
             },
-            "ImageMedia": {
+            "ImageContentItem": {
                 "type": "object",
                 "properties": {
-                    "image": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "format": {
-                                        "type": "string"
-                                    },
-                                    "format_description": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "title": "This class represents an image object.  To create"
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "data": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "image",
+                        "default": "image"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "image"
+                    "type"
+                ]
+            },
+            "InterleavedContent": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "$ref": "#/components/schemas/InterleavedContentItem"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InterleavedContentItem"
+                        }
+                    }
+                ]
+            },
+            "InterleavedContentItem": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ImageContentItem"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TextContentItem"
+                    }
                 ]
             },
             "SamplingParams": {
@@ -2658,33 +2656,31 @@
                         "default": "system"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "role",
                     "content"
+                ]
+            },
+            "TextContentItem": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text",
+                        "default": "text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
                 ]
             },
             "ToolCall": {
@@ -2885,27 +2881,7 @@
                         ]
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -2930,50 +2906,10 @@
                         "default": "user"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "context": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -3066,27 +3002,7 @@
                     "content_batch": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ImageMedia"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/ImageMedia"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
+                            "$ref": "#/components/schemas/InterleavedContent"
                         }
                     },
                     "sampling_params": {
@@ -3407,27 +3323,7 @@
                         "type": "string"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
@@ -4188,19 +4084,12 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/ImageMedia"
+                                "$ref": "#/components/schemas/InterleavedContentItem"
                             },
                             {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/InterleavedContentItem"
                                 }
                             },
                             {
@@ -4526,27 +4415,7 @@
                         }
                     },
                     "inserted_context": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -4693,27 +4562,7 @@
                         ]
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -4839,27 +4688,7 @@
                     "contents": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ImageMedia"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/ImageMedia"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
+                            "$ref": "#/components/schemas/InterleavedContent"
                         }
                     }
                 },
@@ -5502,148 +5331,7 @@
                     "dataset_schema": {
                         "type": "object",
                         "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "string",
-                                            "default": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "number",
-                                            "default": "number"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "boolean",
-                                            "default": "boolean"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "array",
-                                            "default": "array"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "object",
-                                            "default": "object"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "json",
-                                            "default": "json"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "union",
-                                            "default": "union"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "chat_completion_input",
-                                            "default": "chat_completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "completion_input",
-                                            "default": "completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "agent_turn_input",
-                                            "default": "agent_turn_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ParamType"
                         }
                     },
                     "url": {
@@ -5684,6 +5372,150 @@
                     "dataset_schema",
                     "url",
                     "metadata"
+                ]
+            },
+            "ParamType": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "string",
+                                "default": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "number",
+                                "default": "number"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "boolean",
+                                "default": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "array",
+                                "default": "array"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "object",
+                                "default": "object"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "json",
+                                "default": "json"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "union",
+                                "default": "union"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "chat_completion_input",
+                                "default": "chat_completion_input"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "completion_input",
+                                "default": "completion_input"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "agent_turn_input",
+                                "default": "agent_turn_input"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    }
                 ]
             },
             "EvalTask": {
@@ -5903,148 +5735,7 @@
                         }
                     },
                     "return_type": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "string",
-                                        "default": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "number",
-                                        "default": "number"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "boolean",
-                                        "default": "boolean"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "array",
-                                        "default": "array"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "object",
-                                        "default": "object"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json",
-                                        "default": "json"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "union",
-                                        "default": "union"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "chat_completion_input",
-                                        "default": "chat_completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "completion_input",
-                                        "default": "completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "agent_turn_input",
-                                        "default": "agent_turn_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ParamType"
                     },
                     "params": {
                         "oneOf": [
@@ -6330,19 +6021,12 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/ImageMedia"
+                                "$ref": "#/components/schemas/InterleavedContentItem"
                             },
                             {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/InterleavedContentItem"
                                 }
                             },
                             {
@@ -6960,27 +6644,7 @@
                         "type": "string"
                     },
                     "query": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "params": {
                         "type": "object",
@@ -7023,27 +6687,7 @@
                             "type": "object",
                             "properties": {
                                 "content": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "string"
-                                                    },
-                                                    {
-                                                        "$ref": "#/components/schemas/ImageMedia"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/InterleavedContent"
                                 },
                                 "token_count": {
                                     "type": "integer"
@@ -7261,148 +6905,7 @@
                     "dataset_schema": {
                         "type": "object",
                         "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "string",
-                                            "default": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "number",
-                                            "default": "number"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "boolean",
-                                            "default": "boolean"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "array",
-                                            "default": "array"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "object",
-                                            "default": "object"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "json",
-                                            "default": "json"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "union",
-                                            "default": "union"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "chat_completion_input",
-                                            "default": "chat_completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "completion_input",
-                                            "default": "completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "agent_turn_input",
-                                            "default": "agent_turn_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ParamType"
                         }
                     },
                     "url": {
@@ -7659,148 +7162,7 @@
                         "type": "string"
                     },
                     "return_type": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "string",
-                                        "default": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "number",
-                                        "default": "number"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "boolean",
-                                        "default": "boolean"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "array",
-                                        "default": "array"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "object",
-                                        "default": "object"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json",
-                                        "default": "json"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "union",
-                                        "default": "union"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "chat_completion_input",
-                                        "default": "chat_completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "completion_input",
-                                        "default": "completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "agent_turn_input",
-                                        "default": "agent_turn_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ParamType"
                     },
                     "provider_scoring_fn_id": {
                         "type": "string"
@@ -8680,8 +8042,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
         },
         {
-            "name": "ImageMedia",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageMedia\" />"
+            "name": "ImageContentItem",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageContentItem\" />"
         },
         {
             "name": "Inference"
@@ -8696,6 +8058,14 @@
         },
         {
             "name": "Inspect"
+        },
+        {
+            "name": "InterleavedContent",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InterleavedContent\" />"
+        },
+        {
+            "name": "InterleavedContentItem",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InterleavedContentItem\" />"
         },
         {
             "name": "Job",
@@ -8789,6 +8159,10 @@
         {
             "name": "PaginatedRowsResult",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PaginatedRowsResult\" />"
+        },
+        {
+            "name": "ParamType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ParamType\" />"
         },
         {
             "name": "PhotogenToolDefinition",
@@ -9016,6 +8390,10 @@
             "name": "Telemetry"
         },
         {
+            "name": "TextContentItem",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TextContentItem\" />"
+        },
+        {
             "name": "TokenLogProbs",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TokenLogProbs\" />"
         },
@@ -9194,9 +8572,11 @@
                 "GraphMemoryBank",
                 "GraphMemoryBankParams",
                 "HealthInfo",
-                "ImageMedia",
+                "ImageContentItem",
                 "InferenceStep",
                 "InsertDocumentsRequest",
+                "InterleavedContent",
+                "InterleavedContentItem",
                 "Job",
                 "JobCancelRequest",
                 "JobStatus",
@@ -9218,6 +8598,7 @@
                 "OptimizerConfig",
                 "OptimizerType",
                 "PaginatedRowsResult",
+                "ParamType",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
@@ -9269,6 +8650,7 @@
                 "SyntheticDataGenerateRequest",
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
+                "TextContentItem",
                 "TokenLogProbs",
                 "ToolCall",
                 "ToolCallDelta",

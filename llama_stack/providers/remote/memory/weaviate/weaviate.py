@@ -15,6 +15,7 @@ from weaviate.classes.init import Auth
 from weaviate.classes.query import Filter
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks import MemoryBankType
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
@@ -186,7 +187,7 @@ class WeaviateMemoryAdapter(
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = await self._get_and_cache_bank_index(bank_id)

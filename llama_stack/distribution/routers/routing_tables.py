@@ -16,8 +16,7 @@ from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.eval_tasks import *  # noqa: F403
 
-
-from llama_models.llama3.api.datatypes import URL
+from llama_stack.apis.common.content_types import URL
 
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.distribution.store import DistributionRegistry
@@ -30,7 +29,6 @@ def get_impl_api(p: Any) -> Api:
 
 # TODO: this should return the registered object for all APIs
 async def register_object_with_provider(obj: RoutableObject, p: Any) -> RoutableObject:
-
     api = get_impl_api(p)
 
     assert obj.provider_id != "remote", "Remote provider should not be registered"
@@ -76,7 +74,6 @@ class CommonRoutingTableImpl(RoutingTable):
         self.dist_registry = dist_registry
 
     async def initialize(self) -> None:
-
         async def add_objects(
             objs: List[RoutableObjectWithProvider], provider_id: str, cls
         ) -> None:

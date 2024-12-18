@@ -55,11 +55,15 @@ def test_image_chat_completion(llama_stack_client):
         "role": "user",
         "content": [
             {
-                "image": {
+                "type": "image",
+                "data": {
                     "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
-                }
+                },
             },
-            "Describe what is in this image.",
+            {
+                "type": "text",
+                "text": "Describe what is in this image.",
+            },
         ],
     }
     response = llama_stack_client.inference.chat_completion(
