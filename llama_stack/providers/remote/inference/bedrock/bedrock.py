@@ -48,14 +48,6 @@ MODEL_ALIASES = [
         "meta.llama3-1-405b-instruct-v1:0",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
-    build_model_alias(
-        "meta.llama3-2-3b-instruct-v1:0",
-        CoreModelId.llama3_2_3b_instruct.value,
-    ),
-    build_model_alias(
-        "meta.llama3-2-1b-instruct-v1:0",
-        CoreModelId.llama3_2_1b_instruct.value,
-    ),
 ]
 
 
