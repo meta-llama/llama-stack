@@ -65,7 +65,6 @@ class Tools(Protocol):
         parameters: List[ToolParameter],
         returns: ToolReturn,
         provider_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
         provider_resource_id: Optional[str] = None,
         provider_metadata: Optional[Dict[str, Any]] = None,
         tool_prompt_format: Optional[ToolPromptFormat] = None,
