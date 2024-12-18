@@ -226,6 +226,8 @@ class LlamaGuardShield:
 
         for i in range(1, len(messages)):
             if messages[i].role == messages[i - 1].role:
+                for i, m in enumerate(messages):
+                    print(f"{i}: {m.role}: {m.content}")
                 raise ValueError(
                     f"Messages must alternate between user and assistant. Message {i} has the same role as message {i - 1}"
                 )
