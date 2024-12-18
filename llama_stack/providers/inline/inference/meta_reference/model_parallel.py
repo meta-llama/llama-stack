@@ -12,6 +12,7 @@ from typing import Any, Generator
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import Model
 from llama_models.llama3.api.tokenizer import Tokenizer
+from llama_models.sku_list import resolve_model
 
 from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
 
@@ -66,7 +67,13 @@ class LlamaModelParallelGenerator:
 
         # this is a hack because Agent's loop uses this to tokenize and check if input is too long
         # while the tool-use loop is going
-        checkpoint_dir = model_checkpoint_dir(self.model_id)
+        resolved_model = resolve_model(model_id)
+        if resolved_model is None:
+            # if the model is not a native llama model, get the default checkpoint_dir based on model id
+            checkpoint_dir = model_checkpoint_dir(model_id)
+        else:
+            # if the model is a native llama model, get the default checkpoint_dir based on model core_model_id value
+            checkpoint_dir = model_checkpoint_dir(resolved_model.descriptor())
         tokenizer_path = os.path.join(checkpoint_dir, "tokenizer.model")
         self.formatter = ChatFormat(Tokenizer(tokenizer_path))
 
