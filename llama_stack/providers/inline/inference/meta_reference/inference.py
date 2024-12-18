@@ -91,7 +91,7 @@ class MetaReferenceInferenceImpl(
             self.generator.stop()
 
     def check_model(self, request) -> None:
-        if self.model_id or self.llama_model is None:
+        if self.model_id is None or self.llama_model is None:
             raise RuntimeError(
                 "No avaible model yet, please register your requested model or add your model in the resouces first"
             )
