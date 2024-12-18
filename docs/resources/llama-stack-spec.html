@@ -2893,9 +2893,16 @@
                 ]
             },
             "URL": {
-                "type": "string",
-                "format": "uri",
-                "pattern": "^(https?://|file://|data:)"
+                "type": "object",
+                "properties": {
+                    "uri": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uri"
+                ]
             },
             "UserMessage": {
                 "type": "object",

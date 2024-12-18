@@ -3105,9 +3105,13 @@ components:
       title: A single turn in an interaction with an Agentic System.
       type: object
     URL:
-      format: uri
-      pattern: ^(https?://|file://|data:)
-      type: string
+      additionalProperties: false
+      properties:
+        uri:
+          type: string
+      required:
+      - uri
+      type: object
     UnregisterDatasetRequest:
       additionalProperties: false
       properties:
