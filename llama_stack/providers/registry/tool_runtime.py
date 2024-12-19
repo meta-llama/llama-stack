@@ -17,5 +17,6 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=[],
             module="llama_stack.providers.inline.tool_runtime.brave_search",
             config_class="llama_stack.providers.inline.tool_runtime.brave_search.config.BraveSearchToolConfig",
+            provider_data_validator="llama_stack.providers.inline.tool_runtime.brave_search.BraveSearchToolProviderDataValidator",
         ),
     ]

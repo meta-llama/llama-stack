@@ -4,17 +4,20 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import requests
 
-from llama_stack.apis.tools import InvokeToolResult, Tool, ToolRuntime
+from llama_stack.apis.tools import Tool, ToolInvocationResult, ToolRuntime
+from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
 from .config import BraveSearchToolConfig
 
 
-class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
+class BraveSearchToolRuntimeImpl(
+    ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData
+):
     def __init__(self, config: BraveSearchToolConfig):
         self.config = config
 
@@ -28,24 +31,35 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
     async def unregister_tool(self, tool_id: str) -> None:
         return
 
-    async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> InvokeToolResult:
-        results = await self.execute(args["query"])
-        content_items = "\n".join([str(result) for result in results])
-        return InvokeToolResult(
-            content=content_items,
-        )
+    def _get_api_key(self) -> str:
+        if self.config.api_key:
+            return self.config.api_key
 
-    async def execute(self, query: str) -> List[dict]:
+        provider_data = self.get_request_provider_data()
+        if provider_data is None or not provider_data.api_key:
+            raise ValueError(
+                'Pass Search provider\'s API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
+            )
+        return provider_data.api_key
+
+    async def invoke_tool(
+        self, tool_id: str, args: Dict[str, Any]
+    ) -> ToolInvocationResult:
+        api_key = self._get_api_key()
         url = "https://api.search.brave.com/res/v1/web/search"
         headers = {
-            "X-Subscription-Token": self.config.api_key,
+            "X-Subscription-Token": api_key,
             "Accept-Encoding": "gzip",
             "Accept": "application/json",
         }
-        payload = {"q": query}
+        payload = {"q": args["query"]}
         response = requests.get(url=url, params=payload, headers=headers)
         response.raise_for_status()
-        return self._clean_brave_response(response.json())
+        results = self._clean_brave_response(response.json())
+        content_items = "\n".join([str(result) for result in results])
+        return ToolInvocationResult(
+            content=content_items,
+        )
 
     def _clean_brave_response(self, search_response):
         clean_response = []

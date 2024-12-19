@@ -4,8 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from pydantic import BaseModel
+
 from .brave_search import BraveSearchToolRuntimeImpl
 from .config import BraveSearchToolConfig
+
+
+class BraveSearchToolProviderDataValidator(BaseModel):
+    api_key: str
 
 
 async def get_provider_impl(config: BraveSearchToolConfig, _deps):
