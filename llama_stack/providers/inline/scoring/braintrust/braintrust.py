@@ -15,16 +15,45 @@ from llama_stack.apis.datasets import *  # noqa: F403
 import os
 
 from autoevals.llm import Factuality
-from autoevals.ragas import AnswerCorrectness
+from autoevals.ragas import AnswerCorrectness, AnswerRelevancy
+from pydantic import BaseModel
 
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
+from llama_stack.providers.utils.common.data_schema_utils import (
+    get_expected_schema_for_scoring,
+)
 
 from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
-
 from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
+from .scoring_fn.fn_defs.answer_relevancy import answer_relevancy_fn_def
 from .scoring_fn.fn_defs.factuality import factuality_fn_def
+
+
+class BraintrustScoringFnEntry(BaseModel):
+    identifier: str
+    evaluator: Any
+    fn_def: ScoringFn
+
+
+SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY = [
+    BraintrustScoringFnEntry(
+        identifier="braintrust::factuality",
+        evaluator=Factuality(),
+        fn_def=factuality_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-correctness",
+        evaluator=AnswerCorrectness(),
+        fn_def=answer_correctness_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-relevancy",
+        evaluator=AnswerRelevancy(),
+        fn_def=answer_relevancy_fn_def,
+    ),
+]
 
 
 class BraintrustScoringImpl(
@@ -41,12 +70,12 @@ class BraintrustScoringImpl(
         self.datasets_api = datasets_api
 
         self.braintrust_evaluators = {
-            "braintrust::factuality": Factuality(),
-            "braintrust::answer-correctness": AnswerCorrectness(),
+            entry.identifier: entry.evaluator
+            for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
         }
         self.supported_fn_defs_registry = {
-            factuality_fn_def.identifier: factuality_fn_def,
-            answer_correctness_fn_def.identifier: answer_correctness_fn_def,
+            entry.identifier: entry.fn_def
+            for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
         }
 
     async def initialize(self) -> None: ...
@@ -67,6 +96,18 @@ class BraintrustScoringImpl(
             "Registering scoring function not allowed for braintrust provider"
         )
 
+    async def validate_scoring_input_row_schema(
+        self, input_row: Dict[str, Any]
+    ) -> None:
+        expected_schemas = get_expected_schema_for_scoring()
+        for schema in expected_schemas:
+            if all(key in input_row for key in schema):
+                return
+
+        raise ValueError(
+            f"Input row {input_row} does not match any of the expected schemas"
+        )
+
     async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
         if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
@@ -74,15 +115,12 @@ class BraintrustScoringImpl(
                 f"Dataset {dataset_id} does not have a schema defined. Please define a schema for the dataset."
             )
 
-        for required_column in ["generated_answer", "expected_answer", "input_query"]:
-            if required_column not in dataset_def.dataset_schema:
-                raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column."
-                )
-            if dataset_def.dataset_schema[required_column].type != "string":
-                raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'."
-                )
+        expected_schemas = get_expected_schema_for_scoring()
+
+        if dataset_def.dataset_schema not in expected_schemas:
+            raise ValueError(
+                f"Dataset {dataset_id} does not have a correct input schema in {expected_schemas}"
+            )
 
     async def set_api_key(self) -> None:
         # api key is in the request headers
@@ -130,7 +168,12 @@ class BraintrustScoringImpl(
         input_query = input_row["input_query"]
         evaluator = self.braintrust_evaluators[scoring_fn_identifier]
 
-        result = evaluator(generated_answer, expected_answer, input=input_query)
+        result = evaluator(
+            generated_answer,
+            expected_answer,
+            input=input_query,
+            context=input_row["context"] if "context" in input_row else None,
+        )
         score = result.score
         return {"score": score, "metadata": result.metadata}
 
