@@ -20,7 +20,7 @@ from autoevals.ragas import AnswerCorrectness
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 
-from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_average
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 
 from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
@@ -147,8 +147,11 @@ class BraintrustScoringImpl(
                 await self.score_row(input_row, scoring_fn_id)
                 for input_row in input_rows
             ]
-            aggregation_functions = [AggregationFunctionType.average]
-            agg_results = aggregate_average(score_results)
+            aggregation_functions = self.supported_fn_defs_registry[
+                scoring_fn_id
+            ].params.aggregation_functions
+
+            agg_results = aggregate_metrics(score_results, aggregation_functions)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,
