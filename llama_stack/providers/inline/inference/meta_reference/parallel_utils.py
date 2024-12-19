@@ -300,7 +300,7 @@ def start_model_parallel_process(
 
     main_process_url = request_socket.getsockopt_string(zmq.LAST_ENDPOINT)
 
-    ctx = multiprocessing.get_context("fork")
+    ctx = multiprocessing.get_context("spawn")
     process = ctx.Process(
         target=launch_dist_group,
         args=(
