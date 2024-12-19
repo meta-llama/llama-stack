@@ -94,9 +94,14 @@ async def convert_request_to_raw(
             d = m.model_dump()
             d["content"] = content
             messages.append(RawMessage(**d))
-        request.messages = messages
+
+        d = request.model_dump()
+        d["messages"] = messages
+        request = ChatCompletionRequestWithRawContent(**d)
     else:
-        request.content = await interleaved_content_convert_to_raw(request.content)
+        d = request.model_dump()
+        d["content"] = await interleaved_content_convert_to_raw(request.content)
+        request = CompletionRequestWithRawContent(**d)
 
     return request
 
