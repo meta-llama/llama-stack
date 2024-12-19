@@ -76,7 +76,7 @@ docker run \
   llamastack/distribution-meta-reference-quantized-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=Llama3.2-3B-Instruct \
-  --env SAFETY_MODEL=meta-Llama-Guard-3-1B
+  --env SAFETY_MODEL=Llama-Guard-3-1B
 ```
 
 ### Via Conda
