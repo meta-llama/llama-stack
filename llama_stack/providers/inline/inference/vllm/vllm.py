@@ -169,7 +169,8 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = await chat_completion_request_to_prompt(request, self.formatter)
+        prompt = await chat_completion_request_to_prompt(request, self.config.model,
+                                                         self.formatter)
         vllm_sampling_params = self._sampling_params(request.sampling_params)
         results_generator = self.engine.generate(
             prompt, vllm_sampling_params, request_id
