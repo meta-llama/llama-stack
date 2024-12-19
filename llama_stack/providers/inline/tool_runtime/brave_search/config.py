@@ -7,5 +7,6 @@
 from pydantic import BaseModel
 
 
-class MetaReferenceToolRuntimeConfig(BaseModel):
-    pass
+class BraveSearchToolConfig(BaseModel):
+    api_key: str
+    max_results: int = 3

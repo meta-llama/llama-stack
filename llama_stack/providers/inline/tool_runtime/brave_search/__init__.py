@@ -4,11 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .config import MetaReferenceToolRuntimeConfig
-from .meta_reference import MetaReferenceToolRuntimeImpl
+from .brave_search import BraveSearchToolRuntimeImpl
+from .config import BraveSearchToolConfig
 
 
-async def get_provider_impl(config: MetaReferenceToolRuntimeConfig, _deps):
-    impl = MetaReferenceToolRuntimeImpl(config)
+async def get_provider_impl(config: BraveSearchToolConfig, _deps):
+    impl = BraveSearchToolRuntimeImpl(config)
     await impl.initialize()
     return impl
