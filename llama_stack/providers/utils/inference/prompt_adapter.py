@@ -275,9 +275,10 @@ def chat_completion_request_to_messages(
         model.model_family == ModelFamily.llama3_2
         and is_multimodal(model.core_model_id)
     ):
-        # llama3.1, llama3.2 multimodal and llama3.3 models follow the same tool prompt format
+        # llama3.1 and llama3.2 multimodal models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_1(request)
     elif model.model_family in (ModelFamily.llama3_2, ModelFamily.llama3_3):
+        # llama3.2 and llama3.3 models follow the same tool prompt format
         messages = augment_messages_for_tools_llama_3_2(request)
     else:
         messages = request.messages
