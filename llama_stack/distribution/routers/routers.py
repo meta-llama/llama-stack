@@ -15,6 +15,7 @@ from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
 from llama_stack.apis.scoring import *  # noqa: F403
 from llama_stack.apis.eval import *  # noqa: F403
+from llama_stack.apis.tools import *  # noqa: F403
 
 
 class MemoryRouter(Memory):
@@ -371,4 +372,24 @@ class EvalRouter(Eval):
         return await self.routing_table.get_provider_impl(task_id).job_result(
             task_id,
             job_id,
+        )
+
+
+class ToolRuntimeRouter(ToolRuntime):
+    def __init__(
+        self,
+        routing_table: RoutingTable,
+    ) -> None:
+        self.routing_table = routing_table
+
+    async def initialize(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
+    async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
+        return await self.routing_table.get_provider_impl(tool_id).invoke_tool(
+            tool_id=tool_id,
+            args=args,
         )
