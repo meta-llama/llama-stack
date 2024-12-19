@@ -292,6 +292,6 @@ async def inference_stack(request, inference_model):
 
     # Pytest yield fixture; see https://docs.pytest.org/en/stable/how-to/fixtures.html#yield-fixtures-recommended
     yield test_stack.impls[Api.inference], test_stack.impls[Api.models]
-    
+
     # Cleanup code that runs after test case completion
     await test_stack.impls[Api.inference].shutdown()
