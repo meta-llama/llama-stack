@@ -99,7 +99,7 @@ class BraintrustScoringImpl(
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: List[str],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.set_api_key()
@@ -135,7 +135,9 @@ class BraintrustScoringImpl(
         return {"score": score, "metadata": result.metadata}
 
     async def score(
-        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
     ) -> ScoreResponse:
         await self.set_api_key()
         res = {}
@@ -150,6 +152,12 @@ class BraintrustScoringImpl(
             aggregation_functions = self.supported_fn_defs_registry[
                 scoring_fn_id
             ].params.aggregation_functions
+
+            # override scoring_fn params if provided
+            if scoring_functions[scoring_fn_id] is not None:
+                override_params = scoring_functions[scoring_fn_id]
+                if override_params.aggregation_functions:
+                    aggregation_functions = override_params.aggregation_functions
 
             agg_results = aggregate_metrics(score_results, aggregation_functions)
             res[scoring_fn_id] = ScoringResult(
