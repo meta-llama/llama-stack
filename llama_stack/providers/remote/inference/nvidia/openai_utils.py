@@ -10,9 +10,7 @@ from typing import Any, AsyncGenerator, Dict, Generator, List, Optional
 
 from llama_models.llama3.api.datatypes import (
     BuiltinTool,
-    CompletionMessage,
     StopReason,
-    TokenLogProbs,
     ToolCall,
     ToolDefinition,
 )
@@ -42,12 +40,14 @@ from llama_stack.apis.inference import (
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
+    CompletionMessage,
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
     JsonSchemaResponseFormat,
     Message,
     SystemMessage,
+    TokenLogProbs,
     ToolCallDelta,
     ToolCallParseStatus,
     ToolResponseMessage,
