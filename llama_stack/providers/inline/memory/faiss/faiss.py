@@ -19,9 +19,10 @@ from numpy.typing import NDArray
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.memory_banks import MemoryBankType, VectorMemoryBank
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
-
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
     EmbeddingIndex,
@@ -208,7 +209,7 @@ class FaissMemoryImpl(Memory, MemoryBanksProtocolPrivate):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = self.cache.get(bank_id)

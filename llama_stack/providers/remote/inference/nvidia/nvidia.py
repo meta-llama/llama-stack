@@ -8,14 +8,7 @@ import warnings
 from typing import AsyncIterator, List, Optional, Union
 
 from llama_models.datatypes import SamplingParams
-from llama_models.llama3.api.datatypes import (
-    ImageMedia,
-    InterleavedTextMedia,
-    Message,
-    ToolChoice,
-    ToolDefinition,
-    ToolPromptFormat,
-)
+from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
 from llama_models.sku_list import CoreModelId
 from openai import APIConnectionError, AsyncOpenAI
 
@@ -28,13 +21,17 @@ from llama_stack.apis.inference import (
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
     Inference,
+    InterleavedContent,
     LogProbConfig,
+    Message,
     ResponseFormat,
+    ToolChoice,
 )
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
+from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 from . import NVIDIAConfig
 from .openai_utils import (
@@ -123,17 +120,14 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
-        if isinstance(content, ImageMedia) or (
-            isinstance(content, list)
-            and any(isinstance(c, ImageMedia) for c in content)
-        ):
-            raise NotImplementedError("ImageMedia is not supported")
+        if content_has_media(content):
+            raise NotImplementedError("Media is not supported")
 
         await check_health(self._config)  # this raises errors
 
@@ -165,7 +159,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 

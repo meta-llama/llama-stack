@@ -11,7 +11,6 @@ import httpx
 from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
@@ -22,8 +21,8 @@ from llama_stack.providers.utils.inference.model_registry import (
 )
 
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
-
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
@@ -37,7 +36,8 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
     content_has_media,
-    convert_image_media_to_url,
+    convert_image_content_to_url,
+    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -89,7 +89,7 @@ model_aliases = [
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias_with_just_provider_model_id(
-        "llama3.2-vision",
+        "llama3.2-vision:latest",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(
@@ -141,7 +141,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -234,7 +234,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 contents = [
-                    await convert_message_to_dict_for_ollama(m)
+                    await convert_message_to_openai_dict_for_ollama(m)
                     for m in request.messages
                 ]
                 # flatten the list of lists
@@ -243,7 +243,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 ]
             else:
                 input_dict["raw"] = True
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
                     self.formatter,
@@ -252,7 +252,9 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             assert (
                 not media_present
             ), "Ollama does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(
+                request, self.formatter
+            )
             input_dict["raw"] = True
 
         return {
@@ -320,7 +322,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         model = await self.model_store.get_model(model_id)
 
@@ -329,7 +331,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         ), "Ollama does not support media for embeddings"
         response = await self.client.embed(
             model=model.provider_resource_id,
-            input=[interleaved_text_media_as_str(content) for content in contents],
+            input=[interleaved_content_as_str(content) for content in contents],
         )
         embeddings = response["embeddings"]
 
@@ -358,21 +360,23 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return model
 
 
-async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
+async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:
     async def _convert_content(content) -> dict:
-        if isinstance(content, ImageMedia):
+        if isinstance(content, ImageContentItem):
             return {
                 "role": message.role,
                 "images": [
-                    await convert_image_media_to_url(
+                    await convert_image_content_to_url(
                         content, download=True, include_format=False
                     )
                 ],
             }
         else:
+            text = content.text if isinstance(content, TextContentItem) else content
+            assert isinstance(text, str)
             return {
                 "role": message.role,
-                "content": content,
+                "content": text,
             }
 
     if isinstance(message.content, list):

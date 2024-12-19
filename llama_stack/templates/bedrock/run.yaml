@@ -69,7 +69,22 @@ metadata_store:
   namespace: null
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/registry.db
-models: []
+models:
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: bedrock
+  provider_model_id: meta.llama3-1-8b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-70B-Instruct
+  provider_id: bedrock
+  provider_model_id: meta.llama3-1-70b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct-FP8
+  provider_id: bedrock
+  provider_model_id: meta.llama3-1-405b-instruct-v1:0
+  model_type: llm
 shields: []
 memory_banks: []
 datasets: []

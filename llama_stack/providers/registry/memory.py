@@ -65,6 +65,7 @@ def available_providers() -> List[ProviderSpec]:
             pip_packages=EMBEDDING_DEPS + ["chromadb"],
             module="llama_stack.providers.inline.memory.chroma",
             config_class="llama_stack.providers.inline.memory.chroma.ChromaInlineImplConfig",
+            api_dependencies=[Api.inference],
         ),
         remote_provider_spec(
             Api.memory,

@@ -8,6 +8,7 @@ import json
 from typing import Dict, List
 from uuid import uuid4
 
+import pytest
 from llama_stack.providers.tests.env import get_env_or_fail
 
 from llama_stack_client.lib.agents.agent import Agent
@@ -77,16 +78,20 @@ class TestCustomTool(CustomTool):
             return -1
 
 
-def get_agent_config_with_available_models_shields(llama_stack_client):
+@pytest.fixture(scope="session")
+def agent_config(llama_stack_client):
     available_models = [
         model.identifier
         for model in llama_stack_client.models.list()
-        if model.identifier.startswith("meta-llama")
+        if model.identifier.startswith("meta-llama") and "405" not in model.identifier
     ]
     model_id = available_models[0]
+    print(f"Using model: {model_id}")
     available_shields = [
         shield.identifier for shield in llama_stack_client.shields.list()
     ]
+    available_shields = available_shields[:1]
+    print(f"Using shield: {available_shields}")
     agent_config = AgentConfig(
         model=model_id,
         instructions="You are a helpful assistant",
@@ -105,8 +110,7 @@ def get_agent_config_with_available_models_shields(llama_stack_client):
     return agent_config
 
 
-def test_agent_simple(llama_stack_client):
-    agent_config = get_agent_config_with_available_models_shields(llama_stack_client)
+def test_agent_simple(llama_stack_client, agent_config):
     agent = Agent(llama_stack_client, agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
@@ -142,16 +146,18 @@ def test_agent_simple(llama_stack_client):
     assert "I can't" in logs_str
 
 
-def test_builtin_tool_brave_search(llama_stack_client):
-    agent_config = get_agent_config_with_available_models_shields(llama_stack_client)
-    agent_config["tools"] = [
-        {
-            "type": "brave_search",
-            "engine": "brave",
-            "api_key": get_env_or_fail("BRAVE_SEARCH_API_KEY"),
-        }
-    ]
-    print(agent_config)
+def test_builtin_tool_brave_search(llama_stack_client, agent_config):
+    agent_config = {
+        **agent_config,
+        "tools": [
+            {
+                "type": "brave_search",
+                "engine": "brave",
+                "api_key": get_env_or_fail("BRAVE_SEARCH_API_KEY"),
+            }
+        ],
+    }
+    print(f"Agent Config: {agent_config}")
     agent = Agent(llama_stack_client, agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
@@ -174,13 +180,15 @@ def test_builtin_tool_brave_search(llama_stack_client):
     assert "No Violation" in logs_str
 
 
-def test_builtin_tool_code_execution(llama_stack_client):
-    agent_config = get_agent_config_with_available_models_shields(llama_stack_client)
-    agent_config["tools"] = [
-        {
-            "type": "code_interpreter",
-        }
-    ]
+def test_builtin_tool_code_execution(llama_stack_client, agent_config):
+    agent_config = {
+        **agent_config,
+        "tools": [
+            {
+                "type": "code_interpreter",
+            }
+        ],
+    }
     agent = Agent(llama_stack_client, agent_config)
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
@@ -200,34 +208,36 @@ def test_builtin_tool_code_execution(llama_stack_client):
     assert "Tool:code_interpreter Response" in logs_str
 
 
-def test_custom_tool(llama_stack_client):
-    agent_config = get_agent_config_with_available_models_shields(llama_stack_client)
-    agent_config["model"] = "meta-llama/Llama-3.2-3B-Instruct"
-    agent_config["tools"] = [
-        {
-            "type": "brave_search",
-            "engine": "brave",
-            "api_key": get_env_or_fail("BRAVE_SEARCH_API_KEY"),
-        },
-        {
-            "function_name": "get_boiling_point",
-            "description": "Get the boiling point of a imaginary liquids (eg. polyjuice)",
-            "parameters": {
-                "liquid_name": {
-                    "param_type": "str",
-                    "description": "The name of the liquid",
-                    "required": True,
-                },
-                "celcius": {
-                    "param_type": "boolean",
-                    "description": "Whether to return the boiling point in Celcius",
-                    "required": False,
-                },
+def test_custom_tool(llama_stack_client, agent_config):
+    agent_config = {
+        **agent_config,
+        "model": "meta-llama/Llama-3.2-3B-Instruct",
+        "tools": [
+            {
+                "type": "brave_search",
+                "engine": "brave",
+                "api_key": get_env_or_fail("BRAVE_SEARCH_API_KEY"),
             },
-            "type": "function_call",
-        },
-    ]
-    agent_config["tool_prompt_format"] = "python_list"
+            {
+                "function_name": "get_boiling_point",
+                "description": "Get the boiling point of a imaginary liquids (eg. polyjuice)",
+                "parameters": {
+                    "liquid_name": {
+                        "param_type": "str",
+                        "description": "The name of the liquid",
+                        "required": True,
+                    },
+                    "celcius": {
+                        "param_type": "boolean",
+                        "description": "Whether to return the boiling point in Celcius",
+                        "required": False,
+                    },
+                },
+                "type": "function_call",
+            },
+        ],
+        "tool_prompt_format": "python_list",
+    }
 
     agent = Agent(llama_stack_client, agent_config, custom_tools=(TestCustomTool(),))
     session_id = agent.create_session(f"test-session-{uuid4()}")

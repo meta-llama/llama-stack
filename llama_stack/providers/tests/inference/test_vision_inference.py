@@ -7,15 +7,18 @@
 from pathlib import Path
 
 import pytest
-from PIL import Image as PIL_Image
 
 
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem, URL
 
 from .utils import group_chunks
 
 THIS_DIR = Path(__file__).parent
+
+with open(THIS_DIR / "pasta.jpeg", "rb") as f:
+    PASTA_IMAGE = f.read()
 
 
 class TestVisionModelInference:
@@ -24,12 +27,12 @@ class TestVisionModelInference:
         "image, expected_strings",
         [
             (
-                ImageMedia(image=PIL_Image.open(THIS_DIR / "pasta.jpeg")),
+                ImageContentItem(data=PASTA_IMAGE),
                 ["spaghetti"],
             ),
             (
-                ImageMedia(
-                    image=URL(
+                ImageContentItem(
+                    url=URL(
                         uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
                     )
                 ),
@@ -58,7 +61,12 @@ class TestVisionModelInference:
             model_id=inference_model,
             messages=[
                 UserMessage(content="You are a helpful assistant."),
-                UserMessage(content=[image, "Describe this image in two sentences."]),
+                UserMessage(
+                    content=[
+                        image,
+                        TextContentItem(text="Describe this image in two sentences."),
+                    ]
+                ),
             ],
             stream=False,
             sampling_params=SamplingParams(max_tokens=100),
@@ -89,8 +97,8 @@ class TestVisionModelInference:
             )
 
         images = [
-            ImageMedia(
-                image=URL(
+            ImageContentItem(
+                url=URL(
                     uri="https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
                 )
             ),
@@ -106,7 +114,12 @@ class TestVisionModelInference:
                     messages=[
                         UserMessage(content="You are a helpful assistant."),
                         UserMessage(
-                            content=[image, "Describe this image in two sentences."]
+                            content=[
+                                image,
+                                TextContentItem(
+                                    text="Describe this image in two sentences."
+                                ),
+                            ]
                         ),
                     ],
                     stream=True,

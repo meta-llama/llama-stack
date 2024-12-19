@@ -28,6 +28,13 @@ The following environment variables can be configured:
 
 - `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 
+### Models
+
+The following models are available by default:
+
+- `meta-llama/Llama-3.1-8B-Instruct (meta.llama3-1-8b-instruct-v1:0)`
+- `meta-llama/Llama-3.1-70B-Instruct (meta.llama3-1-70b-instruct-v1:0)`
+- `meta-llama/Llama-3.1-405B-Instruct-FP8 (meta.llama3-1-405b-instruct-v1:0)`
 
 
 ### Prerequisite: API Keys

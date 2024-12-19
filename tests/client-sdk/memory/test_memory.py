@@ -22,6 +22,7 @@ def test_memory_bank(llama_stack_client):
     llama_stack_client.memory_banks.register(
         memory_bank_id=memory_bank_id,
         params={
+            "memory_bank_type": "vector",
             "embedding_model": "all-MiniLM-L6-v2",
             "chunk_size_in_tokens": 512,
             "overlap_size_in_tokens": 64,

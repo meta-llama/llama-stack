@@ -102,7 +102,7 @@ Make sure you have done `pip install llama-stack` and have the Llama Stack CLI a
 export LLAMA_STACK_PORT=5001
 
 llama stack build --template ollama --image-type conda
-llama stack run ./distributions/ollama/run.yaml \
+llama stack run ./run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://localhost:11434

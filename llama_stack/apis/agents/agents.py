@@ -29,11 +29,12 @@ from llama_stack.apis.common.deployment_types import *  # noqa: F403
 from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent, URL
 
 
 @json_schema_type
 class Attachment(BaseModel):
-    content: InterleavedTextMedia | URL
+    content: InterleavedContent | URL
     mime_type: str
 
 
@@ -102,20 +103,20 @@ class _MemoryBankConfigCommon(BaseModel):
 
 
 class AgentVectorMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+    type: Literal["vector"] = "vector"
 
 
 class AgentKeyValueMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.keyvalue.value] = MemoryBankType.keyvalue.value
+    type: Literal["keyvalue"] = "keyvalue"
     keys: List[str]  # what keys to focus on
 
 
 class AgentKeywordMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.keyword.value] = MemoryBankType.keyword.value
+    type: Literal["keyword"] = "keyword"
 
 
 class AgentGraphMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+    type: Literal["graph"] = "graph"
     entities: List[str]  # what entities to focus on
 
 
@@ -230,7 +231,7 @@ class MemoryRetrievalStep(StepCommon):
         StepType.memory_retrieval.value
     )
     memory_bank_ids: List[str]
-    inserted_context: InterleavedTextMedia
+    inserted_context: InterleavedContent
 
 
 Step = Annotated[

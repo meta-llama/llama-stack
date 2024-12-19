@@ -6,13 +6,14 @@
 import asyncio
 import json
 import logging
-from typing import List
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 import chromadb
 from numpy.typing import NDArray
 
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks import MemoryBankType
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.inline.memory.chroma import ChromaInlineImplConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -151,7 +152,7 @@ class ChromaMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = await self._get_and_cache_bank_index(bank_id)

@@ -29,7 +29,8 @@ def main(config_path: str):
         print("No models found, skipping chat completion test")
         return
 
-    model_id = models[0].identifier
+    model_id = next(m.identifier for m in models if "8b" in m.identifier.lower())
+    print(f"Using model: {model_id}")
     response = client.inference.chat_completion(
         messages=[UserMessage(content="What is the capital of France?", role="user")],
         model_id=model_id,

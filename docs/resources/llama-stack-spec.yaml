@@ -275,11 +275,9 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/ImageMedia'
+          - $ref: '#/components/schemas/InterleavedContentItem'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
+              $ref: '#/components/schemas/InterleavedContentItem'
             type: array
           - $ref: '#/components/schemas/URL'
         mime_type:
@@ -315,11 +313,7 @@ components:
         messages_batch:
           items:
             items:
-              oneOf:
-              - $ref: '#/components/schemas/UserMessage'
-              - $ref: '#/components/schemas/SystemMessage'
-              - $ref: '#/components/schemas/ToolResponseMessage'
-              - $ref: '#/components/schemas/CompletionMessage'
+              $ref: '#/components/schemas/Message'
             type: array
           type: array
         model:
@@ -353,14 +347,7 @@ components:
       properties:
         content_batch:
           items:
-            oneOf:
-            - type: string
-            - $ref: '#/components/schemas/ImageMedia'
-            - items:
-                oneOf:
-                - type: string
-                - $ref: '#/components/schemas/ImageMedia'
-              type: array
+            $ref: '#/components/schemas/InterleavedContent'
           type: array
         logprobs:
           additionalProperties: false
@@ -431,56 +418,12 @@ components:
           type: object
         messages:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/Message'
           type: array
         model_id:
           type: string
         response_format:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              json_schema:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: json_schema
-                default: json_schema
-                type: string
-            required:
-            - type
-            - json_schema
-            type: object
-          - additionalProperties: false
-            properties:
-              bnf:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: grammar
-                default: grammar
-                type: string
-            required:
-            - type
-            - bnf
-            type: object
+          $ref: '#/components/schemas/ResponseFormat'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -575,14 +518,7 @@ components:
       additionalProperties: false
       properties:
         content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         role:
           const: assistant
           default: assistant
@@ -603,14 +539,7 @@ components:
       additionalProperties: false
       properties:
         content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         logprobs:
           additionalProperties: false
           properties:
@@ -621,47 +550,7 @@ components:
         model_id:
           type: string
         response_format:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              json_schema:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: json_schema
-                default: json_schema
-                type: string
-            required:
-            - type
-            - json_schema
-            type: object
-          - additionalProperties: false
-            properties:
-              bnf:
-                additionalProperties:
-                  oneOf:
-                  - type: 'null'
-                  - type: boolean
-                  - type: number
-                  - type: string
-                  - type: array
-                  - type: object
-                type: object
-              type:
-                const: grammar
-                default: grammar
-                type: string
-            required:
-            - type
-            - bnf
-            type: object
+          $ref: '#/components/schemas/ResponseFormat'
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         stream:
@@ -788,97 +677,7 @@ components:
       properties:
         dataset_schema:
           additionalProperties:
-            oneOf:
-            - additionalProperties: false
-              properties:
-                type:
-                  const: string
-                  default: string
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: number
-                  default: number
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: boolean
-                  default: boolean
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: array
-                  default: array
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: object
-                  default: object
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: json
-                  default: json
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: union
-                  default: union
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: chat_completion_input
-                  default: chat_completion_input
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: completion_input
-                  default: completion_input
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: agent_turn_input
-                  default: agent_turn_input
-                  type: string
-              required:
-              - type
-              type: object
+            $ref: '#/components/schemas/ParamType'
           type: object
         identifier:
           type: string
@@ -951,14 +750,7 @@ components:
       properties:
         contents:
           items:
-            oneOf:
-            - type: string
-            - $ref: '#/components/schemas/ImageMedia'
-            - items:
-                oneOf:
-                - type: string
-                - $ref: '#/components/schemas/ImageMedia'
-              type: array
+            $ref: '#/components/schemas/InterleavedContent'
           type: array
         model_id:
           type: string
@@ -1159,22 +951,20 @@ components:
       required:
       - status
       type: object
-    ImageMedia:
+    ImageContentItem:
       additionalProperties: false
       properties:
-        image:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              format:
-                type: string
-              format_description:
-                type: string
-            title: This class represents an image object.  To create
-            type: object
-          - $ref: '#/components/schemas/URL'
+        data:
+          contentEncoding: base64
+          type: string
+        type:
+          const: image
+          default: image
+          type: string
+        url:
+          $ref: '#/components/schemas/URL'
       required:
-      - image
+      - type
       type: object
     InferenceStep:
       additionalProperties: false
@@ -1216,6 +1006,17 @@ components:
       - bank_id
       - documents
       type: object
+    InterleavedContent:
+      oneOf:
+      - type: string
+      - $ref: '#/components/schemas/InterleavedContentItem'
+      - items:
+          $ref: '#/components/schemas/InterleavedContentItem'
+        type: array
+    InterleavedContentItem:
+      oneOf:
+      - $ref: '#/components/schemas/ImageContentItem'
+      - $ref: '#/components/schemas/TextContentItem'
     Job:
       additionalProperties: false
       properties:
@@ -1395,11 +1196,9 @@ components:
         content:
           oneOf:
           - type: string
-          - $ref: '#/components/schemas/ImageMedia'
+          - $ref: '#/components/schemas/InterleavedContentItem'
           - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
+              $ref: '#/components/schemas/InterleavedContentItem'
             type: array
           - $ref: '#/components/schemas/URL'
         document_id:
@@ -1428,14 +1227,7 @@ components:
           format: date-time
           type: string
         inserted_context:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         memory_bank_ids:
           items:
             type: string
@@ -1587,6 +1379,12 @@ components:
       - max_tokens_in_context
       - max_chunks
       type: object
+    Message:
+      oneOf:
+      - $ref: '#/components/schemas/UserMessage'
+      - $ref: '#/components/schemas/SystemMessage'
+      - $ref: '#/components/schemas/ToolResponseMessage'
+      - $ref: '#/components/schemas/CompletionMessage'
     MetricEvent:
       additionalProperties: false
       properties:
@@ -1731,6 +1529,98 @@ components:
       - rows
       - total_count
       type: object
+    ParamType:
+      oneOf:
+      - additionalProperties: false
+        properties:
+          type:
+            const: string
+            default: string
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: number
+            default: number
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: boolean
+            default: boolean
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: array
+            default: array
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: object
+            default: object
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: json
+            default: json
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: union
+            default: union
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: chat_completion_input
+            default: chat_completion_input
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: completion_input
+            default: completion_input
+            type: string
+        required:
+        - type
+        type: object
+      - additionalProperties: false
+        properties:
+          type:
+            const: agent_turn_input
+            default: agent_turn_input
+            type: string
+        required:
+        - type
+        type: object
     PhotogenToolDefinition:
       additionalProperties: false
       properties:
@@ -1918,14 +1808,7 @@ components:
             - type: object
           type: object
         query:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
       required:
       - bank_id
       - query
@@ -1938,14 +1821,7 @@ components:
             additionalProperties: false
             properties:
               content:
-                oneOf:
-                - type: string
-                - $ref: '#/components/schemas/ImageMedia'
-                - items:
-                    oneOf:
-                    - type: string
-                    - $ref: '#/components/schemas/ImageMedia'
-                  type: array
+                $ref: '#/components/schemas/InterleavedContent'
               document_id:
                 type: string
               token_count:
@@ -2022,97 +1898,7 @@ components:
           type: string
         dataset_schema:
           additionalProperties:
-            oneOf:
-            - additionalProperties: false
-              properties:
-                type:
-                  const: string
-                  default: string
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: number
-                  default: number
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: boolean
-                  default: boolean
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: array
-                  default: array
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: object
-                  default: object
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: json
-                  default: json
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: union
-                  default: union
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: chat_completion_input
-                  default: chat_completion_input
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: completion_input
-                  default: completion_input
-                  type: string
-              required:
-              - type
-              type: object
-            - additionalProperties: false
-              properties:
-                type:
-                  const: agent_turn_input
-                  default: agent_turn_input
-                  type: string
-              required:
-              - type
-              type: object
+            $ref: '#/components/schemas/ParamType'
           type: object
         metadata:
           additionalProperties:
@@ -2223,97 +2009,7 @@ components:
         provider_scoring_fn_id:
           type: string
         return_type:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              type:
-                const: string
-                default: string
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: number
-                default: number
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: boolean
-                default: boolean
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: array
-                default: array
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: object
-                default: object
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: json
-                default: json
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: union
-                default: union
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: chat_completion_input
-                default: chat_completion_input
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: completion_input
-                default: completion_input
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: agent_turn_input
-                default: agent_turn_input
-                type: string
-            required:
-            - type
-            type: object
+          $ref: '#/components/schemas/ParamType'
         scoring_fn_id:
           type: string
       required:
@@ -2343,6 +2039,48 @@ components:
       required:
       - shield_id
       type: object
+    ResponseFormat:
+      oneOf:
+      - additionalProperties: false
+        properties:
+          json_schema:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type:
+            const: json_schema
+            default: json_schema
+            type: string
+        required:
+        - type
+        - json_schema
+        type: object
+      - additionalProperties: false
+        properties:
+          bnf:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          type:
+            const: grammar
+            default: grammar
+            type: string
+        required:
+        - type
+        - bnf
+        type: object
     RestAPIExecutionConfig:
       additionalProperties: false
       properties:
@@ -2425,11 +2163,7 @@ components:
       properties:
         messages:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/Message'
           type: array
         params:
           additionalProperties:
@@ -2623,97 +2357,7 @@ components:
         provider_resource_id:
           type: string
         return_type:
-          oneOf:
-          - additionalProperties: false
-            properties:
-              type:
-                const: string
-                default: string
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: number
-                default: number
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: boolean
-                default: boolean
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: array
-                default: array
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: object
-                default: object
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: json
-                default: json
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: union
-                default: union
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: chat_completion_input
-                default: chat_completion_input
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: completion_input
-                default: completion_input
-                type: string
-            required:
-            - type
-            type: object
-          - additionalProperties: false
-            properties:
-              type:
-                const: agent_turn_input
-                default: agent_turn_input
-                type: string
-            required:
-            - type
-            type: object
+          $ref: '#/components/schemas/ParamType'
         type:
           const: scoring_function
           default: scoring_function
@@ -3056,11 +2700,7 @@ components:
       properties:
         dialogs:
           items:
-            oneOf:
-            - $ref: '#/components/schemas/UserMessage'
-            - $ref: '#/components/schemas/SystemMessage'
-            - $ref: '#/components/schemas/ToolResponseMessage'
-            - $ref: '#/components/schemas/CompletionMessage'
+            $ref: '#/components/schemas/Message'
           type: array
         filtering_function:
           enum:
@@ -3112,14 +2752,7 @@ components:
       additionalProperties: false
       properties:
         content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         role:
           const: system
           default: system
@@ -3127,6 +2760,19 @@ components:
       required:
       - role
       - content
+      type: object
+    TextContentItem:
+      additionalProperties: false
+      properties:
+        text:
+          type: string
+        type:
+          const: text
+          default: text
+          type: string
+      required:
+      - type
+      - text
       type: object
     TokenLogProbs:
       additionalProperties: false
@@ -3293,14 +2939,7 @@ components:
         call_id:
           type: string
         content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         tool_name:
           oneOf:
           - $ref: '#/components/schemas/BuiltinTool'
@@ -3316,14 +2955,7 @@ components:
         call_id:
           type: string
         content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         role:
           const: ipython
           default: ipython
@@ -3425,9 +3057,13 @@ components:
       title: A single turn in an interaction with an Agentic System.
       type: object
     URL:
-      format: uri
-      pattern: ^(https?://|file://|data:)
-      type: string
+      additionalProperties: false
+      properties:
+        uri:
+          type: string
+      required:
+      - uri
+      type: object
     UnregisterDatasetRequest:
       additionalProperties: false
       properties:
@@ -3492,23 +3128,9 @@ components:
       additionalProperties: false
       properties:
         content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         context:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ImageMedia'
-          - items:
-              oneOf:
-              - type: string
-              - $ref: '#/components/schemas/ImageMedia'
-            type: array
+          $ref: '#/components/schemas/InterleavedContent'
         role:
           const: user
           default: user
@@ -5297,8 +4919,9 @@ tags:
   name: GraphMemoryBankParams
 - description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
   name: HealthInfo
-- description: <SchemaDefinition schemaRef="#/components/schemas/ImageMedia" />
-  name: ImageMedia
+- description: <SchemaDefinition schemaRef="#/components/schemas/ImageContentItem"
+    />
+  name: ImageContentItem
 - name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
@@ -5306,6 +4929,12 @@ tags:
     />
   name: InsertDocumentsRequest
 - name: Inspect
+- description: <SchemaDefinition schemaRef="#/components/schemas/InterleavedContent"
+    />
+  name: InterleavedContent
+- description: <SchemaDefinition schemaRef="#/components/schemas/InterleavedContentItem"
+    />
+  name: InterleavedContentItem
 - description: <SchemaDefinition schemaRef="#/components/schemas/Job" />
   name: Job
 - description: <SchemaDefinition schemaRef="#/components/schemas/JobCancelRequest"
@@ -5347,6 +4976,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryToolDefinition"
     />
   name: MemoryToolDefinition
+- description: <SchemaDefinition schemaRef="#/components/schemas/Message" />
+  name: Message
 - description: <SchemaDefinition schemaRef="#/components/schemas/MetricEvent" />
   name: MetricEvent
 - description: <SchemaDefinition schemaRef="#/components/schemas/Model" />
@@ -5364,6 +4995,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/PaginatedRowsResult"
     />
   name: PaginatedRowsResult
+- description: <SchemaDefinition schemaRef="#/components/schemas/ParamType" />
+  name: ParamType
 - description: <SchemaDefinition schemaRef="#/components/schemas/PhotogenToolDefinition"
     />
   name: PhotogenToolDefinition
@@ -5429,6 +5062,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/RegisterShieldRequest"
     />
   name: RegisterShieldRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/ResponseFormat" />
+  name: ResponseFormat
 - description: <SchemaDefinition schemaRef="#/components/schemas/RestAPIExecutionConfig"
     />
   name: RestAPIExecutionConfig
@@ -5521,6 +5156,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/SystemMessage" />
   name: SystemMessage
 - name: Telemetry
+- description: <SchemaDefinition schemaRef="#/components/schemas/TextContentItem"
+    />
+  name: TextContentItem
 - description: <SchemaDefinition schemaRef="#/components/schemas/TokenLogProbs" />
   name: TokenLogProbs
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolCall" />
@@ -5670,9 +5308,11 @@ x-tagGroups:
   - GraphMemoryBank
   - GraphMemoryBankParams
   - HealthInfo
-  - ImageMedia
+  - ImageContentItem
   - InferenceStep
   - InsertDocumentsRequest
+  - InterleavedContent
+  - InterleavedContentItem
   - Job
   - JobCancelRequest
   - JobStatus
@@ -5687,6 +5327,7 @@ x-tagGroups:
   - MemoryBankDocument
   - MemoryRetrievalStep
   - MemoryToolDefinition
+  - Message
   - MetricEvent
   - Model
   - ModelCandidate
@@ -5694,6 +5335,7 @@ x-tagGroups:
   - OptimizerConfig
   - OptimizerType
   - PaginatedRowsResult
+  - ParamType
   - PhotogenToolDefinition
   - PostTrainingJob
   - PostTrainingJobArtifactsResponse
@@ -5714,6 +5356,7 @@ x-tagGroups:
   - RegisterModelRequest
   - RegisterScoringFunctionRequest
   - RegisterShieldRequest
+  - ResponseFormat
   - RestAPIExecutionConfig
   - RestAPIMethod
   - RouteInfo
@@ -5745,6 +5388,7 @@ x-tagGroups:
   - SyntheticDataGenerateRequest
   - SyntheticDataGenerationResponse
   - SystemMessage
+  - TextContentItem
   - TokenLogProbs
   - ToolCall
   - ToolCallDelta

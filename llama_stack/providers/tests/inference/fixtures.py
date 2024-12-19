@@ -134,6 +134,7 @@ def inference_vllm_remote() -> ProviderFixture:
                 provider_type="remote::vllm",
                 config=VLLMInferenceAdapterConfig(
                     url=get_env_or_fail("VLLM_URL"),
+                    max_tokens=int(os.getenv("VLLM_MAX_TOKENS", 2048)),
                 ).model_dump(),
             )
         ],
@@ -210,6 +211,19 @@ def inference_tgi() -> ProviderFixture:
                 ).model_dump(),
             )
         ],
+    )
+
+
+@pytest.fixture(scope="session")
+def inference_sentence_transformers() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="sentence_transformers",
+                provider_type="inline::sentence-transformers",
+                config={},
+            )
+        ]
     )
 
 

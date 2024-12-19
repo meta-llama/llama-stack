@@ -21,8 +21,13 @@ from pypdf import PdfReader
 from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 
+from llama_stack.apis.common.content_types import InterleavedContent, TextContentItem
 from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks import VectorMemoryBank
 from llama_stack.providers.datatypes import Api
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +89,26 @@ def content_from_data(data_url: str) -> str:
         return ""
 
 
+def concat_interleaved_content(content: List[InterleavedContent]) -> InterleavedContent:
+    """concatenate interleaved content into a single list. ensure that 'str's are converted to TextContentItem when in a list"""
+
+    ret = []
+
+    def _process(c):
+        if isinstance(c, str):
+            ret.append(TextContentItem(text=c))
+        elif isinstance(c, list):
+            for item in c:
+                _process(item)
+        else:
+            ret.append(c)
+
+    for c in content:
+        _process(c)
+
+    return ret
+
+
 async def content_from_doc(doc: MemoryBankDocument) -> str:
     if isinstance(doc.content, URL):
         if doc.content.uri.startswith("data:"):
@@ -108,7 +133,7 @@ async def content_from_doc(doc: MemoryBankDocument) -> str:
             else:
                 return r.text
 
-    return interleaved_text_media_as_str(doc.content)
+    return interleaved_content_as_str(doc.content)
 
 
 def make_overlapped_chunks(
@@ -121,6 +146,7 @@ def make_overlapped_chunks(
     for i in range(0, len(tokens), window_len - overlap_len):
         toks = tokens[i : i + window_len]
         chunk = tokenizer.decode(toks)
+        # chunk is a string
         chunks.append(
             Chunk(content=chunk, token_count=len(toks), document_id=document_id)
         )
@@ -174,7 +200,7 @@ class BankWithIndex:
 
     async def query_documents(
         self,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         if params is None:

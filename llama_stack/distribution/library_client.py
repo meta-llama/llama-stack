@@ -13,10 +13,19 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
-from typing import Any, Generator, get_args, get_origin, Optional, Type, TypeVar, Union
+from typing import Any, Generator, get_args, get_origin, Optional, TypeVar
+
+import httpx
 
 import yaml
-from llama_stack_client import AsyncLlamaStackClient, LlamaStackClient, NOT_GIVEN
+from llama_stack_client import (
+    APIResponse,
+    AsyncAPIResponse,
+    AsyncLlamaStackClient,
+    AsyncStream,
+    LlamaStackClient,
+    NOT_GIVEN,
+)
 from pydantic import BaseModel, TypeAdapter
 from rich.console import Console
 
@@ -66,7 +75,7 @@ def stream_across_asyncio_run_boundary(
         # make sure we make the generator in the event loop context
         gen = await async_gen_maker()
         try:
-            async for item in gen:
+            async for item in await gen:
                 result_queue.put(item)
         except Exception as e:
             print(f"Error in generator {e}")
@@ -112,31 +121,17 @@ def stream_across_asyncio_run_boundary(
         future.result()
 
 
-def convert_pydantic_to_json_value(value: Any, cast_to: Type) -> dict:
+def convert_pydantic_to_json_value(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
     elif isinstance(value, list):
-        return [convert_pydantic_to_json_value(item, cast_to) for item in value]
+        return [convert_pydantic_to_json_value(item) for item in value]
     elif isinstance(value, dict):
-        return {k: convert_pydantic_to_json_value(v, cast_to) for k, v in value.items()}
+        return {k: convert_pydantic_to_json_value(v) for k, v in value.items()}
     elif isinstance(value, BaseModel):
-        # This is quite hacky and we should figure out how to use stuff from
-        # generated client-sdk code (using ApiResponse.parse() essentially)
-        value_dict = json.loads(value.model_dump_json())
-
-        origin = get_origin(cast_to)
-        if origin is Union:
-            args = get_args(cast_to)
-            for arg in args:
-                arg_name = arg.__name__.split(".")[-1]
-                value_name = value.__class__.__name__.split(".")[-1]
-                if arg_name == value_name:
-                    return arg(**value_dict)
-
-        # assume we have the correct association between the server-side type and the client-side type
-        return cast_to(**value_dict)
-
-    return value
+        return json.loads(value.model_dump_json())
+    else:
+        return value
 
 
 def convert_to_pydantic(annotation: Any, value: Any) -> Any:
@@ -257,6 +252,8 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         endpoints = get_all_api_endpoints()
         endpoint_impls = {}
         for api, api_endpoints in endpoints.items():
+            if api not in self.impls:
+                continue
             for endpoint in api_endpoints:
                 impl = self.impls[api]
                 func = getattr(impl, endpoint.name)
@@ -276,16 +273,28 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not self.endpoint_impls:
             raise ValueError("Client not initialized")
 
-        params = options.params or {}
-        params |= options.json_data or {}
         if stream:
-            return self._call_streaming(options.url, params, cast_to)
+            return self._call_streaming(
+                cast_to=cast_to,
+                options=options,
+                stream_cls=stream_cls,
+            )
         else:
-            return await self._call_non_streaming(options.url, params, cast_to)
+            return await self._call_non_streaming(
+                cast_to=cast_to,
+                options=options,
+            )
 
     async def _call_non_streaming(
-        self, path: str, body: dict = None, cast_to: Any = None
+        self,
+        *,
+        cast_to: Any,
+        options: Any,
     ):
+        path = options.url
+
+        body = options.params or {}
+        body |= options.json_data or {}
         await start_trace(path, {"__location__": "library_client"})
         try:
             func = self.endpoint_impls.get(path)
@@ -293,11 +302,45 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 raise ValueError(f"No endpoint found for {path}")
 
             body = self._convert_body(path, body)
-            return convert_pydantic_to_json_value(await func(**body), cast_to)
+            result = await func(**body)
+
+            json_content = json.dumps(convert_pydantic_to_json_value(result))
+            mock_response = httpx.Response(
+                status_code=httpx.codes.OK,
+                content=json_content.encode("utf-8"),
+                headers={
+                    "Content-Type": "application/json",
+                },
+                request=httpx.Request(
+                    method=options.method,
+                    url=options.url,
+                    params=options.params,
+                    headers=options.headers,
+                    json=options.json_data,
+                ),
+            )
+            response = APIResponse(
+                raw=mock_response,
+                client=self,
+                cast_to=cast_to,
+                options=options,
+                stream=False,
+                stream_cls=None,
+            )
+            return response.parse()
         finally:
             await end_trace()
 
-    async def _call_streaming(self, path: str, body: dict = None, cast_to: Any = None):
+    async def _call_streaming(
+        self,
+        *,
+        cast_to: Any,
+        options: Any,
+        stream_cls: Any,
+    ):
+        path = options.url
+        body = options.params or {}
+        body |= options.json_data or {}
         await start_trace(path, {"__location__": "library_client"})
         try:
             func = self.endpoint_impls.get(path)
@@ -305,8 +348,42 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 raise ValueError(f"No endpoint found for {path}")
 
             body = self._convert_body(path, body)
-            async for chunk in await func(**body):
-                yield convert_pydantic_to_json_value(chunk, cast_to)
+
+            async def gen():
+                async for chunk in await func(**body):
+                    data = json.dumps(convert_pydantic_to_json_value(chunk))
+                    sse_event = f"data: {data}\n\n"
+                    yield sse_event.encode("utf-8")
+
+            mock_response = httpx.Response(
+                status_code=httpx.codes.OK,
+                content=gen(),
+                headers={
+                    "Content-Type": "application/json",
+                },
+                request=httpx.Request(
+                    method=options.method,
+                    url=options.url,
+                    params=options.params,
+                    headers=options.headers,
+                    json=options.json_data,
+                ),
+            )
+
+            # we use asynchronous impl always internally and channel all requests to AsyncLlamaStackClient
+            # however, the top-level caller may be a SyncAPIClient -- so its stream_cls might be a Stream (SyncStream)
+            # so we need to convert it to AsyncStream
+            args = get_args(stream_cls)
+            stream_cls = AsyncStream[args[0]]
+            response = AsyncAPIResponse(
+                raw=mock_response,
+                client=self,
+                cast_to=cast_to,
+                options=options,
+                stream=True,
+                stream_cls=stream_cls,
+            )
+            return await response.parse()
         finally:
             await end_trace()
 

@@ -23,9 +23,10 @@ from llama_models import schema_utils
 # generation though, we need the full definitions and implementations from the
 #  (json-strong-typing) package.
 
-from .strong_typing.schema import json_schema_type
+from .strong_typing.schema import json_schema_type, register_schema
 
 schema_utils.json_schema_type = json_schema_type
+schema_utils.register_schema = register_schema
 
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION  # noqa: E402
 from llama_stack.distribution.stack import LlamaStack  # noqa: E402
