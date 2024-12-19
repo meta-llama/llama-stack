@@ -4,11 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
 
-from llama_stack.apis.tools import Tool, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.tools import Tool, ToolGroup, ToolInvocationResult, ToolRuntime
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
@@ -41,6 +41,9 @@ class BraveSearchToolRuntimeImpl(
                 'Pass Search provider\'s API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
             )
         return provider_data.api_key
+
+    async def discover_tools(self, tool_group: ToolGroup) -> List[Tool]:
+        raise NotImplementedError("Brave search tool group not supported")
 
     async def invoke_tool(
         self, tool_id: str, args: Dict[str, Any]

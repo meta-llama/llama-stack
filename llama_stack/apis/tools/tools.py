@@ -26,11 +26,11 @@ class ToolParameter(BaseModel):
 @json_schema_type
 class Tool(Resource):
     type: Literal[ResourceType.tool.value] = ResourceType.tool.value
-    name: str
     tool_group: str
     description: str
     parameters: List[ToolParameter]
     provider_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
@@ -55,12 +55,14 @@ class MCPToolGroup(BaseModel):
     """
 
     type: Literal["model_context_protocol"] = "model_context_protocol"
+    name: str
     endpoint: URL
 
 
 @json_schema_type
 class UserDefinedToolGroup(BaseModel):
     type: Literal["user_defined"] = "user_defined"
+    name: str
     tools: List[ToolDef]
 
 
@@ -87,7 +89,6 @@ class Tools(Protocol):
     @webmethod(route="/toolgroups/register", method="POST")
     async def register_tool_group(
         self,
-        name: str,
         tool_group: ToolGroup,
         provider_id: Optional[str] = None,
     ) -> None:
@@ -114,6 +115,9 @@ class Tools(Protocol):
 @trace_protocol
 class ToolRuntime(Protocol):
     tool_store: ToolStore
+
+    @webmethod(route="/tool-runtime/discover", method="POST")
+    async def discover_tools(self, tool_group: ToolGroup) -> List[Tool]: ...
 
     @webmethod(route="/tool-runtime/invoke", method="POST")
     async def invoke_tool(
