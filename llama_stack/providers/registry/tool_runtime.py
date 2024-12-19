@@ -13,9 +13,9 @@ def available_providers() -> List[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.tool_runtime,
-            provider_type="inline::meta-reference",
+            provider_type="inline::brave-search",
             pip_packages=[],
-            module="llama_stack.providers.inline.tool_runtime.meta_reference",
-            config_class="llama_stack.providers.inline.tool_runtime.meta_reference.MetaReferenceToolRuntimeConfig",
+            module="llama_stack.providers.inline.tool_runtime.brave_search",
+            config_class="llama_stack.providers.inline.tool_runtime.brave_search.config.BraveSearchToolConfig",
         ),
     ]
