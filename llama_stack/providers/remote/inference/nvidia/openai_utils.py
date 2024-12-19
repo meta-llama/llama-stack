@@ -10,12 +10,13 @@ from typing import Any, AsyncGenerator, Dict, Generator, List, Optional
 
 from llama_models.llama3.api.datatypes import (
     BuiltinTool,
-    CompletionMessage,
+    # CompletionMessage,
     StopReason,
-    TokenLogProbs,
+    # TokenLogProbs,
     ToolCall,
     ToolDefinition,
 )
+from llama_stack.apis.inference import CompletionMessage, TokenLogProbs
 from openai import AsyncStream
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
@@ -339,7 +340,7 @@ def _convert_openai_tool_calls(
 
 def _convert_openai_logprobs(
     logprobs: OpenAIChoiceLogprobs,
-) -> Optional[List[TokenLogProbs]]:
+) -> Optional[List[Any]]:
     """
     Convert an OpenAI ChoiceLogprobs into a list of TokenLogProbs.
 
