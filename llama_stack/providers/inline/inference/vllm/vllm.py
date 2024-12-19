@@ -78,7 +78,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self.engine = AsyncLLMEngine.from_engine_args(engine_args)
 
     async def shutdown(self):
-        """Shutdown the vLLM inference adapter."""
+        """Shut down the vLLM inference adapter."""
         log.info("Shutting down vLLM inference provider.")
         if self.engine:
             self.engine.shutdown_background_loop()
