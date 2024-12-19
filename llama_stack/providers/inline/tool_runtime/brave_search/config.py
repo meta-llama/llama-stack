@@ -4,9 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class BraveSearchToolConfig(BaseModel):
-    api_key: str
-    max_results: int = 3
+    api_key: Optional[str] = Field(
+        default=None,
+        description="The Brave Search API Key",
+    )
+    max_results: int = Field(
+        default=3,
+        description="The maximum number of results to return",
+    )
