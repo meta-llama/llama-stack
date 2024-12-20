@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
+from typing import Any, Dict, List
 
 from llama_stack.apis.common.type_system import (
     ChatCompletionInputType,
@@ -51,3 +52,38 @@ def get_expected_schema_for_eval():
             ColumnName.completion_input.value: CompletionInputType(),
         },
     ]
+
+
+def validate_dataset_schema(
+    dataset_schema: Dict[str, Any], expected_schemas: List[Dict[str, Any]]
+):
+    if dataset_schema not in expected_schemas:
+        raise ValueError(
+            f"Dataset does not have a correct input schema in {expected_schemas}"
+        )
+
+
+def validate_row_schema(
+    input_row: Dict[str, Any], expected_schemas: List[Dict[str, Any]]
+):
+    for schema in expected_schemas:
+        if all(key in input_row for key in schema):
+            return
+
+    raise ValueError(
+        f"Input row {input_row} does not match any of the expected schemas in {expected_schemas}"
+    )
+
+
+class DataSchemaValidatorMixin:
+    def validate_dataset_schema_for_scoring(self, dataset_schema: Dict[str, Any]):
+        validate_dataset_schema(dataset_schema, get_expected_schema_for_scoring())
+
+    def validate_dataset_schema_for_eval(self, dataset_schema: Dict[str, Any]):
+        validate_dataset_schema(dataset_schema, get_expected_schema_for_eval())
+
+    def validate_row_schema_for_scoring(self, row_schema: Dict[str, Any]):
+        validate_row_schema(row_schema, get_expected_schema_for_scoring())
+
+    def validate_row_schema_for_eval(self, row_schema: Dict[str, Any]):
+        validate_row_schema(row_schema, get_expected_schema_for_eval())

@@ -17,6 +17,9 @@ from llama_stack.apis.scoring import (
 )
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
+from llama_stack.providers.utils.common.data_schema_validator_mixin import (
+    DataSchemaValidatorMixin,
+)
 
 from .config import LlmAsJudgeScoringConfig
 from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
@@ -25,7 +28,9 @@ from .scoring_fn.llm_as_judge_scoring_fn import LlmAsJudgeScoringFn
 LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 
 
-class LlmAsJudgeScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
+class LlmAsJudgeScoringImpl(
+    Scoring, ScoringFunctionsProtocolPrivate, DataSchemaValidatorMixin
+):
     def __init__(
         self,
         config: LlmAsJudgeScoringConfig,
@@ -65,30 +70,15 @@ class LlmAsJudgeScoringImpl(Scoring, ScoringFunctionsProtocolPrivate):
     async def register_scoring_function(self, function_def: ScoringFn) -> None:
         raise NotImplementedError("Register scoring function not implemented yet")
 
-    async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
-        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
-            raise ValueError(
-                f"Dataset {dataset_id} does not have a schema defined. Please define a schema for the dataset."
-            )
-
-        for required_column in ["generated_answer", "expected_answer", "input_query"]:
-            if required_column not in dataset_def.dataset_schema:
-                raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column."
-                )
-            if dataset_def.dataset_schema[required_column].type != "string":
-                raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'."
-                )
-
     async def score_batch(
         self,
         dataset_id: str,
         scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
-        await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
+        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+        self.validate_dataset_schema_for_scoring(dataset_def.dataset_schema)
+
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=-1,
