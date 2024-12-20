@@ -19,6 +19,10 @@ from autoevals.ragas import (
     AnswerCorrectness,
     AnswerRelevancy,
     AnswerSimilarity,
+    ContextEntityRecall,
+    ContextPrecision,
+    ContextRecall,
+    ContextRelevancy,
     Faithfulness,
 )
 from pydantic import BaseModel
@@ -34,6 +38,10 @@ from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
 from .scoring_fn.fn_defs.answer_relevancy import answer_relevancy_fn_def
 from .scoring_fn.fn_defs.answer_similarity import answer_similarity_fn_def
+from .scoring_fn.fn_defs.context_entity_recall import context_entity_recall_fn_def
+from .scoring_fn.fn_defs.context_precision import context_precision_fn_def
+from .scoring_fn.fn_defs.context_recall import context_recall_fn_def
+from .scoring_fn.fn_defs.context_relevancy import context_relevancy_fn_def
 from .scoring_fn.fn_defs.factuality import factuality_fn_def
 from .scoring_fn.fn_defs.faithfulness import faithfulness_fn_def
 
@@ -69,6 +77,26 @@ SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY = [
         identifier="braintrust::faithfulness",
         evaluator=Faithfulness(),
         fn_def=faithfulness_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-entity-recall",
+        evaluator=ContextEntityRecall(),
+        fn_def=context_entity_recall_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-precision",
+        evaluator=ContextPrecision(),
+        fn_def=context_precision_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-recall",
+        evaluator=ContextRecall(),
+        fn_def=context_recall_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-relevancy",
+        evaluator=ContextRelevancy(),
+        fn_def=context_relevancy_fn_def,
     ),
 ]
 
