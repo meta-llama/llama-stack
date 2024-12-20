@@ -8,15 +8,16 @@ from typing import List
 
 from jinja2 import Template
 
-from llama_stack.apis.agents import (
+from llama_stack.apis.inference import Message, UserMessage
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
+
+from .config import (
     DefaultMemoryQueryGeneratorConfig,
     LLMMemoryQueryGeneratorConfig,
     MemoryQueryGenerator,
     MemoryQueryGeneratorConfig,
-)
-from llama_stack.apis.inference import Message, UserMessage
-from llama_stack.providers.utils.inference.prompt_adapter import (
-    interleaved_content_as_str,
 )
 
 

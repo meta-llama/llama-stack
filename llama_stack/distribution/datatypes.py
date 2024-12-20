@@ -161,6 +161,7 @@ a default SQLite store will be used.""",
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
+    tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 
 
 class BuildConfig(BaseModel):

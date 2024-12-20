@@ -24,12 +24,11 @@ from llama_stack.apis.agents import (
     Session,
     Turn,
 )
-
 from llama_stack.apis.inference import Inference, ToolResponseMessage, UserMessage
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.safety import Safety
-
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 
 from .agent_instance import ChatAgent
@@ -47,12 +46,16 @@ class MetaReferenceAgentsImpl(Agents):
         memory_api: Memory,
         safety_api: Safety,
         memory_banks_api: MemoryBanks,
+        tool_runtime_api: ToolRuntime,
+        tool_groups_api: ToolGroups,
     ):
         self.config = config
         self.inference_api = inference_api
         self.memory_api = memory_api
         self.safety_api = safety_api
         self.memory_banks_api = memory_banks_api
+        self.tool_runtime_api = tool_runtime_api
+        self.tool_groups_api = tool_groups_api
 
         self.in_memory_store = InmemoryKVStoreImpl()
         self.tempdir = tempfile.mkdtemp()
@@ -112,6 +115,8 @@ class MetaReferenceAgentsImpl(Agents):
             safety_api=self.safety_api,
             memory_api=self.memory_api,
             memory_banks_api=self.memory_banks_api,
+            tool_runtime_api=self.tool_runtime_api,
+            tool_groups_api=self.tool_groups_api,
             persistence_store=(
                 self.persistence_store
                 if agent_config.enable_session_persistence
