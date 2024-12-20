@@ -47,6 +47,10 @@ def builtin_automatically_routed_apis() -> List[AutoRoutedApiInfo]:
             routing_table_api=Api.eval_tasks,
             router_api=Api.eval,
         ),
+        AutoRoutedApiInfo(
+            routing_table_api=Api.tools,
+            router_api=Api.tool_runtime,
+        ),
     ]
 
 

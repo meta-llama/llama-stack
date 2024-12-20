@@ -17,6 +17,7 @@ from .routing_tables import (
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
+    ToolsRoutingTable,
 )
 
 
@@ -33,6 +34,7 @@ async def get_routing_table_impl(
         "datasets": DatasetsRoutingTable,
         "scoring_functions": ScoringFunctionsRoutingTable,
         "eval_tasks": EvalTasksRoutingTable,
+        "tools": ToolsRoutingTable,
     }
 
     if api.value not in api_to_tables:
@@ -51,6 +53,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         MemoryRouter,
         SafetyRouter,
         ScoringRouter,
+        ToolRuntimeRouter,
     )
 
     api_to_routers = {
@@ -60,6 +63,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         "datasetio": DatasetIORouter,
         "scoring": ScoringRouter,
         "eval": EvalRouter,
+        "tool_runtime": ToolRuntimeRouter,
     }
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")
