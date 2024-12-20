@@ -1,4 +1,4 @@
-# Cerebras Distribution
+# Portkey Distribution
 
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
 
@@ -27,10 +27,10 @@ The following models are available by default:
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a Cerebras API Key. You can get one by visiting [cloud.cerebras.ai](https://cloud.cerebras.ai/).
+Make sure you have access to a Portkey API Key and Virtual Key or Config ID. You can get these by visiting [app.portkey.ai](https://app.portkey.ai/).
 
 
-## Running Llama Stack with Cerebras
+## Running Llama Stack with Portkey
 
 You can do this via Conda (build code) or Docker which has a pre-built image.
 
@@ -47,14 +47,19 @@ docker run \
   llamastack/distribution-{{ name }} \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
-  --env CEREBRAS_API_KEY=$CEREBRAS_API_KEY
+  --env PORTKEY_API_KEY=$PORTKEY_API_KEY
+  --env PORTKEY_VIRTUAL_KEY=$PORTKEY_VIRTUAL_KEY
+  --env PORTKEY_CONFIG_ID=$PORTKEY_CONFIG_ID
+  
 ```
 
 ### Via Conda
 
 ```bash
-llama stack build --template cerebras --image-type conda
+llama stack build --template portkey --image-type conda
 llama stack run ./run.yaml \
   --port 5001 \
-  --env CEREBRAS_API_KEY=$CEREBRAS_API_KEY
+  --env PORTKEY_API_KEY=$PORTKEY_API_KEY
+  --env PORTKEY_VIRTUAL_KEY=$PORTKEY_VIRTUAL_KEY
+  --env PORTKEY_CONFIG_ID=$PORTKEY_CONFIG_ID
 ```
