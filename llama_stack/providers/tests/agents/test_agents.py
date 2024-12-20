@@ -35,7 +35,6 @@ from llama_stack.providers.datatypes import Api
 #
 # pytest -v -s llama_stack/providers/tests/agents/test_agents.py
 #   -m "meta_reference"
-
 from .fixtures import pick_inference_model
 from .utils import create_agent_session
 
@@ -255,17 +254,8 @@ class TestAgents:
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "tools": [
-                    MemoryToolDefinition(
-                        memory_bank_configs=[],
-                        query_generator_config={
-                            "type": "default",
-                            "sep": " ",
-                        },
-                        max_tokens_in_context=4096,
-                        max_chunks=10,
-                    ),
-                ],
+                "tools": [],
+                "preprocessing_tools": ["memory"],
                 "tool_choice": ToolChoice.auto,
             }
         )

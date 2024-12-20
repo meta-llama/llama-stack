@@ -523,6 +523,8 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                 )
             provider_id = list(self.impls_by_provider_id.keys())[0]
 
+        # parse tool group to the type if dict
+        tool_group = parse_obj_as(ToolGroupDef, tool_group)
         if isinstance(tool_group, MCPToolGroupDef):
             tool_defs = await self.impls_by_provider_id[provider_id].discover_tools(
                 tool_group

@@ -7,12 +7,10 @@
 import pytest
 
 from ..conftest import get_provider_fixture_overrides
-
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
-from .fixtures import AGENTS_FIXTURES
-
+from .fixtures import AGENTS_FIXTURES, TOOL_RUNTIME_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
@@ -21,6 +19,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "safety": "llama_guard",
             "memory": "faiss",
             "agents": "meta_reference",
+            "tool_runtime": "memory",
         },
         id="meta_reference",
         marks=pytest.mark.meta_reference,
@@ -31,6 +30,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "safety": "llama_guard",
             "memory": "faiss",
             "agents": "meta_reference",
+            "tool_runtime": "memory",
         },
         id="ollama",
         marks=pytest.mark.ollama,
@@ -42,6 +42,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             # make this work with Weaviate which is what the together distro supports
             "memory": "faiss",
             "agents": "meta_reference",
+            "tool_runtime": "memory",
         },
         id="together",
         marks=pytest.mark.together,
@@ -52,6 +53,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "safety": "llama_guard",
             "memory": "faiss",
             "agents": "meta_reference",
+            "tool_runtime": "memory",
         },
         id="fireworks",
         marks=pytest.mark.fireworks,
@@ -62,6 +64,7 @@ DEFAULT_PROVIDER_COMBINATIONS = [
             "safety": "remote",
             "memory": "remote",
             "agents": "remote",
+            "tool_runtime": "memory",
         },
         id="remote",
         marks=pytest.mark.remote,
@@ -117,6 +120,7 @@ def pytest_generate_tests(metafunc):
             "safety": SAFETY_FIXTURES,
             "memory": MEMORY_FIXTURES,
             "agents": AGENTS_FIXTURES,
+            "tool_runtime": TOOL_RUNTIME_FIXTURES,
         }
         combinations = (
             get_provider_fixture_overrides(metafunc.config, available_fixtures)

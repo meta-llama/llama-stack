@@ -68,8 +68,14 @@ ToolGroupDef = register_schema(
     Annotated[
         Union[MCPToolGroupDef, UserDefinedToolGroupDef], Field(discriminator="type")
     ],
-    name="ToolGroup",
+    name="ToolGroupDef",
 )
+
+
+class ToolGroupInput(BaseModel):
+    tool_group_id: str
+    tool_group: ToolGroupDef
+    provider_id: Optional[str] = None
 
 
 class ToolGroup(Resource):

@@ -4,25 +4,21 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import asyncio
 import copy
 import logging
 import os
-import re
 import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, Dict, List, Optional, Tuple
+from typing import AsyncGenerator, Dict, List
 from urllib.parse import urlparse
 
 import httpx
-
 from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.agents import (
     AgentConfig,
-    AgentTool,
     AgentTurnCreateRequest,
     AgentTurnResponseEvent,
     AgentTurnResponseEventType,
@@ -36,8 +32,6 @@ from llama_stack.apis.agents import (
     CodeInterpreterToolDefinition,
     FunctionCallToolDefinition,
     InferenceStep,
-    MemoryRetrievalStep,
-    MemoryToolDefinition,
     PhotogenToolDefinition,
     SearchToolDefinition,
     ShieldCallStep,
@@ -46,11 +40,9 @@ from llama_stack.apis.agents import (
     Turn,
     WolframAlphaToolDefinition,
 )
-
 from llama_stack.apis.common.content_types import (
-    InterleavedContent,
-    TextContentItem,
     URL,
+    TextContentItem,
 )
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
@@ -62,30 +54,26 @@ from llama_stack.apis.inference import (
     SystemMessage,
     ToolCallDelta,
     ToolCallParseStatus,
-    ToolChoice,
     ToolDefinition,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
 )
-from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
-from llama_stack.apis.memory_banks import MemoryBanks, VectorMemoryBankParams
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.safety import Safety
-
 from llama_stack.providers.utils.kvstore import KVStore
-from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
 
 from .persistence import AgentPersistence
-from .rag.context_retriever import generate_rag_query
 from .safety import SafetyException, ShieldRunnerMixin
 from .tools.base import BaseTool
 from .tools.builtin import (
     CodeInterpreterTool,
-    interpret_content_as_attachment,
     PhotogenTool,
     SearchTool,
     WolframAlphaTool,
+    interpret_content_as_attachment,
 )
 from .tools.safety import SafeTool
 
@@ -108,6 +96,8 @@ class ChatAgent(ShieldRunnerMixin):
         memory_api: Memory,
         memory_banks_api: MemoryBanks,
         safety_api: Safety,
+        tool_runtime_api: ToolRuntime,
+        tool_groups_api: ToolGroups,
         persistence_store: KVStore,
     ):
         self.agent_id = agent_id
@@ -118,6 +108,8 @@ class ChatAgent(ShieldRunnerMixin):
         self.memory_banks_api = memory_banks_api
         self.safety_api = safety_api
         self.storage = AgentPersistence(agent_id, persistence_store)
+        self.tool_runtime_api = tool_runtime_api
+        self.tool_groups_api = tool_groups_api
 
         builtin_tools = []
         for tool_defn in agent_config.tools:
@@ -392,62 +384,50 @@ class ChatAgent(ShieldRunnerMixin):
         sampling_params: SamplingParams,
         stream: bool = False,
     ) -> AsyncGenerator:
-        enabled_tools = set(t.type for t in self.agent_config.tools)
-        need_rag_context = await self._should_retrieve_context(
-            input_messages, attachments
-        )
-        if need_rag_context:
-            step_id = str(uuid.uuid4())
-            yield AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseStepStartPayload(
-                        step_type=StepType.memory_retrieval.value,
-                        step_id=step_id,
+        if self.agent_config.preprocessing_tools:
+            with tracing.span("preprocessing_tools") as span:
+                for tool_name in self.agent_config.preprocessing_tools:
+                    yield AgentTurnResponseStreamChunk(
+                        event=AgentTurnResponseEvent(
+                            payload=AgentTurnResponseStepStartPayload(
+                                step_type=StepType.tool_execution.value,
+                                step_id=str(uuid.uuid4()),
+                            )
+                        )
                     )
-                )
-            )
-
-            # TODO: find older context from the session and either replace it
-            # or append with a sliding window. this is really a very simplistic implementation
-            with tracing.span("retrieve_rag_context") as span:
-                rag_context, bank_ids = await self._retrieve_context(
-                    session_id, input_messages, attachments
-                )
-                span.set_attribute(
-                    "input", [m.model_dump_json() for m in input_messages]
-                )
-                span.set_attribute("output", rag_context)
-                span.set_attribute("bank_ids", bank_ids)
-
-            step_id = str(uuid.uuid4())
-            yield AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseStepCompletePayload(
-                        step_type=StepType.memory_retrieval.value,
-                        step_id=step_id,
-                        step_details=MemoryRetrievalStep(
-                            turn_id=turn_id,
-                            step_id=step_id,
-                            memory_bank_ids=bank_ids,
-                            inserted_context=rag_context or "",
-                        ),
+                    args = dict(
+                        session_id=session_id,
+                        input_messages=input_messages,
+                        attachments=attachments,
                     )
-                )
-            )
-
-            if rag_context:
-                last_message = input_messages[-1]
-                last_message.context = rag_context
-
-        elif attachments and AgentTool.code_interpreter.value in enabled_tools:
-            urls = [a.content for a in attachments if isinstance(a.content, URL)]
-            # TODO: we need to migrate URL away from str type
-            pattern = re.compile("^(https?://|file://|data:)")
-            urls += [
-                URL(uri=a.content) for a in attachments if pattern.match(a.content)
-            ]
-            msg = await attachment_message(self.tempdir, urls)
-            input_messages.append(msg)
+                    result = await self.tool_runtime_api.invoke_tool(
+                        tool_name=tool_name,
+                        args=args,
+                    )
+                    yield AgentTurnResponseStreamChunk(
+                        event=AgentTurnResponseEvent(
+                            payload=AgentTurnResponseStepProgressPayload(
+                                step_type=StepType.tool_execution.value,
+                                step_id=str(uuid.uuid4()),
+                                tool_call_delta=ToolCallDelta(
+                                    parse_status=ToolCallParseStatus.success,
+                                    content=ToolCall(
+                                        call_id="", tool_name=tool_name, arguments={}
+                                    ),
+                                ),
+                            )
+                        )
+                    )
+                    span.set_attribute(
+                        "input", [m.model_dump_json() for m in input_messages]
+                    )
+                    span.set_attribute("output", result.content)
+                    span.set_attribute("error_code", result.error_code)
+                    span.set_attribute("error_message", result.error_message)
+                    span.set_attribute("tool_name", tool_name)
+                    if result.error_code != 0 and result.content:
+                        last_message = input_messages[-1]
+                        last_message.context = result.content
 
         output_attachments = []
 
@@ -658,129 +638,6 @@ class ChatAgent(ShieldRunnerMixin):
                 input_messages = input_messages + [message, result_message]
 
             n_iter += 1
-
-    async def _ensure_memory_bank(self, session_id: str) -> str:
-        session_info = await self.storage.get_session_info(session_id)
-        if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
-
-        if session_info.memory_bank_id is None:
-            bank_id = f"memory_bank_{session_id}"
-            await self.memory_banks_api.register_memory_bank(
-                memory_bank_id=bank_id,
-                params=VectorMemoryBankParams(
-                    embedding_model="all-MiniLM-L6-v2",
-                    chunk_size_in_tokens=512,
-                ),
-            )
-            await self.storage.add_memory_bank_to_session(session_id, bank_id)
-        else:
-            bank_id = session_info.memory_bank_id
-
-        return bank_id
-
-    async def _should_retrieve_context(
-        self, messages: List[Message], attachments: List[Attachment]
-    ) -> bool:
-        enabled_tools = set(t.type for t in self.agent_config.tools)
-        if attachments:
-            if (
-                AgentTool.code_interpreter.value in enabled_tools
-                and self.agent_config.tool_choice == ToolChoice.required
-            ):
-                return False
-            else:
-                return True
-
-        return AgentTool.memory.value in enabled_tools
-
-    def _memory_tool_definition(self) -> Optional[MemoryToolDefinition]:
-        for t in self.agent_config.tools:
-            if t.type == AgentTool.memory.value:
-                return t
-
-        return None
-
-    async def _retrieve_context(
-        self, session_id: str, messages: List[Message], attachments: List[Attachment]
-    ) -> Tuple[Optional[InterleavedContent], List[int]]:  # (rag_context, bank_ids)
-        bank_ids = []
-
-        memory = self._memory_tool_definition()
-        assert memory is not None, "Memory tool not configured"
-        bank_ids.extend(c.bank_id for c in memory.memory_bank_configs)
-
-        if attachments:
-            bank_id = await self._ensure_memory_bank(session_id)
-            bank_ids.append(bank_id)
-
-            documents = [
-                MemoryBankDocument(
-                    document_id=str(uuid.uuid4()),
-                    content=a.content,
-                    mime_type=a.mime_type,
-                    metadata={},
-                )
-                for a in attachments
-            ]
-            with tracing.span("insert_documents"):
-                await self.memory_api.insert_documents(bank_id, documents)
-        else:
-            session_info = await self.storage.get_session_info(session_id)
-            if session_info.memory_bank_id:
-                bank_ids.append(session_info.memory_bank_id)
-
-        if not bank_ids:
-            # this can happen if the per-session memory bank is not yet populated
-            # (i.e., no prior turns uploaded an Attachment)
-            return None, []
-
-        query = await generate_rag_query(
-            memory.query_generator_config, messages, inference_api=self.inference_api
-        )
-        tasks = [
-            self.memory_api.query_documents(
-                bank_id=bank_id,
-                query=query,
-                params={
-                    "max_chunks": 5,
-                },
-            )
-            for bank_id in bank_ids
-        ]
-        results: List[QueryDocumentsResponse] = await asyncio.gather(*tasks)
-        chunks = [c for r in results for c in r.chunks]
-        scores = [s for r in results for s in r.scores]
-
-        if not chunks:
-            return None, bank_ids
-
-        # sort by score
-        chunks, scores = zip(
-            *sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True)
-        )
-
-        tokens = 0
-        picked = []
-        for c in chunks[: memory.max_chunks]:
-            tokens += c.token_count
-            if tokens > memory.max_tokens_in_context:
-                log.error(
-                    f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
-                )
-                break
-            picked.append(f"id:{c.document_id}; content:{c.content}")
-
-        return (
-            concat_interleaved_content(
-                [
-                    "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
-                    *picked,
-                    "\n=== END-RETRIEVED-CONTEXT ===\n",
-                ]
-            ),
-            bank_ids,
-        )
 
     def _get_tools(self) -> List[ToolDefinition]:
         ret = []

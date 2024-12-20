@@ -22,6 +22,8 @@ async def get_provider_impl(
         deps[Api.memory],
         deps[Api.safety],
         deps[Api.memory_banks],
+        deps[Api.tool_runtime],
+        deps[Api.tool_groups],
     )
     await impl.initialize()
     return impl
