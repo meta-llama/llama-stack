@@ -15,7 +15,7 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTask
-from llama_stack.apis.inference import Inference
+from llama_stack.apis.inference import Inference, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl

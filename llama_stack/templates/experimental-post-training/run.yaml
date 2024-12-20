@@ -11,6 +11,7 @@ apis:
 - safety
 - scoring
 - telemetry
+- post_training
 providers:
   inference:
   - provider_id: meta-reference-inference
