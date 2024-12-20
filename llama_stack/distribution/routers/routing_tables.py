@@ -480,34 +480,40 @@ class ToolsRoutingTable(CommonRoutingTableImpl, Tools):
 
     async def register_tool_group(
         self,
-        name: str,
         tool_group: ToolGroup,
         provider_id: Optional[str] = None,
     ) -> None:
         tools = []
         if isinstance(tool_group, MCPToolGroup):
-            # TODO: first needs to be resolved to corresponding tools available in the MCP server
-            raise NotImplementedError("MCP tool provider not implemented yet")
+            # TODO: Actually find the right MCP provider
+            if provider_id is None:
+                raise ValueError("MCP provider_id not specified")
+            tools = await self.impls_by_provider_id[provider_id].discover_tools(
+                tool_group
+            )
+            for tool in tools:
+                tool.provider_id = provider_id
         elif isinstance(tool_group, UserDefinedToolGroup):
             for tool in tool_group.tools:
 
                 tools.append(
                     Tool(
                         identifier=tool.name,
-                        tool_group=name,
+                        tool_group=tool_group.name,
                         name=tool.name,
                         description=tool.description,
                         parameters=tool.parameters,
                         provider_id=provider_id,
                         tool_prompt_format=tool.tool_prompt_format,
                         provider_resource_id=tool.name,
+                        metadata=tool.metadata,
                     )
                 )
         else:
             raise ValueError(f"Unknown tool group: {tool_group}")
 
         for tool in tools:
-            existing_tool = await self.get_tool(tool.name)
+            existing_tool = await self.get_tool(tool.identifier)
             # Compare existing and new object if one exists
             if existing_tool:
                 # Compare all fields except provider_id since that might be None in new obj

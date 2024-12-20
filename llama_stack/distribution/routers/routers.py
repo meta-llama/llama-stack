@@ -393,3 +393,8 @@ class ToolRuntimeRouter(ToolRuntime):
             tool_id=tool_id,
             args=args,
         )
+
+    async def discover_tools(self, tool_group: ToolGroup) -> List[Tool]:
+        return await self.routing_table.get_provider_impl(
+            tool_group.name
+        ).discover_tools(tool_group)

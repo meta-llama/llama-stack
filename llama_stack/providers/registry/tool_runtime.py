@@ -6,7 +6,13 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import Api, InlineProviderSpec, ProviderSpec
+from llama_stack.distribution.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 
 def available_providers() -> List[ProviderSpec]:
@@ -18,5 +24,14 @@ def available_providers() -> List[ProviderSpec]:
             module="llama_stack.providers.inline.tool_runtime.brave_search",
             config_class="llama_stack.providers.inline.tool_runtime.brave_search.config.BraveSearchToolConfig",
             provider_data_validator="llama_stack.providers.inline.tool_runtime.brave_search.BraveSearchToolProviderDataValidator",
+        ),
+        remote_provider_spec(
+            api=Api.tool_runtime,
+            adapter=AdapterSpec(
+                adapter_type="model-context-protocol",
+                module="llama_stack.providers.remote.tool_runtime.model_context_protocol",
+                config_class="llama_stack.providers.remote.tool_runtime.model_context_protocol.config.ModelContextProtocolConfig",
+                pip_packages=["mcp"],
+            ),
         ),
     ]
