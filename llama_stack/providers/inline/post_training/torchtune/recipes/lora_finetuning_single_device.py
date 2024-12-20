@@ -110,6 +110,10 @@ class LoraFinetuningSingleDevice:
             self.checkpoint_dir = config.checkpoint_dir
         else:
             model = resolve_model(self.model_id)
+            if model is None:
+                raise ValueError(
+                    f"{self.model_id} not found. Your model id should be in the llama models SKU list"
+                )
             self.checkpoint_dir = model_checkpoint_dir(model)
 
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
