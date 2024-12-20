@@ -23,6 +23,14 @@ class PortkeyImplConfig(BaseModel):
         default=os.environ.get("PORTKEY_API_KEY"),
         description="Portkey API Key",
     )
+    virtual_key: Optional[str] = Field(
+        default=os.environ.get("PORTKEY_VIRTUAL_KEY"),
+        description="Portkey Virtual Key",
+    )
+    config: Optional[str] = Field(
+        default=os.environ.get("PORTKEY_CONFIG_ID"),
+        description="Portkey Config ID",
+    )
 
     @classmethod
     def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
