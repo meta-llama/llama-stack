@@ -430,6 +430,7 @@ class ChatAgent(ShieldRunnerMixin):
                     input_messages,
                     tools=self._get_tools(),
                     tool_prompt_format=self.agent_config.tool_prompt_format,
+                    response_format=self.agent_config.response_format,
                     stream=True,
                     sampling_params=sampling_params,
                 ):
