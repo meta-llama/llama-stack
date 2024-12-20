@@ -37,9 +37,15 @@ def data_url_from_file(file_path: str) -> str:
 
 
 async def register_dataset(
-    datasets_impl: Datasets, for_generation=False, dataset_id="test_dataset"
+    datasets_impl: Datasets,
+    for_generation=False,
+    for_rag=False,
+    dataset_id="test_dataset",
 ):
-    test_file = Path(os.path.abspath(__file__)).parent / "test_dataset.csv"
+    if for_rag:
+        test_file = Path(os.path.abspath(__file__)).parent / "test_rag_dataset.csv"
+    else:
+        test_file = Path(os.path.abspath(__file__)).parent / "test_dataset.csv"
     test_url = data_url_from_file(str(test_file))
 
     if for_generation:
@@ -47,6 +53,13 @@ async def register_dataset(
             "expected_answer": StringType(),
             "input_query": StringType(),
             "chat_completion_input": ChatCompletionInputType(),
+        }
+    elif for_rag:
+        dataset_schema = {
+            "expected_answer": StringType(),
+            "input_query": StringType(),
+            "generated_answer": StringType(),
+            "context": StringType(),
         }
     else:
         dataset_schema = {

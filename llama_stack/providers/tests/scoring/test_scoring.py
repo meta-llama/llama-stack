@@ -60,7 +60,7 @@ class TestScoring:
                 f"{provider_id} provider does not support scoring without params"
             )
 
-        await register_dataset(datasets_impl)
+        await register_dataset(datasets_impl, for_rag=True)
         response = await datasets_impl.list_datasets()
         assert len(response) == 1
 
@@ -112,7 +112,7 @@ class TestScoring:
             scoring_stack[Api.datasets],
             scoring_stack[Api.models],
         )
-        await register_dataset(datasets_impl)
+        await register_dataset(datasets_impl, for_rag=True)
         response = await datasets_impl.list_datasets()
         assert len(response) == 1
 
@@ -173,7 +173,7 @@ class TestScoring:
             scoring_stack[Api.datasets],
             scoring_stack[Api.models],
         )
-        await register_dataset(datasets_impl)
+        await register_dataset(datasets_impl, for_rag=True)
         rows = await datasetio_impl.get_rows_paginated(
             dataset_id="test_dataset",
             rows_in_page=3,

@@ -34,11 +34,11 @@ class DataSchemaValidatorMixin:
             dataset_schema, self.get_expected_schema_for_eval()
         )
 
-    def validate_row_schema_for_scoring(self, row_schema: Dict[str, Any]):
-        self.validate_row_schema(row_schema, self.get_expected_schema_for_scoring())
+    def validate_row_schema_for_scoring(self, input_row: Dict[str, Any]):
+        self.validate_row_schema(input_row, self.get_expected_schema_for_scoring())
 
-    def validate_row_schema_for_eval(self, row_schema: Dict[str, Any]):
-        self.validate_row_schema(row_schema, self.get_expected_schema_for_eval())
+    def validate_row_schema_for_eval(self, input_row: Dict[str, Any]):
+        self.validate_row_schema(input_row, self.get_expected_schema_for_eval())
 
     def get_expected_schema_for_scoring(self):
         return [

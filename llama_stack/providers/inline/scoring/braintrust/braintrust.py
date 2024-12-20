@@ -15,7 +15,12 @@ from llama_stack.apis.datasets import *  # noqa: F403
 import os
 
 from autoevals.llm import Factuality
-from autoevals.ragas import AnswerCorrectness
+from autoevals.ragas import (
+    AnswerCorrectness,
+    AnswerRelevancy,
+    AnswerSimilarity,
+    Faithfulness,
+)
 from pydantic import BaseModel
 
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
@@ -27,7 +32,10 @@ from llama_stack.providers.utils.common.data_schema_validator_mixin import (
 from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
+from .scoring_fn.fn_defs.answer_relevancy import answer_relevancy_fn_def
+from .scoring_fn.fn_defs.answer_similarity import answer_similarity_fn_def
 from .scoring_fn.fn_defs.factuality import factuality_fn_def
+from .scoring_fn.fn_defs.faithfulness import faithfulness_fn_def
 
 
 class BraintrustScoringFnEntry(BaseModel):
@@ -46,6 +54,21 @@ SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY = [
         identifier="braintrust::answer-correctness",
         evaluator=AnswerCorrectness(),
         fn_def=answer_correctness_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-relevancy",
+        evaluator=AnswerRelevancy(),
+        fn_def=answer_relevancy_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-similarity",
+        evaluator=AnswerSimilarity(),
+        fn_def=answer_similarity_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::faithfulness",
+        evaluator=Faithfulness(),
+        fn_def=faithfulness_fn_def,
     ),
 ]
 
@@ -135,6 +158,7 @@ class BraintrustScoringImpl(
     async def score_row(
         self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
     ) -> ScoringResultRow:
+        self.validate_row_schema_for_scoring(input_row)
         await self.set_api_key()
         assert scoring_fn_identifier is not None, "scoring_fn_identifier cannot be None"
         expected_answer = input_row["expected_answer"]
@@ -146,6 +170,7 @@ class BraintrustScoringImpl(
             generated_answer,
             expected_answer,
             input=input_query,
+            context=input_row["context"] if "context" in input_row else None,
         )
         score = result.score
         return {"score": score, "metadata": result.metadata}
