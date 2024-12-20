@@ -3,37 +3,33 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from enum import Enum
 from typing import Any, Dict, List, Optional
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+
 from tqdm import tqdm
 
-from .....apis.common.job_types import Job
-from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
-from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTask
-from llama_stack.apis.inference import Inference
+from llama_stack.apis.inference import Inference, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
+
+from llama_stack.providers.utils.common.data_schema_validator_mixin import (
+    ColumnName,
+    DataSchemaValidatorMixin,
+)
 from llama_stack.providers.utils.kvstore import kvstore_impl
+
+from .....apis.common.job_types import Job
+from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
 
 from .config import MetaReferenceEvalConfig
 
 EVAL_TASKS_PREFIX = "eval_tasks:"
 
 
-class ColumnName(Enum):
-    input_query = "input_query"
-    expected_answer = "expected_answer"
-    chat_completion_input = "chat_completion_input"
-    completion_input = "completion_input"
-    generated_answer = "generated_answer"
-
-
-class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
+class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate, DataSchemaValidatorMixin):
     def __init__(
         self,
         config: MetaReferenceEvalConfig,
@@ -77,29 +73,6 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         )
         self.eval_tasks[task_def.identifier] = task_def
 
-    async def validate_eval_input_dataset_schema(self, dataset_id: str) -> None:
-        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
-            raise ValueError(f"Dataset {dataset_id} does not have a schema defined.")
-
-        expected_schemas = [
-            {
-                ColumnName.input_query.value: StringType(),
-                ColumnName.expected_answer.value: StringType(),
-                ColumnName.chat_completion_input.value: ChatCompletionInputType(),
-            },
-            {
-                ColumnName.input_query.value: StringType(),
-                ColumnName.expected_answer.value: StringType(),
-                ColumnName.completion_input.value: CompletionInputType(),
-            },
-        ]
-
-        if dataset_def.dataset_schema not in expected_schemas:
-            raise ValueError(
-                f"Dataset {dataset_id} does not have a correct input schema in {expected_schemas}"
-            )
-
     async def run_eval(
         self,
         task_id: str,
@@ -109,8 +82,8 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate):
         dataset_id = task_def.dataset_id
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
-
-        await self.validate_eval_input_dataset_schema(dataset_id=dataset_id)
+        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+        self.validate_dataset_schema_for_eval(dataset_def.dataset_schema)
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=(

@@ -197,7 +197,7 @@ class TestScoring:
                     judge_score_regexes=[r"Score: (\d+)"],
                     aggregation_functions=aggr_fns,
                 )
-            elif x.provider_id == "basic":
+            elif x.provider_id == "basic" or x.provider_id == "braintrust":
                 if "regex_parser" in x.identifier:
                     scoring_functions[x.identifier] = RegexParserScoringFnParams(
                         aggregation_functions=aggr_fns,

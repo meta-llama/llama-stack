@@ -7,8 +7,7 @@
 
 import pytest
 
-from llama_models.llama3.api import SamplingParams, URL
-
+from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
 
 from llama_stack.apis.eval.eval import (
@@ -16,6 +15,7 @@ from llama_stack.apis.eval.eval import (
     BenchmarkEvalTaskConfig,
     ModelCandidate,
 )
+from llama_stack.apis.inference import SamplingParams
 from llama_stack.apis.scoring_functions import LLMAsJudgeScoringFnParams
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.tests.datasetio.test_datasetio import register_dataset

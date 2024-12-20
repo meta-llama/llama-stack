@@ -5,14 +5,23 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.common.type_system import NumberType
-from llama_stack.apis.scoring_functions import ScoringFn
+from llama_stack.apis.scoring_functions import (
+    AggregationFunctionType,
+    BasicScoringFnParams,
+    ScoringFn,
+)
 
 
 factuality_fn_def = ScoringFn(
     identifier="braintrust::factuality",
-    description="Test whether an output is factual, compared to an original (`expected`) value. One of Braintrust LLM basd scorer https://github.com/braintrustdata/autoevals/blob/main/py/autoevals/llm.py",
-    params=None,
+    description=(
+        "Test output factuality against expected value using Braintrust LLM scorer. "
+        "See: github.com/braintrustdata/autoevals"
+    ),
     provider_id="braintrust",
     provider_resource_id="factuality",
     return_type=NumberType(),
+    params=BasicScoringFnParams(
+        aggregation_functions=[AggregationFunctionType.average]
+    ),
 )
