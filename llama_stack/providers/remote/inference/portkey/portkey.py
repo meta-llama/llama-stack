@@ -44,6 +44,9 @@ model_aliases = [
         "llama-3.3-70b",
         CoreModelId.llama3_3_70b_instruct.value,
     ),
+    build_model_alias(
+        "llama"
+    )
 ]
 
 
@@ -182,9 +185,9 @@ class PortkeyInferenceAdapter(ModelRegistryHelper, Inference):
             **get_sampling_options(request.sampling_params),
         }
 
-    async def embeddings(
-        self,
-        model_id: str,
-        contents: List[InterleavedContent],
-    ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+    # async def embeddings(
+    #     self,
+    #     model_id: str,
+    #     contents: List[InterleavedContent],
+    # ) -> EmbeddingsResponse:
+    #     raise NotImplementedError()
