@@ -30,7 +30,7 @@ from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
-from llama_stack.apis.tools import ToolRuntime, Tools
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.distribution.client import get_client_impl
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
@@ -61,7 +61,7 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.eval: Eval,
         Api.eval_tasks: EvalTasks,
         Api.post_training: PostTraining,
-        Api.tools: Tools,
+        Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
     }
 
@@ -69,7 +69,7 @@ def api_protocol_map() -> Dict[Api, Any]:
 def additional_protocols_map() -> Dict[Api, Any]:
     return {
         Api.inference: (ModelsProtocolPrivate, Models, Api.models),
-        Api.tools: (ToolsProtocolPrivate, Tools, Api.tools),
+        Api.tool_groups: (ToolsProtocolPrivate, ToolGroups, Api.tool_groups),
         Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks, Api.memory_banks),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),

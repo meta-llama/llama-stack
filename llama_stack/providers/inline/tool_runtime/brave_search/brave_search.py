@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 
 import requests
 
-from llama_stack.apis.tools import Tool, ToolGroup, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.tools import Tool, ToolGroupDef, ToolInvocationResult, ToolRuntime
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
@@ -42,11 +42,11 @@ class BraveSearchToolRuntimeImpl(
             )
         return provider_data.api_key
 
-    async def discover_tools(self, tool_group: ToolGroup) -> List[Tool]:
+    async def discover_tools(self, tool_group: ToolGroupDef) -> List[Tool]:
         raise NotImplementedError("Brave search tool group not supported")
 
     async def invoke_tool(
-        self, tool_id: str, args: Dict[str, Any]
+        self, tool_name: str, args: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
         url = "https://api.search.brave.com/res/v1/web/search"

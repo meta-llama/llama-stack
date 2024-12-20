@@ -6,16 +6,16 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from llama_stack.apis.datasetio.datasetio import DatasetIO
-from llama_stack.apis.memory_banks.memory_banks import BankParams
-from llama_stack.distribution.datatypes import RoutingTable
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
+from llama_stack.apis.datasetio.datasetio import DatasetIO
 from llama_stack.apis.eval import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks.memory_banks import BankParams
+from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.scoring import *  # noqa: F403
 from llama_stack.apis.tools import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutingTable
 
 
 class MemoryRouter(Memory):
@@ -388,13 +388,13 @@ class ToolRuntimeRouter(ToolRuntime):
     async def shutdown(self) -> None:
         pass
 
-    async def invoke_tool(self, tool_id: str, args: Dict[str, Any]) -> Any:
-        return await self.routing_table.get_provider_impl(tool_id).invoke_tool(
-            tool_id=tool_id,
+    async def invoke_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
+        return await self.routing_table.get_provider_impl(tool_name).invoke_tool(
+            tool_name=tool_name,
             args=args,
         )
 
-    async def discover_tools(self, tool_group: ToolGroup) -> List[Tool]:
+    async def discover_tools(self, tool_group: ToolGroupDef) -> List[Tool]:
         return await self.routing_table.get_provider_impl(
             tool_group.name
         ).discover_tools(tool_group)

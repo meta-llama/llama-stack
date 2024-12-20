@@ -8,20 +8,20 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from llama_stack.providers.datatypes import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import *  # noqa: F403
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.eval_tasks import EvalTaskInput
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
-from llama_stack.apis.tools import Tool, ToolRuntime
+from llama_stack.apis.scoring_functions import *  # noqa: F403
+from llama_stack.apis.shields import *  # noqa: F403
+from llama_stack.apis.tools import Tool, ToolGroup, ToolRuntime
+from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
@@ -39,6 +39,7 @@ RoutableObject = Union[
     ScoringFn,
     EvalTask,
     Tool,
+    ToolGroup,
 ]
 
 
@@ -51,6 +52,7 @@ RoutableObjectWithProvider = Annotated[
         ScoringFn,
         EvalTask,
         Tool,
+        ToolGroup,
     ],
     Field(discriminator="type"),
 ]

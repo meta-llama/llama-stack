@@ -40,7 +40,7 @@ class Api(Enum):
     datasets = "datasets"
     scoring_functions = "scoring_functions"
     eval_tasks = "eval_tasks"
-    tools = "tools"
+    tool_groups = "tool_groups"
 
     # built-in API
     inspect = "inspect"

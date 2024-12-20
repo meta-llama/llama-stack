@@ -7,7 +7,6 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import *  # noqa: F403
-
 from llama_stack.distribution.store import DistributionRegistry
 
 from .routing_tables import (
@@ -17,7 +16,7 @@ from .routing_tables import (
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
-    ToolsRoutingTable,
+    ToolGroupsRoutingTable,
 )
 
 
@@ -34,7 +33,7 @@ async def get_routing_table_impl(
         "datasets": DatasetsRoutingTable,
         "scoring_functions": ScoringFunctionsRoutingTable,
         "eval_tasks": EvalTasksRoutingTable,
-        "tools": ToolsRoutingTable,
+        "tool_groups": ToolGroupsRoutingTable,
     }
 
     if api.value not in api_to_tables:

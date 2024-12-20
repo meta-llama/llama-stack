@@ -19,6 +19,7 @@ class ResourceType(Enum):
     scoring_function = "scoring_function"
     eval_task = "eval_task"
     tool = "tool"
+    tool_group = "tool_group"
 
 
 class Resource(BaseModel):
