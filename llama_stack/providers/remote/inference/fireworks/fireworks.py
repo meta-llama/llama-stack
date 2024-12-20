@@ -66,6 +66,10 @@ MODEL_ALIASES = [
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     build_model_alias(
+        "fireworks/llama-v3p3-70b-instruct",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
+    build_model_alias(
         "fireworks/llama-guard-3-8b",
         CoreModelId.llama_guard_3_8b.value,
     ),
