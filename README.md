@@ -91,6 +91,7 @@ Additionally, we have designed every element of the Stack such that APIs as well
 |                                         PG Vector                                          |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
 |                                     PyTorch ExecuTorch                                     |     On-device iOS      | :heavy_check_mark: | :heavy_check_mark: |                    |                    |                    |
 |                        [vLLM](https://github.com/vllm-project/vllm)                        | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
+|                        [OpenLLM](https://github.com/bentoml/OpenLLM)                       | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    | :heavy_check_mark: |
 
 ### Distributions
 
