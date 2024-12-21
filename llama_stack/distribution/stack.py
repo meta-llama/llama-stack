@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-import pkg_resources
+import importlib.resources
 import yaml
 
 from termcolor import colored
@@ -190,14 +190,13 @@ async def construct_stack(
 
 
 def get_stack_run_config_from_template(template: str) -> StackRunConfig:
-    template_path = pkg_resources.resource_filename(
-        "llama_stack", f"templates/{template}/run.yaml"
+    template_path = (
+        importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
     )
 
-    if not Path(template_path).exists():
-        raise ValueError(f"Template '{template}' not found at {template_path}")
-
-    with open(template_path) as f:
-        run_config = yaml.safe_load(f)
+    with importlib.resources.as_file(template_path) as path:
+        if not path.exists():
+            raise ValueError(f"Template '{template}' not found at {template_path}")
+        run_config = yaml.safe_load(path.open())
 
     return StackRunConfig(**replace_env_vars(run_config))
