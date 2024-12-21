@@ -125,12 +125,14 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
             )
         )
 
-        try: 
+        try:
             response = self._get_client().chat.completions.create(**request)
         except groq.BadRequestError as e:
             if e.body.get("error", {}).get("code") == "tool_use_failed":
                 # For smaller models, Groq may fail to call a tool even when the request is well formed
-                raise ValueError("Groq failed to call a tool", e.body.get("error", {}))
+                raise ValueError(
+                    "Groq failed to call a tool", e.body.get("error", {})
+                ) from e
             else:
                 raise e
 
