@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import os
 import tempfile
 
 import pytest
@@ -68,7 +69,14 @@ def tool_runtime_memory() -> ProviderFixture:
                 provider_id="memory-runtime",
                 provider_type="inline::memory-runtime",
                 config={},
-            )
+            ),
+            Provider(
+                provider_id="brave-search",
+                provider_type="inline::brave-search",
+                config={
+                    "api_key": os.environ["BRAVE_SEARCH_API_KEY"],
+                },
+            ),
         ],
     )
 
@@ -132,6 +140,20 @@ async def agents_stack(request, inference_model, safety_shield):
     )
     tool_groups = [
         ToolGroupInput(
+            tool_group_id="brave_search_group",
+            tool_group=UserDefinedToolGroupDef(
+                tools=[
+                    ToolDef(
+                        name="brave_search",
+                        description="brave_search",
+                        parameters=[],
+                        metadata={},
+                    ),
+                ],
+            ),
+            provider_id="brave-search",
+        ),
+        ToolGroupInput(
             tool_group_id="memory_group",
             tool_group=UserDefinedToolGroupDef(
                 tools=[
@@ -163,7 +185,7 @@ async def agents_stack(request, inference_model, safety_shield):
                 ],
             ),
             provider_id="memory-runtime",
-        )
+        ),
     ]
 
     test_stack = await construct_stack_for_test(

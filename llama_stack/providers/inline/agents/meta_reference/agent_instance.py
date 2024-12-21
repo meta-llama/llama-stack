@@ -5,13 +5,15 @@
 # the root directory of this source tree.
 
 import copy
+import json
 import logging
 import os
+import re
 import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, Dict, List
+from typing import AsyncGenerator, List
 from urllib.parse import urlparse
 
 import httpx
@@ -29,16 +31,11 @@ from llama_stack.apis.agents import (
     AgentTurnResponseTurnCompletePayload,
     AgentTurnResponseTurnStartPayload,
     Attachment,
-    CodeInterpreterToolDefinition,
-    FunctionCallToolDefinition,
     InferenceStep,
-    PhotogenToolDefinition,
-    SearchToolDefinition,
     ShieldCallStep,
     StepType,
     ToolExecutionStep,
     Turn,
-    WolframAlphaToolDefinition,
 )
 from llama_stack.apis.common.content_types import (
     URL,
@@ -67,15 +64,6 @@ from llama_stack.providers.utils.telemetry import tracing
 
 from .persistence import AgentPersistence
 from .safety import SafetyException, ShieldRunnerMixin
-from .tools.base import BaseTool
-from .tools.builtin import (
-    CodeInterpreterTool,
-    PhotogenTool,
-    SearchTool,
-    WolframAlphaTool,
-    interpret_content_as_attachment,
-)
-from .tools.safety import SafeTool
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +72,9 @@ def make_random_string(length: int = 8):
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
     )
+
+
+TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -110,29 +101,6 @@ class ChatAgent(ShieldRunnerMixin):
         self.storage = AgentPersistence(agent_id, persistence_store)
         self.tool_runtime_api = tool_runtime_api
         self.tool_groups_api = tool_groups_api
-
-        builtin_tools = []
-        for tool_defn in agent_config.tools:
-            if isinstance(tool_defn, WolframAlphaToolDefinition):
-                tool = WolframAlphaTool(tool_defn.api_key)
-            elif isinstance(tool_defn, SearchToolDefinition):
-                tool = SearchTool(tool_defn.engine, tool_defn.api_key)
-            elif isinstance(tool_defn, CodeInterpreterToolDefinition):
-                tool = CodeInterpreterTool()
-            elif isinstance(tool_defn, PhotogenToolDefinition):
-                tool = PhotogenTool(dump_dir=self.tempdir)
-            else:
-                continue
-
-            builtin_tools.append(
-                SafeTool(
-                    tool,
-                    safety_api,
-                    tool_defn.input_shields,
-                    tool_defn.output_shields,
-                )
-            )
-        self.tools_dict = {t.get_name(): t for t in builtin_tools}
 
         ShieldRunnerMixin.__init__(
             self,
@@ -453,7 +421,7 @@ class ChatAgent(ShieldRunnerMixin):
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
-                    tools=self._get_tools(),
+                    tools=await self._get_tools(),
                     tool_prompt_format=self.agent_config.tool_prompt_format,
                     stream=True,
                     sampling_params=sampling_params,
@@ -595,7 +563,8 @@ class ChatAgent(ShieldRunnerMixin):
                     },
                 ) as span:
                     result_messages = await execute_tool_call_maybe(
-                        self.tools_dict,
+                        self.tool_runtime_api,
+                        session_id,
                         [message],
                     )
                     assert (
@@ -627,6 +596,20 @@ class ChatAgent(ShieldRunnerMixin):
                 # TODO: add tool-input touchpoint and a "start" event for this step also
                 # but that needs a lot more refactoring of Tool code potentially
 
+                def interpret_content_as_attachment(
+                    content: str,
+                ) -> Optional[Attachment]:
+                    match = re.search(TOOLS_ATTACHMENT_KEY_REGEX, content)
+                    if match:
+                        snippet = match.group(1)
+                        data = json.loads(snippet)
+                        return Attachment(
+                            url=URL(uri="file://" + data["filepath"]),
+                            mime_type=data["mimetype"],
+                        )
+
+                    return None
+
                 if out_attachment := interpret_content_as_attachment(
                     result_message.content
                 ):
@@ -639,25 +622,25 @@ class ChatAgent(ShieldRunnerMixin):
 
             n_iter += 1
 
-    def _get_tools(self) -> List[ToolDefinition]:
+    async def _get_tools(self) -> List[ToolDefinition]:
         ret = []
-        for t in self.agent_config.tools:
-            if isinstance(t, SearchToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.brave_search))
-            elif isinstance(t, WolframAlphaToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.wolfram_alpha))
-            elif isinstance(t, PhotogenToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.photogen))
-            elif isinstance(t, CodeInterpreterToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.code_interpreter))
-            elif isinstance(t, FunctionCallToolDefinition):
-                ret.append(
-                    ToolDefinition(
-                        tool_name=t.function_name,
-                        description=t.description,
-                        parameters=t.parameters,
-                    )
+        for tool_name in self.agent_config.available_tools:
+            tool = await self.tool_groups_api.get_tool(tool_name)
+            params = {}
+            for param in tool.parameters:
+                params[param.name] = ToolParamDefinition(
+                    param_type=param.parameter_type,
+                    description=param.description,
+                    required=param.required,
+                    default=param.default,
                 )
+            ret.append(
+                ToolDefinition(
+                    tool_name=tool.identifier,
+                    description=tool.description,
+                    parameters=params,
+                )
+            )
         return ret
 
 
@@ -696,7 +679,7 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
 
 
 async def execute_tool_call_maybe(
-    tools_dict: Dict[str, BaseTool], messages: List[CompletionMessage]
+    tool_runtime_api: ToolRuntime, session_id: str, messages: List[CompletionMessage]
 ) -> List[ToolResponseMessage]:
     # While Tools.run interface takes a list of messages,
     # All tools currently only run on a single message
@@ -712,7 +695,17 @@ async def execute_tool_call_maybe(
 
     name = name.value
 
-    assert name in tools_dict, f"Tool {name} not found"
-    tool = tools_dict[name]
-    result_messages = await tool.run(messages)
-    return result_messages
+    result = await tool_runtime_api.invoke_tool(
+        tool_name=name,
+        args=dict(
+            session_id=session_id,
+            **tool_call.arguments,
+        ),
+    )
+    return [
+        ToolResponseMessage(
+            call_id=tool_call.call_id,
+            tool_name=tool_call.tool_name,
+            content=result.content,
+        )
+    ]

@@ -21,6 +21,8 @@ class ToolParameter(BaseModel):
     name: str
     parameter_type: str
     description: str
+    required: bool
+    default: Optional[Any] = None
 
 
 @json_schema_type
