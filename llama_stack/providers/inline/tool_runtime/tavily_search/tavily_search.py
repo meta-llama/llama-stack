@@ -54,7 +54,6 @@ class TavilySearchToolRuntimeImpl(
             "https://api.tavily.com/search",
             json={"api_key": api_key, "query": args["query"]},
         )
-        print(f"================= Tavily response: {response.json()}")
 
         return ToolInvocationResult(
             content=json.dumps(self._clean_tavily_response(response.json()))

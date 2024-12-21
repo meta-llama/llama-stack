@@ -531,11 +531,6 @@ class ChatAgent(ShieldRunnerMixin):
                 log.info(f"{str(message)}")
                 tool_call = message.tool_calls[0]
 
-                name = tool_call.tool_name
-                if not isinstance(name, BuiltinTool) or name not in enabled_tools:
-                    yield message
-                    return
-
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
@@ -691,10 +686,8 @@ async def execute_tool_call_maybe(
 
     tool_call = message.tool_calls[0]
     name = tool_call.tool_name
-    assert isinstance(name, BuiltinTool)
-
-    name = name.value
-
+    if isinstance(name, BuiltinTool):
+        name = name.value
     result = await tool_runtime_api.invoke_tool(
         tool_name=name,
         args=dict(

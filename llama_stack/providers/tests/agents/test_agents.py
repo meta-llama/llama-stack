@@ -149,7 +149,10 @@ async def create_agent_turn_with_search_tool(
     tool_execution = tool_execution_events[0].event.payload.step_details
     assert isinstance(tool_execution, ToolExecutionStep)
     assert len(tool_execution.tool_calls) > 0
-    assert tool_execution.tool_calls[0].tool_name == tool_name
+    actual_tool_name = tool_execution.tool_calls[0].tool_name
+    if isinstance(actual_tool_name, BuiltinTool):
+        actual_tool_name = actual_tool_name.value
+    assert actual_tool_name == tool_name
     assert len(tool_execution.tool_responses) > 0
 
     check_turn_complete_event(turn_response, session_id, search_query_messages)
