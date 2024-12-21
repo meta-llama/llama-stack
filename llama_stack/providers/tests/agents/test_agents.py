@@ -149,7 +149,7 @@ async def create_agent_turn_with_search_tool(
     tool_execution = tool_execution_events[0].event.payload.step_details
     assert isinstance(tool_execution, ToolExecutionStep)
     assert len(tool_execution.tool_calls) > 0
-    assert tool_execution.tool_calls[0].tool_name == BuiltinTool.brave_search
+    assert tool_execution.tool_calls[0].tool_name == tool_name
     assert len(tool_execution.tool_responses) > 0
 
     check_turn_complete_event(turn_response, session_id, search_query_messages)
@@ -300,6 +300,20 @@ class TestAgents:
             search_query_messages,
             common_params,
             "brave_search",
+        )
+
+    @pytest.mark.asyncio
+    async def test_create_agent_turn_with_tavily_search(
+        self, agents_stack, search_query_messages, common_params
+    ):
+        if "TAVILY_SEARCH_API_KEY" not in os.environ:
+            pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
+
+        await create_agent_turn_with_search_tool(
+            agents_stack,
+            search_query_messages,
+            common_params,
+            "tavily_search",
         )
 
 

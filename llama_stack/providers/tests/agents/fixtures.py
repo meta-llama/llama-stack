@@ -77,6 +77,13 @@ def tool_runtime_memory() -> ProviderFixture:
                     "api_key": os.environ["BRAVE_SEARCH_API_KEY"],
                 },
             ),
+            Provider(
+                provider_id="tavily-search",
+                provider_type="inline::tavily-search",
+                config={
+                    "api_key": os.environ["TAVILY_SEARCH_API_KEY"],
+                },
+            ),
         ],
     )
 
@@ -146,12 +153,40 @@ async def agents_stack(request, inference_model, safety_shield):
                     ToolDef(
                         name="brave_search",
                         description="brave_search",
-                        parameters=[],
+                        parameters=[
+                            ToolParameter(
+                                name="query",
+                                description="query",
+                                parameter_type="string",
+                                required=True,
+                            ),
+                        ],
                         metadata={},
                     ),
                 ],
             ),
             provider_id="brave-search",
+        ),
+        ToolGroupInput(
+            tool_group_id="tavily_search_group",
+            tool_group=UserDefinedToolGroupDef(
+                tools=[
+                    ToolDef(
+                        name="tavily_search",
+                        description="tavily_search",
+                        parameters=[
+                            ToolParameter(
+                                name="query",
+                                description="query",
+                                parameter_type="string",
+                                required=True,
+                            ),
+                        ],
+                        metadata={},
+                    ),
+                ],
+            ),
+            provider_id="tavily-search",
         ),
         ToolGroupInput(
             tool_group_id="memory_group",
