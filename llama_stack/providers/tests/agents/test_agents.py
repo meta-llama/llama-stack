@@ -50,7 +50,8 @@ def common_params(inference_model):
         sampling_params=SamplingParams(temperature=0.7, top_p=0.95),
         input_shields=[],
         output_shields=[],
-        tools=[],
+        available_tools=[],
+        preprocessing_tools=[],
         max_infer_iters=5,
     )
 
@@ -91,7 +92,7 @@ async def create_agent_turn_with_search_tool(
     agents_stack: Dict[str, object],
     search_query_messages: List[object],
     common_params: Dict[str, str],
-    search_tool_definition: SearchToolDefinition,
+    tool_name: str,
 ) -> None:
     """
     Create an agent turn with a search tool.
@@ -107,7 +108,7 @@ async def create_agent_turn_with_search_tool(
     agent_config = AgentConfig(
         **{
             **common_params,
-            "tools": [search_tool_definition],
+            "available_tools": [tool_name],
         }
     )
 
@@ -254,7 +255,6 @@ class TestAgents:
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "tools": [],
                 "preprocessing_tools": ["memory"],
                 "tool_choice": ToolChoice.auto,
             }
@@ -295,29 +295,11 @@ class TestAgents:
         if "BRAVE_SEARCH_API_KEY" not in os.environ:
             pytest.skip("BRAVE_SEARCH_API_KEY not set, skipping test")
 
-        search_tool_definition = SearchToolDefinition(
-            type=AgentTool.brave_search.value,
-            api_key=os.environ["BRAVE_SEARCH_API_KEY"],
-            engine=SearchEngineType.brave,
-        )
         await create_agent_turn_with_search_tool(
-            agents_stack, search_query_messages, common_params, search_tool_definition
-        )
-
-    @pytest.mark.asyncio
-    async def test_create_agent_turn_with_tavily_search(
-        self, agents_stack, search_query_messages, common_params
-    ):
-        if "TAVILY_SEARCH_API_KEY" not in os.environ:
-            pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
-
-        search_tool_definition = SearchToolDefinition(
-            type=AgentTool.brave_search.value,  # place holder only
-            api_key=os.environ["TAVILY_SEARCH_API_KEY"],
-            engine=SearchEngineType.tavily,
-        )
-        await create_agent_turn_with_search_tool(
-            agents_stack, search_query_messages, common_params, search_tool_definition
+            agents_stack,
+            search_query_messages,
+            common_params,
+            "brave_search",
         )
 
 

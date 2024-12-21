@@ -47,78 +47,6 @@ class Attachment(BaseModel):
     mime_type: str
 
 
-class AgentTool(Enum):
-    brave_search = "brave_search"
-    wolfram_alpha = "wolfram_alpha"
-    photogen = "photogen"
-    code_interpreter = "code_interpreter"
-
-    function_call = "function_call"
-    memory = "memory"
-
-
-class ToolDefinitionCommon(BaseModel):
-    input_shields: Optional[List[str]] = Field(default_factory=list)
-    output_shields: Optional[List[str]] = Field(default_factory=list)
-
-
-class SearchEngineType(Enum):
-    bing = "bing"
-    brave = "brave"
-    tavily = "tavily"
-
-
-@json_schema_type
-class SearchToolDefinition(ToolDefinitionCommon):
-    # NOTE: brave_search is just a placeholder since model always uses
-    # brave_search as tool call name
-    type: Literal[AgentTool.brave_search.value] = AgentTool.brave_search.value
-    api_key: str
-    engine: SearchEngineType = SearchEngineType.brave
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class WolframAlphaToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.wolfram_alpha.value] = AgentTool.wolfram_alpha.value
-    api_key: str
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class PhotogenToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.photogen.value] = AgentTool.photogen.value
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class CodeInterpreterToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.code_interpreter.value] = AgentTool.code_interpreter.value
-    enable_inline_code_execution: bool = True
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class FunctionCallToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.function_call.value] = AgentTool.function_call.value
-    function_name: str
-    description: str
-    parameters: Dict[str, ToolParamDefinition]
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-AgentToolDefinition = Annotated[
-    Union[
-        SearchToolDefinition,
-        WolframAlphaToolDefinition,
-        PhotogenToolDefinition,
-        CodeInterpreterToolDefinition,
-        FunctionCallToolDefinition,
-    ],
-    Field(discriminator="type"),
-]
-
-
 class StepCommon(BaseModel):
     turn_id: str
     step_id: str
@@ -211,10 +139,6 @@ class AgentConfigCommon(BaseModel):
 
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)
-
-    tools: Optional[List[AgentToolDefinition]] = Field(
-        default_factory=list, deprecated=True
-    )
     available_tools: Optional[List[str]] = Field(default_factory=list)
     preprocessing_tools: Optional[List[str]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
