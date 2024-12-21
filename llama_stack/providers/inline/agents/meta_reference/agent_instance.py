@@ -539,7 +539,7 @@ class ChatAgent(ShieldRunnerMixin):
                 tool_call = message.tool_calls[0]
 
                 name = tool_call.tool_name
-                if not isinstance(name, BuiltinTool):
+                if not isinstance(name, BuiltinTool) or name not in enabled_tools:
                     yield message
                     return
 
