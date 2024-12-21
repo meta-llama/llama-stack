@@ -52,6 +52,7 @@ class StackRun(Subcommand):
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import importlib.resources
+
         import yaml
 
         from llama_stack.distribution.build import ImageType
