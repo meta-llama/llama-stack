@@ -1,0 +1,77 @@
+version: '2'
+image_name: portkey
+docker_image: null
+conda_env: portkey
+apis:
+- agents
+- inference
+- memory
+- safety
+- telemetry
+providers:
+  inference:
+  - provider_id: portkey
+    provider_type: remote::portkey
+    config:
+      base_url: https://api.portkey.ai/v1
+      api_key: ${env.PORTKEY_API_KEY}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  memory:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/portkey}/faiss_store.db
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/portkey}/agents_store.db
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/portkey/trace_store.db}
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/portkey}/registry.db
+models:
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: portkey
+  provider_model_id: llama3.1-8b
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: portkey
+  provider_model_id: llama-3.3-70b
+  model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  provider_model_id: null
+  model_type: embedding
+shields:
+- params: null
+  shield_id: meta-llama/Llama-Guard-3-8B
+  provider_id: null
+  provider_shield_id: null
+memory_banks: []
+datasets: []
+scoring_fns: []
+eval_tasks: []
