@@ -3,6 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/llama_stack.svg)](https://pypi.org/project/llama_stack/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![Discord](https://img.shields.io/discord/1257833999603335178)](https://discord.gg/llama-stack)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20Llama%20Stack%20Guru-006BFF)](https://gurubase.io/g/llama-stack)
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Zero-to-Hero Guide**](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide)
 
