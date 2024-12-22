@@ -100,7 +100,7 @@ model_aliases = [
         "llama3.2-vision:90b",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
-    build_model_alias_with_just_provider_model_id(
+    build_model_alias(
         "llama3.3:70b",
         CoreModelId.llama3_3_70b_instruct.value,
     ),
