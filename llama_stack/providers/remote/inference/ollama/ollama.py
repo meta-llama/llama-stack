@@ -48,10 +48,10 @@ model_aliases = [
         "llama3.1:8b-instruct-fp16",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
-    build_model_alias_with_just_provider_model_id(
-        "llama3.1:8b",
-        CoreModelId.llama3_1_8b_instruct.value,
-    ),
+    # build_model_alias_with_just_provider_model_id(
+    #     "llama3.1:8b",
+    #     CoreModelId.llama3_1_8b_instruct.value,
+    # ),
     build_model_alias(
         "llama3.1:70b-instruct-fp16",
         CoreModelId.llama3_1_70b_instruct.value,
@@ -214,6 +214,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            response_format=response_format,
         )
         if stream:
             return self._stream_chat_completion(request)
@@ -256,6 +257,14 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 request, self.formatter
             )
             input_dict["raw"] = True
+
+        if fmt := request.response_format:
+            if fmt.type == "json_schema":
+                input_dict["format"] = fmt.json_schema
+            elif fmt.type == "grammar":
+                raise NotImplementedError("Grammar response format is not supported")
+            else:
+                raise ValueError(f"Unknown response format type: {fmt.type}")
 
         return {
             "model": request.model,
