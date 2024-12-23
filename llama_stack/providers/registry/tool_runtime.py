@@ -41,6 +41,13 @@ def available_providers() -> List[ProviderSpec]:
             config_class="llama_stack.providers.inline.tool_runtime.tavily_search.config.TavilySearchToolConfig",
             provider_data_validator="llama_stack.providers.inline.tool_runtime.tavily_search.TavilySearchToolProviderDataValidator",
         ),
+        InlineProviderSpec(
+            api=Api.tool_runtime,
+            provider_type="inline::code-interpreter",
+            pip_packages=[],
+            module="llama_stack.providers.inline.tool_runtime.code_interpreter",
+            config_class="llama_stack.providers.inline.tool_runtime.code_interpreter.config.CodeInterpreterToolConfig",
+        ),
         remote_provider_spec(
             api=Api.tool_runtime,
             adapter=AdapterSpec(

@@ -110,3 +110,29 @@ def test_builtin_tool_brave_search(llama_stack_client, agent_config):
     assert "Tool:brave_search Response:" in logs_str
     assert "mark zuckerberg" in logs_str.lower()
     assert "No Violation" in logs_str
+
+
+def test_builtin_tool_code_execution(llama_stack_client, agent_config):
+    agent_config = {
+        **agent_config,
+        "available_tools": [
+            "code_interpreter",
+        ],
+    }
+    agent = Agent(llama_stack_client, agent_config)
+    session_id = agent.create_session(f"test-session-{uuid4()}")
+
+    response = agent.create_turn(
+        messages=[
+            {
+                "role": "user",
+                "content": "Write code to answer the question: What is the 100th prime number?",
+            },
+        ],
+        session_id=session_id,
+    )
+    logs = [str(log) for log in EventLogger().log(response) if log is not None]
+    logs_str = "".join(logs)
+
+    assert "541" in logs_str
+    assert "Tool:code_interpreter Response" in logs_str

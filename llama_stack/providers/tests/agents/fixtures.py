@@ -84,6 +84,11 @@ def tool_runtime_memory() -> ProviderFixture:
                     "api_key": os.environ["TAVILY_SEARCH_API_KEY"],
                 },
             ),
+            Provider(
+                provider_id="code-interpreter",
+                provider_type="inline::code-interpreter",
+                config={},
+            ),
         ],
     )
 
@@ -220,6 +225,20 @@ async def agents_stack(request, inference_model, safety_shield):
                 ],
             ),
             provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            tool_group_id="code_interpreter_group",
+            tool_group=UserDefinedToolGroupDef(
+                tools=[
+                    ToolDef(
+                        name="code_interpreter",
+                        description="code_interpreter",
+                        parameters=[],
+                        metadata={},
+                    )
+                ],
+            ),
+            provider_id="code-interpreter",
         ),
     ]
 
