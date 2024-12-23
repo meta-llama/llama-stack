@@ -74,12 +74,14 @@ ToolGroupDef = register_schema(
 )
 
 
+@json_schema_type
 class ToolGroupInput(BaseModel):
     tool_group_id: str
     tool_group: ToolGroupDef
     provider_id: Optional[str] = None
 
 
+@json_schema_type
 class ToolGroup(Resource):
     type: Literal[ResourceType.tool_group.value] = ResourceType.tool_group.value
 
