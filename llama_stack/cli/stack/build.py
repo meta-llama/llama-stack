@@ -77,6 +77,13 @@ class StackBuild(Subcommand):
             default="conda",
         )
 
+        self.parser.add_argument(
+            "--platform",
+            type=str,
+            default=None,
+            help="Platform to use for the build. Required when using docker as image type, defaults to host if no platform is specified",
+        )
+
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import textwrap
 
@@ -96,6 +103,8 @@ class StackBuild(Subcommand):
             available_templates = available_templates_specs()
             for build_config in available_templates:
                 if build_config.name == args.template:
+                    if args.platform:
+                        build_config.platform = args.platform
                     if args.image_type:
                         build_config.image_type = args.image_type
                     else:
@@ -128,6 +137,10 @@ class StackBuild(Subcommand):
                     error_message="Invalid image type, please enter conda or docker or venv",
                 ),
                 default="conda",
+            )
+
+            platform = prompt(
+                "> Enter the target platform you want your Llama Stack to be built for: "
             )
 
             cprint(
@@ -174,6 +187,8 @@ class StackBuild(Subcommand):
             build_config = BuildConfig(
                 name=name, image_type=image_type, distribution_spec=distribution_spec
             )
+            if platform.strip():
+                build_config.platform = platform
             self._run_stack_build_command_from_build_config(build_config)
             return
 

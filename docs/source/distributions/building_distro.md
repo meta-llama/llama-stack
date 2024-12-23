@@ -20,6 +20,7 @@ llama stack build -h
 We will start build our distribution (in the form of a Conda environment, or Docker image). In this step, we will specify:
 - `name`: the name for our distribution (e.g. `my-stack`)
 - `image_type`: our build image type (`conda | docker`)
+- `platform`: the platform for docker image (e.g. `linux/arm64`)
 - `distribution_spec`: our distribution specs for specifying API providers
   - `description`: a short description of the configurations for the distribution
   - `providers`: specifies the underlying implementation for serving each API endpoint
@@ -36,6 +37,7 @@ llama stack build
 
 > Enter a name for your Llama Stack (e.g. my-local-stack): my-stack
 > Enter the image type you want your Llama Stack to be built as (docker or conda): conda
+> Enter the target platform you want your Llama Stack to be built for:
 
 Llama Stack is composed of several APIs working together. Let's select
 the provider types (implementations) you want to use for these APIs.

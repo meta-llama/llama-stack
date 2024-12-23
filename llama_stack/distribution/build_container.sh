@@ -11,9 +11,9 @@ LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
-if [ "$#" -lt 4 ]; then
-  echo "Usage: $0 <build_name> <docker_base> <pip_dependencies> [<special_pip_deps>]" >&2
-  echo "Example: $0 my-fastapi-app python:3.9-slim 'fastapi uvicorn' " >&2
+if [ "$#" -lt 5 ]; then
+  echo "Usage: $0 <build_name> <docker_base> <platform> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Example: $0 my-fastapi-app python:3.9-slim linux/arm64 'fastapi uvicorn' " >&2
   exit 1
 fi
 
@@ -24,9 +24,10 @@ set -euo pipefail
 build_name="$1"
 image_name="distribution-$build_name"
 docker_base=$2
-build_file_path=$3
-host_build_dir=$4
-pip_dependencies=$5
+platform=$3
+build_file_path=$4
+host_build_dir=$5
+pip_dependencies=$6
 
 # Define color codes
 RED='\033[0;31m'
