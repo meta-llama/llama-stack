@@ -18,13 +18,11 @@ from typing import (
     runtime_checkable,
 )
 
-from llama_models.llama3.api.datatypes import ToolParamDefinition
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
-from llama_stack.apis.common.deployment_types import RestAPIExecutionConfig
 from llama_stack.apis.inference import (
     CompletionMessage,
     SamplingParams,
@@ -140,6 +138,7 @@ class AgentConfigCommon(BaseModel):
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)
     available_tools: Optional[List[str]] = Field(default_factory=list)
+    custom_tools: Optional[List[CustomToolDef]] = Field(default_factory=list)
     preprocessing_tools: Optional[List[str]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(

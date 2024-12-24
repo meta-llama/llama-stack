@@ -21,6 +21,10 @@ components:
           items:
             type: string
           type: array
+        custom_tools:
+          items:
+            $ref: '#/components/schemas/CustomToolDef'
+          type: array
         enable_session_persistence:
           type: boolean
         input_shields:
@@ -389,6 +393,29 @@ components:
       - type
       - eval_candidate
       type: object
+    BuiltInToolDef:
+      additionalProperties: false
+      properties:
+        built_in_type:
+          $ref: '#/components/schemas/BuiltinTool'
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        type:
+          const: built_in
+          default: built_in
+          type: string
+      required:
+      - type
+      - built_in_type
+      type: object
     BuiltinTool:
       enum:
       - brave_search
@@ -606,6 +633,41 @@ components:
       - agent_id
       - session_id
       - messages
+      type: object
+    CustomToolDef:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        name:
+          type: string
+        parameters:
+          items:
+            $ref: '#/components/schemas/ToolParameter'
+          type: array
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
+          default: json
+        type:
+          const: custom
+          default: custom
+          type: string
+      required:
+      - type
+      - name
+      - description
+      - parameters
+      - metadata
       type: object
     DPOAlignmentConfig:
       additionalProperties: false
@@ -2557,6 +2619,8 @@ components:
     Tool:
       additionalProperties: false
       properties:
+        built_in_type:
+          $ref: '#/components/schemas/BuiltinTool'
         description:
           type: string
         identifier:
@@ -2581,6 +2645,8 @@ components:
           type: string
         tool_group:
           type: string
+        tool_host:
+          $ref: '#/components/schemas/ToolHost'
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
           default: json
@@ -2591,8 +2657,10 @@ components:
       required:
       - identifier
       - provider_resource_id
+      - provider_id
       - type
       - tool_group
+      - tool_host
       - description
       - parameters
       type: object
@@ -2661,35 +2729,9 @@ components:
       - required
       type: string
     ToolDef:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        parameters:
-          items:
-            $ref: '#/components/schemas/ToolParameter'
-          type: array
-        tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
-          default: json
-      required:
-      - name
-      - description
-      - parameters
-      - metadata
-      type: object
+      oneOf:
+      - $ref: '#/components/schemas/CustomToolDef'
+      - $ref: '#/components/schemas/BuiltInToolDef'
     ToolDefinition:
       additionalProperties: false
       properties:
@@ -2761,6 +2803,12 @@ components:
       oneOf:
       - $ref: '#/components/schemas/MCPToolGroupDef'
       - $ref: '#/components/schemas/UserDefinedToolGroupDef'
+    ToolHost:
+      enum:
+      - distribution
+      - client
+      - model_context_protocol
+      type: string
     ToolInvocationResult:
       additionalProperties: false
       properties:
@@ -4896,6 +4944,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BenchmarkEvalTaskConfig"
     />
   name: BenchmarkEvalTaskConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/BuiltInToolDef" />
+  name: BuiltInToolDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
@@ -4955,6 +5005,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentTurnRequest"
     />
   name: CreateAgentTurnRequest
+- description: <SchemaDefinition schemaRef="#/components/schemas/CustomToolDef" />
+  name: CustomToolDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
@@ -5269,6 +5321,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolGroupDef" />
   name: ToolGroupDef
 - name: ToolGroups
+- description: <SchemaDefinition schemaRef="#/components/schemas/ToolHost" />
+  name: ToolHost
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolInvocationResult"
     />
   name: ToolInvocationResult
@@ -5380,6 +5434,7 @@ x-tagGroups:
   - BatchCompletionRequest
   - BatchCompletionResponse
   - BenchmarkEvalTaskConfig
+  - BuiltInToolDef
   - BuiltinTool
   - CancelTrainingJobRequest
   - ChatCompletionRequest
@@ -5395,6 +5450,7 @@ x-tagGroups:
   - CreateAgentRequest
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
+  - CustomToolDef
   - DPOAlignmentConfig
   - DataConfig
   - Dataset
@@ -5502,6 +5558,7 @@ x-tagGroups:
   - ToolExecutionStep
   - ToolGroup
   - ToolGroupDef
+  - ToolHost
   - ToolInvocationResult
   - ToolParamDefinition
   - ToolParameter
