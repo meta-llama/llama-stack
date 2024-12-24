@@ -621,6 +621,9 @@ class ChatAgent(ShieldRunnerMixin):
         ret = []
         for tool_name in self.agent_config.available_tools:
             tool = await self.tool_groups_api.get_tool(tool_name)
+            if tool.built_in_type:
+                ret.append(ToolDefinition(tool_name=tool.built_in_type))
+                continue
             params = {}
             for param in tool.parameters:
                 params[param.name] = ToolParamDefinition(

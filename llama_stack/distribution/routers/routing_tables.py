@@ -516,6 +516,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     ) -> None:
         tools = []
         tool_defs = []
+        tool_host = ToolHost.distribution
         if provider_id is None:
             if len(self.impls_by_provider_id.keys()) > 1:
                 raise ValueError(
@@ -529,25 +530,42 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
             tool_defs = await self.impls_by_provider_id[provider_id].discover_tools(
                 tool_group
             )
-
+            tool_host = ToolHost.model_context_protocol
         elif isinstance(tool_group, UserDefinedToolGroupDef):
             tool_defs = tool_group.tools
         else:
             raise ValueError(f"Unknown tool group: {tool_group}")
 
         for tool_def in tool_defs:
-            tools.append(
-                Tool(
-                    identifier=tool_def.name,
-                    tool_group=tool_group_id,
-                    description=tool_def.description,
-                    parameters=tool_def.parameters,
-                    provider_id=provider_id,
-                    tool_prompt_format=tool_def.tool_prompt_format,
-                    provider_resource_id=tool_def.name,
-                    metadata=tool_def.metadata,
+            if isinstance(tool_def, CustomToolDef):
+                tools.append(
+                    Tool(
+                        identifier=tool_def.name,
+                        tool_group=tool_group_id,
+                        description=tool_def.description,
+                        parameters=tool_def.parameters,
+                        provider_id=provider_id,
+                        tool_prompt_format=tool_def.tool_prompt_format,
+                        provider_resource_id=tool_def.name,
+                        metadata=tool_def.metadata,
+                        tool_host=tool_host,
+                    )
                 )
-            )
+            elif isinstance(tool_def, BuiltInToolDef):
+                tools.append(
+                    Tool(
+                        identifier=tool_def.built_in_type.value,
+                        tool_group=tool_group_id,
+                        built_in_type=tool_def.built_in_type,
+                        description="",
+                        parameters=[],
+                        provider_id=provider_id,
+                        tool_prompt_format=ToolPromptFormat.json,
+                        provider_resource_id=tool_def.built_in_type.value,
+                        metadata=tool_def.metadata,
+                        tool_host=tool_host,
+                    )
+                )
         for tool in tools:
             existing_tool = await self.get_tool(tool.identifier)
             # Compare existing and new object if one exists

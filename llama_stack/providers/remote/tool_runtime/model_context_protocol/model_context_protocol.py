@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 from llama_stack.apis.tools import (
+    CustomToolDef,
     MCPToolGroupDef,
     ToolDef,
     ToolGroupDef,
@@ -52,7 +53,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                             )
                         )
                     tools.append(
-                        ToolDef(
+                        CustomToolDef(
                             name=tool.name,
                             description=tool.description,
                             parameters=parameters,

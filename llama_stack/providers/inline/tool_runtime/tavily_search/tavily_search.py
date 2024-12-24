@@ -26,8 +26,7 @@ class TavilySearchToolRuntimeImpl(
         pass
 
     async def register_tool(self, tool: Tool):
-        if tool.identifier != "tavily_search":
-            raise ValueError(f"Tool identifier {tool.identifier} is not supported")
+        pass
 
     async def unregister_tool(self, tool_id: str) -> None:
         return

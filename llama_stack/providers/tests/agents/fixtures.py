@@ -9,10 +9,12 @@ import tempfile
 
 import pytest
 import pytest_asyncio
+from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.apis.tools import (
-    ToolDef,
+    BuiltInToolDef,
+    CustomToolDef,
     ToolGroupInput,
     ToolParameter,
     UserDefinedToolGroupDef,
@@ -152,41 +154,11 @@ async def agents_stack(request, inference_model, safety_shield):
     )
     tool_groups = [
         ToolGroupInput(
-            tool_group_id="brave_search_group",
-            tool_group=UserDefinedToolGroupDef(
-                tools=[
-                    ToolDef(
-                        name="brave_search",
-                        description="brave_search",
-                        parameters=[
-                            ToolParameter(
-                                name="query",
-                                description="query",
-                                parameter_type="string",
-                                required=True,
-                            ),
-                        ],
-                        metadata={},
-                    ),
-                ],
-            ),
-            provider_id="brave-search",
-        ),
-        ToolGroupInput(
             tool_group_id="tavily_search_group",
             tool_group=UserDefinedToolGroupDef(
                 tools=[
-                    ToolDef(
-                        name="tavily_search",
-                        description="tavily_search",
-                        parameters=[
-                            ToolParameter(
-                                name="query",
-                                description="query",
-                                parameter_type="string",
-                                required=True,
-                            ),
-                        ],
+                    BuiltInToolDef(
+                        built_in_type=BuiltinTool.brave_search,
                         metadata={},
                     ),
                 ],
@@ -197,7 +169,7 @@ async def agents_stack(request, inference_model, safety_shield):
             tool_group_id="memory_group",
             tool_group=UserDefinedToolGroupDef(
                 tools=[
-                    ToolDef(
+                    CustomToolDef(
                         name="memory",
                         description="memory",
                         parameters=[
@@ -230,10 +202,8 @@ async def agents_stack(request, inference_model, safety_shield):
             tool_group_id="code_interpreter_group",
             tool_group=UserDefinedToolGroupDef(
                 tools=[
-                    ToolDef(
-                        name="code_interpreter",
-                        description="code_interpreter",
-                        parameters=[],
+                    BuiltInToolDef(
+                        built_in_type=BuiltinTool.code_interpreter,
                         metadata={},
                     )
                 ],
