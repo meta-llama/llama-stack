@@ -6,15 +6,15 @@
 
 from pydantic import BaseModel
 
-from .config import TavilySearchToolConfig
-from .tavily_search import TavilySearchToolRuntimeImpl
+from .brave_search import BraveSearchToolRuntimeImpl
+from .config import BraveSearchToolConfig
 
 
-class TavilySearchToolProviderDataValidator(BaseModel):
+class BraveSearchToolProviderDataValidator(BaseModel):
     api_key: str
 
 
-async def get_provider_impl(config: TavilySearchToolConfig, _deps):
-    impl = TavilySearchToolRuntimeImpl(config)
+async def get_adapter_impl(config: BraveSearchToolConfig, _deps):
+    impl = BraveSearchToolRuntimeImpl(config)
     await impl.initialize()
     return impl

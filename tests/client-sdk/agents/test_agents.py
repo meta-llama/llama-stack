@@ -191,7 +191,7 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
         messages=[
             {
                 "role": "user",
-                "content": "Write code to answer the question: What is the 100th prime number?",
+                "content": "Write code and execute it to find the answer for: What is the 100th prime number?",
             },
         ],
         session_id=session_id,
