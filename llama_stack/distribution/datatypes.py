@@ -20,7 +20,7 @@ from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.tools import Tool, ToolGroup, ToolRuntime
+from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
@@ -161,6 +161,7 @@ a default SQLite store will be used.""",
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
+    tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 
 
 class BuildConfig(BaseModel):

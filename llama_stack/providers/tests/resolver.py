@@ -8,9 +8,9 @@ import json
 import tempfile
 from typing import Any, Dict, List, Optional
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
+from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_remote_stack_impls
@@ -33,6 +33,7 @@ async def construct_stack_for_test(
     datasets: Optional[List[DatasetInput]] = None,
     scoring_fns: Optional[List[ScoringFnInput]] = None,
     eval_tasks: Optional[List[EvalTaskInput]] = None,
+    tool_groups: Optional[List[ToolGroupInput]] = None,
 ) -> TestStack:
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     run_config = dict(
@@ -46,6 +47,7 @@ async def construct_stack_for_test(
         datasets=datasets or [],
         scoring_fns=scoring_fns or [],
         eval_tasks=eval_tasks or [],
+        tool_groups=tool_groups or [],
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
     try:

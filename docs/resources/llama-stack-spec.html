@@ -462,6 +462,46 @@
                 }
             }
         },
+        "/alpha/tool-runtime/discover": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ToolDef"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolRuntime"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DiscoverToolsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/inference/embeddings": {
             "post": {
                 "responses": {
@@ -1118,6 +1158,82 @@
                 }
             }
         },
+        "/alpha/tools/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Tool"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "parameters": [
+                    {
+                        "name": "tool_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/alpha/toolgroups/get": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ToolGroup"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "parameters": [
+                    {
+                        "name": "tool_group_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/alpha/post-training/job/artifacts": {
             "get": {
                 "responses": {
@@ -1294,6 +1410,47 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/InsertDocumentsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/alpha/tool-runtime/invoke": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ToolInvocationResult"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolRuntime"
+                ],
+                "summary": "Run a tool with the given arguments",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InvokeToolRequest"
                             }
                         }
                     },
@@ -1683,6 +1840,76 @@
                     "Shields"
                 ],
                 "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/alpha/toolgroups/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ToolGroup"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "List tool groups with optional provider",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/alpha/tools/list": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Tool"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "List tools with optional tool group",
+                "parameters": [
+                    {
+                        "name": "tool_group_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-ProviderData",
                         "in": "header",
@@ -2096,6 +2323,40 @@
                 }
             }
         },
+        "/alpha/toolgroups/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "Register a tool group",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterToolGroupRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/eval/run-eval": {
             "post": {
                 "responses": {
@@ -2461,6 +2722,40 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/UnregisterModelRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/alpha/toolgroups/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "Unregister a tool group",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterToolGroupRequest"
                             }
                         }
                     },
@@ -3414,29 +3709,22 @@
                             "type": "string"
                         }
                     },
-                    "tools": {
+                    "available_tools": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/SearchToolDefinition"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/WolframAlphaToolDefinition"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/PhotogenToolDefinition"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CodeInterpreterToolDefinition"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/FunctionCallToolDefinition"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/MemoryToolDefinition"
-                                }
-                            ]
+                            "type": "string"
+                        }
+                    },
+                    "custom_tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomToolDef"
+                        }
+                    },
+                    "preprocessing_tools": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
                         }
                     },
                     "tool_choice": {
@@ -3469,477 +3757,109 @@
                     "enable_session_persistence"
                 ]
             },
-            "CodeInterpreterToolDefinition": {
+            "CustomToolDef": {
                 "type": "object",
                 "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
                     "type": {
                         "type": "string",
-                        "const": "code_interpreter",
-                        "default": "code_interpreter"
+                        "const": "custom",
+                        "default": "custom"
                     },
-                    "enable_inline_code_execution": {
-                        "type": "boolean",
-                        "default": true
-                    },
-                    "remote_execution": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "enable_inline_code_execution"
-                ]
-            },
-            "FunctionCallToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "function_call",
-                        "default": "function_call"
-                    },
-                    "function_name": {
+                    "name": {
                         "type": "string"
                     },
                     "description": {
                         "type": "string"
                     },
                     "parameters": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/ToolParamDefinition"
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolParameter"
                         }
                     },
-                    "remote_execution": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "default": "json"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "function_name",
+                    "name",
                     "description",
-                    "parameters"
+                    "parameters",
+                    "metadata"
                 ]
             },
-            "MemoryToolDefinition": {
+            "ToolParameter": {
                 "type": "object",
                 "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                    "name": {
+                        "type": "string"
                     },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                    "parameter_type": {
+                        "type": "string"
                     },
-                    "type": {
-                        "type": "string",
-                        "const": "memory",
-                        "default": "memory"
+                    "description": {
+                        "type": "string"
                     },
-                    "memory_bank_configs": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "vector",
-                                            "default": "vector"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "keyvalue",
-                                            "default": "keyvalue"
-                                        },
-                                        "keys": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type",
-                                        "keys"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "keyword",
-                                            "default": "keyword"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "bank_id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "const": "graph",
-                                            "default": "graph"
-                                        },
-                                        "entities": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "bank_id",
-                                        "type",
-                                        "entities"
-                                    ]
-                                }
-                            ]
-                        }
+                    "required": {
+                        "type": "boolean"
                     },
-                    "query_generator_config": {
+                    "default": {
                         "oneOf": [
                             {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "default",
-                                        "default": "default"
-                                    },
-                                    "sep": {
-                                        "type": "string",
-                                        "default": " "
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "sep"
-                                ]
+                                "type": "null"
                             },
                             {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "llm",
-                                        "default": "llm"
-                                    },
-                                    "model": {
-                                        "type": "string"
-                                    },
-                                    "template": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "model",
-                                    "template"
-                                ]
+                                "type": "boolean"
                             },
                             {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "custom",
-                                        "default": "custom"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
                             }
                         ]
-                    },
-                    "max_tokens_in_context": {
-                        "type": "integer",
-                        "default": 4096
-                    },
-                    "max_chunks": {
-                        "type": "integer",
-                        "default": 10
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
-                    "memory_bank_configs",
-                    "query_generator_config",
-                    "max_tokens_in_context",
-                    "max_chunks"
-                ]
-            },
-            "PhotogenToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "photogen",
-                        "default": "photogen"
-                    },
-                    "remote_execution": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ]
-            },
-            "RestAPIExecutionConfig": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "method": {
-                        "$ref": "#/components/schemas/RestAPIMethod"
-                    },
-                    "params": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "headers": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "body": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "url",
-                    "method"
-                ]
-            },
-            "RestAPIMethod": {
-                "type": "string",
-                "enum": [
-                    "GET",
-                    "POST",
-                    "PUT",
-                    "DELETE"
-                ]
-            },
-            "SearchToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "brave_search",
-                        "default": "brave_search"
-                    },
-                    "api_key": {
-                        "type": "string"
-                    },
-                    "engine": {
-                        "type": "string",
-                        "enum": [
-                            "bing",
-                            "brave",
-                            "tavily"
-                        ],
-                        "default": "brave"
-                    },
-                    "remote_execution": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "api_key",
-                    "engine"
-                ]
-            },
-            "WolframAlphaToolDefinition": {
-                "type": "object",
-                "properties": {
-                    "input_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "output_shields": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "type": {
-                        "type": "string",
-                        "const": "wolfram_alpha",
-                        "default": "wolfram_alpha"
-                    },
-                    "api_key": {
-                        "type": "string"
-                    },
-                    "remote_execution": {
-                        "$ref": "#/components/schemas/RestAPIExecutionConfig"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "api_key"
+                    "name",
+                    "parameter_type",
+                    "description",
+                    "required"
                 ]
             },
             "CreateAgentRequest": {
@@ -4596,6 +4516,121 @@
                 "required": [
                     "agent_id",
                     "session_id"
+                ]
+            },
+            "BuiltInToolDef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "built_in",
+                        "default": "built_in"
+                    },
+                    "built_in_type": {
+                        "$ref": "#/components/schemas/BuiltinTool"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "built_in_type"
+                ]
+            },
+            "MCPToolGroupDef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "model_context_protocol",
+                        "default": "model_context_protocol"
+                    },
+                    "endpoint": {
+                        "$ref": "#/components/schemas/URL"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "endpoint"
+                ],
+                "title": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information."
+            },
+            "ToolDef": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/CustomToolDef"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BuiltInToolDef"
+                    }
+                ]
+            },
+            "ToolGroupDef": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/MCPToolGroupDef"
+                    },
+                    {
+                        "$ref": "#/components/schemas/UserDefinedToolGroupDef"
+                    }
+                ]
+            },
+            "UserDefinedToolGroupDef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "user_defined",
+                        "default": "user_defined"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolDef"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "tools"
+                ]
+            },
+            "DiscoverToolsRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_group": {
+                        "$ref": "#/components/schemas/ToolGroupDef"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_group"
                 ]
             },
             "EmbeddingsRequest": {
@@ -5811,6 +5846,117 @@
                     "start_time"
                 ]
             },
+            "Tool": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "tool",
+                        "default": "tool"
+                    },
+                    "tool_group": {
+                        "type": "string"
+                    },
+                    "tool_host": {
+                        "$ref": "#/components/schemas/ToolHost"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolParameter"
+                        }
+                    },
+                    "built_in_type": {
+                        "$ref": "#/components/schemas/BuiltinTool"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "default": "json"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type",
+                    "tool_group",
+                    "tool_host",
+                    "description",
+                    "parameters"
+                ]
+            },
+            "ToolHost": {
+                "type": "string",
+                "enum": [
+                    "distribution",
+                    "client",
+                    "model_context_protocol"
+                ]
+            },
+            "ToolGroup": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "provider_resource_id": {
+                        "type": "string"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "tool_group",
+                        "default": "tool_group"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "provider_resource_id",
+                    "provider_id",
+                    "type"
+                ]
+            },
             "Checkpoint": {
                 "description": "Checkpoint created during training runs"
             },
@@ -6009,6 +6155,62 @@
                 "required": [
                     "bank_id",
                     "documents"
+                ]
+            },
+            "InvokeToolRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_name": {
+                        "type": "string"
+                    },
+                    "args": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_name",
+                    "args"
+                ]
+            },
+            "ToolInvocationResult": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "$ref": "#/components/schemas/InterleavedContent"
+                    },
+                    "error_message": {
+                        "type": "string"
+                    },
+                    "error_code": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content"
                 ]
             },
             "JobCancelRequest": {
@@ -7153,6 +7355,25 @@
                     "shield_id"
                 ]
             },
+            "RegisterToolGroupRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_group_id": {
+                        "type": "string"
+                    },
+                    "tool_group": {
+                        "$ref": "#/components/schemas/ToolGroupDef"
+                    },
+                    "provider_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_group_id",
+                    "tool_group"
+                ]
+            },
             "RunEvalRequest": {
                 "type": "object",
                 "properties": {
@@ -7686,6 +7907,18 @@
                 "required": [
                     "model_id"
                 ]
+            },
+            "UnregisterToolGroupRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_group_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_group_id"
+                ]
             }
         },
         "responses": {}
@@ -7791,6 +8024,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BenchmarkEvalTaskConfig\" />"
         },
         {
+            "name": "BuiltInToolDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltInToolDef\" />"
+        },
+        {
             "name": "BuiltinTool",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinTool\" />"
         },
@@ -7823,10 +8060,6 @@
             "description": "Checkpoint created during training runs\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Checkpoint\" />"
         },
         {
-            "name": "CodeInterpreterToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CodeInterpreterToolDefinition\" />"
-        },
-        {
             "name": "CompletionMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CompletionMessage\" />"
         },
@@ -7855,6 +8088,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentTurnRequest\" />"
         },
         {
+            "name": "CustomToolDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CustomToolDef\" />"
+        },
+        {
             "name": "DPOAlignmentConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DPOAlignmentConfig\" />"
         },
@@ -7879,6 +8116,10 @@
         {
             "name": "DeleteAgentsSessionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
+        },
+        {
+            "name": "DiscoverToolsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DiscoverToolsRequest\" />"
         },
         {
             "name": "EfficiencyConfig",
@@ -7909,10 +8150,6 @@
         {
             "name": "EvaluateRowsRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
-        },
-        {
-            "name": "FunctionCallToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
         },
         {
             "name": "GetAgentsSessionRequest",
@@ -7961,6 +8198,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InterleavedContentItem\" />"
         },
         {
+            "name": "InvokeToolRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InvokeToolRequest\" />"
+        },
+        {
             "name": "Job",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Job\" />"
         },
@@ -8005,6 +8246,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LoraFinetuningConfig\" />"
         },
         {
+            "name": "MCPToolGroupDef",
+            "description": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/MCPToolGroupDef\" />"
+        },
+        {
             "name": "Memory"
         },
         {
@@ -8017,10 +8262,6 @@
         {
             "name": "MemoryRetrievalStep",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryRetrievalStep\" />"
-        },
-        {
-            "name": "MemoryToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryToolDefinition\" />"
         },
         {
             "name": "Message",
@@ -8060,10 +8301,6 @@
         {
             "name": "ParamType",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ParamType\" />"
-        },
-        {
-            "name": "PhotogenToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PhotogenToolDefinition\" />"
         },
         {
             "name": "PostTraining (Coming Soon)"
@@ -8145,16 +8382,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterShieldRequest\" />"
         },
         {
+            "name": "RegisterToolGroupRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterToolGroupRequest\" />"
+        },
+        {
             "name": "ResponseFormat",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ResponseFormat\" />"
-        },
-        {
-            "name": "RestAPIExecutionConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIExecutionConfig\" />"
-        },
-        {
-            "name": "RestAPIMethod",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RestAPIMethod\" />"
         },
         {
             "name": "RouteInfo",
@@ -8220,10 +8453,6 @@
         {
             "name": "ScoringResult",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScoringResult\" />"
-        },
-        {
-            "name": "SearchToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SearchToolDefinition\" />"
         },
         {
             "name": "Session",
@@ -8299,6 +8528,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TokenLogProbs\" />"
         },
         {
+            "name": "Tool",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Tool\" />"
+        },
+        {
             "name": "ToolCall",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolCall\" />"
         },
@@ -8315,6 +8548,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolChoice\" />"
         },
         {
+            "name": "ToolDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolDef\" />"
+        },
+        {
             "name": "ToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolDefinition\" />"
         },
@@ -8323,8 +8560,31 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolExecutionStep\" />"
         },
         {
+            "name": "ToolGroup",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolGroup\" />"
+        },
+        {
+            "name": "ToolGroupDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolGroupDef\" />"
+        },
+        {
+            "name": "ToolGroups"
+        },
+        {
+            "name": "ToolHost",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolHost\" />"
+        },
+        {
+            "name": "ToolInvocationResult",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolInvocationResult\" />"
+        },
+        {
             "name": "ToolParamDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolParamDefinition\" />"
+        },
+        {
+            "name": "ToolParameter",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolParameter\" />"
         },
         {
             "name": "ToolPromptFormat",
@@ -8337,6 +8597,9 @@
         {
             "name": "ToolResponseMessage",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolResponseMessage\" />"
+        },
+        {
+            "name": "ToolRuntime"
         },
         {
             "name": "Trace",
@@ -8367,8 +8630,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterModelRequest\" />"
         },
         {
+            "name": "UnregisterToolGroupRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterToolGroupRequest\" />"
+        },
+        {
             "name": "UnstructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
+        },
+        {
+            "name": "UserDefinedToolGroupDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserDefinedToolGroupDef\" />"
         },
         {
             "name": "UserMessage",
@@ -8385,10 +8656,6 @@
         {
             "name": "ViolationLevel",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
-        },
-        {
-            "name": "WolframAlphaToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/WolframAlphaToolDefinition\" />"
         }
     ],
     "x-tagGroups": [
@@ -8412,7 +8679,9 @@
                 "ScoringFunctions",
                 "Shields",
                 "SyntheticDataGeneration (Coming Soon)",
-                "Telemetry"
+                "Telemetry",
+                "ToolGroups",
+                "ToolRuntime"
             ]
         },
         {
@@ -8440,6 +8709,7 @@
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
                 "BenchmarkEvalTaskConfig",
+                "BuiltInToolDef",
                 "BuiltinTool",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
@@ -8448,7 +8718,6 @@
                 "ChatCompletionResponseEventType",
                 "ChatCompletionResponseStreamChunk",
                 "Checkpoint",
-                "CodeInterpreterToolDefinition",
                 "CompletionMessage",
                 "CompletionRequest",
                 "CompletionResponse",
@@ -8456,18 +8725,19 @@
                 "CreateAgentRequest",
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
+                "CustomToolDef",
                 "DPOAlignmentConfig",
                 "DataConfig",
                 "Dataset",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
+                "DiscoverToolsRequest",
                 "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvalTask",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
-                "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
                 "GetSpanTreeRequest",
                 "GraphMemoryBank",
@@ -8478,6 +8748,7 @@
                 "InsertDocumentsRequest",
                 "InterleavedContent",
                 "InterleavedContentItem",
+                "InvokeToolRequest",
                 "Job",
                 "JobCancelRequest",
                 "JobStatus",
@@ -8489,9 +8760,9 @@
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
+                "MCPToolGroupDef",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
-                "MemoryToolDefinition",
                 "Message",
                 "MetricEvent",
                 "Model",
@@ -8501,7 +8772,6 @@
                 "OptimizerType",
                 "PaginatedRowsResult",
                 "ParamType",
-                "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
                 "PostTrainingJobStatusResponse",
@@ -8521,9 +8791,8 @@
                 "RegisterModelRequest",
                 "RegisterScoringFunctionRequest",
                 "RegisterShieldRequest",
+                "RegisterToolGroupRequest",
                 "ResponseFormat",
-                "RestAPIExecutionConfig",
-                "RestAPIMethod",
                 "RouteInfo",
                 "RunEvalRequest",
                 "RunShieldRequest",
@@ -8538,7 +8807,6 @@
                 "ScoreResponse",
                 "ScoringFn",
                 "ScoringResult",
-                "SearchToolDefinition",
                 "Session",
                 "Shield",
                 "ShieldCallStep",
@@ -8555,13 +8823,20 @@
                 "SystemMessage",
                 "TextContentItem",
                 "TokenLogProbs",
+                "Tool",
                 "ToolCall",
                 "ToolCallDelta",
                 "ToolCallParseStatus",
                 "ToolChoice",
+                "ToolDef",
                 "ToolDefinition",
                 "ToolExecutionStep",
+                "ToolGroup",
+                "ToolGroupDef",
+                "ToolHost",
+                "ToolInvocationResult",
                 "ToolParamDefinition",
+                "ToolParameter",
                 "ToolPromptFormat",
                 "ToolResponse",
                 "ToolResponseMessage",
@@ -8572,12 +8847,13 @@
                 "UnregisterDatasetRequest",
                 "UnregisterMemoryBankRequest",
                 "UnregisterModelRequest",
+                "UnregisterToolGroupRequest",
                 "UnstructuredLogEvent",
+                "UserDefinedToolGroupDef",
                 "UserMessage",
                 "VectorMemoryBank",
                 "VectorMemoryBankParams",
-                "ViolationLevel",
-                "WolframAlphaToolDefinition"
+                "ViolationLevel"
             ]
         }
     ]

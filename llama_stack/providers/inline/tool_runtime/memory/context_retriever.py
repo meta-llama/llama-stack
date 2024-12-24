@@ -9,16 +9,16 @@ from typing import List
 from jinja2 import Template
 from llama_models.llama3.api import *  # noqa: F403
 
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
-from llama_stack.apis.agents import (
+from .config import (
     DefaultMemoryQueryGeneratorConfig,
     LLMMemoryQueryGeneratorConfig,
     MemoryQueryGenerator,
     MemoryQueryGeneratorConfig,
-)
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.utils.inference.prompt_adapter import (
-    interleaved_content_as_str,
 )
 
 

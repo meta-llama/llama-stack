@@ -29,6 +29,8 @@ def available_providers() -> List[ProviderSpec]:
                 Api.safety,
                 Api.memory,
                 Api.memory_banks,
+                Api.tool_runtime,
+                Api.tool_groups,
             ],
         ),
         remote_provider_spec(

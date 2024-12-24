@@ -14,7 +14,6 @@ from typing import List, Optional, Tuple, Union
 
 import httpx
 from llama_models.datatypes import is_multimodal, ModelFamily
-
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import (
     RawContent,
@@ -42,7 +41,6 @@ from llama_stack.apis.common.content_types import (
     TextContentItem,
     URL,
 )
-
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     CompletionRequest,
@@ -53,7 +51,6 @@ from llama_stack.apis.inference import (
     ToolChoice,
     UserMessage,
 )
-
 from llama_stack.providers.utils.inference import supported_inference_models
 
 log = logging.getLogger(__name__)

@@ -8,11 +8,11 @@ import json
 import logging
 import uuid
 from datetime import datetime
-
 from typing import List, Optional
-from llama_stack.apis.agents import *  # noqa: F403
+
 from pydantic import BaseModel
 
+from llama_stack.apis.agents import *  # noqa: F403
 from llama_stack.providers.utils.kvstore import KVStore
 
 log = logging.getLogger(__name__)
@@ -21,7 +21,6 @@ log = logging.getLogger(__name__)
 class AgentSessionInfo(BaseModel):
     session_id: str
     session_name: str
-    memory_bank_id: Optional[str] = None
     started_at: datetime
 
 
@@ -51,17 +50,6 @@ class AgentPersistence:
             return None
 
         return AgentSessionInfo(**json.loads(value))
-
-    async def add_memory_bank_to_session(self, session_id: str, bank_id: str):
-        session_info = await self.get_session_info(session_id)
-        if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
-
-        session_info.memory_bank_id = bank_id
-        await self.kvstore.set(
-            key=f"session:{self.agent_id}:{session_id}",
-            value=session_info.model_dump_json(),
-        )
 
     async def add_turn_to_session(self, session_id: str, turn: Turn):
         await self.kvstore.set(

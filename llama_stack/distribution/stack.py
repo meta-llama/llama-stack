@@ -12,35 +12,33 @@ from typing import Any, Dict
 
 import pkg_resources
 import yaml
-
+from llama_models.llama3.api.datatypes import *  # noqa: F403
 from termcolor import colored
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.batch_inference import *  # noqa: F403
 from llama_stack.apis.datasetio import *  # noqa: F403
+from llama_stack.apis.datasets import *  # noqa: F403
+from llama_stack.apis.eval import *  # noqa: F403
+from llama_stack.apis.eval_tasks import *  # noqa: F403
+from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.inspect import *  # noqa: F403
+from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.memory_banks import *  # noqa: F403
+from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.post_training import *  # noqa: F403
+from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.scoring import *  # noqa: F403
 from llama_stack.apis.scoring_functions import *  # noqa: F403
-from llama_stack.apis.eval import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.batch_inference import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.telemetry import *  # noqa: F403
-from llama_stack.apis.post_training import *  # noqa: F403
-from llama_stack.apis.synthetic_data_generation import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
 from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.inspect import *  # noqa: F403
-from llama_stack.apis.eval_tasks import *  # noqa: F403
-
+from llama_stack.apis.synthetic_data_generation import *  # noqa: F403
+from llama_stack.apis.telemetry import *  # noqa: F403
+from llama_stack.apis.tools import *  # noqa: F403
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.providers.datatypes import Api
-
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +64,8 @@ class LlamaStack(
     Models,
     Shields,
     Inspect,
+    ToolGroups,
+    ToolRuntime,
 ):
     pass
 
@@ -82,6 +82,7 @@ RESOURCES = [
         "list_scoring_functions",
     ),
     ("eval_tasks", Api.eval_tasks, "register_eval_task", "list_eval_tasks"),
+    ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
 ]
 
 
