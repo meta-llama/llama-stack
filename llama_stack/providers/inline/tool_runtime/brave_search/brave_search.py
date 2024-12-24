@@ -25,8 +25,7 @@ class BraveSearchToolRuntimeImpl(
         pass
 
     async def register_tool(self, tool: Tool):
-        if tool.identifier != "brave_search":
-            raise ValueError(f"Tool identifier {tool.identifier} is not supported")
+        pass
 
     async def unregister_tool(self, tool_id: str) -> None:
         return

@@ -4,9 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from enum import Enum
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
-from llama_models.llama3.api.datatypes import ToolPromptFormat
+from llama_models.llama3.api.datatypes import BuiltinTool, ToolPromptFormat
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Protocol, runtime_checkable
@@ -26,12 +27,20 @@ class ToolParameter(BaseModel):
 
 
 @json_schema_type
+class ToolHost(Enum):
+    distribution = "distribution"
+    client = "client"
+    model_context_protocol = "model_context_protocol"
+
+
+@json_schema_type
 class Tool(Resource):
     type: Literal[ResourceType.tool.value] = ResourceType.tool.value
     tool_group: str
+    tool_host: ToolHost
     description: str
     parameters: List[ToolParameter]
-    provider_id: Optional[str] = None
+    built_in_type: Optional[BuiltinTool] = None
     metadata: Optional[Dict[str, Any]] = None
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
@@ -39,7 +48,8 @@ class Tool(Resource):
 
 
 @json_schema_type
-class ToolDef(BaseModel):
+class CustomToolDef(BaseModel):
+    type: Literal["custom"] = "custom"
     name: str
     description: str
     parameters: List[ToolParameter]
@@ -47,6 +57,19 @@ class ToolDef(BaseModel):
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
+
+
+@json_schema_type
+class BuiltInToolDef(BaseModel):
+    type: Literal["built_in"] = "built_in"
+    built_in_type: BuiltinTool
+    metadata: Optional[Dict[str, Any]] = None
+
+
+ToolDef = register_schema(
+    Annotated[Union[CustomToolDef, BuiltInToolDef], Field(discriminator="type")],
+    name="ToolDef",
+)
 
 
 @json_schema_type
@@ -149,3 +172,14 @@ class ToolRuntime(Protocol):
     ) -> ToolInvocationResult:
         """Run a tool with the given arguments"""
         ...
+
+
+# Three tool types:
+# 1. Built-in tools
+# 2. Client tools
+# 3. Model-context-protocol tools
+
+# Suport registration of agents with tool groups
+# TBD: Have a client utility to hide the pre processing tools.
+# Attachments are confusing right now since they are inserted into memory first and retireved through RAG, even before a question is asked.
+#
