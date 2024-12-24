@@ -66,6 +66,21 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
 Registry = Dict[str, List[RoutableObjectWithProvider]]
 
 
+def extract_tags_from_identifier(identifier: str) -> Dict[str, str]:
+    tags = {}
+    version_match = re.search(r"(\d+\.\d+)", identifier)
+    model_type_match = re.search(r"(Instruct|Vision|Other|chat)", identifier)
+    size_match = re.search(r"(\d+)(B|M)", identifier)
+
+    if version_match:
+        tags["llama_version"] = version_match.group(1)
+    if model_type_match:
+        tags["model_type"] = model_type_match.group(1)
+    if size_match:
+        tags["model_size"] = size_match.group(1) + size_match.group(2)
+    return tags
+
+
 class CommonRoutingTableImpl(RoutingTable):
     def __init__(
         self,
@@ -201,7 +216,14 @@ class CommonRoutingTableImpl(RoutingTable):
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def list_models(self) -> List[Model]:
-        return await self.get_all_with_type("model")
+        models = await self.get_all_with_type("model")
+        for model in models:
+            if not model.tags:  # If there are no tags, assign them
+                tags = extract_tags_from_identifier(model.identifier)
+                model.tags = tags
+                await self.dist_registry.register(model)
+
+        return models
 
     async def get_model(self, identifier: str) -> Optional[Model]:
         return await self.get_object_by_identifier("model", identifier)
@@ -213,6 +235,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
         model_type: Optional[ModelType] = None,
+        tags: Optional[Dict[str, str]] = None,
     ) -> Model:
         if provider_model_id is None:
             provider_model_id = model_id
@@ -232,12 +255,14 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             raise ValueError(
                 "Embedding model must have an embedding dimension in its metadata"
             )
+        tags = extract_tags_from_identifier(model_id)
         model = Model(
             identifier=model_id,
             provider_resource_id=provider_model_id,
             provider_id=provider_id,
             metadata=metadata,
             model_type=model_type,
+            tags=tags,
         )
         registered_model = await self.register_object(model)
         return registered_model
