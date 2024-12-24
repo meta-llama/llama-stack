@@ -3711,6 +3711,12 @@
                             "type": "string"
                         }
                     },
+                    "custom_tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomToolDef"
+                        }
+                    },
                     "preprocessing_tools": {
                         "type": "array",
                         "items": {
@@ -3745,6 +3751,111 @@
                     "model",
                     "instructions",
                     "enable_session_persistence"
+                ]
+            },
+            "CustomToolDef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "custom",
+                        "default": "custom"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolParameter"
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "tool_prompt_format": {
+                        "$ref": "#/components/schemas/ToolPromptFormat",
+                        "default": "json"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "name",
+                    "description",
+                    "parameters",
+                    "metadata"
+                ]
+            },
+            "ToolParameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parameter_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "parameter_type",
+                    "description",
+                    "required"
                 ]
             },
             "CreateAgentRequest": {
@@ -4403,39 +4514,16 @@
                     "session_id"
                 ]
             },
-            "MCPToolGroupDef": {
+            "BuiltInToolDef": {
                 "type": "object",
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "model_context_protocol",
-                        "default": "model_context_protocol"
+                        "const": "built_in",
+                        "default": "built_in"
                     },
-                    "endpoint": {
-                        "$ref": "#/components/schemas/URL"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "endpoint"
-                ],
-                "title": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information."
-            },
-            "ToolDef": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolParameter"
-                        }
+                    "built_in_type": {
+                        "$ref": "#/components/schemas/BuiltinTool"
                     },
                     "metadata": {
                         "type": "object",
@@ -4461,18 +4549,41 @@
                                 }
                             ]
                         }
-                    },
-                    "tool_prompt_format": {
-                        "$ref": "#/components/schemas/ToolPromptFormat",
-                        "default": "json"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "name",
-                    "description",
-                    "parameters",
-                    "metadata"
+                    "type",
+                    "built_in_type"
+                ]
+            },
+            "MCPToolGroupDef": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "model_context_protocol",
+                        "default": "model_context_protocol"
+                    },
+                    "endpoint": {
+                        "$ref": "#/components/schemas/URL"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "endpoint"
+                ],
+                "title": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information."
+            },
+            "ToolDef": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/CustomToolDef"
+                    },
+                    {
+                        "$ref": "#/components/schemas/BuiltInToolDef"
+                    }
                 ]
             },
             "ToolGroupDef": {
@@ -4483,52 +4594,6 @@
                     {
                         "$ref": "#/components/schemas/UserDefinedToolGroupDef"
                     }
-                ]
-            },
-            "ToolParameter": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "parameter_type": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "default": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "parameter_type",
-                    "description",
-                    "required"
                 ]
             },
             "UserDefinedToolGroupDef": {
@@ -5797,6 +5862,9 @@
                     "tool_group": {
                         "type": "string"
                     },
+                    "tool_host": {
+                        "$ref": "#/components/schemas/ToolHost"
+                    },
                     "description": {
                         "type": "string"
                     },
@@ -5805,6 +5873,9 @@
                         "items": {
                             "$ref": "#/components/schemas/ToolParameter"
                         }
+                    },
+                    "built_in_type": {
+                        "$ref": "#/components/schemas/BuiltinTool"
                     },
                     "metadata": {
                         "type": "object",
@@ -5840,10 +5911,20 @@
                 "required": [
                     "identifier",
                     "provider_resource_id",
+                    "provider_id",
                     "type",
                     "tool_group",
+                    "tool_host",
                     "description",
                     "parameters"
+                ]
+            },
+            "ToolHost": {
+                "type": "string",
+                "enum": [
+                    "distribution",
+                    "client",
+                    "model_context_protocol"
                 ]
             },
             "ToolGroup": {
@@ -7943,6 +8024,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BenchmarkEvalTaskConfig\" />"
         },
         {
+            "name": "BuiltInToolDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltInToolDef\" />"
+        },
+        {
             "name": "BuiltinTool",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinTool\" />"
         },
@@ -8001,6 +8086,10 @@
         {
             "name": "CreateAgentTurnRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentTurnRequest\" />"
+        },
+        {
+            "name": "CustomToolDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CustomToolDef\" />"
         },
         {
             "name": "DPOAlignmentConfig",
@@ -8482,6 +8571,10 @@
             "name": "ToolGroups"
         },
         {
+            "name": "ToolHost",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolHost\" />"
+        },
+        {
             "name": "ToolInvocationResult",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolInvocationResult\" />"
         },
@@ -8624,6 +8717,7 @@
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
                 "BenchmarkEvalTaskConfig",
+                "BuiltInToolDef",
                 "BuiltinTool",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
@@ -8639,6 +8733,7 @@
                 "CreateAgentRequest",
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
+                "CustomToolDef",
                 "DPOAlignmentConfig",
                 "DataConfig",
                 "Dataset",
@@ -8746,6 +8841,7 @@
                 "ToolExecutionStep",
                 "ToolGroup",
                 "ToolGroupDef",
+                "ToolHost",
                 "ToolInvocationResult",
                 "ToolParamDefinition",
                 "ToolParameter",
