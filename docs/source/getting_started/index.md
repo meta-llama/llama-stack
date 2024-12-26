@@ -51,7 +51,8 @@ pip install llama-stack-client
 Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
+llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
+llama-stack-client models list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
@@ -61,7 +62,7 @@ llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
 
 You can test basic Llama inference completion using the CLI too.
 ```bash
-llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT \
+llama-stack-client
   inference chat-completion \
   --message "hello, what model are you?"
 ```
