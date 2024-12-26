@@ -184,6 +184,7 @@ class AgentTurnResponseStepCompletePayload(BaseModel):
         AgentTurnResponseEventType.step_complete.value
     )
     step_type: StepType
+    step_id: str
     step_details: Step
 
 
