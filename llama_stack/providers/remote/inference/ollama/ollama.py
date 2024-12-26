@@ -100,6 +100,10 @@ model_aliases = [
         "llama3.2-vision:90b",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
+    build_model_alias(
+        "llama3.3:70b",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
     # The Llama Guard models don't have their full fp16 versions
     # so we are going to alias their default version to the canonical SKU
     build_model_alias(
