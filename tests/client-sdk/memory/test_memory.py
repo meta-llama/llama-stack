@@ -61,9 +61,7 @@ def test_memory_bank(llama_stack_client):
     # query documents
     response = llama_stack_client.memory.query(
         bank_id=memory_bank_id,
-        query=[
-            "How do I use lora",
-        ],
+        query="How do I use lora",
     )
 
     assert len(response.chunks) > 0
