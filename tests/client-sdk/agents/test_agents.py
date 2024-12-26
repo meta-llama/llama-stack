@@ -165,7 +165,7 @@ def test_builtin_tool_brave_search(llama_stack_client, agent_config):
         messages=[
             {
                 "role": "user",
-                "content": "Search the web and tell me who the 44th president of the United States was.",
+                "content": "Search the web and tell me who the 44th president of the United States was. Please use tools",
             }
         ],
         session_id=session_id,
