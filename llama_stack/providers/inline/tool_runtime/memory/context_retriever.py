@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from jinja2 import Template
 
@@ -23,7 +22,7 @@ from .config import (
 
 async def generate_rag_query(
     config: MemoryQueryGeneratorConfig,
-    messages: List[Message],
+    message: Message,
     **kwargs,
 ):
     """
@@ -31,9 +30,9 @@ async def generate_rag_query(
     retrieving relevant information from the memory bank.
     """
     if config.type == MemoryQueryGenerator.default.value:
-        query = await default_rag_query_generator(config, messages, **kwargs)
+        query = await default_rag_query_generator(config, message, **kwargs)
     elif config.type == MemoryQueryGenerator.llm.value:
-        query = await llm_rag_query_generator(config, messages, **kwargs)
+        query = await llm_rag_query_generator(config, message, **kwargs)
     else:
         raise NotImplementedError(f"Unsupported memory query generator {config.type}")
     return query
@@ -41,21 +40,21 @@ async def generate_rag_query(
 
 async def default_rag_query_generator(
     config: DefaultMemoryQueryGeneratorConfig,
-    messages: List[Message],
+    message: Message,
     **kwargs,
 ):
-    return config.sep.join(interleaved_content_as_str(m.content) for m in messages)
+    return interleaved_content_as_str(message.content)
 
 
 async def llm_rag_query_generator(
     config: LLMMemoryQueryGeneratorConfig,
-    messages: List[Message],
+    message: Message,
     **kwargs,
 ):
     assert "inference_api" in kwargs, "LLMRAGQueryGenerator needs inference_api"
     inference_api = kwargs["inference_api"]
 
-    m_dict = {"messages": [m.model_dump() for m in messages]}
+    m_dict = {"messages": [message.model_dump()]}
 
     template = Template(config.template)
     content = template.render(m_dict)

@@ -39,7 +39,6 @@ from llama_stack.apis.safety import SafetyViolation
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
-@json_schema_type
 class Attachment(BaseModel):
     content: InterleavedContent | URL
     mime_type: str
@@ -258,7 +257,6 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
             ToolResponseMessage,
         ]
     ]
-    attachments: Optional[List[Attachment]] = None
 
     stream: Optional[bool] = False
 
@@ -295,7 +293,6 @@ class Agents(Protocol):
                 ToolResponseMessage,
             ]
         ],
-        attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 

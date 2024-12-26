@@ -146,14 +146,12 @@ class MetaReferenceAgentsImpl(Agents):
                 ToolResponseMessage,
             ]
         ],
-        attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
             agent_id=agent_id,
             session_id=session_id,
             messages=messages,
-            attachments=attachments,
             stream=True,
         )
         if stream:

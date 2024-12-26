@@ -7,9 +7,6 @@
 from enum import Enum
 from typing import Annotated, List, Literal, Union
 
-from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
-from llama_stack.providers.utils.kvstore import KVStoreConfig, SqliteKVStoreConfig
-
 from pydantic import BaseModel, Field
 
 
@@ -81,13 +78,13 @@ MemoryQueryGeneratorConfig = Annotated[
 
 class MemoryToolConfig(BaseModel):
     memory_bank_configs: List[MemoryBankConfig] = Field(default_factory=list)
+
+
+class MemoryToolRuntimeConfig(BaseModel):
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
     query_generator_config: MemoryQueryGeneratorConfig = Field(
         default=DefaultMemoryQueryGeneratorConfig()
     )
     max_tokens_in_context: int = 4096
-    max_chunks: int = 10
-    kvstore_config: KVStoreConfig = SqliteKVStoreConfig(
-        db_path=(RUNTIME_BASE_DIR / "memory.db").as_posix()
-    )
+    max_chunks: int = 5
