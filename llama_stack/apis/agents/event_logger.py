@@ -6,12 +6,13 @@
 
 from typing import Optional
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_models.llama3.api.datatypes import ToolPromptFormat
 from llama_models.llama3.api.tool_utils import ToolUtils
-
 from termcolor import cprint
 
 from llama_stack.apis.agents import AgentTurnResponseEventType, StepType
+
+from llama_stack.apis.inference import ToolResponseMessage
 
 
 class LogEvent:
