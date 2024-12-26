@@ -8,11 +8,11 @@ from typing import Any, Dict
 
 from llama_stack.providers.datatypes import Api
 
-from .config import MemoryToolConfig
+from .config import MemoryToolRuntimeConfig
 from .memory import MemoryToolRuntimeImpl
 
 
-async def get_provider_impl(config: MemoryToolConfig, deps: Dict[str, Any]):
+async def get_provider_impl(config: MemoryToolRuntimeConfig, deps: Dict[str, Any]):
     impl = MemoryToolRuntimeImpl(
         config, deps[Api.memory], deps[Api.memory_banks], deps[Api.inference]
     )

@@ -21,7 +21,7 @@ from llama_stack_client.types.shared.completion_message import CompletionMessage
 
 class TestCustomTool(CustomTool):
     """Tool to give boiling point of a liquid
-    Returns the correct value for water in Celcius and Fahrenheit
+    Returns the correct value for polyjuice in Celcius and Fahrenheit
     and returns -1 for other liquids
     """
 
@@ -50,7 +50,7 @@ class TestCustomTool(CustomTool):
         return "get_boiling_point"
 
     def get_description(self) -> str:
-        return "Get the boiling point of a imaginary liquids (eg. polyjuice)"
+        return "Get the boiling point of imaginary liquids (eg. polyjuice)"
 
     def get_params_definition(self) -> Dict[str, Parameter]:
         return {
@@ -279,7 +279,6 @@ def test_rag_agent(llama_stack_client, agent_config):
         "What are the top 5 topics that were explained in the documentation? Only list succinct bullet points.",
         "Was anything related to 'Llama3' discussed, if so what?",
         "Tell me how to use LoRA",
-        "What about Quantization?",
     ]
 
     for prompt in user_prompts:

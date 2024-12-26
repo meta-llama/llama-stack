@@ -22,7 +22,7 @@ def available_providers() -> List[ProviderSpec]:
             provider_type="inline::memory-runtime",
             pip_packages=[],
             module="llama_stack.providers.inline.tool_runtime.memory",
-            config_class="llama_stack.providers.inline.tool_runtime.memory.config.MemoryToolConfig",
+            config_class="llama_stack.providers.inline.tool_runtime.memory.config.MemoryToolRuntimeConfig",
             api_dependencies=[Api.memory, Api.memory_banks, Api.inference],
         ),
         InlineProviderSpec(
