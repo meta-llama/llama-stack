@@ -5,13 +5,15 @@
 # the root directory of this source tree.
 from enum import Enum
 from typing import Any, Dict, List, Optional
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+
 from tqdm import tqdm
 
-from .....apis.common.job_types import Job
-from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
-from llama_stack.apis.common.type_system import *  # noqa: F403
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.common.type_system import (
+    ChatCompletionInputType,
+    CompletionInputType,
+    StringType,
+)
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTask
@@ -19,6 +21,9 @@ from llama_stack.apis.inference import Inference, UserMessage
 from llama_stack.apis.scoring import Scoring
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
+
+from .....apis.common.job_types import Job
+from .....apis.eval.eval import Eval, EvalTaskConfig, EvaluateResponse, JobStatus
 
 from .config import MetaReferenceEvalConfig
 
