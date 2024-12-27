@@ -3,7 +3,9 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from llama_stack.apis.scoring import *  # noqa: F401, F403
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field
 
 
 class BraintrustScoringConfig(BaseModel):

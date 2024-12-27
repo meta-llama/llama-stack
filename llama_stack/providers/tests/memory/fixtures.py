@@ -10,8 +10,7 @@ import tempfile
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.inference import ModelInput, ModelType
-
+from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.memory.chroma import ChromaInlineImplConfig
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
