@@ -6,7 +6,6 @@
 
 from typing import Any, Dict, List, Optional
 
-# from llama_models.llama3.api.datatypes import *  # noqa: F403
 from pydantic import parse_obj_as
 
 from llama_stack.apis.common.content_types import URL
