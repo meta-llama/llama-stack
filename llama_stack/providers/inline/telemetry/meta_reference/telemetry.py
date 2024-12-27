@@ -17,6 +17,22 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
+from llama_stack.apis.telemetry import (
+    Event,
+    MetricEvent,
+    QueryCondition,
+    SpanEndPayload,
+    SpanStartPayload,
+    SpanStatus,
+    SpanWithStatus,
+    StructuredLogEvent,
+    Telemetry,
+    Trace,
+    UnstructuredLogEvent,
+)
+
+from llama_stack.distribution.datatypes import Api
+
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
@@ -26,10 +42,6 @@ from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor
 )
 from llama_stack.providers.utils.telemetry.dataset_mixin import TelemetryDatasetMixin
 from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
-
-from llama_stack.apis.telemetry import *  # noqa: F403
-
-from llama_stack.distribution.datatypes import Api
 
 from .config import TelemetryConfig, TelemetrySink
 
