@@ -3,21 +3,28 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
 import argparse
-
-from llama_stack.cli.subcommand import Subcommand
-from llama_stack.distribution.datatypes import *  # noqa: F403
 import os
 import shutil
 from functools import lru_cache
 from pathlib import Path
+from typing import List, Optional
 
 import pkg_resources
+
+from llama_stack.cli.subcommand import Subcommand
+
+from llama_stack.distribution.datatypes import (
+    BuildConfig,
+    DistributionSpec,
+    Provider,
+    StackRunConfig,
+)
 
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 

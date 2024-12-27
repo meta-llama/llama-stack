@@ -4,16 +4,27 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import StopReason
-
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_models.llama3.api.datatypes import SamplingParams, StopReason
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
+
+from llama_stack.apis.inference import (
+    ChatCompletionResponse,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    CompletionMessage,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    Message,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 
 from llama_stack.providers.utils.inference.prompt_adapter import (
     convert_image_content_to_url,

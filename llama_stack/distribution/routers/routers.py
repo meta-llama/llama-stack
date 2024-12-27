@@ -6,17 +6,40 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.datasetio.datasetio import DatasetIO
-from llama_stack.apis.eval import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
+from llama_stack.apis.eval import (
+    AppEvalTaskConfig,
+    Eval,
+    EvalTaskConfig,
+    EvaluateResponse,
+    Job,
+    JobStatus,
+)
+from llama_stack.apis.inference import (
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
 from llama_stack.apis.memory_banks.memory_banks import BankParams
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.tools import *  # noqa: F403
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.datatypes import RoutingTable
+from llama_stack.apis.safety import RunShieldResponse, Safety
+from llama_stack.apis.scoring import (
+    ScoreBatchResponse,
+    ScoreResponse,
+    Scoring,
+    ScoringFnParams,
+)
+from llama_stack.apis.shields import Shield
+from llama_stack.apis.tools import Tool, ToolGroupDef, ToolRuntime
+from llama_stack.providers.datatypes import RoutingTable
 
 
 class MemoryRouter(Memory):
@@ -331,7 +354,6 @@ class EvalRouter(Eval):
             task_config=task_config,
         )
 
-    @webmethod(route="/eval/evaluate_rows", method="POST")
     async def evaluate_rows(
         self,
         task_id: str,

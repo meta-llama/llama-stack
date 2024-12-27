@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import MemoryBank
 from .config import SampleConfig
-
-
-from llama_stack.apis.memory import *  # noqa: F403
 
 
 class SampleMemoryImpl(Memory):
