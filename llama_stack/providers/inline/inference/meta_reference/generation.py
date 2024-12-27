@@ -36,7 +36,12 @@ from llama_models.sku_list import resolve_model
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
 from pydantic import BaseModel
 
-from llama_stack.apis.inference import ResponseFormat, ResponseFormatType
+from llama_stack.apis.inference import (
+    Fp8QuantizationConfig,
+    Int4QuantizationConfig,
+    ResponseFormat,
+    ResponseFormatType,
+)
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -44,12 +49,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     CompletionRequestWithRawContent,
 )
 
-from .config import (
-    Fp8QuantizationConfig,
-    Int4QuantizationConfig,
-    MetaReferenceInferenceConfig,
-    MetaReferenceQuantizedInferenceConfig,
-)
+from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
 
 log = logging.getLogger(__name__)
 
