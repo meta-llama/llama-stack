@@ -64,7 +64,7 @@ def agents_meta_reference() -> ProviderFixture:
 
 
 @pytest.fixture(scope="session")
-def tool_runtime_memory() -> ProviderFixture:
+def tool_runtime_memory_and_search() -> ProviderFixture:
     return ProviderFixture(
         providers=[
             Provider(
@@ -73,30 +73,18 @@ def tool_runtime_memory() -> ProviderFixture:
                 config={},
             ),
             Provider(
-                provider_id="brave-search",
-                provider_type="inline::brave-search",
-                config={
-                    "api_key": os.environ["BRAVE_SEARCH_API_KEY"],
-                },
-            ),
-            Provider(
                 provider_id="tavily-search",
-                provider_type="inline::tavily-search",
+                provider_type="remote::tavily-search",
                 config={
                     "api_key": os.environ["TAVILY_SEARCH_API_KEY"],
                 },
-            ),
-            Provider(
-                provider_id="code-interpreter",
-                provider_type="inline::code-interpreter",
-                config={},
             ),
         ],
     )
 
 
 AGENTS_FIXTURES = ["meta_reference", "remote"]
-TOOL_RUNTIME_FIXTURES = ["memory"]
+TOOL_RUNTIME_FIXTURES = ["memory_and_search"]
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -174,41 +162,23 @@ async def agents_stack(request, inference_model, safety_shield):
                         description="memory",
                         parameters=[
                             ToolParameter(
-                                name="session_id",
-                                description="session id",
-                                parameter_type="string",
-                                required=True,
-                            ),
-                            ToolParameter(
                                 name="input_messages",
                                 description="messages",
                                 parameter_type="list",
                                 required=True,
                             ),
-                            ToolParameter(
-                                name="attachments",
-                                description="attachments",
-                                parameter_type="list",
-                                required=False,
-                            ),
                         ],
-                        metadata={},
+                        metadata={
+                            "config": {
+                                "memory_bank_configs": [
+                                    {"bank_id": "test_bank", "type": "vector"}
+                                ]
+                            }
+                        },
                     )
                 ],
             ),
             provider_id="memory-runtime",
-        ),
-        ToolGroupInput(
-            tool_group_id="code_interpreter_group",
-            tool_group=UserDefinedToolGroupDef(
-                tools=[
-                    BuiltInToolDef(
-                        built_in_type=BuiltinTool.code_interpreter,
-                        metadata={},
-                    )
-                ],
-            ),
-            provider_id="code-interpreter",
         ),
     ]
 
