@@ -13,7 +13,7 @@ import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, Dict, List, Tuple
+from typing import AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
@@ -27,6 +27,7 @@ from llama_stack.apis.agents import (
     AgentTurnResponseEvent,
     AgentTurnResponseEventType,
     AgentTurnResponseStepCompletePayload,
+    AgentTurnResponseStepProgressPayload,
     AgentTurnResponseStepStartPayload,
     AgentTurnResponseStreamChunk,
     AgentTurnResponseTurnCompletePayload,
@@ -34,11 +35,14 @@ from llama_stack.apis.agents import (
     Attachment,
     CodeInterpreterToolDefinition,
     FunctionCallToolDefinition,
+    InferenceStep,
     MemoryRetrievalStep,
+    MemoryToolDefinition,
     PhotogenToolDefinition,
     SearchToolDefinition,
     ShieldCallStep,
     StepType,
+    ToolExecutionStep,
     Turn,
     WolframAlphaToolDefinition,
 )
@@ -49,18 +53,22 @@ from llama_stack.apis.common.content_types import (
     URL,
 )
 from llama_stack.apis.inference import (
+    ChatCompletionResponseEventType,
     CompletionMessage,
     Inference,
     Message,
     SamplingParams,
     StopReason,
     SystemMessage,
+    ToolCallDelta,
+    ToolCallParseStatus,
     ToolDefinition,
+    ToolResponse,
     ToolResponseMessage,
     UserMessage,
 )
-from llama_stack.apis.memory import Memory, MemoryBankDocument
-from llama_stack.apis.memory_banks import MemoryBanks
+from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
+from llama_stack.apis.memory_banks import MemoryBanks, VectorMemoryBankParams
 from llama_stack.apis.safety import Safety
 
 from llama_stack.providers.utils.kvstore import KVStore

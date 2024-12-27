@@ -31,16 +31,9 @@ from llama_stack.distribution.client import get_client_impl
 
 from llama_stack.distribution.datatypes import (
     AutoRoutedProviderSpec,
-    DatasetsProtocolPrivate,
-    EvalTasksProtocolPrivate,
-    MemoryBanksProtocolPrivate,
-    ModelsProtocolPrivate,
     Provider,
     RoutingTableProviderSpec,
-    ScoringFunctionsProtocolPrivate,
-    ShieldsProtocolPrivate,
     StackRunConfig,
-    ToolsProtocolPrivate,
 )
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
@@ -48,10 +41,17 @@ from llama_stack.distribution.utils.dynamic import instantiate_class_type
 
 from llama_stack.providers.datatypes import (
     Api,
+    DatasetsProtocolPrivate,
+    EvalTasksProtocolPrivate,
     InlineProviderSpec,
+    MemoryBanksProtocolPrivate,
+    ModelsProtocolPrivate,
     ProviderSpec,
     RemoteProviderConfig,
     RemoteProviderSpec,
+    ScoringFunctionsProtocolPrivate,
+    ShieldsProtocolPrivate,
+    ToolsProtocolPrivate,
 )
 
 log = logging.getLogger(__name__)
