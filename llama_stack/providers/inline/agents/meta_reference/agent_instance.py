@@ -62,6 +62,7 @@ from llama_stack.apis.inference import (
     SystemMessage,
     ToolCallDelta,
     ToolCallParseStatus,
+    ToolChoice,
     ToolDefinition,
     ToolResponse,
     ToolResponseMessage,
