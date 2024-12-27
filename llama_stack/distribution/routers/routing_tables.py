@@ -13,7 +13,12 @@ from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.datasets import Dataset, Datasets
 from llama_stack.apis.eval_tasks import EvalTask, EvalTasks
-from llama_stack.apis.memory_banks import BankParams, MemoryBank, MemoryBanks
+from llama_stack.apis.memory_banks import (
+    BankParams,
+    MemoryBank,
+    MemoryBanks,
+    MemoryBankType,
+)
 from llama_stack.apis.models import Model, Models, ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import (

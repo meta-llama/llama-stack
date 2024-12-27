@@ -16,11 +16,14 @@ import faiss
 import numpy as np
 from numpy.typing import NDArray
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-
-from llama_stack.apis.memory import *  # noqa: F403
 from llama_stack.apis.inference import InterleavedContent
-from llama_stack.apis.memory_banks import MemoryBankType, VectorMemoryBank
+from llama_stack.apis.memory import (
+    Chunk,
+    Memory,
+    MemoryBankDocument,
+    QueryDocumentsResponse,
+)
+from llama_stack.apis.memory_banks import MemoryBank, MemoryBankType, VectorMemoryBank
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.memory.vector_store import (
