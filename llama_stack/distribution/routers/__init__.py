@@ -4,10 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any
+from typing import Any, Dict
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutedProtocol
+
 from llama_stack.distribution.store import DistributionRegistry
+from llama_stack.providers.datatypes import Api, RoutingTable
 
 from .routing_tables import (
     DatasetsRoutingTable,

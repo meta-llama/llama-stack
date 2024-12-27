@@ -16,7 +16,7 @@ from llama_stack.apis.safety import *  # noqa: F403
 from llama_stack.apis.scoring import *  # noqa: F403
 from llama_stack.apis.tools import *  # noqa: F403
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.datatypes import RoutingTable
+from llama_stack.providers.datatypes import RoutingTable
 
 
 class MemoryRouter(Memory):
