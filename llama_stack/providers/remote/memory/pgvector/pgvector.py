@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import psycopg2
 from numpy.typing import NDArray
@@ -14,8 +14,14 @@ from psycopg2.extras import execute_values, Json
 
 from pydantic import BaseModel, parse_obj_as
 
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.memory_banks import MemoryBankType, VectorMemoryBank
+from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.memory import (
+    Chunk,
+    Memory,
+    MemoryBankDocument,
+    QueryDocumentsResponse,
+)
+from llama_stack.apis.memory_banks import MemoryBank, MemoryBankType, VectorMemoryBank
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 
 from llama_stack.providers.utils.memory.vector_store import (

@@ -9,8 +9,15 @@ import logging
 
 from typing import Any, Dict, List
 
-from llama_stack.apis.safety import *  # noqa
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.inference import Message
+
+from llama_stack.apis.safety import (
+    RunShieldResponse,
+    Safety,
+    SafetyViolation,
+    ViolationLevel,
+)
+from llama_stack.apis.shields import Shield
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
