@@ -6,8 +6,13 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
-
+from llama_stack.providers.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 EMBEDDING_DEPS = [
     "blobfile",

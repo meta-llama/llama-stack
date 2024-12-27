@@ -8,10 +8,15 @@ from pathlib import Path
 
 import pytest
 
-
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem, URL
+
+from llama_stack.apis.inference import (
+    ChatCompletionResponse,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    SamplingParams,
+    UserMessage,
+)
 
 from .utils import group_chunks
 

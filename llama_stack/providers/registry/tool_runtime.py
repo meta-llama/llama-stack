@@ -6,7 +6,7 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import (
+from llama_stack.providers.datatypes import (
     AdapterSpec,
     Api,
     InlineProviderSpec,

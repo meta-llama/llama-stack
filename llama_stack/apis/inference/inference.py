@@ -7,7 +7,9 @@
 from enum import Enum
 
 from typing import (
+    Any,
     AsyncIterator,
+    Dict,
     List,
     Literal,
     Optional,
@@ -32,8 +34,9 @@ from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import InterleavedContent
 
+from llama_stack.apis.models import Model
+
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
-from llama_stack.apis.models import *  # noqa: F403
 
 
 class LogProbConfig(BaseModel):

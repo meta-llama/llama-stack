@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
 from llama_models.datatypes import CoreModelId
@@ -14,15 +14,33 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
 
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    TextContentItem,
+)
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model, ModelType
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
+
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
-
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
