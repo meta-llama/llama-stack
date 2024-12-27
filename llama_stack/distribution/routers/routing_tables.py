@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
@@ -39,7 +39,6 @@ from llama_stack.distribution.datatypes import (
     RoutableObjectWithProvider,
     RoutedProtocol,
 )
-
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
@@ -361,7 +360,7 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
             memory_bank_data["embedding_dimension"] = model.metadata[
                 "embedding_dimension"
             ]
-        memory_bank = parse_obj_as(MemoryBank, memory_bank_data)
+        memory_bank = TypeAdapter(MemoryBank).validate_python(memory_bank_data)
         await self.register_object(memory_bank)
         return memory_bank
 
@@ -525,7 +524,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
             provider_id = list(self.impls_by_provider_id.keys())[0]
 
         # parse tool group to the type if dict
-        tool_group = parse_obj_as(ToolGroupDef, tool_group)
+        tool_group = TypeAdapter(ToolGroupDef).validate_python(tool_group)
         if isinstance(tool_group, MCPToolGroupDef):
             tool_defs = await self.impls_by_provider_id[provider_id].discover_tools(
                 tool_group
