@@ -35,7 +35,6 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
-from llama_stack.providers.datatypes import *  # noqa: F403
 from llama_stack.providers.datatypes import (
     Api,
     DatasetsProtocolPrivate,

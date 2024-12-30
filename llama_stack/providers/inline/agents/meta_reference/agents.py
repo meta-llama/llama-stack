@@ -20,7 +20,6 @@ from llama_stack.apis.agents import (
     AgentSessionCreateResponse,
     AgentStepResponse,
     AgentTurnCreateRequest,
-    Attachment,
     Session,
     Turn,
 )
