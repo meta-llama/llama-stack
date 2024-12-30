@@ -99,7 +99,7 @@ async def agents_stack(request, inference_model, safety_shield):
         )
     )
 
-    pprint("fixtures", providers)
+    pprint(f"fixture providers: {providers}")
     test_stack = await construct_stack_for_test(
         [Api.agents, Api.inference, Api.safety, Api.memory],
         providers,
