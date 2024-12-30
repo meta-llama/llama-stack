@@ -86,7 +86,7 @@ async def agents_stack(request, inference_model, safety_shield):
     provider_id = inference_provider.provider_id
     if inference_provider.config and "model" in inference_provider.config:
         model_to_provider_id = {
-            provider.config.model: provider.provider_id
+            provider.config["model"]: provider.provider_id
             for provider in providers["inference"]
         }
 
