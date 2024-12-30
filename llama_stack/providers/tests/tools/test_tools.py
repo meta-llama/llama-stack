@@ -14,8 +14,6 @@ from llama_stack.apis.memory_banks import VectorMemoryBankParams
 from llama_stack.apis.tools import ToolInvocationResult
 from llama_stack.providers.datatypes import Api
 
-from .fixtures import tools_stack as _tools_stack  # noqa: F401, F811
-
 
 @pytest.fixture
 def sample_search_query():
