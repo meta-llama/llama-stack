@@ -44,7 +44,11 @@ async def construct_stack_for_test(
     scoring_fns: Optional[List[ScoringFnInput]] = None,
     eval_tasks: Optional[List[EvalTaskInput]] = None,
 ) -> TestStack:
+    from termcolor import cprint
+
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+    cprint(providers, "red")
+
     run_config = dict(
         image_name="test-fixture",
         apis=apis,
