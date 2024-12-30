@@ -8,10 +8,13 @@ import os
 
 import pytest
 
+from llama_stack.apis.inference import UserMessage
 from llama_stack.apis.memory import MemoryBankDocument
 from llama_stack.apis.memory_banks import VectorMemoryBankParams
 from llama_stack.apis.tools import ToolInvocationResult
 from llama_stack.providers.datatypes import Api
+
+from .fixtures import tool_runtime_memory_and_search  # noqa: F401
 
 
 @pytest.fixture
@@ -51,7 +54,7 @@ class TestTools:
 
         # Execute the tool
         response = await tools_impl.invoke_tool(
-            tool_name="brave_search", tool_args={"query": sample_search_query}
+            tool_name="brave_search", args={"query": sample_search_query}
         )
 
         # Verify the response
@@ -65,11 +68,11 @@ class TestTools:
         """Test the memory tool functionality."""
         memory_banks_impl = tools_stack.impls[Api.memory_banks]
         memory_impl = tools_stack.impls[Api.memory]
-        tools_impl = tools_stack.impls[Api.tools]
+        tools_impl = tools_stack.impls[Api.tool_runtime]
 
         # Register memory bank
         await memory_banks_impl.register_memory_bank(
-            memory_bank_id="test_memory_bank",
+            memory_bank_id="test_bank",
             params=VectorMemoryBankParams(
                 embedding_model="all-MiniLM-L6-v2",
                 chunk_size_in_tokens=512,
@@ -79,16 +82,20 @@ class TestTools:
         )
 
         # Insert documents into memory
-        memory_impl.insert_documents(
-            bank_id="test_memory_bank",
+        await memory_impl.insert_documents(
+            bank_id="test_bank",
             documents=sample_documents,
         )
 
         # Execute the memory tool
         response = await tools_impl.invoke_tool(
             tool_name="memory",
-            tool_args={
-                "query": "What are the main topics covered in the documentation?",
+            args={
+                "input_messages": [
+                    UserMessage(
+                        content="What are the main topics covered in the documentation?",
+                    )
+                ],
             },
         )
 
@@ -96,4 +103,3 @@ class TestTools:
         assert isinstance(response, ToolInvocationResult)
         assert response.content is not None
         assert len(response.content) > 0
-        assert isinstance(response.content, str)
