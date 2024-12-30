@@ -185,8 +185,6 @@ async def construct_stack(
     impls = await resolve_impls(
         run_config, provider_registry or get_provider_registry(), dist_registry
     )
-    print("impls", impls)
-    print("run_config", run_config)
     await register_resources(run_config, impls)
     return impls
 
