@@ -429,9 +429,9 @@ class ChatAgent(ShieldRunnerMixin):
 
         n_iter = 0
         # Build a map of custom tools to their definitions for faster lookup
-        custom_tools = {}
-        for tool in self.agent_config.custom_tools:
-            custom_tools[tool.name] = tool
+        client_tools = {}
+        for tool in self.agent_config.client_tools:
+            client_tools[tool.name] = tool
         while True:
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
@@ -560,7 +560,7 @@ class ChatAgent(ShieldRunnerMixin):
             else:
                 log.info(f"{str(message)}")
                 tool_call = message.tool_calls[0]
-                if tool_call.tool_name in custom_tools:
+                if tool_call.tool_name in client_tools:
                     yield message
                     return
 
@@ -656,7 +656,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _get_tools(self) -> List[ToolDefinition]:
         ret = []
-        for tool in self.agent_config.custom_tools:
+        for tool in self.agent_config.client_tools:
             params = {}
             for param in tool.parameters:
                 params[param.name] = ToolParamDefinition(
@@ -672,7 +672,7 @@ class ChatAgent(ShieldRunnerMixin):
                     parameters=params,
                 )
             )
-        for tool_name in self.agent_config.available_tools:
+        for tool_name in self.agent_config.tool_names:
             tool = await self.tool_groups_api.get_tool(tool_name)
             if tool.built_in_type:
                 ret.append(ToolDefinition(tool_name=tool.built_in_type))

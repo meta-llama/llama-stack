@@ -13,9 +13,9 @@ from llama_models.llama3.api.datatypes import BuiltinTool
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.apis.tools import (
     BuiltInToolDef,
-    CustomToolDef,
     ToolGroupInput,
     ToolParameter,
+    UserDefinedToolDef,
     UserDefinedToolGroupDef,
 )
 from llama_stack.distribution.datatypes import Api, Provider
@@ -50,7 +50,7 @@ def tool_group_input_memory() -> ToolGroupInput:
         tool_group_id="memory_group",
         tool_group=UserDefinedToolGroupDef(
             tools=[
-                CustomToolDef(
+                UserDefinedToolDef(
                     name="memory",
                     description="Query the memory bank",
                     parameters=[

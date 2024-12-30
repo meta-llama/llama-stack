@@ -28,7 +28,6 @@ from llama_stack.apis.scoring_functions import (
 from llama_stack.apis.shields import Shield, Shields
 from llama_stack.apis.tools import (
     BuiltInToolDef,
-    CustomToolDef,
     MCPToolGroupDef,
     Tool,
     ToolGroup,
@@ -36,6 +35,7 @@ from llama_stack.apis.tools import (
     ToolGroups,
     ToolHost,
     ToolPromptFormat,
+    UserDefinedToolDef,
     UserDefinedToolGroupDef,
 )
 from llama_stack.distribution.datatypes import (
@@ -540,7 +540,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
             raise ValueError(f"Unknown tool group: {tool_group}")
 
         for tool_def in tool_defs:
-            if isinstance(tool_def, CustomToolDef):
+            if isinstance(tool_def, UserDefinedToolDef):
                 tools.append(
                     Tool(
                         identifier=tool_def.name,

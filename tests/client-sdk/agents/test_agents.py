@@ -151,7 +151,7 @@ def test_agent_simple(llama_stack_client, agent_config):
 def test_builtin_tool_brave_search(llama_stack_client, agent_config):
     agent_config = {
         **agent_config,
-        "available_tools": [
+        "tool_names": [
             "brave_search",
         ],
     }
@@ -181,7 +181,7 @@ def test_builtin_tool_brave_search(llama_stack_client, agent_config):
 def test_builtin_tool_code_execution(llama_stack_client, agent_config):
     agent_config = {
         **agent_config,
-        "available_tools": [
+        "tool_names": [
             "code_interpreter",
         ],
     }
@@ -209,12 +209,12 @@ def test_custom_tool(llama_stack_client, agent_config):
     agent_config = {
         **agent_config,
         "model": "meta-llama/Llama-3.2-3B-Instruct",
-        "available_tools": ["brave_search"],
-        "custom_tools": [custom_tool.get_tool_definition()],
+        "tool_names": ["brave_search"],
+        "client_tools": [custom_tool.get_tool_definition()],
         "tool_prompt_format": "python_list",
     }
 
-    agent = Agent(llama_stack_client, agent_config, custom_tools=(custom_tool,))
+    agent = Agent(llama_stack_client, agent_config, client_tools=(custom_tool,))
     session_id = agent.create_session(f"test-session-{uuid4()}")
 
     response = agent.create_turn(

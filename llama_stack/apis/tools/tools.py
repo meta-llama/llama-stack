@@ -48,8 +48,8 @@ class Tool(Resource):
 
 
 @json_schema_type
-class CustomToolDef(BaseModel):
-    type: Literal["custom"] = "custom"
+class UserDefinedToolDef(BaseModel):
+    type: Literal["user_defined"] = "user_defined"
     name: str
     description: str
     parameters: List[ToolParameter]
@@ -67,7 +67,7 @@ class BuiltInToolDef(BaseModel):
 
 
 ToolDef = register_schema(
-    Annotated[Union[CustomToolDef, BuiltInToolDef], Field(discriminator="type")],
+    Annotated[Union[UserDefinedToolDef, BuiltInToolDef], Field(discriminator="type")],
     name="ToolDef",
 )
 
@@ -172,14 +172,3 @@ class ToolRuntime(Protocol):
     ) -> ToolInvocationResult:
         """Run a tool with the given arguments"""
         ...
-
-
-# Three tool types:
-# 1. Built-in tools
-# 2. Client tools
-# 3. Model-context-protocol tools
-
-# Suport registration of agents with tool groups
-# TBD: Have a client utility to hide the pre processing tools.
-# Attachments are confusing right now since they are inserted into memory first and retireved through RAG, even before a question is asked.
-#
