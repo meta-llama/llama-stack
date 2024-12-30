@@ -3705,16 +3705,16 @@
                             "type": "string"
                         }
                     },
-                    "available_tools": {
+                    "tool_names": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         }
                     },
-                    "custom_tools": {
+                    "client_tools": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/CustomToolDef"
+                            "$ref": "#/components/schemas/UserDefinedToolDef"
                         }
                     },
                     "preprocessing_tools": {
@@ -3753,13 +3753,59 @@
                     "enable_session_persistence"
                 ]
             },
-            "CustomToolDef": {
+            "ToolParameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parameter_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "parameter_type",
+                    "description",
+                    "required"
+                ]
+            },
+            "UserDefinedToolDef": {
                 "type": "object",
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "custom",
-                        "default": "custom"
+                        "const": "user_defined",
+                        "default": "user_defined"
                     },
                     "name": {
                         "type": "string"
@@ -3810,52 +3856,6 @@
                     "description",
                     "parameters",
                     "metadata"
-                ]
-            },
-            "ToolParameter": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "parameter_type": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "default": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "parameter_type",
-                    "description",
-                    "required"
                 ]
             },
             "CreateAgentRequest": {
@@ -4574,7 +4574,7 @@
             "ToolDef": {
                 "oneOf": [
                     {
-                        "$ref": "#/components/schemas/CustomToolDef"
+                        "$ref": "#/components/schemas/UserDefinedToolDef"
                     },
                     {
                         "$ref": "#/components/schemas/BuiltInToolDef"
@@ -8079,10 +8079,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentTurnRequest\" />"
         },
         {
-            "name": "CustomToolDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CustomToolDef\" />"
-        },
-        {
             "name": "DPOAlignmentConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DPOAlignmentConfig\" />"
         },
@@ -8629,6 +8625,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
         },
         {
+            "name": "UserDefinedToolDef",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserDefinedToolDef\" />"
+        },
+        {
             "name": "UserDefinedToolGroupDef",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserDefinedToolGroupDef\" />"
         },
@@ -8723,7 +8723,6 @@
                 "CreateAgentRequest",
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
-                "CustomToolDef",
                 "DPOAlignmentConfig",
                 "DataConfig",
                 "Dataset",
@@ -8847,6 +8846,7 @@
                 "UnregisterModelRequest",
                 "UnregisterToolGroupRequest",
                 "UnstructuredLogEvent",
+                "UserDefinedToolDef",
                 "UserDefinedToolGroupDef",
                 "UserMessage",
                 "VectorMemoryBank",
