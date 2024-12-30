@@ -115,6 +115,8 @@ components:
           - $ref: '#/components/schemas/ToolExecutionStep'
           - $ref: '#/components/schemas/ShieldCallStep'
           - $ref: '#/components/schemas/MemoryRetrievalStep'
+        step_id:
+          type: string
         step_type:
           enum:
           - inference
@@ -125,6 +127,7 @@ components:
       required:
       - event_type
       - step_type
+      - step_id
       - step_details
       type: object
     AgentTurnResponseStepProgressPayload:
@@ -270,23 +273,6 @@ components:
       required:
       - dataset_id
       - rows
-      type: object
-    Attachment:
-      additionalProperties: false
-      properties:
-        content:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/InterleavedContentItem'
-          - items:
-              $ref: '#/components/schemas/InterleavedContentItem'
-            type: array
-          - $ref: '#/components/schemas/URL'
-        mime_type:
-          type: string
-      required:
-      - content
-      - mime_type
       type: object
     BasicScoringFnParams:
       additionalProperties: false
@@ -615,10 +601,6 @@ components:
       properties:
         agent_id:
           type: string
-        attachments:
-          items:
-            $ref: '#/components/schemas/Attachment'
-          type: array
         messages:
           items:
             oneOf:
@@ -2977,7 +2959,22 @@ components:
           type: array
         output_attachments:
           items:
-            $ref: '#/components/schemas/Attachment'
+            additionalProperties: false
+            properties:
+              content:
+                oneOf:
+                - type: string
+                - $ref: '#/components/schemas/InterleavedContentItem'
+                - items:
+                    $ref: '#/components/schemas/InterleavedContentItem'
+                  type: array
+                - $ref: '#/components/schemas/URL'
+              mime_type:
+                type: string
+            required:
+            - content
+            - mime_type
+            type: object
           type: array
         output_message:
           $ref: '#/components/schemas/CompletionMessage'
@@ -4923,8 +4920,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AppendRowsRequest"
     />
   name: AppendRowsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/Attachment" />
-  name: Attachment
 - description: <SchemaDefinition schemaRef="#/components/schemas/BasicScoringFnParams"
     />
   name: BasicScoringFnParams
@@ -5427,7 +5422,6 @@ x-tagGroups:
   - AggregationFunctionType
   - AppEvalTaskConfig
   - AppendRowsRequest
-  - Attachment
   - BasicScoringFnParams
   - BatchChatCompletionRequest
   - BatchChatCompletionResponse
