@@ -117,8 +117,9 @@ async def interleaved_content_convert_to_raw(
             return RawTextItem(text=c.text)
         elif isinstance(c, ImageContentItem):
             if c.url:
+                # Load image bytes from URL
                 if c.url.uri.startswith("data"):
-                    match = re.match(r"data:image/(\w+);base64,(.+)", img.uri)
+                    match = re.match(r"data:image/(\w+);base64,(.+)", c.url.uri)
                     if not match:
                         raise ValueError("Invalid data URL format")
                     _, image_data = match.groups()
@@ -138,29 +139,6 @@ async def interleaved_content_convert_to_raw(
             else:
                 raise ValueError("No data or URL provided")
 
-            # # load image and return PIL version
-            # img = c.data
-            # if isinstance(img, URL):
-            #     if img.uri.startswith("data"):
-            #         match = re.match(r"data:image/(\w+);base64,(.+)", img.uri)
-            #         if not match:
-            #             raise ValueError("Invalid data URL format")
-            #         _, image_data = match.groups()
-            #         data = base64.b64decode(image_data)
-            #     elif img.uri.startswith("file://"):
-            #         path = img.uri[len("file://") :]
-            #         with open(path, "rb") as f:
-            #             data = f.read()  # type: ignore
-            #     elif img.uri.startswith("http"):
-            #         async with httpx.AsyncClient() as client:
-            #             response = await client.get(img.uri)
-            #             data = response.content
-            #     else:
-            #         raise ValueError("Unsupported URL type")
-            # else:
-            #     data = c.data
-
-            print("type of data", type(data))
             return RawMediaItem(data=data)
         else:
             raise ValueError(f"Unsupported content type: {type(c)}")
