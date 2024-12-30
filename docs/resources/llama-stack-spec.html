@@ -3910,38 +3910,6 @@
                     "session_id"
                 ]
             },
-            "Attachment": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/InterleavedContentItem"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/InterleavedContentItem"
-                                }
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
-                    },
-                    "mime_type": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "content",
-                    "mime_type"
-                ]
-            },
             "CreateAgentTurnRequest": {
                 "type": "object",
                 "properties": {
@@ -3962,12 +3930,6 @@
                                     "$ref": "#/components/schemas/ToolResponseMessage"
                                 }
                             ]
-                        }
-                    },
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Attachment"
                         }
                     },
                     "stream": {
@@ -4027,6 +3989,9 @@
                             "memory_retrieval"
                         ]
                     },
+                    "step_id": {
+                        "type": "string"
+                    },
                     "step_details": {
                         "oneOf": [
                             {
@@ -4048,6 +4013,7 @@
                 "required": [
                     "event_type",
                     "step_type",
+                    "step_id",
                     "step_details"
                 ]
             },
@@ -4454,7 +4420,36 @@
                     "output_attachments": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Attachment"
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/InterleavedContentItem"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/InterleavedContentItem"
+                                            }
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/URL"
+                                        }
+                                    ]
+                                },
+                                "mime_type": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "content",
+                                "mime_type"
+                            ]
                         }
                     },
                     "started_at": {
@@ -7993,10 +7988,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppendRowsRequest\" />"
         },
         {
-            "name": "Attachment",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
-        },
-        {
             "name": "BasicScoringFnParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BasicScoringFnParams\" />"
         },
@@ -8710,7 +8701,6 @@
                 "AggregationFunctionType",
                 "AppEvalTaskConfig",
                 "AppendRowsRequest",
-                "Attachment",
                 "BasicScoringFnParams",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
