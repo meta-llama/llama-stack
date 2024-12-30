@@ -13,7 +13,7 @@ apis:
 - telemetry
 providers:
   inference:
-  - provider_id: meta-reference-inference
+  - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       model: ${env.INFERENCE_MODEL}
@@ -22,7 +22,7 @@ providers:
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
-  - provider_id: meta-reference-safety
+  - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       model: ${env.SAFETY_MODEL}
@@ -84,12 +84,12 @@ metadata_store:
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}
-  provider_id: meta-reference-inference
+  provider_id: meta-reference
   provider_model_id: null
   model_type: llm
 - metadata: {}
   model_id: ${env.SAFETY_MODEL}
-  provider_id: meta-reference-safety
+  provider_id: meta-reference
   provider_model_id: null
   model_type: llm
 - metadata:
