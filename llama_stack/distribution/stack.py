@@ -12,7 +12,6 @@ from typing import Any, Dict, Optional
 
 import pkg_resources
 import yaml
-from llama_models.llama3.api.datatypes import *  # noqa: F403
 from termcolor import colored
 
 from llama_stack.apis.agents import Agents
