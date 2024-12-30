@@ -22,6 +22,8 @@ from llama_stack.apis.agents import (
     Turn,
 )
 from llama_stack.apis.inference import CompletionMessage, SamplingParams, UserMessage
+from llama_stack.apis.memory import MemoryBankDocument
+from llama_stack.apis.memory_banks import VectorMemoryBankParams
 from llama_stack.apis.safety import ViolationLevel
 from llama_stack.providers.datatypes import Api
 

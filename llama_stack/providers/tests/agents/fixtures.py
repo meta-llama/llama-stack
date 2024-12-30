@@ -4,21 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import os
 import tempfile
 
 import pytest
 import pytest_asyncio
-from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.models import ModelInput, ModelType
-from llama_stack.apis.tools import (
-    BuiltInToolDef,
-    CustomToolDef,
-    ToolGroupInput,
-    ToolParameter,
-    UserDefinedToolGroupDef,
-)
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.agents.meta_reference import (
     MetaReferenceAgentsImplConfig,
@@ -63,32 +54,17 @@ def agents_meta_reference() -> ProviderFixture:
     )
 
 
-@pytest.fixture(scope="session")
-def tool_runtime_memory_and_search() -> ProviderFixture:
-    return ProviderFixture(
-        providers=[
-            Provider(
-                provider_id="memory-runtime",
-                provider_type="inline::memory-runtime",
-                config={},
-            ),
-            Provider(
-                provider_id="tavily-search",
-                provider_type="remote::tavily-search",
-                config={
-                    "api_key": os.environ["TAVILY_SEARCH_API_KEY"],
-                },
-            ),
-        ],
-    )
-
-
 AGENTS_FIXTURES = ["meta_reference", "remote"]
-TOOL_RUNTIME_FIXTURES = ["memory_and_search"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def agents_stack(request, inference_model, safety_shield):
+async def agents_stack(
+    request,
+    inference_model,
+    safety_shield,
+    tool_group_input_memory,
+    tool_group_input_tavily_search,
+):
     fixture_dict = request.param
 
     providers = {}
@@ -140,47 +116,6 @@ async def agents_stack(request, inference_model, safety_shield):
             metadata={"embedding_dimension": 384},
         )
     )
-    tool_groups = [
-        ToolGroupInput(
-            tool_group_id="tavily_search_group",
-            tool_group=UserDefinedToolGroupDef(
-                tools=[
-                    BuiltInToolDef(
-                        built_in_type=BuiltinTool.brave_search,
-                        metadata={},
-                    ),
-                ],
-            ),
-            provider_id="tavily-search",
-        ),
-        ToolGroupInput(
-            tool_group_id="memory_group",
-            tool_group=UserDefinedToolGroupDef(
-                tools=[
-                    CustomToolDef(
-                        name="memory",
-                        description="memory",
-                        parameters=[
-                            ToolParameter(
-                                name="input_messages",
-                                description="messages",
-                                parameter_type="list",
-                                required=True,
-                            ),
-                        ],
-                        metadata={
-                            "config": {
-                                "memory_bank_configs": [
-                                    {"bank_id": "test_bank", "type": "vector"}
-                                ]
-                            }
-                        },
-                    )
-                ],
-            ),
-            provider_id="memory-runtime",
-        ),
-    ]
 
     test_stack = await construct_stack_for_test(
         [Api.agents, Api.inference, Api.safety, Api.memory, Api.tool_runtime],
@@ -188,6 +123,6 @@ async def agents_stack(request, inference_model, safety_shield):
         provider_data,
         models=models,
         shields=[safety_shield] if safety_shield else [],
-        tool_groups=tool_groups,
+        tool_groups=[tool_group_input_memory, tool_group_input_tavily_search],
     )
     return test_stack
