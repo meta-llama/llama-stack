@@ -23,12 +23,7 @@ def serialize_value(value: Any) -> Any:
     elif hasattr(value, "_name_"):
         return value._name_
     elif isinstance(value, BaseModel):
-        try:
-            return value.model_dump_json()
-        except Exception as e:
-            # We cannot serialize the binary bytes data,
-            # So we return the model dump as a string for logging
-            return str(value.model_dump())
+        return value.model_dump_json()
     elif isinstance(value, (list, tuple, set)):
         return [serialize_value(item) for item in value]
     elif isinstance(value, dict):

@@ -27,6 +27,9 @@ class _URLOrData(BaseModel):
             return values
         return {"url": values}
 
+    class Config:
+        json_encoders = {bytes: lambda v: str("binary data")}
+
 
 @json_schema_type
 class ImageContentItem(_URLOrData):
