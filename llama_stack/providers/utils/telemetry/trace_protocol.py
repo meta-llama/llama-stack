@@ -26,8 +26,8 @@ def serialize_value(value: Any) -> Any:
         try:
             return value.model_dump_json()
         except Exception as e:
-            # We cannot serialize the binary bytes data
-            return value.model_dump()
+            # We cannot serialize the binary bytes data, so we return serialization exception for logging
+            return str(e)
     elif isinstance(value, (list, tuple, set)):
         return [serialize_value(item) for item in value]
     elif isinstance(value, dict):
