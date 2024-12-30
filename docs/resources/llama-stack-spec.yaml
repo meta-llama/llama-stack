@@ -17,13 +17,9 @@ components:
     AgentConfig:
       additionalProperties: false
       properties:
-        available_tools:
+        client_tools:
           items:
-            type: string
-          type: array
-        custom_tools:
-          items:
-            $ref: '#/components/schemas/CustomToolDef'
+            $ref: '#/components/schemas/UserDefinedToolDef'
           type: array
         enable_session_persistence:
           type: boolean
@@ -51,6 +47,10 @@ components:
         tool_choice:
           $ref: '#/components/schemas/ToolChoice'
           default: auto
+        tool_names:
+          items:
+            type: string
+          type: array
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
           default: json
@@ -615,41 +615,6 @@ components:
       - agent_id
       - session_id
       - messages
-      type: object
-    CustomToolDef:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        parameters:
-          items:
-            $ref: '#/components/schemas/ToolParameter'
-          type: array
-        tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
-          default: json
-        type:
-          const: custom
-          default: custom
-          type: string
-      required:
-      - type
-      - name
-      - description
-      - parameters
-      - metadata
       type: object
     DPOAlignmentConfig:
       additionalProperties: false
@@ -2712,7 +2677,7 @@ components:
       type: string
     ToolDef:
       oneOf:
-      - $ref: '#/components/schemas/CustomToolDef'
+      - $ref: '#/components/schemas/UserDefinedToolDef'
       - $ref: '#/components/schemas/BuiltInToolDef'
     ToolDefinition:
       additionalProperties: false
@@ -3078,6 +3043,41 @@ components:
       - type
       - message
       - severity
+      type: object
+    UserDefinedToolDef:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        name:
+          type: string
+        parameters:
+          items:
+            $ref: '#/components/schemas/ToolParameter'
+          type: array
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
+          default: json
+        type:
+          const: user_defined
+          default: user_defined
+          type: string
+      required:
+      - type
+      - name
+      - description
+      - parameters
+      - metadata
       type: object
     UserDefinedToolGroupDef:
       additionalProperties: false
@@ -5000,8 +5000,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentTurnRequest"
     />
   name: CreateAgentTurnRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/CustomToolDef" />
-  name: CustomToolDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/DPOAlignmentConfig"
     />
   name: DPOAlignmentConfig
@@ -5369,6 +5367,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
+- description: <SchemaDefinition schemaRef="#/components/schemas/UserDefinedToolDef"
+    />
+  name: UserDefinedToolDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserDefinedToolGroupDef"
     />
   name: UserDefinedToolGroupDef
@@ -5444,7 +5445,6 @@ x-tagGroups:
   - CreateAgentRequest
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
-  - CustomToolDef
   - DPOAlignmentConfig
   - DataConfig
   - Dataset
@@ -5568,6 +5568,7 @@ x-tagGroups:
   - UnregisterModelRequest
   - UnregisterToolGroupRequest
   - UnstructuredLogEvent
+  - UserDefinedToolDef
   - UserDefinedToolGroupDef
   - UserMessage
   - VectorMemoryBank
