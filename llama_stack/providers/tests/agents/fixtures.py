@@ -67,6 +67,7 @@ async def agents_stack(request, inference_model, safety_shield):
     for key in ["inference", "safety", "memory", "agents"]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = fixture.providers
+        print(f"fixture {key} providers: {providers[key]}")
         if key == "inference":
             providers[key].append(
                 Provider(
@@ -81,6 +82,9 @@ async def agents_stack(request, inference_model, safety_shield):
     inference_models = (
         inference_model if isinstance(inference_model, list) else [inference_model]
     )
+    print(providers)
+
+    print(inference_models, safety_shield)
     models = [
         ModelInput(
             model_id=model,
