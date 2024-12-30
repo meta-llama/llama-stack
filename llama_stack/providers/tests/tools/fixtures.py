@@ -8,6 +8,7 @@ import os
 
 import pytest
 import pytest_asyncio
+from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.apis.tools import (
@@ -17,7 +18,6 @@ from llama_stack.apis.tools import (
     ToolParameter,
     UserDefinedToolGroupDef,
 )
-from llama_stack.apis.tools.tools import BuiltinTool
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 

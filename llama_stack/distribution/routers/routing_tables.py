@@ -27,11 +27,15 @@ from llama_stack.apis.scoring_functions import (
 )
 from llama_stack.apis.shields import Shield, Shields
 from llama_stack.apis.tools import (
+    BuiltInToolDef,
+    CustomToolDef,
     MCPToolGroupDef,
     Tool,
     ToolGroup,
     ToolGroupDef,
     ToolGroups,
+    ToolHost,
+    ToolPromptFormat,
     UserDefinedToolGroupDef,
 )
 from llama_stack.distribution.datatypes import (

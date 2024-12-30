@@ -13,11 +13,11 @@ import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator, List, Optional
 from urllib.parse import urlparse
 
 import httpx
-from llama_models.llama3.api.datatypes import BuiltinTool
+from llama_models.llama3.api.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -37,10 +37,7 @@ from llama_stack.apis.agents import (
     ToolExecutionStep,
     Turn,
 )
-from llama_stack.apis.common.content_types import (
-    URL,
-    TextContentItem,
-)
+from llama_stack.apis.common.content_types import TextContentItem, URL
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
     CompletionMessage,
@@ -59,6 +56,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.safety import Safety
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.telemetry import tracing
 
