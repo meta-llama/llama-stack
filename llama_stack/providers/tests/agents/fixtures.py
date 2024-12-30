@@ -82,8 +82,6 @@ async def agents_stack(request, inference_model, safety_shield):
         inference_model if isinstance(inference_model, list) else [inference_model]
     )
 
-    print(providers)
-
     model_to_provider_id = {}
     for provider in providers["inference"]:
         if provider.config and "model" in provider.config:
