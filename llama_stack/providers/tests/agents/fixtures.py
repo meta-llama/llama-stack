@@ -86,9 +86,9 @@ async def agents_stack(request, inference_model, safety_shield):
         ModelInput(
             model_id=model,
             model_type=ModelType.llm,
-            provider_id=providers["inference"][0].provider_id,
+            provider_id=providers["inference"][i].provider_id,
         )
-        for model in inference_models
+        for i, model in enumerate(inference_models)
     ]
     models.append(
         ModelInput(
