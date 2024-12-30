@@ -36,7 +36,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.memory import MemoryBank
 from llama_stack.apis.safety import SafetyViolation
-from llama_stack.apis.tools import CustomToolDef
+from llama_stack.apis.tools import UserDefinedToolDef
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
@@ -137,8 +137,8 @@ class AgentConfigCommon(BaseModel):
 
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)
-    available_tools: Optional[List[str]] = Field(default_factory=list)
-    custom_tools: Optional[List[CustomToolDef]] = Field(default_factory=list)
+    tool_names: Optional[List[str]] = Field(default_factory=list)
+    client_tools: Optional[List[UserDefinedToolDef]] = Field(default_factory=list)
     preprocessing_tools: Optional[List[str]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(

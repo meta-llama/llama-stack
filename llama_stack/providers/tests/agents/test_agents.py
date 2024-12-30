@@ -104,7 +104,7 @@ async def create_agent_turn_with_search_tool(
     agent_config = AgentConfig(
         **{
             **common_params,
-            "available_tools": [tool_name],
+            "tool_names": [tool_name],
         }
     )
 
