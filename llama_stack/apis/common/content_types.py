@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 from typing import Annotated, List, Literal, Optional, Union
 
 from llama_models.schema_utils import json_schema_type, register_schema
@@ -28,7 +29,7 @@ class _URLOrData(BaseModel):
         return {"url": values}
 
     class Config:
-        json_encoders = {bytes: lambda v: str("binary data")}
+        json_encoders = {bytes: lambda v: base64.b64encode(v).decode("utf-8")}
 
 
 @json_schema_type
