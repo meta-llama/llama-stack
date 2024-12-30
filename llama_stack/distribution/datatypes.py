@@ -20,7 +20,7 @@ from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
 from llama_stack.apis.shields import Shield, ShieldInput
-from llama_stack.apis.tools import Tool, ToolGroup, ToolRuntime
+from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 

@@ -14,15 +14,15 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Union,
     runtime_checkable,
+    Union,
 )
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.content_types import URL, InterleavedContent
+from llama_stack.apis.common.content_types import InterleavedContent, URL
 from llama_stack.apis.inference import (
     CompletionMessage,
     SamplingParams,
@@ -36,6 +36,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.memory import MemoryBank
 from llama_stack.apis.safety import SafetyViolation
+from llama_stack.apis.tools import CustomToolDef
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
