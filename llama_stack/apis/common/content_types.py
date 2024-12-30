@@ -9,7 +9,7 @@ from typing import Annotated, List, Literal, Optional, Union
 
 from llama_models.schema_utils import json_schema_type, register_schema
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_serializer, model_validator
 
 
 @json_schema_type
@@ -28,8 +28,11 @@ class _URLOrData(BaseModel):
             return values
         return {"url": values}
 
-    class Config:
-        json_encoders = {bytes: lambda v: base64.b64encode(v).decode("utf-8")}
+    @field_serializer("data")
+    def serialize_data(self, data: Optional[bytes], _info):
+        if data is None:
+            return None
+        return base64.b64encode(data).decode("utf-8")
 
 
 @json_schema_type
