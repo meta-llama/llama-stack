@@ -23,7 +23,11 @@ def serialize_value(value: Any) -> Any:
     elif hasattr(value, "_name_"):
         return value._name_
     elif isinstance(value, BaseModel):
-        return value.model_dump_json()
+        try:
+            return value.model_dump_json()
+        except Exception as e:
+            # TODO: fix this
+            return value.model_dump()
     elif isinstance(value, (list, tuple, set)):
         return [serialize_value(item) for item in value]
     elif isinstance(value, dict):
