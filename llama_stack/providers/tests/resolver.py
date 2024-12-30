@@ -58,6 +58,7 @@ async def construct_stack_for_test(
         eval_tasks=eval_tasks or [],
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
+    print("construct_stack_for_test", run_config)
     try:
         remote_config = remote_provider_config(run_config)
         if not remote_config:

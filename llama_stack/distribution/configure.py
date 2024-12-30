@@ -176,7 +176,6 @@ def upgrade_from_routing_table(
     config_dict["apis"] = config_dict["apis_to_serve"]
     config_dict.pop("apis_to_serve", None)
 
-    print(config_dict)
     return config_dict
 
 
