@@ -82,17 +82,28 @@ async def agents_stack(request, inference_model, safety_shield):
     inference_models = (
         inference_model if isinstance(inference_model, list) else [inference_model]
     )
-    print(providers)
 
-    print(inference_models, safety_shield)
-    models = [
-        ModelInput(
-            model_id=model,
-            model_type=ModelType.llm,
-            provider_id=providers["inference"][i].provider_id,
+    inference_provider = providers["inference"][0]
+    provider_id = inference_provider.provider_id
+    if inference_provider.config and "model" in inference_provider.config:
+        model_to_provider_id = {
+            provider.config.model: provider.provider_id
+            for provider in providers["inference"]
+        }
+
+    models = []
+    for model in inference_models:
+        if model in model_to_provider_id:
+            provider_id = model_to_provider_id[model]
+
+        models.append(
+            ModelInput(
+                model_id=model,
+                model_type=ModelType.llm,
+                provider_id=provider_id,
+            )
         )
-        for i, model in enumerate(inference_models)
-    ]
+
     models.append(
         ModelInput(
             model_id="all-MiniLM-L6-v2",
