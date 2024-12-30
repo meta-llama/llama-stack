@@ -58,6 +58,7 @@ async def construct_stack_for_test(
         scoring_fns=scoring_fns or [],
         eval_tasks=eval_tasks or [],
     )
+    cprint(f"run_config BEFORE: {run_config}", "yellow")
     run_config = parse_and_maybe_upgrade_config(run_config)
     cprint(f"run_config AFTER: {run_config}", "red")
     try:
