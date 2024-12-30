@@ -157,4 +157,5 @@ pytest_plugins = [
     "llama_stack.providers.tests.scoring.fixtures",
     "llama_stack.providers.tests.eval.fixtures",
     "llama_stack.providers.tests.post_training.fixtures",
+    "llama_stack.providers.tests.tools.fixtures",
 ]

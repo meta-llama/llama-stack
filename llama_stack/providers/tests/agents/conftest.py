@@ -10,7 +10,8 @@ from ..conftest import get_provider_fixture_overrides
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
-from .fixtures import AGENTS_FIXTURES, TOOL_RUNTIME_FIXTURES
+from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
+from .fixtures import AGENTS_FIXTURES
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(

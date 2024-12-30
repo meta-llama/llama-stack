@@ -19,4 +19,3 @@ Package.resolved
 _build
 docs/src
 pyrightconfig.json
-.aider*

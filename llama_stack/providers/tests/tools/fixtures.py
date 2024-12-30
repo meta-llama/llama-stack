@@ -44,11 +44,55 @@ def tool_runtime_memory_and_search() -> ProviderFixture:
     )
 
 
+@pytest.fixture(scope="session")
+def tool_group_input_memory() -> ToolGroupInput:
+    return ToolGroupInput(
+        tool_group_id="memory_group",
+        tool_group=UserDefinedToolGroupDef(
+            tools=[
+                CustomToolDef(
+                    name="memory",
+                    description="Query the memory bank",
+                    parameters=[
+                        ToolParameter(
+                            name="input_messages",
+                            description="The input messages to search for in memory",
+                            parameter_type="list",
+                            required=True,
+                        ),
+                    ],
+                    metadata={
+                        "config": {
+                            "memory_bank_configs": [
+                                {"bank_id": "test_bank", "type": "vector"}
+                            ]
+                        }
+                    },
+                )
+            ],
+        ),
+        provider_id="memory-runtime",
+    )
+
+
+@pytest.fixture(scope="session")
+def tool_group_input_tavily_search() -> ToolGroupInput:
+    return ToolGroupInput(
+        tool_group_id="tavily_search_group",
+        tool_group=UserDefinedToolGroupDef(
+            tools=[BuiltInToolDef(built_in_type=BuiltinTool.brave_search, metadata={})],
+        ),
+        provider_id="tavily-search",
+    )
+
+
 TOOL_RUNTIME_FIXTURES = ["memory_and_search"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def tools_stack(request, inference_model):
+async def tools_stack(
+    request, inference_model, tool_group_input_memory, tool_group_input_tavily_search
+):
     fixture_dict = request.param
 
     providers = {}
@@ -86,53 +130,14 @@ async def tools_stack(request, inference_model):
         )
     )
 
-    tool_groups = [
-        ToolGroupInput(
-            tool_group_id="tavily_search_group",
-            tool_group=UserDefinedToolGroupDef(
-                tools=[
-                    BuiltInToolDef(
-                        built_in_type=BuiltinTool.brave_search,
-                        metadata={},
-                    ),
-                ],
-            ),
-            provider_id="tavily-search",
-        ),
-        ToolGroupInput(
-            tool_group_id="memory_group",
-            tool_group=UserDefinedToolGroupDef(
-                tools=[
-                    CustomToolDef(
-                        name="memory",
-                        description="Query the memory bank",
-                        parameters=[
-                            ToolParameter(
-                                name="input_messages",
-                                description="The input messages to search for in memory",
-                                parameter_type="list",
-                                required=True,
-                            ),
-                        ],
-                        metadata={
-                            "config": {
-                                "memory_bank_configs": [
-                                    {"bank_id": "test_bank", "type": "vector"}
-                                ]
-                            }
-                        },
-                    )
-                ],
-            ),
-            provider_id="memory-runtime",
-        ),
-    ]
-
     test_stack = await construct_stack_for_test(
         [Api.tool_groups, Api.inference, Api.memory, Api.tool_runtime],
         providers,
         provider_data,
         models=models,
-        tool_groups=tool_groups,
+        tool_groups=[
+            tool_group_input_tavily_search,
+            tool_group_input_memory,
+        ],
     )
     return test_stack
