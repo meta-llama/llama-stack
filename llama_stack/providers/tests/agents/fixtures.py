@@ -8,6 +8,7 @@ import tempfile
 
 import pytest
 import pytest_asyncio
+from rich.pretty import pprint
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
@@ -98,6 +99,7 @@ async def agents_stack(request, inference_model, safety_shield):
         )
     )
 
+    pprint("fixtures", providers)
     test_stack = await construct_stack_for_test(
         [Api.agents, Api.inference, Api.safety, Api.memory],
         providers,
