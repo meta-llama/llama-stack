@@ -10,7 +10,7 @@ from ..conftest import get_provider_fixture_overrides
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES
-from .fixtures import TOOL_RUNTIME_FIXTURES
+from .fixtures import TOOL_RUNTIME_FIXTURES, tools_stack  # noqa: F401
 
 DEFAULT_PROVIDER_COMBINATIONS = [
     pytest.param(
