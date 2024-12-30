@@ -44,11 +44,7 @@ async def construct_stack_for_test(
     scoring_fns: Optional[List[ScoringFnInput]] = None,
     eval_tasks: Optional[List[EvalTaskInput]] = None,
 ) -> TestStack:
-    from termcolor import cprint
-
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-    cprint(providers, "red")
-
     run_config = dict(
         image_name="test-fixture",
         apis=apis,
@@ -62,7 +58,6 @@ async def construct_stack_for_test(
         eval_tasks=eval_tasks or [],
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
-    print("construct_stack_for_test", run_config)
     try:
         remote_config = remote_provider_config(run_config)
         if not remote_config:
