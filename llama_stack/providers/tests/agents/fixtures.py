@@ -85,7 +85,7 @@ async def agents_stack(request, inference_model, safety_shield):
     # NOTE: meta-reference provider needs 1 provider per model, lookup provider_id from provider config
     model_to_provider_id = {}
     for provider in providers["inference"]:
-        if provider.config and "model" in provider.config:
+        if "model" in provider.config:
             model_to_provider_id[provider.config["model"]] = provider.provider_id
 
     models = []
