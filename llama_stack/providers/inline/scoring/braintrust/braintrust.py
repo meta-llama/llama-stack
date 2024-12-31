@@ -28,7 +28,7 @@ from llama_stack.apis.scoring import (
     ScoringResult,
     ScoringResultRow,
 )
-from llama_stack.apis.scoring_functions import AggregationFunctionType, ScoringFn
+from llama_stack.apis.scoring_functions import ScoringFn
 
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
