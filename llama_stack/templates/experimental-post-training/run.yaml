@@ -3,9 +3,14 @@ image_name: experimental-post-training
 docker_image: null
 conda_env: experimental-post-training
 apis:
-- inference
-- telemetry
+- agents
 - datasetio
+- eval
+- inference
+- memory
+- safety
+- scoring
+- telemetry
 - post_training
 providers:
   inference:
@@ -14,6 +19,14 @@ providers:
     config:
       max_seq_len: 4096
       checkpoint_dir: null
+  eval:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config: {}
+  scoring:
+  - provider_id: basic
+    provider_type: inline::basic
+    config: {}
   datasetio:
   - provider_id: huggingface-0
     provider_type: remote::huggingface
@@ -26,6 +39,26 @@ providers:
   - provider_id: torchtune-post-training
     provider_type: inline::torchtune
     config: {}
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/agents_store.db
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  memory:
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
 
 metadata_store:
   namespace: null

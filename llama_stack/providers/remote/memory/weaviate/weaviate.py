@@ -14,8 +14,14 @@ from numpy.typing import NDArray
 from weaviate.classes.init import Auth
 from weaviate.classes.query import Filter
 
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.memory_banks import MemoryBankType
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.memory import (
+    Chunk,
+    Memory,
+    MemoryBankDocument,
+    QueryDocumentsResponse,
+)
+from llama_stack.apis.memory_banks import MemoryBank, MemoryBankType
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (

@@ -127,7 +127,7 @@ You have two ways to install this repository:
     conda activate stack
 
     cd llama-stack
-    $CONDA_PREFIX/bin/pip install -e .
+    pip install -e .
    ```
 
 ## Documentation

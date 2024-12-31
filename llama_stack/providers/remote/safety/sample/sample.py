@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from llama_stack.apis.safety import Safety
+from llama_stack.apis.shields import Shield
 from .config import SampleConfig
-
-
-from llama_stack.apis.safety import *  # noqa: F403
 
 
 class SampleSafetyImpl(Safety):

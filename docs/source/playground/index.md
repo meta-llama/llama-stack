@@ -16,7 +16,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
 
 ##### Chatbot
 ```{eval-rst}
-.. video:: https://github.com/user-attachments/assets/6ca617e8-32ca-49b2-9774-185020ff5204
+.. video:: https://github.com/user-attachments/assets/8d2ef802-5812-4a28-96e1-316038c84cbf
     :autoplay:
     :playsinline:
     :muted:

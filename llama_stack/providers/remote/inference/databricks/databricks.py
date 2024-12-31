@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional
 
 from llama_models.datatypes import CoreModelId
 
@@ -14,7 +14,20 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 
 from openai import OpenAI
 
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,

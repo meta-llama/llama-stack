@@ -4,11 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 from typing import Annotated, List, Literal, Optional, Union
 
 from llama_models.schema_utils import json_schema_type, register_schema
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_serializer, model_validator
 
 
 @json_schema_type
@@ -26,6 +27,12 @@ class _URLOrData(BaseModel):
         if isinstance(values, dict):
             return values
         return {"url": values}
+
+    @field_serializer("data")
+    def serialize_data(self, data: Optional[bytes], _info):
+        if data is None:
+            return None
+        return base64.b64encode(data).decode("utf-8")
 
 
 @json_schema_type

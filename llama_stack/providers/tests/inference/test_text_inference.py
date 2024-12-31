@@ -7,13 +7,32 @@
 
 import pytest
 
+from llama_models.llama3.api.datatypes import (
+    SamplingParams,
+    StopReason,
+    ToolCall,
+    ToolDefinition,
+    ToolParamDefinition,
+    ToolPromptFormat,
+)
+
 from pydantic import BaseModel, ValidationError
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-
-from llama_stack.distribution.datatypes import *  # noqa: F403
-
+from llama_stack.apis.inference import (
+    ChatCompletionResponse,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    JsonSchemaResponseFormat,
+    LogProbConfig,
+    SystemMessage,
+    ToolCallDelta,
+    ToolCallParseStatus,
+    ToolChoice,
+    UserMessage,
+)
+from llama_stack.apis.models import Model
 from .utils import group_chunks
 
 

@@ -4,10 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from llama_stack.apis.agents import Agents
 from .config import SampleConfig
-
-
-from llama_stack.apis.agents import *  # noqa: F403
 
 
 class SampleAgentsImpl(Agents):

@@ -6,11 +6,9 @@
 
 import pytest
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-
-from llama_stack.distribution.datatypes import *  # noqa: F403
 from llama_stack.apis.inference import UserMessage
+from llama_stack.apis.safety import ViolationLevel
+from llama_stack.apis.shields import Shield
 
 # How to run this test:
 #
