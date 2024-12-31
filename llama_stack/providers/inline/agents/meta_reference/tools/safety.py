@@ -7,7 +7,7 @@
 from typing import List
 
 from llama_stack.apis.inference import Message
-from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.safety import Safety
 
 from ..safety import ShieldRunnerMixin
 from .builtin import BaseTool

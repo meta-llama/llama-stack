@@ -10,8 +10,7 @@ import tempfile
 import pytest
 import pytest_asyncio
 
-from llama_stack.apis.inference import ModelInput, ModelType
-
+from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.memory.chroma import ChromaInlineImplConfig
 from llama_stack.providers.inline.memory.faiss import FaissImplConfig
@@ -19,7 +18,7 @@ from llama_stack.providers.remote.memory.chroma import ChromaRemoteImplConfig
 from llama_stack.providers.remote.memory.pgvector import PGVectorConfig
 from llama_stack.providers.remote.memory.weaviate import WeaviateConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
-from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 from ..conftest import ProviderFixture, remote_stack_fixture
 from ..env import get_env_or_fail
 

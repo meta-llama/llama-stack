@@ -8,11 +8,14 @@ import os
 
 import pytest
 import pytest_asyncio
-from llama_stack.distribution.store import *  # noqa F403
 from llama_stack.apis.inference import Model
 from llama_stack.apis.memory_banks import VectorMemoryBank
+
+from llama_stack.distribution.store.registry import (
+    CachedDiskDistributionRegistry,
+    DiskDistributionRegistry,
+)
 from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
-from llama_stack.distribution.datatypes import *  # noqa F403
 
 
 @pytest.fixture

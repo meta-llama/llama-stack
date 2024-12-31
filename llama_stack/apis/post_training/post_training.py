@@ -7,17 +7,17 @@
 from datetime import datetime
 from enum import Enum
 
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.common.content_types import URL
+
 from llama_stack.apis.common.job_types import JobStatus
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.common.training_types import *  # noqa: F403
+from llama_stack.apis.common.training_types import Checkpoint
 
 
 @json_schema_type

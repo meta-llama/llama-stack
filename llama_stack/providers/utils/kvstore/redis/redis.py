@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from redis.asyncio import Redis
 
-from ..api import *  # noqa: F403
+from ..api import KVStore
 from ..config import RedisKVStoreConfig
 
 

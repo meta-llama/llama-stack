@@ -3,21 +3,28 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-
 import argparse
-
-from llama_stack.cli.subcommand import Subcommand
-from llama_stack.distribution.datatypes import *  # noqa: F403
 import os
 import shutil
 from functools import lru_cache
 from pathlib import Path
+from typing import List, Optional
 
 import pkg_resources
+
+from llama_stack.cli.subcommand import Subcommand
+
+from llama_stack.distribution.datatypes import (
+    BuildConfig,
+    DistributionSpec,
+    Provider,
+    StackRunConfig,
+)
 
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
 
@@ -100,7 +107,7 @@ class StackBuild(Subcommand):
                         build_config.image_type = args.image_type
                     else:
                         self.parser.error(
-                            f"Please specify a image-type (docker | conda) for {args.template}"
+                            f"Please specify a image-type (docker | conda | venv) for {args.template}"
                         )
                     self._run_stack_build_command_from_build_config(
                         build_config, template_name=args.template
@@ -122,7 +129,7 @@ class StackBuild(Subcommand):
             )
 
             image_type = prompt(
-                "> Enter the image type you want your Llama Stack to be built as (docker or conda): ",
+                "> Enter the image type you want your Llama Stack to be built as (docker or conda or venv): ",
                 validator=Validator.from_callable(
                     lambda x: x in ["docker", "conda", "venv"],
                     error_message="Invalid image type, please enter conda or docker or venv",

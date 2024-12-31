@@ -8,14 +8,18 @@ import uuid
 
 import pytest
 
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.distribution.datatypes import *  # noqa: F403
-from llama_stack.apis.memory_banks.memory_banks import VectorMemoryBankParams
+from llama_stack.apis.memory import MemoryBankDocument, QueryDocumentsResponse
+
+from llama_stack.apis.memory_banks import (
+    MemoryBank,
+    MemoryBanks,
+    VectorMemoryBankParams,
+)
 
 # How to run this test:
 #
 # pytest llama_stack/providers/tests/memory/test_memory.py
-#   -m "meta_reference"
+#   -m "sentence_transformers" --env EMBEDDING_DIMENSION=384
 #   -v -s --tb=short --disable-warnings
 
 

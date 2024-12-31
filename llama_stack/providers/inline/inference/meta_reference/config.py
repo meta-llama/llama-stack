@@ -6,10 +6,9 @@
 
 from typing import Any, Dict, Optional
 
-from llama_models.datatypes import *  # noqa: F403
-
-from llama_stack.apis.inference import *  # noqa: F401, F403
 from pydantic import BaseModel, field_validator
+
+from llama_stack.apis.inference import QuantizationConfig
 
 from llama_stack.providers.utils.inference import supported_inference_models
 
