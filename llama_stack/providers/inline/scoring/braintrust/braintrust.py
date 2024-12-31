@@ -28,12 +28,15 @@ from llama_stack.apis.scoring import (
     ScoringResult,
     ScoringResultRow,
 )
-from llama_stack.apis.scoring_functions import ScoringFn
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
+
+from llama_stack.distribution.datatypes import Api
 
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
-from llama_stack.providers.utils.common.data_schema_validator_mixin import (
+from llama_stack.providers.utils.common.data_schema_validator import (
     DataSchemaValidatorMixin,
+    get_valid_schemas,
 )
 
 from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
@@ -168,7 +171,9 @@ class BraintrustScoringImpl(
         await self.set_api_key()
 
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        self.validate_dataset_schema_for_scoring(dataset_def.dataset_schema)
+        self.validate_dataset_schema(
+            dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
+        )
 
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
@@ -189,7 +194,7 @@ class BraintrustScoringImpl(
     async def score_row(
         self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
     ) -> ScoringResultRow:
-        self.validate_row_schema_for_scoring(input_row)
+        self.validate_row_schema(input_row, get_valid_schemas(Api.scoring.value))
         await self.set_api_key()
         assert scoring_fn_identifier is not None, "scoring_fn_identifier cannot be None"
         expected_answer = input_row["expected_answer"]
