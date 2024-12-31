@@ -19,8 +19,9 @@ from llama_models.sku_list import resolve_model
 from llama_stack.apis.common.type_system import ParamType, StringType
 from llama_stack.apis.datasets import Datasets
 
-from torchtune.models.llama3 import llama3_tokenizer, lora_llama3_8b
+from torchtune.models.llama3 import llama3_tokenizer
 from torchtune.models.llama3._tokenizer import Llama3Tokenizer
+from torchtune.models.llama3_1 import lora_llama3_1_8b
 from torchtune.models.llama3_2 import lora_llama3_2_3b
 
 
@@ -47,8 +48,8 @@ MODEL_CONFIGS: Dict[str, ModelConfig] = {
         tokenizer_type=llama3_tokenizer,
         checkpoint_type="LLAMA3_2",
     ),
-    "Llama-3-8B-Instruct": ModelConfig(
-        model_definition=lora_llama3_8b,
+    "Llama3.1-8B-Instruct": ModelConfig(
+        model_definition=lora_llama3_1_8b,
         tokenizer_type=llama3_tokenizer,
         checkpoint_type="LLAMA3",
     ),
