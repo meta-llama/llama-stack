@@ -8,6 +8,11 @@ from typing import Any, Dict, List, Optional
 from tqdm import tqdm
 
 from llama_stack.apis.agents import Agents
+from llama_stack.apis.common.type_system import (
+    ChatCompletionInputType,
+    CompletionInputType,
+    StringType,
+)
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval_tasks import EvalTask

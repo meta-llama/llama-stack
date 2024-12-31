@@ -3,20 +3,23 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List
-
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
-from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-
 import os
+from typing import Any, Dict, List, Optional
 
 from autoevals.llm import Factuality
 from autoevals.ragas import AnswerCorrectness
 from pydantic import BaseModel
+
+from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.scoring import (
+    ScoreBatchResponse,
+    ScoreResponse,
+    Scoring,
+    ScoringResult,
+    ScoringResultRow,
+)
+from llama_stack.apis.scoring_functions import AggregationFunctionType, ScoringFn
 
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate

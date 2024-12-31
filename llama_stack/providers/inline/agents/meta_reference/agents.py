@@ -9,15 +9,26 @@ import logging
 import shutil
 import tempfile
 import uuid
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from termcolor import colored
 
-from llama_stack.apis.inference import Inference
+from llama_stack.apis.agents import (
+    AgentConfig,
+    AgentCreateResponse,
+    Agents,
+    AgentSessionCreateResponse,
+    AgentStepResponse,
+    AgentTurnCreateRequest,
+    Attachment,
+    Session,
+    Turn,
+)
+
+from llama_stack.apis.inference import Inference, ToolResponseMessage, UserMessage
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.agents import *  # noqa: F403
 
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 

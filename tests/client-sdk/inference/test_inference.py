@@ -56,7 +56,7 @@ def test_image_chat_completion(llama_stack_client):
         "content": [
             {
                 "type": "image",
-                "data": {
+                "url": {
                     "uri": "https://www.healthypawspetinsurance.com/Images/V3/DogAndPuppyInsurance/Dog_CTA_Desktop_HeroImage.jpg"
                 },
             },

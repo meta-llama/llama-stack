@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from llama_stack.apis.datasetio import *  # noqa: F401, F403
+from pydantic import BaseModel
 
 
 class LocalFSDatasetIOConfig(BaseModel): ...

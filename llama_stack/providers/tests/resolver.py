@@ -8,14 +8,24 @@ import json
 import tempfile
 from typing import Any, Dict, List, Optional
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from pydantic import BaseModel
+
+from llama_stack.apis.datasets import DatasetInput
+from llama_stack.apis.eval_tasks import EvalTaskInput
+from llama_stack.apis.memory_banks import MemoryBankInput
+from llama_stack.apis.models import ModelInput
+from llama_stack.apis.scoring_functions import ScoringFnInput
+from llama_stack.apis.shields import ShieldInput
+
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
+from llama_stack.distribution.datatypes import Provider, StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import resolve_remote_stack_impls
 from llama_stack.distribution.stack import construct_stack
-from llama_stack.providers.utils.kvstore import SqliteKVStoreConfig
+from llama_stack.providers.datatypes import Api, RemoteProviderConfig
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
 class TestStack(BaseModel):

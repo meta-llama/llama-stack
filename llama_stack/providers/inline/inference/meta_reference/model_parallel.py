@@ -14,7 +14,10 @@ from llama_models.llama3.api.datatypes import Model
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 
-from llama_stack.apis.inference import ChatCompletionRequest, CompletionRequest
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    ChatCompletionRequestWithRawContent,
+    CompletionRequestWithRawContent,
+)
 
 from .config import MetaReferenceInferenceConfig
 from .generation import Llama, model_checkpoint_dir
@@ -27,9 +30,9 @@ class ModelRunner:
 
     # the `task` object is the same that is sent to `ModelParallelProcessGroup.run_inference()`
     def __call__(self, req: Any):
-        if isinstance(req, ChatCompletionRequest):
+        if isinstance(req, ChatCompletionRequestWithRawContent):
             return self.llama.chat_completion(req)
-        elif isinstance(req, CompletionRequest):
+        elif isinstance(req, CompletionRequestWithRawContent):
             return self.llama.completion(req)
         else:
             raise ValueError(f"Unexpected task type {type(req)}")
@@ -100,7 +103,7 @@ class LlamaModelParallelGenerator:
 
     def completion(
         self,
-        request: CompletionRequest,
+        request: CompletionRequestWithRawContent,
     ) -> Generator:
         req_obj = deepcopy(request)
         gen = self.group.run_inference(req_obj)
@@ -108,7 +111,7 @@ class LlamaModelParallelGenerator:
 
     def chat_completion(
         self,
-        request: ChatCompletionRequest,
+        request: ChatCompletionRequestWithRawContent,
     ) -> Generator:
         req_obj = deepcopy(request)
         gen = self.group.run_inference(req_obj)

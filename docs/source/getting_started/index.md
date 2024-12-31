@@ -43,7 +43,7 @@ Configuration for this is available at `distributions/ollama/run.yaml`.
 
 ### 3. Use the Llama Stack client SDK
 
-You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using:
+You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
 ```bash
 pip install llama-stack-client
 ```
@@ -51,7 +51,8 @@ pip install llama-stack-client
 Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
+llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
+llama-stack-client models list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
@@ -61,7 +62,7 @@ llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
 
 You can test basic Llama inference completion using the CLI too.
 ```bash
-llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT \
+llama-stack-client \
   inference chat-completion \
   --message "hello, what model are you?"
 ```
@@ -153,10 +154,3 @@ if __name__ == "__main__":
 - Learn how to [Build Llama Stacks](../distributions/index.md)
 - See [References](../references/index.md) for more details about the llama CLI and Python SDK
 - For example applications and more detailed tutorials, visit our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repository.
-
-
-## Thinking out aloud here in terms of what to write in the docs
-
-- how to get a llama stack server running
-- what are all the different client sdks
-- what are the components of building agents

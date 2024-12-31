@@ -8,19 +8,40 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import parse_obj_as
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.eval_tasks import *  # noqa: F403
-
 from llama_stack.apis.common.content_types import URL
-
 from llama_stack.apis.common.type_system import ParamType
+from llama_stack.apis.datasets import Dataset, Datasets
+from llama_stack.apis.eval_tasks import EvalTask, EvalTasks
+from llama_stack.apis.memory_banks import (
+    BankParams,
+    MemoryBank,
+    MemoryBanks,
+    MemoryBankType,
+)
+from llama_stack.apis.models import Model, Models, ModelType
+from llama_stack.apis.resource import ResourceType
+from llama_stack.apis.scoring_functions import (
+    ScoringFn,
+    ScoringFnParams,
+    ScoringFunctions,
+)
+from llama_stack.apis.shields import Shield, Shields
+from llama_stack.apis.tools import (
+    MCPToolGroupDef,
+    Tool,
+    ToolGroup,
+    ToolGroupDef,
+    ToolGroups,
+    UserDefinedToolGroupDef,
+)
+from llama_stack.distribution.datatypes import (
+    RoutableObject,
+    RoutableObjectWithProvider,
+    RoutedProtocol,
+)
+
 from llama_stack.distribution.store import DistributionRegistry
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import Api, RoutingTable
 
 
 def get_impl_api(p: Any) -> Api:
@@ -45,6 +66,8 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
         return await p.register_scoring_function(obj)
     elif api == Api.eval:
         return await p.register_eval_task(obj)
+    elif api == Api.tool_runtime:
+        return await p.register_tool(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -57,6 +80,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_model(obj.identifier)
     elif api == Api.datasetio:
         return await p.unregister_dataset(obj.identifier)
+    elif api == Api.tool_runtime:
+        return await p.unregister_tool(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -104,6 +129,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 await add_objects(scoring_functions, pid, ScoringFn)
             elif api == Api.eval:
                 p.eval_task_store = self
+            elif api == Api.tool_runtime:
+                p.tool_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
@@ -125,6 +152,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("Scoring", "scoring_function")
             elif isinstance(self, EvalTasksRoutingTable):
                 return ("Eval", "eval_task")
+            elif isinstance(self, ToolGroupsRoutingTable):
+                return ("Tools", "tool")
             else:
                 raise ValueError("Unknown routing table type")
 
@@ -461,3 +490,88 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
             provider_resource_id=provider_eval_task_id,
         )
         await self.register_object(eval_task)
+
+
+class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
+    async def list_tools(self, tool_group_id: Optional[str] = None) -> List[Tool]:
+        tools = await self.get_all_with_type("tool")
+        if tool_group_id:
+            tools = [tool for tool in tools if tool.tool_group == tool_group_id]
+        return tools
+
+    async def list_tool_groups(self) -> List[ToolGroup]:
+        return await self.get_all_with_type("tool_group")
+
+    async def get_tool_group(self, tool_group_id: str) -> ToolGroup:
+        return await self.get_object_by_identifier("tool_group", tool_group_id)
+
+    async def get_tool(self, tool_name: str) -> Tool:
+        return await self.get_object_by_identifier("tool", tool_name)
+
+    async def register_tool_group(
+        self,
+        tool_group_id: str,
+        tool_group: ToolGroupDef,
+        provider_id: Optional[str] = None,
+    ) -> None:
+        tools = []
+        tool_defs = []
+        if provider_id is None:
+            if len(self.impls_by_provider_id.keys()) > 1:
+                raise ValueError(
+                    f"No provider_id specified and multiple providers available. Please specify a provider_id. Available providers: {', '.join(self.impls_by_provider_id.keys())}"
+                )
+            provider_id = list(self.impls_by_provider_id.keys())[0]
+
+        if isinstance(tool_group, MCPToolGroupDef):
+            tool_defs = await self.impls_by_provider_id[provider_id].discover_tools(
+                tool_group
+            )
+
+        elif isinstance(tool_group, UserDefinedToolGroupDef):
+            tool_defs = tool_group.tools
+        else:
+            raise ValueError(f"Unknown tool group: {tool_group}")
+
+        for tool_def in tool_defs:
+            tools.append(
+                Tool(
+                    identifier=tool_def.name,
+                    tool_group=tool_group_id,
+                    description=tool_def.description,
+                    parameters=tool_def.parameters,
+                    provider_id=provider_id,
+                    tool_prompt_format=tool_def.tool_prompt_format,
+                    provider_resource_id=tool_def.name,
+                    metadata=tool_def.metadata,
+                )
+            )
+        for tool in tools:
+            existing_tool = await self.get_tool(tool.identifier)
+            # Compare existing and new object if one exists
+            if existing_tool:
+                existing_dict = existing_tool.model_dump()
+                new_dict = tool.model_dump()
+
+                if existing_dict != new_dict:
+                    raise ValueError(
+                        f"Object {tool.identifier} already exists in registry. Please use a different identifier."
+                    )
+            await self.register_object(tool)
+
+        await self.dist_registry.register(
+            ToolGroup(
+                identifier=tool_group_id,
+                provider_id=provider_id,
+                provider_resource_id=tool_group_id,
+            )
+        )
+
+    async def unregister_tool_group(self, tool_group_id: str) -> None:
+        tool_group = await self.get_tool_group(tool_group_id)
+        if tool_group is None:
+            raise ValueError(f"Tool group {tool_group_id} not found")
+        tools = await self.list_tools(tool_group_id)
+        for tool in tools:
+            await self.unregister_object(tool)
+        await self.unregister_object(tool_group)
