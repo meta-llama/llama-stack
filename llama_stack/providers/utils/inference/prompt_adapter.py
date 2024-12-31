@@ -121,7 +121,9 @@ async def interleaved_content_convert_to_raw(
                 if c.url.uri.startswith("data"):
                     match = re.match(r"data:image/(\w+);base64,(.+)", c.url.uri)
                     if not match:
-                        raise ValueError("Invalid data URL format")
+                        raise ValueError(
+                            f"Invalid data URL format, {c.url.uri[:40]}..."
+                        )
                     _, image_data = match.groups()
                     data = base64.b64decode(image_data)
                 elif c.url.uri.startswith("file://"):
