@@ -43,7 +43,7 @@ Configuration for this is available at `distributions/ollama/run.yaml`.
 
 ### 3. Use the Llama Stack client SDK
 
-You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using:
+You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
 ```bash
 pip install llama-stack-client
 ```
@@ -62,7 +62,7 @@ llama-stack-client models list
 
 You can test basic Llama inference completion using the CLI too.
 ```bash
-llama-stack-client
+llama-stack-client \
   inference chat-completion \
   --message "hello, what model are you?"
 ```
