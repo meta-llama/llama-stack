@@ -13,8 +13,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
 
-import pkg_resources
-
 from llama_stack.cli.subcommand import Subcommand
 
 from llama_stack.distribution.datatypes import (
