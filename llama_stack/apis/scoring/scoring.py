@@ -47,7 +47,7 @@ class Scoring(Protocol):
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse: ...
 
@@ -55,5 +55,5 @@ class Scoring(Protocol):
     async def score(
         self,
         input_rows: List[Dict[str, Any]],
-        scoring_functions: Dict[str, Optional[ScoringFnParams]] = None,
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
     ) -> ScoreResponse: ...

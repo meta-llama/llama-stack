@@ -8,12 +8,12 @@ from typing import Any, Dict, Optional
 
 from llama_stack.apis.scoring import ScoringResultRow
 from llama_stack.apis.scoring_functions import ScoringFnParams
-from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
+from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
 from .fn_defs.subset_of import subset_of
 
 
-class SubsetOfScoringFn(BaseScoringFn):
+class SubsetOfScoringFn(RegisteredBaseScoringFn):
     """
     A scoring_fn that assigns a score of 1.0 if the expected string is included in the generated string, and 0.0 otherwise.
     """

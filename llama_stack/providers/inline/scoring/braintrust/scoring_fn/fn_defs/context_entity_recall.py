@@ -11,15 +11,14 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-
-answer_correctness_fn_def = ScoringFn(
-    identifier="braintrust::answer-correctness",
+context_entity_recall_fn_def = ScoringFn(
+    identifier="braintrust::context-entity-recall",
     description=(
-        "Scores the correctness of the answer based on the ground truth. "
-        "Uses Braintrust LLM-based scorer from autoevals library."
+        "Evaluates how well the context captures the named entities present in the "
+        "reference answer. See: github.com/braintrustdata/autoevals"
     ),
     provider_id="braintrust",
-    provider_resource_id="answer-correctness",
+    provider_resource_id="context-entity-recall",
     return_type=NumberType(),
     params=BasicScoringFnParams(
         aggregation_functions=[AggregationFunctionType.average]

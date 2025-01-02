@@ -11,15 +11,14 @@ from llama_stack.apis.scoring_functions import (
     ScoringFn,
 )
 
-
-answer_correctness_fn_def = ScoringFn(
-    identifier="braintrust::answer-correctness",
+answer_similarity_fn_def = ScoringFn(
+    identifier="braintrust::answer-similarity",
     description=(
-        "Scores the correctness of the answer based on the ground truth. "
-        "Uses Braintrust LLM-based scorer from autoevals library."
+        "Test output similarity against expected value using Braintrust LLM scorer. "
+        "See: github.com/braintrustdata/autoevals"
     ),
     provider_id="braintrust",
-    provider_resource_id="answer-correctness",
+    provider_resource_id="answer-similarity",
     return_type=NumberType(),
     params=BasicScoringFnParams(
         aggregation_functions=[AggregationFunctionType.average]
