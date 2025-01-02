@@ -338,8 +338,8 @@ distribution_spec:
     inference: remote::ollama
     memory: inline::faiss
     safety: inline::llama-guard
-    agents: meta-reference
-    telemetry: meta-reference
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference
 image_type: conda
 ```
 
