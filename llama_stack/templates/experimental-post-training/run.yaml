@@ -19,6 +19,7 @@ providers:
     config:
       max_seq_len: 4096
       checkpoint_dir: null
+      create_distributed_process_group: False
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
