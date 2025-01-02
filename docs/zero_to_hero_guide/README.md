@@ -45,7 +45,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 
 ---
 
-## Install Dependencies and Set Up Environment
+## Install Dependencies and Set Up Environmen
 
 1. **Create a Conda Environment**:
    Create a new Conda environment with Python 3.10:
@@ -73,7 +73,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    Open a new terminal and install `llama-stack`:
    ```bash
    conda activate ollama
-   pip install llama-stack==0.0.55
+   pip install llama-stack==0.0.61
    ```
 
 ---
@@ -96,7 +96,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 3. **Set the ENV variables by exporting them to the terminal**:
    ```bash
    export OLLAMA_URL="http://localhost:11434"
-   export LLAMA_STACK_PORT=5051
+   export LLAMA_STACK_PORT=5001
    export INFERENCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
    export SAFETY_MODEL="meta-llama/Llama-Guard-3-1B"
    ```
@@ -104,34 +104,29 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 3. **Run the Llama Stack**:
    Run the stack with command shared by the API from earlier:
    ```bash
-   llama stack run ollama  \
-      --port $LLAMA_STACK_PORT \
-      --env INFERENCE_MODEL=$INFERENCE_MODEL \
-      --env SAFETY_MODEL=$SAFETY_MODEL \
+   llama stack run ollama
+      --port $LLAMA_STACK_PORT
+      --env INFERENCE_MODEL=$INFERENCE_MODEL
+      --env SAFETY_MODEL=$SAFETY_MODEL
       --env OLLAMA_URL=$OLLAMA_URL
    ```
    Note: Everytime you run a new model with `ollama run`, you will need to restart the llama stack. Otherwise it won't see the new model.
 
-The server will start and listen on `http://localhost:5051`.
+The server will start and listen on `http://localhost:5001`.
 
 ---
 ## Test with `llama-stack-client` CLI
-After setting up the server, open a new terminal window and install the llama-stack-client package.
+After setting up the server, open a new terminal window and configure the llama-stack-client.
 
-1. Install the llama-stack-client package
+1. Configure the CLI to point to the llama-stack server.
    ```bash
-   conda activate ollama
-   pip install llama-stack-client
-   ```
-2. Configure the CLI to point to the llama-stack server.
-   ```bash
-   llama-stack-client configure --endpoint http://localhost:5051
+   llama-stack-client configure --endpoint http://localhost:5001
    ```
    **Expected Output:**
    ```bash
-   Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5051
+   Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5001
    ```
-3. Test the CLI by running inference:
+2. Test the CLI by running inference:
    ```bash
    llama-stack-client inference chat-completion --message "Write me a 2-sentence poem about the moon"
    ```
@@ -153,16 +148,18 @@ After setting up the server, open a new terminal window and install the llama-st
 After setting up the server, open a new terminal window and verify it's working by sending a `POST` request using `curl`:
 
 ```bash
-curl http://localhost:$LLAMA_STACK_PORT/inference/chat_completion \
--H "Content-Type: application/json" \
--d '{
-    "model": "Llama3.2-3B-Instruct",
+curl http://localhost:$LLAMA_STACK_PORT/alpha/inference/chat-completion
+-H "Content-Type: application/json"
+-d @- <<EOF
+{
+    "model_id": "$INFERENCE_MODEL",
     "messages": [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write me a 2-sentence poem about the moon"}
     ],
     "sampling_params": {"temperature": 0.7, "seed": 42, "max_tokens": 512}
-}'
+}
+EOF
 ```
 
 You can check the available models with the command `llama-stack-client models list`.
@@ -186,15 +183,11 @@ You can check the available models with the command `llama-stack-client models l
 
 You can also interact with the Llama Stack server using a simple Python script. Below is an example:
 
-### 1. Activate Conda Environment and Install Required Python Packages
-The `llama-stack-client` library offers a robust and efficient python methods for interacting with the Llama Stack server.
+### 1. Activate Conda Environmen
 
 ```bash
 conda activate ollama
-pip install llama-stack-client
 ```
-
-Note, the client library gets installed by default if you install the server library
 
 ### 2. Create Python Script (`test_llama_stack.py`)
 ```bash
@@ -206,19 +199,28 @@ touch test_llama_stack.py
 In `test_llama_stack.py`, write the following code:
 
 ```python
-from llama_stack_client import LlamaStackClient
+import os
+from llama_stack_client import LlamaStackClien
 
-# Initialize the client
-client = LlamaStackClient(base_url="http://localhost:5051")
+# Get the model ID from the environment variable
+INFERENCE_MODEL = os.environ.get("INFERENCE_MODEL")
 
-# Create a chat completion request
+# Check if the environment variable is se
+if INFERENCE_MODEL is None:
+    raise ValueError("The environment variable 'INFERENCE_MODEL' is not set.")
+
+# Initialize the clien
+client = LlamaStackClient(base_url="http://localhost:5001")
+
+# Create a chat completion reques
 response = client.inference.chat_completion(
     messages=[
         {"role": "system", "content": "You are a friendly assistant."},
         {"role": "user", "content": "Write a two-sentence poem about llama."}
     ],
-    model_id=MODEL_NAME,
+    model_id=INFERENCE_MODEL,
 )
+
 # Print the response
 print(response.completion_message.content)
 ```
