@@ -15,6 +15,8 @@ from typing import Any, Callable, Dict, List
 
 import torch
 from llama_models.datatypes import Model
+
+from llama_models.llama3.api.datatypes import BaseModel
 from llama_models.sku_list import resolve_model
 from llama_stack.apis.common.type_system import ParamType, StringType
 from llama_stack.apis.datasets import Datasets
