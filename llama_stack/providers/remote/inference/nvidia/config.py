@@ -8,7 +8,7 @@ import os
 from typing import Optional
 
 from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 
 @json_schema_type
@@ -40,7 +40,7 @@ class NVIDIAConfig(BaseModel):
         ),
         description="A base url for accessing the NVIDIA NIM",
     )
-    api_key: Optional[str] = Field(
+    api_key: Optional[SecretStr] = Field(
         default_factory=lambda: os.getenv("NVIDIA_API_KEY"),
         description="The NVIDIA API key, only needed of using the hosted service",
     )

@@ -35,6 +35,7 @@ from llama_stack.distribution.request_headers import set_request_provider_data
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import (
     construct_stack,
+    redact_sensitive_fields,
     replace_env_vars,
     validate_env_pair,
 )
@@ -280,7 +281,8 @@ def main():
         config = StackRunConfig(**config)
 
     print("Run configuration:")
-    print(yaml.dump(config.model_dump(), indent=2))
+    safe_config = redact_sensitive_fields(config.model_dump())
+    print(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(TracingMiddleware)

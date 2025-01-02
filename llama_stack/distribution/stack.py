@@ -112,6 +112,26 @@ class EnvVarError(Exception):
         )
 
 
+def redact_sensitive_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Redact sensitive information from config before printing."""
+    sensitive_patterns = ["api_key", "api_token", "password", "secret"]
+
+    def _redact_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+        result = {}
+        for k, v in d.items():
+            if isinstance(v, dict):
+                result[k] = _redact_dict(v)
+            elif isinstance(v, list):
+                result[k] = [_redact_dict(i) if isinstance(i, dict) else i for i in v]
+            elif any(pattern in k.lower() for pattern in sensitive_patterns):
+                result[k] = "********"
+            else:
+                result[k] = v
+        return result
+
+    return _redact_dict(data)
+
+
 def replace_env_vars(config: Any, path: str = "") -> Any:
     if isinstance(config, dict):
         result = {}

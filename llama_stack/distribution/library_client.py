@@ -39,6 +39,7 @@ from llama_stack.distribution.server.endpoints import get_all_api_endpoints
 from llama_stack.distribution.stack import (
     construct_stack,
     get_stack_run_config_from_template,
+    redact_sensitive_fields,
     replace_env_vars,
 )
 
@@ -273,7 +274,10 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         console = Console()
         console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
-        console.print(yaml.dump(self.config.model_dump(), indent=2))
+
+        # Redact sensitive information before printing
+        safe_config = redact_sensitive_fields(self.config.model_dump())
+        console.print(yaml.dump(safe_config, indent=2))
 
         endpoints = get_all_api_endpoints()
         endpoint_impls = {}
