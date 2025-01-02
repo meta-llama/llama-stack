@@ -18,6 +18,7 @@ from llama_models.datatypes import Model
 from llama_models.sku_list import resolve_model
 from llama_stack.apis.common.type_system import ParamType, StringType
 from llama_stack.apis.datasets import Datasets
+from pydantic import BaseModel
 
 from torchtune.models.llama3 import llama3_tokenizer
 from torchtune.models.llama3._tokenizer import Llama3Tokenizer
