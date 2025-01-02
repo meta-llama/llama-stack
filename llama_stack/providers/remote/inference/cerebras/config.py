@@ -8,7 +8,7 @@ import os
 from typing import Any, Dict, Optional
 
 from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 DEFAULT_BASE_URL = "https://api.cerebras.ai"
 
@@ -19,7 +19,7 @@ class CerebrasImplConfig(BaseModel):
         default=os.environ.get("CEREBRAS_BASE_URL", DEFAULT_BASE_URL),
         description="Base URL for the Cerebras API",
     )
-    api_key: Optional[str] = Field(
+    api_key: Optional[SecretStr] = Field(
         default=os.environ.get("CEREBRAS_API_KEY"),
         description="Cerebras API Key",
     )

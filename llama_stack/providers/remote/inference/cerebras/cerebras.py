@@ -71,7 +71,8 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
         self.client = AsyncCerebras(
-            base_url=self.config.base_url, api_key=self.config.api_key
+            base_url=self.config.base_url,
+            api_key=self.config.api_key.get_secret_value(),
         )
 
     async def initialize(self) -> None:

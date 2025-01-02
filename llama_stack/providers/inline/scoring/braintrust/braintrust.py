@@ -7,7 +7,17 @@ import os
 from typing import Any, Dict, List, Optional
 
 from autoevals.llm import Factuality
-from autoevals.ragas import AnswerCorrectness
+from autoevals.ragas import (
+    AnswerCorrectness,
+    AnswerRelevancy,
+    AnswerSimilarity,
+    ContextEntityRecall,
+    ContextPrecision,
+    ContextRecall,
+    ContextRelevancy,
+    Faithfulness,
+)
+from pydantic import BaseModel
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
@@ -18,20 +28,90 @@ from llama_stack.apis.scoring import (
     ScoringResult,
     ScoringResultRow,
 )
-from llama_stack.apis.scoring_functions import AggregationFunctionType, ScoringFn
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
+
+from llama_stack.distribution.datatypes import Api
 
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
+from llama_stack.providers.utils.common.data_schema_validator import (
+    DataSchemaValidatorMixin,
+    get_valid_schemas,
+)
 
-from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_average
-
+from llama_stack.providers.utils.scoring.aggregation_utils import aggregate_metrics
 from .config import BraintrustScoringConfig
 from .scoring_fn.fn_defs.answer_correctness import answer_correctness_fn_def
+from .scoring_fn.fn_defs.answer_relevancy import answer_relevancy_fn_def
+from .scoring_fn.fn_defs.answer_similarity import answer_similarity_fn_def
+from .scoring_fn.fn_defs.context_entity_recall import context_entity_recall_fn_def
+from .scoring_fn.fn_defs.context_precision import context_precision_fn_def
+from .scoring_fn.fn_defs.context_recall import context_recall_fn_def
+from .scoring_fn.fn_defs.context_relevancy import context_relevancy_fn_def
 from .scoring_fn.fn_defs.factuality import factuality_fn_def
+from .scoring_fn.fn_defs.faithfulness import faithfulness_fn_def
+
+
+class BraintrustScoringFnEntry(BaseModel):
+    identifier: str
+    evaluator: Any
+    fn_def: ScoringFn
+
+
+SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY = [
+    BraintrustScoringFnEntry(
+        identifier="braintrust::factuality",
+        evaluator=Factuality(),
+        fn_def=factuality_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-correctness",
+        evaluator=AnswerCorrectness(),
+        fn_def=answer_correctness_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-relevancy",
+        evaluator=AnswerRelevancy(),
+        fn_def=answer_relevancy_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::answer-similarity",
+        evaluator=AnswerSimilarity(),
+        fn_def=answer_similarity_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::faithfulness",
+        evaluator=Faithfulness(),
+        fn_def=faithfulness_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-entity-recall",
+        evaluator=ContextEntityRecall(),
+        fn_def=context_entity_recall_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-precision",
+        evaluator=ContextPrecision(),
+        fn_def=context_precision_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-recall",
+        evaluator=ContextRecall(),
+        fn_def=context_recall_fn_def,
+    ),
+    BraintrustScoringFnEntry(
+        identifier="braintrust::context-relevancy",
+        evaluator=ContextRelevancy(),
+        fn_def=context_relevancy_fn_def,
+    ),
+]
 
 
 class BraintrustScoringImpl(
-    Scoring, ScoringFunctionsProtocolPrivate, NeedsRequestProviderData
+    Scoring,
+    ScoringFunctionsProtocolPrivate,
+    NeedsRequestProviderData,
+    DataSchemaValidatorMixin,
 ):
     def __init__(
         self,
@@ -44,12 +124,12 @@ class BraintrustScoringImpl(
         self.datasets_api = datasets_api
 
         self.braintrust_evaluators = {
-            "braintrust::factuality": Factuality(),
-            "braintrust::answer-correctness": AnswerCorrectness(),
+            entry.identifier: entry.evaluator
+            for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
         }
         self.supported_fn_defs_registry = {
-            factuality_fn_def.identifier: factuality_fn_def,
-            answer_correctness_fn_def.identifier: answer_correctness_fn_def,
+            entry.identifier: entry.fn_def
+            for entry in SUPPORTED_BRAINTRUST_SCORING_FN_ENTRY
         }
 
     async def initialize(self) -> None: ...
@@ -70,23 +150,6 @@ class BraintrustScoringImpl(
             "Registering scoring function not allowed for braintrust provider"
         )
 
-    async def validate_scoring_input_dataset_schema(self, dataset_id: str) -> None:
-        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
-            raise ValueError(
-                f"Dataset {dataset_id} does not have a schema defined. Please define a schema for the dataset."
-            )
-
-        for required_column in ["generated_answer", "expected_answer", "input_query"]:
-            if required_column not in dataset_def.dataset_schema:
-                raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column."
-                )
-            if dataset_def.dataset_schema[required_column].type != "string":
-                raise ValueError(
-                    f"Dataset {dataset_id} does not have a '{required_column}' column of type 'string'."
-                )
-
     async def set_api_key(self) -> None:
         # api key is in the request headers
         if not self.config.openai_api_key:
@@ -102,11 +165,16 @@ class BraintrustScoringImpl(
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: List[str],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         await self.set_api_key()
-        await self.validate_scoring_input_dataset_schema(dataset_id=dataset_id)
+
+        dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+        self.validate_dataset_schema(
+            dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
+        )
+
         all_rows = await self.datasetio_api.get_rows_paginated(
             dataset_id=dataset_id,
             rows_in_page=-1,
@@ -126,6 +194,7 @@ class BraintrustScoringImpl(
     async def score_row(
         self, input_row: Dict[str, Any], scoring_fn_identifier: Optional[str] = None
     ) -> ScoringResultRow:
+        self.validate_row_schema(input_row, get_valid_schemas(Api.scoring.value))
         await self.set_api_key()
         assert scoring_fn_identifier is not None, "scoring_fn_identifier cannot be None"
         expected_answer = input_row["expected_answer"]
@@ -133,12 +202,19 @@ class BraintrustScoringImpl(
         input_query = input_row["input_query"]
         evaluator = self.braintrust_evaluators[scoring_fn_identifier]
 
-        result = evaluator(generated_answer, expected_answer, input=input_query)
+        result = evaluator(
+            generated_answer,
+            expected_answer,
+            input=input_query,
+            context=input_row["context"] if "context" in input_row else None,
+        )
         score = result.score
         return {"score": score, "metadata": result.metadata}
 
     async def score(
-        self, input_rows: List[Dict[str, Any]], scoring_functions: List[str]
+        self,
+        input_rows: List[Dict[str, Any]],
+        scoring_functions: Dict[str, Optional[ScoringFnParams]],
     ) -> ScoreResponse:
         await self.set_api_key()
         res = {}
@@ -150,8 +226,17 @@ class BraintrustScoringImpl(
                 await self.score_row(input_row, scoring_fn_id)
                 for input_row in input_rows
             ]
-            aggregation_functions = [AggregationFunctionType.average]
-            agg_results = aggregate_average(score_results)
+            aggregation_functions = self.supported_fn_defs_registry[
+                scoring_fn_id
+            ].params.aggregation_functions
+
+            # override scoring_fn params if provided
+            if scoring_functions[scoring_fn_id] is not None:
+                override_params = scoring_functions[scoring_fn_id]
+                if override_params.aggregation_functions:
+                    aggregation_functions = override_params.aggregation_functions
+
+            agg_results = aggregate_metrics(score_results, aggregation_functions)
             res[scoring_fn_id] = ScoringResult(
                 score_rows=score_results,
                 aggregated_results=agg_results,

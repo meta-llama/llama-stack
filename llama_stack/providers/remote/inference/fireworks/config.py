@@ -7,7 +7,7 @@
 from typing import Any, Dict, Optional
 
 from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 
 @json_schema_type
@@ -16,7 +16,7 @@ class FireworksImplConfig(BaseModel):
         default="https://api.fireworks.ai/inference/v1",
         description="The URL for the Fireworks server",
     )
-    api_key: Optional[str] = Field(
+    api_key: Optional[SecretStr] = Field(
         default=None,
         description="The Fireworks.ai API Key",
     )
