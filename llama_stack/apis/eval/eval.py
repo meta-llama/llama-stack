@@ -6,8 +6,9 @@
 
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
-from llama_models.llama3.api.datatypes import BaseModel, Field
 from llama_models.schema_utils import json_schema_type, webmethod
+
+from pydantic import BaseModel, Field
 
 from typing_extensions import Annotated
 
