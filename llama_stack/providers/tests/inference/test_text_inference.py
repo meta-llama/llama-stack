@@ -210,6 +210,7 @@ class TestInference:
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
             "inline::meta-reference",
+            "remote::ollama",
             "remote::tgi",
             "remote::together",
             "remote::fireworks",
@@ -272,6 +273,7 @@ class TestInference:
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
             "inline::meta-reference",
+            "remote::ollama",
             "remote::fireworks",
             "remote::tgi",
             "remote::together",
