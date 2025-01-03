@@ -32,6 +32,9 @@ providers:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config: {}
+  - provider_id: code-scanner
+    provider_type: inline::code-scanner
+    config: {}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -93,7 +96,11 @@ models:
 shields:
 - params: null
   shield_id: ${env.SAFETY_MODEL}
-  provider_id: null
+  provider_id: llama-guard
+  provider_shield_id: null
+- params: null
+  shield_id: CodeScanner
+  provider_id: code-scanner
   provider_shield_id: null
 memory_banks: []
 datasets: []
