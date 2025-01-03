@@ -193,10 +193,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             assert (
                 not media_present
-            ), "Together does not support media for Completion requests"
+            ), "vLLM does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(
                 request,
-                self.register_helper.get_llama_model(request.model),
                 self.formatter,
             )
 
