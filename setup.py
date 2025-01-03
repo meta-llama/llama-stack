@@ -14,6 +14,7 @@ def read_requirements():
     return [line.strip() for line in content]
 
 
+# Setup configuration
 setup(
     name="llama_stack",
     version="0.0.63",
