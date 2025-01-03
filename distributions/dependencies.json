@@ -393,5 +393,33 @@
     "uvicorn",
     "sentence-transformers --no-deps",
     "torch --index-url https://download.pytorch.org/whl/cpu"
+  ],
+  "portkey": [
+    "aiosqlite",
+    "blobfile",
+    "portkey-ai",
+    "chardet",
+    "faiss-cpu",
+    "fastapi",
+    "fire",
+    "httpx",
+    "matplotlib",
+    "nltk",
+    "numpy",
+    "opentelemetry-exporter-otlp-proto-http",
+    "opentelemetry-sdk",
+    "pandas",
+    "pillow",
+    "psycopg2-binary",
+    "pypdf",
+    "redis",
+    "scikit-learn",
+    "scipy",
+    "sentencepiece",
+    "tqdm",
+    "transformers",
+    "uvicorn",
+    "sentence-transformers --no-deps",
+    "torch --index-url https://download.pytorch.org/whl/cpu"
   ]
 }
