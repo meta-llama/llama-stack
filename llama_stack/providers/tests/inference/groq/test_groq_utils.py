@@ -4,21 +4,33 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
+
 import pytest
 from groq.types.chat.chat_completion import ChatCompletion, Choice
 from groq.types.chat.chat_completion_chunk import (
     ChatCompletionChunk,
     Choice as StreamChoice,
     ChoiceDelta,
+    ChoiceDeltaToolCall,
+    ChoiceDeltaToolCallFunction,
 )
 from groq.types.chat.chat_completion_message import ChatCompletionMessage
-
+from groq.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
+from groq.types.shared.function_definition import FunctionDefinition
+from llama_models.llama3.api.datatypes import ToolParamDefinition
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponseEventType,
     CompletionMessage,
     StopReason,
     SystemMessage,
+    ToolCall,
+    ToolChoice,
+    ToolDefinition,
     UserMessage,
 )
 from llama_stack.providers.remote.inference.groq.groq_utils import (
@@ -140,12 +152,6 @@ class TestConvertChatCompletionRequest:
 
         assert converted["max_tokens"] == 100
 
-    def _dummy_chat_completion_request(self):
-        return ChatCompletionRequest(
-            model="Llama-3.2-3B",
-            messages=[UserMessage(content="Hello World")],
-        )
-
     def test_includes_temperature(self):
         request = self._dummy_chat_completion_request()
         request.sampling_params.temperature = 0.5
@@ -161,6 +167,112 @@ class TestConvertChatCompletionRequest:
         converted = convert_chat_completion_request(request)
 
         assert converted["top_p"] == 0.95
+
+    def test_includes_tool_choice(self):
+        request = self._dummy_chat_completion_request()
+        request.tool_choice = ToolChoice.required
+
+        converted = convert_chat_completion_request(request)
+
+        assert converted["tool_choice"] == "required"
+
+    def test_includes_tools(self):
+        request = self._dummy_chat_completion_request()
+        request.tools = [
+            ToolDefinition(
+                tool_name="get_flight_info",
+                description="Get fight information between two destinations.",
+                parameters={
+                    "origin": ToolParamDefinition(
+                        param_type="string",
+                        description="The origin airport code. E.g., AU",
+                        required=True,
+                    ),
+                    "destination": ToolParamDefinition(
+                        param_type="string",
+                        description="The destination airport code. E.g., 'LAX'",
+                        required=True,
+                    ),
+                    "passengers": ToolParamDefinition(
+                        param_type="array",
+                        description="The passengers",
+                        required=False,
+                    ),
+                },
+            ),
+            ToolDefinition(
+                tool_name="log",
+                description="Calulate the logarithm of a number",
+                parameters={
+                    "number": ToolParamDefinition(
+                        param_type="float",
+                        description="The number to calculate the logarithm of",
+                        required=True,
+                    ),
+                    "base": ToolParamDefinition(
+                        param_type="integer",
+                        description="The base of the logarithm",
+                        required=False,
+                        default=10,
+                    ),
+                },
+            ),
+        ]
+
+        converted = convert_chat_completion_request(request)
+
+        assert converted["tools"] == [
+            {
+                "type": "function",
+                "function": FunctionDefinition(
+                    name="get_flight_info",
+                    description="Get fight information between two destinations.",
+                    parameters={
+                        "origin": {
+                            "type": "string",
+                            "description": "The origin airport code. E.g., AU",
+                            "required": True,
+                        },
+                        "destination": {
+                            "type": "string",
+                            "description": "The destination airport code. E.g., 'LAX'",
+                            "required": True,
+                        },
+                        "passengers": {
+                            "type": "array",
+                            "description": "The passengers",
+                            "required": False,
+                        },
+                    },
+                ),
+            },
+            {
+                "type": "function",
+                "function": FunctionDefinition(
+                    name="log",
+                    description="Calulate the logarithm of a number",
+                    parameters={
+                        "number": {
+                            "type": "float",
+                            "description": "The number to calculate the logarithm of",
+                            "required": True,
+                        },
+                        "base": {
+                            "type": "integer",
+                            "description": "The base of the logarithm",
+                            "required": False,
+                            "default": 10,
+                        },
+                    },
+                ),
+            },
+        ]
+
+    def _dummy_chat_completion_request(self):
+        return ChatCompletionRequest(
+            model="Llama-3.2-3B",
+            messages=[UserMessage(content="Hello World")],
+        )
 
 
 class TestConvertNonStreamChatCompletionResponse:
@@ -188,6 +300,49 @@ class TestConvertNonStreamChatCompletionResponse:
 
         assert converted.completion_message.stop_reason == StopReason.out_of_tokens
 
+    def test_maps_tool_call_to_end_of_message(self):
+        response = self._dummy_chat_completion_response_with_tool_call()
+
+        converted = convert_chat_completion_response(response)
+
+        assert converted.completion_message.stop_reason == StopReason.end_of_message
+
+    def test_converts_multiple_tool_calls(self):
+        response = self._dummy_chat_completion_response_with_tool_call()
+        response.choices[0].message.tool_calls = [
+            ChatCompletionMessageToolCall(
+                id="tool_call_id",
+                type="function",
+                function=Function(
+                    name="get_flight_info",
+                    arguments='{"origin": "AU", "destination": "LAX"}',
+                ),
+            ),
+            ChatCompletionMessageToolCall(
+                id="tool_call_id_2",
+                type="function",
+                function=Function(
+                    name="log",
+                    arguments='{"number": 10, "base": 2}',
+                ),
+            ),
+        ]
+
+        converted = convert_chat_completion_response(response)
+
+        assert converted.completion_message.tool_calls == [
+            ToolCall(
+                call_id="tool_call_id",
+                tool_name="get_flight_info",
+                arguments={"origin": "AU", "destination": "LAX"},
+            ),
+            ToolCall(
+                call_id="tool_call_id_2",
+                tool_name="log",
+                arguments={"number": 10, "base": 2},
+            ),
+        ]
+
     def _dummy_chat_completion_response(self):
         return ChatCompletion(
             id="chatcmpl-123",
@@ -205,6 +360,33 @@ class TestConvertNonStreamChatCompletionResponse:
             object="chat.completion",
         )
 
+    def _dummy_chat_completion_response_with_tool_call(self):
+        return ChatCompletion(
+            id="chatcmpl-123",
+            model="Llama-3.2-3B",
+            choices=[
+                Choice(
+                    index=0,
+                    message=ChatCompletionMessage(
+                        role="assistant",
+                        tool_calls=[
+                            ChatCompletionMessageToolCall(
+                                id="tool_call_id",
+                                type="function",
+                                function=Function(
+                                    name="get_flight_info",
+                                    arguments='{"origin": "AU", "destination": "LAX"}',
+                                ),
+                            )
+                        ],
+                    ),
+                    finish_reason="tool_calls",
+                )
+            ],
+            created=1729382400,
+            object="chat.completion",
+        )
+
 
 class TestConvertStreamChatCompletionResponse:
     @pytest.mark.asyncio
@@ -214,10 +396,6 @@ class TestConvertStreamChatCompletionResponse:
             for i, message in enumerate(messages):
                 chunk = self._dummy_chat_completion_chunk()
                 chunk.choices[0].delta.content = message
-                if i == len(messages) - 1:
-                    chunk.choices[0].finish_reason = "stop"
-                else:
-                    chunk.choices[0].finish_reason = None
                 yield chunk
 
             chunk = self._dummy_chat_completion_chunk()
@@ -241,12 +419,6 @@ class TestConvertStreamChatCompletionResponse:
         assert chunk.event.event_type == ChatCompletionResponseEventType.progress
         assert chunk.event.delta == " !"
 
-        # Dummy chunk to ensure the last chunk is really the end of the stream
-        # This one technically maps to Groq's final "stop" chunk
-        chunk = await iter.__anext__()
-        assert chunk.event.event_type == ChatCompletionResponseEventType.progress
-        assert chunk.event.delta == ""
-
         chunk = await iter.__anext__()
         assert chunk.event.event_type == ChatCompletionResponseEventType.complete
         assert chunk.event.delta == ""
@@ -254,6 +426,53 @@ class TestConvertStreamChatCompletionResponse:
 
         with pytest.raises(StopAsyncIteration):
             await iter.__anext__()
+
+    @pytest.mark.asyncio
+    async def test_returns_tool_calls_stream(self):
+        def tool_call_stream():
+            tool_calls = [
+                ToolCall(
+                    call_id="tool_call_id",
+                    tool_name="get_flight_info",
+                    arguments={"origin": "AU", "destination": "LAX"},
+                ),
+                ToolCall(
+                    call_id="tool_call_id_2",
+                    tool_name="log",
+                    arguments={"number": 10, "base": 2},
+                ),
+            ]
+            for i, tool_call in enumerate(tool_calls):
+                chunk = self._dummy_chat_completion_chunk_with_tool_call()
+                chunk.choices[0].delta.tool_calls = [
+                    ChoiceDeltaToolCall(
+                        index=0,
+                        type="function",
+                        id=tool_call.call_id,
+                        function=ChoiceDeltaToolCallFunction(
+                            name=tool_call.tool_name,
+                            arguments=json.dumps(tool_call.arguments),
+                        ),
+                    ),
+                ]
+                yield chunk
+
+            chunk = self._dummy_chat_completion_chunk_with_tool_call()
+            chunk.choices[0].delta.content = None
+            chunk.choices[0].finish_reason = "stop"
+            yield chunk
+
+        stream = tool_call_stream()
+        converted = convert_chat_completion_response_stream(stream)
+
+        iter = converted.__aiter__()
+        chunk = await iter.__anext__()
+        assert chunk.event.event_type == ChatCompletionResponseEventType.start
+        assert chunk.event.delta.content == ToolCall(
+            call_id="tool_call_id",
+            tool_name="get_flight_info",
+            arguments={"origin": "AU", "destination": "LAX"},
+        )
 
     def _dummy_chat_completion_chunk(self):
         return ChatCompletionChunk(
@@ -263,6 +482,34 @@ class TestConvertStreamChatCompletionResponse:
                 StreamChoice(
                     index=0,
                     delta=ChoiceDelta(role="assistant", content="Hello World"),
+                )
+            ],
+            created=1729382400,
+            object="chat.completion.chunk",
+            x_groq=None,
+        )
+
+    def _dummy_chat_completion_chunk_with_tool_call(self):
+        return ChatCompletionChunk(
+            id="chatcmpl-123",
+            model="Llama-3.2-3B",
+            choices=[
+                StreamChoice(
+                    index=0,
+                    delta=ChoiceDelta(
+                        role="assistant",
+                        content="Hello World",
+                        tool_calls=[
+                            ChoiceDeltaToolCall(
+                                index=0,
+                                type="function",
+                                function=ChoiceDeltaToolCallFunction(
+                                    name="get_flight_info",
+                                    arguments='{"origin": "AU", "destination": "LAX"}',
+                                ),
+                            )
+                        ],
+                    ),
                 )
             ],
             created=1729382400,
