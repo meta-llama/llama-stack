@@ -412,7 +412,7 @@ class ChatAgent(ShieldRunnerMixin):
                                     ToolCall(
                                         call_id="",
                                         tool_name="memory",
-                                        arguments={},
+                                        arguments=serialized_args,
                                     )
                                 ],
                                 tool_responses=[
