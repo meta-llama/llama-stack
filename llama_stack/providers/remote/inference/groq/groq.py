@@ -140,7 +140,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
 
     def _get_client(self) -> Groq:
         if self._config.api_key is not None:
-            return Groq(api_key=self.config.api_key)
+            return Groq(api_key=self._config.api_key)
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.groq_api_key:
