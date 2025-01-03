@@ -104,7 +104,7 @@ async def create_agent_turn_with_search_tool(
     agent_config = AgentConfig(
         **{
             **common_params,
-            "tool_names": [tool_name],
+            "tools": [tool_name],
         }
     )
 
@@ -268,7 +268,7 @@ class TestAgents:
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "preprocessing_tools": ["memory"],
+                "tools": ["memory"],
                 "tool_choice": ToolChoice.auto,
             }
         )

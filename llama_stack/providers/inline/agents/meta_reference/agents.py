@@ -19,6 +19,7 @@ from llama_stack.apis.agents import (
     Agents,
     AgentSessionCreateResponse,
     AgentStepResponse,
+    AgentTool,
     AgentTurnCreateRequest,
     Session,
     Turn,
@@ -145,6 +146,7 @@ class MetaReferenceAgentsImpl(Agents):
                 ToolResponseMessage,
             ]
         ],
+        tools: Optional[List[AgentTool]] = None,
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
@@ -152,6 +154,7 @@ class MetaReferenceAgentsImpl(Agents):
             session_id=session_id,
             messages=messages,
             stream=True,
+            tools=tools,
         )
         if stream:
             return self._create_agent_turn_streaming(request)
