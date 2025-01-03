@@ -11,19 +11,28 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import torch
 from llama_models.datatypes import Model
 from llama_models.sku_list import resolve_model
+
 from llama_stack.apis.common.type_system import ParamType, StringType
 from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.post_training import DatasetFormat
 
 from pydantic import BaseModel
+from torchtune.data._messages import (
+    AlpacaToMessages,
+    InputOutputToMessages,
+    OpenAIToMessages,
+    ShareGPTToMessages,
+)
 
 from torchtune.models.llama3 import llama3_tokenizer, lora_llama3_8b
 from torchtune.models.llama3._tokenizer import Llama3Tokenizer
 from torchtune.models.llama3_2 import lora_llama3_2_3b
+from torchtune.modules.transforms import Transform
 
 
 class ColumnName(Enum):
@@ -31,6 +40,8 @@ class ColumnName(Enum):
     input = "input"
     output = "output"
     text = "text"
+    conversations = "conversations"
+    messages = "messages"
 
 
 class ModelConfig(BaseModel):
@@ -41,6 +52,9 @@ class ModelConfig(BaseModel):
 
 class DatasetSchema(BaseModel):
     alpaca: List[Dict[str, ParamType]]
+    instruct: Dict[str, ParamType]
+    chat_sharegpt: Dict[str, ParamType]
+    chat_openai: Dict[str, ParamType]
 
 
 MODEL_CONFIGS: Dict[str, ModelConfig] = {
@@ -54,6 +68,13 @@ MODEL_CONFIGS: Dict[str, ModelConfig] = {
         tokenizer_type=llama3_tokenizer,
         checkpoint_type="LLAMA3",
     ),
+}
+
+DATA_FORMATS: Dict[str, Transform] = {
+    "alpaca": AlpacaToMessages,
+    "instruct": InputOutputToMessages,
+    "chat_sharegpt": ShareGPTToMessages,
+    "chat_openai": OpenAIToMessages,
 }
 
 
@@ -74,7 +95,17 @@ EXPECTED_DATASET_SCHEMA = DatasetSchema(
             ColumnName.instruction.value: StringType(),
             ColumnName.output.value: StringType(),
         },
-    ]
+    ],
+    instruct={
+        ColumnName.input.value: StringType(),
+        ColumnName.output.value: StringType(),
+    },
+    chat_sharegpt={
+        ColumnName.conversations.value: StringType(),
+    },
+    chat_openai={
+        ColumnName.messages.value: StringType(),
+    },
 )
 
 BuildLoraModelCallable = Callable[..., torch.nn.Module]
@@ -122,10 +153,15 @@ async def get_checkpointer_model_type(
     return model_config.checkpoint_type
 
 
+async def get_data_transform(data_format: DatasetFormat) -> Transform:
+    return DATA_FORMATS[data_format.value]
+
+
 async def validate_input_dataset_schema(
     datasets_api: Datasets,
     dataset_id: str,
     dataset_type: str,
+    column_map: Optional[Dict[str, str]] = None,
 ) -> None:
     dataset_def = await datasets_api.get_dataset(dataset_id=dataset_id)
     if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
@@ -134,7 +170,21 @@ async def validate_input_dataset_schema(
     if not hasattr(EXPECTED_DATASET_SCHEMA, dataset_type):
         raise ValueError(f"Dataset type {dataset_type} is not supported.")
 
-    if dataset_def.dataset_schema not in getattr(EXPECTED_DATASET_SCHEMA, dataset_type):
+    dataset_schema = {}
+
+    if column_map:
+        for old_col_name in dataset_def.dataset_schema.keys():
+            if old_col_name in column_map.values():
+                new_col_name = next(
+                    k for k, v in column_map.items() if v == old_col_name
+                )
+                dataset_schema[new_col_name] = dataset_def.dataset_schema[old_col_name]
+            else:
+                dataset_schema[old_col_name] = dataset_def.dataset_schema[old_col_name]
+    else:
+        dataset_schema = dataset_def.dataset_schema
+
+    if dataset_schema not in getattr(EXPECTED_DATASET_SCHEMA, dataset_type):
         raise ValueError(
             f"Dataset {dataset_id} does not have a correct input schema in {getattr(EXPECTED_DATASET_SCHEMA, dataset_type)}"
         )

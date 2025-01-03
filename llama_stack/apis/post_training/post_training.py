@@ -28,13 +28,23 @@ class OptimizerType(Enum):
 
 
 @json_schema_type
+class DatasetFormat(Enum):
+    alpaca = "alpaca"
+    instruct = "instruct"
+    chat_sharegpt = "chat_sharegpt"
+    chat_openai = "chat_openai"
+
+
+@json_schema_type
 class DataConfig(BaseModel):
     dataset_id: str
     batch_size: int
     shuffle: bool
+    data_format: DatasetFormat
     validation_dataset_id: Optional[str] = None
     packed: Optional[bool] = False
     train_on_input: Optional[bool] = False
+    column_map: Optional[Dict[str, str]] = None
 
 
 @json_schema_type
@@ -58,7 +68,6 @@ class TrainingConfig(BaseModel):
     n_epochs: int
     max_steps_per_epoch: int
     gradient_accumulation_steps: int
-    max_validation_steps: int
     data_config: DataConfig
     optimizer_config: OptimizerConfig
     efficiency_config: Optional[EfficiencyConfig] = None
