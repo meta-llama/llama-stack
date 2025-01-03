@@ -126,7 +126,8 @@ class LoraFinetuningSingleDevice:
 
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
 
-        self.seed = training.set_seed(seed=config.torch_seed)
+        # self.seed = training.set_seed(seed=config.torch_seed)
+        self.seed = 42
         self.epochs_run = 0
         self.total_epochs = training_config.n_epochs
         self._data_format = training_config.data_config.data_format
@@ -365,6 +366,7 @@ class LoraFinetuningSingleDevice:
             column_map=self._column_map,
         )
         data_transform = await utils.get_data_transform(self._data_format)
+        print("data_transform", data_transform.__name__)
         ds = SFTDataset(
             rows,
             message_transform=data_transform(
