@@ -112,8 +112,6 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
     async def shutdown(self) -> None:
         trace.get_tracer_provider().force_flush()
-        trace.get_tracer_provider().shutdown()
-        metrics.get_meter_provider().shutdown()
 
     async def log_event(self, event: Event, ttl_seconds: int = 604800) -> None:
         if isinstance(event, UnstructuredLogEvent):
