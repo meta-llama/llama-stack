@@ -58,6 +58,7 @@ class TrainingConfig(BaseModel):
     n_epochs: int
     max_steps_per_epoch: int
     gradient_accumulation_steps: int
+    max_validation_steps: int
     data_config: DataConfig
     optimizer_config: OptimizerConfig
     efficiency_config: Optional[EfficiencyConfig] = None
