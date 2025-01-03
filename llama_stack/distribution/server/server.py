@@ -239,7 +239,12 @@ def main():
         "--template",
         help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
     )
-    parser.add_argument("--port", type=int, default=int(os.getenv("PORT", 5000)), help="Port to listen on")
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("PORT", 5000)),
+        help="Port to listen on",
+    )
     parser.add_argument(
         "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
     )
