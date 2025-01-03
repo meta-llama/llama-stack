@@ -3709,22 +3709,16 @@
                             "type": "string"
                         }
                     },
-                    "tool_names": {
+                    "tools": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/AgentTool"
                         }
                     },
                     "client_tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/UserDefinedToolDef"
-                        }
-                    },
-                    "preprocessing_tools": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
                         }
                     },
                     "tool_choice": {
@@ -3755,6 +3749,51 @@
                     "model",
                     "instructions",
                     "enable_session_persistence"
+                ]
+            },
+            "AgentTool": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "args": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "name",
+                            "args"
+                        ]
+                    }
                 ]
             },
             "ToolParameter": {
@@ -3938,6 +3977,12 @@
                     },
                     "stream": {
                         "type": "boolean"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgentTool"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7945,6 +7990,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentStepResponse\" />"
         },
         {
+            "name": "AgentTool",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AgentTool\" />"
+        },
+        {
             "name": "AgentTurnResponseEvent",
             "description": "Streamed agent execution response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AgentTurnResponseEvent\" />"
         },
@@ -8683,6 +8732,7 @@
                 "AgentCreateResponse",
                 "AgentSessionCreateResponse",
                 "AgentStepResponse",
+                "AgentTool",
                 "AgentTurnResponseEvent",
                 "AgentTurnResponseStepCompletePayload",
                 "AgentTurnResponseStepProgressPayload",

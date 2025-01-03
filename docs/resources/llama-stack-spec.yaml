@@ -38,22 +38,18 @@ components:
           items:
             type: string
           type: array
-        preprocessing_tools:
-          items:
-            type: string
-          type: array
         sampling_params:
           $ref: '#/components/schemas/SamplingParams'
         tool_choice:
           $ref: '#/components/schemas/ToolChoice'
           default: auto
-        tool_names:
-          items:
-            type: string
-          type: array
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
           default: json
+        tools:
+          items:
+            $ref: '#/components/schemas/AgentTool'
+          type: array
       required:
       - max_infer_iters
       - model
@@ -88,6 +84,27 @@ components:
       required:
       - step
       type: object
+    AgentTool:
+      oneOf:
+      - type: string
+      - additionalProperties: false
+        properties:
+          args:
+            additionalProperties:
+              oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+            type: object
+          name:
+            type: string
+        required:
+        - name
+        - args
+        type: object
     AgentTurnResponseEvent:
       additionalProperties: false
       properties:
@@ -611,6 +628,10 @@ components:
           type: string
         stream:
           type: boolean
+        tools:
+          items:
+            $ref: '#/components/schemas/AgentTool'
+          type: array
       required:
       - agent_id
       - session_id
@@ -4884,6 +4905,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/AgentStepResponse"
     />
   name: AgentStepResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/AgentTool" />
+  name: AgentTool
 - description: 'Streamed agent execution response.
 
 
@@ -5413,6 +5436,7 @@ x-tagGroups:
   - AgentCreateResponse
   - AgentSessionCreateResponse
   - AgentStepResponse
+  - AgentTool
   - AgentTurnResponseEvent
   - AgentTurnResponseStepCompletePayload
   - AgentTurnResponseStepProgressPayload
