@@ -62,26 +62,24 @@ def get_valid_schemas(api_str: str):
         raise ValueError(f"Invalid API string: {api_str}")
 
 
-class DataSchemaValidatorMixin:
-    def validate_dataset_schema(
-        self,
-        dataset_schema: Dict[str, Any],
-        expected_schemas: List[Dict[str, Any]],
-    ):
-        if dataset_schema not in expected_schemas:
-            raise ValueError(
-                f"Dataset {dataset_schema} does not have a correct input schema in {expected_schemas}"
-            )
-
-    def validate_row_schema(
-        self,
-        input_row: Dict[str, Any],
-        expected_schemas: List[Dict[str, Any]],
-    ):
-        for schema in expected_schemas:
-            if all(key in input_row for key in schema):
-                return
-
+def validate_dataset_schema(
+    dataset_schema: Dict[str, Any],
+    expected_schemas: List[Dict[str, Any]],
+):
+    if dataset_schema not in expected_schemas:
         raise ValueError(
-            f"Input row {input_row} does not match any of the expected schemas in {expected_schemas}"
+            f"Dataset {dataset_schema} does not have a correct input schema in {expected_schemas}"
         )
+
+
+def validate_row_schema(
+    input_row: Dict[str, Any],
+    expected_schemas: List[Dict[str, Any]],
+):
+    for schema in expected_schemas:
+        if all(key in input_row for key in schema):
+            return
+
+    raise ValueError(
+        f"Input row {input_row} does not match any of the expected schemas in {expected_schemas}"
+    )
