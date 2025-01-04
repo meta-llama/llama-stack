@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Any, Generator, get_args, get_origin, Optional, TypeVar
 
 import httpx
-
 import yaml
 from llama_stack_client import (
     APIResponse,
@@ -28,7 +27,6 @@ from llama_stack_client import (
 )
 from pydantic import BaseModel, TypeAdapter
 from rich.console import Console
-
 from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
@@ -42,7 +40,6 @@ from llama_stack.distribution.stack import (
     redact_sensitive_fields,
     replace_env_vars,
 )
-
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
@@ -255,6 +252,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 self.config, self.custom_provider_registry
             )
         except ModuleNotFoundError as _e:
+            cprint(_e.msg, "red")
             cprint(
                 "Using llama-stack as a library requires installing dependencies depending on the template (providers) you choose.\n",
                 "yellow",

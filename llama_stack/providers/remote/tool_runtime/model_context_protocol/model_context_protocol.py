@@ -7,6 +7,9 @@
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
+from mcp import ClientSession
+from mcp.client.sse import sse_client
+
 from llama_stack.apis.tools import (
     MCPToolGroupDef,
     ToolDef,
@@ -14,11 +17,9 @@ from llama_stack.apis.tools import (
     ToolInvocationResult,
     ToolParameter,
     ToolRuntime,
+    UserDefinedToolDef,
 )
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
-
-from mcp import ClientSession
-from mcp.client.sse import sse_client
 
 from .config import ModelContextProtocolConfig
 
@@ -52,7 +53,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                             )
                         )
                     tools.append(
-                        ToolDef(
+                        UserDefinedToolDef(
                             name=tool.name,
                             description=tool.description,
                             parameters=parameters,

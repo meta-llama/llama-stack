@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
@@ -27,11 +27,15 @@ from llama_stack.apis.scoring_functions import (
 )
 from llama_stack.apis.shields import Shield, Shields
 from llama_stack.apis.tools import (
+    BuiltInToolDef,
     MCPToolGroupDef,
     Tool,
     ToolGroup,
     ToolGroupDef,
     ToolGroups,
+    ToolHost,
+    ToolPromptFormat,
+    UserDefinedToolDef,
     UserDefinedToolGroupDef,
 )
 from llama_stack.distribution.datatypes import (
@@ -39,7 +43,6 @@ from llama_stack.distribution.datatypes import (
     RoutableObjectWithProvider,
     RoutedProtocol,
 )
-
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
 
@@ -361,7 +364,7 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
             memory_bank_data["embedding_dimension"] = model.metadata[
                 "embedding_dimension"
             ]
-        memory_bank = parse_obj_as(MemoryBank, memory_bank_data)
+        memory_bank = TypeAdapter(MemoryBank).validate_python(memory_bank_data)
         await self.register_object(memory_bank)
         return memory_bank
 
@@ -516,6 +519,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     ) -> None:
         tools = []
         tool_defs = []
+        tool_host = ToolHost.distribution
         if provider_id is None:
             if len(self.impls_by_provider_id.keys()) > 1:
                 raise ValueError(
@@ -523,29 +527,48 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                 )
             provider_id = list(self.impls_by_provider_id.keys())[0]
 
+        # parse tool group to the type if dict
+        tool_group = TypeAdapter(ToolGroupDef).validate_python(tool_group)
         if isinstance(tool_group, MCPToolGroupDef):
             tool_defs = await self.impls_by_provider_id[provider_id].discover_tools(
                 tool_group
             )
-
+            tool_host = ToolHost.model_context_protocol
         elif isinstance(tool_group, UserDefinedToolGroupDef):
             tool_defs = tool_group.tools
         else:
             raise ValueError(f"Unknown tool group: {tool_group}")
 
         for tool_def in tool_defs:
-            tools.append(
-                Tool(
-                    identifier=tool_def.name,
-                    tool_group=tool_group_id,
-                    description=tool_def.description,
-                    parameters=tool_def.parameters,
-                    provider_id=provider_id,
-                    tool_prompt_format=tool_def.tool_prompt_format,
-                    provider_resource_id=tool_def.name,
-                    metadata=tool_def.metadata,
+            if isinstance(tool_def, UserDefinedToolDef):
+                tools.append(
+                    Tool(
+                        identifier=tool_def.name,
+                        tool_group=tool_group_id,
+                        description=tool_def.description,
+                        parameters=tool_def.parameters,
+                        provider_id=provider_id,
+                        tool_prompt_format=tool_def.tool_prompt_format,
+                        provider_resource_id=tool_def.name,
+                        metadata=tool_def.metadata,
+                        tool_host=tool_host,
+                    )
                 )
-            )
+            elif isinstance(tool_def, BuiltInToolDef):
+                tools.append(
+                    Tool(
+                        identifier=tool_def.built_in_type.value,
+                        tool_group=tool_group_id,
+                        built_in_type=tool_def.built_in_type,
+                        description="",
+                        parameters=[],
+                        provider_id=provider_id,
+                        tool_prompt_format=ToolPromptFormat.json,
+                        provider_resource_id=tool_def.built_in_type.value,
+                        metadata=tool_def.metadata,
+                        tool_host=tool_host,
+                    )
+                )
         for tool in tools:
             existing_tool = await self.get_tool(tool.identifier)
             # Compare existing and new object if one exists

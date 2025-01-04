@@ -8,19 +8,13 @@ import os
 from typing import Dict, List
 
 import pytest
-from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.agents import (
     AgentConfig,
-    AgentTool,
     AgentTurnResponseEventType,
     AgentTurnResponseStepCompletePayload,
     AgentTurnResponseStreamChunk,
     AgentTurnResponseTurnCompletePayload,
-    Attachment,
-    MemoryToolDefinition,
-    SearchEngineType,
-    SearchToolDefinition,
     ShieldCallStep,
     StepType,
     ToolChoice,
@@ -28,6 +22,8 @@ from llama_stack.apis.agents import (
     Turn,
 )
 from llama_stack.apis.inference import CompletionMessage, SamplingParams, UserMessage
+from llama_stack.apis.memory import MemoryBankDocument
+from llama_stack.apis.memory_banks import VectorMemoryBankParams
 from llama_stack.apis.safety import ViolationLevel
 from llama_stack.providers.datatypes import Api
 
@@ -35,7 +31,6 @@ from llama_stack.providers.datatypes import Api
 #
 # pytest -v -s llama_stack/providers/tests/agents/test_agents.py
 #   -m "meta_reference"
-
 from .fixtures import pick_inference_model
 from .utils import create_agent_session
 
@@ -51,7 +46,8 @@ def common_params(inference_model):
         sampling_params=SamplingParams(temperature=0.7, top_p=0.95),
         input_shields=[],
         output_shields=[],
-        tools=[],
+        available_tools=[],
+        preprocessing_tools=[],
         max_infer_iters=5,
     )
 
@@ -92,7 +88,7 @@ async def create_agent_turn_with_search_tool(
     agents_stack: Dict[str, object],
     search_query_messages: List[object],
     common_params: Dict[str, str],
-    search_tool_definition: SearchToolDefinition,
+    tool_name: str,
 ) -> None:
     """
     Create an agent turn with a search tool.
@@ -108,7 +104,7 @@ async def create_agent_turn_with_search_tool(
     agent_config = AgentConfig(
         **{
             **common_params,
-            "tools": [search_tool_definition],
+            "tools": [tool_name],
         }
     )
 
@@ -149,7 +145,8 @@ async def create_agent_turn_with_search_tool(
     tool_execution = tool_execution_events[0].event.payload.step_details
     assert isinstance(tool_execution, ToolExecutionStep)
     assert len(tool_execution.tool_calls) > 0
-    assert tool_execution.tool_calls[0].tool_name == BuiltinTool.brave_search
+    actual_tool_name = tool_execution.tool_calls[0].tool_name
+    assert actual_tool_name.value == tool_name
     assert len(tool_execution.tool_responses) > 0
 
     check_turn_complete_event(turn_response, session_id, search_query_messages)
@@ -227,7 +224,7 @@ class TestAgents:
         check_turn_complete_event(turn_response, session_id, sample_messages)
 
     @pytest.mark.asyncio
-    async def test_rag_agent_as_attachments(
+    async def test_rag_agent(
         self,
         agents_stack,
         attachment_message,
@@ -235,6 +232,8 @@ class TestAgents:
         common_params,
     ):
         agents_impl = agents_stack.impls[Api.agents]
+        memory_banks_impl = agents_stack.impls[Api.memory_banks]
+        memory_impl = agents_stack.impls[Api.memory]
         urls = [
             "memory_optimizations.rst",
             "chat.rst",
@@ -243,29 +242,33 @@ class TestAgents:
             "qat_finetune.rst",
             "lora_finetune.rst",
         ]
-
-        attachments = [
-            Attachment(
+        documents = [
+            MemoryBankDocument(
+                document_id=f"num-{i}",
                 content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
                 mime_type="text/plain",
+                metadata={},
             )
             for i, url in enumerate(urls)
         ]
+        await memory_banks_impl.register_memory_bank(
+            memory_bank_id="test_bank",
+            params=VectorMemoryBankParams(
+                embedding_model="all-MiniLM-L6-v2",
+                chunk_size_in_tokens=512,
+                overlap_size_in_tokens=64,
+            ),
+            provider_id="faiss",
+        )
+        memory_impl.insert_documents(
+            bank_id="test_bank",
+            documents=documents,
+        )
 
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "tools": [
-                    MemoryToolDefinition(
-                        memory_bank_configs=[],
-                        query_generator_config={
-                            "type": "default",
-                            "sep": " ",
-                        },
-                        max_tokens_in_context=4096,
-                        max_chunks=10,
-                    ),
-                ],
+                "tools": ["memory"],
                 "tool_choice": ToolChoice.auto,
             }
         )
@@ -275,7 +278,6 @@ class TestAgents:
             agent_id=agent_id,
             session_id=session_id,
             messages=attachment_message,
-            attachments=attachments,
             stream=True,
         )
         turn_response = [
@@ -299,35 +301,17 @@ class TestAgents:
         assert len(turn_response) > 0
 
     @pytest.mark.asyncio
-    async def test_create_agent_turn_with_brave_search(
-        self, agents_stack, search_query_messages, common_params
-    ):
-        if "BRAVE_SEARCH_API_KEY" not in os.environ:
-            pytest.skip("BRAVE_SEARCH_API_KEY not set, skipping test")
-
-        search_tool_definition = SearchToolDefinition(
-            type=AgentTool.brave_search.value,
-            api_key=os.environ["BRAVE_SEARCH_API_KEY"],
-            engine=SearchEngineType.brave,
-        )
-        await create_agent_turn_with_search_tool(
-            agents_stack, search_query_messages, common_params, search_tool_definition
-        )
-
-    @pytest.mark.asyncio
     async def test_create_agent_turn_with_tavily_search(
         self, agents_stack, search_query_messages, common_params
     ):
         if "TAVILY_SEARCH_API_KEY" not in os.environ:
             pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
 
-        search_tool_definition = SearchToolDefinition(
-            type=AgentTool.brave_search.value,  # place holder only
-            api_key=os.environ["TAVILY_SEARCH_API_KEY"],
-            engine=SearchEngineType.tavily,
-        )
         await create_agent_turn_with_search_tool(
-            agents_stack, search_query_messages, common_params, search_tool_definition
+            agents_stack,
+            search_query_messages,
+            common_params,
+            "brave_search",
         )
 
 
