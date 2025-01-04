@@ -52,9 +52,9 @@ class ModelConfig(BaseModel):
 
 class DatasetSchema(BaseModel):
     alpaca: List[Dict[str, ParamType]]
-    instruct: Dict[str, ParamType]
-    chat_sharegpt: Dict[str, ParamType]
-    chat_openai: Dict[str, ParamType]
+    instruct: List[Dict[str, ParamType]]
+    chat_sharegpt: List[Dict[str, ParamType]]
+    chat_openai: List[Dict[str, ParamType]]
 
 
 MODEL_CONFIGS: Dict[str, ModelConfig] = {
@@ -96,16 +96,22 @@ EXPECTED_DATASET_SCHEMA = DatasetSchema(
             ColumnName.output.value: StringType(),
         },
     ],
-    instruct={
-        ColumnName.input.value: StringType(),
-        ColumnName.output.value: StringType(),
-    },
-    chat_sharegpt={
-        ColumnName.conversations.value: StringType(),
-    },
-    chat_openai={
-        ColumnName.messages.value: StringType(),
-    },
+    instruct=[
+        {
+            ColumnName.input.value: StringType(),
+            ColumnName.output.value: StringType(),
+        }
+    ],
+    chat_sharegpt=[
+        {
+            ColumnName.conversations.value: StringType(),
+        }
+    ],
+    chat_openai=[
+        {
+            ColumnName.messages.value: StringType(),
+        }
+    ],
 )
 
 BuildLoraModelCallable = Callable[..., torch.nn.Module]
