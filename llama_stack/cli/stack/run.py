@@ -51,7 +51,8 @@ class StackRun(Subcommand):
         )
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
-        import pkg_resources
+        import importlib.resources
+
         import yaml
 
         from llama_stack.distribution.build import ImageType
@@ -106,15 +107,15 @@ class StackRun(Subcommand):
         config = parse_and_maybe_upgrade_config(config_dict)
 
         if config.docker_image:
-            script = pkg_resources.resource_filename(
-                "llama_stack",
-                "distribution/start_container.sh",
+            script = (
+                importlib.resources.files("llama_stack")
+                / "distribution/start_container.sh"
             )
             run_args = [script, config.docker_image]
         else:
-            script = pkg_resources.resource_filename(
-                "llama_stack",
-                "distribution/start_conda_env.sh",
+            script = (
+                importlib.resources.files("llama_stack")
+                / "distribution/start_conda_env.sh"
             )
             run_args = [
                 script,

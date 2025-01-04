@@ -43,7 +43,7 @@ class ModelPromptFormat(Subcommand):
         )
 
     def _run_model_template_cmd(self, args: argparse.Namespace) -> None:
-        import pkg_resources
+        import importlib.resources
 
         # Only Llama 3.1 and 3.2 are supported
         supported_model_ids = [
@@ -64,25 +64,26 @@ class ModelPromptFormat(Subcommand):
                 f"{model_id} is not a valid Model. Choose one from --\n {model_str}"
             )
 
-        llama_3_1_file = pkg_resources.resource_filename(
-            "llama_models", "llama3_1/prompt_format.md"
+        llama_3_1_file = (
+            importlib.resources.files("llama_models") / "llama3_1/prompt_format.md"
         )
-        llama_3_2_text_file = pkg_resources.resource_filename(
-            "llama_models", "llama3_2/text_prompt_format.md"
+        llama_3_2_text_file = (
+            importlib.resources.files("llama_models") / "llama3_2/text_prompt_format.md"
         )
-        llama_3_2_vision_file = pkg_resources.resource_filename(
-            "llama_models", "llama3_2/vision_prompt_format.md"
+        llama_3_2_vision_file = (
+            importlib.resources.files("llama_models")
+            / "llama3_2/vision_prompt_format.md"
         )
         if model_family(model_id) == ModelFamily.llama3_1:
-            with open(llama_3_1_file, "r") as f:
-                content = f.read()
+            with importlib.resources.as_file(llama_3_1_file) as f:
+                content = f.open("r").read()
         elif model_family(model_id) == ModelFamily.llama3_2:
             if is_multimodal(model_id):
-                with open(llama_3_2_vision_file, "r") as f:
-                    content = f.read()
+                with importlib.resources.as_file(llama_3_2_vision_file) as f:
+                    content = f.open("r").read()
             else:
-                with open(llama_3_2_text_file, "r") as f:
-                    content = f.read()
+                with importlib.resources.as_file(llama_3_2_text_file) as f:
+                    content = f.open("r").read()
 
         render_markdown_to_pager(content)
 
