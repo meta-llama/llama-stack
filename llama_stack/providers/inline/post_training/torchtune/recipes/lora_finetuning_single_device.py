@@ -42,7 +42,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
 from torchtune import modules, training, utils as torchtune_utils
-from torchtune.data import AlpacaToMessages, padded_collate_sft
+from torchtune.data import padded_collate_sft
 
 from torchtune.modules.loss import CEWithChunkedOutputLoss
 from torchtune.modules.peft import (
@@ -129,8 +129,10 @@ class LoraFinetuningSingleDevice:
         self.seed = training.set_seed(seed=config.torch_seed)
         self.epochs_run = 0
         self.total_epochs = training_config.n_epochs
+        self._data_format = training_config.data_config.data_format
         self._shuffle = training_config.data_config.shuffle
         self._batch_size = training_config.data_config.batch_size
+        self._column_map = training_config.data_config.column_map
 
         # this is important for debugging purpose
         self.max_steps_per_epoch = training_config.max_steps_per_epoch
@@ -360,11 +362,15 @@ class LoraFinetuningSingleDevice:
         await utils.validate_input_dataset_schema(
             datasets_api=self.datasets_api,
             dataset_id=dataset_id,
-            dataset_type="alpaca",
+            dataset_type=self._data_format.value,
+            column_map=self._column_map,
         )
+        data_transform = await utils.get_data_transform(self._data_format)
         ds = SFTDataset(
             rows,
-            message_transform=AlpacaToMessages(train_on_input=False),
+            message_transform=data_transform(
+                train_on_input=False, column_map=self._column_map
+            ),
             model_transform=tokenizer,
         )
 
