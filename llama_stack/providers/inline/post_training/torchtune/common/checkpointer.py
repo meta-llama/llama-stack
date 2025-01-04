@@ -90,18 +90,24 @@ class TorchtuneCheckpointer:
         model_file_path.mkdir(parents=True, exist_ok=True)
 
         # copy the related files for inference
-        shutil.copy(
-            Path.joinpath(self._checkpoint_dir, "params.json"),
-            Path.joinpath(model_file_path, "params.json"),
-        )
-        shutil.copy(
-            Path.joinpath(self._checkpoint_dir, "tokenizer.model"),
-            Path.joinpath(model_file_path, "tokenizer.model"),
-        )
-        shutil.copy(
-            Path.joinpath(self._checkpoint_dir, "orig_params.json"),
-            Path.joinpath(model_file_path, "orig_params.json"),
-        )
+        source_path = Path.joinpath(self._checkpoint_dir, "params.json")
+        if source_path.exists():
+            shutil.copy(
+                source_path,
+                Path.joinpath(model_file_path, "params.json"),
+            )
+        source_path = Path.joinpath(self._checkpoint_dir, "tokenizer.model")
+        if source_path.exists():
+            shutil.copy(
+                source_path,
+                Path.joinpath(model_file_path, "tokenizer.model"),
+            )
+        source_path = Path.joinpath(self._checkpoint_dir, "orig_params.json")
+        if source_path.exists():
+            shutil.copy(
+                source_path,
+                Path.joinpath(model_file_path, "orig_params.json"),
+            )
 
         if not adapter_only:
             model_state_dict = state_dict[training.MODEL_KEY]
