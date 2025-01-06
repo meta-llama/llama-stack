@@ -7,6 +7,7 @@
 import asyncio
 import inspect
 import json
+import logging
 import os
 import queue
 import threading
@@ -16,7 +17,6 @@ from pathlib import Path
 from typing import Any, Generator, get_args, get_origin, Optional, TypeVar
 
 import httpx
-
 import yaml
 from llama_stack_client import (
     APIResponse,
@@ -28,7 +28,6 @@ from llama_stack_client import (
 )
 from pydantic import BaseModel, TypeAdapter
 from rich.console import Console
-
 from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
@@ -42,7 +41,6 @@ from llama_stack.distribution.stack import (
     redact_sensitive_fields,
     replace_env_vars,
 )
-
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
@@ -174,6 +172,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
     def __init__(
         self,
         config_path_or_template_name: str,
+        skip_logger_removal: bool = False,
         custom_provider_registry: Optional[ProviderRegistry] = None,
     ):
         super().__init__()
@@ -181,14 +180,27 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             config_path_or_template_name, custom_provider_registry
         )
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
+        self.skip_logger_removal = skip_logger_removal
 
     def initialize(self):
         if in_notebook():
             import nest_asyncio
 
             nest_asyncio.apply()
+        if not self.skip_logger_removal:
+            self._remove_root_logger_handlers()
 
         return asyncio.run(self.async_client.initialize())
+
+    def _remove_root_logger_handlers(self):
+        """
+        Remove all handlers from the root logger. Needed to avoid polluting the console with logs.
+        """
+        root_logger = logging.getLogger()
+
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+            print(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def _get_path(
         self,
