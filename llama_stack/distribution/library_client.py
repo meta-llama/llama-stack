@@ -171,6 +171,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
     def __init__(
         self,
         config_path_or_template_name: str,
+        skip_logger_removal: bool = False,
         custom_provider_registry: Optional[ProviderRegistry] = None,
     ):
         super().__init__()
@@ -178,12 +179,14 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             config_path_or_template_name, custom_provider_registry
         )
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
+        self.skip_logger_removal = skip_logger_removal
 
     def initialize(self):
         if in_notebook():
             import nest_asyncio
 
             nest_asyncio.apply()
+        if not self.skip_logger_removal:
             self._remove_root_logger_handlers()
 
         return asyncio.run(self.async_client.initialize())
