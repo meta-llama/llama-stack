@@ -14,6 +14,11 @@ INFERENCE_PROVIDER_ENV_KEY = {
     "together": "TOGETHER_API_KEY",
 }
 
+TEST_MODELS = {
+    "text": "meta-llama/Llama-3.1-8B-Instruct",
+    "vision": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+}
+
 # Model category and the keywords of the corresponding functionality tests
 CATEGORY_FUNCTIONALITY_TESTS = {
     "text": ["streaming", "tool_calling", "structured_output"],
@@ -35,6 +40,7 @@ def generate_pytest_args(category, provider, env_key):
         "-s",
         "-k",
         provider,
+        "--inference-model={model_name}".format(model_name=TEST_MODELS[category]),
     ]
     if env_key is not None:
         pytest_args.extend(
