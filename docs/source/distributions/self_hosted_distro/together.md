@@ -41,6 +41,7 @@ The following models are available by default:
 - `meta-llama/Llama-3.2-3B-Instruct`
 - `meta-llama/Llama-3.2-11B-Vision-Instruct`
 - `meta-llama/Llama-3.2-90B-Vision-Instruct`
+- `meta-llama/Llama-3.3-70B-Instruct`
 - `meta-llama/Llama-Guard-3-8B`
 - `meta-llama/Llama-Guard-3-11B-Vision`
 

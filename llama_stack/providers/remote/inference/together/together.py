@@ -80,6 +80,10 @@ MODEL_ALIASES = [
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     build_model_alias(
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
+    build_model_alias(
         "meta-llama/Meta-Llama-Guard-3-8B",
         CoreModelId.llama_guard_3_8b.value,
     ),
