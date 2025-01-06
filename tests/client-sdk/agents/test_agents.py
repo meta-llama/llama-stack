@@ -9,7 +9,7 @@ from typing import Dict, List
 from uuid import uuid4
 
 import pytest
-from llama_stack_client.lib.agents.agent import Agent, AugmentConfigWithMemoryTool
+from llama_stack_client.lib.agents.agent import Agent, maybe_register_memory_tool
 from llama_stack_client.lib.agents.client_tool import ClientTool
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types import ToolResponseMessage
@@ -227,7 +227,8 @@ def test_code_execution(llama_stack_client):
             "overlap_size_in_tokens": 64,
         },
     )
-    AugmentConfigWithMemoryTool(agent_config, llama_stack_client)
+    tool_name, _ = maybe_register_memory_tool(llama_stack_client)
+    agent_config["tools"].append(tool_name)
     codex_agent = Agent(llama_stack_client, agent_config)
     session_id = codex_agent.create_session("test-session")
 
@@ -324,7 +325,8 @@ def test_rag_agent(llama_stack_client, agent_config):
         for i, url in enumerate(urls)
     ]
 
-    memory_bank_id = AugmentConfigWithMemoryTool(agent_config, llama_stack_client)
+    tool_name, memory_bank_id = maybe_register_memory_tool(llama_stack_client)
+    agent_config["tools"].append(tool_name)
     agent = Agent(llama_stack_client, agent_config)
     llama_stack_client.memory.insert(
         bank_id=memory_bank_id,
