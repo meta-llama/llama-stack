@@ -23,6 +23,12 @@ class ColumnName(Enum):
     completion_input = "completion_input"
     generated_answer = "generated_answer"
     context = "context"
+    instruction = "instruction"
+    input = "input"
+    output = "output"
+    text = "text"
+    conversations = "conversations"
+    messages = "messages"
 
 
 VALID_SCHEMAS_FOR_SCORING = [
