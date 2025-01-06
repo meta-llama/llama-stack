@@ -14,6 +14,7 @@ from llama_stack_client.lib.agents.client_tool import ClientTool
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client.types import ToolResponseMessage
 from llama_stack_client.types.agent_create_params import AgentConfig
+from llama_stack_client.types.agents.turn_create_params import Document as AgentDocument
 from llama_stack_client.types.memory_insert_params import Document
 from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.tool_def_param import UserDefinedToolDefParameter
@@ -208,7 +209,6 @@ def test_code_execution(llama_stack_client):
         model="meta-llama/Llama-3.1-70B-Instruct",
         instructions="You are a helpful assistant",
         tools=[
-            "brave_search",
             "code_interpreter",
         ],
         tool_choice="required",
@@ -217,49 +217,19 @@ def test_code_execution(llama_stack_client):
         enable_session_persistence=False,
     )
 
-    memory_bank_id = "inflation_data_memory_bank"
-    llama_stack_client.memory_banks.register(
-        memory_bank_id=memory_bank_id,
-        params={
-            "memory_bank_type": "vector",
-            "embedding_model": "all-MiniLM-L6-v2",
-            "chunk_size_in_tokens": 512,
-            "overlap_size_in_tokens": 64,
-        },
-    )
-    tool_name, _ = maybe_register_memory_tool(llama_stack_client)
-    agent_config["tools"].append(tool_name)
     codex_agent = Agent(llama_stack_client, agent_config)
     session_id = codex_agent.create_session("test-session")
-
-    llama_stack_client.memory.insert(
-        bank_id=memory_bank_id,
-        documents=[
-            Document(
-                document_id="inflation",
-                content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
-                mime_type="text/csv",
-                metadata={},
-            )
-        ],
+    inflation_doc = AgentDocument(
+        content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
+        mime_type="text/csv",
     )
 
-    user_prompts = [
-        {
-            "prompt": "Can you describe the data in the context?",
-            "tools": [{"name": "memory", "args": {"memory_bank_id": memory_bank_id}}],
-        },
-        {
-            "prompt": "Plot average yearly inflation as a time series",
-            "tools": [
-                {"name": "memory", "args": {"memory_bank_id": memory_bank_id}},
-                "code_interpreter",
-            ],
-        },
+    user_input = [
+        {"prompt": "Here is a csv, can you describe it?", "documents": [inflation_doc]},
+        {"prompt": "Plot average yearly inflation as a time series"},
     ]
 
-    for input in user_prompts:
-        print(f'User> {input["prompt"]}')
+    for input in user_input:
         response = codex_agent.create_turn(
             messages=[
                 {
@@ -268,13 +238,12 @@ def test_code_execution(llama_stack_client):
                 }
             ],
             session_id=session_id,
-            tools=input["tools"],
+            documents=input.get("documents", None),
         )
-        # for chunk in response:
-        #     print(chunk)
-
-        for log in EventLogger().log(response):
-            log.print()
+        logs = [str(log) for log in EventLogger().log(response) if log is not None]
+        logs_str = "".join(logs)
+        breakpoint()
+        print(logs_str)
 
 
 def test_custom_tool(llama_stack_client, agent_config):

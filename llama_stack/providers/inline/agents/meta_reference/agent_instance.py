@@ -40,11 +40,7 @@ from llama_stack.apis.agents import (
     ToolExecutionStep,
     Turn,
 )
-from llama_stack.apis.common.content_types import (
-    InterleavedContent,
-    TextContentItem,
-    URL,
-)
+from llama_stack.apis.common.content_types import TextContentItem, URL
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
     CompletionMessage,
@@ -375,7 +371,10 @@ class ChatAgent(ShieldRunnerMixin):
                     tool_args[tool.name] = tool.args
 
         tool_defs = await self._get_tool_defs(tools_for_turn)
-        await self.handle_documents(session_id, documents, input_messages, tool_defs)
+        if documents:
+            await self.handle_documents(
+                session_id, documents, input_messages, tool_defs
+            )
         if "memory" in tool_defs and len(input_messages) > 0:
             with tracing.span("memory_tool") as span:
                 step_id = str(uuid.uuid4())
@@ -759,26 +758,30 @@ class ChatAgent(ShieldRunnerMixin):
         input_messages: List[Message],
         tool_defs: Dict[str, ToolDefinition],
     ) -> None:
+        breakpoint()
         memory_tool = tool_defs.get("memory", None)
-        code_interpreter_tool = tool_defs.get("code_interpreter", None)
+        code_interpreter_tool = tool_defs.get(BuiltinTool.code_interpreter, None)
         if documents:
-            content_items = [
-                d for d in documents if isinstance(d.content, InterleavedContent)
-            ]
-            url_items = [d for d in documents if isinstance(d.content, URL)]
+            content_items = []
+            url_items = []
             pattern = re.compile("^(https?://|file://|data:)")
-            url_items = [
-                URL(uri=a.content) for a in url_items if pattern.match(a.content)
-            ]
+            for d in documents:
+                if isinstance(d.content, URL):
+                    url_items.append(d.content)
+                elif pattern.match(d.content):
+                    url_items.append(URL(uri=d.content))
+                else:
+                    content_items.append(d)
+
             # Save the contents to a tempdir and use its path as a URL if code interpreter is present
             if code_interpreter_tool:
                 for c in content_items:
                     temp_file_path = os.path.join(
                         self.tempdir, f"{make_random_string()}.txt"
                     )
-                with open(temp_file_path, "w") as temp_file:
-                    temp_file.write(c.content)
-                url_items.append(URL(uri=f"file://{temp_file_path}"))
+                    with open(temp_file_path, "w") as temp_file:
+                        temp_file.write(c.content)
+                    url_items.append(URL(uri=f"file://{temp_file_path}"))
 
             if memory_tool and code_interpreter_tool:
                 # if both memory and code_interpreter are available, we download the URLs
@@ -800,7 +803,7 @@ class ChatAgent(ShieldRunnerMixin):
                 # if no memory or code_interpreter tool is available,
                 # we try to load the data from the URLs and content items as a message to inference
                 # and add it to the last message's context
-                input_messages[-1].context = content_items + load_data_from_urls(
+                input_messages[-1].context = content_items + await load_data_from_urls(
                     url_items
                 )
 
