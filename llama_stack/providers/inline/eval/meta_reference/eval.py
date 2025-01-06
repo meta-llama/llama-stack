@@ -18,8 +18,8 @@ from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
 from llama_stack.providers.utils.common.data_schema_validator import (
     ColumnName,
-    DataSchemaValidatorMixin,
     get_valid_schemas,
+    validate_dataset_schema,
 )
 from llama_stack.providers.utils.kvstore import kvstore_impl
 
@@ -31,7 +31,10 @@ from .config import MetaReferenceEvalConfig
 EVAL_TASKS_PREFIX = "eval_tasks:"
 
 
-class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate, DataSchemaValidatorMixin):
+class MetaReferenceEvalImpl(
+    Eval,
+    EvalTasksProtocolPrivate,
+):
     def __init__(
         self,
         config: MetaReferenceEvalConfig,
@@ -85,7 +88,7 @@ class MetaReferenceEvalImpl(Eval, EvalTasksProtocolPrivate, DataSchemaValidatorM
         candidate = task_config.eval_candidate
         scoring_functions = task_def.scoring_functions
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        self.validate_dataset_schema(
+        validate_dataset_schema(
             dataset_def.dataset_schema, get_valid_schemas(Api.eval.value)
         )
         all_rows = await self.datasetio_api.get_rows_paginated(
