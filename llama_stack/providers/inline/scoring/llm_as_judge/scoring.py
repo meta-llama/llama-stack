@@ -19,8 +19,8 @@ from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
 from llama_stack.providers.utils.common.data_schema_validator import (
-    DataSchemaValidatorMixin,
     get_valid_schemas,
+    validate_dataset_schema,
 )
 
 from .config import LlmAsJudgeScoringConfig
@@ -31,7 +31,8 @@ LLM_JUDGE_FNS = [LlmAsJudgeScoringFn]
 
 
 class LlmAsJudgeScoringImpl(
-    Scoring, ScoringFunctionsProtocolPrivate, DataSchemaValidatorMixin
+    Scoring,
+    ScoringFunctionsProtocolPrivate,
 ):
     def __init__(
         self,
@@ -79,7 +80,7 @@ class LlmAsJudgeScoringImpl(
         save_results_dataset: bool = False,
     ) -> ScoreBatchResponse:
         dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
-        self.validate_dataset_schema(
+        validate_dataset_schema(
             dataset_def.dataset_schema, get_valid_schemas(Api.scoring.value)
         )
 
