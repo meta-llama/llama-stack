@@ -211,7 +211,7 @@ def test_code_execution(llama_stack_client):
         tools=[
             "code_interpreter",
         ],
-        tool_choice="required",
+        tool_choice="auto",
         input_shields=[],
         output_shields=[],
         enable_session_persistence=False,
@@ -242,7 +242,6 @@ def test_code_execution(llama_stack_client):
         )
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
-        breakpoint()
         print(logs_str)
 
 

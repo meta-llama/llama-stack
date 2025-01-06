@@ -758,7 +758,6 @@ class ChatAgent(ShieldRunnerMixin):
         input_messages: List[Message],
         tool_defs: Dict[str, ToolDefinition],
     ) -> None:
-        breakpoint()
         memory_tool = tool_defs.get("memory", None)
         code_interpreter_tool = tool_defs.get(BuiltinTool.code_interpreter, None)
         if documents:
