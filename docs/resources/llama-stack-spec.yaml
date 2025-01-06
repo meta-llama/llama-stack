@@ -618,6 +618,25 @@ components:
       properties:
         agent_id:
           type: string
+        documents:
+          items:
+            additionalProperties: false
+            properties:
+              content:
+                oneOf:
+                - type: string
+                - $ref: '#/components/schemas/InterleavedContentItem'
+                - items:
+                    $ref: '#/components/schemas/InterleavedContentItem'
+                  type: array
+                - $ref: '#/components/schemas/URL'
+              mime_type:
+                type: string
+            required:
+            - content
+            - mime_type
+            type: object
+          type: array
         messages:
           items:
             oneOf:

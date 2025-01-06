@@ -45,6 +45,11 @@ class Attachment(BaseModel):
     mime_type: str
 
 
+class Document(BaseModel):
+    content: InterleavedContent | URL
+    mime_type: str
+
+
 class StepCommon(BaseModel):
     turn_id: str
     step_id: str
@@ -272,6 +277,9 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
         ]
     ]
 
+    documents: Optional[List[Document]] = None
+    tools: Optional[List[AgentTool]] = None
+
     stream: Optional[bool] = False
 
 
@@ -308,6 +316,7 @@ class Agents(Protocol):
             ]
         ],
         stream: Optional[bool] = False,
+        documents: Optional[List[Document]] = None,
         tools: Optional[List[AgentTool]] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 

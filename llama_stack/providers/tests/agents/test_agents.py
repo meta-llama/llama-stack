@@ -15,6 +15,7 @@ from llama_stack.apis.agents import (
     AgentTurnResponseStepCompletePayload,
     AgentTurnResponseStreamChunk,
     AgentTurnResponseTurnCompletePayload,
+    Document,
     ShieldCallStep,
     StepType,
     ToolChoice,
@@ -22,8 +23,6 @@ from llama_stack.apis.agents import (
     Turn,
 )
 from llama_stack.apis.inference import CompletionMessage, SamplingParams, UserMessage
-from llama_stack.apis.memory import MemoryBankDocument
-from llama_stack.apis.memory_banks import VectorMemoryBankParams
 from llama_stack.apis.safety import ViolationLevel
 from llama_stack.providers.datatypes import Api
 
@@ -232,8 +231,6 @@ class TestAgents:
         common_params,
     ):
         agents_impl = agents_stack.impls[Api.agents]
-        memory_banks_impl = agents_stack.impls[Api.memory_banks]
-        memory_impl = agents_stack.impls[Api.memory]
         urls = [
             "memory_optimizations.rst",
             "chat.rst",
@@ -243,28 +240,12 @@ class TestAgents:
             "lora_finetune.rst",
         ]
         documents = [
-            MemoryBankDocument(
-                document_id=f"num-{i}",
+            Document(
                 content=f"https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/{url}",
                 mime_type="text/plain",
-                metadata={},
             )
             for i, url in enumerate(urls)
         ]
-        await memory_banks_impl.register_memory_bank(
-            memory_bank_id="test_bank",
-            params=VectorMemoryBankParams(
-                embedding_model="all-MiniLM-L6-v2",
-                chunk_size_in_tokens=512,
-                overlap_size_in_tokens=64,
-            ),
-            provider_id="faiss",
-        )
-        memory_impl.insert_documents(
-            bank_id="test_bank",
-            documents=documents,
-        )
-
         agent_config = AgentConfig(
             **{
                 **common_params,
@@ -278,6 +259,7 @@ class TestAgents:
             agent_id=agent_id,
             session_id=session_id,
             messages=attachment_message,
+            documents=documents,
             stream=True,
         )
         turn_response = [

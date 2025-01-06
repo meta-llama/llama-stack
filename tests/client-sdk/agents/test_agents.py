@@ -203,6 +203,79 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
     assert "Tool:code_interpreter Response" in logs_str
 
 
+def test_code_execution(llama_stack_client):
+    agent_config = AgentConfig(
+        model="meta-llama/Llama-3.1-70B-Instruct",
+        instructions="You are a helpful assistant",
+        tools=[
+            "brave_search",
+            "code_interpreter",
+        ],
+        tool_choice="required",
+        input_shields=[],
+        output_shields=[],
+        enable_session_persistence=False,
+    )
+
+    memory_bank_id = "inflation_data_memory_bank"
+    llama_stack_client.memory_banks.register(
+        memory_bank_id=memory_bank_id,
+        params={
+            "memory_bank_type": "vector",
+            "embedding_model": "all-MiniLM-L6-v2",
+            "chunk_size_in_tokens": 512,
+            "overlap_size_in_tokens": 64,
+        },
+    )
+    AugmentConfigWithMemoryTool(agent_config, llama_stack_client)
+    codex_agent = Agent(llama_stack_client, agent_config)
+    session_id = codex_agent.create_session("test-session")
+
+    llama_stack_client.memory.insert(
+        bank_id=memory_bank_id,
+        documents=[
+            Document(
+                document_id="inflation",
+                content="https://raw.githubusercontent.com/meta-llama/llama-stack-apps/main/examples/resources/inflation.csv",
+                mime_type="text/csv",
+                metadata={},
+            )
+        ],
+    )
+
+    user_prompts = [
+        {
+            "prompt": "Can you describe the data in the context?",
+            "tools": [{"name": "memory", "args": {"memory_bank_id": memory_bank_id}}],
+        },
+        {
+            "prompt": "Plot average yearly inflation as a time series",
+            "tools": [
+                {"name": "memory", "args": {"memory_bank_id": memory_bank_id}},
+                "code_interpreter",
+            ],
+        },
+    ]
+
+    for input in user_prompts:
+        print(f'User> {input["prompt"]}')
+        response = codex_agent.create_turn(
+            messages=[
+                {
+                    "role": "user",
+                    "content": input["prompt"],
+                }
+            ],
+            session_id=session_id,
+            tools=input["tools"],
+        )
+        # for chunk in response:
+        #     print(chunk)
+
+        for log in EventLogger().log(response):
+            log.print()
+
+
 def test_custom_tool(llama_stack_client, agent_config):
     client_tool = TestClientTool()
     agent_config = {

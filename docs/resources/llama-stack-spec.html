@@ -3974,6 +3974,41 @@
                     "stream": {
                         "type": "boolean"
                     },
+                    "documents": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/InterleavedContentItem"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/InterleavedContentItem"
+                                            }
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/URL"
+                                        }
+                                    ]
+                                },
+                                "mime_type": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "content",
+                                "mime_type"
+                            ]
+                        }
+                    },
                     "tools": {
                         "type": "array",
                         "items": {
