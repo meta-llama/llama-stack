@@ -137,15 +137,15 @@ class Session(BaseModel):
     memory_bank: Optional[MemoryBank] = None
 
 
-class AgentToolWithArgs(BaseModel):
+class AgentToolGroupWithArgs(BaseModel):
     name: str
     args: Dict[str, Any]
 
 
-AgentTool = register_schema(
+AgentToolGroup = register_schema(
     Union[
         str,
-        AgentToolWithArgs,
+        AgentToolGroupWithArgs,
     ],
     name="AgentTool",
 )
@@ -156,7 +156,7 @@ class AgentConfigCommon(BaseModel):
 
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)
-    tools: Optional[List[AgentTool]] = Field(default_factory=list)
+    toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
     client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
@@ -278,7 +278,7 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
     ]
 
     documents: Optional[List[Document]] = None
-    tools: Optional[List[AgentTool]] = None
+    toolgroups: Optional[List[AgentToolGroup]] = None
 
     stream: Optional[bool] = False
 
@@ -317,7 +317,7 @@ class Agents(Protocol):
         ],
         stream: Optional[bool] = False,
         documents: Optional[List[Document]] = None,
-        tools: Optional[List[AgentTool]] = None,
+        tools: Optional[List[AgentToolGroup]] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(route="/agents/turn/get")

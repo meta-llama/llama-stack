@@ -8,16 +8,9 @@ import os
 
 import pytest
 import pytest_asyncio
-from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.models import ModelInput, ModelType
-from llama_stack.apis.tools import (
-    BuiltInToolDef,
-    ToolGroupInput,
-    ToolParameter,
-    UserDefinedToolDef,
-    UserDefinedToolGroupDef,
-)
+from llama_stack.apis.tools import ToolGroupInput
 from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 
@@ -47,30 +40,7 @@ def tool_runtime_memory_and_search() -> ProviderFixture:
 @pytest.fixture(scope="session")
 def tool_group_input_memory() -> ToolGroupInput:
     return ToolGroupInput(
-        tool_group_id="memory_group",
-        tool_group=UserDefinedToolGroupDef(
-            tools=[
-                UserDefinedToolDef(
-                    name="memory",
-                    description="Query the memory bank",
-                    parameters=[
-                        ToolParameter(
-                            name="input_messages",
-                            description="The input messages to search for in memory",
-                            parameter_type="list",
-                            required=True,
-                        ),
-                    ],
-                    metadata={
-                        "config": {
-                            "memory_bank_configs": [
-                                {"bank_id": "test_bank", "type": "vector"}
-                            ]
-                        }
-                    },
-                )
-            ],
-        ),
+        toolgroup_id="builtin::memory",
         provider_id="memory-runtime",
     )
 
@@ -78,10 +48,7 @@ def tool_group_input_memory() -> ToolGroupInput:
 @pytest.fixture(scope="session")
 def tool_group_input_tavily_search() -> ToolGroupInput:
     return ToolGroupInput(
-        tool_group_id="tavily_search_group",
-        tool_group=UserDefinedToolGroupDef(
-            tools=[BuiltInToolDef(built_in_type=BuiltinTool.brave_search, metadata={})],
-        ),
+        toolgroup_id="builtin::web_search",
         provider_id="tavily-search",
     )
 

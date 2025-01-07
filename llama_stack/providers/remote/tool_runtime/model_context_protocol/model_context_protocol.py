@@ -4,20 +4,18 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from mcp import ClientSession
 from mcp.client.sse import sse_client
 
+from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
-    MCPToolGroupDef,
     ToolDef,
-    ToolGroupDef,
     ToolInvocationResult,
     ToolParameter,
     ToolRuntime,
-    UserDefinedToolDef,
 )
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
@@ -31,12 +29,14 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
     async def initialize(self):
         pass
 
-    async def discover_tools(self, tool_group: ToolGroupDef) -> List[ToolDef]:
-        if not isinstance(tool_group, MCPToolGroupDef):
-            raise ValueError(f"Unsupported tool group type: {type(tool_group)}")
+    async def list_tools(
+        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+    ) -> List[ToolDef]:
+        if mcp_endpoint is None:
+            raise ValueError("mcp_endpoint is required")
 
         tools = []
-        async with sse_client(tool_group.endpoint.uri) as streams:
+        async with sse_client(mcp_endpoint.uri) as streams:
             async with ClientSession(*streams) as session:
                 await session.initialize()
                 tools_result = await session.list_tools()
@@ -53,12 +53,12 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                             )
                         )
                     tools.append(
-                        UserDefinedToolDef(
+                        ToolDef(
                             name=tool.name,
                             description=tool.description,
                             parameters=parameters,
                             metadata={
-                                "endpoint": tool_group.endpoint.uri,
+                                "endpoint": mcp_endpoint.uri,
                             },
                         )
                     )

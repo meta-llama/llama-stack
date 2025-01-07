@@ -45,8 +45,7 @@ def common_params(inference_model):
         sampling_params=SamplingParams(temperature=0.7, top_p=0.95),
         input_shields=[],
         output_shields=[],
-        available_tools=[],
-        preprocessing_tools=[],
+        toolgroups=[],
         max_infer_iters=5,
     )
 
@@ -83,27 +82,27 @@ def query_attachment_messages():
     ]
 
 
-async def create_agent_turn_with_search_tool(
+async def create_agent_turn_with_toolgroup(
     agents_stack: Dict[str, object],
     search_query_messages: List[object],
     common_params: Dict[str, str],
-    tool_name: str,
+    toolgroup_name: str,
 ) -> None:
     """
-    Create an agent turn with a search tool.
+    Create an agent turn with a toolgroup.
 
     Args:
         agents_stack (Dict[str, object]): The agents stack.
         search_query_messages (List[object]): The search query messages.
         common_params (Dict[str, str]): The common parameters.
-        search_tool_definition (SearchToolDefinition): The search tool definition.
+        toolgroup_name (str): The name of the toolgroup.
     """
 
-    # Create an agent with the search tool
+    # Create an agent with the toolgroup
     agent_config = AgentConfig(
         **{
             **common_params,
-            "tools": [tool_name],
+            "toolgroups": [toolgroup_name],
         }
     )
 
@@ -249,7 +248,7 @@ class TestAgents:
         agent_config = AgentConfig(
             **{
                 **common_params,
-                "tools": ["memory"],
+                "toolgroups": ["builtin::memory"],
                 "tool_choice": ToolChoice.auto,
             }
         )
@@ -289,12 +288,57 @@ class TestAgents:
         if "TAVILY_SEARCH_API_KEY" not in os.environ:
             pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
 
-        await create_agent_turn_with_search_tool(
-            agents_stack,
-            search_query_messages,
-            common_params,
-            "brave_search",
+        # Create an agent with the toolgroup
+        agent_config = AgentConfig(
+            **{
+                **common_params,
+                "toolgroups": ["builtin::web_search"],
+            }
         )
+
+        agent_id, session_id = await create_agent_session(
+            agents_stack.impls[Api.agents], agent_config
+        )
+        turn_request = dict(
+            agent_id=agent_id,
+            session_id=session_id,
+            messages=search_query_messages,
+            stream=True,
+        )
+
+        turn_response = [
+            chunk
+            async for chunk in await agents_stack.impls[Api.agents].create_agent_turn(
+                **turn_request
+            )
+        ]
+
+        assert len(turn_response) > 0
+        assert all(
+            isinstance(chunk, AgentTurnResponseStreamChunk) for chunk in turn_response
+        )
+
+        check_event_types(turn_response)
+
+        # Check for tool execution events
+        tool_execution_events = [
+            chunk
+            for chunk in turn_response
+            if isinstance(chunk.event.payload, AgentTurnResponseStepCompletePayload)
+            and chunk.event.payload.step_details.step_type
+            == StepType.tool_execution.value
+        ]
+        assert len(tool_execution_events) > 0, "No tool execution events found"
+
+        # Check the tool execution details
+        tool_execution = tool_execution_events[0].event.payload.step_details
+        assert isinstance(tool_execution, ToolExecutionStep)
+        assert len(tool_execution.tool_calls) > 0
+        actual_tool_name = tool_execution.tool_calls[0].tool_name
+        assert actual_tool_name == "web_search"
+        assert len(tool_execution.tool_responses) > 0
+
+        check_turn_complete_event(turn_response, session_id, search_query_messages)
 
 
 def check_event_types(turn_response):

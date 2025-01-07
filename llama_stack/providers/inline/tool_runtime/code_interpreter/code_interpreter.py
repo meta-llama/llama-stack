@@ -7,9 +7,16 @@
 
 import logging
 import tempfile
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
-from llama_stack.apis.tools import Tool, ToolGroupDef, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.tools import (
+    Tool,
+    ToolDef,
+    ToolInvocationResult,
+    ToolParameter,
+    ToolRuntime,
+)
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
 from .code_execution import CodeExecutionContext, CodeExecutionRequest, CodeExecutor
@@ -35,8 +42,22 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
     async def unregister_tool(self, tool_id: str) -> None:
         return
 
-    async def discover_tools(self, tool_group: ToolGroupDef) -> List[Tool]:
-        raise NotImplementedError("Code interpreter tool group not supported")
+    async def list_tools(
+        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+    ) -> List[ToolDef]:
+        return [
+            ToolDef(
+                name="code_interpreter",
+                description="Execute code",
+                parameters=[
+                    ToolParameter(
+                        name="code",
+                        description="The code to execute",
+                        parameter_type="string",
+                    ),
+                ],
+            )
+        ]
 
     async def invoke_tool(
         self, tool_name: str, args: Dict[str, Any]

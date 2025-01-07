@@ -19,7 +19,7 @@ from llama_stack.apis.agents import (
     Agents,
     AgentSessionCreateResponse,
     AgentStepResponse,
-    AgentTool,
+    AgentToolGroup,
     AgentTurnCreateRequest,
     Document,
     Session,
@@ -147,7 +147,7 @@ class MetaReferenceAgentsImpl(Agents):
                 ToolResponseMessage,
             ]
         ],
-        tools: Optional[List[AgentTool]] = None,
+        tools: Optional[List[AgentToolGroup]] = None,
         documents: Optional[List[Document]] = None,
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:

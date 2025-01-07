@@ -43,8 +43,8 @@ def sample_documents():
 
 class TestTools:
     @pytest.mark.asyncio
-    async def test_brave_search_tool(self, tools_stack, sample_search_query):
-        """Test the Brave search tool functionality."""
+    async def test_web_search_tool(self, tools_stack, sample_search_query):
+        """Test the web search tool functionality."""
         if "TAVILY_SEARCH_API_KEY" not in os.environ:
             pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
 
@@ -52,7 +52,7 @@ class TestTools:
 
         # Execute the tool
         response = await tools_impl.invoke_tool(
-            tool_name="brave_search", args={"query": sample_search_query}
+            tool_name="web_search", args={"query": sample_search_query}
         )
 
         # Verify the response
@@ -89,11 +89,12 @@ class TestTools:
         response = await tools_impl.invoke_tool(
             tool_name="memory",
             args={
-                "input_messages": [
+                "messages": [
                     UserMessage(
                         content="What are the main topics covered in the documentation?",
                     )
                 ],
+                "memory_bank_ids": ["test_bank"],
             },
         )
 

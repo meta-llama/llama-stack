@@ -5,11 +5,18 @@
 # the root directory of this source tree.
 
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import requests
 
-from llama_stack.apis.tools import Tool, ToolGroupDef, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.tools import (
+    Tool,
+    ToolDef,
+    ToolInvocationResult,
+    ToolParameter,
+    ToolRuntime,
+)
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
@@ -42,8 +49,22 @@ class TavilySearchToolRuntimeImpl(
             )
         return provider_data.api_key
 
-    async def discover_tools(self, tool_group: ToolGroupDef) -> List[Tool]:
-        raise NotImplementedError("Tavily search tool group not supported")
+    async def list_tools(
+        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+    ) -> List[ToolDef]:
+        return [
+            ToolDef(
+                name="web_search",
+                description="Search the web for information",
+                parameters=[
+                    ToolParameter(
+                        name="query",
+                        description="The query to search for",
+                        parameter_type="string",
+                    )
+                ],
+            )
+        ]
 
     async def invoke_tool(
         self, tool_name: str, args: Dict[str, Any]

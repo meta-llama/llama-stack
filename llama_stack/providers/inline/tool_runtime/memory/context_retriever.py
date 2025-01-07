@@ -5,6 +5,8 @@
 # the root directory of this source tree.
 
 
+from typing import List
+
 from jinja2 import Template
 
 from llama_stack.apis.inference import Message, UserMessage
@@ -22,7 +24,7 @@ from .config import (
 
 async def generate_rag_query(
     config: MemoryQueryGeneratorConfig,
-    message: Message,
+    messages: List[Message],
     **kwargs,
 ):
     """
@@ -30,9 +32,9 @@ async def generate_rag_query(
     retrieving relevant information from the memory bank.
     """
     if config.type == MemoryQueryGenerator.default.value:
-        query = await default_rag_query_generator(config, message, **kwargs)
+        query = await default_rag_query_generator(config, messages, **kwargs)
     elif config.type == MemoryQueryGenerator.llm.value:
-        query = await llm_rag_query_generator(config, message, **kwargs)
+        query = await llm_rag_query_generator(config, messages, **kwargs)
     else:
         raise NotImplementedError(f"Unsupported memory query generator {config.type}")
     return query
@@ -40,21 +42,21 @@ async def generate_rag_query(
 
 async def default_rag_query_generator(
     config: DefaultMemoryQueryGeneratorConfig,
-    message: Message,
+    messages: List[Message],
     **kwargs,
 ):
-    return interleaved_content_as_str(message.content)
+    return config.sep.join(interleaved_content_as_str(m.content) for m in messages)
 
 
 async def llm_rag_query_generator(
     config: LLMMemoryQueryGeneratorConfig,
-    message: Message,
+    messages: List[Message],
     **kwargs,
 ):
     assert "inference_api" in kwargs, "LLMRAGQueryGenerator needs inference_api"
     inference_api = kwargs["inference_api"]
 
-    m_dict = {"messages": [message.model_dump()]}
+    m_dict = {"messages": [message.model_dump() for message in messages]}
 
     template = Template(config.template)
     content = template.render(m_dict)
