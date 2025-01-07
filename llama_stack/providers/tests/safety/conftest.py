@@ -64,15 +64,6 @@ def pytest_configure(config):
         )
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--safety-shield",
-        action="store",
-        default=None,
-        help="Specify the safety shield to use for testing",
-    )
-
-
 SAFETY_SHIELD_PARAMS = [
     pytest.param(
         "meta-llama/Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"

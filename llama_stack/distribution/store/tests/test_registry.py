@@ -15,7 +15,8 @@ from llama_stack.distribution.store.registry import (
     CachedDiskDistributionRegistry,
     DiskDistributionRegistry,
 )
-from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
 @pytest.fixture
