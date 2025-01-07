@@ -34,21 +34,6 @@ def pytest_configure(config):
         )
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--inference-model",
-        action="store",
-        default="meta-llama/Llama-3.2-3B-Instruct",
-        help="Specify the inference model to use for testing",
-    )
-    parser.addoption(
-        "--safety-shield",
-        action="store",
-        default="meta-llama/Llama-Guard-3-1B",
-        help="Specify the safety shield to use for testing",
-    )
-
-
 def pytest_generate_tests(metafunc):
     if "tools_stack" in metafunc.fixturenames:
         available_fixtures = {

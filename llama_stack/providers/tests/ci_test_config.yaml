@@ -1,0 +1,24 @@
+tests:
+- path: inference/test_vision_inference.py
+  functions:
+  - test_vision_chat_completion_streaming
+  - test_vision_chat_completion_non_streaming
+
+- path: inference/test_text_inference.py
+  functions:
+  - test_structured_output
+  - test_chat_completion_streaming
+  - test_chat_completion_non_streaming
+  - test_chat_completion_with_tool_calling
+  - test_chat_completion_with_tool_calling_streaming
+
+inference_fixtures:
+  - ollama
+  - fireworks
+  - together
+  - tgi
+  - vllm_remote
+
+test_models:
+  text: meta-llama/Llama-3.1-8B-Instruct
+  vision: meta-llama/Llama-3.2-11B-Vision-Instruct
