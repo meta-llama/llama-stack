@@ -7,7 +7,8 @@
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
+import yaml
+import json
 import pytest
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -73,6 +74,10 @@ def pytest_addoption(parser):
     parser.addoption(
         "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
     )
+    parser.addoption(
+        "--config", action="append", help="Set environment variables, e.g. --env KEY=value"
+    )
+
 
 
 def make_provider_id(providers: Dict[str, str]) -> str:
@@ -146,6 +151,62 @@ def pytest_itemcollected(item):
     if marks:
         marks = colored(",".join(marks), "yellow")
         item.name = f"{item.name}[{marks}]"
+
+
+# def pytest_ignore_collect(path, config):
+#     # print("SIXIAN ignore", path)
+#     # if config.getoption("--config") is None:
+#     #     return False
+    
+#     manifest_path = Path(__file__).parent  / "manifest.json"
+#     files = json.loads(manifest_path.read_text(encoding="utf-8"))["files"]
+#     file_path = set((Path(__file__).parent / f["path"]) for f in files)
+#     # print("SIXIAN ", path.__class__.__name__)
+#     # print("SIXIAN files", file_path)
+#     if Path(path) not in file_path:
+#         # print("SIXIAN ignoring", path, file_path)
+#         return True
+#     return False
+
+def pytest_collection_modifyitems(config, items):
+    manifest_path = Path(__file__).parent  / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    mapping = dict()
+    for f in manifest["files"]:
+        mapping[f["basepath"]] = f["functions"]
+    ret_items = []
+    deselected = []
+    print("SIXIAN test_file", items)
+
+    for item in items:
+        test_file = item.fspath.basename
+        # print("SIXIAN test_file", test_file, "mapping", mapping)
+        if test_file in mapping.keys():
+            print("SIXIAN appending", item)
+            ret_items.append(item)
+        else:
+            deselected.append(item)  
+    print("SIXIAN ret_items", ret_items)
+    config.hook.pytest_deselected(items=[deselected])
+
+
+# class ManifestDirectory(pytest.Directory):
+#     def collect(self):
+#         manifest_path = self.path / "manifest.json"
+#         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+#         ihook = self.ihook
+#         for file in manifest["files"]:
+#             yield from ihook.pytest_collect_file(
+#                 file_path=self.path / file, parent=self
+#             )
+
+
+# def pytest_collect_directory(path, parent):
+#     if config.getoption("--env") is None:
+#         return None
+#     if path.joinpath("manifest.json").is_file():
+#         return ManifestDirectory.from_parent(parent=parent, path=path)
+#     return None
 
 
 pytest_plugins = [

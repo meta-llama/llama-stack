@@ -1,0 +1,49 @@
+
+inference:
+  providers:
+    - id: ollama
+    - id: together
+      env_param: TOGETHER_API_KEY
+    - id: fireworks
+      env_param: FIREWORKS_API_KEY
+    - id: tgi
+    - id: vllm
+  apis:
+    - chat_completion
+    - embeddings
+  capabilities:
+    - streaming
+    - tool_calling
+    - structured_output
+  model_tests:
+    - model_type: vision
+      model_name: meta-llama/Llama-3.2-11B-Vision-Instruct
+      test_path: /llama_stack/providers/tests/inference/test_vision_inference.py
+      test_api:
+        - chat_completion
+      test_capabilities:
+        - streaming
+    - model_type: text
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+      test_path: /llama_stack/providers/tests/inference/test_text_inference.py
+      test_api:
+        - chat_completion
+      test_capabilities:
+        - streaming
+        - tool_calling
+        - structured_output
+    - model_type: embedding
+      model_name: sentence-transformers/all-MiniLM-L6-v2
+      test_path: /llama_stack/providers/tests/inference/test_embeddings.py
+      test_api:
+        - embedding
+      test_capabilities: ~
+
+memory:
+  providers:
+   - faiss
+   - weaviate
+   - pgvector
+   - chroma
+  test_path:
+   -  /llama_stack/providers/tests/memory/test_memory.py

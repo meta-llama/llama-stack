@@ -1,0 +1,21 @@
+{
+    "files": [
+        {
+            "basepath": "test_text_inference.py",
+            "functions": [
+                "test_structured_output",
+                "test_chat_completion_streaming",
+                "test_chat_completion_non_streaming",
+                "test_chat_completion_with_tool_calling",
+                "test_chat_completion_with_tool_calling_streaming"
+            ]
+        },
+        {
+            "basepath": "test_vision_inference.py",
+            "functions": [
+                "test_vision_chat_completion_streaming",
+                "test_vision_chat_completion_non_streaming"
+            ]
+        }
+    ]
+}

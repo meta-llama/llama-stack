@@ -16,8 +16,6 @@ from llama_models.llama3.api.datatypes import (
     ToolPromptFormat,
 )
 
-from pydantic import BaseModel, ValidationError
-
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
@@ -33,6 +31,9 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.models import Model
+
+from pydantic import BaseModel, ValidationError
+
 from .utils import group_chunks
 
 
