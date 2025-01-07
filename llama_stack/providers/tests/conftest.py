@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
+
+import yaml
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from termcolor import colored
@@ -68,6 +70,11 @@ def pytest_addoption(parser):
             "Provider configuration in format: api1=provider1,api2=provider2. "
             "Example: --providers inference=ollama,safety=meta-reference"
         ),
+    )
+    parser.addoption(
+        "--config",
+        action="store",
+        help="Set test config file (supported format: YAML), e.g. --config=test_config.yml",
     )
     """Add custom command line options"""
     parser.addoption(
@@ -170,6 +177,41 @@ def pytest_itemcollected(item):
     if marks:
         marks = colored(",".join(marks), "yellow")
         item.name = f"{item.name}[{marks}]"
+
+
+def pytest_collection_modifyitems(session, config, items):
+    if config.getoption("--config") is None:
+        return
+    file_name = config.getoption("--config")
+    config_file_path = Path(__file__).parent / file_name
+    if not config_file_path.exists():
+        raise ValueError(
+            f"Test config {file_name} was specified but not found. Please make sure it exists in the llama_stack/providers/tests directory."
+        )
+
+    required_tests = dict()
+    inference_providers = set()
+    with open(config_file_path, "r") as config_file:
+        test_config = yaml.safe_load(config_file)
+        for test in test_config["tests"]:
+            required_tests[Path(__file__).parent / test["path"]] = set(
+                test["functions"]
+            )
+        inference_providers = set(test_config["inference_fixtures"])
+
+    new_items, deselected_items = [], []
+    for item in items:
+        if item.fspath in required_tests:
+            func_name = getattr(item, "originalname", item.name)
+            if func_name in required_tests[item.fspath]:
+                inference = item.callspec.params.get("inference_stack")
+                if inference in inference_providers:
+                    new_items.append(item)
+                    continue
+        deselected_items.append(item)
+
+    items[:] = new_items
+    config.hook.pytest_deselected(items=deselected_items)
 
 
 pytest_plugins = [
