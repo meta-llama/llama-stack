@@ -482,7 +482,11 @@ class ChatAgent(ShieldRunnerMixin):
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
-                    tools=[tool for tool in tool_defs.values()],
+                    tools=[
+                        tool
+                        for tool in tool_defs.values()
+                        if tool.tool_name != "memory"
+                    ],
                     tool_prompt_format=self.agent_config.tool_prompt_format,
                     stream=True,
                     sampling_params=sampling_params,
