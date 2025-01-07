@@ -73,6 +73,30 @@ def pytest_addoption(parser):
     parser.addoption(
         "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
     )
+    parser.addoption(
+        "--inference-model",
+        action="store",
+        default="meta-llama/Llama-3.2-3B-Instruct",
+        help="Specify the inference model to use for testing",
+    )
+    parser.addoption(
+        "--safety-shield",
+        action="store",
+        default="meta-llama/Llama-Guard-3-1B",
+        help="Specify the safety shield to use for testing",
+    )
+    parser.addoption(
+        "--embedding-model",
+        action="store",
+        default=None,
+        help="Specify the embedding model to use for testing",
+    )
+    parser.addoption(
+        "--judge-model",
+        action="store",
+        default="meta-llama/Llama-3.1-8B-Instruct",
+        help="Specify the judge model to use for testing",
+    )
 
 
 def make_provider_id(providers: Dict[str, str]) -> str:

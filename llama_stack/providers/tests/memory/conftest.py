@@ -56,15 +56,6 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 ]
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--embedding-model",
-        action="store",
-        default=None,
-        help="Specify the embedding model to use for testing",
-    )
-
-
 def pytest_configure(config):
     for fixture_name in MEMORY_FIXTURES:
         config.addinivalue_line(
