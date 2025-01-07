@@ -11,21 +11,6 @@ from ..conftest import get_provider_fixture_overrides
 from .fixtures import INFERENCE_FIXTURES
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--inference-model",
-        action="store",
-        default=None,
-        help="Specify the inference model to use for testing",
-    )
-    parser.addoption(
-        "--embedding-model",
-        action="store",
-        default=None,
-        help="Specify the embedding model to use for testing",
-    )
-
-
 def pytest_configure(config):
     for model in ["llama_8b", "llama_3b", "llama_vision"]:
         config.addinivalue_line(
