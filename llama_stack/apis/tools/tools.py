@@ -48,28 +48,14 @@ class Tool(Resource):
 
 
 @json_schema_type
-class UserDefinedToolDef(BaseModel):
-    type: Literal["user_defined"] = "user_defined"
+class ToolDef(BaseModel):
     name: str
-    description: str
-    parameters: List[ToolParameter]
-    metadata: Dict[str, Any]
+    description: Optional[str] = None
+    parameters: Optional[List[ToolParameter]] = None
+    metadata: Optional[Dict[str, Any]] = None
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
-
-
-@json_schema_type
-class BuiltInToolDef(BaseModel):
-    type: Literal["built_in"] = "built_in"
-    built_in_type: BuiltinTool
-    metadata: Optional[Dict[str, Any]] = None
-
-
-ToolDef = register_schema(
-    Annotated[Union[UserDefinedToolDef, BuiltInToolDef], Field(discriminator="type")],
-    name="ToolDef",
-)
 
 
 @json_schema_type
@@ -100,7 +86,7 @@ ToolGroupDef = register_schema(
 @json_schema_type
 class ToolGroupInput(BaseModel):
     tool_group_id: str
-    tool_group: ToolGroupDef
+    tool_group_def: ToolGroupDef
     provider_id: Optional[str] = None
 
 
@@ -127,7 +113,7 @@ class ToolGroups(Protocol):
     async def register_tool_group(
         self,
         tool_group_id: str,
-        tool_group: ToolGroupDef,
+        tool_group_def: ToolGroupDef,
         provider_id: Optional[str] = None,
     ) -> None:
         """Register a tool group"""

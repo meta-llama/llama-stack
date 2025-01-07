@@ -19,7 +19,7 @@ components:
       properties:
         client_tools:
           items:
-            $ref: '#/components/schemas/UserDefinedToolDef'
+            $ref: '#/components/schemas/ToolDef'
           type: array
         enable_session_persistence:
           type: boolean
@@ -395,29 +395,6 @@ components:
       required:
       - type
       - eval_candidate
-      type: object
-    BuiltInToolDef:
-      additionalProperties: false
-      properties:
-        built_in_type:
-          $ref: '#/components/schemas/BuiltinTool'
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        type:
-          const: built_in
-          default: built_in
-          type: string
-      required:
-      - type
-      - built_in_type
       type: object
     BuiltinTool:
       enum:
@@ -1929,13 +1906,13 @@ components:
       properties:
         provider_id:
           type: string
-        tool_group:
+        tool_group_def:
           $ref: '#/components/schemas/ToolGroupDef'
         tool_group_id:
           type: string
       required:
       - tool_group_id
-      - tool_group
+      - tool_group_def
       type: object
     ResponseFormat:
       oneOf:
@@ -2716,9 +2693,32 @@ components:
       - required
       type: string
     ToolDef:
-      oneOf:
-      - $ref: '#/components/schemas/UserDefinedToolDef'
-      - $ref: '#/components/schemas/BuiltInToolDef'
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        metadata:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        name:
+          type: string
+        parameters:
+          items:
+            $ref: '#/components/schemas/ToolParameter'
+          type: array
+        tool_prompt_format:
+          $ref: '#/components/schemas/ToolPromptFormat'
+          default: json
+      required:
+      - name
+      type: object
     ToolDefinition:
       additionalProperties: false
       properties:
@@ -3086,41 +3086,6 @@ components:
       - type
       - message
       - severity
-      type: object
-    UserDefinedToolDef:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        metadata:
-          additionalProperties:
-            oneOf:
-            - type: 'null'
-            - type: boolean
-            - type: number
-            - type: string
-            - type: array
-            - type: object
-          type: object
-        name:
-          type: string
-        parameters:
-          items:
-            $ref: '#/components/schemas/ToolParameter'
-          type: array
-        tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
-          default: json
-        type:
-          const: user_defined
-          default: user_defined
-          type: string
-      required:
-      - type
-      - name
-      - description
-      - parameters
-      - metadata
       type: object
     UserDefinedToolGroupDef:
       additionalProperties: false
@@ -4823,8 +4788,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/BenchmarkEvalTaskConfig"
     />
   name: BenchmarkEvalTaskConfig
-- description: <SchemaDefinition schemaRef="#/components/schemas/BuiltInToolDef" />
-  name: BuiltInToolDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/BuiltinTool" />
   name: BuiltinTool
 - description: <SchemaDefinition schemaRef="#/components/schemas/CancelTrainingJobRequest"
@@ -5251,9 +5214,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
-- description: <SchemaDefinition schemaRef="#/components/schemas/UserDefinedToolDef"
-    />
-  name: UserDefinedToolDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserDefinedToolGroupDef"
     />
   name: UserDefinedToolGroupDef
@@ -5316,7 +5276,6 @@ x-tagGroups:
   - BatchCompletionRequest
   - BatchCompletionResponse
   - BenchmarkEvalTaskConfig
-  - BuiltInToolDef
   - BuiltinTool
   - CancelTrainingJobRequest
   - ChatCompletionRequest
@@ -5455,7 +5414,6 @@ x-tagGroups:
   - UnregisterModelRequest
   - UnregisterToolGroupRequest
   - UnstructuredLogEvent
-  - UserDefinedToolDef
   - UserDefinedToolGroupDef
   - UserMessage
   - VectorMemoryBank

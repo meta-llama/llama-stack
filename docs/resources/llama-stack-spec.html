@@ -3714,7 +3714,7 @@
                     "client_tools": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/UserDefinedToolDef"
+                            "$ref": "#/components/schemas/ToolDef"
                         }
                     },
                     "tool_choice": {
@@ -3792,60 +3792,9 @@
                     }
                 ]
             },
-            "ToolParameter": {
+            "ToolDef": {
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "parameter_type": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "default": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name",
-                    "parameter_type",
-                    "description",
-                    "required"
-                ]
-            },
-            "UserDefinedToolDef": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "user_defined",
-                        "default": "user_defined"
-                    },
                     "name": {
                         "type": "string"
                     },
@@ -3890,11 +3839,53 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "type",
+                    "name"
+                ]
+            },
+            "ToolParameter": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parameter_type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "default": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
                     "name",
+                    "parameter_type",
                     "description",
-                    "parameters",
-                    "metadata"
+                    "required"
                 ]
             },
             "CreateAgentRequest": {
@@ -4589,49 +4580,6 @@
                     "session_id"
                 ]
             },
-            "BuiltInToolDef": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "built_in",
-                        "default": "built_in"
-                    },
-                    "built_in_type": {
-                        "$ref": "#/components/schemas/BuiltinTool"
-                    },
-                    "metadata": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "built_in_type"
-                ]
-            },
             "MCPToolGroupDef": {
                 "type": "object",
                 "properties": {
@@ -4650,16 +4598,6 @@
                     "endpoint"
                 ],
                 "title": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information."
-            },
-            "ToolDef": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/UserDefinedToolDef"
-                    },
-                    {
-                        "$ref": "#/components/schemas/BuiltInToolDef"
-                    }
-                ]
             },
             "ToolGroupDef": {
                 "oneOf": [
@@ -7436,7 +7374,7 @@
                     "tool_group_id": {
                         "type": "string"
                     },
-                    "tool_group": {
+                    "tool_group_def": {
                         "$ref": "#/components/schemas/ToolGroupDef"
                     },
                     "provider_id": {
@@ -7446,7 +7384,7 @@
                 "additionalProperties": false,
                 "required": [
                     "tool_group_id",
-                    "tool_group"
+                    "tool_group_def"
                 ]
             },
             "RunEvalRequest": {
@@ -8099,10 +8037,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BenchmarkEvalTaskConfig\" />"
         },
         {
-            "name": "BuiltInToolDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltInToolDef\" />"
-        },
-        {
             "name": "BuiltinTool",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BuiltinTool\" />"
         },
@@ -8709,10 +8643,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
         },
         {
-            "name": "UserDefinedToolDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserDefinedToolDef\" />"
-        },
-        {
             "name": "UserDefinedToolGroupDef",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserDefinedToolGroupDef\" />"
         },
@@ -8792,7 +8722,6 @@
                 "BatchCompletionRequest",
                 "BatchCompletionResponse",
                 "BenchmarkEvalTaskConfig",
-                "BuiltInToolDef",
                 "BuiltinTool",
                 "CancelTrainingJobRequest",
                 "ChatCompletionRequest",
@@ -8931,7 +8860,6 @@
                 "UnregisterModelRequest",
                 "UnregisterToolGroupRequest",
                 "UnstructuredLogEvent",
-                "UserDefinedToolDef",
                 "UserDefinedToolGroupDef",
                 "UserMessage",
                 "VectorMemoryBank",
