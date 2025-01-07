@@ -4,26 +4,51 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import *  # noqa: F403
+import json
+from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from botocore.client import BaseClient
 from llama_models.datatypes import CoreModelId
-
 from llama_models.llama3.api.chat_format import ChatFormat
+
 from llama_models.llama3.api.tokenizer import Tokenizer
+
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    ChatCompletionResponseStreamChunk,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
+from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
+from llama_stack.providers.utils.inference.openai_compat import (
+    OpenAICompatCompletionChoice,
+    OpenAICompatCompletionResponse,
+    process_chat_completion_response,
+    process_chat_completion_stream_response,
+)
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    chat_completion_request_to_prompt,
+    content_has_media,
+    interleaved_content_as_str,
+)
 
-from llama_stack.apis.inference import *  # noqa: F403
 
-from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
-from llama_stack.providers.utils.bedrock.client import create_bedrock_client
-
-
-model_aliases = [
+MODEL_ALIASES = [
     build_model_alias(
         "meta.llama3-1-8b-instruct-v1:0",
         CoreModelId.llama3_1_8b_instruct.value,
@@ -39,10 +64,9 @@ model_aliases = [
 ]
 
 
-# NOTE: this is not quite tested after the recent refactors
 class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     def __init__(self, config: BedrockConfig) -> None:
-        ModelRegistryHelper.__init__(self, model_aliases)
+        ModelRegistryHelper.__init__(self, MODEL_ALIASES)
         self._config = config
 
         self._client = create_bedrock_client(config)
@@ -61,239 +85,13 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
         raise NotImplementedError()
-
-    @staticmethod
-    def _bedrock_stop_reason_to_stop_reason(bedrock_stop_reason: str) -> StopReason:
-        if bedrock_stop_reason == "max_tokens":
-            return StopReason.out_of_tokens
-        return StopReason.end_of_turn
-
-    @staticmethod
-    def _builtin_tool_name_to_enum(tool_name_str: str) -> Union[BuiltinTool, str]:
-        for builtin_tool in BuiltinTool:
-            if builtin_tool.value == tool_name_str:
-                return builtin_tool
-        else:
-            return tool_name_str
-
-    @staticmethod
-    def _bedrock_message_to_message(converse_api_res: Dict) -> Message:
-        stop_reason = BedrockInferenceAdapter._bedrock_stop_reason_to_stop_reason(
-            converse_api_res["stopReason"]
-        )
-
-        bedrock_message = converse_api_res["output"]["message"]
-
-        role = bedrock_message["role"]
-        contents = bedrock_message["content"]
-
-        tool_calls = []
-        text_content = ""
-        for content in contents:
-            if "toolUse" in content:
-                tool_use = content["toolUse"]
-                tool_calls.append(
-                    ToolCall(
-                        tool_name=BedrockInferenceAdapter._builtin_tool_name_to_enum(
-                            tool_use["name"]
-                        ),
-                        arguments=tool_use["input"] if "input" in tool_use else None,
-                        call_id=tool_use["toolUseId"],
-                    )
-                )
-            elif "text" in content:
-                text_content += content["text"]
-
-        return CompletionMessage(
-            role=role,
-            content=text_content,
-            stop_reason=stop_reason,
-            tool_calls=tool_calls,
-        )
-
-    @staticmethod
-    def _messages_to_bedrock_messages(
-        messages: List[Message],
-    ) -> Tuple[List[Dict], Optional[List[Dict]]]:
-        bedrock_messages = []
-        system_bedrock_messages = []
-
-        user_contents = []
-        assistant_contents = None
-        for message in messages:
-            role = message.role
-            content_list = (
-                message.content
-                if isinstance(message.content, list)
-                else [message.content]
-            )
-            if role == "ipython" or role == "user":
-                if not user_contents:
-                    user_contents = []
-
-                if role == "ipython":
-                    user_contents.extend(
-                        [
-                            {
-                                "toolResult": {
-                                    "toolUseId": message.call_id,
-                                    "content": [
-                                        {"text": content} for content in content_list
-                                    ],
-                                }
-                            }
-                        ]
-                    )
-                else:
-                    user_contents.extend(
-                        [{"text": content} for content in content_list]
-                    )
-
-                if assistant_contents:
-                    bedrock_messages.append(
-                        {"role": "assistant", "content": assistant_contents}
-                    )
-                    assistant_contents = None
-            elif role == "system":
-                system_bedrock_messages.extend(
-                    [{"text": content} for content in content_list]
-                )
-            elif role == "assistant":
-                if not assistant_contents:
-                    assistant_contents = []
-
-                assistant_contents.extend(
-                    [
-                        {
-                            "text": content,
-                        }
-                        for content in content_list
-                    ]
-                    + [
-                        {
-                            "toolUse": {
-                                "input": tool_call.arguments,
-                                "name": (
-                                    tool_call.tool_name
-                                    if isinstance(tool_call.tool_name, str)
-                                    else tool_call.tool_name.value
-                                ),
-                                "toolUseId": tool_call.call_id,
-                            }
-                        }
-                        for tool_call in message.tool_calls
-                    ]
-                )
-
-                if user_contents:
-                    bedrock_messages.append({"role": "user", "content": user_contents})
-                    user_contents = None
-            else:
-                # Unknown role
-                pass
-
-        if user_contents:
-            bedrock_messages.append({"role": "user", "content": user_contents})
-        if assistant_contents:
-            bedrock_messages.append(
-                {"role": "assistant", "content": assistant_contents}
-            )
-
-        if system_bedrock_messages:
-            return bedrock_messages, system_bedrock_messages
-
-        return bedrock_messages, None
-
-    @staticmethod
-    def get_bedrock_inference_config(sampling_params: Optional[SamplingParams]) -> Dict:
-        inference_config = {}
-        if sampling_params:
-            param_mapping = {
-                "max_tokens": "maxTokens",
-                "temperature": "temperature",
-                "top_p": "topP",
-            }
-
-            for k, v in param_mapping.items():
-                if getattr(sampling_params, k):
-                    inference_config[v] = getattr(sampling_params, k)
-
-        return inference_config
-
-    @staticmethod
-    def _tool_parameters_to_input_schema(
-        tool_parameters: Optional[Dict[str, ToolParamDefinition]],
-    ) -> Dict:
-        input_schema = {"type": "object"}
-        if not tool_parameters:
-            return input_schema
-
-        json_properties = {}
-        required = []
-        for name, param in tool_parameters.items():
-            json_property = {
-                "type": param.param_type,
-            }
-
-            if param.description:
-                json_property["description"] = param.description
-            if param.required:
-                required.append(name)
-            json_properties[name] = json_property
-
-        input_schema["properties"] = json_properties
-        if required:
-            input_schema["required"] = required
-        return input_schema
-
-    @staticmethod
-    def _tools_to_tool_config(
-        tools: Optional[List[ToolDefinition]], tool_choice: Optional[ToolChoice]
-    ) -> Optional[Dict]:
-        if not tools:
-            return None
-
-        bedrock_tools = []
-        for tool in tools:
-            tool_name = (
-                tool.tool_name
-                if isinstance(tool.tool_name, str)
-                else tool.tool_name.value
-            )
-
-            tool_spec = {
-                "toolSpec": {
-                    "name": tool_name,
-                    "inputSchema": {
-                        "json": BedrockInferenceAdapter._tool_parameters_to_input_schema(
-                            tool.parameters
-                        ),
-                    },
-                }
-            }
-
-            if tool.description:
-                tool_spec["toolSpec"]["description"] = tool.description
-
-            bedrock_tools.append(tool_spec)
-        tool_config = {
-            "tools": bedrock_tools,
-        }
-
-        if tool_choice:
-            tool_config["toolChoice"] = (
-                {"any": {}}
-                if tool_choice.value == ToolChoice.required
-                else {"auto": {}}
-            )
-        return tool_config
 
     async def chat_completion(
         self,
@@ -330,122 +128,91 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params_for_chat_completion(request)
-        converse_api_res = self.client.converse(**params)
+        params = await self._get_params_for_chat_completion(request)
+        res = self.client.invoke_model(**params)
+        chunk = next(res["body"])
+        result = json.loads(chunk.decode("utf-8"))
 
-        output_message = BedrockInferenceAdapter._bedrock_message_to_message(
-            converse_api_res
+        choice = OpenAICompatCompletionChoice(
+            finish_reason=result["stop_reason"],
+            text=result["generation"],
         )
 
-        return ChatCompletionResponse(
-            completion_message=output_message,
-            logprobs=None,
-        )
+        response = OpenAICompatCompletionResponse(choices=[choice])
+        return process_chat_completion_response(response, self.formatter)
 
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params_for_chat_completion(request)
-        converse_stream_api_res = self.client.converse_stream(**params)
-        event_stream = converse_stream_api_res["stream"]
+        params = await self._get_params_for_chat_completion(request)
+        res = self.client.invoke_model_with_response_stream(**params)
+        event_stream = res["body"]
 
-        for chunk in event_stream:
-            if "messageStart" in chunk:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.start,
-                        delta="",
-                    )
+        async def _generate_and_convert_to_openai_compat():
+            for chunk in event_stream:
+                chunk = chunk["chunk"]["bytes"]
+                result = json.loads(chunk.decode("utf-8"))
+                choice = OpenAICompatCompletionChoice(
+                    finish_reason=result["stop_reason"],
+                    text=result["generation"],
                 )
-            elif "contentBlockStart" in chunk:
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=ToolCallDelta(
-                            content=ToolCall(
-                                tool_name=chunk["contentBlockStart"]["toolUse"]["name"],
-                                call_id=chunk["contentBlockStart"]["toolUse"][
-                                    "toolUseId"
-                                ],
-                            ),
-                            parse_status=ToolCallParseStatus.started,
-                        ),
-                    )
-                )
-            elif "contentBlockDelta" in chunk:
-                if "text" in chunk["contentBlockDelta"]["delta"]:
-                    delta = chunk["contentBlockDelta"]["delta"]["text"]
-                else:
-                    delta = ToolCallDelta(
-                        content=ToolCall(
-                            arguments=chunk["contentBlockDelta"]["delta"]["toolUse"][
-                                "input"
-                            ]
-                        ),
-                        parse_status=ToolCallParseStatus.success,
-                    )
+                yield OpenAICompatCompletionResponse(choices=[choice])
 
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.progress,
-                        delta=delta,
-                    )
-                )
-            elif "contentBlockStop" in chunk:
-                # Ignored
-                pass
-            elif "messageStop" in chunk:
-                stop_reason = (
-                    BedrockInferenceAdapter._bedrock_stop_reason_to_stop_reason(
-                        chunk["messageStop"]["stopReason"]
-                    )
-                )
+        stream = _generate_and_convert_to_openai_compat()
+        async for chunk in process_chat_completion_stream_response(
+            stream, self.formatter
+        ):
+            yield chunk
 
-                yield ChatCompletionResponseStreamChunk(
-                    event=ChatCompletionResponseEvent(
-                        event_type=ChatCompletionResponseEventType.complete,
-                        delta="",
-                        stop_reason=stop_reason,
-                    )
-                )
-            elif "metadata" in chunk:
-                # Ignored
-                pass
-            else:
-                # Ignored
-                pass
-
-    def _get_params_for_chat_completion(self, request: ChatCompletionRequest) -> Dict:
+    async def _get_params_for_chat_completion(
+        self, request: ChatCompletionRequest
+    ) -> Dict:
         bedrock_model = request.model
-        inference_config = BedrockInferenceAdapter.get_bedrock_inference_config(
-            request.sampling_params
-        )
 
-        tool_config = BedrockInferenceAdapter._tools_to_tool_config(
-            request.tools, request.tool_choice
-        )
-        bedrock_messages, system_bedrock_messages = (
-            BedrockInferenceAdapter._messages_to_bedrock_messages(request.messages)
-        )
-
-        converse_api_params = {
-            "modelId": bedrock_model,
-            "messages": bedrock_messages,
+        inference_config = {}
+        param_mapping = {
+            "max_tokens": "max_gen_len",
+            "temperature": "temperature",
+            "top_p": "top_p",
         }
-        if inference_config:
-            converse_api_params["inferenceConfig"] = inference_config
 
-        # Tool use is not supported in streaming mode
-        if tool_config and not request.stream:
-            converse_api_params["toolConfig"] = tool_config
-        if system_bedrock_messages:
-            converse_api_params["system"] = system_bedrock_messages
+        for k, v in param_mapping.items():
+            if getattr(request.sampling_params, k):
+                inference_config[v] = getattr(request.sampling_params, k)
 
-        return converse_api_params
+        prompt = await chat_completion_request_to_prompt(
+            request, self.get_llama_model(request.model), self.formatter
+        )
+        return {
+            "modelId": bedrock_model,
+            "body": json.dumps(
+                {
+                    "prompt": prompt,
+                    **inference_config,
+                }
+            ),
+        }
 
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+        embeddings = []
+        for content in contents:
+            assert not content_has_media(
+                content
+            ), "Bedrock does not support media for embeddings"
+            input_text = interleaved_content_as_str(content)
+            input_body = {"inputText": input_text}
+            body = json.dumps(input_body)
+            response = self.client.invoke_model(
+                body=body,
+                modelId=model.provider_resource_id,
+                accept="application/json",
+                contentType="application/json",
+            )
+            response_body = json.loads(response.get("body").read())
+            embeddings.append(response_body.get("embedding"))
+        return EmbeddingsResponse(embeddings=embeddings)

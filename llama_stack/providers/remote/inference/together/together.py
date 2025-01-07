@@ -4,24 +4,39 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from together import Together
 
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    convert_message_to_openai_dict,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -31,7 +46,8 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
-    convert_message_to_dict,
+    content_has_media,
+    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -64,6 +80,10 @@ MODEL_ALIASES = [
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     build_model_alias(
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
+    build_model_alias(
         "meta-llama/Meta-Llama-Guard-3-8B",
         CoreModelId.llama_guard_3_8b.value,
     ),
@@ -91,7 +111,7 @@ class TogetherInferenceAdapter(
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -114,7 +134,7 @@ class TogetherInferenceAdapter(
     def _get_client(self) -> Together:
         together_api_key = None
         if self.config.api_key is not None:
-            together_api_key = self.config.api_key
+            together_api_key = self.config.api_key.get_secret_value()
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.together_api_key:
@@ -229,17 +249,19 @@ class TogetherInferenceAdapter(
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 input_dict["messages"] = [
-                    await convert_message_to_dict(m) for m in request.messages
+                    await convert_message_to_openai_dict(m) for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request, self.get_llama_model(request.model), self.formatter
                 )
         else:
             assert (
                 not media_present
             ), "Together does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(
+                request, self.formatter
+            )
 
         return {
             "model": request.model,
@@ -251,6 +273,15 @@ class TogetherInferenceAdapter(
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Together does not support media for embeddings"
+        r = self._get_client().embeddings.create(
+            model=model.provider_resource_id,
+            input=[interleaved_content_as_str(content) for content in contents],
+        )
+        embeddings = [item.embedding for item in r.data]
+        return EmbeddingsResponse(embeddings=embeddings)

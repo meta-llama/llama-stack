@@ -4,8 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import ModelInput, Provider
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
 from llama_stack.providers.inline.inference.vllm import VLLMConfig
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -16,21 +21,42 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
-
+    name = "vllm-gpu"
     inference_provider = Provider(
         provider_id="vllm",
         provider_type="inline::vllm",
         config=VLLMConfig.sample_run_config(),
+    )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+    )
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
 
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="vllm",
     )
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
+    )
 
     return DistributionTemplate(
-        name="vllm-gpu",
+        name=name,
         distro_type="self_hosted",
         description="Use a built-in vLLM engine for running LLM inference",
         docker_image=None,
@@ -40,9 +66,10 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
+                    "memory": [memory_provider],
                 },
-                default_models=[inference_model],
+                default_models=[inference_model, embedding_model],
             ),
         },
         run_config_env_vars={

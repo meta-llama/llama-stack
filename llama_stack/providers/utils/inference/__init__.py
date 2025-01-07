@@ -27,7 +27,8 @@ def supported_inference_models() -> List[Model]:
         m
         for m in all_registered_models()
         if (
-            m.model_family in {ModelFamily.llama3_1, ModelFamily.llama3_2}
+            m.model_family
+            in {ModelFamily.llama3_1, ModelFamily.llama3_2, ModelFamily.llama3_3}
             or is_supported_safety_model(m)
         )
     ]

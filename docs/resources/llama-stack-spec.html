@@ -21,7 +21,7 @@
     "info": {
         "title": "Llama Stack Specification",
         "version": "alpha",
-        "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models. Generated at 2024-11-22 17:23:55.034164"
+        "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models."
     },
     "servers": [
         {
@@ -29,6 +29,39 @@
         }
     ],
     "paths": {
+        "/alpha/datasetio/append-rows": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AppendRowsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/batch-inference/chat-completion": {
             "post": {
                 "responses": {
@@ -1026,15 +1059,18 @@
                 ]
             }
         },
-        "/alpha/telemetry/get-trace": {
-            "get": {
+        "/alpha/telemetry/get-span-tree": {
+            "post": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Trace"
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/SpanWithStatus"
+                                    }
                                 }
                             }
                         }
@@ -1045,11 +1081,19 @@
                 ],
                 "parameters": [
                     {
-                        "name": "trace_id",
+                        "name": "span_id",
                         "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "max_depth",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     },
                     {
@@ -1061,7 +1105,17 @@
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GetSpanTreeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/alpha/post-training/job/artifacts": {
@@ -1072,45 +1126,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "PostTraining (Coming Soon)"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_uuid",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/alpha/post-training/job/logs": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJobLogStream"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/PostTrainingJobArtifactsResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -1148,7 +1171,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/PostTrainingJobStatusResponse"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -1778,6 +1808,86 @@
                 }
             }
         },
+        "/alpha/telemetry/query-spans": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Span"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QuerySpansRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/alpha/telemetry/query-traces": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Trace"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QueryTracesRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/datasets/register": {
             "post": {
                 "responses": {
@@ -2066,6 +2176,39 @@
                 }
             }
         },
+        "/alpha/telemetry/save-spans-to-dataset": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SaveSpansToDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/scoring/score": {
             "post": {
                 "responses": {
@@ -2226,6 +2369,39 @@
                 }
             }
         },
+        "/alpha/datasets/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/memory-banks/unregister": {
             "post": {
                 "responses": {
@@ -2291,44 +2467,52 @@
                     "required": true
                 }
             }
-        },
-        "/alpha/datasets/unregister": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Datasets"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UnregisterDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
         }
     },
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
     "components": {
         "schemas": {
+            "AppendRowsRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "rows"
+                ]
+            },
             "BuiltinTool": {
                 "type": "string",
                 "enum": [
@@ -2347,27 +2531,7 @@
                         "default": "assistant"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "stop_reason": {
                         "$ref": "#/components/schemas/StopReason"
@@ -2387,33 +2551,67 @@
                     "tool_calls"
                 ]
             },
-            "ImageMedia": {
+            "ImageContentItem": {
                 "type": "object",
                 "properties": {
-                    "image": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "format": {
-                                        "type": "string"
-                                    },
-                                    "format_description": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "title": "This class represents an image object.  To create"
-                            },
-                            {
-                                "$ref": "#/components/schemas/URL"
-                            }
-                        ]
+                    "url": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "data": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "image",
+                        "default": "image"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "image"
+                    "type"
+                ]
+            },
+            "InterleavedContent": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "$ref": "#/components/schemas/InterleavedContentItem"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InterleavedContentItem"
+                        }
+                    }
+                ]
+            },
+            "InterleavedContentItem": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ImageContentItem"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TextContentItem"
+                    }
+                ]
+            },
+            "Message": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/UserMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SystemMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ToolResponseMessage"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CompletionMessage"
+                    }
                 ]
             },
             "SamplingParams": {
@@ -2474,33 +2672,31 @@
                         "default": "system"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "role",
                     "content"
+                ]
+            },
+            "TextContentItem": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text",
+                        "default": "text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
                 ]
             },
             "ToolCall": {
@@ -2701,27 +2897,7 @@
                         ]
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -2733,9 +2909,16 @@
                 ]
             },
             "URL": {
-                "type": "string",
-                "format": "uri",
-                "pattern": "^(https?://|file://|data:)"
+                "type": "object",
+                "properties": {
+                    "uri": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "uri"
+                ]
             },
             "UserMessage": {
                 "type": "object",
@@ -2746,50 +2929,10 @@
                         "default": "user"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "context": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -2809,20 +2952,7 @@
                         "items": {
                             "type": "array",
                             "items": {
-                                "oneOf": [
-                                    {
-                                        "$ref": "#/components/schemas/UserMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/SystemMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/ToolResponseMessage"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/CompletionMessage"
-                                    }
-                                ]
+                                "$ref": "#/components/schemas/Message"
                             }
                         }
                     },
@@ -2882,27 +3012,7 @@
                     "content_batch": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ImageMedia"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/ImageMedia"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
+                            "$ref": "#/components/schemas/InterleavedContent"
                         }
                     },
                     "sampling_params": {
@@ -2952,6 +3062,90 @@
                     "job_uuid"
                 ]
             },
+            "ResponseFormat": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "json_schema",
+                                "default": "json_schema"
+                            },
+                            "json_schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "json_schema"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "grammar",
+                                "default": "grammar"
+                            },
+                            "bnf": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "bnf"
+                        ]
+                    }
+                ]
+            },
             "ChatCompletionRequest": {
                 "type": "object",
                 "properties": {
@@ -2961,20 +3155,7 @@
                     "messages": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "sampling_params": {
@@ -2993,88 +3174,7 @@
                         "$ref": "#/components/schemas/ToolPromptFormat"
                     },
                     "response_format": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json_schema",
-                                        "default": "json_schema"
-                                    },
-                                    "json_schema": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "json_schema"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "grammar",
-                                        "default": "grammar"
-                                    },
-                                    "bnf": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "bnf"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ResponseFormat"
                     },
                     "stream": {
                         "type": "boolean"
@@ -3223,114 +3323,13 @@
                         "type": "string"
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams"
                     },
                     "response_format": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json_schema",
-                                        "default": "json_schema"
-                                    },
-                                    "json_schema": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "json_schema"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "grammar",
-                                        "default": "grammar"
-                                    },
-                                    "bnf": {
-                                        "type": "object",
-                                        "additionalProperties": {
-                                            "oneOf": [
-                                                {
-                                                    "type": "null"
-                                                },
-                                                {
-                                                    "type": "boolean"
-                                                },
-                                                {
-                                                    "type": "number"
-                                                },
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array"
-                                                },
-                                                {
-                                                    "type": "object"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type",
-                                    "bnf"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ResponseFormat"
                     },
                     "stream": {
                         "type": "boolean"
@@ -4004,19 +4003,12 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/ImageMedia"
+                                "$ref": "#/components/schemas/InterleavedContentItem"
                             },
                             {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/InterleavedContentItem"
                                 }
                             },
                             {
@@ -4163,14 +4155,11 @@
                     "step_id": {
                         "type": "string"
                     },
-                    "model_response_text_delta": {
+                    "text_delta": {
                         "type": "string"
                     },
                     "tool_call_delta": {
                         "$ref": "#/components/schemas/ToolCallDelta"
-                    },
-                    "tool_response_text_delta": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -4345,27 +4334,7 @@
                         }
                     },
                     "inserted_context": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -4512,27 +4481,7 @@
                         ]
                     },
                     "content": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     }
                 },
                 "additionalProperties": false,
@@ -4658,27 +4607,7 @@
                     "contents": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ImageMedia"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/ImageMedia"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
+                            "$ref": "#/components/schemas/InterleavedContent"
                         }
                     }
                 },
@@ -4724,6 +4653,15 @@
                     "config"
                 ]
             },
+            "AggregationFunctionType": {
+                "type": "string",
+                "enum": [
+                    "average",
+                    "median",
+                    "categorical_count",
+                    "accuracy"
+                ]
+            },
             "AppEvalTaskConfig": {
                 "type": "object",
                 "properties": {
@@ -4751,6 +4689,9 @@
                                 },
                                 {
                                     "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/BasicScoringFnParams"
                                 }
                             ]
                         }
@@ -4764,6 +4705,26 @@
                     "type",
                     "eval_candidate",
                     "scoring_params"
+                ]
+            },
+            "BasicScoringFnParams": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "basic",
+                        "default": "basic"
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "BenchmarkEvalTaskConfig": {
@@ -4813,6 +4774,12 @@
                         "items": {
                             "type": "string"
                         }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -4858,6 +4825,12 @@
                         "type": "array",
                         "items": {
                             "type": "string"
+                        }
+                    },
+                    "aggregation_functions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AggregationFunctionType"
                         }
                     }
                 },
@@ -5213,6 +5186,10 @@
                     "chunk_size_in_tokens": {
                         "type": "integer"
                     },
+                    "embedding_dimension": {
+                        "type": "integer",
+                        "default": 384
+                    },
                     "overlap_size_in_tokens": {
                         "type": "integer"
                     }
@@ -5273,148 +5250,7 @@
                     "dataset_schema": {
                         "type": "object",
                         "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "string",
-                                            "default": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "number",
-                                            "default": "number"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "boolean",
-                                            "default": "boolean"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "array",
-                                            "default": "array"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "object",
-                                            "default": "object"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "json",
-                                            "default": "json"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "union",
-                                            "default": "union"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "chat_completion_input",
-                                            "default": "chat_completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "completion_input",
-                                            "default": "completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "agent_turn_input",
-                                            "default": "agent_turn_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ParamType"
                         }
                     },
                     "url": {
@@ -5455,6 +5291,150 @@
                     "dataset_schema",
                     "url",
                     "metadata"
+                ]
+            },
+            "ParamType": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "string",
+                                "default": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "number",
+                                "default": "number"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "boolean",
+                                "default": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "array",
+                                "default": "array"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "object",
+                                "default": "object"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "json",
+                                "default": "json"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "union",
+                                "default": "union"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "chat_completion_input",
+                                "default": "chat_completion_input"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "completion_input",
+                                "default": "completion_input"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "agent_turn_input",
+                                "default": "agent_turn_input"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ]
+                    }
                 ]
             },
             "EvalTask": {
@@ -5561,6 +5541,10 @@
                                 }
                             ]
                         }
+                    },
+                    "model_type": {
+                        "$ref": "#/components/schemas/ModelType",
+                        "default": "llm"
                     }
                 },
                 "additionalProperties": false,
@@ -5569,7 +5553,15 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "metadata"
+                    "metadata",
+                    "model_type"
+                ]
+            },
+            "ModelType": {
+                "type": "string",
+                "enum": [
+                    "llm",
+                    "embedding"
                 ]
             },
             "PaginatedRowsResult": {
@@ -5662,148 +5654,7 @@
                         }
                     },
                     "return_type": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "string",
-                                        "default": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "number",
-                                        "default": "number"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "boolean",
-                                        "default": "boolean"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "array",
-                                        "default": "array"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "object",
-                                        "default": "object"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json",
-                                        "default": "json"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "union",
-                                        "default": "union"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "chat_completion_input",
-                                        "default": "chat_completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "completion_input",
-                                        "default": "completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "agent_turn_input",
-                                        "default": "agent_turn_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ParamType"
                     },
                     "params": {
                         "oneOf": [
@@ -5812,6 +5663,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
                         ]
                     }
@@ -5878,13 +5732,38 @@
                 ],
                 "title": "A safety shield resource that can be used to check content"
             },
-            "Trace": {
+            "GetSpanTreeRequest": {
                 "type": "object",
                 "properties": {
+                    "attributes_to_return": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "SpanStatus": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "error"
+                ]
+            },
+            "SpanWithStatus": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
                     "trace_id": {
                         "type": "string"
                     },
-                    "root_span_id": {
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     },
                     "start_time": {
@@ -5894,12 +5773,41 @@
                     "end_time": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SpanStatus"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "span_id",
                     "trace_id",
-                    "root_span_id",
+                    "name",
                     "start_time"
                 ]
             },
@@ -5926,31 +5834,11 @@
                 ],
                 "title": "Artifacts of a finetuning job."
             },
-            "PostTrainingJobLogStream": {
-                "type": "object",
-                "properties": {
-                    "job_uuid": {
-                        "type": "string"
-                    },
-                    "log_lines": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_uuid",
-                    "log_lines"
-                ],
-                "title": "Stream of logs from a finetuning job."
-            },
-            "PostTrainingJobStatus": {
+            "JobStatus": {
                 "type": "string",
                 "enum": [
-                    "running",
                     "completed",
+                    "in_progress",
                     "failed",
                     "scheduled"
                 ]
@@ -5962,7 +5850,7 @@
                         "type": "string"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/PostTrainingJobStatus"
+                        "$ref": "#/components/schemas/JobStatus"
                     },
                     "scheduled_at": {
                         "type": "string",
@@ -6052,19 +5940,12 @@
                                 "type": "string"
                             },
                             {
-                                "$ref": "#/components/schemas/ImageMedia"
+                                "$ref": "#/components/schemas/InterleavedContentItem"
                             },
                             {
                                 "type": "array",
                                 "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/InterleavedContentItem"
                                 }
                             },
                             {
@@ -6144,13 +6025,6 @@
                 "required": [
                     "task_id",
                     "job_id"
-                ]
-            },
-            "JobStatus": {
-                "type": "string",
-                "enum": [
-                    "completed",
-                    "in_progress"
                 ]
             },
             "ProviderInfo": {
@@ -6313,13 +6187,6 @@
                     "name"
                 ]
             },
-            "SpanStatus": {
-                "type": "string",
-                "enum": [
-                    "ok",
-                    "error"
-                ]
-            },
             "StructuredLogEvent": {
                 "type": "object",
                 "properties": {
@@ -6458,11 +6325,15 @@
                                 "$ref": "#/components/schemas/StructuredLogEvent"
                             }
                         ]
+                    },
+                    "ttl_seconds": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "event"
+                    "event",
+                    "ttl_seconds"
                 ]
             },
             "DPOAlignmentConfig": {
@@ -6489,39 +6360,89 @@
                     "gamma"
                 ]
             },
+            "DataConfig": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "batch_size": {
+                        "type": "integer"
+                    },
+                    "shuffle": {
+                        "type": "boolean"
+                    },
+                    "validation_dataset_id": {
+                        "type": "string"
+                    },
+                    "packed": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "train_on_input": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id",
+                    "batch_size",
+                    "shuffle"
+                ]
+            },
+            "EfficiencyConfig": {
+                "type": "object",
+                "properties": {
+                    "enable_activation_checkpointing": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "enable_activation_offloading": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "memory_efficient_fsdp_wrap": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "fsdp_cpu_offload": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false
+            },
             "OptimizerConfig": {
                 "type": "object",
                 "properties": {
                     "optimizer_type": {
-                        "type": "string",
-                        "enum": [
-                            "adam",
-                            "adamw",
-                            "sgd"
-                        ]
+                        "$ref": "#/components/schemas/OptimizerType"
                     },
                     "lr": {
                         "type": "number"
                     },
-                    "lr_min": {
-                        "type": "number"
-                    },
                     "weight_decay": {
                         "type": "number"
+                    },
+                    "num_warmup_steps": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "optimizer_type",
                     "lr",
-                    "lr_min",
-                    "weight_decay"
+                    "weight_decay",
+                    "num_warmup_steps"
                 ]
             },
-            "RLHFAlgorithm": {
+            "OptimizerType": {
                 "type": "string",
                 "enum": [
-                    "dpo"
+                    "adam",
+                    "adamw",
+                    "sgd"
                 ]
             },
             "TrainingConfig": {
@@ -6530,34 +6451,33 @@
                     "n_epochs": {
                         "type": "integer"
                     },
-                    "batch_size": {
+                    "max_steps_per_epoch": {
                         "type": "integer"
                     },
-                    "shuffle": {
-                        "type": "boolean"
-                    },
-                    "n_iters": {
+                    "gradient_accumulation_steps": {
                         "type": "integer"
                     },
-                    "enable_activation_checkpointing": {
-                        "type": "boolean"
+                    "data_config": {
+                        "$ref": "#/components/schemas/DataConfig"
                     },
-                    "memory_efficient_fsdp_wrap": {
-                        "type": "boolean"
+                    "optimizer_config": {
+                        "$ref": "#/components/schemas/OptimizerConfig"
                     },
-                    "fsdp_cpu_offload": {
-                        "type": "boolean"
+                    "efficiency_config": {
+                        "$ref": "#/components/schemas/EfficiencyConfig"
+                    },
+                    "dtype": {
+                        "type": "string",
+                        "default": "bf16"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "n_epochs",
-                    "batch_size",
-                    "shuffle",
-                    "n_iters",
-                    "enable_activation_checkpointing",
-                    "memory_efficient_fsdp_wrap",
-                    "fsdp_cpu_offload"
+                    "max_steps_per_epoch",
+                    "gradient_accumulation_steps",
+                    "data_config",
+                    "optimizer_config"
                 ]
             },
             "PreferenceOptimizeRequest": {
@@ -6567,22 +6487,10 @@
                         "type": "string"
                     },
                     "finetuned_model": {
-                        "$ref": "#/components/schemas/URL"
-                    },
-                    "dataset_id": {
                         "type": "string"
-                    },
-                    "validation_dataset_id": {
-                        "type": "string"
-                    },
-                    "algorithm": {
-                        "$ref": "#/components/schemas/RLHFAlgorithm"
                     },
                     "algorithm_config": {
                         "$ref": "#/components/schemas/DPOAlignmentConfig"
-                    },
-                    "optimizer_config": {
-                        "$ref": "#/components/schemas/OptimizerConfig"
                     },
                     "training_config": {
                         "$ref": "#/components/schemas/TrainingConfig"
@@ -6642,11 +6550,7 @@
                 "required": [
                     "job_uuid",
                     "finetuned_model",
-                    "dataset_id",
-                    "validation_dataset_id",
-                    "algorithm",
                     "algorithm_config",
-                    "optimizer_config",
                     "training_config",
                     "hyperparam_search_config",
                     "logger_config"
@@ -6659,27 +6563,7 @@
                         "type": "string"
                     },
                     "query": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ImageMedia"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+                        "$ref": "#/components/schemas/InterleavedContent"
                     },
                     "params": {
                         "type": "object",
@@ -6722,27 +6606,7 @@
                             "type": "object",
                             "properties": {
                                 "content": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ImageMedia"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "oneOf": [
-                                                    {
-                                                        "type": "string"
-                                                    },
-                                                    {
-                                                        "$ref": "#/components/schemas/ImageMedia"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/InterleavedContent"
                                 },
                                 "token_count": {
                                     "type": "integer"
@@ -6772,6 +6636,185 @@
                     "scores"
                 ]
             },
+            "QueryCondition": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "op": {
+                        "$ref": "#/components/schemas/QueryConditionOp"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "key",
+                    "op",
+                    "value"
+                ]
+            },
+            "QueryConditionOp": {
+                "type": "string",
+                "enum": [
+                    "eq",
+                    "ne",
+                    "gt",
+                    "lt"
+                ]
+            },
+            "QuerySpansRequest": {
+                "type": "object",
+                "properties": {
+                    "attribute_filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QueryCondition"
+                        }
+                    },
+                    "attributes_to_return": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "max_depth": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attribute_filters",
+                    "attributes_to_return"
+                ]
+            },
+            "Span": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "span_id",
+                    "trace_id",
+                    "name",
+                    "start_time"
+                ]
+            },
+            "QueryTracesRequest": {
+                "type": "object",
+                "properties": {
+                    "attribute_filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QueryCondition"
+                        }
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "offset": {
+                        "type": "integer"
+                    },
+                    "order_by": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "Trace": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "root_span_id": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "root_span_id",
+                    "start_time"
+                ]
+            },
             "RegisterDatasetRequest": {
                 "type": "object",
                 "properties": {
@@ -6781,148 +6824,7 @@
                     "dataset_schema": {
                         "type": "object",
                         "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "string",
-                                            "default": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "number",
-                                            "default": "number"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "boolean",
-                                            "default": "boolean"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "array",
-                                            "default": "array"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "object",
-                                            "default": "object"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "json",
-                                            "default": "json"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "union",
-                                            "default": "union"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "chat_completion_input",
-                                            "default": "chat_completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "completion_input",
-                                            "default": "completion_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "string",
-                                            "const": "agent_turn_input",
-                                            "default": "agent_turn_input"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ParamType"
                         }
                     },
                     "url": {
@@ -7159,6 +7061,9 @@
                                 }
                             ]
                         }
+                    },
+                    "model_type": {
+                        "$ref": "#/components/schemas/ModelType"
                     }
                 },
                 "additionalProperties": false,
@@ -7176,148 +7081,7 @@
                         "type": "string"
                     },
                     "return_type": {
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "string",
-                                        "default": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "number",
-                                        "default": "number"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "boolean",
-                                        "default": "boolean"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "array",
-                                        "default": "array"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "object",
-                                        "default": "object"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "json",
-                                        "default": "json"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "union",
-                                        "default": "union"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "chat_completion_input",
-                                        "default": "chat_completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "completion_input",
-                                        "default": "completion_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "const": "agent_turn_input",
-                                        "default": "agent_turn_input"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "type"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ParamType"
                     },
                     "provider_scoring_fn_id": {
                         "type": "string"
@@ -7332,6 +7096,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BasicScoringFnParams"
                             }
                         ]
                     }
@@ -7430,20 +7197,7 @@
                     "messages": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "params": {
@@ -7488,6 +7242,35 @@
                 },
                 "additionalProperties": false
             },
+            "SaveSpansToDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "attribute_filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QueryCondition"
+                        }
+                    },
+                    "attributes_to_save": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "dataset_id": {
+                        "type": "string"
+                    },
+                    "max_depth": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "attribute_filters",
+                    "attributes_to_save",
+                    "dataset_id"
+                ]
+            },
             "ScoreRequest": {
                 "type": "object",
                 "properties": {
@@ -7530,6 +7313,9 @@
                                         },
                                         {
                                             "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
                                     ]
                                 },
@@ -7578,6 +7364,9 @@
                                         },
                                         {
                                             "$ref": "#/components/schemas/RegexParserScoringFnParams"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BasicScoringFnParams"
                                         }
                                     ]
                                 },
@@ -7616,49 +7405,14 @@
                     "results"
                 ]
             },
-            "DoraFinetuningConfig": {
-                "type": "object",
-                "properties": {
-                    "lora_attn_modules": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "apply_lora_to_mlp": {
-                        "type": "boolean"
-                    },
-                    "apply_lora_to_output": {
-                        "type": "boolean"
-                    },
-                    "rank": {
-                        "type": "integer"
-                    },
-                    "alpha": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "lora_attn_modules",
-                    "apply_lora_to_mlp",
-                    "apply_lora_to_output",
-                    "rank",
-                    "alpha"
-                ]
-            },
-            "FinetuningAlgorithm": {
-                "type": "string",
-                "enum": [
-                    "full",
-                    "lora",
-                    "qlora",
-                    "dora"
-                ]
-            },
             "LoraFinetuningConfig": {
                 "type": "object",
                 "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "LoRA",
+                        "default": "LoRA"
+                    },
                     "lora_attn_modules": {
                         "type": "array",
                         "items": {
@@ -7676,10 +7430,19 @@
                     },
                     "alpha": {
                         "type": "integer"
+                    },
+                    "use_dora": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "quantize_base": {
+                        "type": "boolean",
+                        "default": false
                     }
                 },
                 "additionalProperties": false,
                 "required": [
+                    "type",
                     "lora_attn_modules",
                     "apply_lora_to_mlp",
                     "apply_lora_to_output",
@@ -7687,35 +7450,26 @@
                     "alpha"
                 ]
             },
-            "QLoraFinetuningConfig": {
+            "QATFinetuningConfig": {
                 "type": "object",
                 "properties": {
-                    "lora_attn_modules": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                    "type": {
+                        "type": "string",
+                        "const": "QAT",
+                        "default": "QAT"
                     },
-                    "apply_lora_to_mlp": {
-                        "type": "boolean"
+                    "quantizer_name": {
+                        "type": "string"
                     },
-                    "apply_lora_to_output": {
-                        "type": "boolean"
-                    },
-                    "rank": {
-                        "type": "integer"
-                    },
-                    "alpha": {
+                    "group_size": {
                         "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "lora_attn_modules",
-                    "apply_lora_to_mlp",
-                    "apply_lora_to_output",
-                    "rank",
-                    "alpha"
+                    "type",
+                    "quantizer_name",
+                    "group_size"
                 ]
             },
             "SupervisedFineTuneRequest": {
@@ -7723,34 +7477,6 @@
                 "properties": {
                     "job_uuid": {
                         "type": "string"
-                    },
-                    "model": {
-                        "type": "string"
-                    },
-                    "dataset_id": {
-                        "type": "string"
-                    },
-                    "validation_dataset_id": {
-                        "type": "string"
-                    },
-                    "algorithm": {
-                        "$ref": "#/components/schemas/FinetuningAlgorithm"
-                    },
-                    "algorithm_config": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/LoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/QLoraFinetuningConfig"
-                            },
-                            {
-                                "$ref": "#/components/schemas/DoraFinetuningConfig"
-                            }
-                        ]
-                    },
-                    "optimizer_config": {
-                        "$ref": "#/components/schemas/OptimizerConfig"
                     },
                     "training_config": {
                         "$ref": "#/components/schemas/TrainingConfig"
@@ -7804,20 +7530,31 @@
                                 }
                             ]
                         }
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "checkpoint_dir": {
+                        "type": "string"
+                    },
+                    "algorithm_config": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/LoraFinetuningConfig"
+                            },
+                            {
+                                "$ref": "#/components/schemas/QATFinetuningConfig"
+                            }
+                        ]
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "job_uuid",
-                    "model",
-                    "dataset_id",
-                    "validation_dataset_id",
-                    "algorithm",
-                    "algorithm_config",
-                    "optimizer_config",
                     "training_config",
                     "hyperparam_search_config",
-                    "logger_config"
+                    "logger_config",
+                    "model"
                 ]
             },
             "SyntheticDataGenerateRequest": {
@@ -7826,20 +7563,7 @@
                     "dialogs": {
                         "type": "array",
                         "items": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/UserMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/SystemMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/ToolResponseMessage"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/CompletionMessage"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/Message"
                         }
                     },
                     "filtering_function": {
@@ -7927,6 +7651,18 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
+            "UnregisterDatasetRequest": {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "dataset_id"
+                ]
+            },
             "UnregisterMemoryBankRequest": {
                 "type": "object",
                 "properties": {
@@ -7949,18 +7685,6 @@
                 "additionalProperties": false,
                 "required": [
                     "model_id"
-                ]
-            },
-            "UnregisterDatasetRequest": {
-                "type": "object",
-                "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dataset_id"
                 ]
             }
         },
@@ -8024,12 +7748,24 @@
             "name": "Agents"
         },
         {
+            "name": "AggregationFunctionType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AggregationFunctionType\" />"
+        },
+        {
             "name": "AppEvalTaskConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppEvalTaskConfig\" />"
         },
         {
+            "name": "AppendRowsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/AppendRowsRequest\" />"
+        },
+        {
             "name": "Attachment",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Attachment\" />"
+        },
+        {
+            "name": "BasicScoringFnParams",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/BasicScoringFnParams\" />"
         },
         {
             "name": "BatchChatCompletionRequest",
@@ -8123,6 +7859,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DPOAlignmentConfig\" />"
         },
         {
+            "name": "DataConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DataConfig\" />"
+        },
+        {
             "name": "Dataset",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
         },
@@ -8141,8 +7881,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
         },
         {
-            "name": "DoraFinetuningConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DoraFinetuningConfig\" />"
+            "name": "EfficiencyConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EfficiencyConfig\" />"
         },
         {
             "name": "EmbeddingsRequest",
@@ -8171,16 +7911,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
         },
         {
-            "name": "FinetuningAlgorithm",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FinetuningAlgorithm\" />"
-        },
-        {
             "name": "FunctionCallToolDefinition",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/FunctionCallToolDefinition\" />"
         },
         {
             "name": "GetAgentsSessionRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgentsSessionRequest\" />"
+        },
+        {
+            "name": "GetSpanTreeRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetSpanTreeRequest\" />"
         },
         {
             "name": "GraphMemoryBank",
@@ -8195,8 +7935,8 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
         },
         {
-            "name": "ImageMedia",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageMedia\" />"
+            "name": "ImageContentItem",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageContentItem\" />"
         },
         {
             "name": "Inference"
@@ -8211,6 +7951,14 @@
         },
         {
             "name": "Inspect"
+        },
+        {
+            "name": "InterleavedContent",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InterleavedContent\" />"
+        },
+        {
+            "name": "InterleavedContentItem",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/InterleavedContentItem\" />"
         },
         {
             "name": "Job",
@@ -8275,6 +8023,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryToolDefinition\" />"
         },
         {
+            "name": "Message",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Message\" />"
+        },
+        {
             "name": "MetricEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MetricEvent\" />"
         },
@@ -8287,6 +8039,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelCandidate\" />"
         },
         {
+            "name": "ModelType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ModelType\" />"
+        },
+        {
             "name": "Models"
         },
         {
@@ -8294,8 +8050,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerConfig\" />"
         },
         {
+            "name": "OptimizerType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OptimizerType\" />"
+        },
+        {
             "name": "PaginatedRowsResult",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PaginatedRowsResult\" />"
+        },
+        {
+            "name": "ParamType",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ParamType\" />"
         },
         {
             "name": "PhotogenToolDefinition",
@@ -8313,14 +8077,6 @@
             "description": "Artifacts of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobArtifactsResponse\" />"
         },
         {
-            "name": "PostTrainingJobLogStream",
-            "description": "Stream of logs from a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobLogStream\" />"
-        },
-        {
-            "name": "PostTrainingJobStatus",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobStatus\" />"
-        },
-        {
             "name": "PostTrainingJobStatusResponse",
             "description": "Status of a finetuning job.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/PostTrainingJobStatusResponse\" />"
         },
@@ -8333,8 +8089,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ProviderInfo\" />"
         },
         {
-            "name": "QLoraFinetuningConfig",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QLoraFinetuningConfig\" />"
+            "name": "QATFinetuningConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QATFinetuningConfig\" />"
+        },
+        {
+            "name": "QueryCondition",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryCondition\" />"
+        },
+        {
+            "name": "QueryConditionOp",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryConditionOp\" />"
         },
         {
             "name": "QueryDocumentsRequest",
@@ -8345,8 +8109,12 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
         },
         {
-            "name": "RLHFAlgorithm",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RLHFAlgorithm\" />"
+            "name": "QuerySpansRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpansRequest\" />"
+        },
+        {
+            "name": "QueryTracesRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryTracesRequest\" />"
         },
         {
             "name": "RegexParserScoringFnParams",
@@ -8375,6 +8143,10 @@
         {
             "name": "RegisterShieldRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/RegisterShieldRequest\" />"
+        },
+        {
+            "name": "ResponseFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ResponseFormat\" />"
         },
         {
             "name": "RestAPIExecutionConfig",
@@ -8414,6 +8186,10 @@
         {
             "name": "SamplingStrategy",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingStrategy\" />"
+        },
+        {
+            "name": "SaveSpansToDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SaveSpansToDatasetRequest\" />"
         },
         {
             "name": "ScoreBatchRequest",
@@ -8465,6 +8241,10 @@
             "name": "Shields"
         },
         {
+            "name": "Span",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Span\" />"
+        },
+        {
             "name": "SpanEndPayload",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanEndPayload\" />"
         },
@@ -8475,6 +8255,10 @@
         {
             "name": "SpanStatus",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanStatus\" />"
+        },
+        {
+            "name": "SpanWithStatus",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SpanWithStatus\" />"
         },
         {
             "name": "StopReason",
@@ -8505,6 +8289,10 @@
         },
         {
             "name": "Telemetry"
+        },
+        {
+            "name": "TextContentItem",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TextContentItem\" />"
         },
         {
             "name": "TokenLogProbs",
@@ -8567,16 +8355,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
         },
         {
+            "name": "UnregisterDatasetRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterDatasetRequest\" />"
+        },
+        {
             "name": "UnregisterMemoryBankRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterMemoryBankRequest\" />"
         },
         {
             "name": "UnregisterModelRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterModelRequest\" />"
-        },
-        {
-            "name": "UnregisterDatasetRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterDatasetRequest\" />"
         },
         {
             "name": "UnstructuredLogEvent",
@@ -8642,8 +8430,11 @@
                 "AgentTurnResponseStreamChunk",
                 "AgentTurnResponseTurnCompletePayload",
                 "AgentTurnResponseTurnStartPayload",
+                "AggregationFunctionType",
                 "AppEvalTaskConfig",
+                "AppendRowsRequest",
                 "Attachment",
+                "BasicScoringFnParams",
                 "BatchChatCompletionRequest",
                 "BatchChatCompletionResponse",
                 "BatchCompletionRequest",
@@ -8666,24 +8457,27 @@
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",
                 "DPOAlignmentConfig",
+                "DataConfig",
                 "Dataset",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
-                "DoraFinetuningConfig",
+                "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvalTask",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
-                "FinetuningAlgorithm",
                 "FunctionCallToolDefinition",
                 "GetAgentsSessionRequest",
+                "GetSpanTreeRequest",
                 "GraphMemoryBank",
                 "GraphMemoryBankParams",
                 "HealthInfo",
-                "ImageMedia",
+                "ImageContentItem",
                 "InferenceStep",
                 "InsertDocumentsRequest",
+                "InterleavedContent",
+                "InterleavedContentItem",
                 "Job",
                 "JobCancelRequest",
                 "JobStatus",
@@ -8698,23 +8492,28 @@
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "MemoryToolDefinition",
+                "Message",
                 "MetricEvent",
                 "Model",
                 "ModelCandidate",
+                "ModelType",
                 "OptimizerConfig",
+                "OptimizerType",
                 "PaginatedRowsResult",
+                "ParamType",
                 "PhotogenToolDefinition",
                 "PostTrainingJob",
                 "PostTrainingJobArtifactsResponse",
-                "PostTrainingJobLogStream",
-                "PostTrainingJobStatus",
                 "PostTrainingJobStatusResponse",
                 "PreferenceOptimizeRequest",
                 "ProviderInfo",
-                "QLoraFinetuningConfig",
+                "QATFinetuningConfig",
+                "QueryCondition",
+                "QueryConditionOp",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
-                "RLHFAlgorithm",
+                "QuerySpansRequest",
+                "QueryTracesRequest",
                 "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
                 "RegisterEvalTaskRequest",
@@ -8722,6 +8521,7 @@
                 "RegisterModelRequest",
                 "RegisterScoringFunctionRequest",
                 "RegisterShieldRequest",
+                "ResponseFormat",
                 "RestAPIExecutionConfig",
                 "RestAPIMethod",
                 "RouteInfo",
@@ -8731,6 +8531,7 @@
                 "SafetyViolation",
                 "SamplingParams",
                 "SamplingStrategy",
+                "SaveSpansToDatasetRequest",
                 "ScoreBatchRequest",
                 "ScoreBatchResponse",
                 "ScoreRequest",
@@ -8741,15 +8542,18 @@
                 "Session",
                 "Shield",
                 "ShieldCallStep",
+                "Span",
                 "SpanEndPayload",
                 "SpanStartPayload",
                 "SpanStatus",
+                "SpanWithStatus",
                 "StopReason",
                 "StructuredLogEvent",
                 "SupervisedFineTuneRequest",
                 "SyntheticDataGenerateRequest",
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
+                "TextContentItem",
                 "TokenLogProbs",
                 "ToolCall",
                 "ToolCallDelta",
@@ -8765,9 +8569,9 @@
                 "TrainingConfig",
                 "Turn",
                 "URL",
+                "UnregisterDatasetRequest",
                 "UnregisterMemoryBankRequest",
                 "UnregisterModelRequest",
-                "UnregisterDatasetRequest",
                 "UnstructuredLogEvent",
                 "UserMessage",
                 "VectorMemoryBank",

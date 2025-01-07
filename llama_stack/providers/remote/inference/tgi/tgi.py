@@ -13,10 +13,25 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import all_registered_models
 
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model
 
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
@@ -83,7 +98,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -130,8 +145,8 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 
         return options
 
-    def _get_params_for_completion(self, request: CompletionRequest) -> dict:
-        prompt, input_tokens = completion_request_to_prompt_model_input_info(
+    async def _get_params_for_completion(self, request: CompletionRequest) -> dict:
+        prompt, input_tokens = await completion_request_to_prompt_model_input_info(
             request, self.formatter
         )
 
@@ -147,7 +162,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         )
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params_for_completion(request)
 
         async def _generate_and_convert_to_openai_compat():
             s = await self.client.text_generation(**params)
@@ -169,7 +184,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params_for_completion(request)
+        params = await self._get_params_for_completion(request)
         r = await self.client.text_generation(**params)
 
         choice = OpenAICompatCompletionChoice(
@@ -216,7 +231,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> ChatCompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
         r = await self.client.text_generation(**params)
 
         choice = OpenAICompatCompletionChoice(
@@ -231,7 +246,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def _stream_chat_completion(
         self, request: ChatCompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         async def _generate_and_convert_to_openai_compat():
             s = await self.client.text_generation(**params)
@@ -249,8 +264,8 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
         ):
             yield chunk
 
-    def _get_params(self, request: ChatCompletionRequest) -> dict:
-        prompt, input_tokens = chat_completion_request_to_model_input_info(
+    async def _get_params(self, request: ChatCompletionRequest) -> dict:
+        prompt, input_tokens = await chat_completion_request_to_model_input_info(
             request, self.register_helper.get_llama_model(request.model), self.formatter
         )
         return dict(
@@ -267,7 +282,7 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 
@@ -275,7 +290,9 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
         log.info(f"Initializing TGI client with url={config.url}")
-        self.client = AsyncInferenceClient(model=config.url, token=config.api_token)
+        self.client = AsyncInferenceClient(
+            model=config.url, token=config.api_token.get_secret_value()
+        )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
         self.model_id = endpoint_info["model_id"]
@@ -284,7 +301,7 @@ class TGIAdapter(_HfAdapter):
 class InferenceAPIAdapter(_HfAdapter):
     async def initialize(self, config: InferenceAPIImplConfig) -> None:
         self.client = AsyncInferenceClient(
-            model=config.huggingface_repo, token=config.api_token
+            model=config.huggingface_repo, token=config.api_token.get_secret_value()
         )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
@@ -294,7 +311,7 @@ class InferenceAPIAdapter(_HfAdapter):
 class InferenceEndpointAdapter(_HfAdapter):
     async def initialize(self, config: InferenceEndpointImplConfig) -> None:
         # Get the inference endpoint details
-        api = HfApi(token=config.api_token)
+        api = HfApi(token=config.api_token.get_secret_value())
         endpoint = api.get_inference_endpoint(config.endpoint_name)
 
         # Wait for the endpoint to be ready (if not already)

@@ -10,24 +10,70 @@ import logging
 import os
 import re
 import secrets
-import shutil
 import string
-import tempfile
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, List, Tuple
+from typing import AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
 
+from llama_models.llama3.api.datatypes import BuiltinTool
 
-from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.agents import (
+    AgentConfig,
+    AgentTool,
+    AgentTurnCreateRequest,
+    AgentTurnResponseEvent,
+    AgentTurnResponseEventType,
+    AgentTurnResponseStepCompletePayload,
+    AgentTurnResponseStepProgressPayload,
+    AgentTurnResponseStepStartPayload,
+    AgentTurnResponseStreamChunk,
+    AgentTurnResponseTurnCompletePayload,
+    AgentTurnResponseTurnStartPayload,
+    Attachment,
+    CodeInterpreterToolDefinition,
+    FunctionCallToolDefinition,
+    InferenceStep,
+    MemoryRetrievalStep,
+    MemoryToolDefinition,
+    PhotogenToolDefinition,
+    SearchToolDefinition,
+    ShieldCallStep,
+    StepType,
+    ToolExecutionStep,
+    Turn,
+    WolframAlphaToolDefinition,
+)
+
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    TextContentItem,
+    URL,
+)
+from llama_stack.apis.inference import (
+    ChatCompletionResponseEventType,
+    CompletionMessage,
+    Inference,
+    Message,
+    SamplingParams,
+    StopReason,
+    SystemMessage,
+    ToolCallDelta,
+    ToolCallParseStatus,
+    ToolChoice,
+    ToolDefinition,
+    ToolResponse,
+    ToolResponseMessage,
+    UserMessage,
+)
+from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
+from llama_stack.apis.memory_banks import MemoryBanks, VectorMemoryBankParams
+from llama_stack.apis.safety import Safety
 
 from llama_stack.providers.utils.kvstore import KVStore
+from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
 
 from .persistence import AgentPersistence
@@ -57,6 +103,7 @@ class ChatAgent(ShieldRunnerMixin):
         self,
         agent_id: str,
         agent_config: AgentConfig,
+        tempdir: str,
         inference_api: Inference,
         memory_api: Memory,
         memory_banks_api: MemoryBanks,
@@ -65,13 +112,12 @@ class ChatAgent(ShieldRunnerMixin):
     ):
         self.agent_id = agent_id
         self.agent_config = agent_config
+        self.tempdir = tempdir
         self.inference_api = inference_api
         self.memory_api = memory_api
         self.memory_banks_api = memory_banks_api
         self.safety_api = safety_api
         self.storage = AgentPersistence(agent_id, persistence_store)
-
-        self.tempdir = tempfile.mkdtemp()
 
         builtin_tools = []
         for tool_defn in agent_config.tools:
@@ -102,9 +148,6 @@ class ChatAgent(ShieldRunnerMixin):
             input_shields=agent_config.input_shields,
             output_shields=agent_config.output_shields,
         )
-
-    def __del__(self):
-        shutil.rmtree(self.tempdir)
 
     def turn_to_messages(self, turn: Turn) -> List[Message]:
         messages = []
@@ -144,87 +187,91 @@ class ChatAgent(ShieldRunnerMixin):
     async def create_session(self, name: str) -> str:
         return await self.storage.create_session(name)
 
-    @tracing.span("create_and_execute_turn")
     async def create_and_execute_turn(
         self, request: AgentTurnCreateRequest
     ) -> AsyncGenerator:
-        assert request.stream is True, "Non-streaming not supported"
+        with tracing.span("create_and_execute_turn") as span:
+            span.set_attribute("session_id", request.session_id)
+            span.set_attribute("agent_id", self.agent_id)
+            span.set_attribute("request", request.model_dump_json())
+            assert request.stream is True, "Non-streaming not supported"
 
-        session_info = await self.storage.get_session_info(request.session_id)
-        if session_info is None:
-            raise ValueError(f"Session {request.session_id} not found")
+            session_info = await self.storage.get_session_info(request.session_id)
+            if session_info is None:
+                raise ValueError(f"Session {request.session_id} not found")
 
-        turns = await self.storage.get_session_turns(request.session_id)
+            turns = await self.storage.get_session_turns(request.session_id)
 
-        messages = []
-        if self.agent_config.instructions != "":
-            messages.append(SystemMessage(content=self.agent_config.instructions))
+            messages = []
+            if self.agent_config.instructions != "":
+                messages.append(SystemMessage(content=self.agent_config.instructions))
 
-        for i, turn in enumerate(turns):
-            messages.extend(self.turn_to_messages(turn))
+            for i, turn in enumerate(turns):
+                messages.extend(self.turn_to_messages(turn))
 
-        messages.extend(request.messages)
+            messages.extend(request.messages)
 
-        turn_id = str(uuid.uuid4())
-        start_time = datetime.now()
-        yield AgentTurnResponseStreamChunk(
-            event=AgentTurnResponseEvent(
-                payload=AgentTurnResponseTurnStartPayload(
-                    turn_id=turn_id,
+            turn_id = str(uuid.uuid4())
+            span.set_attribute("turn_id", turn_id)
+            start_time = datetime.now()
+            yield AgentTurnResponseStreamChunk(
+                event=AgentTurnResponseEvent(
+                    payload=AgentTurnResponseTurnStartPayload(
+                        turn_id=turn_id,
+                    )
                 )
             )
-        )
 
-        steps = []
-        output_message = None
-        async for chunk in self.run(
-            session_id=request.session_id,
-            turn_id=turn_id,
-            input_messages=messages,
-            attachments=request.attachments or [],
-            sampling_params=self.agent_config.sampling_params,
-            stream=request.stream,
-        ):
-            if isinstance(chunk, CompletionMessage):
-                log.info(
-                    f"{chunk.role.capitalize()}: {chunk.content}",
-                )
-                output_message = chunk
-                continue
-
-            assert isinstance(
-                chunk, AgentTurnResponseStreamChunk
-            ), f"Unexpected type {type(chunk)}"
-            event = chunk.event
-            if (
-                event.payload.event_type
-                == AgentTurnResponseEventType.step_complete.value
+            steps = []
+            output_message = None
+            async for chunk in self.run(
+                session_id=request.session_id,
+                turn_id=turn_id,
+                input_messages=messages,
+                attachments=request.attachments or [],
+                sampling_params=self.agent_config.sampling_params,
+                stream=request.stream,
             ):
-                steps.append(event.payload.step_details)
+                if isinstance(chunk, CompletionMessage):
+                    log.info(
+                        f"{chunk.role.capitalize()}: {chunk.content}",
+                    )
+                    output_message = chunk
+                    continue
 
-            yield chunk
+                assert isinstance(
+                    chunk, AgentTurnResponseStreamChunk
+                ), f"Unexpected type {type(chunk)}"
+                event = chunk.event
+                if (
+                    event.payload.event_type
+                    == AgentTurnResponseEventType.step_complete.value
+                ):
+                    steps.append(event.payload.step_details)
 
-        assert output_message is not None
+                yield chunk
 
-        turn = Turn(
-            turn_id=turn_id,
-            session_id=request.session_id,
-            input_messages=request.messages,
-            output_message=output_message,
-            started_at=start_time,
-            completed_at=datetime.now(),
-            steps=steps,
-        )
-        await self.storage.add_turn_to_session(request.session_id, turn)
+            assert output_message is not None
 
-        chunk = AgentTurnResponseStreamChunk(
-            event=AgentTurnResponseEvent(
-                payload=AgentTurnResponseTurnCompletePayload(
-                    turn=turn,
+            turn = Turn(
+                turn_id=turn_id,
+                session_id=request.session_id,
+                input_messages=request.messages,
+                output_message=output_message,
+                started_at=start_time,
+                completed_at=datetime.now(),
+                steps=steps,
+            )
+            await self.storage.add_turn_to_session(request.session_id, turn)
+
+            chunk = AgentTurnResponseStreamChunk(
+                event=AgentTurnResponseEvent(
+                    payload=AgentTurnResponseTurnCompletePayload(
+                        turn=turn,
+                    )
                 )
             )
-        )
-        yield chunk
+            yield chunk
 
     async def run(
         self,
@@ -240,13 +287,14 @@ class ChatAgent(ShieldRunnerMixin):
         # return a "final value" for the `yield from` statement. we simulate that by yielding a
         # final boolean (to see whether an exception happened) and then explicitly testing for it.
 
-        async for res in self.run_multiple_shields_wrapper(
-            turn_id, input_messages, self.input_shields, "user-input"
-        ):
-            if isinstance(res, bool):
-                return
-            else:
-                yield res
+        if len(self.input_shields) > 0:
+            async for res in self.run_multiple_shields_wrapper(
+                turn_id, input_messages, self.input_shields, "user-input"
+            ):
+                if isinstance(res, bool):
+                    return
+                else:
+                    yield res
 
         async for res in self._run(
             session_id, turn_id, input_messages, attachments, sampling_params, stream
@@ -263,17 +311,17 @@ class ChatAgent(ShieldRunnerMixin):
         # for output shields run on the full input and output combination
         messages = input_messages + [final_response]
 
-        async for res in self.run_multiple_shields_wrapper(
-            turn_id, messages, self.output_shields, "assistant-output"
-        ):
-            if isinstance(res, bool):
-                return
-            else:
-                yield res
+        if len(self.output_shields) > 0:
+            async for res in self.run_multiple_shields_wrapper(
+                turn_id, messages, self.output_shields, "assistant-output"
+            ):
+                if isinstance(res, bool):
+                    return
+                else:
+                    yield res
 
         yield final_response
 
-    @tracing.span("run_shields")
     async def run_multiple_shields_wrapper(
         self,
         turn_id: str,
@@ -281,23 +329,46 @@ class ChatAgent(ShieldRunnerMixin):
         shields: List[str],
         touchpoint: str,
     ) -> AsyncGenerator:
-        if len(shields) == 0:
-            return
+        with tracing.span("run_shields") as span:
+            span.set_attribute("input", [m.model_dump_json() for m in messages])
+            if len(shields) == 0:
+                span.set_attribute("output", "no shields")
+                return
 
-        step_id = str(uuid.uuid4())
-        try:
-            yield AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseStepStartPayload(
-                        step_type=StepType.shield_call.value,
-                        step_id=step_id,
-                        metadata=dict(touchpoint=touchpoint),
+            step_id = str(uuid.uuid4())
+            try:
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepStartPayload(
+                            step_type=StepType.shield_call.value,
+                            step_id=step_id,
+                            metadata=dict(touchpoint=touchpoint),
+                        )
                     )
                 )
-            )
-            await self.run_multiple_shields(messages, shields)
+                await self.run_multiple_shields(messages, shields)
 
-        except SafetyException as e:
+            except SafetyException as e:
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepCompletePayload(
+                            step_type=StepType.shield_call.value,
+                            step_details=ShieldCallStep(
+                                step_id=step_id,
+                                turn_id=turn_id,
+                                violation=e.violation,
+                            ),
+                        )
+                    )
+                )
+                span.set_attribute("output", e.violation.model_dump_json())
+
+                yield CompletionMessage(
+                    content=str(e),
+                    stop_reason=StopReason.end_of_turn,
+                )
+                yield False
+
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseStepCompletePayload(
@@ -305,30 +376,12 @@ class ChatAgent(ShieldRunnerMixin):
                         step_details=ShieldCallStep(
                             step_id=step_id,
                             turn_id=turn_id,
-                            violation=e.violation,
+                            violation=None,
                         ),
                     )
                 )
             )
-
-            yield CompletionMessage(
-                content=str(e),
-                stop_reason=StopReason.end_of_turn,
-            )
-            yield False
-
-        yield AgentTurnResponseStreamChunk(
-            event=AgentTurnResponseEvent(
-                payload=AgentTurnResponseStepCompletePayload(
-                    step_type=StepType.shield_call.value,
-                    step_details=ShieldCallStep(
-                        step_id=step_id,
-                        turn_id=turn_id,
-                        violation=None,
-                    ),
-                )
-            )
-        )
+            span.set_attribute("output", "no violations")
 
     async def _run(
         self,
@@ -356,10 +409,15 @@ class ChatAgent(ShieldRunnerMixin):
 
             # TODO: find older context from the session and either replace it
             # or append with a sliding window. this is really a very simplistic implementation
-            with tracing.span("retrieve_rag_context"):
+            with tracing.span("retrieve_rag_context") as span:
                 rag_context, bank_ids = await self._retrieve_context(
                     session_id, input_messages, attachments
                 )
+                span.set_attribute(
+                    "input", [m.model_dump_json() for m in input_messages]
+                )
+                span.set_attribute("output", rag_context)
+                span.set_attribute("bank_ids", bank_ids)
 
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
@@ -379,7 +437,7 @@ class ChatAgent(ShieldRunnerMixin):
 
             if rag_context:
                 last_message = input_messages[-1]
-                last_message.context = "\n".join(rag_context)
+                last_message.context = rag_context
 
         elif attachments and AgentTool.code_interpreter.value in enabled_tools:
             urls = [a.content for a in attachments if isinstance(a.content, URL)]
@@ -396,11 +454,6 @@ class ChatAgent(ShieldRunnerMixin):
         n_iter = 0
         while True:
             msg = input_messages[-1]
-            if len(str(msg)) > 1000:
-                msg_str = f"{str(msg)[:500]}...<more>...{str(msg)[-500:]}"
-            else:
-                msg_str = str(msg)
-            log.info(f"{msg_str}")
 
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
@@ -416,7 +469,7 @@ class ChatAgent(ShieldRunnerMixin):
             content = ""
             stop_reason = None
 
-            with tracing.span("inference"):
+            with tracing.span("inference") as span:
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
@@ -436,14 +489,13 @@ class ChatAgent(ShieldRunnerMixin):
                     if isinstance(delta, ToolCallDelta):
                         if delta.parse_status == ToolCallParseStatus.success:
                             tool_calls.append(delta.content)
-
                         if stream:
                             yield AgentTurnResponseStreamChunk(
                                 event=AgentTurnResponseEvent(
                                     payload=AgentTurnResponseStepProgressPayload(
                                         step_type=StepType.inference.value,
                                         step_id=step_id,
-                                        model_response_text_delta="",
+                                        text_delta="",
                                         tool_call_delta=delta,
                                     )
                                 )
@@ -457,7 +509,7 @@ class ChatAgent(ShieldRunnerMixin):
                                     payload=AgentTurnResponseStepProgressPayload(
                                         step_type=StepType.inference.value,
                                         step_id=step_id,
-                                        model_response_text_delta=event.delta,
+                                        text_delta=event.delta,
                                     )
                                 )
                             )
@@ -466,6 +518,13 @@ class ChatAgent(ShieldRunnerMixin):
 
                     if event.stop_reason is not None:
                         stop_reason = event.stop_reason
+                span.set_attribute("stop_reason", stop_reason)
+                span.set_attribute(
+                    "input", [m.model_dump_json() for m in input_messages]
+                )
+                span.set_attribute(
+                    "output", f"content: {content} tool_calls: {tool_calls}"
+                )
 
             stop_reason = stop_reason or StopReason.out_of_tokens
 
@@ -522,98 +581,71 @@ class ChatAgent(ShieldRunnerMixin):
                     input_messages = input_messages + [message]
             else:
                 log.info(f"{str(message)}")
-                try:
-                    tool_call = message.tool_calls[0]
+                tool_call = message.tool_calls[0]
 
-                    name = tool_call.tool_name
-                    if not isinstance(name, BuiltinTool):
-                        yield message
-                        return
-
-                    step_id = str(uuid.uuid4())
-                    yield AgentTurnResponseStreamChunk(
-                        event=AgentTurnResponseEvent(
-                            payload=AgentTurnResponseStepStartPayload(
-                                step_type=StepType.tool_execution.value,
-                                step_id=step_id,
-                            )
-                        )
-                    )
-                    yield AgentTurnResponseStreamChunk(
-                        event=AgentTurnResponseEvent(
-                            payload=AgentTurnResponseStepProgressPayload(
-                                step_type=StepType.tool_execution.value,
-                                step_id=step_id,
-                                tool_call=tool_call,
-                            )
-                        )
-                    )
-
-                    with tracing.span("tool_execution"):
-                        result_messages = await execute_tool_call_maybe(
-                            self.tools_dict,
-                            [message],
-                        )
-                        assert (
-                            len(result_messages) == 1
-                        ), "Currently not supporting multiple messages"
-                        result_message = result_messages[0]
-
-                    yield AgentTurnResponseStreamChunk(
-                        event=AgentTurnResponseEvent(
-                            payload=AgentTurnResponseStepCompletePayload(
-                                step_type=StepType.tool_execution.value,
-                                step_details=ToolExecutionStep(
-                                    step_id=step_id,
-                                    turn_id=turn_id,
-                                    tool_calls=[tool_call],
-                                    tool_responses=[
-                                        ToolResponse(
-                                            call_id=result_message.call_id,
-                                            tool_name=result_message.tool_name,
-                                            content=result_message.content,
-                                        )
-                                    ],
-                                ),
-                            )
-                        )
-                    )
-
-                    # TODO: add tool-input touchpoint and a "start" event for this step also
-                    # but that needs a lot more refactoring of Tool code potentially
-                    yield AgentTurnResponseStreamChunk(
-                        event=AgentTurnResponseEvent(
-                            payload=AgentTurnResponseStepCompletePayload(
-                                step_type=StepType.shield_call.value,
-                                step_details=ShieldCallStep(
-                                    step_id=str(uuid.uuid4()),
-                                    turn_id=turn_id,
-                                    violation=None,
-                                ),
-                            )
-                        )
-                    )
-
-                except SafetyException as e:
-                    yield AgentTurnResponseStreamChunk(
-                        event=AgentTurnResponseEvent(
-                            payload=AgentTurnResponseStepCompletePayload(
-                                step_type=StepType.shield_call.value,
-                                step_details=ShieldCallStep(
-                                    step_id=str(uuid.uuid4()),
-                                    turn_id=turn_id,
-                                    violation=e.violation,
-                                ),
-                            )
-                        )
-                    )
-
-                    yield CompletionMessage(
-                        content=str(e),
-                        stop_reason=StopReason.end_of_turn,
-                    )
-                    yield False
+                name = tool_call.tool_name
+                if not isinstance(name, BuiltinTool) or name not in enabled_tools:
+                    yield message
                     return
+
+                step_id = str(uuid.uuid4())
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepStartPayload(
+                            step_type=StepType.tool_execution.value,
+                            step_id=step_id,
+                        )
+                    )
+                )
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepProgressPayload(
+                            step_type=StepType.tool_execution.value,
+                            step_id=step_id,
+                            tool_call=tool_call,
+                        )
+                    )
+                )
+
+                with tracing.span(
+                    "tool_execution",
+                    {
+                        "tool_name": tool_call.tool_name,
+                        "input": message.model_dump_json(),
+                    },
+                ) as span:
+                    result_messages = await execute_tool_call_maybe(
+                        self.tools_dict,
+                        [message],
+                    )
+                    assert (
+                        len(result_messages) == 1
+                    ), "Currently not supporting multiple messages"
+                    result_message = result_messages[0]
+                    span.set_attribute("output", result_message.model_dump_json())
+
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepCompletePayload(
+                            step_type=StepType.tool_execution.value,
+                            step_details=ToolExecutionStep(
+                                step_id=step_id,
+                                turn_id=turn_id,
+                                tool_calls=[tool_call],
+                                tool_responses=[
+                                    ToolResponse(
+                                        call_id=result_message.call_id,
+                                        tool_name=result_message.tool_name,
+                                        content=result_message.content,
+                                    )
+                                ],
+                            ),
+                        )
+                    )
+                )
+
+                # TODO: add tool-input touchpoint and a "start" event for this step also
+                # but that needs a lot more refactoring of Tool code potentially
 
                 if out_attachment := interpret_content_as_attachment(
                     result_message.content
@@ -671,7 +703,7 @@ class ChatAgent(ShieldRunnerMixin):
 
     async def _retrieve_context(
         self, session_id: str, messages: List[Message], attachments: List[Attachment]
-    ) -> Tuple[Optional[List[str]], Optional[List[int]]]:  # (rag_context, bank_ids)
+    ) -> Tuple[Optional[InterleavedContent], List[int]]:  # (rag_context, bank_ids)
         bank_ids = []
 
         memory = self._memory_tool_definition()
@@ -739,11 +771,16 @@ class ChatAgent(ShieldRunnerMixin):
                 break
             picked.append(f"id:{c.document_id}; content:{c.content}")
 
-        return [
-            "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
-            *picked,
-            "\n=== END-RETRIEVED-CONTEXT ===\n",
-        ], bank_ids
+        return (
+            concat_interleaved_content(
+                [
+                    "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
+                    *picked,
+                    "\n=== END-RETRIEVED-CONTEXT ===\n",
+                ]
+            ),
+            bank_ids,
+        )
 
     def _get_tools(self) -> List[ToolDefinition]:
         ret = []
@@ -788,7 +825,11 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
         else:
             raise ValueError(f"Unsupported URL {url}")
 
-        content.append(f'# There is a file accessible to you at "{filepath}"\n')
+        content.append(
+            TextContentItem(
+                text=f'# There is a file accessible to you at "{filepath}"\n'
+            )
+        )
 
     return ToolResponseMessage(
         call_id="",

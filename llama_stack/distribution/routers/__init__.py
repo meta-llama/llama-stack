@@ -4,11 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any
+from typing import Any, Dict
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.distribution.datatypes import RoutedProtocol
 
 from llama_stack.distribution.store import DistributionRegistry
+from llama_stack.providers.datatypes import Api, RoutingTable
 
 from .routing_tables import (
     DatasetsRoutingTable,
@@ -17,6 +18,7 @@ from .routing_tables import (
     ModelsRoutingTable,
     ScoringFunctionsRoutingTable,
     ShieldsRoutingTable,
+    ToolGroupsRoutingTable,
 )
 
 
@@ -33,6 +35,7 @@ async def get_routing_table_impl(
         "datasets": DatasetsRoutingTable,
         "scoring_functions": ScoringFunctionsRoutingTable,
         "eval_tasks": EvalTasksRoutingTable,
+        "tool_groups": ToolGroupsRoutingTable,
     }
 
     if api.value not in api_to_tables:
@@ -51,6 +54,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         MemoryRouter,
         SafetyRouter,
         ScoringRouter,
+        ToolRuntimeRouter,
     )
 
     api_to_routers = {
@@ -60,6 +64,7 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, _deps) -> 
         "datasetio": DatasetIORouter,
         "scoring": ScoringRouter,
         "eval": EvalRouter,
+        "tool_runtime": ToolRuntimeRouter,
     }
     if api.value not in api_to_routers:
         raise ValueError(f"API {api.value} not found in router map")

@@ -126,7 +126,7 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--templat
 
 EOF
 
-printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile"
+printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile\n\n"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
 

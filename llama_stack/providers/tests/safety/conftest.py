@@ -74,7 +74,9 @@ def pytest_addoption(parser):
 
 
 SAFETY_SHIELD_PARAMS = [
-    pytest.param("Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"),
+    pytest.param(
+        "meta-llama/Llama-Guard-3-1B", marks=pytest.mark.guard_1b, id="guard_1b"
+    ),
 ]
 
 
@@ -86,6 +88,7 @@ def pytest_generate_tests(metafunc):
     if "safety_shield" in metafunc.fixturenames:
         shield_id = metafunc.config.getoption("--safety-shield")
         if shield_id:
+            assert shield_id.startswith("meta-llama/")
             params = [pytest.param(shield_id, id="")]
         else:
             params = SAFETY_SHIELD_PARAMS

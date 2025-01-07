@@ -19,16 +19,17 @@ export LLAMA_STACK_PORT=5001
 ollama run $OLLAMA_INFERENCE_MODEL --keepalive 60m
 ```
 
-By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to enspagents/agenure the model remains loaded for sometime.
+By default, Ollama keeps the model loaded in memory for 5 minutes which can be too short. We set the `--keepalive` flag to 60 minutes to ensure the model remains loaded for sometime.
 
 
 ### 2. Start the Llama Stack server
 
 Llama Stack is based on a client-server architecture. It consists of a server which can be configured very flexibly so you can mix-and-match various providers for its individual API components -- beyond Inference, these include Memory, Agents, Telemetry, Evals and so forth.
 
+To get started quickly, we provide various Docker images for the server component that work with different inference providers out of the box. For this guide, we will use `llamastack/distribution-ollama` as the Docker image.
+
 ```bash
-docker run \
-  -it \
+docker run -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-ollama \
@@ -42,8 +43,7 @@ Configuration for this is available at `distributions/ollama/run.yaml`.
 
 ### 3. Use the Llama Stack client SDK
 
-You can interact with the Llama Stack server using the `llama-stack-client` CLI or via the Python SDK.
-
+You can interact with the Llama Stack server using various client SDKs. We will use the Python SDK which you can install using the following command. Note that you must be using Python 3.10 or newer:
 ```bash
 pip install llama-stack-client
 ```
@@ -51,7 +51,8 @@ pip install llama-stack-client
 Let's use the `llama-stack-client` CLI to check the connectivity to the server.
 
 ```bash
-llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
+llama-stack-client configure --endpoint http://localhost:$LLAMA_STACK_PORT
+llama-stack-client models list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ identifier                       ┃ provider_id ┃ provider_resource_id      ┃ metadata ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩
@@ -61,8 +62,8 @@ llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT models list
 
 You can test basic Llama inference completion using the CLI too.
 ```bash
-llama-stack-client --endpoint http://localhost:$LLAMA_STACK_PORT \
-  inference chat_completion \
+llama-stack-client \
+  inference chat-completion \
   --message "hello, what model are you?"
 ```
 
@@ -118,11 +119,11 @@ async def run_main():
         model=os.environ["INFERENCE_MODEL"],
         instructions="You are a helpful assistant",
         tools=[{"type": "memory"}],  # enable Memory aka RAG
+        enable_session_persistence=True,
     )
 
     agent = Agent(client, agent_config)
     session_id = agent.create_session("test-session")
-    print(f"Created session_id={session_id} for Agent({agent.agent_id})")
     user_prompts = [
         (
             "I am attaching documentation for Torchtune. Help me answer questions I will ask next.",
@@ -139,7 +140,7 @@ async def run_main():
             attachments=attachments,
             session_id=session_id,
         )
-        async for log in EventLogger().log(response):
+        for log in EventLogger().log(response):
             log.print()
 
 

@@ -6,7 +6,13 @@
 
 from pathlib import Path
 
+from llama_stack.apis.models.models import ModelType
+
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.tgi import TGIImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -18,8 +24,11 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
-
+    name = "tgi"
     inference_provider = Provider(
         provider_id="tgi-inference",
         provider_type="remote::tgi",
@@ -27,10 +36,28 @@ def get_distribution_template() -> DistributionTemplate:
             url="${env.TGI_URL}",
         ),
     )
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+    )
 
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="tgi-inference",
+    )
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
     )
     safety_model = ModelInput(
         model_id="${env.SAFETY_MODEL}",
@@ -38,7 +65,7 @@ def get_distribution_template() -> DistributionTemplate:
     )
 
     return DistributionTemplate(
-        name="tgi",
+        name=name,
         distro_type="self_hosted",
         description="Use (an external) TGI server for running LLM inference",
         docker_image=None,
@@ -48,9 +75,10 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
+                    "memory": [memory_provider],
                 },
-                default_models=[inference_model],
+                default_models=[inference_model, embedding_model],
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
@@ -64,6 +92,7 @@ def get_distribution_template() -> DistributionTemplate:
                             ),
                         ),
                     ],
+                    "memory": [memory_provider],
                 },
                 default_models=[
                     inference_model,

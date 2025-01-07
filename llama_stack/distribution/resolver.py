@@ -6,13 +6,9 @@
 import importlib
 import inspect
 
-from typing import Any, Dict, List, Set
-
-
-from llama_stack.providers.datatypes import *  # noqa: F403
-from llama_stack.distribution.datatypes import *  # noqa: F403
-
 import logging
+
+from typing import Any, Dict, List, Set
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.datasetio import DatasetIO
@@ -24,15 +20,39 @@ from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.models import Models
+from llama_stack.apis.post_training import PostTraining
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
 from llama_stack.apis.scoring_functions import ScoringFunctions
 from llama_stack.apis.shields import Shields
 from llama_stack.apis.telemetry import Telemetry
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.distribution.client import get_client_impl
+
+from llama_stack.distribution.datatypes import (
+    AutoRoutedProviderSpec,
+    Provider,
+    RoutingTableProviderSpec,
+    StackRunConfig,
+)
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+
+from llama_stack.providers.datatypes import (
+    Api,
+    DatasetsProtocolPrivate,
+    EvalTasksProtocolPrivate,
+    InlineProviderSpec,
+    MemoryBanksProtocolPrivate,
+    ModelsProtocolPrivate,
+    ProviderSpec,
+    RemoteProviderConfig,
+    RemoteProviderSpec,
+    ScoringFunctionsProtocolPrivate,
+    ShieldsProtocolPrivate,
+    ToolsProtocolPrivate,
+)
 
 log = logging.getLogger(__name__)
 
@@ -58,12 +78,16 @@ def api_protocol_map() -> Dict[Api, Any]:
         Api.scoring_functions: ScoringFunctions,
         Api.eval: Eval,
         Api.eval_tasks: EvalTasks,
+        Api.post_training: PostTraining,
+        Api.tool_groups: ToolGroups,
+        Api.tool_runtime: ToolRuntime,
     }
 
 
 def additional_protocols_map() -> Dict[Api, Any]:
     return {
         Api.inference: (ModelsProtocolPrivate, Models, Api.models),
+        Api.tool_groups: (ToolsProtocolPrivate, ToolGroups, Api.tool_groups),
         Api.memory: (MemoryBanksProtocolPrivate, MemoryBanks, Api.memory_banks),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),

@@ -10,14 +10,22 @@ from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.inference import (
+    CompletionMessage,
+    InterleavedContent,
+    LogProbConfig,
+    Message,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 
 
 @json_schema_type
 class BatchCompletionRequest(BaseModel):
     model: str
-    content_batch: List[InterleavedTextMedia]
+    content_batch: List[InterleavedContent]
     sampling_params: Optional[SamplingParams] = SamplingParams()
     logprobs: Optional[LogProbConfig] = None
 
@@ -53,7 +61,7 @@ class BatchInference(Protocol):
     async def batch_completion(
         self,
         model: str,
-        content_batch: List[InterleavedTextMedia],
+        content_batch: List[InterleavedContent],
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchCompletionResponse: ...

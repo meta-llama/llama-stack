@@ -6,14 +6,29 @@
 
 import json
 import logging
+import shutil
+import tempfile
 import uuid
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
-from llama_stack.apis.inference import Inference
+from termcolor import colored
+
+from llama_stack.apis.agents import (
+    AgentConfig,
+    AgentCreateResponse,
+    Agents,
+    AgentSessionCreateResponse,
+    AgentStepResponse,
+    AgentTurnCreateRequest,
+    Attachment,
+    Session,
+    Turn,
+)
+
+from llama_stack.apis.inference import Inference, ToolResponseMessage, UserMessage
 from llama_stack.apis.memory import Memory
 from llama_stack.apis.memory_banks import MemoryBanks
 from llama_stack.apis.safety import Safety
-from llama_stack.apis.agents import *  # noqa: F403
 
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 
@@ -40,9 +55,19 @@ class MetaReferenceAgentsImpl(Agents):
         self.memory_banks_api = memory_banks_api
 
         self.in_memory_store = InmemoryKVStoreImpl()
+        self.tempdir = tempfile.mkdtemp()
 
     async def initialize(self) -> None:
         self.persistence_store = await kvstore_impl(self.config.persistence_store)
+
+        # check if "bwrap" is available
+        if not shutil.which("bwrap"):
+            print(
+                colored(
+                    "Warning: `bwrap` is not available. Code interpreter tool will not work correctly.",
+                    "yellow",
+                )
+            )
 
     async def create_agent(
         self,
@@ -82,6 +107,7 @@ class MetaReferenceAgentsImpl(Agents):
         return ChatAgent(
             agent_id=agent_id,
             agent_config=agent_config,
+            tempdir=self.tempdir,
             inference_api=self.inference_api,
             safety_api=self.safety_api,
             memory_api=self.memory_api,

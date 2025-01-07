@@ -18,21 +18,35 @@ from typing import (
     Union,
 )
 
+from llama_models.llama3.api.datatypes import ToolParamDefinition
+
 from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.common.deployment_types import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.deployment_types import RestAPIExecutionConfig
+from llama_stack.apis.inference import (
+    CompletionMessage,
+    SamplingParams,
+    ToolCall,
+    ToolCallDelta,
+    ToolChoice,
+    ToolPromptFormat,
+    ToolResponse,
+    ToolResponseMessage,
+    UserMessage,
+)
+from llama_stack.apis.memory import MemoryBank
+from llama_stack.apis.safety import SafetyViolation
+
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 @json_schema_type
 class Attachment(BaseModel):
-    content: InterleavedTextMedia | URL
+    content: InterleavedContent | URL
     mime_type: str
 
 
@@ -101,20 +115,20 @@ class _MemoryBankConfigCommon(BaseModel):
 
 
 class AgentVectorMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
+    type: Literal["vector"] = "vector"
 
 
 class AgentKeyValueMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.keyvalue.value] = MemoryBankType.keyvalue.value
+    type: Literal["keyvalue"] = "keyvalue"
     keys: List[str]  # what keys to focus on
 
 
 class AgentKeywordMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.keyword.value] = MemoryBankType.keyword.value
+    type: Literal["keyword"] = "keyword"
 
 
 class AgentGraphMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
+    type: Literal["graph"] = "graph"
     entities: List[str]  # what entities to focus on
 
 
@@ -229,7 +243,7 @@ class MemoryRetrievalStep(StepCommon):
         StepType.memory_retrieval.value
     )
     memory_bank_ids: List[str]
-    inserted_context: InterleavedTextMedia
+    inserted_context: InterleavedContent
 
 
 Step = Annotated[
@@ -339,9 +353,8 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
     step_type: StepType
     step_id: str
 
-    model_response_text_delta: Optional[str] = None
+    text_delta: Optional[str] = None
     tool_call_delta: Optional[ToolCallDelta] = None
-    tool_response_text_delta: Optional[str] = None
 
 
 @json_schema_type
@@ -418,6 +431,7 @@ class AgentStepResponse(BaseModel):
 
 
 @runtime_checkable
+@trace_protocol
 class Agents(Protocol):
     @webmethod(route="/agents/create")
     async def create_agent(

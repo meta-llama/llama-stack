@@ -15,6 +15,9 @@ providers:
     config:
       base_url: https://api.cerebras.ai
       api_key: ${env.CEREBRAS_API_KEY}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -38,7 +41,10 @@ providers:
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
+      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/cerebras/trace_store.db}
 metadata_store:
   namespace: null
   type: sqlite
@@ -46,12 +52,20 @@ metadata_store:
 models:
 - metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
-  provider_id: null
+  provider_id: cerebras
   provider_model_id: llama3.1-8b
+  model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3.1-70B-Instruct
-  provider_id: null
-  provider_model_id: llama3.1-70b
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: cerebras
+  provider_model_id: llama-3.3-70b
+  model_type: llm
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: sentence-transformers
+  provider_model_id: null
+  model_type: embedding
 shields:
 - params: null
   shield_id: meta-llama/Llama-Guard-3-8B

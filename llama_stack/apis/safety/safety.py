@@ -5,13 +5,15 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
+from llama_stack.apis.inference import Message
+from llama_stack.apis.shields import Shield
+
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 @json_schema_type
@@ -43,6 +45,7 @@ class ShieldStore(Protocol):
 
 
 @runtime_checkable
+@trace_protocol
 class Safety(Protocol):
     shield_store: ShieldStore
 

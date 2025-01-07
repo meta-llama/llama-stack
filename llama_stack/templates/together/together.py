@@ -8,10 +8,15 @@ from pathlib import Path
 
 from llama_models.sku_list import all_registered_models
 
+from llama_stack.apis.models.models import ModelType
+
 from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
+from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.together.together import MODEL_ALIASES
-
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
@@ -22,12 +27,25 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
     }
-
+    name = "together"
     inference_provider = Provider(
         provider_id="together",
         provider_type="remote::together",
         config=TogetherImplConfig.sample_run_config(),
+    )
+    memory_provider = Provider(
+        provider_id="faiss",
+        provider_type="inline::faiss",
+        config=FaissImplConfig.sample_run_config(f"distributions/{name}"),
+    )
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
 
     core_model_to_hf_repo = {
@@ -37,12 +55,21 @@ def get_distribution_template() -> DistributionTemplate:
         ModelInput(
             model_id=core_model_to_hf_repo[m.llama_model],
             provider_model_id=m.provider_model_id,
+            provider_id="together",
         )
         for m in MODEL_ALIASES
     ]
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
+    )
 
     return DistributionTemplate(
-        name="together",
+        name=name,
         distro_type="self_hosted",
         description="Use Together.AI for running LLM inference",
         docker_image=None,
@@ -52,9 +79,10 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
+                    "memory": [memory_provider],
                 },
-                default_models=default_models,
+                default_models=default_models + [embedding_model],
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
         },

@@ -7,8 +7,6 @@
 from typing import List
 
 from jinja2 import Template
-from llama_models.llama3.api import *  # noqa: F403
-
 
 from llama_stack.apis.agents import (
     DefaultMemoryQueryGeneratorConfig,
@@ -16,7 +14,10 @@ from llama_stack.apis.agents import (
     MemoryQueryGenerator,
     MemoryQueryGeneratorConfig,
 )
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.inference import Message, UserMessage
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 
 
 async def generate_rag_query(
@@ -42,7 +43,7 @@ async def default_rag_query_generator(
     messages: List[Message],
     **kwargs,
 ):
-    return config.sep.join(interleaved_text_media_as_str(m.content) for m in messages)
+    return config.sep.join(interleaved_content_as_str(m.content) for m in messages)
 
 
 async def llm_rag_query_generator(
@@ -61,7 +62,7 @@ async def llm_rag_query_generator(
     model = config.model
     message = UserMessage(content=content)
     response = await inference_api.chat_completion(
-        model=model,
+        model_id=model,
         messages=[message],
         stream=False,
     )

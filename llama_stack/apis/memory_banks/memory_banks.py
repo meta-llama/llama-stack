@@ -20,6 +20,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 @json_schema_type
@@ -88,6 +89,7 @@ class VectorMemoryBank(MemoryBankResourceMixin):
     memory_bank_type: Literal[MemoryBankType.vector.value] = MemoryBankType.vector.value
     embedding_model: str
     chunk_size_in_tokens: int
+    embedding_dimension: Optional[int] = 384  # default to minilm-l6-v2
     overlap_size_in_tokens: Optional[int] = None
 
 
@@ -129,6 +131,7 @@ class MemoryBankInput(BaseModel):
 
 
 @runtime_checkable
+@trace_protocol
 class MemoryBanks(Protocol):
     @webmethod(route="/memory-banks/list", method="GET")
     async def list_memory_banks(self) -> List[MemoryBank]: ...
