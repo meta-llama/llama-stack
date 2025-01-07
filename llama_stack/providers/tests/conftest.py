@@ -12,11 +12,11 @@ import pytest
 
 import yaml
 from dotenv import load_dotenv
-from pydantic import BaseModel
-from termcolor import colored
 
 from llama_stack.distribution.datatypes import Provider
 from llama_stack.providers.datatypes import RemoteProviderConfig
+from pydantic import BaseModel
+from termcolor import colored
 
 from .env import get_env_or_fail
 
