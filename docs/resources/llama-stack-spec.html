@@ -2467,6 +2467,36 @@
                     "required": true
                 }
             }
+        },
+        "/alpha/version": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VersionInfo"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Inspect"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
         }
     },
     "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
@@ -6457,6 +6487,9 @@
                     "gradient_accumulation_steps": {
                         "type": "integer"
                     },
+                    "max_validation_steps": {
+                        "type": "integer"
+                    },
                     "data_config": {
                         "$ref": "#/components/schemas/DataConfig"
                     },
@@ -6476,6 +6509,7 @@
                     "n_epochs",
                     "max_steps_per_epoch",
                     "gradient_accumulation_steps",
+                    "max_validation_steps",
                     "data_config",
                     "optimizer_config"
                 ]
@@ -7686,6 +7720,18 @@
                 "required": [
                     "model_id"
                 ]
+            },
+            "VersionInfo": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "version"
+                ]
             }
         },
         "responses": {}
@@ -8383,6 +8429,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/VectorMemoryBankParams\" />"
         },
         {
+            "name": "VersionInfo",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/VersionInfo\" />"
+        },
+        {
             "name": "ViolationLevel",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
         },
@@ -8576,6 +8626,7 @@
                 "UserMessage",
                 "VectorMemoryBank",
                 "VectorMemoryBankParams",
+                "VersionInfo",
                 "ViolationLevel",
                 "WolframAlphaToolDefinition"
             ]

@@ -3002,6 +3002,8 @@ components:
           type: integer
         max_steps_per_epoch:
           type: integer
+        max_validation_steps:
+          type: integer
         n_epochs:
           type: integer
         optimizer_config:
@@ -3010,6 +3012,7 @@ components:
       - n_epochs
       - max_steps_per_epoch
       - gradient_accumulation_steps
+      - max_validation_steps
       - data_config
       - optimizer_config
       type: object
@@ -3191,6 +3194,14 @@ components:
       - memory_bank_type
       - embedding_model
       - chunk_size_in_tokens
+      type: object
+    VersionInfo:
+      additionalProperties: false
+      properties:
+        version:
+          type: string
+      required:
+      - version
       type: object
     ViolationLevel:
       enum:
@@ -4731,6 +4742,25 @@ paths:
           description: OK
       tags:
       - Telemetry
+  /alpha/version:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+          description: OK
+      tags:
+      - Inspect
 security:
 - Default: []
 servers:
@@ -5225,6 +5255,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBankParams"
     />
   name: VectorMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/VersionInfo" />
+  name: VersionInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/ViolationLevel" />
   name: ViolationLevel
 - description: <SchemaDefinition schemaRef="#/components/schemas/WolframAlphaToolDefinition"
@@ -5411,5 +5443,6 @@ x-tagGroups:
   - UserMessage
   - VectorMemoryBank
   - VectorMemoryBankParams
+  - VersionInfo
   - ViolationLevel
   - WolframAlphaToolDefinition
