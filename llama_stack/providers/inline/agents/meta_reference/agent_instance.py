@@ -401,7 +401,9 @@ class ChatAgent(ShieldRunnerMixin):
                 session_info = await self.storage.get_session_info(session_id)
                 # if the session has a memory bank id, let the memory tool use it
                 if session_info.memory_bank_id:
-                    query_args["memory_bank_id"] = session_info.memory_bank_id
+                    if "memory_bank_ids" not in query_args:
+                        query_args["memory_bank_ids"] = []
+                    query_args["memory_bank_ids"].append(session_info.memory_bank_id)
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepProgressPayload(

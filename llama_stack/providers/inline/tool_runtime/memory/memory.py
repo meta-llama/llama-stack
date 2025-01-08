@@ -69,7 +69,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         ]
 
     async def _retrieve_context(
-        self, input_messages: List[str], bank_ids: List[str]
+        self, input_messages: List[InterleavedContent], bank_ids: List[str]
     ) -> Optional[List[InterleavedContent]]:
         if not bank_ids:
             return None

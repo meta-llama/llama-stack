@@ -206,7 +206,7 @@ def test_builtin_tool_code_execution(llama_stack_client, agent_config):
 
 def test_code_execution(llama_stack_client):
     agent_config = AgentConfig(
-        model="meta-llama/Llama-3.1-70B-Instruct",
+        model="meta-llama/Llama-3.1-8B-Instruct",
         instructions="You are a helpful assistant",
         toolgroups=[
             "builtin::code_interpreter",
@@ -297,7 +297,7 @@ def test_rag_agent(llama_stack_client, agent_config):
     agent_config["toolgroups"].append(
         dict(
             name="builtin::memory",
-            args={"memory_bank_id": memory_bank_id},
+            args={"memory_bank_ids": [memory_bank_id]},
         )
     )
     agent = Agent(llama_stack_client, agent_config)
