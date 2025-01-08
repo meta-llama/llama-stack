@@ -2,7 +2,6 @@ version: '2'
 name: hf-serverless
 distribution_spec:
   description: Use (an external) Hugging Face Inference Endpoint for running LLM inference
-  docker_image: null
   providers:
     inference:
     - remote::hf::serverless
@@ -25,4 +24,9 @@ distribution_spec:
     - inline::basic
     - inline::llm-as-judge
     - inline::braintrust
+    tool_runtime:
+    - remote::brave-search
+    - remote::tavily-search
+    - inline::code-interpreter
+    - inline::memory-runtime
 image_type: conda

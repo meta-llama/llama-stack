@@ -23,6 +23,7 @@ The `llamastack/distribution-tgi` distribution consists of the following provide
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 You can use this distribution if you have GPUs and want to run an independent TGI server container for running inference.

@@ -7,8 +7,12 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
-
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.distribution.datatypes import (
+    ModelInput,
+    Provider,
+    ShieldInput,
+    ToolGroupInput,
+)
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -27,6 +31,12 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::memory-runtime",
+        ],
     }
     name = "tgi"
     inference_provider = Provider(
@@ -63,6 +73,20 @@ def get_distribution_template() -> DistributionTemplate:
         model_id="${env.SAFETY_MODEL}",
         provider_id="tgi-safety",
     )
+    default_tool_groups = [
+        ToolGroupInput(
+            toolgroup_id="builtin::websearch",
+            provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::memory",
+            provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::code_interpreter",
+            provider_id="code-interpreter",
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -99,6 +123,7 @@ def get_distribution_template() -> DistributionTemplate:
                     safety_model,
                 ],
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
+                default_tool_groups=default_tool_groups,
             ),
         },
         run_config_env_vars={

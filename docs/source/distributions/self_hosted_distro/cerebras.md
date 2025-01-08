@@ -9,6 +9,7 @@ The `llamastack/distribution-cerebras` distribution consists of the following pr
 | memory | `inline::meta-reference` |
 | safety | `inline::llama-guard` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 ### Environment Variables

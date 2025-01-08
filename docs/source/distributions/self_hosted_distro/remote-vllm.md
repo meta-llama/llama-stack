@@ -18,6 +18,7 @@ The `llamastack/distribution-remote-vllm` distribution consists of the following
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 You can use this distribution if you have GPUs and want to run an independent vLLM server container for running inference.
