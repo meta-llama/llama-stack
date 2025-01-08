@@ -12,6 +12,7 @@ from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.agents import (
     AgentConfig,
+    AgentToolGroupWithArgs,
     AgentTurnCreateRequest,
     AgentTurnResponseTurnCompletePayload,
     StepType,
@@ -478,3 +479,15 @@ async def test_chat_agent_tools(
         assert MEMORY_QUERY_TOOL in tool_defs
     if expected_code_interpreter:
         assert BuiltinTool.code_interpreter in tool_defs
+    if expected_memory and expected_code_interpreter:
+        # override the tools for turn
+        new_tool_defs, _ = await chat_agent._get_tool_defs(
+            toolgroups_for_turn=[
+                AgentToolGroupWithArgs(
+                    name=MEMORY_TOOLGROUP,
+                    args={"memory_banks": ["test_memory_bank"]},
+                )
+            ]
+        )
+        assert MEMORY_QUERY_TOOL in new_tool_defs
+        assert BuiltinTool.code_interpreter not in new_tool_defs
