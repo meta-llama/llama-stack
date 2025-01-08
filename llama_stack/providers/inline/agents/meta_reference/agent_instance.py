@@ -13,7 +13,7 @@ import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
@@ -76,7 +76,6 @@ def make_random_string(length: int = 8):
 
 
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
-MEMORY_TOOL_GROUP_ID = "builtin::memory"
 MEMORY_QUERY_TOOL = "query_memory"
 WEB_SEARCH_TOOL = "web_search"
 
@@ -382,6 +381,9 @@ class ChatAgent(ShieldRunnerMixin):
                 session_id, documents, input_messages, tool_defs
             )
         if MEMORY_QUERY_TOOL in tool_defs and len(input_messages) > 0:
+            memory_tool_group = tool_to_group.get(MEMORY_QUERY_TOOL, None)
+            if memory_tool_group is None:
+                raise ValueError(f"Memory tool group not found for {MEMORY_QUERY_TOOL}")
             with tracing.span(MEMORY_QUERY_TOOL) as span:
                 step_id = str(uuid.uuid4())
                 yield AgentTurnResponseStreamChunk(
@@ -394,7 +396,7 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 query_args = {
                     "messages": [msg.content for msg in input_messages],
-                    **toolgroup_args.get(MEMORY_TOOL_GROUP_ID, {}),
+                    **toolgroup_args.get(memory_tool_group, {}),
                 }
 
                 session_info = await self.storage.get_session_info(session_id)
@@ -484,14 +486,20 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             with tracing.span("inference") as span:
+
+                def is_memory_group(tool):
+                    memory_tool_group = tool_to_group.get(MEMORY_QUERY_TOOL, None)
+                    has_memory_tool = MEMORY_QUERY_TOOL in tool_defs
+                    return (
+                        has_memory_tool
+                        and tool_to_group.get(tool.tool_name, None) != memory_tool_group
+                    )
+
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
                     tools=[
-                        tool
-                        for tool in tool_defs.values()
-                        if tool_to_group.get(tool.tool_name, None)
-                        != MEMORY_TOOL_GROUP_ID
+                        tool for tool in tool_defs.values() if not is_memory_group(tool)
                     ],
                     tool_prompt_format=self.agent_config.tool_prompt_format,
                     stream=True,
@@ -698,8 +706,8 @@ class ChatAgent(ShieldRunnerMixin):
             n_iter += 1
 
     async def _get_tool_defs(
-        self, toolgroups_for_turn: Optional[List[AgentToolGroup]]
-    ) -> Dict[str, ToolDefinition]:
+        self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
+    ) -> Tuple[Dict[str, ToolDefinition], Dict[str, str]]:
         # Determine which tools to include
         agent_config_toolgroups = set(
             (
