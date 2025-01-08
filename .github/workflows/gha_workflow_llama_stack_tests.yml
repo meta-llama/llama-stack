@@ -142,7 +142,7 @@ jobs:
         id: checkout_repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ inputs.checkout_reference }}
 
       - name: "[DEBUG] Content of the repository after checkout"
         id: debug_content_after_checkout
