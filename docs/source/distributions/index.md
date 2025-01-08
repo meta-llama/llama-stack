@@ -8,10 +8,6 @@ building_distro
 configuration
 ```
 
-<!-- self_hosted_distro/index -->
-<!-- remote_hosted_distro/index -->
-<!-- ondevice_distro/index -->
-
 You can instantiate a Llama Stack in one of the following ways:
 - **As a Library**: this is the simplest, especially if you are using an external inference service. See [Using Llama Stack as a Library](importing_as_library)
 - **Docker**: we provide a number of pre-built Docker containers so you can start a Llama Stack server instantly. You can also build your own custom Docker container.
@@ -30,11 +26,15 @@ If so, we suggest:
   - {dockerhub}`distribution-ollama` ([Guide](self_hosted_distro/ollama))
 
 - **Do you have an API key for a remote inference provider like Fireworks, Together, etc.?** If so, we suggest:
-  - {dockerhub}`distribution-together` ([Guide](remote_hosted_distro/index))
-  - {dockerhub}`distribution-fireworks` ([Guide](remote_hosted_distro/index))
+  - {dockerhub}`distribution-together` ([Guide](self_hosted_distro/together))
+  - {dockerhub}`distribution-fireworks` ([Guide](self_hosted_distro/fireworks))
 
 - **Do you want to run Llama Stack inference on your iOS / Android device** If so, we suggest:
   - [iOS SDK](ondevice_distro/ios_sdk)
   - [Android](ondevice_distro/android_sdk)
+
+- **Do you want a hosted Llama Stack endpoint?** If so, we suggest:
+  - [Remote-Hosted Llama Stack Endpoints](remote_hosted_distro/index)
+
 
 You can also build your own [custom distribution](building_distro).
