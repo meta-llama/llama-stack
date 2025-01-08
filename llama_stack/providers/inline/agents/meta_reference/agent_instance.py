@@ -78,7 +78,6 @@ def make_random_string(length: int = 8):
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
 MEMORY_TOOL_GROUP_ID = "builtin::memory"
 MEMORY_QUERY_TOOL = "query_memory"
-CODE_INTERPRETER_TOOL = "code_interpreter"
 WEB_SEARCH_TOOL = "web_search"
 
 
@@ -787,7 +786,7 @@ class ChatAgent(ShieldRunnerMixin):
         tool_defs: Dict[str, ToolDefinition],
     ) -> None:
         memory_tool = tool_defs.get(MEMORY_QUERY_TOOL, None)
-        code_interpreter_tool = tool_defs.get(CODE_INTERPRETER_TOOL, None)
+        code_interpreter_tool = tool_defs.get(BuiltinTool.code_interpreter, None)
         content_items = []
         url_items = []
         pattern = re.compile("^(https?://|file://|data:)")
