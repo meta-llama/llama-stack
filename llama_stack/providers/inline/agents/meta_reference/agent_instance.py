@@ -402,7 +402,6 @@ class ChatAgent(ShieldRunnerMixin):
                 # if the session has a memory bank id, let the memory tool use it
                 if session_info.memory_bank_id:
                     query_args["memory_bank_id"] = session_info.memory_bank_id
-                serialized_args = tracing.serialize_value(query_args)
                 yield AgentTurnResponseStreamChunk(
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepProgressPayload(
@@ -412,8 +411,8 @@ class ChatAgent(ShieldRunnerMixin):
                                 parse_status=ToolCallParseStatus.success,
                                 content=ToolCall(
                                     call_id="",
-                                    tool_name="memory",
-                                    arguments=serialized_args,
+                                    tool_name=MEMORY_QUERY_TOOL,
+                                    arguments={},
                                 ),
                             ),
                         )
@@ -435,14 +434,14 @@ class ChatAgent(ShieldRunnerMixin):
                                 tool_calls=[
                                     ToolCall(
                                         call_id="",
-                                        tool_name="memory",
-                                        arguments=serialized_args,
+                                        tool_name=MEMORY_QUERY_TOOL,
+                                        arguments={},
                                     )
                                 ],
                                 tool_responses=[
                                     ToolResponse(
                                         call_id="",
-                                        tool_name="memory",
+                                        tool_name=MEMORY_QUERY_TOOL,
                                         content=result.content,
                                     )
                                 ],
@@ -456,7 +455,7 @@ class ChatAgent(ShieldRunnerMixin):
                 span.set_attribute("output", result.content)
                 span.set_attribute("error_code", result.error_code)
                 span.set_attribute("error_message", result.error_message)
-                span.set_attribute("tool_name", "memory")
+                span.set_attribute("tool_name", MEMORY_QUERY_TOOL)
                 if result.error_code == 0:
                     last_message = input_messages[-1]
                     last_message.context = result.content

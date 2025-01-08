@@ -56,7 +56,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
     ) -> List[ToolDef]:
         return [
             ToolDef(
-                name="memory",
+                name="query_memory",
                 description="Retrieve context from memory",
                 parameters=[
                     ToolParameter(
