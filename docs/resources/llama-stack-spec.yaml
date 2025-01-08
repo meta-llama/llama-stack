@@ -1122,6 +1122,12 @@ components:
       - type
       - judge_model
       type: object
+    ListRuntimeToolsRequest:
+      additionalProperties: false
+      properties:
+        mcp_endpoint:
+          $ref: '#/components/schemas/URL'
+      type: object
     LogEventRequest:
       additionalProperties: false
       properties:
@@ -4919,6 +4925,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LLMAsJudgeScoringFnParams"
     />
   name: LLMAsJudgeScoringFnParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListRuntimeToolsRequest"
+    />
+  name: ListRuntimeToolsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogEventRequest"
     />
   name: LogEventRequest
@@ -5290,6 +5299,7 @@ x-tagGroups:
   - KeywordMemoryBank
   - KeywordMemoryBankParams
   - LLMAsJudgeScoringFnParams
+  - ListRuntimeToolsRequest
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig

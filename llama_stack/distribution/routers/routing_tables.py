@@ -508,7 +508,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         args: Optional[Dict[str, Any]] = None,
     ) -> None:
         tools = []
-        tool_defs = await self.impls_by_provider_id[provider_id].list_tools(
+        tool_defs = await self.impls_by_provider_id[provider_id].list_runtime_tools(
             toolgroup_id, mcp_endpoint
         )
         tool_host = (

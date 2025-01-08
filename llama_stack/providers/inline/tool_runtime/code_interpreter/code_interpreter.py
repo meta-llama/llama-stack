@@ -44,7 +44,7 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
     async def unregister_tool(self, tool_id: str) -> None:
         return
 
-    async def list_tools(
+    async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]:
         return [

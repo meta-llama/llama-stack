@@ -130,8 +130,8 @@ class ToolGroups(Protocol):
 class ToolRuntime(Protocol):
     tool_store: ToolStore
 
-    @webmethod(route="/tool-runtime/list-tools", method="POST")
-    async def list_tools(
+    @webmethod(route="/tool-runtime/list-tools", method="GET")
+    async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]: ...
 

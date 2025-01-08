@@ -1752,6 +1752,54 @@
                 ]
             }
         },
+        "/alpha/tool-runtime/list-tools": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/jsonl": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ToolDef"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "ToolRuntime"
+                ],
+                "parameters": [
+                    {
+                        "name": "tool_group_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ListRuntimeToolsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/scoring-functions/list": {
             "get": {
                 "responses": {
@@ -1858,7 +1906,7 @@
                     }
                 },
                 "tags": [
-                    "ToolRuntime"
+                    "ToolGroups"
                 ],
                 "summary": "List tools with optional tool group",
                 "parameters": [
@@ -6207,6 +6255,15 @@
                     "provider_types"
                 ]
             },
+            "ListRuntimeToolsRequest": {
+                "type": "object",
+                "properties": {
+                    "mcp_endpoint": {
+                        "$ref": "#/components/schemas/URL"
+                    }
+                },
+                "additionalProperties": false
+            },
             "LogSeverity": {
                 "type": "string",
                 "enum": [
@@ -8190,6 +8247,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LLMAsJudgeScoringFnParams\" />"
         },
         {
+            "name": "ListRuntimeToolsRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListRuntimeToolsRequest\" />"
+        },
+        {
             "name": "LogEventRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LogEventRequest\" />"
         },
@@ -8706,6 +8767,7 @@
                 "KeywordMemoryBank",
                 "KeywordMemoryBankParams",
                 "LLMAsJudgeScoringFnParams",
+                "ListRuntimeToolsRequest",
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",

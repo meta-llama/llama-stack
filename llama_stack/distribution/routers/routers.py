@@ -417,7 +417,7 @@ class ToolRuntimeRouter(ToolRuntime):
             args=args,
         )
 
-    async def list_tools(
+    async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
     ) -> List[ToolDef]:
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(
