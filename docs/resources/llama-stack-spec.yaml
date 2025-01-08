@@ -46,7 +46,7 @@ components:
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
           default: json
-        tools:
+        toolgroups:
           items:
             $ref: '#/components/schemas/AgentTool'
           type: array
@@ -729,14 +729,6 @@ components:
       - agent_id
       - session_id
       type: object
-    DiscoverToolsRequest:
-      additionalProperties: false
-      properties:
-        tool_group:
-          $ref: '#/components/schemas/ToolGroupDef'
-      required:
-      - tool_group
-      type: object
     EfficiencyConfig:
       additionalProperties: false
       properties:
@@ -1185,21 +1177,6 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
-      type: object
-    MCPToolGroupDef:
-      additionalProperties: false
-      properties:
-        endpoint:
-          $ref: '#/components/schemas/URL'
-        type:
-          const: model_context_protocol
-          default: model_context_protocol
-          type: string
-      required:
-      - type
-      - endpoint
-      title: A tool group that is defined by in a model context protocol server. Refer
-        to https://modelcontextprotocol.io/docs/concepts/tools for more information.
       type: object
     MemoryBankDocument:
       additionalProperties: false
@@ -1904,15 +1881,25 @@ components:
     RegisterToolGroupRequest:
       additionalProperties: false
       properties:
+        args:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        mcp_endpoint:
+          $ref: '#/components/schemas/URL'
         provider_id:
           type: string
-        tool_group_def:
-          $ref: '#/components/schemas/ToolGroupDef'
-        tool_group_id:
+        toolgroup_id:
           type: string
       required:
-      - tool_group_id
-      - tool_group_def
+      - toolgroup_id
+      - provider_id
       type: object
     ResponseFormat:
       oneOf:
@@ -2607,13 +2594,13 @@ components:
           type: string
         provider_resource_id:
           type: string
-        tool_group:
-          type: string
         tool_host:
           $ref: '#/components/schemas/ToolHost'
         tool_prompt_format:
           $ref: '#/components/schemas/ToolPromptFormat'
           default: json
+        toolgroup_id:
+          type: string
         type:
           const: tool
           default: tool
@@ -2623,7 +2610,7 @@ components:
       - provider_resource_id
       - provider_id
       - type
-      - tool_group
+      - toolgroup_id
       - tool_host
       - description
       - parameters
@@ -2695,6 +2682,8 @@ components:
     ToolDef:
       additionalProperties: false
       properties:
+        built_in_type:
+          $ref: '#/components/schemas/BuiltinTool'
         description:
           type: string
         metadata:
@@ -2770,8 +2759,20 @@ components:
     ToolGroup:
       additionalProperties: false
       properties:
+        args:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
         identifier:
           type: string
+        mcp_endpoint:
+          $ref: '#/components/schemas/URL'
         provider_id:
           type: string
         provider_resource_id:
@@ -2786,10 +2787,6 @@ components:
       - provider_id
       - type
       type: object
-    ToolGroupDef:
-      oneOf:
-      - $ref: '#/components/schemas/MCPToolGroupDef'
-      - $ref: '#/components/schemas/UserDefinedToolGroupDef'
     ToolHost:
       enum:
       - distribution
@@ -2847,6 +2844,7 @@ components:
         parameter_type:
           type: string
         required:
+          default: true
           type: boolean
       required:
       - name
@@ -3086,21 +3084,6 @@ components:
       - type
       - message
       - severity
-      type: object
-    UserDefinedToolGroupDef:
-      additionalProperties: false
-      properties:
-        tools:
-          items:
-            $ref: '#/components/schemas/ToolDef'
-          type: array
-        type:
-          const: user_defined
-          default: user_defined
-          type: string
-      required:
-      - type
-      - tools
       type: object
     UserMessage:
       additionalProperties: false
@@ -4862,9 +4845,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
     />
   name: DeleteAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DiscoverToolsRequest"
-    />
-  name: DiscoverToolsRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EfficiencyConfig"
     />
   name: EfficiencyConfig
@@ -4947,12 +4927,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LoraFinetuningConfig"
     />
   name: LoraFinetuningConfig
-- description: 'A tool group that is defined by in a model context protocol server.
-    Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information.
-
-
-    <SchemaDefinition schemaRef="#/components/schemas/MCPToolGroupDef" />'
-  name: MCPToolGroupDef
 - name: Memory
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
     />
@@ -5158,8 +5132,6 @@ tags:
   name: ToolExecutionStep
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolGroup" />
   name: ToolGroup
-- description: <SchemaDefinition schemaRef="#/components/schemas/ToolGroupDef" />
-  name: ToolGroupDef
 - name: ToolGroups
 - description: <SchemaDefinition schemaRef="#/components/schemas/ToolHost" />
   name: ToolHost
@@ -5214,9 +5186,6 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
-- description: <SchemaDefinition schemaRef="#/components/schemas/UserDefinedToolGroupDef"
-    />
-  name: UserDefinedToolGroupDef
 - description: <SchemaDefinition schemaRef="#/components/schemas/UserMessage" />
   name: UserMessage
 - description: <SchemaDefinition schemaRef="#/components/schemas/VectorMemoryBank"
@@ -5296,7 +5265,6 @@ x-tagGroups:
   - Dataset
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
-  - DiscoverToolsRequest
   - EfficiencyConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
@@ -5325,7 +5293,6 @@ x-tagGroups:
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
-  - MCPToolGroupDef
   - MemoryBankDocument
   - MemoryRetrievalStep
   - Message
@@ -5397,7 +5364,6 @@ x-tagGroups:
   - ToolDefinition
   - ToolExecutionStep
   - ToolGroup
-  - ToolGroupDef
   - ToolHost
   - ToolInvocationResult
   - ToolParamDefinition
@@ -5414,7 +5380,6 @@ x-tagGroups:
   - UnregisterModelRequest
   - UnregisterToolGroupRequest
   - UnstructuredLogEvent
-  - UserDefinedToolGroupDef
   - UserMessage
   - VectorMemoryBank
   - VectorMemoryBankParams

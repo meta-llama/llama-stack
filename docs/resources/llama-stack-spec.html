@@ -462,46 +462,6 @@
                 }
             }
         },
-        "/alpha/tool-runtime/discover": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ToolDef"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "ToolRuntime"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-ProviderData",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DiscoverToolsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/alpha/inference/embeddings": {
             "post": {
                 "responses": {
@@ -1215,7 +1175,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "tool_group_id",
+                        "name": "toolgroup_id",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1898,7 +1858,7 @@
                     }
                 },
                 "tags": [
-                    "ToolGroups"
+                    "ToolRuntime"
                 ],
                 "summary": "List tools with optional tool group",
                 "parameters": [
@@ -3705,7 +3665,7 @@
                             "type": "string"
                         }
                     },
-                    "tools": {
+                    "toolgroups": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AgentTool"
@@ -3832,6 +3792,9 @@
                             ]
                         }
                     },
+                    "built_in_type": {
+                        "$ref": "#/components/schemas/BuiltinTool"
+                    },
                     "tool_prompt_format": {
                         "$ref": "#/components/schemas/ToolPromptFormat",
                         "default": "json"
@@ -3855,7 +3818,8 @@
                         "type": "string"
                     },
                     "required": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default": true
                     },
                     "default": {
                         "oneOf": [
@@ -4578,68 +4542,6 @@
                 "required": [
                     "agent_id",
                     "session_id"
-                ]
-            },
-            "MCPToolGroupDef": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "model_context_protocol",
-                        "default": "model_context_protocol"
-                    },
-                    "endpoint": {
-                        "$ref": "#/components/schemas/URL"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "endpoint"
-                ],
-                "title": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information."
-            },
-            "ToolGroupDef": {
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/MCPToolGroupDef"
-                    },
-                    {
-                        "$ref": "#/components/schemas/UserDefinedToolGroupDef"
-                    }
-                ]
-            },
-            "UserDefinedToolGroupDef": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "user_defined",
-                        "default": "user_defined"
-                    },
-                    "tools": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ToolDef"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "tools"
-                ]
-            },
-            "DiscoverToolsRequest": {
-                "type": "object",
-                "properties": {
-                    "tool_group": {
-                        "$ref": "#/components/schemas/ToolGroupDef"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "tool_group"
                 ]
             },
             "EmbeddingsRequest": {
@@ -5872,7 +5774,7 @@
                         "const": "tool",
                         "default": "tool"
                     },
-                    "tool_group": {
+                    "toolgroup_id": {
                         "type": "string"
                     },
                     "tool_host": {
@@ -5926,7 +5828,7 @@
                     "provider_resource_id",
                     "provider_id",
                     "type",
-                    "tool_group",
+                    "toolgroup_id",
                     "tool_host",
                     "description",
                     "parameters"
@@ -5956,6 +5858,34 @@
                         "type": "string",
                         "const": "tool_group",
                         "default": "tool_group"
+                    },
+                    "mcp_endpoint": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "args": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -7371,20 +7301,45 @@
             "RegisterToolGroupRequest": {
                 "type": "object",
                 "properties": {
-                    "tool_group_id": {
+                    "toolgroup_id": {
                         "type": "string"
-                    },
-                    "tool_group_def": {
-                        "$ref": "#/components/schemas/ToolGroupDef"
                     },
                     "provider_id": {
                         "type": "string"
+                    },
+                    "mcp_endpoint": {
+                        "$ref": "#/components/schemas/URL"
+                    },
+                    "args": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "tool_group_id",
-                    "tool_group_def"
+                    "toolgroup_id",
+                    "provider_id"
                 ]
             },
             "RunEvalRequest": {
@@ -8123,10 +8078,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
         },
         {
-            "name": "DiscoverToolsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DiscoverToolsRequest\" />"
-        },
-        {
             "name": "EfficiencyConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EfficiencyConfig\" />"
         },
@@ -8249,10 +8200,6 @@
         {
             "name": "LoraFinetuningConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LoraFinetuningConfig\" />"
-        },
-        {
-            "name": "MCPToolGroupDef",
-            "description": "A tool group that is defined by in a model context protocol server. Refer to https://modelcontextprotocol.io/docs/concepts/tools for more information.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/MCPToolGroupDef\" />"
         },
         {
             "name": "Memory"
@@ -8569,10 +8516,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolGroup\" />"
         },
         {
-            "name": "ToolGroupDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ToolGroupDef\" />"
-        },
-        {
             "name": "ToolGroups"
         },
         {
@@ -8641,10 +8584,6 @@
         {
             "name": "UnstructuredLogEvent",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnstructuredLogEvent\" />"
-        },
-        {
-            "name": "UserDefinedToolGroupDef",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UserDefinedToolGroupDef\" />"
         },
         {
             "name": "UserMessage",
@@ -8742,7 +8681,6 @@
                 "Dataset",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
-                "DiscoverToolsRequest",
                 "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
@@ -8771,7 +8709,6 @@
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
-                "MCPToolGroupDef",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "Message",
@@ -8843,7 +8780,6 @@
                 "ToolDefinition",
                 "ToolExecutionStep",
                 "ToolGroup",
-                "ToolGroupDef",
                 "ToolHost",
                 "ToolInvocationResult",
                 "ToolParamDefinition",
@@ -8860,7 +8796,6 @@
                 "UnregisterModelRequest",
                 "UnregisterToolGroupRequest",
                 "UnstructuredLogEvent",
-                "UserDefinedToolGroupDef",
                 "UserMessage",
                 "VectorMemoryBank",
                 "VectorMemoryBankParams",
