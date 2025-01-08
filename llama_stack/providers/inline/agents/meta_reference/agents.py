@@ -147,7 +147,7 @@ class MetaReferenceAgentsImpl(Agents):
                 ToolResponseMessage,
             ]
         ],
-        tools: Optional[List[AgentToolGroup]] = None,
+        toolgroups: Optional[List[AgentToolGroup]] = None,
         documents: Optional[List[Document]] = None,
         stream: Optional[bool] = False,
     ) -> AsyncGenerator:
@@ -156,7 +156,7 @@ class MetaReferenceAgentsImpl(Agents):
             session_id=session_id,
             messages=messages,
             stream=True,
-            tools=tools,
+            toolgroups=toolgroups,
             documents=documents,
         )
         if stream:

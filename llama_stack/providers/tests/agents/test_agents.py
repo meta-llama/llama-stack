@@ -8,6 +8,7 @@ import os
 from typing import Dict, List
 
 import pytest
+from llama_models.llama3.api.datatypes import BuiltinTool
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -335,7 +336,7 @@ class TestAgents:
         assert isinstance(tool_execution, ToolExecutionStep)
         assert len(tool_execution.tool_calls) > 0
         actual_tool_name = tool_execution.tool_calls[0].tool_name
-        assert actual_tool_name == "web_search"
+        assert actual_tool_name == BuiltinTool.brave_search
         assert len(tool_execution.tool_responses) > 0
 
         check_turn_complete_event(turn_response, session_id, search_query_messages)

@@ -624,7 +624,7 @@ components:
           type: string
         stream:
           type: boolean
-        tools:
+        toolgroups:
           items:
             $ref: '#/components/schemas/AgentTool'
           type: array

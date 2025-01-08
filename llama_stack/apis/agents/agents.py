@@ -317,7 +317,7 @@ class Agents(Protocol):
         ],
         stream: Optional[bool] = False,
         documents: Optional[List[Document]] = None,
-        tools: Optional[List[AgentToolGroup]] = None,
+        toolgroups: Optional[List[AgentToolGroup]] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(route="/agents/turn/get")
