@@ -34,7 +34,7 @@ If so, we suggest:
   - [Android](ondevice_distro/android_sdk)
 
 - **Do you want a hosted Llama Stack endpoint?** If so, we suggest:
-  - Remote-Hosted Llama Stack endpoints with Together | Fireworks ([Guide](remote_hosted_distro/index))
+  - [Remote-Hosted Llama Stack Endpoints](remote_hosted_distro/index)
 
 
 You can also build your own [custom distribution](building_distro).
