@@ -42,6 +42,28 @@ from .utils import group_chunks
 #   --env FIREWORKS_API_KEY=<your_api_key>
 
 
+def skip_if_centml_tool_call(provider):
+    """
+    Skip tool-calling tests if the provider is remote::centml,
+    because CentML currently doesn't generate tool_call responses.
+    """
+    if provider.__provider_spec__.provider_type == "remote::centml":
+        pytest.skip(
+            "CentML does not currently return tool calls. Skipping tool-calling test."
+        )
+
+
+def skip_if_centml_and_8b(inference_model, inference_impl):
+    """
+    Skip if provider is CentML and the model is 8B.
+    CentML only supports 'meta-llama/Llama-3.2-3B-Instruct'.
+    """
+    provider = inference_impl.routing_table.get_provider_impl(inference_model)
+    if provider.__provider_spec__.provider_type == "remote::centml" and "8b" in inference_model.lower(
+    ):
+        pytest.skip("CentML does not support Llama-3.1 8B model.")
+
+
 def get_expected_stop_reason(model: str):
     return (
         StopReason.end_of_message
@@ -89,7 +111,11 @@ class TestInference:
     # share the same provider instance.
     @pytest.mark.asyncio(loop_scope="session")
     async def test_model_list(self, inference_model, inference_stack):
-        _, models_impl = inference_stack
+        inference_impl, models_impl = inference_stack
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
+
         response = await models_impl.list_models()
         assert isinstance(response, list)
         assert len(response) >= 1
@@ -106,6 +132,9 @@ class TestInference:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_completion(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
@@ -151,6 +180,9 @@ class TestInference:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_completion_logprobs(self, inference_model, inference_stack):
         inference_impl, _ = inference_stack
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
 
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
         if provider.__provider_spec__.provider_type not in (
@@ -255,6 +287,10 @@ class TestInference:
         self, inference_model, inference_stack, common_params, sample_messages
     ):
         inference_impl, _ = inference_stack
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
+
         response = await inference_impl.chat_completion(
             model_id=inference_model,
             messages=sample_messages,
@@ -343,6 +379,10 @@ class TestInference:
         self, inference_model, inference_stack, common_params, sample_messages
     ):
         inference_impl, _ = inference_stack
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
+
         response = [
             r
             async for r in await inference_impl.chat_completion(
@@ -376,6 +416,13 @@ class TestInference:
     ):
         inference_impl, _ = inference_stack
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
+
+        # Skip if CentML (it doesn't produce tool calls yet)
+        skip_if_centml_tool_call(provider)
+
         if (
             provider.__provider_spec__.provider_type == "remote::groq"
             and "Llama-3.2" in inference_model
@@ -423,6 +470,13 @@ class TestInference:
     ):
         inference_impl, _ = inference_stack
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
+
+        # Skip if 8B + CentML
+        skip_if_centml_and_8b(inference_model, inference_impl)
+
+        # Skip if CentML (it doesn't produce tool calls yet)
+        skip_if_centml_tool_call(provider)
+
         if (
             provider.__provider_spec__.provider_type == "remote::groq"
             and "Llama-3.2" in inference_model
