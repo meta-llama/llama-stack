@@ -173,3 +173,7 @@ class BuildConfig(BaseModel):
         default="conda",
         description="Type of package to build (conda | docker | venv)",
     )
+    platform: Optional[str] = Field(
+        default=None,
+        description="The platform for docker image",
+    )
