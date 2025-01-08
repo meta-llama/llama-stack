@@ -45,11 +45,31 @@ def available_providers() -> List[ProviderSpec]:
         remote_provider_spec(
             api=Api.tool_runtime,
             adapter=AdapterSpec(
+                adapter_type="bing-search",
+                module="llama_stack.providers.remote.tool_runtime.bing_search",
+                config_class="llama_stack.providers.remote.tool_runtime.bing_search.config.BingSearchToolConfig",
+                pip_packages=["requests"],
+                provider_data_validator="llama_stack.providers.remote.tool_runtime.bing_search.BingSearchToolProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.tool_runtime,
+            adapter=AdapterSpec(
                 adapter_type="tavily-search",
                 module="llama_stack.providers.remote.tool_runtime.tavily_search",
                 config_class="llama_stack.providers.remote.tool_runtime.tavily_search.config.TavilySearchToolConfig",
                 pip_packages=["requests"],
                 provider_data_validator="llama_stack.providers.remote.tool_runtime.tavily_search.TavilySearchToolProviderDataValidator",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.tool_runtime,
+            adapter=AdapterSpec(
+                adapter_type="wolfram-alpha",
+                module="llama_stack.providers.remote.tool_runtime.wolfram_alpha",
+                config_class="llama_stack.providers.remote.tool_runtime.wolfram_alpha.config.WolframAlphaToolConfig",
+                pip_packages=["requests"],
+                provider_data_validator="llama_stack.providers.remote.tool_runtime.wolfram_alpha.WolframAlphaToolProviderDataValidator",
             ),
         ),
         remote_provider_spec(

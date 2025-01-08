@@ -53,6 +53,7 @@ class ToolDef(BaseModel):
     description: Optional[str] = None
     parameters: Optional[List[ToolParameter]] = None
     metadata: Optional[Dict[str, Any]] = None
+    built_in_type: Optional[BuiltinTool] = None
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )

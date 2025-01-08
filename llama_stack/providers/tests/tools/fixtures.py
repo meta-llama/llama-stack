@@ -33,6 +33,13 @@ def tool_runtime_memory_and_search() -> ProviderFixture:
                     "api_key": os.environ["TAVILY_SEARCH_API_KEY"],
                 },
             ),
+            Provider(
+                provider_id="wolfram-alpha",
+                provider_type="remote::wolfram-alpha",
+                config={
+                    "api_key": os.environ["WOLFRAM_ALPHA_API_KEY"],
+                },
+            ),
         ],
     )
 
@@ -53,12 +60,24 @@ def tool_group_input_tavily_search() -> ToolGroupInput:
     )
 
 
+@pytest.fixture(scope="session")
+def tool_group_input_wolfram_alpha() -> ToolGroupInput:
+    return ToolGroupInput(
+        toolgroup_id="builtin::wolfram_alpha",
+        provider_id="wolfram-alpha",
+    )
+
+
 TOOL_RUNTIME_FIXTURES = ["memory_and_search"]
 
 
 @pytest_asyncio.fixture(scope="session")
 async def tools_stack(
-    request, inference_model, tool_group_input_memory, tool_group_input_tavily_search
+    request,
+    inference_model,
+    tool_group_input_memory,
+    tool_group_input_tavily_search,
+    tool_group_input_wolfram_alpha,
 ):
     fixture_dict = request.param
 
@@ -104,6 +123,7 @@ async def tools_stack(
         models=models,
         tool_groups=[
             tool_group_input_tavily_search,
+            tool_group_input_wolfram_alpha,
             tool_group_input_memory,
         ],
     )

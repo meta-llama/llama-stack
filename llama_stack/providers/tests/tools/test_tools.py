@@ -21,6 +21,11 @@ def sample_search_query():
 
 
 @pytest.fixture
+def sample_wolfram_alpha_query():
+    return "What is the square root of 16?"
+
+
+@pytest.fixture
 def sample_documents():
     urls = [
         "memory_optimizations.rst",
@@ -53,6 +58,24 @@ class TestTools:
         # Execute the tool
         response = await tools_impl.invoke_tool(
             tool_name="web_search", args={"query": sample_search_query}
+        )
+
+        # Verify the response
+        assert isinstance(response, ToolInvocationResult)
+        assert response.content is not None
+        assert len(response.content) > 0
+        assert isinstance(response.content, str)
+
+    @pytest.mark.asyncio
+    async def test_wolfram_alpha_tool(self, tools_stack, sample_wolfram_alpha_query):
+        """Test the wolfram alpha tool functionality."""
+        if "WOLFRAM_ALPHA_API_KEY" not in os.environ:
+            pytest.skip("WOLFRAM_ALPHA_API_KEY not set, skipping test")
+
+        tools_impl = tools_stack.impls[Api.tool_runtime]
+
+        response = await tools_impl.invoke_tool(
+            tool_name="wolfram_alpha", args={"query": sample_wolfram_alpha_query}
         )
 
         # Verify the response

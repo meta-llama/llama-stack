@@ -21,14 +21,15 @@ from llama_stack.apis.tools import (
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
-from .config import TavilySearchToolConfig
+from .config import BingSearchToolConfig
 
 
-class TavilySearchToolRuntimeImpl(
+class BingSearchToolRuntimeImpl(
     ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData
 ):
-    def __init__(self, config: TavilySearchToolConfig):
+    def __init__(self, config: BingSearchToolConfig):
         self.config = config
+        self.url = "https://api.bing.microsoft.com/v7.0/search"
 
     async def initialize(self):
         pass
@@ -46,7 +47,7 @@ class TavilySearchToolRuntimeImpl(
         provider_data = self.get_request_provider_data()
         if provider_data is None or not provider_data.api_key:
             raise ValueError(
-                'Pass Search provider\'s API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
+                'Pass Bing Search API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
             )
         return provider_data.api_key
 
@@ -56,7 +57,7 @@ class TavilySearchToolRuntimeImpl(
         return [
             ToolDef(
                 name="web_search",
-                description="Search the web for information",
+                description="Search the web using Bing Search API",
                 parameters=[
                     ToolParameter(
                         name="query",
@@ -72,14 +73,44 @@ class TavilySearchToolRuntimeImpl(
         self, tool_name: str, args: Dict[str, Any]
     ) -> ToolInvocationResult:
         api_key = self._get_api_key()
-        response = requests.post(
-            "https://api.tavily.com/search",
-            json={"api_key": api_key, "query": args["query"]},
+        headers = {
+            "Ocp-Apim-Subscription-Key": api_key,
+        }
+        params = {
+            "count": self.config.top_k,
+            "textDecorations": True,
+            "textFormat": "HTML",
+            "q": args["query"],
+        }
+
+        response = requests.get(
+            url=self.url,
+            params=params,
+            headers=headers,
         )
+        response.raise_for_status()
 
         return ToolInvocationResult(
-            content=json.dumps(self._clean_tavily_response(response.json()))
+            content=json.dumps(self._clean_response(response.json()))
         )
 
-    def _clean_tavily_response(self, search_response, top_k=3):
-        return {"query": search_response["query"], "top_k": search_response["results"]}
+    def _clean_response(self, search_response):
+        clean_response = []
+        query = search_response["queryContext"]["originalQuery"]
+        if "webPages" in search_response:
+            pages = search_response["webPages"]["value"]
+            for p in pages:
+                selected_keys = {"name", "url", "snippet"}
+                clean_response.append(
+                    {k: v for k, v in p.items() if k in selected_keys}
+                )
+        if "news" in search_response:
+            clean_news = []
+            news = search_response["news"]["value"]
+            for n in news:
+                selected_keys = {"name", "url", "description"}
+                clean_news.append({k: v for k, v in n.items() if k in selected_keys})
+
+            clean_response.append(clean_news)
+
+        return {"query": query, "top_k": clean_response}
