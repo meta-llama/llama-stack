@@ -11,11 +11,16 @@ import torch
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from llama_stack.distribution.utils.model_utils import model_local_dir
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.inference import Message
+from llama_stack.apis.safety import (
+    RunShieldResponse,
+    Safety,
+    SafetyViolation,
+    ViolationLevel,
+)
+from llama_stack.apis.shields import Shield
 
+from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,

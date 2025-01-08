@@ -13,10 +13,25 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import all_registered_models
 
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model
 
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
@@ -275,7 +290,9 @@ class _HfAdapter(Inference, ModelsProtocolPrivate):
 class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
         log.info(f"Initializing TGI client with url={config.url}")
-        self.client = AsyncInferenceClient(model=config.url, token=config.api_token)
+        self.client = AsyncInferenceClient(
+            model=config.url, token=config.api_token.get_secret_value()
+        )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
         self.model_id = endpoint_info["model_id"]
@@ -284,7 +301,7 @@ class TGIAdapter(_HfAdapter):
 class InferenceAPIAdapter(_HfAdapter):
     async def initialize(self, config: InferenceAPIImplConfig) -> None:
         self.client = AsyncInferenceClient(
-            model=config.huggingface_repo, token=config.api_token
+            model=config.huggingface_repo, token=config.api_token.get_secret_value()
         )
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
@@ -294,7 +311,7 @@ class InferenceAPIAdapter(_HfAdapter):
 class InferenceEndpointAdapter(_HfAdapter):
     async def initialize(self, config: InferenceEndpointImplConfig) -> None:
         # Get the inference endpoint details
-        api = HfApi(token=config.api_token)
+        api = HfApi(token=config.api_token.get_secret_value())
         endpoint = api.get_inference_endpoint(config.endpoint_name)
 
         # Wait for the endpoint to be ready (if not already)

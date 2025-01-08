@@ -53,7 +53,7 @@ def trace_protocol(cls: Type[T]) -> Type[T]:
             combined_args = {}
             for i, arg in enumerate(args):
                 param_name = (
-                    param_names[i] if i < len(param_names) else f"position_{i+1}"
+                    param_names[i] if i < len(param_names) else f"position_{i + 1}"
                 )
                 combined_args[param_name] = serialize_value(arg)
             for k, v in kwargs.items():

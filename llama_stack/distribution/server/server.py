@@ -28,24 +28,28 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
+from llama_stack.distribution.datatypes import StackRunConfig
+
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.request_headers import set_request_provider_data
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.stack import (
+    construct_stack,
+    redact_sensitive_fields,
+    replace_env_vars,
+    validate_env_pair,
+)
+
+from llama_stack.providers.datatypes import Api
+from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
+from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
+    TelemetryAdapter,
+)
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
     start_trace,
-)
-from llama_stack.distribution.datatypes import *  # noqa: F403
-from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import (
-    construct_stack,
-    replace_env_vars,
-    validate_env_pair,
-)
-from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
-from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
-    TelemetryAdapter,
 )
 
 from .endpoints import get_all_api_endpoints
@@ -235,7 +239,12 @@ def main():
         "--template",
         help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
     )
-    parser.add_argument("--port", type=int, default=5000, help="Port to listen on")
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("LLAMASTACK_PORT", 5000)),
+        help="Port to listen on",
+    )
     parser.add_argument(
         "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
     )
@@ -277,7 +286,8 @@ def main():
         config = StackRunConfig(**config)
 
     print("Run configuration:")
-    print(yaml.dump(config.model_dump(), indent=2))
+    safe_config = redact_sensitive_fields(config.model_dump())
+    print(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(TracingMiddleware)

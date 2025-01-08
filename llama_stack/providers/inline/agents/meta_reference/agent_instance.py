@@ -13,19 +13,64 @@ import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, List, Tuple
+from typing import AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
 
+from llama_models.llama3.api.datatypes import BuiltinTool
 
-from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
+from llama_stack.apis.agents import (
+    AgentConfig,
+    AgentTool,
+    AgentTurnCreateRequest,
+    AgentTurnResponseEvent,
+    AgentTurnResponseEventType,
+    AgentTurnResponseStepCompletePayload,
+    AgentTurnResponseStepProgressPayload,
+    AgentTurnResponseStepStartPayload,
+    AgentTurnResponseStreamChunk,
+    AgentTurnResponseTurnCompletePayload,
+    AgentTurnResponseTurnStartPayload,
+    Attachment,
+    CodeInterpreterToolDefinition,
+    FunctionCallToolDefinition,
+    InferenceStep,
+    MemoryRetrievalStep,
+    MemoryToolDefinition,
+    PhotogenToolDefinition,
+    SearchToolDefinition,
+    ShieldCallStep,
+    StepType,
+    ToolExecutionStep,
+    Turn,
+    WolframAlphaToolDefinition,
+)
 
-from llama_stack.apis.common.content_types import InterleavedContent, TextContentItem
+from llama_stack.apis.common.content_types import (
+    InterleavedContent,
+    TextContentItem,
+    URL,
+)
+from llama_stack.apis.inference import (
+    ChatCompletionResponseEventType,
+    CompletionMessage,
+    Inference,
+    Message,
+    SamplingParams,
+    StopReason,
+    SystemMessage,
+    ToolCallDelta,
+    ToolCallParseStatus,
+    ToolChoice,
+    ToolDefinition,
+    ToolResponse,
+    ToolResponseMessage,
+    UserMessage,
+)
+from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
+from llama_stack.apis.memory_banks import MemoryBanks, VectorMemoryBankParams
+from llama_stack.apis.safety import Safety
 
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
@@ -539,7 +584,7 @@ class ChatAgent(ShieldRunnerMixin):
                 tool_call = message.tool_calls[0]
 
                 name = tool_call.tool_name
-                if not isinstance(name, BuiltinTool):
+                if not isinstance(name, BuiltinTool) or name not in enabled_tools:
                     yield message
                     return
 

@@ -9,12 +9,12 @@ from typing import Any, Dict, Optional
 from llama_stack.apis.scoring import ScoringResultRow
 
 from llama_stack.apis.scoring_functions import ScoringFnParams
-from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
+from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
 from .fn_defs.equality import equality
 
 
-class EqualityScoringFn(BaseScoringFn):
+class EqualityScoringFn(RegisteredBaseScoringFn):
     """
     A scoring_fn that assigns a score of 1.0 if the input string matches the target string, and 0.0 otherwise.
     """

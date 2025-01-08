@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
@@ -13,7 +13,25 @@ from llama_models.sku_list import all_registered_models
 
 from openai import OpenAI
 
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.model_registry import (
@@ -175,10 +193,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             assert (
                 not media_present
-            ), "Together does not support media for Completion requests"
+            ), "vLLM does not support media for Completion requests"
             input_dict["prompt"] = await completion_request_to_prompt(
                 request,
-                self.register_helper.get_llama_model(request.model),
                 self.formatter,
             )
 

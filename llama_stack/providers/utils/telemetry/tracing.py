@@ -12,10 +12,18 @@ import threading
 import uuid
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
-
-from llama_stack.apis.telemetry import *  # noqa: F403
+from llama_stack.apis.telemetry import (
+    LogSeverity,
+    Span,
+    SpanEndPayload,
+    SpanStartPayload,
+    SpanStatus,
+    StructuredLogEvent,
+    Telemetry,
+    UnstructuredLogEvent,
+)
 from llama_stack.providers.utils.telemetry.trace_protocol import serialize_value
 
 log = logging.getLogger(__name__)

@@ -5,10 +5,10 @@
 # the root directory of this source tree.
 from typing import Any, Dict, List, Optional
 
-from llama_stack.apis.datasetio import *  # noqa: F403
-
-
 import datasets as hf_datasets
+
+from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
+from llama_stack.apis.datasets import Dataset
 
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url

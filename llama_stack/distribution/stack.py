@@ -8,32 +8,31 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pkg_resources
 import yaml
 
 from termcolor import colored
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.agents import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.apis.scoring import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
-from llama_stack.apis.eval import *  # noqa: F403
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.batch_inference import *  # noqa: F403
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.apis.telemetry import *  # noqa: F403
-from llama_stack.apis.post_training import *  # noqa: F403
-from llama_stack.apis.synthetic_data_generation import *  # noqa: F403
-from llama_stack.apis.safety import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.inspect import *  # noqa: F403
-from llama_stack.apis.eval_tasks import *  # noqa: F403
+from llama_stack.apis.agents import Agents
+from llama_stack.apis.batch_inference import BatchInference
+from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.eval import Eval
+from llama_stack.apis.eval_tasks import EvalTasks
+from llama_stack.apis.inference import Inference
+from llama_stack.apis.inspect import Inspect
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import MemoryBanks
+from llama_stack.apis.models import Models
+from llama_stack.apis.post_training import PostTraining
+from llama_stack.apis.safety import Safety
+from llama_stack.apis.scoring import Scoring
+from llama_stack.apis.scoring_functions import ScoringFunctions
+from llama_stack.apis.shields import Shields
+from llama_stack.apis.synthetic_data_generation import SyntheticDataGeneration
+from llama_stack.apis.telemetry import Telemetry
 
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
@@ -111,6 +110,26 @@ class EnvVarError(Exception):
         super().__init__(
             f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}"
         )
+
+
+def redact_sensitive_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Redact sensitive information from config before printing."""
+    sensitive_patterns = ["api_key", "api_token", "password", "secret"]
+
+    def _redact_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+        result = {}
+        for k, v in d.items():
+            if isinstance(v, dict):
+                result[k] = _redact_dict(v)
+            elif isinstance(v, list):
+                result[k] = [_redact_dict(i) if isinstance(i, dict) else i for i in v]
+            elif any(pattern in k.lower() for pattern in sensitive_patterns):
+                result[k] = "********"
+            else:
+                result[k] = v
+        return result
+
+    return _redact_dict(data)
 
 
 def replace_env_vars(config: Any, path: str = "") -> Any:

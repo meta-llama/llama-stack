@@ -11,7 +11,24 @@ from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
-from llama_stack.apis.inference import *  # noqa: F403
+
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    CompletionResponse,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
@@ -66,6 +83,10 @@ MODEL_ALIASES = [
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     build_model_alias(
+        "fireworks/llama-v3p3-70b-instruct",
+        CoreModelId.llama3_3_70b_instruct.value,
+    ),
+    build_model_alias(
         "fireworks/llama-guard-3-8b",
         CoreModelId.llama_guard_3_8b.value,
     ),
@@ -92,7 +113,7 @@ class FireworksInferenceAdapter(
 
     def _get_api_key(self) -> str:
         if self.config.api_key is not None:
-            return self.config.api_key
+            return self.config.api_key.get_secret_value()
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.fireworks_api_key:

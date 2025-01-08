@@ -7,6 +7,7 @@
 import logging
 import os
 import time
+from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -14,27 +15,33 @@ from typing import Any, Dict, List, Optional, Tuple
 import torch
 from llama_models.sku_list import resolve_model
 
+from llama_stack.apis.common.training_types import PostTrainingMetric
 from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.post_training import (
+    AlgorithmConfig,
+    Checkpoint,
+    LoraFinetuningConfig,
+    OptimizerConfig,
+    TrainingConfig,
+)
 
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
-from llama_stack.providers.inline.post_training.torchtune.common.checkpointer import (
-    TorchtuneCheckpointer,
-)
-from torch import nn
-from torchtune import utils as torchtune_utils
-from torchtune.training.metric_logging import DiskLogger
-from tqdm import tqdm
-from llama_stack.apis.post_training import *  # noqa
+
 from llama_stack.distribution.utils.model_utils import model_local_dir
 
 from llama_stack.providers.inline.post_training.torchtune.common import utils
+from llama_stack.providers.inline.post_training.torchtune.common.checkpointer import (
+    TorchtuneCheckpointer,
+)
 from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
 from llama_stack.providers.inline.post_training.torchtune.datasets.sft import SFTDataset
+from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
-from torchtune import modules, training
+from torchtune import modules, training, utils as torchtune_utils
 from torchtune.data import AlpacaToMessages, padded_collate_sft
 
 from torchtune.modules.loss import CEWithChunkedOutputLoss
@@ -43,11 +50,12 @@ from torchtune.modules.peft import (
     get_adapter_state_dict,
     get_lora_module_names,
     get_merged_lora_ckpt,
-    load_dora_magnitudes,
     set_trainable_params,
     validate_missing_and_unexpected_for_lora,
 )
 from torchtune.training.lr_schedulers import get_cosine_schedule_with_warmup
+from torchtune.training.metric_logging import DiskLogger
+from tqdm import tqdm
 
 log = logging.getLogger(__name__)
 
@@ -110,6 +118,10 @@ class LoraFinetuningSingleDevice:
             self.checkpoint_dir = config.checkpoint_dir
         else:
             model = resolve_model(self.model_id)
+            if model is None:
+                raise ValueError(
+                    f"{self.model_id} not found. Your model id should be in the llama models SKU list"
+                )
             self.checkpoint_dir = model_checkpoint_dir(model)
 
         self._output_dir = str(DEFAULT_CHECKPOINT_DIR)
@@ -125,6 +137,7 @@ class LoraFinetuningSingleDevice:
         self.global_step = 0
 
         self._gradient_accumulation_steps = training_config.gradient_accumulation_steps
+        self.max_validation_steps = training_config.max_validation_steps
 
         self._clip_grad_norm = 1.0
         self._enable_activation_checkpointing = (
@@ -277,7 +290,6 @@ class LoraFinetuningSingleDevice:
             for m in model.modules():
                 if hasattr(m, "initialize_dora_magnitude"):
                     m.initialize_dora_magnitude()
-            load_dora_magnitudes(model)
         if lora_weights_state_dict:
             lora_missing, lora_unexpected = model.load_state_dict(
                 lora_weights_state_dict, strict=False
@@ -572,7 +584,7 @@ class LoraFinetuningSingleDevice:
         log.info("Starting validation...")
         pbar = tqdm(total=len(self._validation_dataloader))
         for idx, batch in enumerate(self._validation_dataloader):
-            if idx == 10:
+            if idx == self.max_validation_steps:
                 break
             torchtune_utils.batch_to_device(batch, self._device)
 

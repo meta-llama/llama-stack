@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.datatypes import CoreModelId
 
@@ -14,7 +14,22 @@ from llama_models.llama3.api.tokenizer import Tokenizer
 
 from together import Together
 
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
@@ -63,6 +78,10 @@ MODEL_ALIASES = [
     build_model_alias(
         "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
         CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    build_model_alias(
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        CoreModelId.llama3_3_70b_instruct.value,
     ),
     build_model_alias(
         "meta-llama/Meta-Llama-Guard-3-8B",
@@ -115,7 +134,7 @@ class TogetherInferenceAdapter(
     def _get_client(self) -> Together:
         together_api_key = None
         if self.config.api_key is not None:
-            together_api_key = self.config.api_key
+            together_api_key = self.config.api_key.get_secret_value()
         else:
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.together_api_key:
