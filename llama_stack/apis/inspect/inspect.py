@@ -29,6 +29,11 @@ class HealthInfo(BaseModel):
     # TODO: add a provider level status
 
 
+@json_schema_type
+class VersionInfo(BaseModel):
+    version: str
+
+
 @runtime_checkable
 class Inspect(Protocol):
     @webmethod(route="/providers/list", method="GET")
@@ -39,3 +44,6 @@ class Inspect(Protocol):
 
     @webmethod(route="/health", method="GET")
     async def health(self) -> HealthInfo: ...
+
+    @webmethod(route="/version", method="GET")
+    async def version(self) -> VersionInfo: ...

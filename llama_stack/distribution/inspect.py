@@ -4,11 +4,18 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from importlib.metadata import version
 from typing import Dict, List
 
 from pydantic import BaseModel
 
-from llama_stack.apis.inspect import HealthInfo, Inspect, ProviderInfo, RouteInfo
+from llama_stack.apis.inspect import (
+    HealthInfo,
+    Inspect,
+    ProviderInfo,
+    RouteInfo,
+    VersionInfo,
+)
 from llama_stack.distribution.datatypes import StackRunConfig
 from llama_stack.distribution.server.endpoints import get_all_api_endpoints
 
@@ -65,3 +72,6 @@ class DistributionInspectImpl(Inspect):
 
     async def health(self) -> HealthInfo:
         return HealthInfo(status="OK")
+
+    async def version(self) -> VersionInfo:
+        return VersionInfo(version=version("llama-stack"))
