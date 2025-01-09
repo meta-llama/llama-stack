@@ -1,9 +1,15 @@
-name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     rc_version:
+  #       description: 'RC version number (e.g., 1, 2, 3)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   build:
@@ -17,14 +23,15 @@ jobs:
     - name: Get date
       id: date
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-    - name: Get short SHA
-      id: sha
-      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
     - name: Update version for nightly
-      if: github.event_name == 'schedule'
+      # if: github.event_name == 'schedule'
       run: |
         # Assuming your version is in setup.py or pyproject.toml
-        sed -i 's/version="\([^"]*\)"/version="\1rc${{ steps.date.outputs.date }}"/' setup.py
+        sed -i 's/version="\([^"]*\)"/version="\1.dev0000${{ steps.date.outputs.date }}"/' setup.py
+    - name: Update version for manual RC
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        sed -i 's/version="\([^"]*\)"/version="\1rc${{ inputs.rc_version }}"/' setup.py
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -50,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
 
     environment:
-      name: testpypi
+      name: testrelease
       url: https://test.pypi.org/p/llama-stack
 
     permissions:
