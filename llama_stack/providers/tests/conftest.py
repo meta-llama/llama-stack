@@ -22,6 +22,7 @@ from termcolor import colored
 from .env import get_env_or_fail
 
 from .test_config_helper import try_load_config_file_cached
+from .report import Report
 
 
 class ProviderFixture(BaseModel):
@@ -140,6 +141,8 @@ def pytest_configure(config):
     for env_var in env_vars:
         key, value = env_var.split("=", 1)
         os.environ[key] = value
+
+    config.pluginmanager.register(Report(config))
 
 
 def pytest_addoption(parser):
