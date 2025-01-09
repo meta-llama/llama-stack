@@ -25,7 +25,7 @@ jobs:
       # if: github.event_name == 'schedule'
       run: |
         # Assuming your version is in setup.py or pyproject.toml
-        sed -i 's/version="\([^"]*\)"/version="\1rc${{ steps.date.outputs.date }}"/' setup.py
+        sed -i 's/version="\([^"]*\)"/version="\1.nightly${{ steps.date.outputs.date }}"/' setup.py
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
