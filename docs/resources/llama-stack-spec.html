@@ -2737,6 +2737,40 @@
                 }
             }
         },
+        "/alpha/toolgroups/unregister": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "Unregister a tool group",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-ProviderData",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnregisterToolGroupRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/alpha/version": {
             "get": {
                 "responses": {
@@ -3839,9 +3873,6 @@
                                 }
                             ]
                         }
-                    },
-                    "built_in_type": {
-                        "$ref": "#/components/schemas/BuiltinTool"
                     },
                     "tool_prompt_format": {
                         "$ref": "#/components/schemas/ToolPromptFormat",
@@ -5836,9 +5867,6 @@
                         "items": {
                             "$ref": "#/components/schemas/ToolParameter"
                         }
-                    },
-                    "built_in_type": {
-                        "$ref": "#/components/schemas/BuiltinTool"
                     },
                     "metadata": {
                         "type": "object",
@@ -7933,6 +7961,18 @@
                     "model_id"
                 ]
             },
+            "UnregisterToolGroupRequest": {
+                "type": "object",
+                "properties": {
+                    "tool_group_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "tool_group_id"
+                ]
+            },
             "VersionInfo": {
                 "type": "object",
                 "properties": {
@@ -8665,10 +8705,6 @@
         {
             "name": "ViolationLevel",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ViolationLevel\" />"
-        },
-        {
-            "name": "WolframAlphaToolDefinition",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/WolframAlphaToolDefinition\" />"
         }
     ],
     "x-tagGroups": [
@@ -8862,8 +8898,7 @@
                 "VectorMemoryBank",
                 "VectorMemoryBankParams",
                 "VersionInfo",
-                "ViolationLevel",
-                "WolframAlphaToolDefinition"
+                "ViolationLevel"
             ]
         }
     ]

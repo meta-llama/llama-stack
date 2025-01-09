@@ -2576,8 +2576,6 @@ components:
     Tool:
       additionalProperties: false
       properties:
-        built_in_type:
-          $ref: '#/components/schemas/BuiltinTool'
         description:
           type: string
         identifier:
@@ -2688,8 +2686,6 @@ components:
     ToolDef:
       additionalProperties: false
       properties:
-        built_in_type:
-          $ref: '#/components/schemas/BuiltinTool'
         description:
           type: string
         metadata:
@@ -4683,6 +4679,199 @@ paths:
           description: OK
       tags:
       - Telemetry
+  /alpha/tool-runtime/invoke:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvokeToolRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolInvocationResult'
+          description: OK
+      summary: Run a tool with the given arguments
+      tags:
+      - ToolRuntime
+  /alpha/tool-runtime/list-tools:
+    post:
+      parameters:
+      - in: query
+        name: tool_group_id
+        required: false
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListRuntimeToolsRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ToolDef'
+          description: OK
+      tags:
+      - ToolRuntime
+  /alpha/toolgroups/get:
+    get:
+      parameters:
+      - in: query
+        name: toolgroup_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolGroup'
+          description: OK
+      tags:
+      - ToolGroups
+  /alpha/toolgroups/list:
+    get:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/ToolGroup'
+          description: OK
+      summary: List tool groups with optional provider
+      tags:
+      - ToolGroups
+  /alpha/toolgroups/register:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterToolGroupRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      summary: Register a tool group
+      tags:
+      - ToolGroups
+  /alpha/toolgroups/unregister:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnregisterToolGroupRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      summary: Unregister a tool group
+      tags:
+      - ToolGroups
+  /alpha/tools/get:
+    get:
+      parameters:
+      - in: query
+        name: tool_name
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+          description: OK
+      tags:
+      - ToolGroups
+  /alpha/tools/list:
+    get:
+      parameters:
+      - in: query
+        name: tool_group_id
+        required: false
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-ProviderData
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/Tool'
+          description: OK
+      summary: List tools with optional tool group
+      tags:
+      - ToolGroups
   /alpha/version:
     get:
       parameters:
