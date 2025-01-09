@@ -9,8 +9,6 @@ import logging
 import tempfile
 from typing import Any, Dict, List, Optional
 
-from llama_models.llama3.api.datatypes import BuiltinTool
-
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
     Tool,
@@ -58,7 +56,6 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                         parameter_type="string",
                     ),
                 ],
-                built_in_type=BuiltinTool.code_interpreter,
             )
         ]
 

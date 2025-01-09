@@ -198,7 +198,7 @@ class MockToolGroupsAPI:
                     toolgroup_id=MEMORY_TOOLGROUP,
                     tool_host=ToolHost.client,
                     description="Mock tool",
-                    provider_id="mock_provider",
+                    provider_id="builtin::memory",
                     parameters=[],
                 )
             ]
@@ -208,10 +208,9 @@ class MockToolGroupsAPI:
                     identifier="code_interpreter",
                     provider_resource_id="code_interpreter",
                     toolgroup_id=CODE_INTERPRETER_TOOLGROUP,
-                    built_in_type=BuiltinTool.code_interpreter,
                     tool_host=ToolHost.client,
                     description="Mock tool",
-                    provider_id="mock_provider",
+                    provider_id="builtin::code_interpreter",
                     parameters=[],
                 )
             ]

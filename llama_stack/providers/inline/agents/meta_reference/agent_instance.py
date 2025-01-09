@@ -78,6 +78,7 @@ def make_random_string(length: int = 8):
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
 MEMORY_QUERY_TOOL = "query_memory"
 WEB_SEARCH_TOOL = "web_search"
+MEMORY_GROUP = "builtin::memory"
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -741,16 +742,24 @@ class ChatAgent(ShieldRunnerMixin):
                 continue
             tools = await self.tool_groups_api.list_tools(tool_group_id=toolgroup_name)
             for tool_def in tools:
-                if tool_def.built_in_type:
-                    if tool_def_map.get(tool_def.built_in_type, None):
-                        raise ValueError(
-                            f"Tool {tool_def.built_in_type} already exists"
-                        )
+                if (
+                    toolgroup_name.startswith("builtin")
+                    and toolgroup_name != MEMORY_GROUP
+                ):
+                    tool_name = tool_def.identifier
+                    built_in_type = BuiltinTool.brave_search
+                    if tool_name == "web_search":
+                        built_in_type = BuiltinTool.brave_search
+                    else:
+                        built_in_type = BuiltinTool(tool_name)
 
-                    tool_def_map[tool_def.built_in_type] = ToolDefinition(
-                        tool_name=tool_def.built_in_type
+                    if tool_def_map.get(built_in_type, None):
+                        raise ValueError(f"Tool {built_in_type} already exists")
+
+                    tool_def_map[built_in_type] = ToolDefinition(
+                        tool_name=built_in_type
                     )
-                    tool_to_group[tool_def.built_in_type] = tool_def.toolgroup_id
+                    tool_to_group[built_in_type] = tool_def.toolgroup_id
                     continue
 
                 if tool_def_map.get(tool_def.identifier, None):

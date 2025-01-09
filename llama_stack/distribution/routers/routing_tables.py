@@ -527,7 +527,6 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                     provider_resource_id=tool_def.name,
                     metadata=tool_def.metadata,
                     tool_host=tool_host,
-                    built_in_type=tool_def.built_in_type,
                 )
             )
         for tool in tools:

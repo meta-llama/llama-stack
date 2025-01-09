@@ -7,7 +7,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
 
-from llama_models.llama3.api.datatypes import BuiltinTool, ToolPromptFormat
+from llama_models.llama3.api.datatypes import ToolPromptFormat
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Protocol, runtime_checkable
@@ -40,7 +40,6 @@ class Tool(Resource):
     tool_host: ToolHost
     description: str
     parameters: List[ToolParameter]
-    built_in_type: Optional[BuiltinTool] = None
     metadata: Optional[Dict[str, Any]] = None
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
@@ -53,7 +52,6 @@ class ToolDef(BaseModel):
     description: Optional[str] = None
     parameters: Optional[List[ToolParameter]] = None
     metadata: Optional[Dict[str, Any]] = None
-    built_in_type: Optional[BuiltinTool] = None
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
     )
@@ -130,6 +128,7 @@ class ToolGroups(Protocol):
 class ToolRuntime(Protocol):
     tool_store: ToolStore
 
+    # TODO: This needs to be renamed once OPEN API generator name conflict issue is fixed.
     @webmethod(route="/tool-runtime/list-tools", method="GET")
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
