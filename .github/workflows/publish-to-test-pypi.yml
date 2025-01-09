@@ -1,6 +1,9 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:  # Keep manual trigger
+  schedule:
+    - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   build:
@@ -11,6 +14,19 @@ jobs:
     - uses: actions/checkout@v4
       with:
         persist-credentials: false
+    - name: Get date
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+    - name: Get short SHA
+      id: sha
+      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+    - name: Update version for nightly
+      if: github.event_name == 'schedule'
+      run: |
+        # Assuming your version is in setup.py or pyproject.toml
+        sed -i "s/version=\".*\"/version=\"&.dev${{ steps.date.outputs.date }}+${{ steps.sha.outputs.sha }}\"/" setup.py
+        # OR for pyproject.toml
+        # sed -i "s/version = \".*\"/version = \"&.dev${{ steps.date.outputs.date }}+${{ steps.sha.outputs.sha }}\"/" pyproject.toml
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
