@@ -11,6 +11,10 @@ on:
   #    - 'llama_stack/**/*.py'
   #    - 'tests/**/*.py'
 
+  # Schedule cron job at 2:30 am EST every day of the week.
+  # Will run a manual workflow off of 'main' branch.
+  schedule:
+    - cron: '30 7 * * *'
   workflow_dispatch:
     inputs:
       runner:
