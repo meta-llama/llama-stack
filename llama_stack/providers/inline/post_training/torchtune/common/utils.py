@@ -10,27 +10,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict
 
 import torch
 from llama_models.datatypes import Model
 from llama_models.sku_list import resolve_model
 
-from llama_stack.apis.common.type_system import ParamType, StringType
-from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import DatasetFormat
-from llama_stack.providers.utils.common.data_schema_validator import (
-    ColumnName,
-    validate_dataset_schema,
-)
 
 from pydantic import BaseModel
-from torchtune.data._messages import (
-    AlpacaToMessages,
-    InputOutputToMessages,
-    OpenAIToMessages,
-    ShareGPTToMessages,
-)
+from torchtune.data._messages import InputOutputToMessages, ShareGPTToMessages
 
 from torchtune.models.llama3 import llama3_tokenizer
 from torchtune.models.llama3._tokenizer import Llama3Tokenizer
@@ -43,13 +32,6 @@ class ModelConfig(BaseModel):
     model_definition: Any
     tokenizer_type: Any
     checkpoint_type: str
-
-
-class DatasetSchema(BaseModel):
-    alpaca: List[Dict[str, ParamType]]
-    instruct: List[Dict[str, ParamType]]
-    chat_sharegpt: List[Dict[str, ParamType]]
-    chat_openai: List[Dict[str, ParamType]]
 
 
 MODEL_CONFIGS: Dict[str, ModelConfig] = {
@@ -66,48 +48,10 @@ MODEL_CONFIGS: Dict[str, ModelConfig] = {
 }
 
 DATA_FORMATS: Dict[str, Transform] = {
-    "alpaca": AlpacaToMessages,
     "instruct": InputOutputToMessages,
-    "chat_sharegpt": ShareGPTToMessages,
-    "chat_openai": OpenAIToMessages,
+    "chat": ShareGPTToMessages,
 }
 
-
-EXPECTED_DATASET_SCHEMA = DatasetSchema(
-    alpaca=[
-        {
-            ColumnName.instruction.value: StringType(),
-            ColumnName.input.value: StringType(),
-            ColumnName.output.value: StringType(),
-            ColumnName.text.value: StringType(),
-        },
-        {
-            ColumnName.instruction.value: StringType(),
-            ColumnName.input.value: StringType(),
-            ColumnName.output.value: StringType(),
-        },
-        {
-            ColumnName.instruction.value: StringType(),
-            ColumnName.output.value: StringType(),
-        },
-    ],
-    instruct=[
-        {
-            ColumnName.input.value: StringType(),
-            ColumnName.output.value: StringType(),
-        }
-    ],
-    chat_sharegpt=[
-        {
-            ColumnName.conversations.value: StringType(),
-        }
-    ],
-    chat_openai=[
-        {
-            ColumnName.messages.value: StringType(),
-        }
-    ],
-)
 
 BuildLoraModelCallable = Callable[..., torch.nn.Module]
 BuildTokenizerCallable = Callable[..., Llama3Tokenizer]
@@ -156,35 +100,3 @@ async def get_checkpointer_model_type(
 
 async def get_data_transform(data_format: DatasetFormat) -> Transform:
     return DATA_FORMATS[data_format.value]
-
-
-async def validate_input_dataset_schema(
-    datasets_api: Datasets,
-    dataset_id: str,
-    dataset_type: str,
-    column_map: Optional[Dict[str, str]] = None,
-) -> None:
-    dataset_def = await datasets_api.get_dataset(dataset_id=dataset_id)
-    if not dataset_def.dataset_schema or len(dataset_def.dataset_schema) == 0:
-        raise ValueError(f"Dataset {dataset_id} does not have a schema defined.")
-
-    if not hasattr(EXPECTED_DATASET_SCHEMA, dataset_type):
-        raise ValueError(f"Dataset type {dataset_type} is not supported.")
-
-    dataset_schema = {}
-
-    if column_map:
-        for old_col_name in dataset_def.dataset_schema.keys():
-            if old_col_name in column_map.values():
-                new_col_name = next(
-                    k for k, v in column_map.items() if v == old_col_name
-                )
-                dataset_schema[new_col_name] = dataset_def.dataset_schema[old_col_name]
-            else:
-                dataset_schema[old_col_name] = dataset_def.dataset_schema[old_col_name]
-    else:
-        dataset_schema = dataset_def.dataset_schema
-
-    validate_dataset_schema(
-        dataset_schema, getattr(EXPECTED_DATASET_SCHEMA, dataset_type)
-    )

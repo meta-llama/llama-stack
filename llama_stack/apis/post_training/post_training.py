@@ -29,10 +29,8 @@ class OptimizerType(Enum):
 
 @json_schema_type
 class DatasetFormat(Enum):
-    alpaca = "alpaca"
     instruct = "instruct"
-    chat_sharegpt = "chat_sharegpt"
-    chat_openai = "chat_openai"
+    chat = "chat"
 
 
 @json_schema_type
@@ -44,7 +42,6 @@ class DataConfig(BaseModel):
     validation_dataset_id: Optional[str] = None
     packed: Optional[bool] = False
     train_on_input: Optional[bool] = False
-    column_map: Optional[Dict[str, str]] = None
 
 
 @json_schema_type
