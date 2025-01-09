@@ -310,7 +310,7 @@ jobs:
       - name: "PR - Upload Test Summary"
         id: pr_test_summary_upload
         if: github.event_name == 'pull_request_target'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-summary
           path: test-summary.md
