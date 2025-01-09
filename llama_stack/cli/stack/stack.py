@@ -28,7 +28,7 @@ class StackParser(Subcommand):
         self.parser.add_argument(
             "--version",
             action="version",
-            version=f"llama-stack {version('llama-stack')}",
+            version=f"{version('llama-stack')}",
         )
 
         subparsers = self.parser.add_subparsers(title="stack_subcommands")
