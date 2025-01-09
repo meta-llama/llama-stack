@@ -9,8 +9,7 @@ from pathlib import Path
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.apis.models import ModelInput
-from llama_stack.distribution.datatypes import Provider
-
+from llama_stack.distribution.datatypes import Provider, ToolGroupInput
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
 from llama_stack.providers.remote.inference.bedrock.bedrock import MODEL_ALIASES
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -26,6 +25,12 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::memory-runtime",
+        ],
     }
     name = "bedrock"
     memory_provider = Provider(
@@ -46,6 +51,20 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in MODEL_ALIASES
     ]
+    default_tool_groups = [
+        ToolGroupInput(
+            toolgroup_id="builtin::websearch",
+            provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::memory",
+            provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::code_interpreter",
+            provider_id="code-interpreter",
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -61,6 +80,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "memory": [memory_provider],
                 },
                 default_models=default_models,
+                default_tool_groups=default_tool_groups,
             ),
         },
         run_config_env_vars={

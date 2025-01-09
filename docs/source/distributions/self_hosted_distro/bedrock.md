@@ -19,6 +19,7 @@ The `llamastack/distribution-bedrock` distribution consists of the following pro
 | safety | `remote::bedrock` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 

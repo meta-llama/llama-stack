@@ -12,7 +12,6 @@ import pydantic
 
 from llama_stack.distribution.datatypes import KVStoreConfig, RoutableObjectWithProvider
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
@@ -36,7 +35,7 @@ class DistributionRegistry(Protocol):
 
 
 REGISTER_PREFIX = "distributions:registry"
-KEY_VERSION = "v3"
+KEY_VERSION = "v4"
 KEY_FORMAT = f"{REGISTER_PREFIX}:{KEY_VERSION}::" + "{type}:{identifier}"
 
 

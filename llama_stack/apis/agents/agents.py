@@ -18,15 +18,11 @@ from typing import (
     Union,
 )
 
-from llama_models.llama3.api.datatypes import ToolParamDefinition
-
-from llama_models.schema_utils import json_schema_type, webmethod
-
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import InterleavedContent, URL
-from llama_stack.apis.common.deployment_types import RestAPIExecutionConfig
 from llama_stack.apis.inference import (
     CompletionMessage,
     SamplingParams,
@@ -40,166 +36,18 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.memory import MemoryBank
 from llama_stack.apis.safety import SafetyViolation
-
+from llama_stack.apis.tools import ToolDef
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
-@json_schema_type
 class Attachment(BaseModel):
     content: InterleavedContent | URL
     mime_type: str
 
 
-class AgentTool(Enum):
-    brave_search = "brave_search"
-    wolfram_alpha = "wolfram_alpha"
-    photogen = "photogen"
-    code_interpreter = "code_interpreter"
-
-    function_call = "function_call"
-    memory = "memory"
-
-
-class ToolDefinitionCommon(BaseModel):
-    input_shields: Optional[List[str]] = Field(default_factory=list)
-    output_shields: Optional[List[str]] = Field(default_factory=list)
-
-
-class SearchEngineType(Enum):
-    bing = "bing"
-    brave = "brave"
-    tavily = "tavily"
-
-
-@json_schema_type
-class SearchToolDefinition(ToolDefinitionCommon):
-    # NOTE: brave_search is just a placeholder since model always uses
-    # brave_search as tool call name
-    type: Literal[AgentTool.brave_search.value] = AgentTool.brave_search.value
-    api_key: str
-    engine: SearchEngineType = SearchEngineType.brave
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class WolframAlphaToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.wolfram_alpha.value] = AgentTool.wolfram_alpha.value
-    api_key: str
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class PhotogenToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.photogen.value] = AgentTool.photogen.value
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class CodeInterpreterToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.code_interpreter.value] = AgentTool.code_interpreter.value
-    enable_inline_code_execution: bool = True
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-@json_schema_type
-class FunctionCallToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.function_call.value] = AgentTool.function_call.value
-    function_name: str
-    description: str
-    parameters: Dict[str, ToolParamDefinition]
-    remote_execution: Optional[RestAPIExecutionConfig] = None
-
-
-class _MemoryBankConfigCommon(BaseModel):
-    bank_id: str
-
-
-class AgentVectorMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal["vector"] = "vector"
-
-
-class AgentKeyValueMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal["keyvalue"] = "keyvalue"
-    keys: List[str]  # what keys to focus on
-
-
-class AgentKeywordMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal["keyword"] = "keyword"
-
-
-class AgentGraphMemoryBankConfig(_MemoryBankConfigCommon):
-    type: Literal["graph"] = "graph"
-    entities: List[str]  # what entities to focus on
-
-
-MemoryBankConfig = Annotated[
-    Union[
-        AgentVectorMemoryBankConfig,
-        AgentKeyValueMemoryBankConfig,
-        AgentKeywordMemoryBankConfig,
-        AgentGraphMemoryBankConfig,
-    ],
-    Field(discriminator="type"),
-]
-
-
-class MemoryQueryGenerator(Enum):
-    default = "default"
-    llm = "llm"
-    custom = "custom"
-
-
-class DefaultMemoryQueryGeneratorConfig(BaseModel):
-    type: Literal[MemoryQueryGenerator.default.value] = (
-        MemoryQueryGenerator.default.value
-    )
-    sep: str = " "
-
-
-class LLMMemoryQueryGeneratorConfig(BaseModel):
-    type: Literal[MemoryQueryGenerator.llm.value] = MemoryQueryGenerator.llm.value
-    model: str
-    template: str
-
-
-class CustomMemoryQueryGeneratorConfig(BaseModel):
-    type: Literal[MemoryQueryGenerator.custom.value] = MemoryQueryGenerator.custom.value
-
-
-MemoryQueryGeneratorConfig = Annotated[
-    Union[
-        DefaultMemoryQueryGeneratorConfig,
-        LLMMemoryQueryGeneratorConfig,
-        CustomMemoryQueryGeneratorConfig,
-    ],
-    Field(discriminator="type"),
-]
-
-
-@json_schema_type
-class MemoryToolDefinition(ToolDefinitionCommon):
-    type: Literal[AgentTool.memory.value] = AgentTool.memory.value
-    memory_bank_configs: List[MemoryBankConfig] = Field(default_factory=list)
-    # This config defines how a query is generated using the messages
-    # for memory bank retrieval.
-    query_generator_config: MemoryQueryGeneratorConfig = Field(
-        default=DefaultMemoryQueryGeneratorConfig()
-    )
-    max_tokens_in_context: int = 4096
-    max_chunks: int = 10
-
-
-AgentToolDefinition = Annotated[
-    Union[
-        SearchToolDefinition,
-        WolframAlphaToolDefinition,
-        PhotogenToolDefinition,
-        CodeInterpreterToolDefinition,
-        FunctionCallToolDefinition,
-        MemoryToolDefinition,
-    ],
-    Field(discriminator="type"),
-]
+class Document(BaseModel):
+    content: InterleavedContent | URL
+    mime_type: str
 
 
 class StepCommon(BaseModel):
@@ -289,13 +137,27 @@ class Session(BaseModel):
     memory_bank: Optional[MemoryBank] = None
 
 
+class AgentToolGroupWithArgs(BaseModel):
+    name: str
+    args: Dict[str, Any]
+
+
+AgentToolGroup = register_schema(
+    Union[
+        str,
+        AgentToolGroupWithArgs,
+    ],
+    name="AgentTool",
+)
+
+
 class AgentConfigCommon(BaseModel):
     sampling_params: Optional[SamplingParams] = SamplingParams()
 
     input_shields: Optional[List[str]] = Field(default_factory=list)
     output_shields: Optional[List[str]] = Field(default_factory=list)
-
-    tools: Optional[List[AgentToolDefinition]] = Field(default_factory=list)
+    toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
+    client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
     tool_prompt_format: Optional[ToolPromptFormat] = Field(
         default=ToolPromptFormat.json
@@ -340,6 +202,7 @@ class AgentTurnResponseStepCompletePayload(BaseModel):
         AgentTurnResponseEventType.step_complete.value
     )
     step_type: StepType
+    step_id: str
     step_details: Step
 
 
@@ -413,7 +276,9 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
             ToolResponseMessage,
         ]
     ]
-    attachments: Optional[List[Attachment]] = None
+
+    documents: Optional[List[Document]] = None
+    toolgroups: Optional[List[AgentToolGroup]] = None
 
     stream: Optional[bool] = False
 
@@ -450,8 +315,9 @@ class Agents(Protocol):
                 ToolResponseMessage,
             ]
         ],
-        attachments: Optional[List[Attachment]] = None,
         stream: Optional[bool] = False,
+        documents: Optional[List[Document]] = None,
+        toolgroups: Optional[List[AgentToolGroup]] = None,
     ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]: ...
 
     @webmethod(route="/agents/turn/get")

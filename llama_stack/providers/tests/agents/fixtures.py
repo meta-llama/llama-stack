@@ -11,13 +11,12 @@ import pytest_asyncio
 
 from llama_stack.apis.models import ModelInput, ModelType
 from llama_stack.distribution.datatypes import Api, Provider
-
 from llama_stack.providers.inline.agents.meta_reference import (
     MetaReferenceAgentsImplConfig,
 )
-
 from llama_stack.providers.tests.resolver import construct_stack_for_test
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
+
 from ..conftest import ProviderFixture, remote_stack_fixture
 
 
@@ -59,12 +58,18 @@ AGENTS_FIXTURES = ["meta_reference", "remote"]
 
 
 @pytest_asyncio.fixture(scope="session")
-async def agents_stack(request, inference_model, safety_shield):
+async def agents_stack(
+    request,
+    inference_model,
+    safety_shield,
+    tool_group_input_memory,
+    tool_group_input_tavily_search,
+):
     fixture_dict = request.param
 
     providers = {}
     provider_data = {}
-    for key in ["inference", "safety", "memory", "agents"]:
+    for key in ["inference", "safety", "memory", "agents", "tool_runtime"]:
         fixture = request.getfixturevalue(f"{key}_{fixture_dict[key]}")
         providers[key] = fixture.providers
         if key == "inference":
@@ -113,10 +118,11 @@ async def agents_stack(request, inference_model, safety_shield):
     )
 
     test_stack = await construct_stack_for_test(
-        [Api.agents, Api.inference, Api.safety, Api.memory],
+        [Api.agents, Api.inference, Api.safety, Api.memory, Api.tool_runtime],
         providers,
         provider_data,
         models=models,
         shields=[safety_shield] if safety_shield else [],
+        tool_groups=[tool_group_input_memory, tool_group_input_tavily_search],
     )
     return test_stack

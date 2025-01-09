@@ -267,6 +267,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 self.config, self.custom_provider_registry
             )
         except ModuleNotFoundError as _e:
+            cprint(_e.msg, "red")
             cprint(
                 "Using llama-stack as a library requires installing dependencies depending on the template (providers) you choose.\n",
                 "yellow",

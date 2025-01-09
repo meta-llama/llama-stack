@@ -7,8 +7,12 @@
 from pathlib import Path
 
 from llama_stack.apis.models.models import ModelType
-
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.distribution.datatypes import (
+    ModelInput,
+    Provider,
+    ShieldInput,
+    ToolGroupInput,
+)
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -24,6 +28,12 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::memory-runtime",
+        ],
     }
     name = "remote-vllm"
     inference_provider = Provider(
@@ -60,6 +70,20 @@ def get_distribution_template() -> DistributionTemplate:
             "embedding_dimension": 384,
         },
     )
+    default_tool_groups = [
+        ToolGroupInput(
+            toolgroup_id="builtin::websearch",
+            provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::memory",
+            provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::code_interpreter",
+            provider_id="code-interpreter",
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -97,6 +121,7 @@ def get_distribution_template() -> DistributionTemplate:
                     embedding_model,
                 ],
                 default_shields=[ShieldInput(shield_id="${env.SAFETY_MODEL}")],
+                default_tool_groups=default_tool_groups,
             ),
         },
         run_config_env_vars={

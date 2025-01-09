@@ -9,8 +9,12 @@ from pathlib import Path
 from llama_models.sku_list import all_registered_models
 
 from llama_stack.apis.models.models import ModelType
-
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput
+from llama_stack.distribution.datatypes import (
+    ModelInput,
+    Provider,
+    ShieldInput,
+    ToolGroupInput,
+)
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -30,6 +34,12 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::memory-runtime",
+        ],
     }
     name = "together"
     inference_provider = Provider(
@@ -59,6 +69,20 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in MODEL_ALIASES
     ]
+    default_tool_groups = [
+        ToolGroupInput(
+            toolgroup_id="builtin::websearch",
+            provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::memory",
+            provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::code_interpreter",
+            provider_id="code-interpreter",
+        ),
+    ]
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -83,6 +107,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "memory": [memory_provider],
                 },
                 default_models=default_models + [embedding_model],
+                default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
         },
