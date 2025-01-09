@@ -8,7 +8,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 from mcp import ClientSession
-from mcp.client.sse import sse_client
+from mcp.client.stdio import stdio_client, StdioServerParameters
 from pydantic import TypeAdapter
 
 from llama_stack.apis.tools import (
@@ -39,7 +39,13 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
             raise ValueError("mcp_config is required")
 
         tools = []
-        async with sse_client(mcp_config.mcp_endpoint.uri) as streams:
+        async with stdio_client(
+            StdioServerParameters(
+                command=mcp_config.command,
+                args=mcp_config.args,
+                env=mcp_config.env,
+            )
+        ) as streams:
             async with ClientSession(*streams) as session:
                 await session.initialize()
                 tools_result = await session.list_tools()
@@ -61,7 +67,7 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                             description=tool.description,
                             parameters=parameters,
                             metadata={
-                                "mcp_config": mcp_config,
+                                "mcp_config": mcp_config.model_dump_json(),
                             },
                         )
                     )
@@ -75,11 +81,16 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
             raise ValueError(f"Tool {tool_name} does not have metadata")
         mcp_config_dict = json.loads(tool.metadata.get("mcp_config"))
         mcp_config = TypeAdapter(MCPConfig).validate_python(mcp_config_dict)
-
-        async with sse_client(mcp_config.mcp_endpoint.uri) as streams:
+        async with stdio_client(
+            StdioServerParameters(
+                command=mcp_config.command,
+                args=mcp_config.args,
+                env=mcp_config.env,
+            )
+        ) as streams:
             async with ClientSession(*streams) as session:
                 await session.initialize()
-                result = await session.call_tool(tool.identifier, args)
+                result = await session.call_tool(tool.identifier, arguments=args)
 
         return ToolInvocationResult(
             content="\n".join([result.model_dump_json() for result in result.content]),

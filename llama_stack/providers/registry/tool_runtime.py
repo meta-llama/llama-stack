@@ -32,6 +32,13 @@ def available_providers() -> List[ProviderSpec]:
             module="llama_stack.providers.inline.tool_runtime.code_interpreter",
             config_class="llama_stack.providers.inline.tool_runtime.code_interpreter.config.CodeInterpreterToolConfig",
         ),
+        InlineProviderSpec(
+            api=Api.tool_runtime,
+            provider_type="inline::model-context-protocol",
+            pip_packages=["mcp"],
+            module="llama_stack.providers.inline.tool_runtime.model_context_protocol",
+            config_class="llama_stack.providers.inline.tool_runtime.model_context_protocol.config.ModelContextProtocolConfig",
+        ),
         remote_provider_spec(
             api=Api.tool_runtime,
             adapter=AdapterSpec(

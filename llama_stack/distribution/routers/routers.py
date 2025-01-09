@@ -6,7 +6,7 @@
 
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
 from llama_stack.apis.eval import (
     AppEvalTaskConfig,
@@ -38,7 +38,7 @@ from llama_stack.apis.scoring import (
     ScoringFnParams,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.apis.tools import ToolDef, ToolRuntime
+from llama_stack.apis.tools import MCPConfig, ToolDef, ToolRuntime
 from llama_stack.providers.datatypes import RoutingTable
 
 
@@ -418,8 +418,10 @@ class ToolRuntimeRouter(ToolRuntime):
         )
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self,
+        tool_group_id: Optional[str] = None,
+        mcp_config: Optional[MCPConfig] = None,
     ) -> List[ToolDef]:
         return await self.routing_table.get_provider_impl(tool_group_id).list_tools(
-            tool_group_id, mcp_endpoint
+            tool_group_id, mcp_config
         )

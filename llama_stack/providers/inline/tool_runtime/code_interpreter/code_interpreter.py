@@ -9,8 +9,8 @@ import logging
 import tempfile
 from typing import Any, Dict, List, Optional
 
-from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
+    MCPConfig,
     Tool,
     ToolDef,
     ToolInvocationResult,
@@ -43,7 +43,9 @@ class CodeInterpreterToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
         return
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self,
+        tool_group_id: Optional[str] = None,
+        mcp_config: Optional[MCPConfig] = None,
     ) -> List[ToolDef]:
         return [
             ToolDef(

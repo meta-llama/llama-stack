@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import json
+import os
 from typing import Dict, List
 from uuid import uuid4
 
@@ -324,3 +325,35 @@ def test_rag_agent(llama_stack_client, agent_config):
         logs = [str(log) for log in EventLogger().log(response) if log is not None]
         logs_str = "".join(logs)
         assert "Tool:query_memory" in logs_str
+
+
+def test_mcp_agent(llama_stack_client, agent_config):
+    llama_stack_client.toolgroups.register(
+        toolgroup_id="brave-search",
+        provider_id="model-context-protocol",
+        mcp_config=dict(
+            type="inline",
+            command="/Users/dineshyv/homebrew/bin/npx",
+            args=["-y", "@modelcontextprotocol/server-brave-search"],
+            env={
+                "BRAVE_API_KEY": os.environ["BRAVE_SEARCH_API_KEY"],
+                "PATH": os.environ["PATH"],
+            },
+        ),
+    )
+    agent_config = {
+        **agent_config,
+        "toolgroups": [
+            "brave-search",
+        ],
+    }
+    agent = Agent(llama_stack_client, agent_config)
+    session_id = agent.create_session("test-session")
+    response = agent.create_turn(
+        messages=[{"role": "user", "content": "what won the NBA playoffs in 2024?"}],
+        session_id=session_id,
+    )
+    logs = [str(log) for log in EventLogger().log(response) if log is not None]
+    logs_str = "".join(logs)
+    assert "Tool:brave_web_search" in logs_str
+    assert "celtics" in logs_str.lower()

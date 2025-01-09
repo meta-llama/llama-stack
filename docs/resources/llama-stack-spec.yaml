@@ -1125,8 +1125,8 @@ components:
     ListRuntimeToolsRequest:
       additionalProperties: false
       properties:
-        mcp_endpoint:
-          $ref: '#/components/schemas/URL'
+        mcp_config:
+          $ref: '#/components/schemas/MCPConfig'
       type: object
     LogEventRequest:
       additionalProperties: false
@@ -1183,6 +1183,50 @@ components:
       - apply_lora_to_output
       - rank
       - alpha
+      type: object
+    MCPConfig:
+      oneOf:
+      - $ref: '#/components/schemas/MCPInlineConfig'
+      - $ref: '#/components/schemas/MCPRemoteConfig'
+    MCPInlineConfig:
+      additionalProperties: false
+      properties:
+        args:
+          items:
+            type: string
+          type: array
+        command:
+          type: string
+        env:
+          additionalProperties:
+            oneOf:
+            - type: 'null'
+            - type: boolean
+            - type: number
+            - type: string
+            - type: array
+            - type: object
+          type: object
+        type:
+          const: inline
+          default: inline
+          type: string
+      required:
+      - type
+      - command
+      type: object
+    MCPRemoteConfig:
+      additionalProperties: false
+      properties:
+        mcp_endpoint:
+          $ref: '#/components/schemas/URL'
+        type:
+          const: remote
+          default: remote
+          type: string
+      required:
+      - type
+      - mcp_endpoint
       type: object
     MemoryBankDocument:
       additionalProperties: false
@@ -1897,8 +1941,8 @@ components:
             - type: array
             - type: object
           type: object
-        mcp_endpoint:
-          $ref: '#/components/schemas/URL'
+        mcp_config:
+          $ref: '#/components/schemas/MCPConfig'
         provider_id:
           type: string
         toolgroup_id:
@@ -2773,8 +2817,8 @@ components:
           type: object
         identifier:
           type: string
-        mcp_endpoint:
-          $ref: '#/components/schemas/URL'
+        mcp_config:
+          $ref: '#/components/schemas/MCPConfig'
         provider_id:
           type: string
         provider_resource_id:
@@ -5615,6 +5659,14 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LoraFinetuningConfig"
     />
   name: LoraFinetuningConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/MCPConfig" />
+  name: MCPConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/MCPInlineConfig"
+    />
+  name: MCPInlineConfig
+- description: <SchemaDefinition schemaRef="#/components/schemas/MCPRemoteConfig"
+    />
+  name: MCPRemoteConfig
 - name: Memory
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
     />
@@ -5982,6 +6034,9 @@ x-tagGroups:
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
+  - MCPConfig
+  - MCPInlineConfig
+  - MCPRemoteConfig
   - MemoryBankDocument
   - MemoryRetrievalStep
   - Message

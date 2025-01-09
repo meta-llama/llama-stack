@@ -26,7 +26,7 @@ from llama_stack.apis.scoring_functions import (
     ScoringFunctions,
 )
 from llama_stack.apis.shields import Shield, Shields
-from llama_stack.apis.tools import Tool, ToolGroup, ToolGroups, ToolHost
+from llama_stack.apis.tools import MCPConfig, Tool, ToolGroup, ToolGroups, ToolHost
 from llama_stack.distribution.datatypes import (
     RoutableObject,
     RoutableObjectWithProvider,
@@ -504,15 +504,15 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         self,
         toolgroup_id: str,
         provider_id: str,
-        mcp_endpoint: Optional[URL] = None,
+        mcp_config: Optional[MCPConfig] = None,
         args: Optional[Dict[str, Any]] = None,
     ) -> None:
         tools = []
         tool_defs = await self.impls_by_provider_id[provider_id].list_runtime_tools(
-            toolgroup_id, mcp_endpoint
+            toolgroup_id, mcp_config
         )
         tool_host = (
-            ToolHost.model_context_protocol if mcp_endpoint else ToolHost.distribution
+            ToolHost.model_context_protocol if mcp_config else ToolHost.distribution
         )
 
         for tool_def in tool_defs:
@@ -547,7 +547,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                 identifier=toolgroup_id,
                 provider_id=provider_id,
                 provider_resource_id=toolgroup_id,
-                mcp_endpoint=mcp_endpoint,
+                mcp_config=mcp_config,
                 args=args,
             )
         )

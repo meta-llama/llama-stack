@@ -6548,6 +6548,83 @@
                     "model_context_protocol"
                 ]
             },
+            "MCPConfig": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/MCPInlineConfig"
+                    },
+                    {
+                        "$ref": "#/components/schemas/MCPRemoteConfig"
+                    }
+                ]
+            },
+            "MCPInlineConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "inline",
+                        "default": "inline"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "args": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "env": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "command"
+                ]
+            },
+            "MCPRemoteConfig": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "remote",
+                        "default": "remote"
+                    },
+                    "mcp_endpoint": {
+                        "$ref": "#/components/schemas/URL"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "mcp_endpoint"
+                ]
+            },
             "ToolGroup": {
                 "type": "object",
                 "properties": {
@@ -6565,8 +6642,8 @@
                         "const": "tool_group",
                         "default": "tool_group"
                     },
-                    "mcp_endpoint": {
-                        "$ref": "#/components/schemas/URL"
+                    "mcp_config": {
+                        "$ref": "#/components/schemas/MCPConfig"
                     },
                     "args": {
                         "type": "object",
@@ -6916,8 +6993,8 @@
             "ListRuntimeToolsRequest": {
                 "type": "object",
                 "properties": {
-                    "mcp_endpoint": {
-                        "$ref": "#/components/schemas/URL"
+                    "mcp_config": {
+                        "$ref": "#/components/schemas/MCPConfig"
                     }
                 },
                 "additionalProperties": false
@@ -8022,8 +8099,8 @@
                     "provider_id": {
                         "type": "string"
                     },
-                    "mcp_endpoint": {
-                        "$ref": "#/components/schemas/URL"
+                    "mcp_config": {
+                        "$ref": "#/components/schemas/MCPConfig"
                     },
                     "args": {
                         "type": "object",
@@ -8933,6 +9010,18 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LoraFinetuningConfig\" />"
         },
         {
+            "name": "MCPConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MCPConfig\" />"
+        },
+        {
+            "name": "MCPInlineConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MCPInlineConfig\" />"
+        },
+        {
+            "name": "MCPRemoteConfig",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MCPRemoteConfig\" />"
+        },
+        {
             "name": "Memory"
         },
         {
@@ -9437,6 +9526,9 @@
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
+                "MCPConfig",
+                "MCPInlineConfig",
+                "MCPRemoteConfig",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "Message",

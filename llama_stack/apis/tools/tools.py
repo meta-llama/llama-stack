@@ -5,10 +5,10 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from llama_models.llama3.api.datatypes import ToolPromptFormat
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Protocol, runtime_checkable
 
@@ -58,17 +58,34 @@ class ToolDef(BaseModel):
 
 
 @json_schema_type
+class MCPInlineConfig(BaseModel):
+    type: Literal["inline"] = "inline"
+    command: str
+    args: Optional[List[str]] = None
+    env: Optional[Dict[str, Any]] = None
+
+
+@json_schema_type
+class MCPRemoteConfig(BaseModel):
+    type: Literal["remote"] = "remote"
+    mcp_endpoint: URL
+
+
+MCPConfig = register_schema(Union[MCPInlineConfig, MCPRemoteConfig], name="MCPConfig")
+
+
+@json_schema_type
 class ToolGroupInput(BaseModel):
     toolgroup_id: str
     provider_id: str
     args: Optional[Dict[str, Any]] = None
-    mcp_endpoint: Optional[URL] = None
+    mcp_config: Optional[MCPConfig] = None
 
 
 @json_schema_type
 class ToolGroup(Resource):
     type: Literal[ResourceType.tool_group.value] = ResourceType.tool_group.value
-    mcp_endpoint: Optional[URL] = None
+    mcp_config: Optional[MCPConfig] = None
     args: Optional[Dict[str, Any]] = None
 
 
@@ -92,7 +109,7 @@ class ToolGroups(Protocol):
         self,
         toolgroup_id: str,
         provider_id: str,
-        mcp_endpoint: Optional[URL] = None,
+        mcp_config: Optional[MCPConfig] = None,
         args: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Register a tool group"""
@@ -131,7 +148,9 @@ class ToolRuntime(Protocol):
     # TODO: This needs to be renamed once OPEN API generator name conflict issue is fixed.
     @webmethod(route="/tool-runtime/list-tools", method="GET")
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self,
+        tool_group_id: Optional[str] = None,
+        mcp_config: Optional[MCPConfig] = None,
     ) -> List[ToolDef]: ...
 
     @webmethod(route="/tool-runtime/invoke", method="POST")
