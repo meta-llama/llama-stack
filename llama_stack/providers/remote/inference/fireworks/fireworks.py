@@ -118,7 +118,7 @@ class FireworksInferenceAdapter(
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.fireworks_api_key:
                 raise ValueError(
-                    'Pass Fireworks API Key in the header X-LlamaStack-ProviderData as { "fireworks_api_key": <your api key>}'
+                    'Pass Fireworks API Key in the header X-LlamaStack-Provider-Data as { "fireworks_api_key": <your api key>}'
                 )
             return provider_data.fireworks_api_key
 
