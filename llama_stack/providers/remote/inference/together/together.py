@@ -135,7 +135,7 @@ class TogetherInferenceAdapter(
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.together_api_key:
                 raise ValueError(
-                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+                    'Pass Together API Key in the header X-LlamaStack-Provider-Data as { "together_api_key": <your api key>}'
                 )
             together_api_key = provider_data.together_api_key
         return Together(api_key=together_api_key)

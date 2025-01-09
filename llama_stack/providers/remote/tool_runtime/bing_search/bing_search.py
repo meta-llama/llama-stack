@@ -46,7 +46,7 @@ class BingSearchToolRuntimeImpl(
         provider_data = self.get_request_provider_data()
         if provider_data is None or not provider_data.api_key:
             raise ValueError(
-                'Pass Bing Search API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
+                'Pass Bing Search API Key in the header X-LlamaStack-Provider-Data as { "api_key": <your api key>}'
             )
         return provider_data.api_key
 

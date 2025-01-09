@@ -79,7 +79,7 @@ async def construct_stack_for_test(
 
     if provider_data:
         set_request_provider_data(
-            {"X-LlamaStack-ProviderData": json.dumps(provider_data)}
+            {"X-LlamaStack-Provider-Data": json.dumps(provider_data)}
         )
 
     return test_stack

@@ -145,6 +145,6 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.groq_api_key:
                 raise ValueError(
-                    'Pass Groq API Key in the header X-LlamaStack-ProviderData as { "groq_api_key": "<your api key>" }'
+                    'Pass Groq API Key in the header X-LlamaStack-Provider-Data as { "groq_api_key": "<your api key>" }'
                 )
             return Groq(api_key=provider_data.groq_api_key)

@@ -40,8 +40,8 @@ class NeedsRequestProviderData:
 
 def set_request_provider_data(headers: Dict[str, str]):
     keys = [
-        "X-LlamaStack-ProviderData",
-        "x-llamastack-providerdata",
+        "X-LlamaStack-Provider-Data",
+        "x-llamastack-provider-data",
     ]
     for key in keys:
         val = headers.get(key, None)
