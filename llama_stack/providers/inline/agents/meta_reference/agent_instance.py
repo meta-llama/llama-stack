@@ -679,21 +679,7 @@ class ChatAgent(ShieldRunnerMixin):
                 # TODO: add tool-input touchpoint and a "start" event for this step also
                 # but that needs a lot more refactoring of Tool code potentially
 
-                def interpret_content_as_attachment(
-                    content: str,
-                ) -> Optional[Attachment]:
-                    match = re.search(TOOLS_ATTACHMENT_KEY_REGEX, content)
-                    if match:
-                        snippet = match.group(1)
-                        data = json.loads(snippet)
-                        return Attachment(
-                            url=URL(uri="file://" + data["filepath"]),
-                            mime_type=data["mimetype"],
-                        )
-
-                    return None
-
-                if out_attachment := interpret_content_as_attachment(
+                if out_attachment := _interpret_content_as_attachment(
                     result_message.content
                 ):
                     # NOTE: when we push this message back to the model, the model may ignore the
@@ -974,3 +960,18 @@ async def execute_tool_call_maybe(
             content=result.content,
         )
     ]
+
+
+def _interpret_content_as_attachment(
+    content: str,
+) -> Optional[Attachment]:
+    match = re.search(TOOLS_ATTACHMENT_KEY_REGEX, content)
+    if match:
+        snippet = match.group(1)
+        data = json.loads(snippet)
+        return Attachment(
+            url=URL(uri="file://" + data["filepath"]),
+            mime_type=data["mimetype"],
+        )
+
+    return None
