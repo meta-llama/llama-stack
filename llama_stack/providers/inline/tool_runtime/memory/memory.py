@@ -60,7 +60,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime):
                 description="Retrieve context from memory",
                 parameters=[
                     ToolParameter(
-                        name="input_messages",
+                        name="messages",
                         description="The input messages to search for",
                         parameter_type="array",
                     ),

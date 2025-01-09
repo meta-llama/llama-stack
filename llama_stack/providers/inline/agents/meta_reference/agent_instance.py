@@ -487,20 +487,13 @@ class ChatAgent(ShieldRunnerMixin):
             stop_reason = None
 
             with tracing.span("inference") as span:
-
-                def is_memory_group(tool):
-                    memory_tool_group = tool_to_group.get(MEMORY_QUERY_TOOL, None)
-                    has_memory_tool = MEMORY_QUERY_TOOL in tool_defs
-                    return (
-                        has_memory_tool
-                        and tool_to_group.get(tool.tool_name, None) != memory_tool_group
-                    )
-
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
                     tools=[
-                        tool for tool in tool_defs.values() if not is_memory_group(tool)
+                        tool
+                        for tool in tool_defs.values()
+                        if tool_to_group.get(tool.tool_name, None) != MEMORY_GROUP
                     ],
                     tool_prompt_format=self.agent_config.tool_prompt_format,
                     stream=True,
