@@ -20,6 +20,7 @@ from llama_stack.distribution.datatypes import (
     Provider,
     ShieldInput,
     StackRunConfig,
+    ToolGroupInput,
 )
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -30,6 +31,7 @@ class RunConfigSettings(BaseModel):
     provider_overrides: Dict[str, List[Provider]] = Field(default_factory=dict)
     default_models: Optional[List[ModelInput]] = None
     default_shields: Optional[List[ShieldInput]] = None
+    default_tool_groups: Optional[List[ToolGroupInput]] = None
 
     def run_config(
         self,
@@ -91,6 +93,7 @@ class RunConfigSettings(BaseModel):
             ),
             models=self.default_models or [],
             shields=self.default_shields or [],
+            tool_groups=self.default_tool_groups or [],
         )
 
 
@@ -159,14 +162,22 @@ class DistributionTemplate(BaseModel):
 
         build_config = self.build_config()
         with open(yaml_output_dir / "build.yaml", "w") as f:
-            yaml.safe_dump(build_config.model_dump(), f, sort_keys=False)
+            yaml.safe_dump(
+                build_config.model_dump(exclude_none=True),
+                f,
+                sort_keys=False,
+            )
 
         for yaml_pth, settings in self.run_configs.items():
             run_config = settings.run_config(
                 self.name, self.providers, self.docker_image
             )
             with open(yaml_output_dir / yaml_pth, "w") as f:
-                yaml.safe_dump(run_config.model_dump(), f, sort_keys=False)
+                yaml.safe_dump(
+                    run_config.model_dump(exclude_none=True),
+                    f,
+                    sort_keys=False,
+                )
 
         if self.template_path:
             docs = self.generate_markdown_docs()

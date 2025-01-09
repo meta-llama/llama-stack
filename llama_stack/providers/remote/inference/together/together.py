@@ -7,11 +7,8 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.datatypes import CoreModelId
-
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from together import Together
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -52,7 +49,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import TogetherImplConfig
-
 
 MODEL_ALIASES = [
     build_model_alias(

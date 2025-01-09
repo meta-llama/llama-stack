@@ -11,7 +11,11 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
 )
 from llama_stack.providers.inline.inference.vllm import VLLMConfig
 from llama_stack.providers.inline.memory.faiss.config import FaissImplConfig
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
+from llama_stack.templates.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    ToolGroupInput,
+)
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -24,7 +28,14 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::memory-runtime",
+        ],
     }
+
     name = "vllm-gpu"
     inference_provider = Provider(
         provider_id="vllm",
@@ -54,6 +65,20 @@ def get_distribution_template() -> DistributionTemplate:
             "embedding_dimension": 384,
         },
     )
+    default_tool_groups = [
+        ToolGroupInput(
+            toolgroup_id="builtin::websearch",
+            provider_id="tavily-search",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::memory",
+            provider_id="memory-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::code_interpreter",
+            provider_id="code-interpreter",
+        ),
+    ]
 
     return DistributionTemplate(
         name=name,
@@ -70,6 +95,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "memory": [memory_provider],
                 },
                 default_models=[inference_model, embedding_model],
+                default_tool_groups=default_tool_groups,
             ),
         },
         run_config_env_vars={

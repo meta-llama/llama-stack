@@ -1,6 +1,5 @@
 version: '2'
 image_name: meta-reference-gpu
-docker_image: null
 conda_env: meta-reference-gpu
 apis:
 - agents
@@ -11,6 +10,7 @@ apis:
 - safety
 - scoring
 - telemetry
+- tool_runtime
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -71,24 +71,39 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: code-interpreter
+    provider_type: inline::code-interpreter
+    config: {}
+  - provider_id: memory-runtime
+    provider_type: inline::memory-runtime
+    config: {}
 metadata_store:
-  namespace: null
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}
   provider_id: meta-reference-inference
-  provider_model_id: null
   model_type: llm
 - metadata:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
   provider_id: sentence-transformers
-  provider_model_id: null
   model_type: embedding
 shields: []
 memory_banks: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
+tool_groups: []
