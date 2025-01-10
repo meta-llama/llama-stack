@@ -16,6 +16,9 @@ jobs:
     name: Trigger llama-stack-client and llama-models build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
     - name: Get date
       id: date
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
