@@ -62,8 +62,9 @@ jobs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
     - name: Update version for nightly
       run: |
-        sed -i 's/version="\([^"]*\)"/version="\1${{ needs.trigger-client-build.outputs.version }}"/' setup.py
-        sed -i 's/llama-stack-client>=\([^"]*\)/llama-stack-client==\1${{ needs.trigger-client-build.outputs.version }}/' requirements.txt
+        sed -i 's/version="\([^"]*\)"/version="\1${{ needs.trigger-client-and-models-build.outputs.version }}"/' setup.py
+        sed -i 's/llama-stack-client>=\([^"]*\)/llama-stack-client==\1${{ needs.trigger-client-and-models-build.outputs.version }}/' requirements.txt
+        sed -i 's/llama-models>=\([^"]*\)/llama-models==\1${{ needs.trigger-client-and-models-build.outputs.version }}/' requirements.txt
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
