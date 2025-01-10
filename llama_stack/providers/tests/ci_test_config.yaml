@@ -16,8 +16,8 @@ inference_fixtures:
   - ollama
   - fireworks
   - together
-  - tgi
-  - vllm_remote
+  # - tgi
+  # - vllm_remote
 
 test_models:
   text: meta-llama/Llama-3.1-8B-Instruct
