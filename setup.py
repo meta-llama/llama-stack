@@ -26,7 +26,7 @@ setup(
             "install-wheel-from-presigned = llama_stack.cli.scripts.run:install_wheel_from_presigned",
         ]
     },
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding='utf-8').read(),
     long_description_content_type="text/markdown",
     url="https://github.com/meta-llama/llama-stack",
     packages=find_packages(),
