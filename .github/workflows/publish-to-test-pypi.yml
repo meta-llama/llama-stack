@@ -28,7 +28,7 @@ jobs:
         elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "version=rc${{ inputs.rc_version }}" >> $GITHUB_OUTPUT
         else
-          echo "version=.dev0" >> $GITHUB_OUTPUT
+          echo "version=.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
         fi
     - name: Trigger llama-stack-client workflow
       uses: peter-evans/repository-dispatch@v2
@@ -59,7 +59,7 @@ jobs:
         elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "version=rc${{ inputs.rc_version }}" >> $GITHUB_OUTPUT
         else
-          echo "version=.dev0" >> $GITHUB_OUTPUT
+          echo "version=.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
         fi
     - name: Update version for nightly
       run: |
