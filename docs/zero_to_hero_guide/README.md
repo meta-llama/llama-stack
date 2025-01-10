@@ -89,7 +89,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    ```
    ...
    Build Successful! Next steps:
-   1. Set the environment variables: LLAMASTACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
+   1. Set the environment variables: LLAMA_STACK_PORT, OLLAMA_URL, INFERENCE_MODEL, SAFETY_MODEL
    2. `llama stack run /Users/<username>/.llama/distributions/llamastack-ollama/ollama-run.yaml
    ```
 

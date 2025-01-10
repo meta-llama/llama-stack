@@ -6,8 +6,8 @@
 import os
 
 import pytest
-from llama_stack import LlamaStackAsLibraryClient
 
+from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.providers.tests.env import get_env_or_fail
 from llama_stack_client import LlamaStackClient
 

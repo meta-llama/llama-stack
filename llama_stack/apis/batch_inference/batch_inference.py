@@ -7,7 +7,6 @@
 from typing import List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.inference import (
@@ -44,9 +43,7 @@ class BatchChatCompletionRequest(BaseModel):
     # zero-shot tool definitions as input to the model
     tools: Optional[List[ToolDefinition]] = Field(default_factory=list)
     tool_choice: Optional[ToolChoice] = Field(default=ToolChoice.auto)
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
+    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None)
     logprobs: Optional[LogProbConfig] = None
 
 
@@ -75,6 +72,6 @@ class BatchInference(Protocol):
         # zero-shot tool definitions as input to the model
         tools: Optional[List[ToolDefinition]] = list,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchChatCompletionResponse: ...

@@ -1,6 +1,5 @@
 version: '2'
 image_name: cerebras
-docker_image: null
 conda_env: cerebras
 apis:
 - agents
@@ -8,6 +7,7 @@ apis:
 - memory
 - safety
 - telemetry
+- tool_runtime
 providers:
   inference:
   - provider_id: cerebras
@@ -45,8 +45,24 @@ providers:
       service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/cerebras/trace_store.db}
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: code-interpreter
+    provider_type: inline::code-interpreter
+    config: {}
+  - provider_id: memory-runtime
+    provider_type: inline::memory-runtime
+    config: {}
 metadata_store:
-  namespace: null
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/cerebras}/registry.db
 models:
@@ -64,14 +80,17 @@ models:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
   provider_id: sentence-transformers
-  provider_model_id: null
   model_type: embedding
 shields:
-- params: null
-  shield_id: meta-llama/Llama-Guard-3-8B
-  provider_id: null
-  provider_shield_id: null
+- shield_id: meta-llama/Llama-Guard-3-8B
 memory_banks: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
+tool_groups:
+- toolgroup_id: builtin::websearch
+  provider_id: tavily-search
+- toolgroup_id: builtin::memory
+  provider_id: memory-runtime
+- toolgroup_id: builtin::code_interpreter
+  provider_id: code-interpreter

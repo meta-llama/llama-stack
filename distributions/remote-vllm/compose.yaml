@@ -85,7 +85,7 @@ services:
       - SQLITE_STORE_DIR=${SQLITE_STORE_DIR:-$HOME/.llama/distributions/remote-vllm}
       - SAFETY_MODEL=${SAFETY_MODEL:-meta-llama/Llama-Guard-3-1B}
     ports:
-      - "${LLAMASTACK_PORT:-5001}:${LLAMASTACK_PORT:-5001}"
+      - "${LLAMA_STACK_PORT:-5001}:${LLAMA_STACK_PORT:-5001}"
     # Hack: wait for vLLM server to start before starting docker
     entrypoint: bash -c "sleep 60; python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-remote-vllm.yaml --port 5001"
     deploy:

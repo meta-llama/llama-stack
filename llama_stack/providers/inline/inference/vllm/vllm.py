@@ -10,10 +10,8 @@ import uuid
 from typing import AsyncGenerator, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
-
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams as VLLMSamplingParams
@@ -36,7 +34,6 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model
-
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
@@ -49,7 +46,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import VLLMConfig
-
 
 log = logging.getLogger(__name__)
 
@@ -146,7 +142,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,

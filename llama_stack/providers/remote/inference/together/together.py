@@ -7,11 +7,8 @@
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.datatypes import CoreModelId
-
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from together import Together
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -52,7 +49,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import TogetherImplConfig
-
 
 MODEL_ALIASES = [
     build_model_alias(
@@ -139,7 +135,7 @@ class TogetherInferenceAdapter(
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.together_api_key:
                 raise ValueError(
-                    'Pass Together API Key in the header X-LlamaStack-ProviderData as { "together_api_key": <your api key>}'
+                    'Pass Together API Key in the header X-LlamaStack-Provider-Data as { "together_api_key": <your api key>}'
                 )
             together_api_key = provider_data.together_api_key
         return Together(api_key=together_api_key)
@@ -188,7 +184,7 @@ class TogetherInferenceAdapter(
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,

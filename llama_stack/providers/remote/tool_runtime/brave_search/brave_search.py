@@ -4,11 +4,19 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import requests
+from llama_models.llama3.api.datatypes import BuiltinTool
 
-from llama_stack.apis.tools import Tool, ToolGroupDef, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.tools import (
+    Tool,
+    ToolDef,
+    ToolInvocationResult,
+    ToolParameter,
+    ToolRuntime,
+)
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ToolsProtocolPrivate
 
@@ -25,8 +33,7 @@ class BraveSearchToolRuntimeImpl(
         pass
 
     async def register_tool(self, tool: Tool):
-        if tool.identifier != "brave_search":
-            raise ValueError(f"Tool identifier {tool.identifier} is not supported")
+        pass
 
     async def unregister_tool(self, tool_id: str) -> None:
         return
@@ -38,12 +45,27 @@ class BraveSearchToolRuntimeImpl(
         provider_data = self.get_request_provider_data()
         if provider_data is None or not provider_data.api_key:
             raise ValueError(
-                'Pass Search provider\'s API Key in the header X-LlamaStack-ProviderData as { "api_key": <your api key>}'
+                'Pass Search provider\'s API Key in the header X-LlamaStack-Provider-Data as { "api_key": <your api key>}'
             )
         return provider_data.api_key
 
-    async def discover_tools(self, tool_group: ToolGroupDef) -> List[Tool]:
-        raise NotImplementedError("Brave search tool group not supported")
+    async def list_runtime_tools(
+        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+    ) -> List[ToolDef]:
+        return [
+            ToolDef(
+                name="web_search",
+                description="Search the web for information",
+                parameters=[
+                    ToolParameter(
+                        name="query",
+                        description="The query to search for",
+                        parameter_type="string",
+                    )
+                ],
+                built_in_type=BuiltinTool.brave_search,
+            )
+        ]
 
     async def invoke_tool(
         self, tool_name: str, args: Dict[str, Any]

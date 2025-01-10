@@ -16,7 +16,7 @@ from llama_stack.apis.memory_banks import MemoryBankInput
 from llama_stack.apis.models import ModelInput
 from llama_stack.apis.scoring_functions import ScoringFnInput
 from llama_stack.apis.shields import ShieldInput
-
+from llama_stack.apis.tools import ToolGroupInput
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Provider, StackRunConfig
@@ -43,6 +43,7 @@ async def construct_stack_for_test(
     datasets: Optional[List[DatasetInput]] = None,
     scoring_fns: Optional[List[ScoringFnInput]] = None,
     eval_tasks: Optional[List[EvalTaskInput]] = None,
+    tool_groups: Optional[List[ToolGroupInput]] = None,
 ) -> TestStack:
     sqlite_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     run_config = dict(
@@ -56,6 +57,7 @@ async def construct_stack_for_test(
         datasets=datasets or [],
         scoring_fns=scoring_fns or [],
         eval_tasks=eval_tasks or [],
+        tool_groups=tool_groups or [],
     )
     run_config = parse_and_maybe_upgrade_config(run_config)
     try:
@@ -77,7 +79,7 @@ async def construct_stack_for_test(
 
     if provider_data:
         set_request_provider_data(
-            {"X-LlamaStack-ProviderData": json.dumps(provider_data)}
+            {"X-LlamaStack-Provider-Data": json.dumps(provider_data)}
         )
 
     return test_stack

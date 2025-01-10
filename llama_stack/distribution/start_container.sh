@@ -90,6 +90,6 @@ $DOCKER_BINARY run $DOCKER_OPTS -it \
   $env_vars \
   -v "$yaml_config:/app/config.yaml" \
   $mounts \
-  --env LLAMASTACK_PORT=$port \
+  --env LLAMA_STACK_PORT=$port \
   --entrypoint='["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app/config.yaml"]' \
   $docker_image:$version_tag
