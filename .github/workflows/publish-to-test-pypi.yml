@@ -64,7 +64,11 @@ jobs:
     - name: Update version for nightly
       run: |
         sed -i 's/version="\([^"]*\)"/version="\1${{ steps.version.outputs.version }}"/' setup.py
-        sed -i 's/llama-stack-client>="\([^"]*\)"/llama-stack-client=="\1${{ steps.version.outputs.version }}"/' requirements.txt
+        echo "Before requirements.txt modification:"
+        cat requirements.txt
+        sed -i 's/llama-stack-client\([>=]\+\)"\([^"]*\)"/llama-stack-client=="\2${{ steps.version.outputs.version }}"/' requirements.txt
+        echo "After requirements.txt modification:"
+        cat requirements.txt
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
