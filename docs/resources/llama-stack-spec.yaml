@@ -2600,9 +2600,6 @@ components:
           type: string
         tool_host:
           $ref: '#/components/schemas/ToolHost'
-        tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
-          default: json
         toolgroup_id:
           type: string
         type:
@@ -2704,9 +2701,6 @@ components:
           items:
             $ref: '#/components/schemas/ToolParameter'
           type: array
-        tool_prompt_format:
-          $ref: '#/components/schemas/ToolPromptFormat'
-          default: json
       required:
       - name
       type: object

@@ -33,6 +33,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
+
 from .groq_utils import (
     convert_chat_completion_request,
     convert_chat_completion_response,
@@ -94,9 +95,7 @@ class GroqInferenceAdapter(Inference, ModelRegistryHelper, NeedsRequestProviderD
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[
-            ToolPromptFormat
-        ] = None,  # API default is ToolPromptFormat.json, we default to None to detect user input
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[
