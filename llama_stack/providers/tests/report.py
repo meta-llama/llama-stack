@@ -106,7 +106,7 @@ class Report:
             report.append("\n - **Functionality:**")
             for functionality in FUNCTIONALITIES:
                 test_nodeids = self.inference_tests[provider][functionality]
-                report.append(f"\n   - {functionality}. Test coverage:")
+                report.append(f"\n   - {functionality}:")
                 report.extend(self._generate_test_result_short(test_nodeids))
 
         output_file = Path("pytest_report.md")
