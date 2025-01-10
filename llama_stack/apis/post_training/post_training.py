@@ -30,7 +30,7 @@ class OptimizerType(Enum):
 @json_schema_type
 class DatasetFormat(Enum):
     instruct = "instruct"
-    chat = "dialog"
+    dialog = "dialog"
 
 
 @json_schema_type
