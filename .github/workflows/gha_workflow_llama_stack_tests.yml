@@ -258,17 +258,7 @@ jobs:
                 for file in "$dir"/test_*.py; do
                   test_name=$(basename "$file")
                   new_file="result-${dir_name}-${test_name}.xml"
-                  #TODO
-                  # Add if test_name = test_model_registration.py then echo "hello"
-                  if [ "$test_name" = "test_model_registration.py" ]; then
-                    echo "Found test_model_registration.py"
-                    if torchrun $(which pytest) -v -s -k "${PROVIDER_ID}" --inference-model="${MODEL_ID}" \
-                     --junitxml="${{ github.workspace }}/${new_file}"; then
-                       echo "Ran the test_model_registration.py"
-                    else
-                      echo "Did NOT run the test_model_registration.py"
-                    fi
-                  elif torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "${PROVIDER_ID} and ${MODEL_ID}" \
+                  if torchrun $(which pytest) -s -v ${TESTS_PATH}/${dir_name}/${test_name} -m "${PROVIDER_ID} and ${MODEL_ID}" \
                      --junitxml="${{ github.workspace }}/${new_file}"; then
                     echo "Ran test: ${test_name}"
                   else
