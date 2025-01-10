@@ -29,7 +29,7 @@ The `llamastack/distribution-fireworks` distribution consists of the following p
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `FIREWORKS_API_KEY`: Fireworks.AI API Key (default: ``)
 
 ### Models

@@ -29,7 +29,7 @@ The `llamastack/distribution-together` distribution consists of the following pr
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `TOGETHER_API_KEY`: Together.AI API Key (default: ``)
 
 ### Models
