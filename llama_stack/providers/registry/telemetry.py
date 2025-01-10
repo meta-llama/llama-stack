@@ -6,7 +6,13 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 
 def available_providers() -> List[ProviderSpec]:
@@ -14,9 +20,13 @@ def available_providers() -> List[ProviderSpec]:
         InlineProviderSpec(
             api=Api.telemetry,
             provider_type="inline::meta-reference",
-            pip_packages=[],
-            module="llama_stack.providers.inline.meta_reference.telemetry",
-            config_class="llama_stack.providers.inline.meta_reference.telemetry.ConsoleConfig",
+            pip_packages=[
+                "opentelemetry-sdk",
+                "opentelemetry-exporter-otlp-proto-http",
+            ],
+            api_dependencies=[Api.datasetio],
+            module="llama_stack.providers.inline.telemetry.meta_reference",
+            config_class="llama_stack.providers.inline.telemetry.meta_reference.config.TelemetryConfig",
         ),
         remote_provider_spec(
             api=Api.telemetry,
@@ -25,20 +35,6 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=[],
                 module="llama_stack.providers.remote.telemetry.sample",
                 config_class="llama_stack.providers.remote.telemetry.sample.SampleConfig",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.telemetry,
-            adapter=AdapterSpec(
-                adapter_type="opentelemetry-jaeger",
-                pip_packages=[
-                    "opentelemetry-api",
-                    "opentelemetry-sdk",
-                    "opentelemetry-exporter-jaeger",
-                    "opentelemetry-semantic-conventions",
-                ],
-                module="llama_stack.providers.remote.telemetry.opentelemetry",
-                config_class="llama_stack.providers.remote.telemetry.opentelemetry.OpenTelemetryConfig",
             ),
         ),
     ]

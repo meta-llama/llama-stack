@@ -13,55 +13,16 @@ Our goal is to provide pre-packaged implementations which can be operated in a v
 The Stack APIs are rapidly improving but still a work-in-progress. We invite feedback as well as direct contributions.
 ```
 
-## Philosophy
+## Quick Links
 
-### Service-oriented design
+- New to Llama Stack? Start with the [Introduction](introduction/index) to understand our motivation and vision.
+- Ready to build? Check out the [Quick Start](getting_started/index) to get started.
+- Need specific providers? Browse [Distributions](distributions/index) to see all the options available.
+- Want to contribute? See the [Contributing](contributing/index) guide.
 
-Unlike other frameworks, Llama Stack is built with a service-oriented, REST API-first approach. Such a design not only allows for seamless transitions from a local to remote deployments, but also forces the design to be more declarative. We believe this restriction can result in a much simpler, robust developer experience. This will necessarily trade-off against expressivity however if we get the APIs right, it can lead to a very powerful platform.
+## Available SDKs
 
-### Composability
-
-We expect the set of APIs we design to be composable. An Agent abstractly depends on { Inference, Memory, Safety } APIs but does not care about the actual implementation details. Safety itself may require model inference and hence can depend on the Inference API.
-
-### Turnkey one-stop solutions
-
-We expect to provide turnkey solutions for popular deployment scenarios. It should be easy to deploy a Llama Stack server on AWS or on a private data center. Either of these should allow a developer to get started with powerful agentic apps, model evaluations or fine-tuning services in a matter of minutes. They should all result in the same uniform observability and developer experience.
-
-### Focus on Llama models
-
-As a Meta initiated project, we have started by explicitly focusing on Meta's Llama series of models. Supporting the broad set of open models is no easy task and we want to start with models we understand best.
-
-### Supporting the Ecosystem
-
-There is a vibrant ecosystem of Providers which provide efficient inference or scalable vector stores or powerful observability solutions. We want to make sure it is easy for developers to pick and choose the best implementations for their use cases. We also want to make sure it is easy for new Providers to onboard and participate in the ecosystem.
-
-Additionally, we have designed every element of the Stack such that APIs as well as Resources (like Models) can be federated.
-
-
-## Supported Llama Stack Implementations
-
-Llama Stack already has a number of "adapters" available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
-
-|  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
-| :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|  Meta Reference  |  Single Node | Y  |  Y  |  Y  |  Y  |  Y  |
-|  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
-|  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
-|  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
-|  Ollama  | Single Node   |    |  Y  |    |   |
-|  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
-| Chroma | Single Node |  |  | Y |  |  |
-| Postgres | Single Node |  |  | Y |  |  |
-| PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
-
-## Dive In
-
-- Look at [Quick Start](getting_started/index) section to get started with Llama Stack.
-- Learn more about [Llama Stack Concepts](concepts/index) to understand how different components fit together.
-- Check out [Zero to Hero](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide) guide to learn in details about how to build your first agent.
-- See how you can use [Llama Stack Distributions](distributions/index) to get started with popular inference and other service providers.
-
-We also provide a number of Client side SDKs to make it easier to connect to Llama Stack server in your preferred language.
+We have a number of client-side SDKs available for different languages.
 
 |  **Language** |  **Client SDK** | **Package** |
 | :----: | :----: | :----: |
@@ -70,17 +31,36 @@ We also provide a number of Client side SDKs to make it easier to connect to Lla
 | Node   | [llama-stack-client-node](https://github.com/meta-llama/llama-stack-client-node) | [![NPM version](https://img.shields.io/npm/v/llama-stack-client.svg)](https://npmjs.org/package/llama-stack-client)
 | Kotlin | [llama-stack-client-kotlin](https://github.com/meta-llama/llama-stack-client-kotlin) | [![Maven version](https://img.shields.io/maven-central/v/com.llama.llamastack/llama-stack-client-kotlin)](https://central.sonatype.com/artifact/com.llama.llamastack/llama-stack-client-kotlin)
 
-You can find more example scripts with client SDKs to talk with the Llama Stack server in our [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) repo.
+## Supported Llama Stack Implementations
+
+A number of "adapters" are available for some popular Inference and Memory (Vector Store) providers. For other APIs (particularly Safety and Agents), we provide *reference implementations* you can use to get started. We expect this list to grow over time. We are slowly onboarding more providers to the ecosystem as we get more confidence in the APIs.
+
+|  **API Provider** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
+| :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+|  Meta Reference  |  Single Node | Y  |  Y  |  Y  |  Y  |  Y  |
+|  Cerebras  |  Single Node  |   | Y  |    |    |   |
+|  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
+|  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
+|  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
+|  Ollama  | Single Node   |    |  Y  |    |   |
+|  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
+|  [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama)  |  Hosted and Single Node  |    |  Y  |    |   |
+| Chroma | Single Node |  |  | Y |  |  |
+| Postgres | Single Node |  |  | Y |  |  |
+| PyTorch ExecuTorch | On-device iOS | Y  | Y  |  |  |
+| PyTorch ExecuTorch | On-device Android |  | Y  |  |  |
 
 ```{toctree}
 :hidden:
 :maxdepth: 3
 
+introduction/index
 getting_started/index
 concepts/index
 distributions/index
 building_applications/index
+benchmark_evaluations/index
+playground/index
 contributing/index
 references/index
-cookbooks/index
 ```

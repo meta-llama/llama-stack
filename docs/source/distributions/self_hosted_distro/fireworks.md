@@ -15,10 +15,14 @@ The `llamastack/distribution-fireworks` distribution consists of the following p
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::fireworks` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 ### Environment Variables
@@ -39,6 +43,7 @@ The following models are available by default:
 - `meta-llama/Llama-3.2-3B-Instruct (fireworks/llama-v3p2-3b-instruct)`
 - `meta-llama/Llama-3.2-11B-Vision-Instruct (fireworks/llama-v3p2-11b-vision-instruct)`
 - `meta-llama/Llama-3.2-90B-Vision-Instruct (fireworks/llama-v3p2-90b-vision-instruct)`
+- `meta-llama/Llama-3.3-70B-Instruct (fireworks/llama-v3p3-70b-instruct)`
 - `meta-llama/Llama-Guard-3-8B (fireworks/llama-guard-3-8b)`
 - `meta-llama/Llama-Guard-3-11B-Vision (fireworks/llama-guard-3-11b-vision)`
 

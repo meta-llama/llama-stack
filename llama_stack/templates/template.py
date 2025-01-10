@@ -11,6 +11,7 @@ import jinja2
 import yaml
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     Api,
     BuildConfig,
@@ -19,6 +20,7 @@ from llama_stack.distribution.datatypes import (
     Provider,
     ShieldInput,
     StackRunConfig,
+    ToolGroupInput,
 )
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -29,6 +31,7 @@ class RunConfigSettings(BaseModel):
     provider_overrides: Dict[str, List[Provider]] = Field(default_factory=dict)
     default_models: Optional[List[ModelInput]] = None
     default_shields: Optional[List[ShieldInput]] = None
+    default_tool_groups: Optional[List[ToolGroupInput]] = None
 
     def run_config(
         self,
@@ -44,35 +47,36 @@ class RunConfigSettings(BaseModel):
                 provider_configs[api_str] = api_providers
                 continue
 
-            provider_type = provider_types[0]
-            provider_id = provider_type.split("::")[-1]
+            provider_configs[api_str] = []
+            for provider_type in provider_types:
+                provider_id = provider_type.split("::")[-1]
 
-            api = Api(api_str)
-            if provider_type not in provider_registry[api]:
-                raise ValueError(
-                    f"Unknown provider type: {provider_type} for API: {api_str}"
+                api = Api(api_str)
+                if provider_type not in provider_registry[api]:
+                    raise ValueError(
+                        f"Unknown provider type: {provider_type} for API: {api_str}"
+                    )
+
+                config_class = provider_registry[api][provider_type].config_class
+                assert (
+                    config_class is not None
+                ), f"No config class for provider type: {provider_type} for API: {api_str}"
+
+                config_class = instantiate_class_type(config_class)
+                if hasattr(config_class, "sample_run_config"):
+                    config = config_class.sample_run_config(
+                        __distro_dir__=f"distributions/{name}"
+                    )
+                else:
+                    config = {}
+
+                provider_configs[api_str].append(
+                    Provider(
+                        provider_id=provider_id,
+                        provider_type=provider_type,
+                        config=config,
+                    )
                 )
-
-            config_class = provider_registry[api][provider_type].config_class
-            assert (
-                config_class is not None
-            ), f"No config class for provider type: {provider_type} for API: {api_str}"
-
-            config_class = instantiate_class_type(config_class)
-            if hasattr(config_class, "sample_run_config"):
-                config = config_class.sample_run_config(
-                    __distro_dir__=f"distributions/{name}"
-                )
-            else:
-                config = {}
-
-            provider_configs[api_str] = [
-                Provider(
-                    provider_id=provider_id,
-                    provider_type=provider_type,
-                    config=config,
-                )
-            ]
 
         # Get unique set of APIs from providers
         apis = list(sorted(providers.keys()))
@@ -89,6 +93,7 @@ class RunConfigSettings(BaseModel):
             ),
             models=self.default_models or [],
             shields=self.default_shields or [],
+            tool_groups=self.default_tool_groups or [],
         )
 
 
@@ -145,19 +150,34 @@ class DistributionTemplate(BaseModel):
         )
 
     def save_distribution(self, yaml_output_dir: Path, doc_output_dir: Path) -> None:
+        def enum_representer(dumper, data):
+            return dumper.represent_scalar("tag:yaml.org,2002:str", data.value)
+
+        # Register YAML representer for ModelType
+        yaml.add_representer(ModelType, enum_representer)
+        yaml.SafeDumper.add_representer(ModelType, enum_representer)
+
         for output_dir in [yaml_output_dir, doc_output_dir]:
             output_dir.mkdir(parents=True, exist_ok=True)
 
         build_config = self.build_config()
         with open(yaml_output_dir / "build.yaml", "w") as f:
-            yaml.safe_dump(build_config.model_dump(), f, sort_keys=False)
+            yaml.safe_dump(
+                build_config.model_dump(exclude_none=True),
+                f,
+                sort_keys=False,
+            )
 
         for yaml_pth, settings in self.run_configs.items():
             run_config = settings.run_config(
                 self.name, self.providers, self.docker_image
             )
             with open(yaml_output_dir / yaml_pth, "w") as f:
-                yaml.safe_dump(run_config.model_dump(), f, sort_keys=False)
+                yaml.safe_dump(
+                    run_config.model_dump(exclude_none=True),
+                    f,
+                    sort_keys=False,
+                )
 
         if self.template_path:
             docs = self.generate_markdown_docs()

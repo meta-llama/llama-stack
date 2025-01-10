@@ -16,6 +16,8 @@ import traceback
 import warnings
 
 from contextlib import asynccontextmanager
+
+from importlib.metadata import version as parse_version
 from pathlib import Path
 from typing import Any, Union
 
@@ -28,24 +30,28 @@ from pydantic import BaseModel, ValidationError
 from termcolor import cprint
 from typing_extensions import Annotated
 
+from llama_stack.distribution.datatypes import StackRunConfig
+
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.request_headers import set_request_provider_data
+from llama_stack.distribution.resolver import InvalidProviderError
+from llama_stack.distribution.stack import (
+    construct_stack,
+    redact_sensitive_fields,
+    replace_env_vars,
+    validate_env_pair,
+)
+
+from llama_stack.providers.datatypes import Api
+from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
+from llama_stack.providers.inline.telemetry.meta_reference.telemetry import (
+    TelemetryAdapter,
+)
 
 from llama_stack.providers.utils.telemetry.tracing import (
     end_trace,
     setup_logger,
     start_trace,
-)
-from llama_stack.distribution.datatypes import *  # noqa: F403
-from llama_stack.distribution.request_headers import set_request_provider_data
-from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import (
-    construct_stack,
-    replace_env_vars,
-    validate_env_pair,
-)
-from llama_stack.providers.inline.meta_reference.telemetry.console import (
-    ConsoleConfig,
-    ConsoleTelemetryImpl,
 )
 
 from .endpoints import get_all_api_endpoints
@@ -217,11 +223,57 @@ class TracingMiddleware:
 
     async def __call__(self, scope, receive, send):
         path = scope["path"]
-        await start_trace(path, {"location": "server"})
+        await start_trace(path, {"__location__": "server"})
         try:
             return await self.app(scope, receive, send)
         finally:
             await end_trace()
+
+
+class ClientVersionMiddleware:
+    def __init__(self, app):
+        self.app = app
+        self.server_version = parse_version("llama-stack")
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = dict(scope.get("headers", []))
+            client_version = headers.get(b"x-llamastack-client-version", b"").decode()
+            if client_version:
+                try:
+                    client_version_parts = tuple(
+                        map(int, client_version.split(".")[:2])
+                    )
+                    server_version_parts = tuple(
+                        map(int, self.server_version.split(".")[:2])
+                    )
+                    if client_version_parts != server_version_parts:
+
+                        async def send_version_error(send):
+                            await send(
+                                {
+                                    "type": "http.response.start",
+                                    "status": 426,
+                                    "headers": [[b"content-type", b"application/json"]],
+                                }
+                            )
+                            error_msg = json.dumps(
+                                {
+                                    "error": {
+                                        "message": f"Client version {client_version} is not compatible with server version {self.server_version}. Please upgrade your client."
+                                    }
+                                }
+                            ).encode()
+                            await send(
+                                {"type": "http.response.body", "body": error_msg}
+                            )
+
+                        return await send_version_error(send)
+                except (ValueError, IndexError):
+                    # If version parsing fails, let the request through
+                    pass
+
+        return await self.app(scope, receive, send)
 
 
 def main():
@@ -235,7 +287,12 @@ def main():
         "--template",
         help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
     )
-    parser.add_argument("--port", type=int, default=5000, help="Port to listen on")
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("LLAMASTACK_PORT", 5000)),
+        help="Port to listen on",
+    )
     parser.add_argument(
         "--disable-ipv6", action="store_true", help="Whether to disable IPv6 support"
     )
@@ -277,10 +334,12 @@ def main():
         config = StackRunConfig(**config)
 
     print("Run configuration:")
-    print(yaml.dump(config.model_dump(), indent=2))
+    safe_config = redact_sensitive_fields(config.model_dump())
+    print(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(TracingMiddleware)
+    app.add_middleware(ClientVersionMiddleware)
 
     try:
         impls = asyncio.run(construct_stack(config))
@@ -290,7 +349,7 @@ def main():
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
     else:
-        setup_logger(ConsoleTelemetryImpl(ConsoleConfig()))
+        setup_logger(TelemetryAdapter(TelemetryConfig()))
 
     all_endpoints = get_all_api_endpoints()
 

@@ -24,45 +24,47 @@ from fairscale.nn.model_parallel.initialize import (
     model_parallel_is_initialized,
 )
 from llama_models.llama3.api.args import ModelArgs
-from llama_models.llama3.api.chat_format import ChatFormat, ModelInput
+from llama_models.llama3.api.chat_format import ChatFormat, LLMInput
+from llama_models.llama3.api.datatypes import Model
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.llama3.reference_impl.model import Transformer
 from llama_models.llama3.reference_impl.multimodal.model import (
     CrossAttentionTransformer,
 )
 from llama_models.sku_list import resolve_model
-from pydantic import BaseModel
-
-from llama_stack.apis.inference import *  # noqa: F403
 
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
+from pydantic import BaseModel
+
+from llama_stack.apis.inference import (
+    Fp8QuantizationConfig,
+    Int4QuantizationConfig,
+    ResponseFormat,
+    ResponseFormatType,
+)
 
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.providers.utils.inference.prompt_adapter import (
-    augment_content_with_response_format_prompt,
-    chat_completion_request_to_messages,
+    ChatCompletionRequestWithRawContent,
+    CompletionRequestWithRawContent,
 )
 
-from .config import (
-    Fp8QuantizationConfig,
-    Int4QuantizationConfig,
-    MetaReferenceInferenceConfig,
-    MetaReferenceQuantizedInferenceConfig,
-)
+from .config import MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
 
 log = logging.getLogger(__name__)
 
 
-def model_checkpoint_dir(model) -> str:
-    checkpoint_dir = Path(model_local_dir(model.descriptor()))
+def model_checkpoint_dir(model_id) -> str:
+    checkpoint_dir = Path(model_local_dir(model_id))
 
     paths = [Path(checkpoint_dir / f"consolidated.{ext}") for ext in ["pth", "00.pth"]]
     if not any(p.exists() for p in paths):
         checkpoint_dir = checkpoint_dir / "original"
 
     assert checkpoint_dir.exists(), (
-        f"Could not find checkpoints in: {model_local_dir(model.descriptor())}. "
-        f"Please download model using `llama download --model-id {model.descriptor()}`"
+        f"Could not find checkpoints in: {model_local_dir(model_id)}. "
+        f"If you try to use the native llama model, Please download model using `llama download --model-id {model_id}`"
+        f"Otherwise, please save you model checkpoint under {model_local_dir(model_id)}"
     )
     return str(checkpoint_dir)
 
@@ -79,6 +81,8 @@ class Llama:
         config: Union[
             MetaReferenceInferenceConfig, MetaReferenceQuantizedInferenceConfig
         ],
+        model_id: str,
+        llama_model: Model,
     ):
         """
         Build a Llama instance by initializing and loading a model checkpoint.
@@ -87,13 +91,11 @@ class Llama:
             This method initializes the distributed process group, sets the device to CUDA,
             and loads the pre-trained model and tokenizer.
         """
-        model = resolve_model(config.model)
-        llama_model = model.core_model_id.value
-
+        llama_model_id = llama_model.core_model_id.value
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
 
-        model_parallel_size = config.model_parallel_size
+        model_parallel_size = llama_model.pth_file_count
 
         if not model_parallel_is_initialized():
             initialize_model_parallel(model_parallel_size)
@@ -112,7 +114,13 @@ class Llama:
         if config.checkpoint_dir and config.checkpoint_dir != "null":
             ckpt_dir = config.checkpoint_dir
         else:
-            ckpt_dir = model_checkpoint_dir(model)
+            resolved_model = resolve_model(model_id)
+            if resolved_model is None:
+                # if the model is not a native llama model, get the default checkpoint_dir based on model id
+                ckpt_dir = model_checkpoint_dir(model_id)
+            else:
+                # if the model is a native llama model, get the default checkpoint_dir based on model core_model_id value
+                ckpt_dir = model_checkpoint_dir(resolved_model.descriptor())
 
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(checkpoints) > 0, f"no checkpoint files found in {ckpt_dir}"
@@ -188,7 +196,7 @@ class Llama:
             model.load_state_dict(state_dict, strict=False)
 
         log.info(f"Loaded in {time.time() - start_time:.2f} seconds")
-        return Llama(model, tokenizer, model_args, llama_model)
+        return Llama(model, tokenizer, model_args, llama_model_id)
 
     def __init__(
         self,
@@ -206,7 +214,7 @@ class Llama:
     @torch.inference_mode()
     def generate(
         self,
-        model_input: ModelInput,
+        model_input: LLMInput,
         max_gen_len: int,
         temperature: float = 0.6,
         top_p: float = 0.9,
@@ -343,7 +351,7 @@ class Llama:
 
     def completion(
         self,
-        request: CompletionRequest,
+        request: CompletionRequestWithRawContent,
     ) -> Generator:
         sampling_params = request.sampling_params
         max_gen_len = sampling_params.max_tokens
@@ -354,10 +362,7 @@ class Llama:
         ):
             max_gen_len = self.model.params.max_seq_len - 1
 
-        content = augment_content_with_response_format_prompt(
-            request.response_format, request.content
-        )
-        model_input = self.formatter.encode_content(content)
+        model_input = self.formatter.encode_content(request.content)
         yield from self.generate(
             model_input=model_input,
             max_gen_len=max_gen_len,
@@ -374,10 +379,8 @@ class Llama:
 
     def chat_completion(
         self,
-        request: ChatCompletionRequest,
+        request: ChatCompletionRequestWithRawContent,
     ) -> Generator:
-        messages = chat_completion_request_to_messages(request, self.llama_model)
-
         sampling_params = request.sampling_params
         max_gen_len = sampling_params.max_tokens
         if (
@@ -389,7 +392,7 @@ class Llama:
 
         yield from self.generate(
             model_input=self.formatter.encode_dialog_prompt(
-                messages,
+                request.messages,
                 request.tool_prompt_format,
             ),
             max_gen_len=max_gen_len,

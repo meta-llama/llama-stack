@@ -5,25 +5,42 @@
 # the root directory of this source tree.
 
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 import httpx
 from llama_models.datatypes import CoreModelId
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 from ollama import AsyncClient
+
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    InterleavedContent,
+    TextContentItem,
+)
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model, ModelType
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
 
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     build_model_alias_with_just_provider_model_id,
     ModelRegistryHelper,
 )
-
-from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
-
 from llama_stack.providers.utils.inference.openai_compat import (
     get_sampling_options,
     OpenAICompatCompletionChoice,
@@ -36,7 +53,9 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
-    convert_image_media_to_url,
+    content_has_media,
+    convert_image_content_to_url,
+    interleaved_content_as_str,
     request_has_media,
 )
 
@@ -88,7 +107,7 @@ model_aliases = [
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias_with_just_provider_model_id(
-        "llama3.2-vision",
+        "llama3.2-vision:latest",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(
@@ -98,6 +117,10 @@ model_aliases = [
     build_model_alias_with_just_provider_model_id(
         "llama3.2-vision:90b",
         CoreModelId.llama3_2_90b_vision_instruct.value,
+    ),
+    build_model_alias(
+        "llama3.3:70b",
+        CoreModelId.llama3_3_70b_instruct.value,
     ),
     # The Llama Guard models don't have their full fp16 versions
     # so we are going to alias their default version to the canonical SKU
@@ -140,7 +163,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -180,7 +203,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def _nonstream_completion(self, request: CompletionRequest) -> AsyncGenerator:
         params = await self._get_params(request)
         r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         choice = OpenAICompatCompletionChoice(
             finish_reason=r["done_reason"] if r["done"] else None,
@@ -214,6 +236,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            response_format=response_format,
         )
         if stream:
             return self._stream_chat_completion(request)
@@ -234,7 +257,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         if isinstance(request, ChatCompletionRequest):
             if media_present:
                 contents = [
-                    await convert_message_to_dict_for_ollama(m)
+                    await convert_message_to_openai_dict_for_ollama(m)
                     for m in request.messages
                 ]
                 # flatten the list of lists
@@ -243,7 +266,7 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
                 ]
             else:
                 input_dict["raw"] = True
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
                     self.formatter,
@@ -252,8 +275,18 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             assert (
                 not media_present
             ), "Ollama does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(request, self.formatter)
+            input_dict["prompt"] = await completion_request_to_prompt(
+                request, self.formatter
+            )
             input_dict["raw"] = True
+
+        if fmt := request.response_format:
+            if fmt.type == "json_schema":
+                input_dict["format"] = fmt.json_schema
+            elif fmt.type == "grammar":
+                raise NotImplementedError("Grammar response format is not supported")
+            else:
+                raise ValueError(f"Unknown response format type: {fmt.type}")
 
         return {
             "model": request.model,
@@ -270,7 +303,6 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
             r = await self.client.chat(**params)
         else:
             r = await self.client.generate(**params)
-        assert isinstance(r, dict)
 
         if "message" in r:
             choice = OpenAICompatCompletionChoice(
@@ -321,11 +353,32 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "Ollama does not support media for embeddings"
+        response = await self.client.embed(
+            model=model.provider_resource_id,
+            input=[interleaved_content_as_str(content) for content in contents],
+        )
+        embeddings = response["embeddings"]
+
+        return EmbeddingsResponse(embeddings=embeddings)
 
     async def register_model(self, model: Model) -> Model:
+        # ollama does not have embedding models running. Check if the model is in list of available models.
+        if model.model_type == ModelType.embedding:
+            response = await self.client.list()
+            available_models = [m["model"] for m in response["models"]]
+            if model.provider_resource_id not in available_models:
+                raise ValueError(
+                    f"Model '{model.provider_resource_id}' is not available in Ollama. "
+                    f"Available models: {', '.join(available_models)}"
+                )
+            return model
         model = await self.register_helper.register_model(model)
         models = await self.client.ps()
         available_models = [m["model"] for m in models["models"]]
@@ -338,21 +391,23 @@ class OllamaInferenceAdapter(Inference, ModelsProtocolPrivate):
         return model
 
 
-async def convert_message_to_dict_for_ollama(message: Message) -> List[dict]:
+async def convert_message_to_openai_dict_for_ollama(message: Message) -> List[dict]:
     async def _convert_content(content) -> dict:
-        if isinstance(content, ImageMedia):
+        if isinstance(content, ImageContentItem):
             return {
                 "role": message.role,
                 "images": [
-                    await convert_image_media_to_url(
+                    await convert_image_content_to_url(
                         content, download=True, include_format=False
                     )
                 ],
             }
         else:
+            text = content.text if isinstance(content, TextContentItem) else content
+            assert isinstance(text, str)
             return {
                 "role": message.role,
-                "content": content,
+                "content": text,
             }
 
     if isinstance(message.content, list):

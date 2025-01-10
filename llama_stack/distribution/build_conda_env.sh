@@ -83,7 +83,9 @@ ensure_conda_env_python310() {
     # these packages are damaged in test-pypi, so install them first
     $CONDA_PREFIX/bin/pip install fastapi libcst
     $CONDA_PREFIX/bin/pip install --extra-index-url https://test.pypi.org/simple/ \
-      llama-models==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION \
+      llama-models==$TEST_PYPI_VERSION \
+      llama-stack-client==$TEST_PYPI_VERSION \
+      llama-stack==$TEST_PYPI_VERSION \
       $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"

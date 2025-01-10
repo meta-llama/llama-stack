@@ -4,15 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import os
-
-import pytest
-from llama_stack.apis.common.type_system import *  # noqa: F403
-from llama_stack.apis.datasetio import *  # noqa: F403
-from llama_stack.distribution.datatypes import *  # noqa: F403
 import base64
 import mimetypes
+import os
 from pathlib import Path
+
+import pytest
+
+from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.common.type_system import ChatCompletionInputType, StringType
+from llama_stack.apis.datasets import Datasets
 
 # How to run this test:
 #
@@ -37,9 +38,15 @@ def data_url_from_file(file_path: str) -> str:
 
 
 async def register_dataset(
-    datasets_impl: Datasets, for_generation=False, dataset_id="test_dataset"
+    datasets_impl: Datasets,
+    for_generation=False,
+    for_rag=False,
+    dataset_id="test_dataset",
 ):
-    test_file = Path(os.path.abspath(__file__)).parent / "test_dataset.csv"
+    if for_rag:
+        test_file = Path(os.path.abspath(__file__)).parent / "test_rag_dataset.csv"
+    else:
+        test_file = Path(os.path.abspath(__file__)).parent / "test_dataset.csv"
     test_url = data_url_from_file(str(test_file))
 
     if for_generation:
@@ -47,6 +54,13 @@ async def register_dataset(
             "expected_answer": StringType(),
             "input_query": StringType(),
             "chat_completion_input": ChatCompletionInputType(),
+        }
+    elif for_rag:
+        dataset_schema = {
+            "expected_answer": StringType(),
+            "input_query": StringType(),
+            "generated_answer": StringType(),
+            "context": StringType(),
         }
     else:
         dataset_schema = {
@@ -80,6 +94,18 @@ class TestDatasetIO:
         assert isinstance(response, list)
         assert len(response) == 1
         assert response[0].identifier == "test_dataset"
+
+        with pytest.raises(Exception) as exc_info:
+            # unregister a dataset that does not exist
+            await datasets_impl.unregister_dataset("test_dataset2")
+
+        await datasets_impl.unregister_dataset("test_dataset")
+        response = await datasets_impl.list_datasets()
+        assert isinstance(response, list)
+        assert len(response) == 0
+
+        with pytest.raises(Exception) as exc_info:
+            await datasets_impl.unregister_dataset("test_dataset")
 
     @pytest.mark.asyncio
     async def test_get_rows_paginated(self, datasetio_stack):

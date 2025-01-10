@@ -6,20 +6,19 @@
 
 from typing import Any, Dict, Optional
 
-from llama_models.datatypes import *  # noqa: F403
-from llama_models.sku_list import resolve_model
+from pydantic import BaseModel, field_validator
 
-from llama_stack.apis.inference import *  # noqa: F401, F403
-from pydantic import BaseModel, Field, field_validator
+from llama_stack.apis.inference import QuantizationConfig
 
 from llama_stack.providers.utils.inference import supported_inference_models
 
 
 class MetaReferenceInferenceConfig(BaseModel):
-    model: str = Field(
-        default="Llama3.2-3B-Instruct",
-        description="Model descriptor from `llama model list`",
-    )
+    # this is a placeholder to indicate inference model id
+    # the actual inference model id is dtermined by the moddel id in the request
+    # Note: you need to register the model before using it for inference
+    # models in the resouce list in the run.yaml config will be registered automatically
+    model: Optional[str] = None
     torch_seed: Optional[int] = None
     max_seq_len: int = 4096
     max_batch_size: int = 1
@@ -45,11 +44,6 @@ class MetaReferenceInferenceConfig(BaseModel):
                 f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]"
             )
         return model
-
-    @property
-    def model_parallel_size(self) -> int:
-        resolved = resolve_model(self.model)
-        return resolved.pth_file_count
 
     @classmethod
     def sample_run_config(

@@ -7,19 +7,50 @@
 import asyncio
 import logging
 
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator, List, Optional, Union
 
+from llama_models.llama3.api.datatypes import (
+    SamplingParams,
+    StopReason,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 from llama_models.sku_list import resolve_model
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    CompletionMessage,
+    CompletionRequest,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    Inference,
+    InterleavedContent,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    TokenLogProbs,
+    ToolCallDelta,
+    ToolCallParseStatus,
+    ToolChoice,
+)
 
-from llama_stack.providers.utils.inference.model_registry import build_model_alias
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
-from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.embedding_mixin import (
+    SentenceTransformerEmbeddingMixin,
+)
+from llama_stack.providers.utils.inference.model_registry import (
+    build_model_alias,
+    ModelRegistryHelper,
+)
 from llama_stack.providers.utils.inference.prompt_adapter import (
-    convert_image_media_to_url,
-    request_has_media,
+    augment_content_with_response_format_prompt,
+    chat_completion_request_to_messages,
+    convert_request_to_raw,
 )
 
 from .config import MetaReferenceInferenceConfig
@@ -32,54 +63,82 @@ log = logging.getLogger(__name__)
 SEMAPHORE = asyncio.Semaphore(1)
 
 
-class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolPrivate):
+class MetaReferenceInferenceImpl(
+    SentenceTransformerEmbeddingMixin,
+    Inference,
+    ModelsProtocolPrivate,
+):
     def __init__(self, config: MetaReferenceInferenceConfig) -> None:
         self.config = config
-        model = resolve_model(config.model)
-        ModelRegistryHelper.__init__(
-            self,
-            [
-                build_model_alias(
-                    model.descriptor(),
-                    model.core_model_id.value,
-                )
-            ],
-        )
-        if model is None:
-            raise RuntimeError(f"Unknown model: {config.model}, Run `llama model list`")
-        self.model = model
-        # verify that the checkpoint actually is for this model lol
+        self.model_id = None
+        self.llama_model = None
 
     async def initialize(self) -> None:
-        log.info(f"Loading model `{self.model.descriptor()}`")
+        pass
+
+    async def load_model(self, model_id, llama_model) -> None:
+        log.info(f"Loading model `{model_id}`")
         if self.config.create_distributed_process_group:
-            self.generator = LlamaModelParallelGenerator(self.config)
+            self.generator = LlamaModelParallelGenerator(
+                self.config, model_id, llama_model
+            )
             self.generator.start()
         else:
-            self.generator = Llama.build(self.config)
+            self.generator = Llama.build(self.config, model_id, llama_model)
+
+        self.model_id = model_id
+        self.llama_model = llama_model
 
     async def shutdown(self) -> None:
         if self.config.create_distributed_process_group:
             self.generator.stop()
 
     def check_model(self, request) -> None:
-        model = resolve_model(request.model)
-        if model is None:
+        if self.model_id is None or self.llama_model is None:
             raise RuntimeError(
-                f"Unknown model: {request.model}, Run `llama model list`"
+                "No avaible model yet, please register your requested model or add your model in the resouces first"
             )
-        elif model.descriptor() != self.model.descriptor():
+        elif request.model != self.model_id:
             raise RuntimeError(
-                f"Model mismatch: {request.model} != {self.model.descriptor()}"
+                f"Model mismatch: request model: {request.model} != loaded model: {self.model_id}"
             )
 
     async def unregister_model(self, model_id: str) -> None:
         pass
 
+    async def register_model(self, model: Model) -> Model:
+        llama_model = (
+            resolve_model(model.metadata["llama_model"])
+            if "llama_model" in model.metadata
+            else resolve_model(model.identifier)
+        )
+        if llama_model is None:
+            raise ValueError(
+                "Please make sure your llama_model in model metadata or model identifier is in llama-models SKU list"
+            )
+
+        self.model_registry_helper = ModelRegistryHelper(
+            [
+                build_model_alias(
+                    llama_model.descriptor(),
+                    llama_model.core_model_id.value,
+                )
+            ],
+        )
+        model = await self.model_registry_helper.register_model(model)
+
+        if model.model_type == ModelType.embedding:
+            self._load_sentence_transformer_model(model.provider_resource_id)
+
+        if "skip_load" in model.metadata and model.metadata["skip_load"]:
+            return model
+        await self.load_model(model.identifier, llama_model)
+        return model
+
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -88,6 +147,7 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
         if logprobs:
             assert logprobs.top_k == 1, f"Unexpected top_k={logprobs.top_k}"
 
+        content = augment_content_with_response_format_prompt(response_format, content)
         request = CompletionRequest(
             model=model_id,
             content=content,
@@ -97,7 +157,7 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
             logprobs=logprobs,
         )
         self.check_model(request)
-        request = await request_with_localized_media(request)
+        request = await convert_request_to_raw(request)
 
         if request.stream:
             return self._stream_completion(request)
@@ -222,7 +282,13 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
             logprobs=logprobs,
         )
         self.check_model(request)
-        request = await request_with_localized_media(request)
+
+        # augment and rewrite messages depending on the model
+        request.messages = chat_completion_request_to_messages(
+            request, self.llama_model.core_model_id.value
+        )
+        # download media and convert to raw content so we can send it to the model
+        request = await convert_request_to_raw(request)
 
         if self.config.create_distributed_process_group:
             if SEMAPHORE.locked():
@@ -263,11 +329,15 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
             if stop_reason is None:
                 stop_reason = StopReason.out_of_tokens
 
-            message = self.generator.formatter.decode_assistant_message(
+            raw_message = self.generator.formatter.decode_assistant_message(
                 tokens, stop_reason
             )
             return ChatCompletionResponse(
-                completion_message=message,
+                completion_message=CompletionMessage(
+                    content=raw_message.content,
+                    stop_reason=raw_message.stop_reason,
+                    tool_calls=raw_message.tool_calls,
+                ),
                 logprobs=logprobs if request.logprobs else None,
             )
 
@@ -393,38 +463,3 @@ class MetaReferenceInferenceImpl(Inference, ModelRegistryHelper, ModelsProtocolP
         else:
             for x in impl():
                 yield x
-
-    async def embeddings(
-        self,
-        model_id: str,
-        contents: List[InterleavedTextMedia],
-    ) -> EmbeddingsResponse:
-        raise NotImplementedError()
-
-
-async def request_with_localized_media(
-    request: Union[ChatCompletionRequest, CompletionRequest],
-) -> Union[ChatCompletionRequest, CompletionRequest]:
-    if not request_has_media(request):
-        return request
-
-    async def _convert_single_content(content):
-        if isinstance(content, ImageMedia):
-            url = await convert_image_media_to_url(content, download=True)
-            return ImageMedia(image=URL(uri=url))
-        else:
-            return content
-
-    async def _convert_content(content):
-        if isinstance(content, list):
-            return [await _convert_single_content(c) for c in content]
-        else:
-            return await _convert_single_content(content)
-
-    if isinstance(request, ChatCompletionRequest):
-        for m in request.messages:
-            m.content = await _convert_content(m.content)
-    else:
-        request.content = await _convert_content(request.content)
-
-    return request

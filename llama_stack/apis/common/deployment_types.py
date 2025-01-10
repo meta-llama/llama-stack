@@ -7,11 +7,11 @@
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from llama_models.llama3.api.datatypes import URL
-
 from llama_models.schema_utils import json_schema_type
 
 from pydantic import BaseModel
+
+from llama_stack.apis.common.content_types import URL
 
 
 @json_schema_type

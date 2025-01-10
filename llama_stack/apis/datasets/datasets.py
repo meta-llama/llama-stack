@@ -6,11 +6,11 @@
 
 from typing import Any, Dict, List, Literal, Optional, Protocol
 
-from llama_models.llama3.api.datatypes import URL
-
 from llama_models.schema_utils import json_schema_type, webmethod
 
 from pydantic import BaseModel, Field
+
+from llama_stack.apis.common.content_types import URL
 
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
@@ -64,3 +64,9 @@ class Datasets(Protocol):
 
     @webmethod(route="/datasets/list", method="GET")
     async def list_datasets(self) -> List[Dataset]: ...
+
+    @webmethod(route="/datasets/unregister", method="POST")
+    async def unregister_dataset(
+        self,
+        dataset_id: str,
+    ) -> None: ...

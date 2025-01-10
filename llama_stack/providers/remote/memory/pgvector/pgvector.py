@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import logging
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import psycopg2
 from numpy.typing import NDArray
@@ -14,11 +14,17 @@ from psycopg2.extras import execute_values, Json
 
 from pydantic import BaseModel, parse_obj_as
 
-from llama_stack.apis.memory import *  # noqa: F403
+from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.memory import (
+    Chunk,
+    Memory,
+    MemoryBankDocument,
+    QueryDocumentsResponse,
+)
+from llama_stack.apis.memory_banks import MemoryBank, MemoryBankType, VectorMemoryBank
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import (
-    ALL_MINILM_L6_V2_DIMENSION,
     BankWithIndex,
     EmbeddingIndex,
 )
@@ -120,8 +126,9 @@ class PGVectorIndex(EmbeddingIndex):
 
 
 class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
-    def __init__(self, config: PGVectorConfig) -> None:
+    def __init__(self, config: PGVectorConfig, inference_api: Api.inference) -> None:
         self.config = config
+        self.inference_api = inference_api
         self.cursor = None
         self.conn = None
         self.cache = {}
@@ -160,41 +167,20 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def shutdown(self) -> None:
         pass
 
-    async def register_memory_bank(
-        self,
-        memory_bank: MemoryBank,
-    ) -> None:
+    async def register_memory_bank(self, memory_bank: MemoryBank) -> None:
         assert (
             memory_bank.memory_bank_type == MemoryBankType.vector.value
         ), f"Only vector banks are supported {memory_bank.memory_bank_type}"
 
-        upsert_models(
-            self.cursor,
-            [
-                (memory_bank.identifier, memory_bank),
-            ],
+        upsert_models(self.cursor, [(memory_bank.identifier, memory_bank)])
+        index = PGVectorIndex(memory_bank, memory_bank.embedding_dimension, self.cursor)
+        self.cache[memory_bank.identifier] = BankWithIndex(
+            memory_bank, index, self.inference_api
         )
-
-        index = BankWithIndex(
-            bank=memory_bank,
-            index=PGVectorIndex(memory_bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
-        )
-        self.cache[memory_bank.identifier] = index
 
     async def unregister_memory_bank(self, memory_bank_id: str) -> None:
         await self.cache[memory_bank_id].index.delete()
         del self.cache[memory_bank_id]
-
-    async def list_memory_banks(self) -> List[MemoryBank]:
-        banks = load_models(self.cursor, VectorMemoryBank)
-        for bank in banks:
-            if bank.identifier not in self.cache:
-                index = BankWithIndex(
-                    bank=bank,
-                    index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
-                )
-                self.cache[bank.identifier] = index
-        return banks
 
     async def insert_documents(
         self,
@@ -208,20 +194,19 @@ class PGVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = await self._get_and_cache_bank_index(bank_id)
         return await index.query_documents(query, params)
+
+        self.inference_api = inference_api
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> BankWithIndex:
         if bank_id in self.cache:
             return self.cache[bank_id]
 
         bank = await self.memory_bank_store.get_memory_bank(bank_id)
-        index = BankWithIndex(
-            bank=bank,
-            index=PGVectorIndex(bank, ALL_MINILM_L6_V2_DIMENSION, self.cursor),
-        )
-        self.cache[bank_id] = index
-        return index
+        index = PGVectorIndex(bank, bank.embedding_dimension, self.cursor)
+        self.cache[bank_id] = BankWithIndex(bank, index, self.inference_api)
+        return self.cache[bank_id]

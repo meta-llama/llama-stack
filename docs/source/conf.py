@@ -28,6 +28,8 @@ extensions = [
     "sphinx_tabs.tabs",
     "sphinx_design",
     "sphinxcontrib.redoc",
+    "sphinxcontrib.mermaid",
+    "sphinxcontrib.video",
 ]
 myst_enable_extensions = ["colon_fence"]
 
@@ -47,6 +49,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 myst_enable_extensions = [
     "amsmath",
     "attrs_inline",
+    "attrs_block",
     "colon_fence",
     "deflist",
     "dollarmath",
@@ -64,6 +67,7 @@ myst_enable_extensions = [
 myst_substitutions = {
     "docker_hub": "https://hub.docker.com/repository/docker/llamastack",
 }
+
 
 # Copy button settings
 copybutton_prompt_text = "$ "  # for bash prompts

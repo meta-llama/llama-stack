@@ -7,10 +7,10 @@
 import logging
 import os
 import uuid
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import *  # noqa: F403
+
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
 
@@ -18,9 +18,26 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams as VLLMSamplingParams
 
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    ChatCompletionResponseStreamChunk,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model
 
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
@@ -114,21 +131,13 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> CompletionResponse | CompletionResponseStreamChunk:
-        log.info("vLLM completion")
-        messages = [UserMessage(content=content)]
-        return self.chat_completion(
-            model=model_id,
-            messages=messages,
-            sampling_params=sampling_params,
-            stream=stream,
-            logprobs=logprobs,
-        )
+        raise NotImplementedError("Completion not implemented for vLLM")
 
     async def chat_completion(
         self,
@@ -142,8 +151,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
-        log.info("vLLM chat completion")
-
         assert self.engine is not None
 
         request = ChatCompletionRequest(
@@ -160,7 +167,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = chat_completion_request_to_prompt(request, self.formatter)
+        prompt = await chat_completion_request_to_prompt(request, self.formatter)
         vllm_sampling_params = self._sampling_params(request.sampling_params)
         results_generator = self.engine.generate(
             prompt, vllm_sampling_params, request_id
@@ -218,8 +225,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def embeddings(
-        self, model_id: str, contents: list[InterleavedTextMedia]
+        self, model_id: str, contents: List[InterleavedContent]
     ) -> EmbeddingsResponse:
-        log.info("vLLM embeddings")
-        # TODO
         raise NotImplementedError()

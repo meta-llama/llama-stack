@@ -1,0 +1,21 @@
+version: '2'
+name: cerebras
+distribution_spec:
+  description: Use Cerebras for running LLM inference
+  providers:
+    inference:
+    - remote::cerebras
+    safety:
+    - inline::llama-guard
+    memory:
+    - inline::meta-reference
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+    tool_runtime:
+    - remote::brave-search
+    - remote::tavily-search
+    - inline::code-interpreter
+    - inline::memory-runtime
+image_type: conda

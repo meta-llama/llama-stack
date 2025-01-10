@@ -66,121 +66,247 @@ llama stack build --list-templates
 ```
 
 ```
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| Template Name                | Providers                                  | Description                                                                      |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| hf-serverless                | {                                          | Like local, but use Hugging Face Inference API (serverless) for running LLM      |
-|                              |   "inference": "remote::hf::serverless",   | inference.                                                                       |
-|                              |   "memory": "meta-reference",              | See https://hf.co/docs/api-inference.                                            |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| together                     | {                                          | Use Together.ai for running LLM inference                                        |
-|                              |   "inference": "remote::together",         |                                                                                  |
-|                              |   "memory": [                              |                                                                                  |
-|                              |     "meta-reference",                      |                                                                                  |
-|                              |     "remote::weaviate"                     |                                                                                  |
-|                              |   ],                                       |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| fireworks                    | {                                          | Use Fireworks.ai for running LLM inference                                       |
-|                              |   "inference": "remote::fireworks",        |                                                                                  |
-|                              |   "memory": [                              |                                                                                  |
-|                              |     "meta-reference",                      |                                                                                  |
-|                              |     "remote::weaviate",                    |                                                                                  |
-|                              |     "remote::chromadb",                    |                                                                                  |
-|                              |     "remote::pgvector"                     |                                                                                  |
-|                              |   ],                                       |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| databricks                   | {                                          | Use Databricks for running LLM inference                                         |
-|                              |   "inference": "remote::databricks",       |                                                                                  |
-|                              |   "memory": "meta-reference",              |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| vllm                         | {                                          | Like local, but use vLLM for running LLM inference                               |
-|                              |   "inference": "vllm",                     |                                                                                  |
-|                              |   "memory": "meta-reference",              |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| tgi                          | {                                          | Use TGI for running LLM inference                                                |
-|                              |   "inference": "remote::tgi",              |                                                                                  |
-|                              |   "memory": [                              |                                                                                  |
-|                              |     "meta-reference",                      |                                                                                  |
-|                              |     "remote::chromadb",                    |                                                                                  |
-|                              |     "remote::pgvector"                     |                                                                                  |
-|                              |   ],                                       |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| bedrock                      | {                                          | Use Amazon Bedrock APIs.                                                         |
-|                              |   "inference": "remote::bedrock",          |                                                                                  |
-|                              |   "memory": "meta-reference",              |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| meta-reference-gpu           | {                                          | Use code from `llama_stack` itself to serve all llama stack APIs                 |
-|                              |   "inference": "meta-reference",           |                                                                                  |
-|                              |   "memory": [                              |                                                                                  |
-|                              |     "meta-reference",                      |                                                                                  |
-|                              |     "remote::chromadb",                    |                                                                                  |
-|                              |     "remote::pgvector"                     |                                                                                  |
-|                              |   ],                                       |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| meta-reference-quantized-gpu | {                                          | Use code from `llama_stack` itself to serve all llama stack APIs                 |
-|                              |   "inference": "meta-reference-quantized", |                                                                                  |
-|                              |   "memory": [                              |                                                                                  |
-|                              |     "meta-reference",                      |                                                                                  |
-|                              |     "remote::chromadb",                    |                                                                                  |
-|                              |     "remote::pgvector"                     |                                                                                  |
-|                              |   ],                                       |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| ollama                       | {                                          | Use ollama for running LLM inference                                             |
-|                              |   "inference": "remote::ollama",           |                                                                                  |
-|                              |   "memory": [                              |                                                                                  |
-|                              |     "meta-reference",                      |                                                                                  |
-|                              |     "remote::chromadb",                    |                                                                                  |
-|                              |     "remote::pgvector"                     |                                                                                  |
-|                              |   ],                                       |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
-| hf-endpoint                  | {                                          | Like local, but use Hugging Face Inference Endpoints for running LLM inference.  |
-|                              |   "inference": "remote::hf::endpoint",     | See https://hf.co/docs/api-endpoints.                                            |
-|                              |   "memory": "meta-reference",              |                                                                                  |
-|                              |   "safety": "meta-reference",              |                                                                                  |
-|                              |   "agents": "meta-reference",              |                                                                                  |
-|                              |   "telemetry": "meta-reference"            |                                                                                  |
-|                              | }                                          |                                                                                  |
-+------------------------------+--------------------------------------------+----------------------------------------------------------------------------------+
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| Template Name                | Providers                              | Description                                                                 |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| tgi                          | {                                      | Use (an external) TGI server for running LLM inference                      |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::tgi"                      |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| remote-vllm                  | {                                      | Use (an external) vLLM server for running LLM inference                     |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::vllm"                     |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| vllm-gpu                     | {                                      | Use a built-in vLLM engine for running LLM inference                        |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "inline::vllm"                     |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| meta-reference-quantized-gpu | {                                      | Use Meta Reference with fp8, int4 quantization for running LLM inference    |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "inline::meta-reference-quantized" |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| meta-reference-gpu           | {                                      | Use Meta Reference for running LLM inference                                |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| hf-serverless                | {                                      | Use (an external) Hugging Face Inference Endpoint for running LLM inference |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::hf::serverless"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| together                     | {                                      | Use Together.AI for running LLM inference                                   |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::together"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| ollama                       | {                                      | Use (an external) Ollama server for running LLM inference                   |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::ollama"                   |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| bedrock                      | {                                      | Use AWS Bedrock for running LLM inference and safety                        |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::bedrock"                  |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "remote::bedrock"                  |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| hf-endpoint                  | {                                      | Use (an external) Hugging Face Inference Endpoint for running LLM inference |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::hf::endpoint"             |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| fireworks                    | {                                      | Use Fireworks.AI for running LLM inference                                  |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::fireworks"                |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| cerebras                     | {                                      | Use Cerebras for running LLM inference                                      |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::cerebras"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
 ```
 
 You may then pick a template to build your distribution with providers fitted to your liking.
@@ -212,8 +338,8 @@ distribution_spec:
     inference: remote::ollama
     memory: inline::faiss
     safety: inline::llama-guard
-    agents: meta-reference
-    telemetry: meta-reference
+    agents: inline::meta-reference
+    telemetry: inline::meta-reference
 image_type: conda
 ```
 

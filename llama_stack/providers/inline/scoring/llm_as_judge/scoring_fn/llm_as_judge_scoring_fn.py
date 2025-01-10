@@ -3,20 +3,23 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import re
+
+from typing import Any, Dict, Optional
+
 from llama_stack.apis.inference.inference import Inference
 
-from llama_stack.providers.utils.scoring.base_scoring_fn import BaseScoringFn
-from llama_stack.apis.scoring_functions import *  # noqa: F401, F403
-from llama_stack.apis.scoring import *  # noqa: F401, F403
-from llama_stack.apis.common.type_system import *  # noqa: F403
-import re
+from llama_stack.apis.scoring import ScoringResultRow
+from llama_stack.apis.scoring_functions import ScoringFnParams
+
+from llama_stack.providers.utils.scoring.base_scoring_fn import RegisteredBaseScoringFn
 
 from .fn_defs.llm_as_judge_405b_simpleqa import llm_as_judge_405b_simpleqa
 
 from .fn_defs.llm_as_judge_base import llm_as_judge_base
 
 
-class LlmAsJudgeScoringFn(BaseScoringFn):
+class LlmAsJudgeScoringFn(RegisteredBaseScoringFn):
     """
     A scoring_fn that assigns
     """
@@ -85,9 +88,3 @@ class LlmAsJudgeScoringFn(BaseScoringFn):
             "score": judge_rating,
             "judge_feedback": content,
         }
-
-    async def aggregate(
-        self, scoring_results: List[ScoringResultRow]
-    ) -> Dict[str, Any]:
-        # TODO: this needs to be config based aggregation, and only useful w/ Jobs API
-        return {}

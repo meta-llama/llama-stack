@@ -10,6 +10,7 @@ from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
 
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 class CommonShieldFields(BaseModel):
@@ -38,6 +39,7 @@ class ShieldInput(CommonShieldFields):
 
 
 @runtime_checkable
+@trace_protocol
 class Shields(Protocol):
     @webmethod(route="/shields/list", method="GET")
     async def list_shields(self) -> List[Shield]: ...

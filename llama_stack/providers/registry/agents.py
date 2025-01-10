@@ -6,7 +6,13 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 from llama_stack.providers.utils.kvstore import kvstore_dependencies
 
 
@@ -29,6 +35,8 @@ def available_providers() -> List[ProviderSpec]:
                 Api.safety,
                 Api.memory,
                 Api.memory_banks,
+                Api.tool_runtime,
+                Api.tool_groups,
             ],
         ),
         remote_provider_spec(

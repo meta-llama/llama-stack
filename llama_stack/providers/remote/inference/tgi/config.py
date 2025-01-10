@@ -7,7 +7,7 @@
 from typing import Optional
 
 from llama_models.schema_utils import json_schema_type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 
 @json_schema_type
@@ -15,7 +15,7 @@ class TGIImplConfig(BaseModel):
     url: str = Field(
         description="The URL for the TGI serving endpoint",
     )
-    api_token: Optional[str] = Field(
+    api_token: Optional[SecretStr] = Field(
         default=None,
         description="A bearer token if your TGI endpoint is protected.",
     )
@@ -32,7 +32,7 @@ class InferenceEndpointImplConfig(BaseModel):
     endpoint_name: str = Field(
         description="The name of the Hugging Face Inference Endpoint in the format of '{namespace}/{endpoint_name}' (e.g. 'my-cool-org/meta-llama-3-1-8b-instruct-rce'). Namespace is optional and will default to the user account if not provided.",
     )
-    api_token: Optional[str] = Field(
+    api_token: Optional[SecretStr] = Field(
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
@@ -55,7 +55,7 @@ class InferenceAPIImplConfig(BaseModel):
     huggingface_repo: str = Field(
         description="The model ID of the model on the Hugging Face Hub (e.g. 'meta-llama/Meta-Llama-3.1-70B-Instruct')",
     )
-    api_token: Optional[str] = Field(
+    api_token: Optional[SecretStr] = Field(
         default=None,
         description="Your Hugging Face user access token (will default to locally saved token if not provided)",
     )
