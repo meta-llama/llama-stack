@@ -87,26 +87,26 @@ class Report:
     @pytest.hookimpl
     def pytest_sessionfinish(self, session):
         report = []
-        report.append("# Pytest Results Report")
-        report.append("\n## Detailed Test Results")
+        report.append("# Llama Stack Integration Test Results Report")
+        report.append("\n## Summary")
         report.append("\n### Inference Providers:")
 
         for provider, models in SUPPORTED_MODELS.items():
             report.append(f"\n#### {provider}")
             report.append("\n - **Supported models:**")
-            report.extend([f"  - {model}" for model in models])
+            report.extend([f"   - {model}" for model in models])
             if provider not in self.inference_tests:
                 continue
             report.append("\n - **APIs:**")
             for api in INFERNECE_APIS:
                 test_nodeids = self.inference_tests[provider][api]
-                report.append(f"\n  - /{api}. Test coverage:")
+                report.append(f"\n   - /{api}:")
                 report.extend(self._generate_test_result_short(test_nodeids))
 
             report.append("\n - **Functionality:**")
             for functionality in FUNCTIONALITIES:
                 test_nodeids = self.inference_tests[provider][functionality]
-                report.append(f"\n  - {functionality}. Test coverage:")
+                report.append(f"\n   - {functionality}. Test coverage:")
                 report.extend(self._generate_test_result_short(test_nodeids))
 
         output_file = Path("pytest_report.md")
@@ -164,5 +164,5 @@ class Report:
         for nodeid in test_nodeids:
             name = self.get_function_name(self.test_data[nodeid]["name"])
             result = self.test_data[nodeid]["outcome"]
-            report.append(f"    - {name}. Result: {result}")
+            report.append(f"     - {name}. Result: {result}")
         return report
