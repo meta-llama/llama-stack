@@ -50,7 +50,7 @@ jobs:
 
   build:
     name: Build distribution 📦
-    needs: trigger-client-build  # Wait for client build to complete
+    needs: trigger-client-and-models-build  # Wait for client build to complete
     runs-on: ubuntu-latest
 
     steps:
