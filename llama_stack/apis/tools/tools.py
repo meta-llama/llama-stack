@@ -7,7 +7,6 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
 
-from llama_models.llama3.api.datatypes import ToolPromptFormat
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel, Field
 from typing_extensions import Protocol, runtime_checkable
@@ -41,9 +40,6 @@ class Tool(Resource):
     description: str
     parameters: List[ToolParameter]
     metadata: Optional[Dict[str, Any]] = None
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
 
 
 @json_schema_type
@@ -52,9 +48,6 @@ class ToolDef(BaseModel):
     description: Optional[str] = None
     parameters: Optional[List[ToolParameter]] = None
     metadata: Optional[Dict[str, Any]] = None
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(
-        default=ToolPromptFormat.json
-    )
 
 
 @json_schema_type
