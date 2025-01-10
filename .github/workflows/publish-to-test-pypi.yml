@@ -32,7 +32,8 @@ jobs:
         elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
         else
-          echo "version=${version}.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
+          # echo "version=${version}.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
+          echo "version=0.0.64.dev20250110" >> $GITHUB_OUTPUT
         fi
     - name: Trigger llama-stack-client workflow
       run: |
