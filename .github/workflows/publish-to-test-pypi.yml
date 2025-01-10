@@ -64,6 +64,7 @@ jobs:
     - name: Update version for nightly
       run: |
         sed -i 's/version="\([^"]*\)"/version="\1${{ steps.version.outputs.version }}"/' setup.py
+        set -i 's/llama-stack-client>="\([^"]*\)"/llama-stack-client=="\1${{ steps.version.outputs.version }}" --index-url https://test.pypi.org/simple/'
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
