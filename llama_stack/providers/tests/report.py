@@ -6,6 +6,7 @@
 
 
 from collections import defaultdict
+from pathlib import Path
 
 import pytest
 from llama_models.datatypes import CoreModelId
@@ -66,83 +67,66 @@ class Report:
     def __init__(self, _config):
         self.report_data = defaultdict(dict)
         self.test_data = dict()
+        self.inference_tests = defaultdict(dict)
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_logreport(self, report):
         # This hook is called in several phases, including setup, call and teardown
         # The test is considered failed / error if any of the outcomes is not "Passed"
         outcome = _process_outcome(report)
+        data = {
+            "outcome": report.outcome,
+            "longrepr": report.longrepr,
+            "name": report.nodeid,
+        }
         if report.nodeid not in self.test_data:
-            self.test_data[report.nodeid] = outcome
+            self.test_data[report.nodeid] = data
         elif self.test_data[report.nodeid] != outcome and outcome != "Passed":
-            self.test_data[report.nodeid] = outcome
+            self.test_data[report.nodeid] = data
 
-    def pytest_html_results_summary(self, prefix, summary, postfix):
-        prefix.append("<h3> Inference Providers: </h3>")
-        for provider in self.report_data.keys():
-            prefix.extend(
-                [
-                    f"<h4> { provider } </h4>",
-                    "<ul>",
-                    "<li><b> Supported models: </b></li>",
-                ]
-            )
-            supported_models = (
-                ["<ul>"]
-                + [f"<li> {model} </li>" for model in SUPPORTED_MODELS[provider]]
-                + ["</ul>"]
-            )
+    @pytest.hookimpl
+    def pytest_sessionfinish(self, session):
+        report = []
+        report.append("# Pytest Results Report")
+        report.append("\n## Detailed Test Results")
+        report.append("\n### Inference Providers:")
 
-            prefix.extend(supported_models)
-
-            api_section = ["<li><h4> APIs: </h4></li>", "<ul>"]
-
+        for provider, models in SUPPORTED_MODELS.items():
+            report.append(f"\n#### {provider}")
+            report.append("\n - **Supported models:**")
+            report.extend([f"  - {model}" for model in models])
+            if provider not in self.inference_tests:
+                continue
+            report.append("\n - **APIs:**")
             for api in INFERNECE_APIS:
-                tests = self.report_data[provider].get(api, set())
-                api_section.append(f"<li> {api} </li>")
-                api_section.append("<ul>")
-                for test in tests:
-                    result = self.test_data[test]
-                    api_section.append(
-                        f"<li> test: {test} {self._print_result_icon(result) }  </li>"
-                    )
-                api_section.append("</ul>")
-            api_section.append("</ul>")
+                test_nodeids = self.inference_tests[provider][api]
+                report.append(f"\n  - /{api}. Test coverage:")
+                report.extend(self._generate_test_result_short(test_nodeids))
 
-            prefix.extend(api_section)
-
-            prefix.append("<li><h4> Model capabilities: </h4> </li>")
-            prefix.append("<ul>")
+            report.append("\n - **Functionality:**")
             for functionality in FUNCTIONALITIES:
-                tests = self.report_data[provider].get(functionality, set())
-                prefix.append(f"<li> <b>{functionality}</b>  </li>")
-                prefix.append("<ul>")
-                for test in tests:
-                    result = self.test_data[test]
-                    prefix.append(
-                        f"<li> tests: {test} { self._print_result_icon(result) } </li>"
-                    )
-                prefix.append("</ul>")
-            prefix.append("</ul>")
-            prefix.append("</ul>")
+                test_nodeids = self.inference_tests[provider][functionality]
+                report.append(f"\n  - {functionality}. Test coverage:")
+                report.extend(self._generate_test_result_short(test_nodeids))
 
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_runtest_makereport(self, item, call):
-        if call.when != "setup":
-            return
-        # generate the mapping from provider, api/functionality to test nodeid
-        provider = item.callspec.params.get("inference_stack")
-        if provider is not None:
-            api, functionality = self._process_function_name(item.name.split("[")[0])
+        output_file = Path("pytest_report.md")
+        output_file.write_text("\n".join(report))
+        print(f"\n Report generated: {output_file.absolute()}")
 
-            api_test_funcs = self.report_data[provider].get(api, set())
-            functionality_test_funcs = self.report_data[provider].get(
-                functionality, set()
-            )
-            api_test_funcs.add(item.nodeid)
-            functionality_test_funcs.add(item.nodeid)
-            self.report_data[provider][api] = api_test_funcs
-            self.report_data[provider][functionality] = functionality_test_funcs
+    @pytest.hookimpl(trylast=True)
+    def pytest_collection_modifyitems(self, session, config, items):
+        for item in items:
+            inference = item.callspec.params.get("inference_stack")
+            if "inference" in item.nodeid:
+                api, functionality = self._process_function_name(item.nodeid)
+                api_tests = self.inference_tests[inference].get(api, set())
+                functionality_tests = self.inference_tests[inference].get(
+                    functionality, set()
+                )
+                api_tests.add(item.nodeid)
+                functionality_tests.add(item.nodeid)
+                self.inference_tests[inference][api] = api_tests
+                self.inference_tests[inference][functionality] = functionality_tests
 
     def _process_function_name(self, function_name):
         api, functionality = None, None
@@ -160,3 +144,25 @@ class Report:
         else:
             #  result == "Failed" or result == "Error":
             return "&#x274C;"
+
+    def get_function_name(self, nodeid):
+        """Extract function name from nodeid.
+
+        Examples:
+        - 'tests/test_math.py::test_addition' -> 'test_addition'
+        - 'tests/test_math.py::TestClass::test_method' -> 'TestClass.test_method'
+        """
+        parts = nodeid.split("::")
+        if len(parts) == 2:  # Simple function
+            return parts[1]
+        elif len(parts) == 3:  # Class method
+            return f"{parts[1]}.{parts[2]}"
+        return nodeid  # Fallback to full nodeid if pattern doesn't match
+
+    def _generate_test_result_short(self, test_nodeids):
+        report = []
+        for nodeid in test_nodeids:
+            name = self.get_function_name(self.test_data[nodeid]["name"])
+            result = self.test_data[nodeid]["outcome"]
+            report.append(f"    - {name}. Result: {result}")
+        return report

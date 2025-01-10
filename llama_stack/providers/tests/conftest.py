@@ -142,7 +142,8 @@ def pytest_configure(config):
         key, value = env_var.split("=", 1)
         os.environ[key] = value
 
-    config.pluginmanager.register(Report(config))
+    if config.getoption("--config") is not None:
+        config.pluginmanager.register(Report(config))
 
 
 def pytest_addoption(parser):
