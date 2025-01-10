@@ -2,6 +2,7 @@ name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
   push
+
   # workflow_dispatch:  # Keep manual trigger
   #   inputs:
   #     rc_version:
