@@ -135,7 +135,7 @@ class LoraFinetuningSingleDevice:
         self._data_format = training_config.data_config.data_format
         self._shuffle = training_config.data_config.shuffle
         self._batch_size = training_config.data_config.batch_size
-        self._training_on_input = training_config.data_config.training_on_input
+        self._train_on_input = training_config.data_config.train_on_input
 
         # this is important for debugging purpose
         self.max_steps_per_epoch = training_config.max_steps_per_epoch
@@ -367,7 +367,7 @@ class LoraFinetuningSingleDevice:
         data_transform = await utils.get_data_transform(self._data_format)
         ds = SFTDataset(
             rows,
-            message_transform=data_transform(train_on_input=self._training_on_input),
+            message_transform=data_transform(train_on_input=self._train_on_input),
             model_transform=tokenizer,
             dataset_type=self._data_format.value,
         )

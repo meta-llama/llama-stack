@@ -30,6 +30,7 @@ def llama_stack_instruct_to_torchtune_instruct(
     input_message = input_messages[0]
 
     assert "content" in input_message, "content not found in input message"
+    input = input_message["content"]
     output = sample[ColumnName.expected_answer.value]
 
     return {

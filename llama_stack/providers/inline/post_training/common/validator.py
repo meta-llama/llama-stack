@@ -23,7 +23,7 @@ EXPECTED_DATASET_SCHEMA = {
             ColumnName.expected_answer.value: StringType(),
         }
     ],
-    "chat": [
+    "dialog": [
         {
             ColumnName.dialog.value: StringType(),
         }

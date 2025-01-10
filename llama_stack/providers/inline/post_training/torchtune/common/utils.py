@@ -49,7 +49,7 @@ MODEL_CONFIGS: Dict[str, ModelConfig] = {
 
 DATA_FORMATS: Dict[str, Transform] = {
     "instruct": InputOutputToMessages,
-    "chat": ShareGPTToMessages,
+    "dialog": ShareGPTToMessages,
 }
 
 
