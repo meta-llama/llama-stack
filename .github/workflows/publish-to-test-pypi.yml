@@ -12,8 +12,8 @@ on:
   #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
-  trigger-client-build:
-    name: Trigger llama-stack-client build
+  trigger-client-and-models-build:
+    name: Trigger llama-stack-client and llama-models build
     runs-on: ubuntu-latest
     steps:
     - name: Get date
@@ -36,6 +36,13 @@ jobs:
         token: ${{ secrets.PAT_TOKEN }}
         repository: meta-llama/llama-stack-client-python
         event-type: build-client-package
+        client-payload: '{"source": "llama-stack-nightly", "version": "${{ steps.version.outputs.version }}"}'
+    - name: Trigger llama-models workflow
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+        repository: meta-llama/llama-models
+        event-type: build-models-package
         client-payload: '{"source": "llama-stack-nightly", "version": "${{ steps.version.outputs.version }}"}'
     outputs:
       version: ${{ steps.version.outputs.version }}
