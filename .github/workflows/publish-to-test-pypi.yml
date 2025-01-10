@@ -37,6 +37,8 @@ jobs:
         repository: meta-llama/llama-stack-client-python
         event-type: build-client-package
         client-payload: '{"source": "llama-stack-nightly", "version": "${{ steps.version.outputs.version }}"}'
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
   build:
     name: Build distribution 📦
