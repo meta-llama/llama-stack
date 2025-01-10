@@ -50,23 +50,12 @@ jobs:
     - name: Get date
       id: date
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-    - name: Compute version based on dispatch event
-      id: version
-      run: |
-        # Read base version from pyproject.toml
-        if [ "${{ github.event_name }}" = "schedule" ]; then
-          echo "version=.dev${{ steps.date.outputs.date }}" >> $GITHUB_OUTPUT
-        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "version=rc${{ inputs.rc_version }}" >> $GITHUB_OUTPUT
-        else
-          echo "version=.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
-        fi
     - name: Update version for nightly
       run: |
-        sed -i 's/version="\([^"]*\)"/version="\1${{ steps.version.outputs.version }}"/' setup.py
+        sed -i 's/version="\([^"]*\)"/version="\1${{ needs.trigger-client-build.outputs.version }}"/' setup.py
         echo "Before requirements.txt modification:"
         cat requirements.txt
-        sed -i 's/llama-stack-client\([>=]\+\)\([^"]*\)/llama-stack-client==\2${{ steps.version.outputs.version }}/' requirements.txt
+        sed -i 's#llama-stack-client\([>=]\+\)\([^"]*\)#llama-stack-client==\2${{ needs.trigger-client-build.outputs.version }} --index-url https://test.pypi.org/simple/#' requirements.txt
         echo "After requirements.txt modification:"
         cat requirements.txt
     - name: Set up Python
