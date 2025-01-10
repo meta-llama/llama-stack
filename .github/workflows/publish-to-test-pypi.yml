@@ -1,15 +1,14 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  push
-  # workflow_dispatch:  # Keep manual trigger
-  #   inputs:
-  #     rc_version:
-  #       description: 'RC version number (e.g., 1, 2, 3)'
-  #       required: true
-  #       type: string
-  # schedule:
-  #   - cron: "0 0 * * *"  # Run every day at midnight
+  workflow_dispatch:  # Keep manual trigger
+    inputs:
+      rc_version:
+        description: 'RC version number (e.g., 1, 2, 3)'
+        required: true
+        type: string
+  schedule:
+    - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-build:
@@ -55,11 +54,6 @@ jobs:
     - name: Update version for nightly
       run: |
         sed -i 's/version="\([^"]*\)"/version="\1${{ needs.trigger-client-build.outputs.version }}"/' setup.py
-        echo "Before requirements.txt modification:"
-        cat requirements.txt
-        sed -i 's#llama-stack-client\([>=]\+\)\([^"]*\)#llama-stack-client==\2${{ needs.trigger-client-build.outputs.version }} --index-url https://test.pypi.org/simple/#' requirements.txt
-        echo "After requirements.txt modification:"
-        cat requirements.txt
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
