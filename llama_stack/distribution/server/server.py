@@ -290,7 +290,7 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=int(os.getenv("LLAMASTACK_PORT", 5000)),
+        default=int(os.getenv("LLAMA_STACK_PORT", 5000)),
         help="Port to listen on",
     )
     parser.add_argument(

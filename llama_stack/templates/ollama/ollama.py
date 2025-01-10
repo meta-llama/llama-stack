@@ -120,7 +120,7 @@ def get_distribution_template() -> DistributionTemplate:
             ),
         },
         run_config_env_vars={
-            "LLAMASTACK_PORT": (
+            "LLAMA_STACK_PORT": (
                 "5001",
                 "Port for the Llama Stack distribution server",
             ),
