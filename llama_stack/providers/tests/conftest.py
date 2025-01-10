@@ -20,6 +20,8 @@ from llama_stack.providers.datatypes import RemoteProviderConfig
 
 from .env import get_env_or_fail
 
+from .report import Report
+
 
 class ProviderFixture(BaseModel):
     providers: List[Provider]
@@ -60,6 +62,9 @@ def pytest_configure(config):
     for env_var in env_vars:
         key, value = env_var.split("=", 1)
         os.environ[key] = value
+
+    if config.getoption("--config") is not None:
+        config.pluginmanager.register(Report(config))
 
 
 def pytest_addoption(parser):
