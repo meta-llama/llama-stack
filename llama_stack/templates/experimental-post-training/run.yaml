@@ -29,6 +29,9 @@ providers:
     provider_type: inline::basic
     config: {}
   datasetio:
+  - provider_id: huggingface-0
+    provider_type: remote::huggingface
+    config: {}
   - provider_id: localfs
     provider_type: inline::localfs
     config: {}
