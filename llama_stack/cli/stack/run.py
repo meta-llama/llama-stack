@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import argparse
+import os
 from pathlib import Path
 
 from llama_stack.cli.subcommand import Subcommand
@@ -34,7 +35,7 @@ class StackRun(Subcommand):
             "--port",
             type=int,
             help="Port to run the server on. Defaults to 5000",
-            default=5000,
+            default=int(os.getenv("LLAMASTACK_PORT", 5000)),
         )
         self.parser.add_argument(
             "--disable-ipv6",
