@@ -33,8 +33,8 @@ jobs:
     - name: Trigger llama-stack-client workflow
       uses: peter-evans/repository-dispatch@v2
       with:
-        token: ${{ secrets.PAT_TOKEN }}  # Personal Access Token with repo access
-        repository: meta-llama/llama-stack-client  # Replace with actual repository path
+        token: ${{ secrets.PAT_TOKEN }}
+        repository: meta-llama/llama-stack-client-python
         event-type: build-client-package
         client-payload: '{"source": "llama-stack-nightly", "version": "${{ steps.version.outputs.version }}"}'
 
