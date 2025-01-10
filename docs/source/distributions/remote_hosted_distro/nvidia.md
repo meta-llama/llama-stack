@@ -1,28 +1,32 @@
 # NVIDIA Distribution
 
-The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.
+The `llamastack/distribution-nvidia` distribution consists of the following provider configurations.
 
-{{ providers_table }}
+| API | Provider(s) |
+|-----|-------------|
+| agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
+| inference | `remote::nvidia` |
+| memory | `inline::faiss` |
+| safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
+| telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
-{% if run_config_env_vars %}
+
 ### Environment Variables
 
 The following environment variables can be configured:
 
-{% for var, (default_value, description) in run_config_env_vars.items() %}
-- `{{ var }}`: {{ description }} (default: `{{ default_value }}`)
-{% endfor %}
-{% endif %}
+- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `NVIDIA_API_KEY`: NVIDIA API Key (default: ``)
 
-{% if default_models %}
 ### Models
 
 The following models are available by default:
 
-{% for model in default_models %}
-- `{{ model.model_id }} ({{ model.provider_model_id }})`
-{% endfor %}
-{% endif %}
+- `${env.INFERENCE_MODEL} (None)`
 
 
 ### Prerequisite: API Keys
@@ -44,7 +48,7 @@ docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
-  llamastack/distribution-{{ name }} \
+  llamastack/distribution-nvidia \
   --yaml-config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
@@ -57,5 +61,5 @@ llama stack build --template nvidia --image-type conda
 llama stack run ./run.yaml \
   --port 5001 \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
-  --env INFERENCE_MODEL=$INFERENCE_MODEL
+  --env INFERENCE=$INFERENCE_MODEL
 ```

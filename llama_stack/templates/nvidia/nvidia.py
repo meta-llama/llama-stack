@@ -8,7 +8,6 @@ from pathlib import Path
 
 from llama_stack.distribution.datatypes import ModelInput, Provider
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
-from llama_stack.providers.remote.inference.nvidia.nvidia import _MODEL_ALIASES
 
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -16,10 +15,19 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::nvidia"],
-        "memory": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
+        "memory": ["inline::faiss"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::code-interpreter",
+            "inline::memory-runtime",
+        ],
     }
 
     inference_provider = Provider(

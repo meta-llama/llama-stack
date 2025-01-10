@@ -1,6 +1,6 @@
 services:
   nim:
-    image: nvcr.io/nim/meta/llama-3.1-8b-instruct:latest
+    image: ${DOCKER_IMAGE:-nvcr.io/nim/meta/llama-3.1-8b-instruct:latest}
     network_mode: "host"
     volumes:
     - nim-llm-cache:/opt/nim/.cache
