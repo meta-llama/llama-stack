@@ -1,14 +1,15 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      rc_version:
-        description: 'RC version number (e.g., 1, 2, 3)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
@@ -22,12 +23,13 @@ jobs:
       id: version
       run: |
         # Read base version from pyproject.toml
+        version=$(sed -n 's/.*version="\([^"]*\)".*/\1/p' setup.py)
         if [ "${{ github.event_name }}" = "schedule" ]; then
-          echo "version=.dev${{ steps.date.outputs.date }}" >> $GITHUB_OUTPUT
+          echo "version=${version}.dev${{ steps.date.outputs.date }}" >> $GITHUB_OUTPUT
         elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "version=rc${{ inputs.rc_version }}" >> $GITHUB_OUTPUT
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
         else
-          echo "version=.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
+          echo "version=${version}.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
         fi
     - name: Trigger llama-stack-client workflow
       run: |
