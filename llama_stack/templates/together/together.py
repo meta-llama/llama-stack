@@ -110,6 +110,51 @@ def get_distribution_template() -> DistributionTemplate:
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
             ),
+            "run-with-safety.yaml": RunConfigSettings(
+                provider_overrides={
+                    "inference": [
+                        inference_provider,
+                        embedding_provider,
+                    ],
+                    "memory": [memory_provider],
+                    "safety": [
+                        Provider(
+                            provider_id="llama-guard",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
+                            provider_id="llama-guard-vision",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
+                            provider_id="code-scanner",
+                            provider_type="inline::code-scanner",
+                            config={},
+                        ),
+                    ],
+                },
+                default_models=[
+                    *default_models,
+                    embedding_model,
+                ],
+                default_shields=[
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-8B",
+                        provider_id="llama-guard",
+                    ),
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-11B-Vision",
+                        provider_id="llama-guard-vision",
+                    ),
+                    ShieldInput(
+                        shield_id="CodeScanner",
+                        provider_id="code-scanner",
+                    ),
+                ],
+                default_tool_groups=default_tool_groups,
+            ),
         },
         run_config_env_vars={
             "LLAMASTACK_PORT": (
