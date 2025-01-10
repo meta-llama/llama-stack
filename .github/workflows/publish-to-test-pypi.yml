@@ -1,15 +1,14 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  push
-  # workflow_dispatch:  # Keep manual trigger
-  #   inputs:
-  #     rc_version:
-  #       description: 'RC version number (e.g., 1, 2, 3)'
-  #       required: true
-  #       type: string
-  # schedule:
-  #   - cron: "0 0 * * *"  # Run every day at midnight
+  workflow_dispatch:  # Keep manual trigger
+    inputs:
+      rc_version:
+        description: 'RC version number (e.g., 1, 2, 3)'
+        required: true
+        type: string
+  schedule:
+    - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-build:
