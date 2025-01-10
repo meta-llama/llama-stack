@@ -1,19 +1,24 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      version:
-        description: 'Version number (e.g. 0.0.63.dev20250111)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
     name: Trigger llama-stack-client and llama-models build
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      client_run_id: ${{ steps.trigger-client.outputs.workflow_id }}
+      model_run_id: ${{ steps.trigger-models.outputs.workflow_id }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -34,19 +39,99 @@ jobs:
           echo "version=${version}.dev$(shuf -i 10000000-99999999 -n 1)" >> $GITHUB_OUTPUT
         fi
     - name: Trigger llama-stack-client workflow
+      id: trigger-client
       run: |
-        curl -X POST https://api.github.com/repos/meta-llama/llama-stack-client-python/dispatches \
+        response=$(curl -X POST https://api.github.com/repos/meta-llama/llama-stack-client-python/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
-        --data "{\"event_type\": \"build-client-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}"
+        --data "{\"event_type\": \"build-client-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}" \
+        -w "\n%{http_code}")
+
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "204" ]; then
+          echo "Failed to trigger client workflow"
+          exit 1
+        fi
+
+        # Get the run ID of the triggered workflow
+        sleep 5  # Wait for workflow to be created
+        run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                 "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs?event=repository_dispatch" \
+                 | jq '.workflow_runs[0].id')
+        echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+
     - name: Trigger llama-models workflow
+      id: trigger-models
       run: |
-        curl -X POST https://api.github.com/repos/meta-llama/llama-models/dispatches \
+        response=$(curl -X POST https://api.github.com/repos/meta-llama/llama-models/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
-        --data "{\"event_type\": \"build-models-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}"
-    outputs:
-      version: ${{ steps.version.outputs.version }}
+        --data "{\"event_type\": \"build-models-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}" \
+        -w "\n%{http_code}")
+
+        http_code=$(echo "$response" | tail -n1)
+        if [ "$http_code" != "204" ]; then
+          echo "Failed to trigger models workflow"
+          exit 1
+        fi
+
+        # Get the run ID of the triggered workflow
+        sleep 5  # Wait for workflow to be created
+        run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                 "https://api.github.com/repos/meta-llama/llama-models/actions/runs?event=repository_dispatch" \
+                 | jq '.workflow_runs[0].id')
+        echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+
+  wait-for-workflows:
+    name: Wait for triggered workflows
+    needs: trigger-client-and-models-build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Wait for client workflow
+      run: |
+        while true; do
+          status=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                   "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs/${{ needs.trigger-client-and-models-build.outputs.client_run_id }}" \
+                   | jq -r '.status')
+          conclusion=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                      "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs/${{ needs.trigger-client-and-models-build.outputs.client_run_id }}" \
+                      | jq -r '.conclusion')
+
+          echo "Client workflow status: $status, conclusion: $conclusion"
+
+          if [ "$status" = "completed" ]; then
+            if [ "$conclusion" != "success" ]; then
+              echo "Client workflow failed"
+              exit 1
+            fi
+            break
+          fi
+
+          sleep 30
+        done
+
+    - name: Wait for models workflow
+      run: |
+        while true; do
+          status=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                   "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.models_run_id }}" \
+                   | jq -r '.status')
+          conclusion=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                      "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.models_run_id }}" \
+                      | jq -r '.conclusion')
+
+          echo "Models workflow status: $status, conclusion: $conclusion"
+
+          if [ "$status" = "completed" ]; then
+            if [ "$conclusion" != "success" ]; then
+              echo "Models workflow failed"
+              exit 1
+            fi
+            break
+          fi
+
+          sleep 30
+        done
 
   build:
     name: Build distribution 📦
