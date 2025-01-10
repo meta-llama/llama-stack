@@ -10,7 +10,6 @@ from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 from botocore.client import BaseClient
 from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.tokenizer import Tokenizer
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -30,7 +29,6 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.providers.remote.inference.bedrock.config import BedrockConfig
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
-
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
@@ -46,7 +44,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     content_has_media,
     interleaved_content_as_str,
 )
-
 
 MODEL_ALIASES = [
     build_model_alias(
@@ -101,7 +98,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[

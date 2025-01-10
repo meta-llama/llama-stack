@@ -523,7 +523,6 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                     description=tool_def.description or "",
                     parameters=tool_def.parameters or [],
                     provider_id=provider_id,
-                    tool_prompt_format=tool_def.tool_prompt_format,
                     provider_resource_id=tool_def.name,
                     metadata=tool_def.metadata,
                     tool_host=tool_host,

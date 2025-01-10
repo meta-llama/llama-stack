@@ -358,7 +358,10 @@ def augment_messages_for_tools_llama_3_1(
 
     has_custom_tools = any(isinstance(dfn.tool_name, str) for dfn in request.tools)
     if has_custom_tools:
-        if request.tool_prompt_format == ToolPromptFormat.json:
+        if (
+            request.tool_prompt_format == ToolPromptFormat.json
+            or request.tool_prompt_format is None
+        ):
             tool_gen = JsonCustomToolGenerator()
         elif request.tool_prompt_format == ToolPromptFormat.function_tag:
             tool_gen = FunctionTagCustomToolGenerator()
@@ -410,7 +413,10 @@ def augment_messages_for_tools_llama_3_2(
 
     custom_tools = [dfn for dfn in request.tools if isinstance(dfn.tool_name, str)]
     if custom_tools:
-        if request.tool_prompt_format != ToolPromptFormat.python_list:
+        if (
+            request.tool_prompt_format is not None
+            and request.tool_prompt_format != ToolPromptFormat.python_list
+        ):
             raise ValueError(
                 f"Non supported ToolPromptFormat {request.tool_prompt_format}"
             )
