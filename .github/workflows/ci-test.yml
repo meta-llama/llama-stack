@@ -48,8 +48,19 @@ jobs:
             fairscale lm-format-enforcer \
             zmq chardet pypdf \
             pandas sentence_transformers together \
-            aiosqlite groq ollama fireworks \
+            aiosqlite groq ollama fireworks-ai \
             pytest-html pytest-asyncio
+
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: spin up ollama server
+        run: |
+          which -a ollama
+          ollama run llama3.2-vision:11b-instruct-fp16
+          ollama run llama3.1:8b-instruct-fp16
+          sleep 10
 
       - name: Run integration test
         working-directory: "${{ github.workspace }}"
@@ -60,12 +71,12 @@ jobs:
           echo "Repository root: ${{ github.workspace }}"
           echo "Branch: ${{ github.ref }}"
           echo "List of tests"
-          pytest ${{ github.workspace }}/llama_stack/providers/tests/ --html=report.html --config=ci_test_config.yaml
+          pytest ${{ github.workspace }}/llama_stack/providers/tests/ --config=ci_test_config.yaml
 
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
-          name: report.html
-          path: report.html
+          name: pytest_report.md
+          path: pytest_report.md
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
