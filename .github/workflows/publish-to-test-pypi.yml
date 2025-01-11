@@ -96,11 +96,11 @@ jobs:
                       "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs/${{ needs.trigger-client-and-models-build.outputs.client_run_id }}" \
                       | jq -r '.conclusion')
 
-          echo "Client workflow status: $status, conclusion: $conclusion"
+          echo "llama-stack-client-python workflow status: $status, conclusion: $conclusion"
 
           if [ "$status" = "completed" ]; then
             if [ "$conclusion" != "success" ]; then
-              echo "Client workflow failed"
+              echo "llama-stack-client-python workflow failed"
               exit 1
             fi
             break
@@ -119,11 +119,11 @@ jobs:
                       "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.model_run_id }}" \
                       | jq -r '.conclusion')
 
-          echo "Client workflow status: $status, conclusion: $conclusion"
+          echo "llama-models workflow status: $status, conclusion: $conclusion"
 
           if [ "$status" = "completed" ]; then
             if [ "$conclusion" != "success" ]; then
-              echo "Client workflow failed"
+              echo "llama-models workflow failed"
               exit 1
             fi
             break
