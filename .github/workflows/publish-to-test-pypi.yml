@@ -107,35 +107,35 @@ jobs:
             break
           fi
 
-          sleep 30
+          sleep 10
         done
 
     - name: Wait for models workflow
       run: |
         while true; do
           status=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
-                   "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.models_run_id }}" \
+                   "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.model_run_id }}" \
                    | jq -r '.status')
           conclusion=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
-                      "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.models_run_id }}" \
+                      "https://api.github.com/repos/meta-llama/llama-models/actions/runs/${{ needs.trigger-client-and-models-build.outputs.model_run_id }}" \
                       | jq -r '.conclusion')
 
-          echo "Models workflow status: $status, conclusion: $conclusion"
+          echo "Client workflow status: $status, conclusion: $conclusion"
 
           if [ "$status" = "completed" ]; then
             if [ "$conclusion" != "success" ]; then
-              echo "Models workflow failed"
+              echo "Client workflow failed"
               exit 1
             fi
             break
           fi
 
-          sleep 30
+          sleep 10
         done
 
   build:
     name: Build distribution 📦
-    needs: trigger-client-and-models-build  # Wait for client build to complete
+    needs: wait-for-workflows
     runs-on: ubuntu-latest
 
     steps:
