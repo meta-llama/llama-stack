@@ -1,14 +1,15 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      version:
-        description: 'Version number (e.g. 0.0.63.dev20250111)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
@@ -67,6 +68,9 @@ jobs:
         -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
         --data "{\"event_type\": \"build-models-package\", \"client_payload\": {\"source\": \"llama-stack-nightly\", \"version\": \"${{ steps.version.outputs.version }}\"}}" \
         -w "\n%{http_code}")
+
+        # tmp print response
+        echo $response
 
         http_code=$(echo "$response" | tail -n1)
         if [ "$http_code" != "204" ]; then
