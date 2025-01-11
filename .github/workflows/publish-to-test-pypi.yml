@@ -1,14 +1,15 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      version:
-        description: 'Version number (e.g. 0.0.63.dev20250111)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
@@ -53,11 +54,28 @@ jobs:
         fi
 
         # Get the run ID of the triggered workflow
-        sleep 5  # Wait for workflow to be created
-        run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
-                 "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs?event=repository_dispatch" \
-                 | jq '.workflow_runs[0].id')
-        echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+        max_attempts=60  # Try for up to 1 minute
+        attempt=1
+        while true; do
+          sleep 1
+          run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                   "https://api.github.com/repos/meta-llama/llama-stack-client-python/actions/runs?event=repository_dispatch" \
+                   | jq '.workflow_runs[0].id')
+
+          if [ "$run_id" != "null" ] && [ -n "$run_id" ]; then
+            echo "Found workflow ID: $run_id"
+            echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+            break
+          fi
+
+          if [ $attempt -ge $max_attempts ]; then
+            echo "Failed to get workflow ID after $max_attempts attempts"
+            exit 1
+          fi
+
+          echo "Attempt $attempt: Workflow ID not found yet, retrying..."
+          attempt=$((attempt + 1))
+        done
 
     - name: Trigger llama-models workflow
       id: trigger-models
@@ -75,11 +93,28 @@ jobs:
         fi
 
         # Get the run ID of the triggered workflow
-        sleep 5  # Wait for workflow to be created
-        run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
-                 "https://api.github.com/repos/meta-llama/llama-models/actions/runs?event=repository_dispatch" \
-                 | jq '.workflow_runs[0].id')
-        echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+        max_attempts=60  # Try for up to 1 minute
+        attempt=1
+        while true; do
+          sleep 1
+          run_id=$(curl -s -H "authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                   "https://api.github.com/repos/meta-llama/llama-models/actions/runs?event=repository_dispatch" \
+                   | jq '.workflow_runs[0].id')
+
+          if [ "$run_id" != "null" ] && [ -n "$run_id" ]; then
+            echo "Found workflow ID: $run_id"
+            echo "workflow_id=$run_id" >> $GITHUB_OUTPUT
+            break
+          fi
+
+          if [ $attempt -ge $max_attempts ]; then
+            echo "Failed to get workflow ID after $max_attempts attempts"
+            exit 1
+          fi
+
+          echo "Attempt $attempt: Workflow ID not found yet, retrying..."
+          attempt=$((attempt + 1))
+        done
 
   wait-for-workflows:
     name: Wait for triggered workflows
