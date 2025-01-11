@@ -135,7 +135,9 @@ jobs:
 
   build:
     name: Build distribution 📦
-    needs: wait-for-workflows
+    needs:
+      - wait-for-workflows
+      - trigger-client-and-models-build
     runs-on: ubuntu-latest
 
     steps:
