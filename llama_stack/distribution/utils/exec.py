@@ -7,16 +7,24 @@
 import errno
 import logging
 import os
-import pty
 import select
 import signal
 import subprocess
 import sys
-import termios
 
 log = logging.getLogger(__name__)
 
+# Handle Windows-specific code or import alternative modules if needed
+# For example, you could use the msvcrt module for some functionalities
+# that are similar to termios.
+if sys.platform.startswith('win'):
+    import msvcrt
+else:
+    # Unix-specific code here
+    import pty
+    import termios
 
+# Rest of your code that uses termios or msvcrt on Windows
 # run a command in a pseudo-terminal, with interrupt handling,
 # useful when you want to run interactive things
 def run_with_pty(command):
