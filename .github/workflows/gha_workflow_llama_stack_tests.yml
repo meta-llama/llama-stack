@@ -11,6 +11,10 @@ on:
   #    - 'llama_stack/**/*.py'
   #    - 'tests/**/*.py'
 
+  # Schedule cron job at 2:30 am EST every day of the week.
+  # Will run a manual workflow off of 'main' branch.
+  schedule:
+    - cron: '30 7 * * *'
   workflow_dispatch:
     inputs:
       runner:
@@ -142,7 +146,7 @@ jobs:
         id: checkout_repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ inputs.checkout_reference }}
 
       - name: "[DEBUG] Content of the repository after checkout"
         id: debug_content_after_checkout
@@ -205,11 +209,6 @@ jobs:
           echo "[STEP] Installing 'apt' required packages"
           sudo apt update -y
           sudo apt install -y python3 python3-pip npm wget
-
-      - name: "Installing packages with 'curl'"
-        id: install_curl
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
 
       - name: "Installing packages with 'wget'"
         id: install_wget
@@ -310,7 +309,7 @@ jobs:
       - name: "PR - Upload Test Summary"
         id: pr_test_summary_upload
         if: github.event_name == 'pull_request_target'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-summary
           path: test-summary.md
