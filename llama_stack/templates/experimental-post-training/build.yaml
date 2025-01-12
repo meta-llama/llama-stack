@@ -13,6 +13,7 @@ distribution_spec:
     post_training:
     - inline::torchtune
     datasetio:
+    - inline::localfs
     - remote::huggingface
     telemetry:
     - inline::meta-reference

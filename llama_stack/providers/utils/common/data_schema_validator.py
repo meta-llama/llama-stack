@@ -23,6 +23,7 @@ class ColumnName(Enum):
     completion_input = "completion_input"
     generated_answer = "generated_answer"
     context = "context"
+    dialog = "dialog"
 
 
 VALID_SCHEMAS_FOR_SCORING = [

@@ -28,10 +28,17 @@ class OptimizerType(Enum):
 
 
 @json_schema_type
+class DatasetFormat(Enum):
+    instruct = "instruct"
+    dialog = "dialog"
+
+
+@json_schema_type
 class DataConfig(BaseModel):
     dataset_id: str
     batch_size: int
     shuffle: bool
+    data_format: DatasetFormat
     validation_dataset_id: Optional[str] = None
     packed: Optional[bool] = False
     train_on_input: Optional[bool] = False
