@@ -15,7 +15,7 @@ from llama_models.sku_list import all_registered_models
 from pytest_html.basereport import _process_outcome
 
 
-INFERNECE_APIS = ["chat_completion"]
+INFERENCE_APIS = ["chat_completion"]
 FUNCTIONALITIES = ["streaming", "structured_output", "tool_calling"]
 SUPPORTED_MODELS = {
     "ollama": set(
@@ -119,27 +119,35 @@ class Report:
 
         report.append("\n### Tests:")
 
-        for provider in SUPPORTED_MODELS.items():
+        for provider in SUPPORTED_MODELS.keys():
             if provider not in self.inference_tests:
                 continue
+            report.append(f"\n #### {provider}")
             test_table = [
-                "| Area | Model | API / Functionality | Test name | Test Result |",
+                "| Area | Model | API | Functionality Test | Status |",
                 "|:-----|:-----|:-----|:-----|:-----|",
             ]
-            for api in INFERNECE_APIS:
+            for api in INFERENCE_APIS:
                 tests = self.inference_tests[provider][api]
-
-        # report.append("\n - **APIs:**")
-        # for api in INFERNECE_APIS:
-        #     test_nodeids = self.inference_tests[provider][api]
-        #     report.append(f"\n   - /{api}:")
-        #     report.extend(self._generate_test_result_short(test_nodeids))
-
-        # report.append("\n - **Functionality:**")
-        # for functionality in FUNCTIONALITIES:
-        #     test_nodeids = self.inference_tests[provider][functionality]
-        #     report.append(f"\n   - {functionality}:")
-        #     report.extend(self._generate_test_result_short(test_nodeids))
+                for test_nodeid in tests:
+                    row = "|{area} | {model} | {api} | {test} | {result} ".format(
+                        area="Text" if "text" in test_nodeid else "Vision",
+                        model=(
+                            "Llama-3.1-8B-Instruct"
+                            if "text" in test_nodeid
+                            else "Llama3.2-11B-Vision-Instruct"
+                        ),
+                        api=f"/{api}",
+                        test=self.get_simple_function_name(test_nodeid),
+                        result=(
+                            "✅"
+                            if self.test_data[test_nodeid]["outcome"] == "passed"
+                            else "❌"
+                        ),
+                    )
+                    test_table += [row]
+            report.extend(test_table)
+            report.append("\n")
 
         output_file = Path("pytest_report.md")
         output_file.write_text("\n".join(report))
@@ -150,51 +158,24 @@ class Report:
         for item in items:
             inference = item.callspec.params.get("inference_stack")
             if "inference" in item.nodeid:
-                api, functionality = self._process_function_name(item.nodeid)
-                api_tests = self.inference_tests[inference].get(api, set())
-                # functionality_tests = self.inference_tests[inference].get(
-                #     functionality, set()
-                # )
-                api_tests.add(item.nodeid)
-                # functionality_tests.add(item.nodeid)
-                self.inference_tests[inference][api] = api_tests
-                # self.inference_tests[inference][functionality] = functionality_tests
+                func_name = getattr(item, "originalname", item.name)
+                for api in INFERENCE_APIS:
+                    if api in func_name:
+                        api_tests = self.inference_tests[inference].get(api, set())
+                        api_tests.add(item.nodeid)
+                        self.inference_tests[inference][api] = api_tests
 
-    def _process_function_name(self, function_name):
-        api, functionality = None, None
-        for val in INFERNECE_APIS:
-            if val in function_name:
-                api = val
-        for val in FUNCTIONALITIES:
-            if val in function_name:
-                functionality = val
-        return api, functionality
-
-    def _print_result_icon(self, result):
-        if result == "Passed":
-            return "&#x2705;"
-        else:
-            #  result == "Failed" or result == "Error":
-            return "&#x274C;"
-
-    def get_function_name(self, nodeid):
+    def get_simple_function_name(self, nodeid):
         """Extract function name from nodeid.
 
         Examples:
         - 'tests/test_math.py::test_addition' -> 'test_addition'
-        - 'tests/test_math.py::TestClass::test_method' -> 'TestClass.test_method'
+        - 'tests/test_math.py::TestClass::test_method' -> test_method'
         """
         parts = nodeid.split("::")
+        func_name = nodeid  # Fallback to full nodeid if pattern doesn't match
         if len(parts) == 2:  # Simple function
-            return parts[1]
+            func_name = parts[1]
         elif len(parts) == 3:  # Class method
-            return f"{parts[1]}.{parts[2]}"
-        return nodeid  # Fallback to full nodeid if pattern doesn't match
-
-    def _generate_test_result_short(self, test_nodeids):
-        report = []
-        for nodeid in test_nodeids:
-            name = self.get_function_name(self.test_data[nodeid]["name"])
-            result = self.test_data[nodeid]["outcome"]
-            report.append(f"     - {name}. Result: {result}")
-        return report
+            func_name = parts[2]
+        return func_name.split("[")[0]
