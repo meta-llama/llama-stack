@@ -51,7 +51,19 @@ add_to_docker() {
   fi
 }
 
-add_to_docker <<EOF
+# Update and install UBI9 components if UBI9 base image is used
+if [[ $docker_base == *"registry.access.redhat.com/ubi9"* ]]; then
+  add_to_docker <<EOF
+FROM $docker_base
+WORKDIR /app
+
+RUN microdnf -y update && microdnf install -y iputils net-tools wget \
+    vim-minimal python3.11 python3.11-pip python3.11-wheel \
+    python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && microdnf clean all
+
+EOF
+else
+  add_to_docker <<EOF
 FROM $docker_base
 WORKDIR /app
 
@@ -64,6 +76,7 @@ RUN apt-get update && apt-get install -y \
        && rm -rf /var/lib/apt/lists/*
 
 EOF
+fi
 
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
