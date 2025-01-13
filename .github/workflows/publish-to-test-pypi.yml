@@ -202,8 +202,21 @@ jobs:
     steps:
     - name: Install the package
       run: |
-        sleep 10
-        pip install --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ llama-stack==${{ needs.trigger-client-and-models-build.outputs.version }}
+        max_attempts=6
+        attempt=1
+        while [ $attempt -le $max_attempts ]; do
+          echo "Attempt $attempt of $max_attempts to install package..."
+          if pip install --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ llama-stack==${{ needs.trigger-client-and-models-build.outputs.version }}; then
+            echo "Package installed successfully"
+            break
+          fi
+          if [ $attempt -eq $max_attempts ]; then
+            echo "Failed to install package after $max_attempts attempts"
+            exit 1
+          fi
+          attempt=$((attempt + 1))
+          sleep 10
+        done
     - name: Test the package versions
       run: |
         pip list | grep llama_
