@@ -1,6 +1,6 @@
 version: '2'
-image_name: ollama
-conda_env: ollama
+image_name: together
+conda_env: together
 apis:
 - agents
 - datasetio
@@ -13,10 +13,11 @@ apis:
 - tool_runtime
 providers:
   inference:
-  - provider_id: ollama
-    provider_type: remote::ollama
+  - provider_id: together
+    provider_type: remote::together
     config:
-      url: ${env.OLLAMA_URL:http://localhost:11434}
+      url: https://api.together.xyz/v1
+      api_key: ${env.TOGETHER_API_KEY}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -27,9 +28,12 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/together}/faiss_store.db
   safety:
   - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config: {}
+  - provider_id: llama-guard-vision
     provider_type: inline::llama-guard
     config: {}
   - provider_id: code-scanner
@@ -42,14 +46,14 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/together}/agents_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/ollama/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/together/trace_store.db}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -91,15 +95,52 @@ providers:
     config: {}
 metadata_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/together}/registry.db
 models:
 - metadata: {}
-  model_id: ${env.INFERENCE_MODEL}
-  provider_id: ollama
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
   model_type: llm
 - metadata: {}
-  model_id: ${env.SAFETY_MODEL}
-  provider_id: ollama
+  model_id: meta-llama/Llama-3.1-70B-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct-FP8
+  provider_id: together
+  provider_model_id: meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-3B-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-3.2-3B-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: together
+  provider_model_id: meta-llama/Llama-3.3-70B-Instruct-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-Guard-3-8B
+  provider_id: together
+  provider_model_id: meta-llama/Meta-Llama-Guard-3-8B
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: together
+  provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
   model_type: llm
 - metadata:
     embedding_dimension: 384
@@ -107,8 +148,10 @@ models:
   provider_id: sentence-transformers
   model_type: embedding
 shields:
-- shield_id: ${env.SAFETY_MODEL}
+- shield_id: meta-llama/Llama-Guard-3-8B
   provider_id: llama-guard
+- shield_id: meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: llama-guard-vision
 - shield_id: CodeScanner
   provider_id: code-scanner
 memory_banks: []
