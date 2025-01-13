@@ -174,3 +174,7 @@ class BuildConfig(BaseModel):
         default="conda",
         description="Type of package to build (conda | docker | venv)",
     )
+    use_host_network: bool = Field(
+        default=False,
+        description="Use host network for the build",
+    )

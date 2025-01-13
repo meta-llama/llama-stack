@@ -120,6 +120,7 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
             docker_image,
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
+            "--use-host-network" if build_config.use_host_network else "",
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.conda.value:

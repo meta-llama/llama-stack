@@ -10,6 +10,7 @@ LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
+USE_HOST_NETWORK=${USE_HOST_NETWORK:-}
 
 if [ "$#" -lt 4 ]; then
   echo "Usage: $0 <build_name> <docker_base> <pip_dependencies> [<special_pip_deps>]" >&2
@@ -163,14 +164,23 @@ if [ -n "$BUILD_PLATFORM" ]; then
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
   PLATFORM="--platform linux/arm64"
 elif [ "$ARCH" = "x86_64" ]; then
+  # TODO: This is a hack, make the network host into a flag
   PLATFORM="--platform linux/amd64"
 else
   echo "Unsupported architecture: $ARCH"
   exit 1
 fi
 
+# Optionally add host network flag if requested.
+# Set USE_HOST_NETWORK=1 (or "true") in the environment to enable it.
+if [ "${USE_HOST_NETWORK:-}" = "1" ] || [ "${USE_HOST_NETWORK:-}" = "true" ]; then
+  HOST_NETWORK="--network host"
+else
+  HOST_NETWORK=""
+fi
+
 set -x
-$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM -t $image_tag -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
+$DOCKER_BINARY build $DOCKER_OPTS $PLATFORM $HOST_NETWORK -t $image_tag -f "$TEMP_DIR/Dockerfile" "$REPO_DIR" $mounts
 
 # clean up tmp/configs
 set +x
