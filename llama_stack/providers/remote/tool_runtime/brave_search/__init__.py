@@ -11,7 +11,7 @@ from .config import BraveSearchToolConfig
 
 
 class BraveSearchToolProviderDataValidator(BaseModel):
-    api_key: str
+    brave_search_api_key: str
 
 
 async def get_adapter_impl(config: BraveSearchToolConfig, _deps):

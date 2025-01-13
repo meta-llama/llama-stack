@@ -44,11 +44,11 @@ class BingSearchToolRuntimeImpl(
             return self.config.api_key
 
         provider_data = self.get_request_provider_data()
-        if provider_data is None or not provider_data.api_key:
+        if provider_data is None or not provider_data.bing_search_api_key:
             raise ValueError(
-                'Pass Bing Search API Key in the header X-LlamaStack-Provider-Data as { "api_key": <your api key>}'
+                'Pass Bing Search API Key in the header X-LlamaStack-Provider-Data as { "bing_search_api_key": <your api key>}'
             )
-        return provider_data.api_key
+        return provider_data.bing_search_api_key
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
