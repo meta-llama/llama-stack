@@ -11,7 +11,7 @@ from .tavily_search import TavilySearchToolRuntimeImpl
 
 
 class TavilySearchToolProviderDataValidator(BaseModel):
-    api_key: str
+    tavily_search_api_key: str
 
 
 async def get_adapter_impl(config: TavilySearchToolConfig, _deps):

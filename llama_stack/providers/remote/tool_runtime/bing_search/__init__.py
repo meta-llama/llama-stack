@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 
 class BingSearchToolProviderDataValidator(BaseModel):
-    api_key: str
+    bing_search_api_key: str
 
 
 async def get_adapter_impl(config: BingSearchToolConfig, _deps):

@@ -43,11 +43,11 @@ class TavilySearchToolRuntimeImpl(
             return self.config.api_key
 
         provider_data = self.get_request_provider_data()
-        if provider_data is None or not provider_data.api_key:
+        if provider_data is None or not provider_data.tavily_search_api_key:
             raise ValueError(
-                'Pass Search provider\'s API Key in the header X-LlamaStack-Provider-Data as { "api_key": <your api key>}'
+                'Pass Search provider\'s API Key in the header X-LlamaStack-Provider-Data as { "tavily_search_api_key": <your api key>}'
             )
-        return provider_data.api_key
+        return provider_data.tavily_search_api_key
 
     async def list_runtime_tools(
         self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
