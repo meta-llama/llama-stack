@@ -54,6 +54,11 @@ class AgentTurnInputType(BaseModel):
     type: Literal["agent_turn_input"] = "agent_turn_input"
 
 
+class DialogType(BaseModel):
+    # expects List[Message] for messages
+    type: Literal["dialog"] = "dialog"
+
+
 ParamType = register_schema(
     Annotated[
         Union[
