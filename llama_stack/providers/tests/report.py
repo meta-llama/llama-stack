@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 from llama_models.datatypes import CoreModelId
+from llama_models.sku_list import all_registered_models
 
 from pytest_html.basereport import _process_outcome
 
@@ -17,56 +18,61 @@ from pytest_html.basereport import _process_outcome
 INFERNECE_APIS = ["chat_completion"]
 FUNCTIONALITIES = ["streaming", "structured_output", "tool_calling"]
 SUPPORTED_MODELS = {
-    "ollama": [
-        CoreModelId.llama3_1_8b_instruct.value,
-        CoreModelId.llama3_1_8b_instruct.value,
-        CoreModelId.llama3_1_70b_instruct.value,
-        CoreModelId.llama3_1_70b_instruct.value,
-        CoreModelId.llama3_1_405b_instruct.value,
-        CoreModelId.llama3_1_405b_instruct.value,
-        CoreModelId.llama3_2_1b_instruct.value,
-        CoreModelId.llama3_2_1b_instruct.value,
-        CoreModelId.llama3_2_3b_instruct.value,
-        CoreModelId.llama3_2_3b_instruct.value,
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-        CoreModelId.llama3_3_70b_instruct.value,
-        CoreModelId.llama_guard_3_8b.value,
-        CoreModelId.llama_guard_3_1b.value,
-    ],
-    "fireworks": [
-        CoreModelId.llama3_1_8b_instruct.value,
-        CoreModelId.llama3_1_70b_instruct.value,
-        CoreModelId.llama3_1_405b_instruct.value,
-        CoreModelId.llama3_2_1b_instruct.value,
-        CoreModelId.llama3_2_3b_instruct.value,
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-        CoreModelId.llama3_3_70b_instruct.value,
-        CoreModelId.llama_guard_3_8b.value,
-        CoreModelId.llama_guard_3_11b_vision.value,
-    ],
-    "together": [
-        CoreModelId.llama3_1_8b_instruct.value,
-        CoreModelId.llama3_1_70b_instruct.value,
-        CoreModelId.llama3_1_405b_instruct.value,
-        CoreModelId.llama3_2_3b_instruct.value,
-        CoreModelId.llama3_2_11b_vision_instruct.value,
-        CoreModelId.llama3_2_90b_vision_instruct.value,
-        CoreModelId.llama3_3_70b_instruct.value,
-        CoreModelId.llama_guard_3_8b.value,
-        CoreModelId.llama_guard_3_11b_vision.value,
-    ],
+    "ollama": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_1b.value,
+        ]
+    ),
+    "fireworks": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_1b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_11b_vision.value,
+        ]
+    ),
+    "together": set(
+        [
+            CoreModelId.llama3_1_8b_instruct.value,
+            CoreModelId.llama3_1_70b_instruct.value,
+            CoreModelId.llama3_1_405b_instruct.value,
+            CoreModelId.llama3_2_3b_instruct.value,
+            CoreModelId.llama3_2_11b_vision_instruct.value,
+            CoreModelId.llama3_2_90b_vision_instruct.value,
+            CoreModelId.llama3_3_70b_instruct.value,
+            CoreModelId.llama_guard_3_8b.value,
+            CoreModelId.llama_guard_3_11b_vision.value,
+        ]
+    ),
 }
 
 
 class Report:
 
     def __init__(self, _config):
-        self.report_data = defaultdict(dict)
-        self.test_data = dict()
+        self.test_data = defaultdict(dict)
         self.inference_tests = defaultdict(dict)
 
     @pytest.hookimpl(tryfirst=True)
@@ -89,25 +95,51 @@ class Report:
         report = []
         report.append("# Llama Stack Integration Test Results Report")
         report.append("\n## Summary")
-        report.append("\n### Inference Providers:")
+        report.append("\n## Supported Models: ")
 
-        for provider, models in SUPPORTED_MODELS.items():
-            report.append(f"\n#### {provider}")
-            report.append("\n - **Supported models:**")
-            report.extend([f"   - {model}" for model in models])
+        header = "| Model Descriptor |"
+        dividor = "|:---|"
+        for k in SUPPORTED_MODELS.keys():
+            header += f"{k} |"
+            dividor += ":---:|"
+
+        report.append(header)
+        report.append(dividor)
+
+        rows = []
+        for model in all_registered_models():
+            row = f"| {model.core_model_id.value} |"
+            for k in SUPPORTED_MODELS.keys():
+                if model.core_model_id.value in SUPPORTED_MODELS[k]:
+                    row += " ✅ |"
+                else:
+                    row += " ❌ |"
+            rows.append(row)
+        report.extend(rows)
+
+        report.append("\n### Tests:")
+
+        for provider in SUPPORTED_MODELS.items():
             if provider not in self.inference_tests:
                 continue
-            report.append("\n - **APIs:**")
+            test_table = [
+                "| Area | Model | API / Functionality | Test name | Test Result |",
+                "|:-----|:-----|:-----|:-----|:-----|",
+            ]
             for api in INFERNECE_APIS:
-                test_nodeids = self.inference_tests[provider][api]
-                report.append(f"\n   - /{api}:")
-                report.extend(self._generate_test_result_short(test_nodeids))
+                tests = self.inference_tests[provider][api]
 
-            report.append("\n - **Functionality:**")
-            for functionality in FUNCTIONALITIES:
-                test_nodeids = self.inference_tests[provider][functionality]
-                report.append(f"\n   - {functionality}:")
-                report.extend(self._generate_test_result_short(test_nodeids))
+        # report.append("\n - **APIs:**")
+        # for api in INFERNECE_APIS:
+        #     test_nodeids = self.inference_tests[provider][api]
+        #     report.append(f"\n   - /{api}:")
+        #     report.extend(self._generate_test_result_short(test_nodeids))
+
+        # report.append("\n - **Functionality:**")
+        # for functionality in FUNCTIONALITIES:
+        #     test_nodeids = self.inference_tests[provider][functionality]
+        #     report.append(f"\n   - {functionality}:")
+        #     report.extend(self._generate_test_result_short(test_nodeids))
 
         output_file = Path("pytest_report.md")
         output_file.write_text("\n".join(report))
@@ -120,13 +152,13 @@ class Report:
             if "inference" in item.nodeid:
                 api, functionality = self._process_function_name(item.nodeid)
                 api_tests = self.inference_tests[inference].get(api, set())
-                functionality_tests = self.inference_tests[inference].get(
-                    functionality, set()
-                )
+                # functionality_tests = self.inference_tests[inference].get(
+                #     functionality, set()
+                # )
                 api_tests.add(item.nodeid)
-                functionality_tests.add(item.nodeid)
+                # functionality_tests.add(item.nodeid)
                 self.inference_tests[inference][api] = api_tests
-                self.inference_tests[inference][functionality] = functionality_tests
+                # self.inference_tests[inference][functionality] = functionality_tests
 
     def _process_function_name(self, function_name):
         api, functionality = None, None
