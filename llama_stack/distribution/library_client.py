@@ -147,6 +147,9 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         async_response = asyncio.run(self.async_client.request(*args, **kwargs))
 
         if kwargs.get("stream"):
+            # NOTE: We are using AsyncLlamaStackClient under the hood
+            # A new event loop is needed to convert the AsyncStream
+            # from async client into SyncStream return type for streaming
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
