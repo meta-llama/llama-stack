@@ -100,6 +100,7 @@ def run_with_pty(command):
 
 def run_command(command):
     try:
+        print("Running command:", command)
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         print("Script Output\n", result.stdout)
         return result.returncode
