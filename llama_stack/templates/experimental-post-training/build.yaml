@@ -10,6 +10,7 @@ distribution_spec:
     - inline::meta-reference
     scoring:
     - inline::basic
+    - inline::braintrust
     post_training:
     - inline::torchtune
     datasetio:
