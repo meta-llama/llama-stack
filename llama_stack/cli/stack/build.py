@@ -81,14 +81,6 @@ class StackBuild(Subcommand):
             default="conda",
         )
 
-        self.parser.add_argument(
-            "--dockerfile-only",
-            type=bool,
-            default=False,
-            action=argparse.BooleanOptionalAction,
-            help="Whether to generate a Dockerfile only (only valid when image-type is docker)",
-        )
-
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
         import textwrap
 
@@ -99,12 +91,6 @@ class StackBuild(Subcommand):
         from termcolor import cprint
 
         from llama_stack.distribution.distribution import get_provider_registry
-
-        if args.dockerfile_only and args.image_type != "docker":
-            self.parser.error(
-                "dockerfile-only flag is only valid when image-type is docker"
-            )
-            return
 
         if args.list_templates:
             self._run_template_list_cmd(args)
@@ -123,7 +109,6 @@ class StackBuild(Subcommand):
                     self._run_stack_build_command_from_build_config(
                         build_config,
                         template_name=args.template,
-                        dockerfile_only=args.dockerfile_only,
                     )
                     return
 
@@ -195,7 +180,7 @@ class StackBuild(Subcommand):
                 name=name, image_type=image_type, distribution_spec=distribution_spec
             )
             self._run_stack_build_command_from_build_config(
-                build_config, dockerfile_only=args.dockerfile_only
+                build_config,
             )
             return
 
@@ -206,7 +191,7 @@ class StackBuild(Subcommand):
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
             self._run_stack_build_command_from_build_config(
-                build_config, dockerfile_only=args.dockerfile_only
+                build_config,
             )
 
     def _generate_run_config(self, build_config: BuildConfig, build_dir: Path) -> None:
@@ -284,7 +269,6 @@ class StackBuild(Subcommand):
         self,
         build_config: BuildConfig,
         template_name: Optional[str] = None,
-        dockerfile_only: bool = False,
     ) -> None:
         import json
         import os
@@ -304,7 +288,7 @@ class StackBuild(Subcommand):
             to_write = json.loads(build_config.model_dump_json())
             f.write(yaml.dump(to_write, sort_keys=False))
 
-        return_code = build_image(build_config, build_file_path, dockerfile_only)
+        return_code = build_image(build_config, build_file_path)
         if return_code != 0:
             return
 

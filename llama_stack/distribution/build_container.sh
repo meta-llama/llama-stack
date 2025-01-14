@@ -18,7 +18,7 @@ if [ "$#" -lt 4 ]; then
   exit 1
 fi
 
-special_pip_deps="$7"
+special_pip_deps="$6"
 
 set -euo pipefail
 
@@ -28,7 +28,6 @@ docker_base=$2
 build_file_path=$3
 host_build_dir=$4
 pip_dependencies=$5
-dockerfile_only=$6
 
 # Define color codes
 RED='\033[0;31m'
@@ -109,6 +108,7 @@ if [ -n "$LLAMA_STACK_DIR" ]; then
 else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
+    echo "Installing fastapi libcst"
     add_to_docker "RUN pip install fastapi libcst"
     add_to_docker <<EOF
 RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
@@ -175,14 +175,6 @@ fi
 
 # Add version tag to image name
 image_tag="$image_name:$version_tag"
-
-if [ "$dockerfile_only" = "True" ]; then
-  echo "Skipping docker build as dockerfile_only=True"
-  dockerfile_name="Dockerfile.${image_tag}"
-  cp "$TEMP_DIR/Dockerfile" "./${dockerfile_name}"
-  printf "Dockerfile saved to ./${dockerfile_name}\n\n"
-  exit 0
-fi
 
 # Detect platform architecture
 ARCH=$(uname -m)
