@@ -12,6 +12,11 @@ from llama_stack.providers.tests.env import get_env_or_fail
 from llama_stack_client import LlamaStackClient
 
 
+def pytest_configure(config):
+    config.option.tbstyle = "short"
+    config.option.disable_warnings = True
+
+
 @pytest.fixture(scope="session")
 def provider_data():
     # check env for tavily secret, brave secret and inject all into provider data
@@ -29,6 +34,7 @@ def llama_stack_client(provider_data):
         client = LlamaStackAsLibraryClient(
             get_env_or_fail("LLAMA_STACK_CONFIG"),
             provider_data=provider_data,
+            skip_logger_removal=True,
         )
         client.initialize()
     elif os.environ.get("LLAMA_STACK_BASE_URL"):

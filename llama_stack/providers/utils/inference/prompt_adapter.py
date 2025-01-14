@@ -265,6 +265,7 @@ def chat_completion_request_to_messages(
     For eg. for llama_3_1, add system message with the appropriate tools or
     add user messsage for custom tools, etc.
     """
+    assert llama_model is not None, "llama_model is required"
     model = resolve_model(llama_model)
     if model is None:
         log.error(f"Could not resolve model {llama_model}")

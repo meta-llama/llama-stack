@@ -142,7 +142,7 @@ async def process_completion_stream_response(
             text = ""
             continue
         yield CompletionResponseStreamChunk(
-            delta=TextDelta(text=text),
+            delta=text,
             stop_reason=stop_reason,
         )
         if finish_reason:
@@ -153,7 +153,7 @@ async def process_completion_stream_response(
             break
 
     yield CompletionResponseStreamChunk(
-        delta=TextDelta(text=""),
+        delta="",
         stop_reason=stop_reason,
     )
 
