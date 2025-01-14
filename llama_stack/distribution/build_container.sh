@@ -28,6 +28,7 @@ docker_base=$2
 build_file_path=$3
 host_build_dir=$4
 pip_dependencies=$5
+dockerfile_only=$7
 
 # Define color codes
 RED='\033[0;31m'
@@ -146,6 +147,8 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--templat
 EOF
 
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile\n\n"
+cp "$TEMP_DIR/Dockerfile" "./Dockerfile"
+printf "Dockerfile saved to ./Dockerfile\n\n"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
 
