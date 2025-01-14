@@ -16,6 +16,11 @@ from llama_models.llama3.api.datatypes import (
 )
 from llama_models.sku_list import resolve_model
 
+from llama_stack.apis.common.content_types import (
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -32,8 +37,6 @@ from llama_stack.apis.inference import (
     Message,
     ResponseFormat,
     TokenLogProbs,
-    ToolCallDelta,
-    ToolCallParseStatus,
     ToolChoice,
 )
 from llama_stack.apis.models import Model, ModelType
@@ -190,14 +193,14 @@ class MetaReferenceInferenceImpl(
                         ]
 
                 yield CompletionResponseStreamChunk(
-                    delta=text,
+                    delta=TextDelta(text=text),
                     stop_reason=stop_reason,
                     logprobs=logprobs if request.logprobs else None,
                 )
 
             if stop_reason is None:
                 yield CompletionResponseStreamChunk(
-                    delta="",
+                    delta=TextDelta(text=""),
                     stop_reason=StopReason.out_of_tokens,
                 )
 
@@ -352,7 +355,7 @@ class MetaReferenceInferenceImpl(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.start,
-                    delta="",
+                    delta=TextDelta(text=""),
                 )
             )
 
@@ -392,7 +395,7 @@ class MetaReferenceInferenceImpl(
                         parse_status=ToolCallParseStatus.in_progress,
                     )
                 else:
-                    delta = text
+                    delta = TextDelta(text=text)
 
                 if stop_reason is None:
                     if request.logprobs:
@@ -449,7 +452,7 @@ class MetaReferenceInferenceImpl(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.complete,
-                    delta="",
+                    delta=TextDelta(text=""),
                     stop_reason=stop_reason,
                 )
             )
