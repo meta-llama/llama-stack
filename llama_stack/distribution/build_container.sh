@@ -59,7 +59,7 @@ WORKDIR /app
 
 RUN microdnf -y update && microdnf install -y iputils net-tools wget \
     vim-minimal python3.11 python3.11-pip python3.11-wheel \
-    python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && microdnf clean all
+    python3.11-setuptools && ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && microdnf clean all
 
 EOF
 else
