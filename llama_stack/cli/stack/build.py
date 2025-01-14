@@ -179,9 +179,7 @@ class StackBuild(Subcommand):
             build_config = BuildConfig(
                 name=name, image_type=image_type, distribution_spec=distribution_spec
             )
-            self._run_stack_build_command_from_build_config(
-                build_config,
-            )
+            self._run_stack_build_command_from_build_config(build_config)
             return
 
         with open(args.config, "r") as f:
@@ -190,9 +188,7 @@ class StackBuild(Subcommand):
             except Exception as e:
                 self.parser.error(f"Could not parse config file {args.config}: {e}")
                 return
-            self._run_stack_build_command_from_build_config(
-                build_config,
-            )
+            self._run_stack_build_command_from_build_config(build_config)
 
     def _generate_run_config(self, build_config: BuildConfig, build_dir: Path) -> None:
         """

@@ -36,7 +36,6 @@ def run_with_pty(command):
         # Set up the signal handler
         signal.signal(signal.SIGINT, sigint_handler)
 
-        # Only modify terminal settings if we're actually in a terminal
         new_settings = termios.tcgetattr(sys.stdin)
         new_settings[3] = new_settings[3] & ~termios.ECHO  # Disable echo
         new_settings[3] = new_settings[3] & ~termios.ICANON  # Disable canonical mode
