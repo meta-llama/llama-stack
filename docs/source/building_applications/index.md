@@ -189,7 +189,11 @@ agent_config = AgentConfig(
     # Control the inference loop
     max_infer_iters=5,
     sampling_params={
-        "temperature": 0.7,
+        "strategy": {
+            "type": "top_p",
+            "temperature": 0.7,
+            "top_p": 0.95
+        },
         "max_tokens": 2048
     }
 )

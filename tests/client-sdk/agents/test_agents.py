@@ -97,9 +97,11 @@ def agent_config(llama_stack_client):
         model=model_id,
         instructions="You are a helpful assistant",
         sampling_params={
-            "strategy": "greedy",
-            "temperature": 1.0,
-            "top_p": 0.9,
+            "strategy": {
+                "type": "greedy",
+                "temperature": 1.0,
+                "top_p": 0.9,
+            },
         },
         toolgroups=[],
         tool_choice="auto",

@@ -937,6 +937,16 @@ components:
       required:
       - memory_bank_type
       type: object
+    GreedySamplingStrategy:
+      additionalProperties: false
+      properties:
+        type:
+          const: greedy
+          default: greedy
+          type: string
+      required:
+      - type
+      type: object
     HealthInfo:
       additionalProperties: false
       properties:
@@ -2064,26 +2074,13 @@ components:
           default: 1.0
           type: number
         strategy:
-          $ref: '#/components/schemas/SamplingStrategy'
-          default: greedy
-        temperature:
-          default: 0.0
-          type: number
-        top_k:
-          default: 0
-          type: integer
-        top_p:
-          default: 0.95
-          type: number
+          oneOf:
+          - $ref: '#/components/schemas/GreedySamplingStrategy'
+          - $ref: '#/components/schemas/TopPSamplingStrategy'
+          - $ref: '#/components/schemas/TopKSamplingStrategy'
       required:
       - strategy
       type: object
-    SamplingStrategy:
-      enum:
-      - greedy
-      - top_p
-      - top_k
-      type: string
     SaveSpansToDatasetRequest:
       additionalProperties: false
       properties:
@@ -2930,6 +2927,34 @@ components:
       - call_id
       - tool_name
       - content
+      type: object
+    TopKSamplingStrategy:
+      additionalProperties: false
+      properties:
+        top_k:
+          type: integer
+        type:
+          const: top_k
+          default: top_k
+          type: string
+      required:
+      - type
+      - top_k
+      type: object
+    TopPSamplingStrategy:
+      additionalProperties: false
+      properties:
+        temperature:
+          type: number
+        top_p:
+          default: 0.95
+          type: number
+        type:
+          const: top_p
+          default: top_p
+          type: string
+      required:
+      - type
       type: object
     Trace:
       additionalProperties: false
@@ -5587,6 +5612,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankParams"
     />
   name: GraphMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/GreedySamplingStrategy"
+    />
+  name: GreedySamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
   name: HealthInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/ImageContentItem"
@@ -5753,9 +5781,6 @@ tags:
   name: SafetyViolation
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams" />
   name: SamplingParams
-- description: <SchemaDefinition schemaRef="#/components/schemas/SamplingStrategy"
-    />
-  name: SamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/SaveSpansToDatasetRequest"
     />
   name: SaveSpansToDatasetRequest
@@ -5874,6 +5899,12 @@ tags:
     />
   name: ToolResponseMessage
 - name: ToolRuntime
+- description: <SchemaDefinition schemaRef="#/components/schemas/TopKSamplingStrategy"
+    />
+  name: TopKSamplingStrategy
+- description: <SchemaDefinition schemaRef="#/components/schemas/TopPSamplingStrategy"
+    />
+  name: TopPSamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
@@ -5990,6 +6021,7 @@ x-tagGroups:
   - GetSpanTreeRequest
   - GraphMemoryBank
   - GraphMemoryBankParams
+  - GreedySamplingStrategy
   - HealthInfo
   - ImageContentItem
   - InferenceStep
@@ -6047,7 +6079,6 @@ x-tagGroups:
   - RunShieldResponse
   - SafetyViolation
   - SamplingParams
-  - SamplingStrategy
   - SaveSpansToDatasetRequest
   - ScoreBatchRequest
   - ScoreBatchResponse
@@ -6087,6 +6118,8 @@ x-tagGroups:
   - ToolPromptFormat
   - ToolResponse
   - ToolResponseMessage
+  - TopKSamplingStrategy
+  - TopPSamplingStrategy
   - Trace
   - TrainingConfig
   - Turn

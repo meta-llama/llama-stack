@@ -56,9 +56,10 @@ response = client.eval.evaluate_rows(
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
             "sampling_params": {
-                "temperature": 0.0,
+                "strategy": {
+                    "type": "greedy",
+                },
                 "max_tokens": 4096,
-                "top_p": 0.9,
                 "repeat_penalty": 1.0,
             },
             "system_message": system_message
@@ -113,9 +114,10 @@ response = client.eval.evaluate_rows(
             "type": "model",
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct",
             "sampling_params": {
-                "temperature": 0.0,
+                "strategy": {
+                    "type": "greedy",
+                },
                 "max_tokens": 4096,
-                "top_p": 0.9,
                 "repeat_penalty": 1.0,
             },
         }
@@ -134,9 +136,9 @@ agent_config = {
     "model": "meta-llama/Llama-3.1-405B-Instruct",
     "instructions": "You are a helpful assistant",
     "sampling_params": {
-        "strategy": "greedy",
-        "temperature": 0.0,
-        "top_p": 0.95,
+        "strategy": {
+            "type": "greedy",
+        },
     },
     "tools": [
         {

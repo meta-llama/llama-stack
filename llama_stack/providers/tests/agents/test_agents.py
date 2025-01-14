@@ -22,7 +22,12 @@ from llama_stack.apis.agents import (
     ToolExecutionStep,
     Turn,
 )
-from llama_stack.apis.inference import CompletionMessage, SamplingParams, UserMessage
+from llama_stack.apis.inference import (
+    CompletionMessage,
+    SamplingParams,
+    TopPSamplingStrategy,
+    UserMessage,
+)
 from llama_stack.apis.safety import ViolationLevel
 from llama_stack.providers.datatypes import Api
 
@@ -42,7 +47,9 @@ def common_params(inference_model):
         model=inference_model,
         instructions="You are a helpful assistant.",
         enable_session_persistence=True,
-        sampling_params=SamplingParams(temperature=0.7, top_p=0.95),
+        sampling_params=SamplingParams(
+            strategy=TopPSamplingStrategy(temperature=0.7, top_p=0.95)
+        ),
         input_shields=[],
         output_shields=[],
         toolgroups=[],

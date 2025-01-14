@@ -3514,6 +3514,20 @@
                     "tool_calls"
                 ]
             },
+            "GreedySamplingStrategy": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "greedy",
+                        "default": "greedy"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
             "ImageContentItem": {
                 "type": "object",
                 "properties": {
@@ -3581,20 +3595,17 @@
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "$ref": "#/components/schemas/SamplingStrategy",
-                        "default": "greedy"
-                    },
-                    "temperature": {
-                        "type": "number",
-                        "default": 0.0
-                    },
-                    "top_p": {
-                        "type": "number",
-                        "default": 0.95
-                    },
-                    "top_k": {
-                        "type": "integer",
-                        "default": 0
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/GreedySamplingStrategy"
+                            },
+                            {
+                                "$ref": "#/components/schemas/TopPSamplingStrategy"
+                            },
+                            {
+                                "$ref": "#/components/schemas/TopKSamplingStrategy"
+                            }
+                        ]
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -3608,14 +3619,6 @@
                 "additionalProperties": false,
                 "required": [
                     "strategy"
-                ]
-            },
-            "SamplingStrategy": {
-                "type": "string",
-                "enum": [
-                    "greedy",
-                    "top_p",
-                    "top_k"
                 ]
             },
             "StopReason": {
@@ -3869,6 +3872,45 @@
                     "call_id",
                     "tool_name",
                     "content"
+                ]
+            },
+            "TopKSamplingStrategy": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "top_k",
+                        "default": "top_k"
+                    },
+                    "top_k": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "top_k"
+                ]
+            },
+            "TopPSamplingStrategy": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "top_p",
+                        "default": "top_p"
+                    },
+                    "temperature": {
+                        "type": "number"
+                    },
+                    "top_p": {
+                        "type": "number",
+                        "default": 0.95
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "URL": {
@@ -8888,6 +8930,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBankParams\" />"
         },
         {
+            "name": "GreedySamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GreedySamplingStrategy\" />"
+        },
+        {
             "name": "HealthInfo",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
         },
@@ -9137,10 +9183,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingParams\" />"
         },
         {
-            "name": "SamplingStrategy",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingStrategy\" />"
-        },
-        {
             "name": "SaveSpansToDatasetRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SaveSpansToDatasetRequest\" />"
         },
@@ -9318,6 +9360,14 @@
             "name": "ToolRuntime"
         },
         {
+            "name": "TopKSamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TopKSamplingStrategy\" />"
+        },
+        {
+            "name": "TopPSamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TopPSamplingStrategy\" />"
+        },
+        {
             "name": "Trace",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Trace\" />"
         },
@@ -9456,6 +9506,7 @@
                 "GetSpanTreeRequest",
                 "GraphMemoryBank",
                 "GraphMemoryBankParams",
+                "GreedySamplingStrategy",
                 "HealthInfo",
                 "ImageContentItem",
                 "InferenceStep",
@@ -9513,7 +9564,6 @@
                 "RunShieldResponse",
                 "SafetyViolation",
                 "SamplingParams",
-                "SamplingStrategy",
                 "SaveSpansToDatasetRequest",
                 "ScoreBatchRequest",
                 "ScoreBatchResponse",
@@ -9553,6 +9603,8 @@
                 "ToolPromptFormat",
                 "ToolResponse",
                 "ToolResponseMessage",
+                "TopKSamplingStrategy",
+                "TopPSamplingStrategy",
                 "Trace",
                 "TrainingConfig",
                 "Turn",
