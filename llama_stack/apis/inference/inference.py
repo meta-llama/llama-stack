@@ -82,7 +82,7 @@ class SystemMessage(BaseModel):
 
 @json_schema_type
 class ToolResponseMessage(BaseModel):
-    role: Literal["ipython"] = "ipython"
+    role: Literal["tool"] = "tool"
     # it was nice to re-use the ToolResponse type, but having all messages
     # have a `content` type makes things nicer too
     call_id: str

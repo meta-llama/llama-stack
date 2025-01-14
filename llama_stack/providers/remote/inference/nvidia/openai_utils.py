@@ -144,7 +144,7 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
             message = UserMessage(**message)
         elif message["role"] == "assistant":
             message = CompletionMessage(**message)
-        elif message["role"] == "ipython":
+        elif message["role"] == "tool":
             message = ToolResponseMessage(**message)
         elif message["role"] == "system":
             message = SystemMessage(**message)
