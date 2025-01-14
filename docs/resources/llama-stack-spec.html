@@ -3843,8 +3843,8 @@
                 "properties": {
                     "role": {
                         "type": "string",
-                        "const": "ipython",
-                        "default": "ipython"
+                        "const": "tool",
+                        "default": "tool"
                     },
                     "call_id": {
                         "type": "string"
@@ -4185,14 +4185,7 @@
                         "$ref": "#/components/schemas/ChatCompletionResponseEventType"
                     },
                     "delta": {
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ToolCallDelta"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/ContentDelta"
                     },
                     "logprobs": {
                         "type": "array",
@@ -4232,6 +4225,50 @@
                 ],
                 "title": "SSE-stream of these events."
             },
+            "ContentDelta": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "text",
+                                "default": "text"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "image",
+                                "default": "image"
+                            },
+                            "data": {
+                                "type": "string",
+                                "contentEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type",
+                            "data"
+                        ]
+                    },
+                    {
+                        "$ref": "#/components/schemas/ToolCallDelta"
+                    }
+                ]
+            },
             "TokenLogProbs": {
                 "type": "object",
                 "properties": {
@@ -4250,6 +4287,11 @@
             "ToolCallDelta": {
                 "type": "object",
                 "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "tool_call",
+                        "default": "tool_call"
+                    },
                     "content": {
                         "oneOf": [
                             {
@@ -4266,6 +4308,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "type",
                     "content",
                     "parse_status"
                 ]
@@ -4275,8 +4318,8 @@
                 "enum": [
                     "started",
                     "in_progress",
-                    "failure",
-                    "success"
+                    "failed",
+                    "succeeded"
                 ]
             },
             "CompletionRequest": {
@@ -4777,18 +4820,16 @@
                     "step_id": {
                         "type": "string"
                     },
-                    "text_delta": {
-                        "type": "string"
-                    },
-                    "tool_call_delta": {
-                        "$ref": "#/components/schemas/ToolCallDelta"
+                    "delta": {
+                        "$ref": "#/components/schemas/ContentDelta"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "event_type",
                     "step_type",
-                    "step_id"
+                    "step_id",
+                    "delta"
                 ]
             },
             "AgentTurnResponseStepStartPayload": {
@@ -8759,6 +8800,10 @@
             "description": "streamed completion response.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CompletionResponseStreamChunk\" />"
         },
         {
+            "name": "ContentDelta",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ContentDelta\" />"
+        },
+        {
             "name": "CreateAgentRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/CreateAgentRequest\" />"
         },
@@ -9392,6 +9437,7 @@
                 "CompletionRequest",
                 "CompletionResponse",
                 "CompletionResponseStreamChunk",
+                "ContentDelta",
                 "CreateAgentRequest",
                 "CreateAgentSessionRequest",
                 "CreateAgentTurnRequest",

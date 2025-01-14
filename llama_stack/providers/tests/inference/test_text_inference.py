@@ -475,7 +475,7 @@ class TestInference:
 
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason
-        assert last.event.delta.parse_status == ToolCallParseStatus.success
+        assert last.event.delta.parse_status == ToolCallParseStatus.succeeded
         assert last.event.delta.content.type == "tool_call"
 
         call = last.event.delta.content

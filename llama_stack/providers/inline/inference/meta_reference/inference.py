@@ -431,7 +431,7 @@ class MetaReferenceInferenceImpl(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
                             content="",
-                            parse_status=ToolCallParseStatus.failure,
+                            parse_status=ToolCallParseStatus.failed,
                         ),
                         stop_reason=stop_reason,
                     )
@@ -443,7 +443,7 @@ class MetaReferenceInferenceImpl(
                         event_type=ChatCompletionResponseEventType.progress,
                         delta=ToolCallDelta(
                             content=tool_call,
-                            parse_status=ToolCallParseStatus.success,
+                            parse_status=ToolCallParseStatus.succeeded,
                         ),
                         stop_reason=stop_reason,
                     )
