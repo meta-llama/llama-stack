@@ -22,9 +22,7 @@ log = logging.getLogger(__name__)
 def run_with_pty(command):
     master, slave = pty.openpty()
 
-    # Check if stdin is actually a terminal
     old_settings = termios.tcgetattr(sys.stdin)
-
     original_sigint = signal.getsignal(signal.SIGINT)
 
     ctrl_c_pressed = False
