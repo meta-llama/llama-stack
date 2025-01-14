@@ -168,11 +168,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
             return sync_generator()
         else:
-
-            async def _request():
-                return await self.async_client.request(*args, **kwargs)
-
-            return asyncio.run(_request())
+            return asyncio.run(self.async_client.request(*args, **kwargs))
 
 
 class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
