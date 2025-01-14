@@ -29,6 +29,10 @@ providers:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+  - provider_id: braintrust
+    provider_type: inline::braintrust
+    config:
+      openai_api_key: ${env.OPENAI_API_KEY:}
   datasetio:
   - provider_id: huggingface-0
     provider_type: remote::huggingface
