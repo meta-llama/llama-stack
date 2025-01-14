@@ -132,7 +132,7 @@ class EventLogger:
 
                         delta = event.payload.delta
                         if delta.type == "tool_call":
-                            if delta.parse_status == ToolCallParseStatus.success:
+                            if delta.parse_status == ToolCallParseStatus.succeeded:
                                 yield (
                                     event,
                                     LogEvent(

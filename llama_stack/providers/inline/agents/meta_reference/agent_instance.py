@@ -415,7 +415,7 @@ class ChatAgent(ShieldRunnerMixin):
                             step_type=StepType.tool_execution.value,
                             step_id=step_id,
                             delta=ToolCallDelta(
-                                parse_status=ToolCallParseStatus.success,
+                                parse_status=ToolCallParseStatus.succeeded,
                                 content=ToolCall(
                                     call_id="",
                                     tool_name=MEMORY_QUERY_TOOL,
@@ -511,7 +511,7 @@ class ChatAgent(ShieldRunnerMixin):
 
                     delta = event.delta
                     if delta.type == "tool_call":
-                        if delta.parse_status == ToolCallParseStatus.success:
+                        if delta.parse_status == ToolCallParseStatus.succeeded:
                             tool_calls.append(delta.content)
                         if stream:
                             yield AgentTurnResponseStreamChunk(

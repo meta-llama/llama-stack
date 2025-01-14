@@ -501,7 +501,7 @@ async def convert_openai_chat_completion_stream(
                     event_type=next(event_type),
                     delta=ToolCallDelta(
                         content=_convert_openai_tool_calls(choice.delta.tool_calls)[0],
-                        parse_status=ToolCallParseStatus.success,
+                        parse_status=ToolCallParseStatus.succeeded,
                     ),
                     logprobs=_convert_openai_logprobs(choice.logprobs),
                 )

@@ -215,7 +215,7 @@ async def convert_chat_completion_response_stream(
                     event_type=event_type,
                     delta=ToolCallDelta(
                         content=tool_call,
-                        parse_status=ToolCallParseStatus.success,
+                        parse_status=ToolCallParseStatus.succeeded,
                     ),
                 )
             )

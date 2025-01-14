@@ -150,6 +150,8 @@ components:
     AgentTurnResponseStepProgressPayload:
       additionalProperties: false
       properties:
+        delta:
+          $ref: '#/components/schemas/ContentDelta'
         event_type:
           const: step_progress
           default: step_progress
@@ -163,14 +165,11 @@ components:
           - shield_call
           - memory_retrieval
           type: string
-        text_delta:
-          type: string
-        tool_call_delta:
-          $ref: '#/components/schemas/ToolCallDelta'
       required:
       - event_type
       - step_type
       - step_id
+      - delta
       type: object
     AgentTurnResponseStepStartPayload:
       additionalProperties: false
@@ -462,9 +461,7 @@ components:
       additionalProperties: false
       properties:
         delta:
-          oneOf:
-          - type: string
-          - $ref: '#/components/schemas/ToolCallDelta'
+          $ref: '#/components/schemas/ContentDelta'
         event_type:
           $ref: '#/components/schemas/ChatCompletionResponseEventType'
         logprobs:
@@ -571,6 +568,34 @@ components:
       - delta
       title: streamed completion response.
       type: object
+    ContentDelta:
+      oneOf:
+      - additionalProperties: false
+        properties:
+          text:
+            type: string
+          type:
+            const: text
+            default: text
+            type: string
+        required:
+        - type
+        - text
+        type: object
+      - additionalProperties: false
+        properties:
+          data:
+            contentEncoding: base64
+            type: string
+          type:
+            const: image
+            default: image
+            type: string
+        required:
+        - type
+        - data
+        type: object
+      - $ref: '#/components/schemas/ToolCallDelta'
     CreateAgentRequest:
       additionalProperties: false
       properties:
@@ -2664,7 +2689,12 @@ components:
           - $ref: '#/components/schemas/ToolCall'
         parse_status:
           $ref: '#/components/schemas/ToolCallParseStatus'
+        type:
+          const: tool_call
+          default: tool_call
+          type: string
       required:
+      - type
       - content
       - parse_status
       type: object
@@ -2672,8 +2702,8 @@ components:
       enum:
       - started
       - in_progress
-      - failure
-      - success
+      - failed
+      - succeeded
       type: string
     ToolChoice:
       enum:
@@ -2888,8 +2918,8 @@ components:
         content:
           $ref: '#/components/schemas/InterleavedContent'
         role:
-          const: ipython
-          default: ipython
+          const: tool
+          default: tool
           type: string
         tool_name:
           oneOf:
@@ -5500,6 +5530,8 @@ tags:
     <SchemaDefinition schemaRef="#/components/schemas/CompletionResponseStreamChunk"
     />'
   name: CompletionResponseStreamChunk
+- description: <SchemaDefinition schemaRef="#/components/schemas/ContentDelta" />
+  name: ContentDelta
 - description: <SchemaDefinition schemaRef="#/components/schemas/CreateAgentRequest"
     />
   name: CreateAgentRequest
@@ -5939,6 +5971,7 @@ x-tagGroups:
   - CompletionRequest
   - CompletionResponse
   - CompletionResponseStreamChunk
+  - ContentDelta
   - CreateAgentRequest
   - CreateAgentSessionRequest
   - CreateAgentTurnRequest
