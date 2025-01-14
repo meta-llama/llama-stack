@@ -104,7 +104,8 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
 
 
 def build_image(
-    build_config: BuildConfig, build_file_path: Path, dockerfile_only: bool = False
+    build_config: BuildConfig,
+    build_file_path: Path,
 ):
     docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
 
@@ -124,7 +125,6 @@ def build_image(
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
-            str(dockerfile_only),
         ]
     elif build_config.image_type == ImageType.conda.value:
         script = (
