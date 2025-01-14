@@ -71,6 +71,14 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in MODEL_ALIASES
     ]
+    inference_model = ModelInput(
+        model_id="${env.INFERENCE_MODEL}",
+        provider_id="fireworks",
+    )
+    safety_model = ModelInput(
+        model_id="${env.SAFETY_MODEL}",
+        provider_id="fireworks",
+    )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -110,6 +118,43 @@ def get_distribution_template() -> DistributionTemplate:
                 },
                 default_models=default_models + [embedding_model],
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_tool_groups=default_tool_groups,
+            ),
+            "run-with-safety.yaml": RunConfigSettings(
+                provider_overrides={
+                    "inference": [
+                        inference_provider,
+                        embedding_provider,
+                    ],
+                    "memory": [memory_provider],
+                    "safety": [
+                        Provider(
+                            provider_id="llama-guard",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
+                            provider_id="code-scanner",
+                            provider_type="inline::code-scanner",
+                            config={},
+                        ),
+                    ],
+                },
+                default_models=[
+                    inference_model,
+                    safety_model,
+                    embedding_model,
+                ],
+                default_shields=[
+                    ShieldInput(
+                        shield_id="${env.SAFETY_MODEL}",
+                        provider_id="llama-guard",
+                    ),
+                    ShieldInput(
+                        shield_id="CodeScanner",
+                        provider_id="code-scanner",
+                    ),
+                ],
                 default_tool_groups=default_tool_groups,
             ),
         },
