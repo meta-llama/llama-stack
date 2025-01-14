@@ -71,14 +71,6 @@ def get_distribution_template() -> DistributionTemplate:
         )
         for m in MODEL_ALIASES
     ]
-    inference_model = ModelInput(
-        model_id="${env.INFERENCE_MODEL}",
-        provider_id="fireworks",
-    )
-    safety_model = ModelInput(
-        model_id="${env.SAFETY_MODEL}",
-        provider_id="fireworks",
-    )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
         provider_id="sentence-transformers",
@@ -134,6 +126,11 @@ def get_distribution_template() -> DistributionTemplate:
                             config={},
                         ),
                         Provider(
+                            provider_id="llama-guard-vision",
+                            provider_type="inline::llama-guard",
+                            config={},
+                        ),
+                        Provider(
                             provider_id="code-scanner",
                             provider_type="inline::code-scanner",
                             config={},
@@ -141,14 +138,17 @@ def get_distribution_template() -> DistributionTemplate:
                     ],
                 },
                 default_models=[
-                    inference_model,
-                    safety_model,
+                    *default_models,
                     embedding_model,
                 ],
                 default_shields=[
                     ShieldInput(
-                        shield_id="${env.SAFETY_MODEL}",
+                        shield_id="meta-llama/Llama-Guard-3-8B",
                         provider_id="llama-guard",
+                    ),
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-11B-Vision",
+                        provider_id="llama-guard-vision",
                     ),
                     ShieldInput(
                         shield_id="CodeScanner",
