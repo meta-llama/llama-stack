@@ -12,6 +12,7 @@ apis:
 - scoring
 - telemetry
 - post_training
+- tool_runtime
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -31,6 +32,9 @@ providers:
   datasetio:
   - provider_id: huggingface-0
     provider_type: remote::huggingface
+    config: {}
+  - provider_id: localfs
+    provider_type: inline::localfs
     config: {}
   telemetry:
   - provider_id: meta-reference
@@ -60,6 +64,13 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+
 
 metadata_store:
   namespace: null
@@ -68,23 +79,6 @@ metadata_store:
 models: []
 shields: []
 memory_banks: []
-datasets:
-  - dataset_id: alpaca
-    provider_id: huggingface-0
-    url:
-      uri: https://huggingface.co/datasets/tatsu-lab/alpaca
-    metadata:
-      path: tatsu-lab/alpaca
-      name:
-      split: train
-    dataset_schema:
-      instruction:
-        type: string
-      input:
-        type: string
-      output:
-        type: string
-      text:
-        type: string
+datasets: []
 scoring_fns: []
 eval_tasks: []
