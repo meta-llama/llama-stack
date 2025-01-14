@@ -29,7 +29,7 @@ from llama_models.schema_utils import json_schema_type, register_schema, webmeth
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent
 from llama_stack.apis.models import Model
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
@@ -148,25 +148,11 @@ class ChatCompletionResponseEventType(Enum):
 
 
 @json_schema_type
-class ToolCallParseStatus(Enum):
-    started = "started"
-    in_progress = "in_progress"
-    failure = "failure"
-    success = "success"
-
-
-@json_schema_type
-class ToolCallDelta(BaseModel):
-    content: Union[str, ToolCall]
-    parse_status: ToolCallParseStatus
-
-
-@json_schema_type
 class ChatCompletionResponseEvent(BaseModel):
     """Chat completion response event."""
 
     event_type: ChatCompletionResponseEventType
-    delta: Union[str, ToolCallDelta]
+    delta: ContentDelta
     logprobs: Optional[List[TokenLogProbs]] = None
     stop_reason: Optional[StopReason] = None
 
