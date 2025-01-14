@@ -22,7 +22,11 @@ log = logging.getLogger(__name__)
 def run_with_pty(command):
     master, slave = pty.openpty()
 
-    old_settings = termios.tcgetattr(sys.stdin)
+    # Check if stdin is actually a terminal
+    is_terminal = sys.stdin.isatty()
+    if is_terminal:
+        old_settings = termios.tcgetattr(sys.stdin)
+
     original_sigint = signal.getsignal(signal.SIGINT)
 
     ctrl_c_pressed = False
@@ -36,10 +40,14 @@ def run_with_pty(command):
         # Set up the signal handler
         signal.signal(signal.SIGINT, sigint_handler)
 
-        new_settings = termios.tcgetattr(sys.stdin)
-        new_settings[3] = new_settings[3] & ~termios.ECHO  # Disable echo
-        new_settings[3] = new_settings[3] & ~termios.ICANON  # Disable canonical mode
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, new_settings)
+        # Only modify terminal settings if we're actually in a terminal
+        if is_terminal:
+            new_settings = termios.tcgetattr(sys.stdin)
+            new_settings[3] = new_settings[3] & ~termios.ECHO  # Disable echo
+            new_settings[3] = (
+                new_settings[3] & ~termios.ICANON
+            )  # Disable canonical mode
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, new_settings)
 
         process = subprocess.Popen(
             command,
@@ -86,7 +94,8 @@ def run_with_pty(command):
             raise
     finally:
         # Clean up
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+        if is_terminal:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
         signal.signal(signal.SIGINT, original_sigint)
 
         os.close(master)
