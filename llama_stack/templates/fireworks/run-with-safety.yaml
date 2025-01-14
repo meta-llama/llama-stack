@@ -33,6 +33,9 @@ providers:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config: {}
+  - provider_id: llama-guard-vision
+    provider_type: inline::llama-guard
+    config: {}
   - provider_id: code-scanner
     provider_type: inline::code-scanner
     config: {}
@@ -97,52 +100,52 @@ models:
 - metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p1-8b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-70B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p1-70b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.1-405B-Instruct-FP8
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p1-405b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-1B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-1b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-1b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-3B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-3b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-11b-vision-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p2-90b-vision-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-3.3-70B-Instruct
   provider_id: fireworks
-  provider_model_id: fireworks/llama-v3p3-70b-instruct
+  provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-Guard-3-8B
   provider_id: fireworks
-  provider_model_id: fireworks/llama-guard-3-8b
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
   model_type: llm
 - metadata: {}
   model_id: meta-llama/Llama-Guard-3-11B-Vision
   provider_id: fireworks
-  provider_model_id: fireworks/llama-guard-3-11b-vision
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
   model_type: llm
 - metadata:
     embedding_dimension: 384
@@ -152,6 +155,8 @@ models:
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
   provider_id: llama-guard
+- shield_id: meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: llama-guard-vision
 - shield_id: CodeScanner
   provider_id: code-scanner
 memory_banks: []
