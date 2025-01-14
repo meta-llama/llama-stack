@@ -13,15 +13,16 @@
 from typing import Any, Dict, List, Mapping
 
 import numpy as np
-from llama_stack.providers.inline.post_training.torchtune.datasets.format_adapter import (
-    llama_stack_chat_to_torchtune_chat,
-    llama_stack_instruct_to_torchtune_instruct,
-)
 
 from torch.utils.data import Dataset
 from torchtune.data._common import CROSS_ENTROPY_IGNORE_IDX
 from torchtune.data._messages import validate_messages
 from torchtune.modules.transforms import Transform
+
+from llama_stack.providers.inline.post_training.torchtune.datasets.format_adapter import (
+    llama_stack_chat_to_torchtune_chat,
+    llama_stack_instruct_to_torchtune_instruct,
+)
 
 
 class SFTDataset(Dataset):
