@@ -29,10 +29,10 @@ jobs:
 
       - name: Build docker image
         run: |
-          llama stack build --template ollama --image-type docker
+          TEST_PYPI_VERSION=0.0.63.dev20250114 llama stack build --template ollama --image-type docker
           docker images
 
       - name: Push to dockerhub
         run: |
-          docker tag localhost/distribution-ollama llamastack/distribution-ollama:0.0.63-test
-          docker push llamastack/distribution-ollama:0.0.63-test
+          docker tag localhost/distribution-ollama:0.0.63.dev20250114 llamastack/distribution-ollama:0.0.63.dev20250114
+          docker push llamastack/distribution-ollama:0.0.63.dev20250114
