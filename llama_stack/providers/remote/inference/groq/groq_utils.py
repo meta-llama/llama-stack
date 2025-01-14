@@ -30,6 +30,11 @@ from groq.types.shared.function_definition import FunctionDefinition
 
 from llama_models.llama3.api.datatypes import ToolParamDefinition
 
+from llama_stack.apis.common.content_types import (
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -40,8 +45,6 @@ from llama_stack.apis.inference import (
     Message,
     StopReason,
     ToolCall,
-    ToolCallDelta,
-    ToolCallParseStatus,
     ToolDefinition,
     ToolPromptFormat,
 )
@@ -162,7 +165,7 @@ def convert_chat_completion_response(
 
 
 def _map_finish_reason_to_stop_reason(
-    finish_reason: Literal["stop", "length", "tool_calls"]
+    finish_reason: Literal["stop", "length", "tool_calls"],
 ) -> StopReason:
     """
     Convert a Groq chat completion finish_reason to a StopReason.
@@ -185,7 +188,6 @@ def _map_finish_reason_to_stop_reason(
 async def convert_chat_completion_response_stream(
     stream: Stream[ChatCompletionChunk],
 ) -> AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
-
     event_type = ChatCompletionResponseEventType.start
     for chunk in stream:
         choice = chunk.choices[0]
@@ -194,7 +196,7 @@ async def convert_chat_completion_response_stream(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.complete,
-                    delta=choice.delta.content or "",
+                    delta=TextDelta(text=choice.delta.content or ""),
                     logprobs=None,
                     stop_reason=_map_finish_reason_to_stop_reason(choice.finish_reason),
                 )
@@ -213,7 +215,7 @@ async def convert_chat_completion_response_stream(
                     event_type=event_type,
                     delta=ToolCallDelta(
                         content=tool_call,
-                        parse_status=ToolCallParseStatus.success,
+                        parse_status=ToolCallParseStatus.succeeded,
                     ),
                 )
             )
@@ -221,7 +223,7 @@ async def convert_chat_completion_response_stream(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=event_type,
-                    delta=choice.delta.content or "",
+                    delta=TextDelta(text=choice.delta.content or ""),
                     logprobs=None,
                 )
             )

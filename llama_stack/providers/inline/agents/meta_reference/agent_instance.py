@@ -40,7 +40,12 @@ from llama_stack.apis.agents import (
     ToolExecutionStep,
     Turn,
 )
-from llama_stack.apis.common.content_types import TextContentItem, URL
+from llama_stack.apis.common.content_types import (
+    TextContentItem,
+    ToolCallDelta,
+    ToolCallParseStatus,
+    URL,
+)
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
     CompletionMessage,
@@ -49,8 +54,6 @@ from llama_stack.apis.inference import (
     SamplingParams,
     StopReason,
     SystemMessage,
-    ToolCallDelta,
-    ToolCallParseStatus,
     ToolDefinition,
     ToolResponse,
     ToolResponseMessage,
@@ -411,8 +414,8 @@ class ChatAgent(ShieldRunnerMixin):
                         payload=AgentTurnResponseStepProgressPayload(
                             step_type=StepType.tool_execution.value,
                             step_id=step_id,
-                            tool_call_delta=ToolCallDelta(
-                                parse_status=ToolCallParseStatus.success,
+                            delta=ToolCallDelta(
+                                parse_status=ToolCallParseStatus.succeeded,
                                 content=ToolCall(
                                     call_id="",
                                     tool_name=MEMORY_QUERY_TOOL,
@@ -507,8 +510,8 @@ class ChatAgent(ShieldRunnerMixin):
                         continue
 
                     delta = event.delta
-                    if isinstance(delta, ToolCallDelta):
-                        if delta.parse_status == ToolCallParseStatus.success:
+                    if delta.type == "tool_call":
+                        if delta.parse_status == ToolCallParseStatus.succeeded:
                             tool_calls.append(delta.content)
                         if stream:
                             yield AgentTurnResponseStreamChunk(
@@ -516,21 +519,20 @@ class ChatAgent(ShieldRunnerMixin):
                                     payload=AgentTurnResponseStepProgressPayload(
                                         step_type=StepType.inference.value,
                                         step_id=step_id,
-                                        text_delta="",
-                                        tool_call_delta=delta,
+                                        delta=delta,
                                     )
                                 )
                             )
 
-                    elif isinstance(delta, str):
-                        content += delta
+                    elif delta.type == "text":
+                        content += delta.text
                         if stream and event.stop_reason is None:
                             yield AgentTurnResponseStreamChunk(
                                 event=AgentTurnResponseEvent(
                                     payload=AgentTurnResponseStepProgressPayload(
                                         step_type=StepType.inference.value,
                                         step_id=step_id,
-                                        text_delta=event.delta,
+                                        delta=delta,
                                     )
                                 )
                             )

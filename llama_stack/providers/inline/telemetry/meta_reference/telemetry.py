@@ -30,13 +30,10 @@ from llama_stack.apis.telemetry import (
     Trace,
     UnstructuredLogEvent,
 )
-
 from llama_stack.distribution.datatypes import Api
-
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
-
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
@@ -52,6 +49,7 @@ _GLOBAL_STORAGE = {
     "up_down_counters": {},
 }
 _global_lock = threading.Lock()
+_TRACER_PROVIDER = None
 
 
 def string_to_trace_id(s: str) -> int:
@@ -80,31 +78,34 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             }
         )
 
-        provider = TracerProvider(resource=resource)
-        trace.set_tracer_provider(provider)
-        if TelemetrySink.OTEL in self.config.sinks:
-            otlp_exporter = OTLPSpanExporter(
-                endpoint=self.config.otel_endpoint,
-            )
-            span_processor = BatchSpanProcessor(otlp_exporter)
-            trace.get_tracer_provider().add_span_processor(span_processor)
-            metric_reader = PeriodicExportingMetricReader(
-                OTLPMetricExporter(
+        global _TRACER_PROVIDER
+        if _TRACER_PROVIDER is None:
+            provider = TracerProvider(resource=resource)
+            trace.set_tracer_provider(provider)
+            _TRACER_PROVIDER = provider
+            if TelemetrySink.OTEL in self.config.sinks:
+                otlp_exporter = OTLPSpanExporter(
                     endpoint=self.config.otel_endpoint,
                 )
-            )
-            metric_provider = MeterProvider(
-                resource=resource, metric_readers=[metric_reader]
-            )
-            metrics.set_meter_provider(metric_provider)
-            self.meter = metrics.get_meter(__name__)
-        if TelemetrySink.SQLITE in self.config.sinks:
-            trace.get_tracer_provider().add_span_processor(
-                SQLiteSpanProcessor(self.config.sqlite_db_path)
-            )
-            self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
-        if TelemetrySink.CONSOLE in self.config.sinks:
-            trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
+                span_processor = BatchSpanProcessor(otlp_exporter)
+                trace.get_tracer_provider().add_span_processor(span_processor)
+                metric_reader = PeriodicExportingMetricReader(
+                    OTLPMetricExporter(
+                        endpoint=self.config.otel_endpoint,
+                    )
+                )
+                metric_provider = MeterProvider(
+                    resource=resource, metric_readers=[metric_reader]
+                )
+                metrics.set_meter_provider(metric_provider)
+                self.meter = metrics.get_meter(__name__)
+            if TelemetrySink.SQLITE in self.config.sinks:
+                trace.get_tracer_provider().add_span_processor(
+                    SQLiteSpanProcessor(self.config.sqlite_db_path)
+                )
+                self.trace_store = SQLiteTraceStore(self.config.sqlite_db_path)
+            if TelemetrySink.CONSOLE in self.config.sinks:
+                trace.get_tracer_provider().add_span_processor(ConsoleSpanProcessor())
         self._lock = _global_lock
 
     async def initialize(self) -> None:

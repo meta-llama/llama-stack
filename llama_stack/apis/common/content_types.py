@@ -5,10 +5,12 @@
 # the root directory of this source tree.
 
 import base64
+from enum import Enum
 from typing import Annotated, List, Literal, Optional, Union
 
-from llama_models.schema_utils import json_schema_type, register_schema
+from llama_models.llama3.api.datatypes import ToolCall
 
+from llama_models.schema_utils import json_schema_type, register_schema
 from pydantic import BaseModel, Field, field_serializer, model_validator
 
 
@@ -59,4 +61,43 @@ InterleavedContentItem = register_schema(
 InterleavedContent = register_schema(
     Union[str, InterleavedContentItem, List[InterleavedContentItem]],
     name="InterleavedContent",
+)
+
+
+class TextDelta(BaseModel):
+    type: Literal["text"] = "text"
+    text: str
+
+
+class ImageDelta(BaseModel):
+    type: Literal["image"] = "image"
+    data: bytes
+
+
+@json_schema_type
+class ToolCallParseStatus(Enum):
+    started = "started"
+    in_progress = "in_progress"
+    failed = "failed"
+    succeeded = "succeeded"
+
+
+@json_schema_type
+class ToolCallDelta(BaseModel):
+    type: Literal["tool_call"] = "tool_call"
+
+    # you either send an in-progress tool call so the client can stream a long
+    # code generation or you send the final parsed tool call at the end of the
+    # stream
+    content: Union[str, ToolCall]
+    parse_status: ToolCallParseStatus
+
+
+# streaming completions send a stream of ContentDeltas
+ContentDelta = register_schema(
+    Annotated[
+        Union[TextDelta, ImageDelta, ToolCallDelta],
+        Field(discriminator="type"),
+    ],
+    name="ContentDelta",
 )
