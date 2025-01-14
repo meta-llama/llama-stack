@@ -375,13 +375,13 @@ class TestInference:
     ):
         inference_impl, _ = inference_stack
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type in ("remote::groq",):
-            pytest.skip(
-                provider.__provider_spec__.provider_type
-                + " doesn't support tool calling yet"
-            )
+        if (
+            provider.__provider_spec__.provider_type == "remote::groq"
+            and "Llama-3.2" in inference_model
+        ):
+            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
+            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
 
-        inference_impl, _ = inference_stack
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -422,11 +422,12 @@ class TestInference:
     ):
         inference_impl, _ = inference_stack
         provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if provider.__provider_spec__.provider_type in ("remote::groq",):
-            pytest.skip(
-                provider.__provider_spec__.provider_type
-                + " doesn't support tool calling yet"
-            )
+        if (
+            provider.__provider_spec__.provider_type == "remote::groq"
+            and "Llama-3.2" in inference_model
+        ):
+            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
+            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
 
         messages = sample_messages + [
             UserMessage(
@@ -444,7 +445,6 @@ class TestInference:
                 **common_params,
             )
         ]
-
         assert len(response) > 0
         assert all(
             isinstance(chunk, ChatCompletionResponseStreamChunk) for chunk in response
