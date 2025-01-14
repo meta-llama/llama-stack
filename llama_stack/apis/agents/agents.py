@@ -22,12 +22,11 @@ from llama_models.schema_utils import json_schema_type, register_schema, webmeth
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Annotated
 
-from llama_stack.apis.common.content_types import InterleavedContent, URL
+from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, URL
 from llama_stack.apis.inference import (
     CompletionMessage,
     SamplingParams,
     ToolCall,
-    ToolCallDelta,
     ToolChoice,
     ToolPromptFormat,
     ToolResponse,
@@ -216,8 +215,7 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
     step_type: StepType
     step_id: str
 
-    text_delta: Optional[str] = None
-    tool_call_delta: Optional[ToolCallDelta] = None
+    delta: ContentDelta
 
 
 @json_schema_type

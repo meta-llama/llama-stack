@@ -11,7 +11,13 @@ from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.datatypes import SamplingParams, StopReason
 from pydantic import BaseModel
 
-from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    TextContentItem,
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 
 from llama_stack.apis.inference import (
     ChatCompletionResponse,
@@ -22,8 +28,6 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     Message,
-    ToolCallDelta,
-    ToolCallParseStatus,
 )
 
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -138,7 +142,7 @@ async def process_completion_stream_response(
             text = ""
             continue
         yield CompletionResponseStreamChunk(
-            delta=text,
+            delta=TextDelta(text=text),
             stop_reason=stop_reason,
         )
         if finish_reason:
@@ -149,7 +153,7 @@ async def process_completion_stream_response(
             break
 
     yield CompletionResponseStreamChunk(
-        delta="",
+        delta=TextDelta(text=""),
         stop_reason=stop_reason,
     )
 
@@ -160,7 +164,7 @@ async def process_chat_completion_stream_response(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.start,
-            delta="",
+            delta=TextDelta(text=""),
         )
     )
 
@@ -227,7 +231,7 @@ async def process_chat_completion_stream_response(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
-                    delta=text,
+                    delta=TextDelta(text=text),
                     stop_reason=stop_reason,
                 )
             )
@@ -262,7 +266,7 @@ async def process_chat_completion_stream_response(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.complete,
-            delta="",
+            delta=TextDelta(text=""),
             stop_reason=stop_reason,
         )
     )
