@@ -9,6 +9,7 @@
 LLAMA_MODELS_DIR=${LLAMA_MODELS_DIR:-}
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
+PYPI_VERSION=${PYPI_VERSION:-}
 BUILD_PLATFORM=${BUILD_PLATFORM:-}
 
 if [ "$#" -lt 4 ]; then
@@ -113,7 +114,12 @@ RUN pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
   llama-models==$TEST_PYPI_VERSION llama-stack-client==$TEST_PYPI_VERSION llama-stack==$TEST_PYPI_VERSION
 EOF
   else
-    add_to_docker "RUN pip install --no-cache llama-stack"
+    if [ -n "$PYPI_VERSION" ]; then
+      SPEC_VERSION="llama-stack==${PYPI_VERSION} llama-models==${PYPI_VERSION} llama-stack-client==${PYPI_VERSION}"
+    else
+      SPEC_VERSION="llama-stack"
+    fi
+    add_to_docker "RUN pip install --no-cache $SPEC_VERSION"
   fi
 fi
 
