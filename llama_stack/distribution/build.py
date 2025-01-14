@@ -153,7 +153,6 @@ def build_image(
         return_code = run_with_pty(args)
     else:
         return_code = run_command(args)
-        print("return code", return_code)
 
     if return_code != 0:
         log.error(

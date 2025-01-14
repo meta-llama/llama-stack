@@ -101,15 +101,9 @@ def run_with_pty(command):
 def run_command(command):
     try:
         result = subprocess.run(command, capture_output=True, text=True, check=True)
-        print("Script Output:", result.stdout)
+        print("Script Output\n", result.stdout)
         return result.returncode
     except subprocess.CalledProcessError as e:
         print("Error running script:", e)
         print("Error output:", e.stderr)
         return e.returncode
-    # process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # output, error = process.communicate()
-    # if process.returncode != 0:
-    #     log.error(f"Error: {error.decode('utf-8')}")
-    #     sys.exit(1)
-    # return output.decode("utf-8")

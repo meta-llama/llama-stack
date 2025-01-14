@@ -31,3 +31,7 @@ jobs:
         run: |
           llama stack build --template ollama --image-type docker
           docker images
+
+      - name: Push to dockerhub
+        run: |
+          docker push localhost/distribution-ollama llamastack/distribution-ollama:0.0.63-test
