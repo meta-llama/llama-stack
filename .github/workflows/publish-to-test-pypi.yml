@@ -1,14 +1,15 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      version:
-        description: 'Version number (e.g. 0.0.63.dev20250111)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
@@ -206,11 +207,11 @@ jobs:
         attempt=1
         while [ $attempt -le $max_attempts ]; do
           echo "Attempt $attempt of $max_attempts to install package..."
-          if pip install --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ llama-stack==${{ needs.trigger-client-and-models-build.outputs.version }}; then
+          if pip install --no-cache --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ llama-stack==${{ needs.trigger-client-and-models-build.outputs.version }}; then
             echo "Package installed successfully"
             break
           fi
-          if [ $attempt -eq $max_attempts ]; then
+          if [ $attempt -ge $max_attempts ]; then
             echo "Failed to install package after $max_attempts attempts"
             exit 1
           fi
