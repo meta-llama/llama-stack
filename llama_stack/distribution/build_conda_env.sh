@@ -105,7 +105,13 @@ ensure_conda_env_python310() {
       printf "Installing from LLAMA_STACK_DIR: $LLAMA_STACK_DIR\n"
       $CONDA_PREFIX/bin/pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
     else
-      $CONDA_PREFIX/bin/pip install --no-cache-dir llama-stack
+      PYPI_VERSION="${PYPI_VERSION:-}"
+      if [ -n "$PYPI_VERSION" ]; then
+        SPEC_VERSION="llama-stack==${PYPI_VERSION} llama-models==${PYPI_VERSION} llama-stack-client==${PYPI_VERSION}"
+      else
+        SPEC_VERSION="llama-stack"
+      fi
+      $CONDA_PREFIX/bin/pip install --no-cache-dir $SPEC_VERSION
     fi
 
     if [ -n "$LLAMA_MODELS_DIR" ]; then
