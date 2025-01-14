@@ -23,4 +23,6 @@ distribution_spec:
     - inline::llama-guard
     memory:
     - inline::faiss
+    tool_runtime:
+    - remote::brave-search
 image_type: conda

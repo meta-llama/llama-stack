@@ -12,6 +12,7 @@ apis:
 - scoring
 - telemetry
 - post_training
+- tool_runtime
 providers:
   inference:
   - provider_id: meta-reference-inference
@@ -63,6 +64,13 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/faiss_store.db
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+
 
 metadata_store:
   namespace: null
