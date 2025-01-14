@@ -4,10 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .config import CodeShieldConfig
+from .config import CodeScannerConfig
 
 
-async def get_provider_impl(config: CodeShieldConfig, deps):
+async def get_provider_impl(config: CodeScannerConfig, deps):
     from .code_scanner import MetaReferenceCodeScannerSafetyImpl
 
     impl = MetaReferenceCodeScannerSafetyImpl(config, deps)

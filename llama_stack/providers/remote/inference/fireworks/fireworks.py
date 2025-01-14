@@ -8,7 +8,6 @@ from typing import AsyncGenerator, List, Optional, Union
 
 from fireworks.client import Fireworks
 from llama_models.datatypes import CoreModelId
-
 from llama_models.llama3.api.chat_format import ChatFormat
 from llama_models.llama3.api.tokenizer import Tokenizer
 
@@ -52,46 +51,45 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import FireworksImplConfig
 
-
 MODEL_ALIASES = [
     build_model_alias(
-        "fireworks/llama-v3p1-8b-instruct",
+        "accounts/fireworks/models/llama-v3p1-8b-instruct",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p1-70b-instruct",
+        "accounts/fireworks/models/llama-v3p1-70b-instruct",
         CoreModelId.llama3_1_70b_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p1-405b-instruct",
+        "accounts/fireworks/models/llama-v3p1-405b-instruct",
         CoreModelId.llama3_1_405b_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p2-1b-instruct",
+        "accounts/fireworks/models/llama-v3p2-1b-instruct",
         CoreModelId.llama3_2_1b_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p2-3b-instruct",
+        "accounts/fireworks/models/llama-v3p2-3b-instruct",
         CoreModelId.llama3_2_3b_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p2-11b-vision-instruct",
+        "accounts/fireworks/models/llama-v3p2-11b-vision-instruct",
         CoreModelId.llama3_2_11b_vision_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p2-90b-vision-instruct",
+        "accounts/fireworks/models/llama-v3p2-90b-vision-instruct",
         CoreModelId.llama3_2_90b_vision_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-v3p3-70b-instruct",
+        "accounts/fireworks/models/llama-v3p3-70b-instruct",
         CoreModelId.llama3_3_70b_instruct.value,
     ),
     build_model_alias(
-        "fireworks/llama-guard-3-8b",
+        "accounts/fireworks/models/llama-guard-3-8b",
         CoreModelId.llama_guard_3_8b.value,
     ),
     build_model_alias(
-        "fireworks/llama-guard-3-11b-vision",
+        "accounts/fireworks/models/llama-guard-3-11b-vision",
         CoreModelId.llama_guard_3_11b_vision.value,
     ),
 ]
@@ -118,7 +116,7 @@ class FireworksInferenceAdapter(
             provider_data = self.get_request_provider_data()
             if provider_data is None or not provider_data.fireworks_api_key:
                 raise ValueError(
-                    'Pass Fireworks API Key in the header X-LlamaStack-ProviderData as { "fireworks_api_key": <your api key>}'
+                    'Pass Fireworks API Key in the header X-LlamaStack-Provider-Data as { "fireworks_api_key": <your api key>}'
                 )
             return provider_data.fireworks_api_key
 
@@ -198,7 +196,7 @@ class FireworksInferenceAdapter(
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,

@@ -7,11 +7,8 @@
 from typing import AsyncGenerator, List, Optional
 
 from llama_models.datatypes import CoreModelId
-
 from llama_models.llama3.api.chat_format import ChatFormat
-
 from llama_models.llama3.api.tokenizer import Tokenizer
-
 from openai import OpenAI
 
 from llama_stack.apis.common.content_types import InterleavedContent
@@ -28,7 +25,6 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
@@ -43,7 +39,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import DatabricksImplConfig
-
 
 model_aliases = [
     build_model_alias(
@@ -91,7 +86,7 @@ class DatabricksInferenceAdapter(ModelRegistryHelper, Inference):
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:

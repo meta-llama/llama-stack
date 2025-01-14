@@ -1,6 +1,5 @@
 version: '2'
 image_name: bedrock
-docker_image: null
 conda_env: bedrock
 apis:
 - agents
@@ -11,6 +10,7 @@ apis:
 - safety
 - scoring
 - telemetry
+- tool_runtime
 providers:
   inference:
   - provider_id: bedrock
@@ -65,8 +65,24 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: code-interpreter
+    provider_type: inline::code-interpreter
+    config: {}
+  - provider_id: memory-runtime
+    provider_type: inline::memory-runtime
+    config: {}
 metadata_store:
-  namespace: null
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/registry.db
 models:
@@ -90,3 +106,10 @@ memory_banks: []
 datasets: []
 scoring_fns: []
 eval_tasks: []
+tool_groups:
+- toolgroup_id: builtin::websearch
+  provider_id: tavily-search
+- toolgroup_id: builtin::memory
+  provider_id: memory-runtime
+- toolgroup_id: builtin::code_interpreter
+  provider_id: code-interpreter

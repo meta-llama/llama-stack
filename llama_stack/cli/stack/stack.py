@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import argparse
+from importlib.metadata import version
 
 from llama_stack.cli.subcommand import Subcommand
 
@@ -22,6 +23,12 @@ class StackParser(Subcommand):
             "stack",
             prog="llama stack",
             description="Operations for the Llama Stack / Distributions",
+        )
+
+        self.parser.add_argument(
+            "--version",
+            action="version",
+            version=f"{version('llama-stack')}",
         )
 
         subparsers = self.parser.add_subparsers(title="stack_subcommands")

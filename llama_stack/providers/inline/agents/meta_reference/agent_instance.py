@@ -4,8 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import asyncio
 import copy
+import json
 import logging
 import os
 import re
@@ -13,16 +13,16 @@ import secrets
 import string
 import uuid
 from datetime import datetime
-from typing import AsyncGenerator, Dict, List, Optional, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
-
-from llama_models.llama3.api.datatypes import BuiltinTool
+from llama_models.llama3.api.datatypes import BuiltinTool, ToolCall, ToolParamDefinition
 
 from llama_stack.apis.agents import (
     AgentConfig,
-    AgentTool,
+    AgentToolGroup,
+    AgentToolGroupWithArgs,
     AgentTurnCreateRequest,
     AgentTurnResponseEvent,
     AgentTurnResponseEventType,
@@ -33,25 +33,14 @@ from llama_stack.apis.agents import (
     AgentTurnResponseTurnCompletePayload,
     AgentTurnResponseTurnStartPayload,
     Attachment,
-    CodeInterpreterToolDefinition,
-    FunctionCallToolDefinition,
+    Document,
     InferenceStep,
-    MemoryRetrievalStep,
-    MemoryToolDefinition,
-    PhotogenToolDefinition,
-    SearchToolDefinition,
     ShieldCallStep,
     StepType,
     ToolExecutionStep,
     Turn,
-    WolframAlphaToolDefinition,
 )
-
-from llama_stack.apis.common.content_types import (
-    InterleavedContent,
-    TextContentItem,
-    URL,
-)
+from llama_stack.apis.common.content_types import TextContentItem, URL
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
     CompletionMessage,
@@ -62,32 +51,20 @@ from llama_stack.apis.inference import (
     SystemMessage,
     ToolCallDelta,
     ToolCallParseStatus,
-    ToolChoice,
     ToolDefinition,
     ToolResponse,
     ToolResponseMessage,
     UserMessage,
 )
-from llama_stack.apis.memory import Memory, MemoryBankDocument, QueryDocumentsResponse
+from llama_stack.apis.memory import Memory, MemoryBankDocument
 from llama_stack.apis.memory_banks import MemoryBanks, VectorMemoryBankParams
 from llama_stack.apis.safety import Safety
-
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.providers.utils.kvstore import KVStore
-from llama_stack.providers.utils.memory.vector_store import concat_interleaved_content
 from llama_stack.providers.utils.telemetry import tracing
 
 from .persistence import AgentPersistence
-from .rag.context_retriever import generate_rag_query
 from .safety import SafetyException, ShieldRunnerMixin
-from .tools.base import BaseTool
-from .tools.builtin import (
-    CodeInterpreterTool,
-    interpret_content_as_attachment,
-    PhotogenTool,
-    SearchTool,
-    WolframAlphaTool,
-)
-from .tools.safety import SafeTool
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +73,12 @@ def make_random_string(length: int = 8):
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
     )
+
+
+TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
+MEMORY_QUERY_TOOL = "query_memory"
+WEB_SEARCH_TOOL = "web_search"
+MEMORY_GROUP = "builtin::memory"
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -108,6 +91,8 @@ class ChatAgent(ShieldRunnerMixin):
         memory_api: Memory,
         memory_banks_api: MemoryBanks,
         safety_api: Safety,
+        tool_runtime_api: ToolRuntime,
+        tool_groups_api: ToolGroups,
         persistence_store: KVStore,
     ):
         self.agent_id = agent_id
@@ -118,29 +103,8 @@ class ChatAgent(ShieldRunnerMixin):
         self.memory_banks_api = memory_banks_api
         self.safety_api = safety_api
         self.storage = AgentPersistence(agent_id, persistence_store)
-
-        builtin_tools = []
-        for tool_defn in agent_config.tools:
-            if isinstance(tool_defn, WolframAlphaToolDefinition):
-                tool = WolframAlphaTool(tool_defn.api_key)
-            elif isinstance(tool_defn, SearchToolDefinition):
-                tool = SearchTool(tool_defn.engine, tool_defn.api_key)
-            elif isinstance(tool_defn, CodeInterpreterToolDefinition):
-                tool = CodeInterpreterTool()
-            elif isinstance(tool_defn, PhotogenToolDefinition):
-                tool = PhotogenTool(dump_dir=self.tempdir)
-            else:
-                continue
-
-            builtin_tools.append(
-                SafeTool(
-                    tool,
-                    safety_api,
-                    tool_defn.input_shields,
-                    tool_defn.output_shields,
-                )
-            )
-        self.tools_dict = {t.get_name(): t for t in builtin_tools}
+        self.tool_runtime_api = tool_runtime_api
+        self.tool_groups_api = tool_groups_api
 
         ShieldRunnerMixin.__init__(
             self,
@@ -228,9 +192,10 @@ class ChatAgent(ShieldRunnerMixin):
                 session_id=request.session_id,
                 turn_id=turn_id,
                 input_messages=messages,
-                attachments=request.attachments or [],
                 sampling_params=self.agent_config.sampling_params,
                 stream=request.stream,
+                documents=request.documents,
+                toolgroups_for_turn=request.toolgroups,
             ):
                 if isinstance(chunk, CompletionMessage):
                     log.info(
@@ -278,9 +243,10 @@ class ChatAgent(ShieldRunnerMixin):
         session_id: str,
         turn_id: str,
         input_messages: List[Message],
-        attachments: List[Attachment],
         sampling_params: SamplingParams,
         stream: bool = False,
+        documents: Optional[List[Document]] = None,
+        toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
         # Doing async generators makes downstream code much simpler and everything amenable to
         # streaming. However, it also makes things complicated here because AsyncGenerators cannot
@@ -297,7 +263,13 @@ class ChatAgent(ShieldRunnerMixin):
                     yield res
 
         async for res in self._run(
-            session_id, turn_id, input_messages, attachments, sampling_params, stream
+            session_id,
+            turn_id,
+            input_messages,
+            sampling_params,
+            stream,
+            documents,
+            toolgroups_for_turn,
         ):
             if isinstance(res, bool):
                 return
@@ -353,6 +325,7 @@ class ChatAgent(ShieldRunnerMixin):
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepCompletePayload(
                             step_type=StepType.shield_call.value,
+                            step_id=step_id,
                             step_details=ShieldCallStep(
                                 step_id=step_id,
                                 turn_id=turn_id,
@@ -373,6 +346,7 @@ class ChatAgent(ShieldRunnerMixin):
                 event=AgentTurnResponseEvent(
                     payload=AgentTurnResponseStepCompletePayload(
                         step_type=StepType.shield_call.value,
+                        step_id=step_id,
                         step_details=ShieldCallStep(
                             step_id=step_id,
                             turn_id=turn_id,
@@ -388,73 +362,116 @@ class ChatAgent(ShieldRunnerMixin):
         session_id: str,
         turn_id: str,
         input_messages: List[Message],
-        attachments: List[Attachment],
         sampling_params: SamplingParams,
         stream: bool = False,
+        documents: Optional[List[Document]] = None,
+        toolgroups_for_turn: Optional[List[AgentToolGroup]] = None,
     ) -> AsyncGenerator:
-        enabled_tools = set(t.type for t in self.agent_config.tools)
-        need_rag_context = await self._should_retrieve_context(
-            input_messages, attachments
-        )
-        if need_rag_context:
-            step_id = str(uuid.uuid4())
-            yield AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseStepStartPayload(
-                        step_type=StepType.memory_retrieval.value,
-                        step_id=step_id,
+        toolgroup_args = {}
+        for toolgroup in self.agent_config.toolgroups:
+            if isinstance(toolgroup, AgentToolGroupWithArgs):
+                toolgroup_args[toolgroup.name] = toolgroup.args
+        if toolgroups_for_turn:
+            for toolgroup in toolgroups_for_turn:
+                if isinstance(toolgroup, AgentToolGroupWithArgs):
+                    toolgroup_args[toolgroup.name] = toolgroup.args
+
+        tool_defs, tool_to_group = await self._get_tool_defs(toolgroups_for_turn)
+        if documents:
+            await self.handle_documents(
+                session_id, documents, input_messages, tool_defs
+            )
+        if MEMORY_QUERY_TOOL in tool_defs and len(input_messages) > 0:
+            memory_tool_group = tool_to_group.get(MEMORY_QUERY_TOOL, None)
+            if memory_tool_group is None:
+                raise ValueError(f"Memory tool group not found for {MEMORY_QUERY_TOOL}")
+            with tracing.span(MEMORY_QUERY_TOOL) as span:
+                step_id = str(uuid.uuid4())
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepStartPayload(
+                            step_type=StepType.tool_execution.value,
+                            step_id=step_id,
+                        )
                     )
                 )
-            )
+                query_args = {
+                    "messages": [msg.content for msg in input_messages],
+                    **toolgroup_args.get(memory_tool_group, {}),
+                }
 
-            # TODO: find older context from the session and either replace it
-            # or append with a sliding window. this is really a very simplistic implementation
-            with tracing.span("retrieve_rag_context") as span:
-                rag_context, bank_ids = await self._retrieve_context(
-                    session_id, input_messages, attachments
+                session_info = await self.storage.get_session_info(session_id)
+                # if the session has a memory bank id, let the memory tool use it
+                if session_info.memory_bank_id:
+                    if "memory_bank_ids" not in query_args:
+                        query_args["memory_bank_ids"] = []
+                    query_args["memory_bank_ids"].append(session_info.memory_bank_id)
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepProgressPayload(
+                            step_type=StepType.tool_execution.value,
+                            step_id=step_id,
+                            tool_call_delta=ToolCallDelta(
+                                parse_status=ToolCallParseStatus.success,
+                                content=ToolCall(
+                                    call_id="",
+                                    tool_name=MEMORY_QUERY_TOOL,
+                                    arguments={},
+                                ),
+                            ),
+                        )
+                    )
+                )
+                result = await self.tool_runtime_api.invoke_tool(
+                    tool_name=MEMORY_QUERY_TOOL,
+                    args=query_args,
+                )
+
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepCompletePayload(
+                            step_type=StepType.tool_execution.value,
+                            step_id=step_id,
+                            step_details=ToolExecutionStep(
+                                step_id=step_id,
+                                turn_id=turn_id,
+                                tool_calls=[
+                                    ToolCall(
+                                        call_id="",
+                                        tool_name=MEMORY_QUERY_TOOL,
+                                        arguments={},
+                                    )
+                                ],
+                                tool_responses=[
+                                    ToolResponse(
+                                        call_id="",
+                                        tool_name=MEMORY_QUERY_TOOL,
+                                        content=result.content,
+                                    )
+                                ],
+                            ),
+                        )
+                    )
                 )
                 span.set_attribute(
                     "input", [m.model_dump_json() for m in input_messages]
                 )
-                span.set_attribute("output", rag_context)
-                span.set_attribute("bank_ids", bank_ids)
-
-            step_id = str(uuid.uuid4())
-            yield AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseStepCompletePayload(
-                        step_type=StepType.memory_retrieval.value,
-                        step_id=step_id,
-                        step_details=MemoryRetrievalStep(
-                            turn_id=turn_id,
-                            step_id=step_id,
-                            memory_bank_ids=bank_ids,
-                            inserted_context=rag_context or "",
-                        ),
-                    )
-                )
-            )
-
-            if rag_context:
-                last_message = input_messages[-1]
-                last_message.context = rag_context
-
-        elif attachments and AgentTool.code_interpreter.value in enabled_tools:
-            urls = [a.content for a in attachments if isinstance(a.content, URL)]
-            # TODO: we need to migrate URL away from str type
-            pattern = re.compile("^(https?://|file://|data:)")
-            urls += [
-                URL(uri=a.content) for a in attachments if pattern.match(a.content)
-            ]
-            msg = await attachment_message(self.tempdir, urls)
-            input_messages.append(msg)
+                span.set_attribute("output", result.content)
+                span.set_attribute("error_code", result.error_code)
+                span.set_attribute("error_message", result.error_message)
+                span.set_attribute("tool_name", MEMORY_QUERY_TOOL)
+                if result.error_code == 0:
+                    last_message = input_messages[-1]
+                    last_message.context = result.content
 
         output_attachments = []
 
         n_iter = 0
+        # Build a map of custom tools to their definitions for faster lookup
+        client_tools = {}
+        for tool in self.agent_config.client_tools:
+            client_tools[tool.name] = tool
         while True:
-            msg = input_messages[-1]
-
             step_id = str(uuid.uuid4())
             yield AgentTurnResponseStreamChunk(
                 event=AgentTurnResponseEvent(
@@ -473,7 +490,11 @@ class ChatAgent(ShieldRunnerMixin):
                 async for chunk in await self.inference_api.chat_completion(
                     self.agent_config.model,
                     input_messages,
-                    tools=self._get_tools(),
+                    tools=[
+                        tool
+                        for tool in tool_defs.values()
+                        if tool_to_group.get(tool.tool_name, None) != MEMORY_GROUP
+                    ],
                     tool_prompt_format=self.agent_config.tool_prompt_format,
                     stream=True,
                     sampling_params=sampling_params,
@@ -572,9 +593,9 @@ class ChatAgent(ShieldRunnerMixin):
                     # TODO: UPDATE RETURN TYPE TO SEND A TUPLE OF (MESSAGE, ATTACHMENTS)
                     if len(output_attachments) > 0:
                         if isinstance(message.content, list):
-                            message.content += attachments
+                            message.content += output_attachments
                         else:
-                            message.content = [message.content] + attachments
+                            message.content = [message.content] + output_attachments
                     yield message
                 else:
                     log.info(f"Partial message: {str(message)}")
@@ -582,9 +603,7 @@ class ChatAgent(ShieldRunnerMixin):
             else:
                 log.info(f"{str(message)}")
                 tool_call = message.tool_calls[0]
-
-                name = tool_call.tool_name
-                if not isinstance(name, BuiltinTool) or name not in enabled_tools:
+                if tool_call.tool_name in client_tools:
                     yield message
                     return
 
@@ -607,16 +626,22 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                 )
 
+                tool_name = tool_call.tool_name
+                if isinstance(tool_name, BuiltinTool):
+                    tool_name = tool_name.value
                 with tracing.span(
                     "tool_execution",
                     {
-                        "tool_name": tool_call.tool_name,
+                        "tool_name": tool_name,
                         "input": message.model_dump_json(),
                     },
                 ) as span:
                     result_messages = await execute_tool_call_maybe(
-                        self.tools_dict,
+                        self.tool_runtime_api,
+                        session_id,
                         [message],
+                        toolgroup_args,
+                        tool_to_group,
                     )
                     assert (
                         len(result_messages) == 1
@@ -628,6 +653,7 @@ class ChatAgent(ShieldRunnerMixin):
                     event=AgentTurnResponseEvent(
                         payload=AgentTurnResponseStepCompletePayload(
                             step_type=StepType.tool_execution.value,
+                            step_id=step_id,
                             step_details=ToolExecutionStep(
                                 step_id=step_id,
                                 turn_id=turn_id,
@@ -647,7 +673,7 @@ class ChatAgent(ShieldRunnerMixin):
                 # TODO: add tool-input touchpoint and a "start" event for this step also
                 # but that needs a lot more refactoring of Tool code potentially
 
-                if out_attachment := interpret_content_as_attachment(
+                if out_attachment := _interpret_content_as_attachment(
                     result_message.content
                 ):
                     # NOTE: when we push this message back to the model, the model may ignore the
@@ -658,6 +684,150 @@ class ChatAgent(ShieldRunnerMixin):
                 input_messages = input_messages + [message, result_message]
 
             n_iter += 1
+
+    async def _get_tool_defs(
+        self, toolgroups_for_turn: Optional[List[AgentToolGroup]] = None
+    ) -> Tuple[Dict[str, ToolDefinition], Dict[str, str]]:
+        # Determine which tools to include
+        agent_config_toolgroups = set(
+            (
+                toolgroup.name
+                if isinstance(toolgroup, AgentToolGroupWithArgs)
+                else toolgroup
+            )
+            for toolgroup in self.agent_config.toolgroups
+        )
+        toolgroups_for_turn_set = (
+            agent_config_toolgroups
+            if toolgroups_for_turn is None
+            else {
+                (
+                    toolgroup.name
+                    if isinstance(toolgroup, AgentToolGroupWithArgs)
+                    else toolgroup
+                )
+                for toolgroup in toolgroups_for_turn
+            }
+        )
+
+        tool_def_map = {}
+        tool_to_group = {}
+
+        for tool_def in self.agent_config.client_tools:
+            if tool_def_map.get(tool_def.name, None):
+                raise ValueError(f"Tool {tool_def.name} already exists")
+            tool_def_map[tool_def.name] = ToolDefinition(
+                tool_name=tool_def.name,
+                description=tool_def.description,
+                parameters={
+                    param.name: ToolParamDefinition(
+                        param_type=param.parameter_type,
+                        description=param.description,
+                        required=param.required,
+                        default=param.default,
+                    )
+                    for param in tool_def.parameters
+                },
+            )
+            tool_to_group[tool_def.name] = "__client_tools__"
+        for toolgroup_name in agent_config_toolgroups:
+            if toolgroup_name not in toolgroups_for_turn_set:
+                continue
+            tools = await self.tool_groups_api.list_tools(tool_group_id=toolgroup_name)
+            for tool_def in tools:
+                if (
+                    toolgroup_name.startswith("builtin")
+                    and toolgroup_name != MEMORY_GROUP
+                ):
+                    tool_name = tool_def.identifier
+                    built_in_type = BuiltinTool.brave_search
+                    if tool_name == "web_search":
+                        built_in_type = BuiltinTool.brave_search
+                    else:
+                        built_in_type = BuiltinTool(tool_name)
+
+                    if tool_def_map.get(built_in_type, None):
+                        raise ValueError(f"Tool {built_in_type} already exists")
+
+                    tool_def_map[built_in_type] = ToolDefinition(
+                        tool_name=built_in_type
+                    )
+                    tool_to_group[built_in_type] = tool_def.toolgroup_id
+                    continue
+
+                if tool_def_map.get(tool_def.identifier, None):
+                    raise ValueError(f"Tool {tool_def.identifier} already exists")
+                tool_def_map[tool_def.identifier] = ToolDefinition(
+                    tool_name=tool_def.identifier,
+                    description=tool_def.description,
+                    parameters={
+                        param.name: ToolParamDefinition(
+                            param_type=param.parameter_type,
+                            description=param.description,
+                            required=param.required,
+                            default=param.default,
+                        )
+                        for param in tool_def.parameters
+                    },
+                )
+                tool_to_group[tool_def.identifier] = tool_def.toolgroup_id
+
+        return tool_def_map, tool_to_group
+
+    async def handle_documents(
+        self,
+        session_id: str,
+        documents: List[Document],
+        input_messages: List[Message],
+        tool_defs: Dict[str, ToolDefinition],
+    ) -> None:
+        memory_tool = tool_defs.get(MEMORY_QUERY_TOOL, None)
+        code_interpreter_tool = tool_defs.get(BuiltinTool.code_interpreter, None)
+        content_items = []
+        url_items = []
+        pattern = re.compile("^(https?://|file://|data:)")
+        for d in documents:
+            if isinstance(d.content, URL):
+                url_items.append(d.content)
+            elif pattern.match(d.content):
+                url_items.append(URL(uri=d.content))
+            else:
+                content_items.append(d)
+
+        # Save the contents to a tempdir and use its path as a URL if code interpreter is present
+        if code_interpreter_tool:
+            for c in content_items:
+                temp_file_path = os.path.join(
+                    self.tempdir, f"{make_random_string()}.txt"
+                )
+                with open(temp_file_path, "w") as temp_file:
+                    temp_file.write(c.content)
+                url_items.append(URL(uri=f"file://{temp_file_path}"))
+
+        if memory_tool and code_interpreter_tool:
+            # if both memory and code_interpreter are available, we download the URLs
+            # and attach the data to the last message.
+            msg = await attachment_message(self.tempdir, url_items)
+            input_messages.append(msg)
+            # Since memory is present, add all the data to the memory bank
+            await self.add_to_session_memory_bank(session_id, documents)
+        elif code_interpreter_tool:
+            # if only code_interpreter is available, we download the URLs to a tempdir
+            # and attach the path to them as a message to inference with the
+            # assumption that the model invokes the code_interpreter tool with the path
+            msg = await attachment_message(self.tempdir, url_items)
+            input_messages.append(msg)
+        elif memory_tool:
+            # if only memory is available, we load the data from the URLs and content items to the memory bank
+            await self.add_to_session_memory_bank(session_id, documents)
+        else:
+            # if no memory or code_interpreter tool is available,
+            # we try to load the data from the URLs and content items as a message to inference
+            # and add it to the last message's context
+            input_messages[-1].context = "\n".join(
+                [doc.content for doc in content_items]
+                + await load_data_from_urls(url_items)
+            )
 
     async def _ensure_memory_bank(self, session_id: str) -> str:
         session_info = await self.storage.get_session_info(session_id)
@@ -679,129 +849,39 @@ class ChatAgent(ShieldRunnerMixin):
 
         return bank_id
 
-    async def _should_retrieve_context(
-        self, messages: List[Message], attachments: List[Attachment]
-    ) -> bool:
-        enabled_tools = set(t.type for t in self.agent_config.tools)
-        if attachments:
-            if (
-                AgentTool.code_interpreter.value in enabled_tools
-                and self.agent_config.tool_choice == ToolChoice.required
-            ):
-                return False
-            else:
-                return True
-
-        return AgentTool.memory.value in enabled_tools
-
-    def _memory_tool_definition(self) -> Optional[MemoryToolDefinition]:
-        for t in self.agent_config.tools:
-            if t.type == AgentTool.memory.value:
-                return t
-
-        return None
-
-    async def _retrieve_context(
-        self, session_id: str, messages: List[Message], attachments: List[Attachment]
-    ) -> Tuple[Optional[InterleavedContent], List[int]]:  # (rag_context, bank_ids)
-        bank_ids = []
-
-        memory = self._memory_tool_definition()
-        assert memory is not None, "Memory tool not configured"
-        bank_ids.extend(c.bank_id for c in memory.memory_bank_configs)
-
-        if attachments:
-            bank_id = await self._ensure_memory_bank(session_id)
-            bank_ids.append(bank_id)
-
-            documents = [
-                MemoryBankDocument(
-                    document_id=str(uuid.uuid4()),
-                    content=a.content,
-                    mime_type=a.mime_type,
-                    metadata={},
-                )
-                for a in attachments
-            ]
-            with tracing.span("insert_documents"):
-                await self.memory_api.insert_documents(bank_id, documents)
-        else:
-            session_info = await self.storage.get_session_info(session_id)
-            if session_info.memory_bank_id:
-                bank_ids.append(session_info.memory_bank_id)
-
-        if not bank_ids:
-            # this can happen if the per-session memory bank is not yet populated
-            # (i.e., no prior turns uploaded an Attachment)
-            return None, []
-
-        query = await generate_rag_query(
-            memory.query_generator_config, messages, inference_api=self.inference_api
-        )
-        tasks = [
-            self.memory_api.query_documents(
-                bank_id=bank_id,
-                query=query,
-                params={
-                    "max_chunks": 5,
-                },
+    async def add_to_session_memory_bank(
+        self, session_id: str, data: List[Document]
+    ) -> None:
+        bank_id = await self._ensure_memory_bank(session_id)
+        documents = [
+            MemoryBankDocument(
+                document_id=str(uuid.uuid4()),
+                content=a.content,
+                mime_type=a.mime_type,
+                metadata={},
             )
-            for bank_id in bank_ids
+            for a in data
         ]
-        results: List[QueryDocumentsResponse] = await asyncio.gather(*tasks)
-        chunks = [c for r in results for c in r.chunks]
-        scores = [s for r in results for s in r.scores]
-
-        if not chunks:
-            return None, bank_ids
-
-        # sort by score
-        chunks, scores = zip(
-            *sorted(zip(chunks, scores), key=lambda x: x[1], reverse=True)
+        await self.memory_api.insert_documents(
+            bank_id=bank_id,
+            documents=documents,
         )
 
-        tokens = 0
-        picked = []
-        for c in chunks[: memory.max_chunks]:
-            tokens += c.token_count
-            if tokens > memory.max_tokens_in_context:
-                log.error(
-                    f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
-                )
-                break
-            picked.append(f"id:{c.document_id}; content:{c.content}")
 
-        return (
-            concat_interleaved_content(
-                [
-                    "Here are the retrieved documents for relevant context:\n=== START-RETRIEVED-CONTEXT ===\n",
-                    *picked,
-                    "\n=== END-RETRIEVED-CONTEXT ===\n",
-                ]
-            ),
-            bank_ids,
-        )
-
-    def _get_tools(self) -> List[ToolDefinition]:
-        ret = []
-        for t in self.agent_config.tools:
-            if isinstance(t, SearchToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.brave_search))
-            elif isinstance(t, WolframAlphaToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.wolfram_alpha))
-            elif isinstance(t, PhotogenToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.photogen))
-            elif isinstance(t, CodeInterpreterToolDefinition):
-                ret.append(ToolDefinition(tool_name=BuiltinTool.code_interpreter))
-            elif isinstance(t, FunctionCallToolDefinition):
-                ret.append(
-                    ToolDefinition(
-                        tool_name=t.function_name,
-                        description=t.description,
-                        parameters=t.parameters,
-                    )
-                )
-        return ret
+async def load_data_from_urls(urls: List[URL]) -> List[str]:
+    data = []
+    for url in urls:
+        uri = url.uri
+        if uri.startswith("file://"):
+            filepath = uri[len("file://") :]
+            with open(filepath, "r") as f:
+                data.append(f.read())
+        elif uri.startswith("http"):
+            async with httpx.AsyncClient() as client:
+                r = await client.get(uri)
+                resp = r.text
+                data.append(resp)
+    return data
 
 
 async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessage:
@@ -839,7 +919,11 @@ async def attachment_message(tempdir: str, urls: List[URL]) -> ToolResponseMessa
 
 
 async def execute_tool_call_maybe(
-    tools_dict: Dict[str, BaseTool], messages: List[CompletionMessage]
+    tool_runtime_api: ToolRuntime,
+    session_id: str,
+    messages: List[CompletionMessage],
+    toolgroup_args: Dict[str, Dict[str, Any]],
+    tool_to_group: Dict[str, str],
 ) -> List[ToolResponseMessage]:
     # While Tools.run interface takes a list of messages,
     # All tools currently only run on a single message
@@ -851,11 +935,45 @@ async def execute_tool_call_maybe(
 
     tool_call = message.tool_calls[0]
     name = tool_call.tool_name
-    assert isinstance(name, BuiltinTool)
+    group_name = tool_to_group.get(name, None)
+    if group_name is None:
+        raise ValueError(f"Tool {name} not found in any tool group")
+    # get the arguments generated by the model and augment with toolgroup arg overrides for the agent
+    tool_call_args = tool_call.arguments
+    tool_call_args.update(toolgroup_args.get(group_name, {}))
+    if isinstance(name, BuiltinTool):
+        if name == BuiltinTool.brave_search:
+            name = WEB_SEARCH_TOOL
+        else:
+            name = name.value
 
-    name = name.value
+    result = await tool_runtime_api.invoke_tool(
+        tool_name=name,
+        args=dict(
+            session_id=session_id,
+            **tool_call_args,
+        ),
+    )
 
-    assert name in tools_dict, f"Tool {name} not found"
-    tool = tools_dict[name]
-    result_messages = await tool.run(messages)
-    return result_messages
+    return [
+        ToolResponseMessage(
+            call_id=tool_call.call_id,
+            tool_name=tool_call.tool_name,
+            content=result.content,
+        )
+    ]
+
+
+def _interpret_content_as_attachment(
+    content: str,
+) -> Optional[Attachment]:
+    match = re.search(TOOLS_ATTACHMENT_KEY_REGEX, content)
+    if match:
+        snippet = match.group(1)
+        data = json.loads(snippet)
+        return Attachment(
+            url=URL(uri="file://" + data["filepath"]),
+            mime_type=data["mimetype"],
+        )
+
+    return None

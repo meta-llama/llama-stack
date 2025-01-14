@@ -6,7 +6,6 @@
 
 import asyncio
 import logging
-
 from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.llama3.api.datatypes import (
@@ -37,7 +36,6 @@ from llama_stack.apis.inference import (
     ToolCallParseStatus,
     ToolChoice,
 )
-
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
@@ -262,7 +260,7 @@ class MetaReferenceInferenceImpl(
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:

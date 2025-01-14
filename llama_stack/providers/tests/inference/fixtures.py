@@ -15,6 +15,7 @@ from llama_stack.distribution.datatypes import Api, Provider
 from llama_stack.providers.inline.inference.meta_reference import (
     MetaReferenceInferenceConfig,
 )
+from llama_stack.providers.inline.inference.vllm import VLLMConfig
 from llama_stack.providers.remote.inference.bedrock import BedrockConfig
 
 from llama_stack.providers.remote.inference.cerebras import CerebrasImplConfig
@@ -102,6 +103,26 @@ def inference_ollama(inference_model) -> ProviderFixture:
                 ).model_dump(),
             )
         ],
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+def inference_vllm(inference_model) -> ProviderFixture:
+    inference_model = (
+        [inference_model] if isinstance(inference_model, str) else inference_model
+    )
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id=f"vllm-{i}",
+                provider_type="inline::vllm",
+                config=VLLMConfig(
+                    model=m,
+                    enforce_eager=True,  # Make test run faster
+                ).model_dump(),
+            )
+            for i, m in enumerate(inference_model)
+        ]
     )
 
 
@@ -253,6 +274,7 @@ INFERENCE_FIXTURES = [
     "ollama",
     "fireworks",
     "together",
+    "vllm",
     "groq",
     "vllm_remote",
     "remote",
@@ -286,4 +308,8 @@ async def inference_stack(request, inference_model):
         ],
     )
 
-    return test_stack.impls[Api.inference], test_stack.impls[Api.models]
+    # Pytest yield fixture; see https://docs.pytest.org/en/stable/how-to/fixtures.html#yield-fixtures-recommended
+    yield test_stack.impls[Api.inference], test_stack.impls[Api.models]
+
+    # Cleanup code that runs after test case completion
+    await test_stack.impls[Api.inference].shutdown()
