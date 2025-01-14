@@ -383,6 +383,12 @@ class TestInference:
             # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
             pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
 
+        if provider.__provider_spec__.provider_type == "remote::sambanova" and (
+            "-1B-" in inference_model or "-3B-" in inference_model
+        ):
+            # TODO(snova-edawrdm): Remove this skip once SambaNova's tool calling for 1B/ 3B
+            pytest.skip("Sambanova's tool calling for lightweight models don't work")
+
         messages = sample_messages + [
             UserMessage(
                 content="What's the weather like in San Francisco?",
@@ -429,6 +435,9 @@ class TestInference:
         ):
             # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
             pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
+        if provider.__provider_spec__.provider_type == "remote::sambanova":
+            # TODO(snova-edawrdm): Remove this skip once SambaNova's tool calling under streaming is supported (we are working on it)
+            pytest.skip("Sambanova's tool calling for streaming doesn't work")
 
         messages = sample_messages + [
             UserMessage(

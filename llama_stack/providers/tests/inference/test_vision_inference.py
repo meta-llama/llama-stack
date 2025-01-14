@@ -145,7 +145,7 @@ class TestVisionModelInference:
             assert len(grouped[ChatCompletionResponseEventType.complete]) == 1
 
             content = "".join(
-                chunk.event.delta
+                chunk.event.delta.text
                 for chunk in grouped[ChatCompletionResponseEventType.progress]
             )
             for expected_string in expected_strings:
