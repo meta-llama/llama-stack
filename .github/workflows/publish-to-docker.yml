@@ -34,5 +34,5 @@ jobs:
 
       - name: Push to dockerhub
         run: |
-          docker tag localhost/distribution-ollama:0.0.63.dev20250114 llamastack/distribution-ollama:0.0.63.dev20250114
+          docker tag distribution-ollama:0.0.63.dev20250114 llamastack/distribution-ollama:0.0.63.dev20250114
           docker push llamastack/distribution-ollama:0.0.63.dev20250114
