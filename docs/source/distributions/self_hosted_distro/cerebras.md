@@ -1,4 +1,14 @@
+---
+orphan: true
+---
 # Cerebras Distribution
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 The `llamastack/distribution-cerebras` distribution consists of the following provider configurations.
 
