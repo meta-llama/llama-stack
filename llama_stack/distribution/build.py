@@ -123,7 +123,7 @@ def build_image(
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
-            dockerfile_only,
+            str(dockerfile_only),
         ]
     elif build_config.image_type == ImageType.conda.value:
         script = (

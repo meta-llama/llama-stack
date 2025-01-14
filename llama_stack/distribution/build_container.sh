@@ -18,7 +18,7 @@ if [ "$#" -lt 4 ]; then
   exit 1
 fi
 
-special_pip_deps="$6"
+special_pip_deps="$7"
 
 set -euo pipefail
 
@@ -28,7 +28,7 @@ docker_base=$2
 build_file_path=$3
 host_build_dir=$4
 pip_dependencies=$5
-dockerfile_only=$7
+dockerfile_only=$6
 
 # Define color codes
 RED='\033[0;31m'
@@ -147,8 +147,6 @@ ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--templat
 EOF
 
 printf "Dockerfile created successfully in $TEMP_DIR/Dockerfile\n\n"
-cp "$TEMP_DIR/Dockerfile" "./Dockerfile"
-printf "Dockerfile saved to ./Dockerfile\n\n"
 cat $TEMP_DIR/Dockerfile
 printf "\n"
 
@@ -177,6 +175,14 @@ fi
 
 # Add version tag to image name
 image_tag="$image_name:$version_tag"
+
+if [ "$dockerfile_only" = "True" ]; then
+  echo "Skipping docker build as dockerfile_only=True"
+  dockerfile_name="Dockerfile.${image_tag}"
+  cp "$TEMP_DIR/Dockerfile" "./${dockerfile_name}"
+  printf "Dockerfile saved to ./${dockerfile_name}\n\n"
+  exit 0
+fi
 
 # Detect platform architecture
 ARCH=$(uname -m)
