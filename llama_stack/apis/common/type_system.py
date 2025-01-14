@@ -56,6 +56,7 @@ class AgentTurnInputType(BaseModel):
 
 class DialogType(BaseModel):
     # expects List[Message] for messages
+    # this type semantically contains the output label whereas ChatCompletionInputType does not
     type: Literal["dialog"] = "dialog"
 
 
