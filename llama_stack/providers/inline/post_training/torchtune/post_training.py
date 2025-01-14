@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from llama_models.schema_utils import webmethod
 
@@ -14,6 +14,7 @@ from llama_stack.apis.post_training import (
     AlgorithmConfig,
     DPOAlignmentConfig,
     JobStatus,
+    ListPostTrainingJobsResponse,
     LoraFinetuningConfig,
     PostTrainingJob,
     PostTrainingJobArtifactsResponse,
@@ -114,8 +115,8 @@ class TorchtunePostTrainingImpl:
         logger_config: Dict[str, Any],
     ) -> PostTrainingJob: ...
 
-    async def get_training_jobs(self) -> List[PostTrainingJob]:
-        return self.jobs_list
+    async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
+        return ListPostTrainingJobsResponse(data=self.jobs_list)
 
     @webmethod(route="/post-training/job/status")
     async def get_training_job_status(

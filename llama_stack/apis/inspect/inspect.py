@@ -34,10 +34,14 @@ class VersionInfo(BaseModel):
     version: str
 
 
+class ListProvidersResponse(BaseModel):
+    data: List[ProviderInfo]
+
+
 @runtime_checkable
 class Inspect(Protocol):
     @webmethod(route="/providers/list", method="GET")
-    async def list_providers(self) -> Dict[str, ProviderInfo]: ...
+    async def list_providers(self) -> ListProvidersResponse: ...
 
     @webmethod(route="/routes/list", method="GET")
     async def list_routes(self) -> Dict[str, List[RouteInfo]]: ...

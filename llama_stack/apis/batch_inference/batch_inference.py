@@ -54,7 +54,7 @@ class BatchChatCompletionResponse(BaseModel):
 
 @runtime_checkable
 class BatchInference(Protocol):
-    @webmethod(route="/batch-inference/completion")
+    @webmethod(route="/batch-inference/completion", method="POST")
     async def batch_completion(
         self,
         model: str,
@@ -63,7 +63,7 @@ class BatchInference(Protocol):
         logprobs: Optional[LogProbConfig] = None,
     ) -> BatchCompletionResponse: ...
 
-    @webmethod(route="/batch-inference/chat-completion")
+    @webmethod(route="/batch-inference/chat-completion", method="POST")
     async def batch_chat_completion(
         self,
         model: str,

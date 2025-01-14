@@ -50,7 +50,7 @@ class Memory(Protocol):
 
     # this will just block now until documents are inserted, but it should
     # probably return a Job instance which can be polled for completion
-    @webmethod(route="/memory/insert")
+    @webmethod(route="/memory/insert", method="POST")
     async def insert_documents(
         self,
         bank_id: str,
@@ -58,7 +58,7 @@ class Memory(Protocol):
         ttl_seconds: Optional[int] = None,
     ) -> None: ...
 
-    @webmethod(route="/memory/query")
+    @webmethod(route="/memory/query", method="POST")
     async def query_documents(
         self,
         bank_id: str,

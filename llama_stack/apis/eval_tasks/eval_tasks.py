@@ -6,7 +6,6 @@
 from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
@@ -40,15 +39,22 @@ class EvalTaskInput(CommonEvalTaskFields, BaseModel):
     provider_eval_task_id: Optional[str] = None
 
 
+class ListEvalTasksResponse(BaseModel):
+    data: List[EvalTask]
+
+
 @runtime_checkable
 class EvalTasks(Protocol):
-    @webmethod(route="/eval-tasks/list", method="GET")
-    async def list_eval_tasks(self) -> List[EvalTask]: ...
+    @webmethod(route="/eval-tasks", method="GET")
+    async def list_eval_tasks(self) -> ListEvalTasksResponse: ...
 
-    @webmethod(route="/eval-tasks/get", method="GET")
-    async def get_eval_task(self, name: str) -> Optional[EvalTask]: ...
+    @webmethod(route="/eval-tasks/{eval_task_id}", method="GET")
+    async def get_eval_task(
+        self,
+        eval_task_id: str,
+    ) -> Optional[EvalTask]: ...
 
-    @webmethod(route="/eval-tasks/register", method="POST")
+    @webmethod(route="/eval-tasks", method="POST")
     async def register_eval_task(
         self,
         eval_task_id: str,

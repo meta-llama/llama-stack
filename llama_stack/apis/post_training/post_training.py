@@ -6,16 +6,13 @@
 
 from datetime import datetime
 from enum import Enum
-
 from typing import Any, Dict, List, Literal, Optional, Protocol, Union
 
 from llama_models.schema_utils import json_schema_type, webmethod
-
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.content_types import URL
-
 from llama_stack.apis.common.job_types import JobStatus
 from llama_stack.apis.common.training_types import Checkpoint
 
@@ -159,6 +156,10 @@ class PostTrainingJobStatusResponse(BaseModel):
     checkpoints: List[Checkpoint] = Field(default_factory=list)
 
 
+class ListPostTrainingJobsResponse(BaseModel):
+    data: List[PostTrainingJob]
+
+
 @json_schema_type
 class PostTrainingJobArtifactsResponse(BaseModel):
     """Artifacts of a finetuning job."""
@@ -197,7 +198,7 @@ class PostTraining(Protocol):
     ) -> PostTrainingJob: ...
 
     @webmethod(route="/post-training/jobs", method="GET")
-    async def get_training_jobs(self) -> List[PostTrainingJob]: ...
+    async def get_training_jobs(self) -> ListPostTrainingJobsResponse: ...
 
     @webmethod(route="/post-training/job/status", method="GET")
     async def get_training_job_status(

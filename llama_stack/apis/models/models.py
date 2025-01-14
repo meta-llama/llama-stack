@@ -52,16 +52,23 @@ class ModelInput(CommonModelFields):
     model_config = ConfigDict(protected_namespaces=())
 
 
+class ListModelsResponse(BaseModel):
+    data: List[Model]
+
+
 @runtime_checkable
 @trace_protocol
 class Models(Protocol):
-    @webmethod(route="/models/list", method="GET")
-    async def list_models(self) -> List[Model]: ...
+    @webmethod(route="/models", method="GET")
+    async def list_models(self) -> ListModelsResponse: ...
 
-    @webmethod(route="/models/get", method="GET")
-    async def get_model(self, identifier: str) -> Optional[Model]: ...
+    @webmethod(route="/models/{model_id}", method="GET")
+    async def get_model(
+        self,
+        model_id: str,
+    ) -> Optional[Model]: ...
 
-    @webmethod(route="/models/register", method="POST")
+    @webmethod(route="/models", method="POST")
     async def register_model(
         self,
         model_id: str,
@@ -71,5 +78,8 @@ class Models(Protocol):
         model_type: Optional[ModelType] = None,
     ) -> Model: ...
 
-    @webmethod(route="/models/unregister", method="POST")
-    async def unregister_model(self, model_id: str) -> None: ...
+    @webmethod(route="/models/{model_id}", method="DELETE")
+    async def unregister_model(
+        self,
+        model_id: str,
+    ) -> None: ...
