@@ -4,9 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import argparse
-
 import importlib.resources
-
 import os
 import shutil
 from functools import lru_cache
@@ -14,14 +12,12 @@ from pathlib import Path
 from typing import List, Optional
 
 from llama_stack.cli.subcommand import Subcommand
-
 from llama_stack.distribution.datatypes import (
     BuildConfig,
     DistributionSpec,
     Provider,
     StackRunConfig,
 )
-
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -296,6 +292,7 @@ class StackBuild(Subcommand):
                 / f"templates/{template_name}/run.yaml"
             )
             with importlib.resources.as_file(template_path) as path:
+                run_config_file = build_dir / f"{build_config.name}-run.yaml"
                 shutil.copy(path, run_config_file)
             # Find all ${env.VARIABLE} patterns
             cprint("Build Successful!", color="green")
