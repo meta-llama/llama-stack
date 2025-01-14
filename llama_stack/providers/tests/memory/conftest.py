@@ -6,7 +6,63 @@
 
 import pytest
 
+from ..conftest import get_provider_fixture_overrides
+
+from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import MEMORY_FIXTURES
+
+
+DEFAULT_PROVIDER_COMBINATIONS = [
+    pytest.param(
+        {
+            "inference": "sentence_transformers",
+            "memory": "faiss",
+        },
+        id="sentence_transformers",
+        marks=pytest.mark.sentence_transformers,
+    ),
+    pytest.param(
+        {
+            "inference": "ollama",
+            "memory": "faiss",
+        },
+        id="ollama",
+        marks=pytest.mark.ollama,
+    ),
+    pytest.param(
+        {
+            "inference": "sentence_transformers",
+            "memory": "chroma",
+        },
+        id="chroma",
+        marks=pytest.mark.chroma,
+    ),
+    pytest.param(
+        {
+            "inference": "bedrock",
+            "memory": "qdrant",
+        },
+        id="qdrant",
+        marks=pytest.mark.qdrant,
+    ),
+    pytest.param(
+        {
+            "inference": "fireworks",
+            "memory": "weaviate",
+        },
+        id="weaviate",
+        marks=pytest.mark.weaviate,
+    ),
+]
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--embedding-model",
+        action="store",
+        default=None,
+        help="Specify the embedding model to use for testing",
+    )
 
 
 def pytest_configure(config):
@@ -18,12 +74,22 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
+    if "embedding_model" in metafunc.fixturenames:
+        model = metafunc.config.getoption("--embedding-model")
+        if model:
+            params = [pytest.param(model, id="")]
+        else:
+            params = [pytest.param("all-MiniLM-L6-v2", id="")]
+
+        metafunc.parametrize("embedding_model", params, indirect=True)
+
     if "memory_stack" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "memory_stack",
-            [
-                pytest.param(fixture_name, marks=getattr(pytest.mark, fixture_name))
-                for fixture_name in MEMORY_FIXTURES
-            ],
-            indirect=True,
+        available_fixtures = {
+            "inference": INFERENCE_FIXTURES,
+            "memory": MEMORY_FIXTURES,
+        }
+        combinations = (
+            get_provider_fixture_overrides(metafunc.config, available_fixtures)
+            or DEFAULT_PROVIDER_COMBINATIONS
         )
+        metafunc.parametrize("memory_stack", combinations, indirect=True)

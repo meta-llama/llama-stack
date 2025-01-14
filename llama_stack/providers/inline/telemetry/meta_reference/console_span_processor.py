@@ -4,10 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 from datetime import datetime
 
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanProcessor
+from opentelemetry.trace.status import StatusCode
 
 # Colors for console output
 COLORS = {
@@ -25,10 +27,14 @@ COLORS = {
 
 
 class ConsoleSpanProcessor(SpanProcessor):
-    """A SpanProcessor that prints spans to the console with color formatting."""
+
+    def __init__(self, print_attributes: bool = False):
+        self.print_attributes = print_attributes
 
     def on_start(self, span: ReadableSpan, parent_context=None) -> None:
-        """Called when a span starts."""
+        if span.attributes and span.attributes.get("__autotraced__"):
+            return
+
         timestamp = datetime.utcfromtimestamp(span.start_time / 1e9).strftime(
             "%H:%M:%S.%f"
         )[:-3]
@@ -36,55 +42,71 @@ class ConsoleSpanProcessor(SpanProcessor):
         print(
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
             f"{COLORS['magenta']}[START]{COLORS['reset']} "
-            f"{COLORS['cyan']}{span.name}{COLORS['reset']}"
+            f"{COLORS['dim']}{span.name}{COLORS['reset']}"
         )
 
     def on_end(self, span: ReadableSpan) -> None:
-        """Called when a span ends."""
+        if span.attributes and span.attributes.get("__autotraced__"):
+            return
+
         timestamp = datetime.utcfromtimestamp(span.end_time / 1e9).strftime(
             "%H:%M:%S.%f"
         )[:-3]
 
-        # Build the span context string
         span_context = (
             f"{COLORS['dim']}{timestamp}{COLORS['reset']} "
             f"{COLORS['magenta']}[END]{COLORS['reset']} "
-            f"{COLORS['cyan']}{span.name}{COLORS['reset']} "
+            f"{COLORS['dim']}{span.name}{COLORS['reset']}"
         )
 
-        # Add status if not OK
-        if span.status.status_code != 0:  # UNSET or ERROR
-            status_color = (
-                COLORS["red"] if span.status.status_code == 2 else COLORS["yellow"]
-            )
-            span_context += (
-                f" {status_color}[{span.status.status_code}]{COLORS['reset']}"
-            )
+        if span.status.status_code == StatusCode.ERROR:
+            span_context += f"{COLORS['reset']} {COLORS['red']}[ERROR]{COLORS['reset']}"
+        elif span.status.status_code != StatusCode.UNSET:
+            span_context += f"{COLORS['reset']} [{span.status.status_code}]"
 
-        # Add duration
         duration_ms = (span.end_time - span.start_time) / 1e6
-        span_context += f" {COLORS['dim']}({duration_ms:.2f}ms){COLORS['reset']}"
+        span_context += f"{COLORS['reset']} ({duration_ms:.2f}ms)"
 
-        # Print the main span line
         print(span_context)
 
-        # Print attributes indented
-        if span.attributes:
+        if self.print_attributes and span.attributes:
             for key, value in span.attributes.items():
-                print(f"  {COLORS['dim']}{key}: {value}{COLORS['reset']}")
+                if key.startswith("__"):
+                    continue
+                str_value = str(value)
+                if len(str_value) > 1000:
+                    str_value = str_value[:997] + "..."
+                print(f"    {COLORS['dim']}{key}: {str_value}{COLORS['reset']}")
 
-        # Print events indented
         for event in span.events:
             event_time = datetime.utcfromtimestamp(event.timestamp / 1e9).strftime(
                 "%H:%M:%S.%f"
             )[:-3]
+
+            severity = event.attributes.get("severity", "info")
+            message = event.attributes.get("message", event.name)
+            if isinstance(message, (dict, list)):
+                message = json.dumps(message, indent=2)
+
+            severity_colors = {
+                "error": f"{COLORS['bold']}{COLORS['red']}",
+                "warn": f"{COLORS['bold']}{COLORS['yellow']}",
+                "info": COLORS["white"],
+                "debug": COLORS["dim"],
+            }
+            msg_color = severity_colors.get(severity, COLORS["white"])
+
             print(
-                f"  {COLORS['dim']}{event_time}{COLORS['reset']} "
-                f"{COLORS['cyan']}[EVENT]{COLORS['reset']} {event.name}"
+                f" {event_time} "
+                f"{msg_color}[{severity.upper()}] "
+                f"{message}{COLORS['reset']}"
             )
+
             if event.attributes:
                 for key, value in event.attributes.items():
-                    print(f"    {COLORS['dim']}{key}: {value}{COLORS['reset']}")
+                    if key.startswith("__") or key in ["message", "severity"]:
+                        continue
+                    print(f"   {COLORS['dim']}{key}: {value}{COLORS['reset']}")
 
     def shutdown(self) -> None:
         """Shutdown the processor."""

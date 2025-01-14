@@ -4,15 +4,35 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
-from llama_models.llama3.api.datatypes import StopReason
-
-from llama_stack.apis.inference import *  # noqa: F403
-
+from llama_models.llama3.api.datatypes import SamplingParams, StopReason
 from pydantic import BaseModel
+
+from llama_stack.apis.common.content_types import (
+    ImageContentItem,
+    TextContentItem,
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
+
+from llama_stack.apis.inference import (
+    ChatCompletionResponse,
+    ChatCompletionResponseEvent,
+    ChatCompletionResponseEventType,
+    ChatCompletionResponseStreamChunk,
+    CompletionMessage,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    Message,
+)
+
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    convert_image_content_to_url,
+)
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):
@@ -90,11 +110,15 @@ def process_chat_completion_response(
 ) -> ChatCompletionResponse:
     choice = response.choices[0]
 
-    completion_message = formatter.decode_assistant_message_from_content(
+    raw_message = formatter.decode_assistant_message_from_content(
         text_from_choice(choice), get_stop_reason(choice.finish_reason)
     )
     return ChatCompletionResponse(
-        completion_message=completion_message,
+        completion_message=CompletionMessage(
+            content=raw_message.content,
+            stop_reason=raw_message.stop_reason,
+            tool_calls=raw_message.tool_calls,
+        ),
         logprobs=None,
     )
 
@@ -140,7 +164,7 @@ async def process_chat_completion_stream_response(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.start,
-            delta="",
+            delta=TextDelta(text=""),
         )
     )
 
@@ -207,7 +231,7 @@ async def process_chat_completion_stream_response(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
-                    delta=text,
+                    delta=TextDelta(text=text),
                     stop_reason=stop_reason,
                 )
             )
@@ -221,7 +245,7 @@ async def process_chat_completion_stream_response(
                 event_type=ChatCompletionResponseEventType.progress,
                 delta=ToolCallDelta(
                     content="",
-                    parse_status=ToolCallParseStatus.failure,
+                    parse_status=ToolCallParseStatus.failed,
                 ),
                 stop_reason=stop_reason,
             )
@@ -233,7 +257,7 @@ async def process_chat_completion_stream_response(
                 event_type=ChatCompletionResponseEventType.progress,
                 delta=ToolCallDelta(
                     content=tool_call,
-                    parse_status=ToolCallParseStatus.success,
+                    parse_status=ToolCallParseStatus.succeeded,
                 ),
                 stop_reason=stop_reason,
             )
@@ -242,7 +266,36 @@ async def process_chat_completion_stream_response(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.complete,
-            delta="",
+            delta=TextDelta(text=""),
             stop_reason=stop_reason,
         )
     )
+
+
+async def convert_message_to_openai_dict(
+    message: Message, download: bool = False
+) -> dict:
+    async def _convert_content(content) -> dict:
+        if isinstance(content, ImageContentItem):
+            return {
+                "type": "image_url",
+                "image_url": {
+                    "url": await convert_image_content_to_url(
+                        content, download=download
+                    ),
+                },
+            }
+        else:
+            text = content.text if isinstance(content, TextContentItem) else content
+            assert isinstance(text, str)
+            return {"type": "text", "text": text}
+
+    if isinstance(message.content, list):
+        content = [await _convert_content(c) for c in message.content]
+    else:
+        content = [await _convert_content(message.content)]
+
+    return {
+        "role": message.role,
+        "content": content,
+    }

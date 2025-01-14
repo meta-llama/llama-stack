@@ -8,13 +8,7 @@ import warnings
 from typing import AsyncIterator, List, Optional, Union
 
 from llama_models.datatypes import SamplingParams
-from llama_models.llama3.api.datatypes import (
-    InterleavedTextMedia,
-    Message,
-    ToolChoice,
-    ToolDefinition,
-    ToolPromptFormat,
-)
+from llama_models.llama3.api.datatypes import ToolDefinition, ToolPromptFormat
 from llama_models.sku_list import CoreModelId
 from openai import APIConnectionError, AsyncOpenAI
 
@@ -22,23 +16,31 @@ from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     ChatCompletionResponseStreamChunk,
+    CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
     EmbeddingsResponse,
     Inference,
+    InterleavedContent,
     LogProbConfig,
+    Message,
     ResponseFormat,
+    ToolChoice,
 )
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
+from llama_stack.providers.utils.inference.prompt_adapter import content_has_media
 
 from . import NVIDIAConfig
 from .openai_utils import (
     convert_chat_completion_request,
+    convert_completion_request,
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
+    convert_openai_completion_choice,
+    convert_openai_completion_stream,
 )
 from .utils import _is_nvidia_hosted, check_health
 
@@ -111,25 +113,57 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # make sure the client lives longer than any async calls
         self._client = AsyncOpenAI(
             base_url=f"{self._config.url}/v1",
-            api_key=self._config.api_key or "NO KEY",
+            api_key=(
+                self._config.api_key.get_secret_value()
+                if self._config.api_key
+                else "NO KEY"
+            ),
             timeout=self._config.timeout,
         )
 
-    def completion(
+    async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
-        raise NotImplementedError()
+        if content_has_media(content):
+            raise NotImplementedError("Media is not supported")
+
+        await check_health(self._config)  # this raises errors
+
+        request = convert_completion_request(
+            request=CompletionRequest(
+                model=self.get_provider_model_id(model_id),
+                content=content,
+                sampling_params=sampling_params,
+                response_format=response_format,
+                stream=stream,
+                logprobs=logprobs,
+            ),
+            n=1,
+        )
+
+        try:
+            response = await self._client.completions.create(**request)
+        except APIConnectionError as e:
+            raise ConnectionError(
+                f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}"
+            ) from e
+
+        if stream:
+            return convert_openai_completion_stream(response)
+        else:
+            # we pass n=1 to get only one completion
+            return convert_openai_completion_choice(response.choices[0])
 
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()
 
@@ -141,9 +175,7 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[
-            ToolPromptFormat
-        ] = None,  # API default is ToolPromptFormat.json, we default to None to detect user input
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[

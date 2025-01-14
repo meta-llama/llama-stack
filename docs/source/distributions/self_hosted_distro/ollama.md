@@ -15,17 +15,21 @@ The `llamastack/distribution-ollama` distribution consists of the following prov
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `remote::ollama` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 You should use this distribution if you have a regular desktop machine without very powerful GPUs. Of course, if you have powerful GPUs, you can still continue using this distribution since Ollama supports GPU acceleration.### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `OLLAMA_URL`: URL of the Ollama server (default: `http://127.0.0.1:11434`)
 - `INFERENCE_MODEL`: Inference model loaded into the Ollama server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `SAFETY_MODEL`: Safety model loaded into the Ollama server (default: `meta-llama/Llama-Guard-3-1B`)
@@ -119,7 +123,7 @@ llama stack run ./run-with-safety.yaml \
 ### (Optional) Update Model Serving Configuration
 
 ```{note}
-Please check the [model_aliases](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) variable for supported Ollama models.
+Please check the [model_aliases](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/providers/remote/inference/ollama/ollama.py#L45) for the supported Ollama models.
 ```
 
 To serve a new model with `ollama`

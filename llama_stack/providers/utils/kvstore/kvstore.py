@@ -4,8 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .api import *  # noqa: F403
-from .config import *  # noqa: F403
+from typing import List, Optional
+
+from .api import KVStore
+from .config import KVStoreConfig, KVStoreType
 
 
 def kvstore_dependencies():

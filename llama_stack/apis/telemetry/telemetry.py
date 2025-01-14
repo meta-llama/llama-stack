@@ -150,21 +150,27 @@ class EvalTrace(BaseModel):
 
 
 @json_schema_type
-class SpanWithChildren(Span):
-    children: List["SpanWithChildren"] = Field(default_factory=list)
+class SpanWithStatus(Span):
     status: Optional[SpanStatus] = None
+
+
+@json_schema_type
+class QueryConditionOp(Enum):
+    EQ = "eq"
+    NE = "ne"
+    GT = "gt"
+    LT = "lt"
 
 
 @json_schema_type
 class QueryCondition(BaseModel):
     key: str
-    op: Literal["eq", "ne", "gt", "lt"]
+    op: QueryConditionOp
     value: Any
 
 
 @runtime_checkable
 class Telemetry(Protocol):
-
     @webmethod(route="/telemetry/log-event")
     async def log_event(
         self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400
@@ -185,4 +191,21 @@ class Telemetry(Protocol):
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> SpanWithChildren: ...
+    ) -> Dict[str, SpanWithStatus]: ...
+
+    @webmethod(route="/telemetry/query-spans", method="POST")
+    async def query_spans(
+        self,
+        attribute_filters: List[QueryCondition],
+        attributes_to_return: List[str],
+        max_depth: Optional[int] = None,
+    ) -> List[Span]: ...
+
+    @webmethod(route="/telemetry/save-spans-to-dataset", method="POST")
+    async def save_spans_to_dataset(
+        self,
+        attribute_filters: List[QueryCondition],
+        attributes_to_save: List[str],
+        dataset_id: str,
+        max_depth: Optional[int] = None,
+    ) -> None: ...

@@ -4,23 +4,24 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from llama_stack.providers.datatypes import *  # noqa: F403
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.scoring_functions import *  # noqa: F403
 from llama_stack.apis.datasetio import DatasetIO
+from llama_stack.apis.datasets import Dataset, DatasetInput
 from llama_stack.apis.eval import Eval
-from llama_stack.apis.eval_tasks import EvalTaskInput
+from llama_stack.apis.eval_tasks import EvalTask, EvalTaskInput
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import MemoryBank, MemoryBankInput
+from llama_stack.apis.models import Model, ModelInput
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.scoring import Scoring
+from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnInput
+from llama_stack.apis.shields import Shield, ShieldInput
+from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
+from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
@@ -37,6 +38,8 @@ RoutableObject = Union[
     Dataset,
     ScoringFn,
     EvalTask,
+    Tool,
+    ToolGroup,
 ]
 
 
@@ -48,6 +51,8 @@ RoutableObjectWithProvider = Annotated[
         Dataset,
         ScoringFn,
         EvalTask,
+        Tool,
+        ToolGroup,
     ],
     Field(discriminator="type"),
 ]
@@ -59,6 +64,7 @@ RoutedProtocol = Union[
     DatasetIO,
     Scoring,
     Eval,
+    ToolRuntime,
 ]
 
 
@@ -155,6 +161,7 @@ a default SQLite store will be used.""",
     datasets: List[DatasetInput] = Field(default_factory=list)
     scoring_fns: List[ScoringFnInput] = Field(default_factory=list)
     eval_tasks: List[EvalTaskInput] = Field(default_factory=list)
+    tool_groups: List[ToolGroupInput] = Field(default_factory=list)
 
 
 class BuildConfig(BaseModel):
@@ -165,5 +172,5 @@ class BuildConfig(BaseModel):
     )
     image_type: str = Field(
         default="conda",
-        description="Type of package to build (conda | container)",
+        description="Type of package to build (conda | docker | venv)",
     )

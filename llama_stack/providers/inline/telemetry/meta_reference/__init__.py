@@ -7,12 +7,13 @@
 from typing import Any, Dict
 
 from .config import TelemetryConfig, TelemetrySink
-from .telemetry import TelemetryAdapter
 
-__all__ = ["TelemetryConfig", "TelemetryAdapter", "TelemetrySink"]
+__all__ = ["TelemetryConfig", "TelemetrySink"]
 
 
 async def get_provider_impl(config: TelemetryConfig, deps: Dict[str, Any]):
-    impl = TelemetryAdapter(config)
+    from .telemetry import TelemetryAdapter
+
+    impl = TelemetryAdapter(config, deps)
     await impl.initialize()
     return impl

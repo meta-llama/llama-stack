@@ -8,27 +8,27 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
-
 from pydantic import BaseModel, Field
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.distribution.tracing import trace_protocol
+from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.memory_banks import MemoryBank
+from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
 @json_schema_type
 class MemoryBankDocument(BaseModel):
     document_id: str
-    content: InterleavedTextMedia | URL
+    content: InterleavedContent | URL
     mime_type: str | None = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class Chunk(BaseModel):
-    content: InterleavedTextMedia
+    content: InterleavedContent
     token_count: int
     document_id: str
 
@@ -62,6 +62,6 @@ class Memory(Protocol):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse: ...

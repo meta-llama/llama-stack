@@ -7,13 +7,13 @@
 from enum import Enum
 from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 
 class TelemetrySink(str, Enum):
-    JAEGER = "jaeger"
+    OTEL = "otel"
     SQLITE = "sqlite"
     CONSOLE = "console"
 
@@ -29,17 +29,30 @@ class TelemetryConfig(BaseModel):
     )
     sinks: List[TelemetrySink] = Field(
         default=[TelemetrySink.CONSOLE, TelemetrySink.SQLITE],
-        description="List of telemetry sinks to enable (possible values: jaeger, sqlite, console)",
+        description="List of telemetry sinks to enable (possible values: otel, sqlite, console)",
     )
     sqlite_db_path: str = Field(
         default=(RUNTIME_BASE_DIR / "trace_store.db").as_posix(),
         description="The path to the SQLite database to use for storing traces",
     )
 
+    @field_validator("sinks", mode="before")
     @classmethod
-    def sample_run_config(cls, **kwargs) -> Dict[str, Any]:
+    def validate_sinks(cls, v):
+        if isinstance(v, str):
+            return [TelemetrySink(sink.strip()) for sink in v.split(",")]
+        return v
+
+    @classmethod
+    def sample_run_config(
+        cls, __distro_dir__: str = "runtime", db_name: str = "trace_store.db"
+    ) -> Dict[str, Any]:
         return {
             "service_name": "${env.OTEL_SERVICE_NAME:llama-stack}",
-            "sinks": "${env.TELEMETRY_SINKS:['console', 'sqlite']}",
-            "sqlite_db_path": "${env.SQLITE_DB_PATH:${runtime.base_dir}/trace_store.db}",
+            "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
+            "sqlite_db_path": "${env.SQLITE_DB_PATH:~/.llama/"
+            + __distro_dir__
+            + "/"
+            + db_name
+            + "}",
         }

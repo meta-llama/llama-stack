@@ -129,7 +129,7 @@ def application_evaluation_page():
 
                 # Display current row results using separate containers
                 progress_text_container.write(
-                    f"Expand to see current processed result ({i+1}/{len(rows)})"
+                    f"Expand to see current processed result ({i + 1} / {len(rows)})"
                 )
                 results_container.json(
                     score_res.to_json(),

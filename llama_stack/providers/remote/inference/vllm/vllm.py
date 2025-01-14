@@ -5,23 +5,39 @@
 # the root directory of this source tree.
 
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import all_registered_models
-
 from openai import OpenAI
 
-from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    CompletionRequest,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    ResponseFormatType,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model, ModelType
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
-
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    convert_message_to_openai_dict,
     get_sampling_options,
     process_chat_completion_response,
     process_chat_completion_stream_response,
@@ -29,12 +45,12 @@ from llama_stack.providers.utils.inference.openai_compat import (
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
     completion_request_to_prompt,
-    convert_message_to_dict,
+    content_has_media,
+    interleaved_content_as_str,
     request_has_media,
 )
 
 from .config import VLLMInferenceAdapterConfig
-
 
 log = logging.getLogger(__name__)
 
@@ -70,13 +86,13 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> Union[CompletionResponse, CompletionResponseStreamChunk]:
-        raise NotImplementedError()
+        raise NotImplementedError("Completion not implemented for vLLM")
 
     async def chat_completion(
         self,
@@ -86,7 +102,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         response_format: Optional[ResponseFormat] = None,
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> AsyncGenerator:
@@ -100,6 +116,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             tool_prompt_format=tool_prompt_format,
             stream=stream,
             logprobs=logprobs,
+            response_format=response_format,
         )
         if stream:
             return self._stream_chat_completion(request, self.client)
@@ -161,11 +178,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             if media_present:
                 # vllm does not seem to work well with image urls, so we download the images
                 input_dict["messages"] = [
-                    await convert_message_to_dict(m, download=True)
+                    await convert_message_to_openai_dict(m, download=True)
                     for m in request.messages
                 ]
             else:
-                input_dict["prompt"] = chat_completion_request_to_prompt(
+                input_dict["prompt"] = await chat_completion_request_to_prompt(
                     request,
                     self.register_helper.get_llama_model(request.model),
                     self.formatter,
@@ -173,12 +190,21 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         else:
             assert (
                 not media_present
-            ), "Together does not support media for Completion requests"
-            input_dict["prompt"] = completion_request_to_prompt(
+            ), "vLLM does not support media for Completion requests"
+            input_dict["prompt"] = await completion_request_to_prompt(
                 request,
-                self.register_helper.get_llama_model(request.model),
                 self.formatter,
             )
+
+        if fmt := request.response_format:
+            if fmt.type == ResponseFormatType.json_schema.value:
+                input_dict["extra_body"] = {
+                    "guided_json": request.response_format.json_schema
+                }
+            elif fmt.type == ResponseFormatType.grammar.value:
+                raise NotImplementedError("Grammar response format not supported yet")
+            else:
+                raise ValueError(f"Unknown response format {fmt.type}")
 
         return {
             "model": request.model,
@@ -190,6 +216,22 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
-        raise NotImplementedError()
+        model = await self.model_store.get_model(model_id)
+
+        kwargs = {}
+        assert model.model_type == ModelType.embedding
+        assert model.metadata.get("embedding_dimensions")
+        kwargs["dimensions"] = model.metadata.get("embedding_dimensions")
+        assert all(
+            not content_has_media(content) for content in contents
+        ), "VLLM does not support media for embeddings"
+        response = self.client.embeddings.create(
+            model=model.provider_resource_id,
+            input=[interleaved_content_as_str(content) for content in contents],
+            **kwargs,
+        )
+
+        embeddings = [data.embedding for data in response.data]
+        return EmbeddingsResponse(embeddings=embeddings)

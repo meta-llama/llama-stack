@@ -10,14 +10,11 @@ from typing import Any, AsyncGenerator, Dict, Generator, List, Optional
 
 from llama_models.llama3.api.datatypes import (
     BuiltinTool,
-    CompletionMessage,
     StopReason,
-    TokenLogProbs,
     ToolCall,
     ToolDefinition,
 )
 from openai import AsyncStream
-
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
     ChatCompletionChunk as OpenAIChatCompletionChunk,
@@ -31,22 +28,31 @@ from openai.types.chat.chat_completion import (
     Choice as OpenAIChoice,
     ChoiceLogprobs as OpenAIChoiceLogprobs,  # same as chat_completion_chunk ChoiceLogprobs
 )
-
 from openai.types.chat.chat_completion_message_tool_call_param import (
     Function as OpenAIFunction,
 )
+from openai.types.completion import Completion as OpenAICompletion
+from openai.types.completion_choice import Logprobs as OpenAICompletionLogprobs
 
+from llama_stack.apis.common.content_types import (
+    TextDelta,
+    ToolCallDelta,
+    ToolCallParseStatus,
+)
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     ChatCompletionResponseEvent,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
+    CompletionMessage,
+    CompletionRequest,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
     JsonSchemaResponseFormat,
     Message,
     SystemMessage,
-    ToolCallDelta,
-    ToolCallParseStatus,
+    TokenLogProbs,
     ToolResponseMessage,
     UserMessage,
 )
@@ -141,7 +147,7 @@ def _convert_message(message: Message | Dict) -> OpenAIChatCompletionMessage:
             message = UserMessage(**message)
         elif message["role"] == "assistant":
             message = CompletionMessage(**message)
-        elif message["role"] == "ipython":
+        elif message["role"] == "tool":
             message = ToolResponseMessage(**message)
         elif message["role"] == "system":
             message = SystemMessage(**message)
@@ -429,69 +435,6 @@ async def convert_openai_chat_completion_stream(
     """
     Convert a stream of OpenAI chat completion chunks into a stream
     of ChatCompletionResponseStreamChunk.
-
-    OpenAI ChatCompletionChunk:
-        choices: List[Choice]
-
-    OpenAI Choice:  # different from the non-streamed Choice
-        delta: ChoiceDelta
-        finish_reason: Optional[Literal["stop", "length", "tool_calls", "content_filter", "function_call"]]
-        logprobs: Optional[ChoiceLogprobs]
-
-    OpenAI ChoiceDelta:
-        content: Optional[str]
-        role: Optional[Literal["system", "user", "assistant", "tool"]]
-        tool_calls: Optional[List[ChoiceDeltaToolCall]]
-
-    OpenAI ChoiceDeltaToolCall:
-        index: int
-        id: Optional[str]
-        function: Optional[ChoiceDeltaToolCallFunction]
-        type: Optional[Literal["function"]]
-
-    OpenAI ChoiceDeltaToolCallFunction:
-        name: Optional[str]
-        arguments: Optional[str]
-
-    ->
-
-    ChatCompletionResponseStreamChunk:
-        event: ChatCompletionResponseEvent
-
-    ChatCompletionResponseEvent:
-        event_type: ChatCompletionResponseEventType
-        delta: Union[str, ToolCallDelta]
-        logprobs: Optional[List[TokenLogProbs]]
-        stop_reason: Optional[StopReason]
-
-    ChatCompletionResponseEventType:
-        start = "start"
-        progress = "progress"
-        complete = "complete"
-
-    ToolCallDelta:
-        content: Union[str, ToolCall]
-        parse_status: ToolCallParseStatus
-
-    ToolCall:
-        call_id: str
-        tool_name: str
-        arguments: str
-
-    ToolCallParseStatus:
-        started = "started"
-        in_progress = "in_progress"
-        failure = "failure"
-        success = "success"
-
-    TokenLogProbs:
-        logprobs_by_token: Dict[str, float]
-         - token, logprob
-
-    StopReason:
-        end_of_turn = "end_of_turn"
-        end_of_message = "end_of_message"
-        out_of_tokens = "out_of_tokens"
     """
 
     # generate a stream of ChatCompletionResponseEventType: start -> progress -> progress -> ...
@@ -540,7 +483,7 @@ async def convert_openai_chat_completion_stream(
                 yield ChatCompletionResponseStreamChunk(
                     event=ChatCompletionResponseEvent(
                         event_type=next(event_type),
-                        delta=choice.delta.content,
+                        delta=TextDelta(text=choice.delta.content),
                         logprobs=_convert_openai_logprobs(choice.logprobs),
                     )
                 )
@@ -558,7 +501,7 @@ async def convert_openai_chat_completion_stream(
                     event_type=next(event_type),
                     delta=ToolCallDelta(
                         content=_convert_openai_tool_calls(choice.delta.tool_calls)[0],
-                        parse_status=ToolCallParseStatus.success,
+                        parse_status=ToolCallParseStatus.succeeded,
                     ),
                     logprobs=_convert_openai_logprobs(choice.logprobs),
                 )
@@ -567,7 +510,7 @@ async def convert_openai_chat_completion_stream(
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=next(event_type),
-                    delta=choice.delta.content or "",  # content is not optional
+                    delta=TextDelta(text=choice.delta.content or ""),
                     logprobs=_convert_openai_logprobs(choice.logprobs),
                 )
             )
@@ -575,7 +518,114 @@ async def convert_openai_chat_completion_stream(
     yield ChatCompletionResponseStreamChunk(
         event=ChatCompletionResponseEvent(
             event_type=ChatCompletionResponseEventType.complete,
-            delta="",
+            delta=TextDelta(text=""),
             stop_reason=stop_reason,
         )
     )
+
+
+def convert_completion_request(
+    request: CompletionRequest,
+    n: int = 1,
+) -> dict:
+    """
+    Convert a ChatCompletionRequest to an OpenAI API-compatible dictionary.
+    """
+    # model -> model
+    # prompt -> prompt
+    # sampling_params  TODO(mattf): review strategy
+    #  strategy=greedy -> nvext.top_k = -1, temperature = temperature
+    #  strategy=top_p -> nvext.top_k = -1, top_p = top_p
+    #  strategy=top_k -> nvext.top_k = top_k
+    #  temperature -> temperature
+    #  top_p -> top_p
+    #  top_k -> nvext.top_k
+    #  max_tokens -> max_tokens
+    #  repetition_penalty -> nvext.repetition_penalty
+    # response_format -> nvext.guided_json
+    # stream -> stream
+    # logprobs.top_k -> logprobs
+
+    nvext = {}
+    payload: Dict[str, Any] = dict(
+        model=request.model,
+        prompt=request.content,
+        stream=request.stream,
+        extra_body=dict(nvext=nvext),
+        extra_headers={
+            b"User-Agent": b"llama-stack: nvidia-inference-adapter",
+        },
+        n=n,
+    )
+
+    if request.response_format:
+        # this is not openai compliant, it is a nim extension
+        nvext.update(guided_json=request.response_format.json_schema)
+
+    if request.logprobs:
+        payload.update(logprobs=request.logprobs.top_k)
+
+    if request.sampling_params:
+        nvext.update(repetition_penalty=request.sampling_params.repetition_penalty)
+
+        if request.sampling_params.max_tokens:
+            payload.update(max_tokens=request.sampling_params.max_tokens)
+
+        if request.sampling_params.strategy == "top_p":
+            nvext.update(top_k=-1)
+            payload.update(top_p=request.sampling_params.top_p)
+        elif request.sampling_params.strategy == "top_k":
+            if (
+                request.sampling_params.top_k != -1
+                and request.sampling_params.top_k < 1
+            ):
+                warnings.warn("top_k must be -1 or >= 1")
+            nvext.update(top_k=request.sampling_params.top_k)
+        elif request.sampling_params.strategy == "greedy":
+            nvext.update(top_k=-1)
+            payload.update(temperature=request.sampling_params.temperature)
+
+    return payload
+
+
+def _convert_openai_completion_logprobs(
+    logprobs: Optional[OpenAICompletionLogprobs],
+) -> Optional[List[TokenLogProbs]]:
+    """
+    Convert an OpenAI CompletionLogprobs into a list of TokenLogProbs.
+    """
+    if not logprobs:
+        return None
+
+    return [
+        TokenLogProbs(logprobs_by_token=logprobs) for logprobs in logprobs.top_logprobs
+    ]
+
+
+def convert_openai_completion_choice(
+    choice: OpenAIChoice,
+) -> CompletionResponse:
+    """
+    Convert an OpenAI Completion Choice into a CompletionResponse.
+    """
+    return CompletionResponse(
+        content=choice.text,
+        stop_reason=_convert_openai_finish_reason(choice.finish_reason),
+        logprobs=_convert_openai_completion_logprobs(choice.logprobs),
+    )
+
+
+async def convert_openai_completion_stream(
+    stream: AsyncStream[OpenAICompletion],
+) -> AsyncGenerator[CompletionResponse, None]:
+    """
+    Convert a stream of OpenAI Completions into a stream
+    of ChatCompletionResponseStreamChunks.
+    """
+    async for chunk in stream:
+        choice = chunk.choices[0]
+        yield CompletionResponseStreamChunk(
+            delta=TextDelta(text=choice.text),
+            stop_reason=_convert_openai_finish_reason(choice.finish_reason),
+            logprobs=_convert_openai_completion_logprobs(choice.logprobs),
+        )

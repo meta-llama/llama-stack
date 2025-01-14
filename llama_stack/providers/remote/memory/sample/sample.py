@@ -4,17 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from llama_stack.apis.memory import Memory
+from llama_stack.apis.memory_banks import MemoryBank
 from .config import SampleConfig
-
-
-from llama_stack.apis.memory import *  # noqa: F403
 
 
 class SampleMemoryImpl(Memory):
     def __init__(self, config: SampleConfig):
         self.config = config
 
-    async def register_memory_bank(self, memory_bank: MemoryBankDef) -> None:
+    async def register_memory_bank(self, memory_bank: MemoryBank) -> None:
         # these are the memory banks the Llama Stack will use to route requests to this provider
         # perform validation here if necessary
         pass

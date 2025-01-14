@@ -6,10 +6,11 @@
 
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from llama_models.datatypes import *  # noqa: F403
+from llama_models.datatypes import CheckpointQuantizationFormat
+from llama_models.llama3.api.datatypes import SamplingParams
 from llama_models.sku_list import LlamaDownloadInfo
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PromptGuardModel(BaseModel):

@@ -6,17 +6,21 @@
 
 import logging
 import uuid
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.providers.datatypes import MemoryBanksProtocolPrivate
-
-from llama_stack.apis.memory import *  # noqa: F403
-
+from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.memory import (
+    Chunk,
+    Memory,
+    MemoryBankDocument,
+    QueryDocumentsResponse,
+)
+from llama_stack.apis.memory_banks import MemoryBank, MemoryBankType
+from llama_stack.providers.datatypes import Api, MemoryBanksProtocolPrivate
 from llama_stack.providers.remote.memory.qdrant.config import QdrantConfig
 from llama_stack.providers.utils.memory.vector_store import (
     BankWithIndex,
@@ -101,10 +105,11 @@ class QdrantIndex(EmbeddingIndex):
 
 
 class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
-    def __init__(self, config: QdrantConfig) -> None:
+    def __init__(self, config: QdrantConfig, inference_api: Api.inference) -> None:
         self.config = config
         self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
         self.cache = {}
+        self.inference_api = inference_api
 
     async def initialize(self) -> None:
         pass
@@ -123,14 +128,10 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         index = BankWithIndex(
             bank=memory_bank,
             index=QdrantIndex(self.client, memory_bank.identifier),
+            inference_api=self.inference_api,
         )
 
         self.cache[memory_bank.identifier] = index
-
-    async def list_memory_banks(self) -> List[MemoryBank]:
-        # Qdrant doesn't have collection level metadata to store the bank properties
-        # So we only return from the cache value
-        return [i.bank for i in self.cache.values()]
 
     async def _get_and_cache_bank_index(self, bank_id: str) -> Optional[BankWithIndex]:
         if bank_id in self.cache:
@@ -143,6 +144,7 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
         index = BankWithIndex(
             bank=bank,
             index=QdrantIndex(client=self.client, collection_name=bank_id),
+            inference_api=self.inference_api,
         )
         self.cache[bank_id] = index
         return index
@@ -162,7 +164,7 @@ class QdrantVectorMemoryAdapter(Memory, MemoryBanksProtocolPrivate):
     async def query_documents(
         self,
         bank_id: str,
-        query: InterleavedTextMedia,
+        query: InterleavedContent,
         params: Optional[Dict[str, Any]] = None,
     ) -> QueryDocumentsResponse:
         index = await self._get_and_cache_bank_index(bank_id)

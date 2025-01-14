@@ -6,22 +6,34 @@
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-
-from llama_stack.apis.models import *  # noqa: F403
-from llama_stack.apis.shields import *  # noqa: F403
-from llama_stack.apis.memory_banks import *  # noqa: F403
-from llama_stack.apis.datasets import *  # noqa: F403
-from llama_stack.apis.eval_tasks import *  # noqa: F403
-
-
-from llama_models.llama3.api.datatypes import URL
-
+from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.type_system import ParamType
+from llama_stack.apis.datasets import Dataset, Datasets
+from llama_stack.apis.eval_tasks import EvalTask, EvalTasks
+from llama_stack.apis.memory_banks import (
+    BankParams,
+    MemoryBank,
+    MemoryBanks,
+    MemoryBankType,
+)
+from llama_stack.apis.models import Model, Models, ModelType
+from llama_stack.apis.resource import ResourceType
+from llama_stack.apis.scoring_functions import (
+    ScoringFn,
+    ScoringFnParams,
+    ScoringFunctions,
+)
+from llama_stack.apis.shields import Shield, Shields
+from llama_stack.apis.tools import Tool, ToolGroup, ToolGroups, ToolHost
+from llama_stack.distribution.datatypes import (
+    RoutableObject,
+    RoutableObjectWithProvider,
+    RoutedProtocol,
+)
 from llama_stack.distribution.store import DistributionRegistry
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import Api, RoutingTable
 
 
 def get_impl_api(p: Any) -> Api:
@@ -30,7 +42,6 @@ def get_impl_api(p: Any) -> Api:
 
 # TODO: this should return the registered object for all APIs
 async def register_object_with_provider(obj: RoutableObject, p: Any) -> RoutableObject:
-
     api = get_impl_api(p)
 
     assert obj.provider_id != "remote", "Remote provider should not be registered"
@@ -47,6 +58,8 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
         return await p.register_scoring_function(obj)
     elif api == Api.eval:
         return await p.register_eval_task(obj)
+    elif api == Api.tool_runtime:
+        return await p.register_tool(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -59,6 +72,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_model(obj.identifier)
     elif api == Api.datasetio:
         return await p.unregister_dataset(obj.identifier)
+    elif api == Api.tool_runtime:
+        return await p.unregister_tool(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -76,7 +91,6 @@ class CommonRoutingTableImpl(RoutingTable):
         self.dist_registry = dist_registry
 
     async def initialize(self) -> None:
-
         async def add_objects(
             objs: List[RoutableObjectWithProvider], provider_id: str, cls
         ) -> None:
@@ -107,6 +121,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 await add_objects(scoring_functions, pid, ScoringFn)
             elif api == Api.eval:
                 p.eval_task_store = self
+            elif api == Api.tool_runtime:
+                p.tool_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():
@@ -128,6 +144,8 @@ class CommonRoutingTableImpl(RoutingTable):
                 return ("Scoring", "scoring_function")
             elif isinstance(self, EvalTasksRoutingTable):
                 return ("Eval", "eval_task")
+            elif isinstance(self, ToolGroupsRoutingTable):
+                return ("Tools", "tool")
             else:
                 raise ValueError("Unknown routing table type")
 
@@ -209,6 +227,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         provider_model_id: Optional[str] = None,
         provider_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
+        model_type: Optional[ModelType] = None,
     ) -> Model:
         if provider_model_id is None:
             provider_model_id = model_id
@@ -222,11 +241,18 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                 )
         if metadata is None:
             metadata = {}
+        if model_type is None:
+            model_type = ModelType.llm
+        if "embedding_dimension" not in metadata and model_type == ModelType.embedding:
+            raise ValueError(
+                "Embedding model must have an embedding dimension in its metadata"
+            )
         model = Model(
             identifier=model_id,
             provider_resource_id=provider_model_id,
             provider_id=provider_id,
             metadata=metadata,
+            model_type=model_type,
         )
         registered_model = await self.register_object(model)
         return registered_model
@@ -298,16 +324,36 @@ class MemoryBanksRoutingTable(CommonRoutingTableImpl, MemoryBanks):
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
-        memory_bank = parse_obj_as(
-            MemoryBank,
-            {
-                "identifier": memory_bank_id,
-                "type": ResourceType.memory_bank.value,
-                "provider_id": provider_id,
-                "provider_resource_id": provider_memory_bank_id,
-                **params.model_dump(),
-            },
-        )
+        model = await self.get_object_by_identifier("model", params.embedding_model)
+        if model is None:
+            if params.embedding_model == "all-MiniLM-L6-v2":
+                raise ValueError(
+                    "Embeddings are now served via Inference providers. "
+                    "Please upgrade your run.yaml to include inline::sentence-transformer as an additional inference provider. "
+                    "See https://github.com/meta-llama/llama-stack/blob/main/llama_stack/templates/together/run.yaml for an example."
+                )
+            else:
+                raise ValueError(f"Model {params.embedding_model} not found")
+        if model.model_type != ModelType.embedding:
+            raise ValueError(
+                f"Model {params.embedding_model} is not an embedding model"
+            )
+        if "embedding_dimension" not in model.metadata:
+            raise ValueError(
+                f"Model {params.embedding_model} does not have an embedding dimension"
+            )
+        memory_bank_data = {
+            "identifier": memory_bank_id,
+            "type": ResourceType.memory_bank.value,
+            "provider_id": provider_id,
+            "provider_resource_id": provider_memory_bank_id,
+            **params.model_dump(),
+        }
+        if params.memory_bank_type == MemoryBankType.vector.value:
+            memory_bank_data["embedding_dimension"] = model.metadata[
+                "embedding_dimension"
+            ]
+        memory_bank = TypeAdapter(MemoryBank).validate_python(memory_bank_data)
         await self.register_object(memory_bank)
         return memory_bank
 
@@ -436,3 +482,80 @@ class EvalTasksRoutingTable(CommonRoutingTableImpl, EvalTasks):
             provider_resource_id=provider_eval_task_id,
         )
         await self.register_object(eval_task)
+
+
+class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
+    async def list_tools(self, tool_group_id: Optional[str] = None) -> List[Tool]:
+        tools = await self.get_all_with_type("tool")
+        if tool_group_id:
+            tools = [tool for tool in tools if tool.toolgroup_id == tool_group_id]
+        return tools
+
+    async def list_tool_groups(self) -> List[ToolGroup]:
+        return await self.get_all_with_type("tool_group")
+
+    async def get_tool_group(self, toolgroup_id: str) -> ToolGroup:
+        return await self.get_object_by_identifier("tool_group", toolgroup_id)
+
+    async def get_tool(self, tool_name: str) -> Tool:
+        return await self.get_object_by_identifier("tool", tool_name)
+
+    async def register_tool_group(
+        self,
+        toolgroup_id: str,
+        provider_id: str,
+        mcp_endpoint: Optional[URL] = None,
+        args: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        tools = []
+        tool_defs = await self.impls_by_provider_id[provider_id].list_runtime_tools(
+            toolgroup_id, mcp_endpoint
+        )
+        tool_host = (
+            ToolHost.model_context_protocol if mcp_endpoint else ToolHost.distribution
+        )
+
+        for tool_def in tool_defs:
+            tools.append(
+                Tool(
+                    identifier=tool_def.name,
+                    toolgroup_id=toolgroup_id,
+                    description=tool_def.description or "",
+                    parameters=tool_def.parameters or [],
+                    provider_id=provider_id,
+                    provider_resource_id=tool_def.name,
+                    metadata=tool_def.metadata,
+                    tool_host=tool_host,
+                )
+            )
+        for tool in tools:
+            existing_tool = await self.get_tool(tool.identifier)
+            # Compare existing and new object if one exists
+            if existing_tool:
+                existing_dict = existing_tool.model_dump()
+                new_dict = tool.model_dump()
+
+                if existing_dict != new_dict:
+                    raise ValueError(
+                        f"Object {tool.identifier} already exists in registry. Please use a different identifier."
+                    )
+            await self.register_object(tool)
+
+        await self.dist_registry.register(
+            ToolGroup(
+                identifier=toolgroup_id,
+                provider_id=provider_id,
+                provider_resource_id=toolgroup_id,
+                mcp_endpoint=mcp_endpoint,
+                args=args,
+            )
+        )
+
+    async def unregister_tool_group(self, tool_group_id: str) -> None:
+        tool_group = await self.get_tool_group(tool_group_id)
+        if tool_group is None:
+            raise ValueError(f"Tool group {tool_group_id} not found")
+        tools = await self.list_tools(tool_group_id)
+        for tool in tools:
+            await self.unregister_object(tool)
+        await self.unregister_object(tool_group)

@@ -6,6 +6,7 @@
 
 from typing import Literal, Union
 
+from llama_models.schema_utils import register_schema
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
@@ -53,21 +54,24 @@ class AgentTurnInputType(BaseModel):
     type: Literal["agent_turn_input"] = "agent_turn_input"
 
 
-ParamType = Annotated[
-    Union[
-        StringType,
-        NumberType,
-        BooleanType,
-        ArrayType,
-        ObjectType,
-        JsonType,
-        UnionType,
-        ChatCompletionInputType,
-        CompletionInputType,
-        AgentTurnInputType,
+ParamType = register_schema(
+    Annotated[
+        Union[
+            StringType,
+            NumberType,
+            BooleanType,
+            ArrayType,
+            ObjectType,
+            JsonType,
+            UnionType,
+            ChatCompletionInputType,
+            CompletionInputType,
+            AgentTurnInputType,
+        ],
+        Field(discriminator="type"),
     ],
-    Field(discriminator="type"),
-]
+    name="ParamType",
+)
 
 # TODO: recursive definition of ParamType in these containers
 # will cause infinite recursion in OpenAPI generation script

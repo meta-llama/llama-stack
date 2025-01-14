@@ -7,20 +7,34 @@
 import logging
 import os
 import uuid
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
-from llama_models.llama3.api.datatypes import *  # noqa: F403
 from llama_models.llama3.api.tokenizer import Tokenizer
 from llama_models.sku_list import resolve_model
-
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams as VLLMSamplingParams
 
-from llama_stack.apis.inference import *  # noqa: F403
-
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    ChatCompletionResponseStreamChunk,
+    CompletionResponse,
+    CompletionResponseStreamChunk,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
+from llama_stack.apis.models import Model
+from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
@@ -32,7 +46,6 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 
 from .config import VLLMConfig
-
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +63,7 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
     async def initialize(self):
-        log.info("Initializing vLLM inference adapter")
+        log.info("Initializing vLLM inference provider.")
 
         # Disable usage stats reporting. This would be a surprising thing for most
         # people to find out was on by default.
@@ -78,15 +91,36 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         self.engine = AsyncLLMEngine.from_engine_args(engine_args)
 
     async def shutdown(self):
-        """Shutdown the vLLM inference adapter."""
-        log.info("Shutting down vLLM inference adapter")
+        """Shut down the vLLM inference adapter."""
+        log.info("Shutting down vLLM inference provider.")
         if self.engine:
             self.engine.shutdown_background_loop()
 
-    async def register_model(self, model: Model) -> None:
-        raise ValueError(
-            "You cannot dynamically add a model to a running vllm instance"
-        )
+    # Note that the return type of the superclass method is WRONG
+    async def register_model(self, model: Model) -> Model:
+        """
+        Callback that is called when the server associates an inference endpoint
+        with an inference provider.
+
+        :param model: Object that encapsulates parameters necessary for identifying
+         a specific LLM.
+
+        :returns: The input ``Model`` object. It may or may not be permissible
+         to change fields before returning this object.
+        """
+        log.info(f"Registering model {model.identifier} with vLLM inference provider.")
+        # The current version of this provided is hard-coded to serve only
+        # the model specified in the YAML config file.
+        configured_model = resolve_model(self.config.model)
+        registered_model = resolve_model(model.model_id)
+
+        if configured_model.core_model_id != registered_model.core_model_id:
+            raise ValueError(
+                f"Requested model '{model.identifier}' is different from "
+                f"model '{self.config.model}' that this provider "
+                f"is configured to serve"
+            )
+        return model
 
     def _sampling_params(self, sampling_params: SamplingParams) -> VLLMSamplingParams:
         if sampling_params is None:
@@ -114,21 +148,13 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> CompletionResponse | CompletionResponseStreamChunk:
-        log.info("vLLM completion")
-        messages = [UserMessage(content=content)]
-        return self.chat_completion(
-            model=model_id,
-            messages=messages,
-            sampling_params=sampling_params,
-            stream=stream,
-            logprobs=logprobs,
-        )
+        raise NotImplementedError("Completion not implemented for vLLM")
 
     async def chat_completion(
         self,
@@ -137,13 +163,11 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
     ) -> ChatCompletionResponse | ChatCompletionResponseStreamChunk:
-        log.info("vLLM chat completion")
-
         assert self.engine is not None
 
         request = ChatCompletionRequest(
@@ -160,7 +184,9 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
         log.info("Sampling params: %s", sampling_params)
         request_id = _random_uuid()
 
-        prompt = chat_completion_request_to_prompt(request, self.formatter)
+        prompt = await chat_completion_request_to_prompt(
+            request, self.config.model, self.formatter
+        )
         vllm_sampling_params = self._sampling_params(request.sampling_params)
         results_generator = self.engine.generate(
             prompt, vllm_sampling_params, request_id
@@ -218,8 +244,6 @@ class VLLMInferenceImpl(Inference, ModelsProtocolPrivate):
             yield chunk
 
     async def embeddings(
-        self, model_id: str, contents: list[InterleavedTextMedia]
+        self, model_id: str, contents: List[InterleavedContent]
     ) -> EmbeddingsResponse:
-        log.info("vLLM embeddings")
-        # TODO
         raise NotImplementedError()

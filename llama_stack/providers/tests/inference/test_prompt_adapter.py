@@ -6,8 +6,14 @@
 
 import unittest
 
-from llama_models.llama3.api import *  # noqa: F403
-from llama_stack.apis.inference.inference import *  # noqa: F403
+from llama_models.llama3.api.datatypes import (
+    BuiltinTool,
+    ToolDefinition,
+    ToolParamDefinition,
+    ToolPromptFormat,
+)
+
+from llama_stack.apis.inference import ChatCompletionRequest, SystemMessage, UserMessage
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_messages,
 )

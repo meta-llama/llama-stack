@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 from contextlib import asynccontextmanager
 from typing import Dict, List, Optional, Protocol, Tuple
 
@@ -13,12 +12,8 @@ import pydantic
 
 from llama_stack.distribution.datatypes import KVStoreConfig, RoutableObjectWithProvider
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-
-from llama_stack.providers.utils.kvstore import (
-    KVStore,
-    kvstore_impl,
-    SqliteKVStoreConfig,
-)
+from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
 class DistributionRegistry(Protocol):
@@ -40,7 +35,7 @@ class DistributionRegistry(Protocol):
 
 
 REGISTER_PREFIX = "distributions:registry"
-KEY_VERSION = "v2"
+KEY_VERSION = "v5"
 KEY_FORMAT = f"{REGISTER_PREFIX}:{KEY_VERSION}::" + "{type}:{identifier}"
 
 
@@ -54,10 +49,7 @@ def _parse_registry_values(values: List[str]) -> List[RoutableObjectWithProvider
     """Utility function to parse registry values into RoutableObjectWithProvider objects."""
     all_objects = []
     for value in values:
-        obj = pydantic.parse_obj_as(
-            RoutableObjectWithProvider,
-            json.loads(value),
-        )
+        obj = pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(value)
         all_objects.append(obj)
     return all_objects
 
@@ -89,14 +81,7 @@ class DiskDistributionRegistry(DistributionRegistry):
         if not json_str:
             return None
 
-        objects_data = json.loads(json_str)
-        # Return only the first object if any exist
-        if objects_data:
-            return pydantic.parse_obj_as(
-                RoutableObjectWithProvider,
-                json.loads(objects_data),
-            )
-        return None
+        return pydantic.TypeAdapter(RoutableObjectWithProvider).validate_json(json_str)
 
     async def update(self, obj: RoutableObjectWithProvider) -> None:
         await self.kvstore.set(

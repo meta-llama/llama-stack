@@ -38,7 +38,7 @@ Alongside these APIs, we also related APIs for operating with associated resourc
 - Models
 - Shields
 - Memory Banks
-- EvalTasks
+- Eval Tasks
 - Datasets
 - Scoring Functions
 
@@ -77,30 +77,34 @@ Additionally, we have designed every element of the Stack such that APIs as well
 
 ## Supported Llama Stack Implementations
 ### API Providers
-|  **API Provider Builder** |  **Environments** | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
-| :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|  Meta Reference  |  Single Node | :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|  Cerebras  |  Single Node  |   | :heavy_check_mark:  |    |    |   |
-|  Fireworks  |  Hosted  | :heavy_check_mark:  | :heavy_check_mark:  |  :heavy_check_mark:  |    |   |
-|  AWS Bedrock  |  Hosted  |    |  :heavy_check_mark:  |    | :heavy_check_mark:  | |
-|  Together  |  Hosted  |  :heavy_check_mark:  |  :heavy_check_mark:  |   | :heavy_check_mark:  |  |
-|  Ollama  | Single Node   |    |  :heavy_check_mark:  |    |   |
-|  TGI  |  Hosted and Single Node  |    |  :heavy_check_mark:  |    |   |
-| Chroma | Single Node |  |  | :heavy_check_mark: |  |  |
-| PG Vector | Single Node |  |  | :heavy_check_mark: |  |  |
-| PyTorch ExecuTorch | On-device iOS | :heavy_check_mark:  | :heavy_check_mark:  |  |  |
+|                                  **API Provider Builder**                                  |    **Environments**    |     **Agents**     |   **Inference**    |     **Memory**     |     **Safety**     |   **Telemetry**    |
+|:------------------------------------------------------------------------------------------:|:----------------------:|:------------------:|:------------------:|:------------------:|:------------------:|:------------------:|
+|                                       Meta Reference                                       |      Single Node       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|                                          Cerebras                                          |         Hosted         |                    | :heavy_check_mark: |                    |                    |                    |
+|                                         Fireworks                                          |         Hosted         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+|                                        AWS Bedrock                                         |         Hosted         |                    | :heavy_check_mark: |                    | :heavy_check_mark: |                    |
+|                                          Together                                          |         Hosted         | :heavy_check_mark: | :heavy_check_mark: |                    | :heavy_check_mark: |                    |
+|                                            Groq                                            |         Hosted         |                    | :heavy_check_mark: |                    |                    |                    |
+|                                           Ollama                                           |      Single Node       |                    | :heavy_check_mark: |                    |                    |                    |
+|                                            TGI                                             | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
+| [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama) | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
+|                                           Chroma                                           |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
+|                                         PG Vector                                          |      Single Node       |                    |                    | :heavy_check_mark: |                    |                    |
+|                                     PyTorch ExecuTorch                                     |     On-device iOS      | :heavy_check_mark: | :heavy_check_mark: |                    |                    |                    |
+|                        [vLLM](https://github.com/vllm-project/vllm)                        | Hosted and Single Node |                    | :heavy_check_mark: |                    |                    |                    |
 
 ### Distributions
 
-| **Distribution** 	|           **Llama Stack Docker**           	| Start This Distribution 	|
-|:----------------:	|:------------------------------------------:	|:-----------------------:	|
-|  Meta Reference  	| [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general) 	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-gpu.html)       	|
-|  Meta Reference Quantized  	| [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) 	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-quantized-gpu.html)       	|
-|      Cerebras     |       [llamastack/distribution-cerebras](https://hub.docker.com/repository/docker/llamastack/distribution-cerebras/general)       	|       [Guide](https://llama-stack.readthedocs.io/en/latest/getting_started/distributions/self_hosted_distro/cerebras.html)       	|
-|      Ollama      	|       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)       	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/ollama.html)       	|
-|        TGI       	|         [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/tgi.html)       	|
-|        Together       	|         [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/together.html)       	|
-|        Fireworks       	|         [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)        	|       [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)       	|
+|               **Distribution**                |                                                                    **Llama Stack Docker**                                                                     |                                                 Start This Distribution                                                  |
+|:---------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------:|
+|                Meta Reference                 |           [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general)           |      [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-gpu.html)      |
+|           Meta Reference Quantized            | [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) | [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-quantized-gpu.html) |
+|                   Cerebras                    |                     [llamastack/distribution-cerebras](https://hub.docker.com/repository/docker/llamastack/distribution-cerebras/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/cerebras.html)   |
+|                    Ollama                     |                       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)                       |            [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/ollama.html)            |
+|                      TGI                      |                          [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)                          |             [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/tgi.html)              |
+|                   Together                    |                     [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)                     |           [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/together.html)           |
+|                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
+| [vLLM](https://github.com/vllm-project/vllm)  |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
 
 ## Installation
 
@@ -113,7 +117,8 @@ You have two ways to install this repository:
    ```
 
 2. **Install from source**:
-   If you prefer to install from the source code, follow these steps:
+   If you prefer to install from the source code, make sure you have [conda installed](https://docs.conda.io/projects/conda/en/stable).
+   Then, follow these steps:
    ```bash
     mkdir -p ~/local
     cd ~/local
@@ -123,7 +128,7 @@ You have two ways to install this repository:
     conda activate stack
 
     cd llama-stack
-    $CONDA_PREFIX/bin/pip install -e .
+    pip install -e .
    ```
 
 ## Documentation
@@ -134,7 +139,7 @@ Please checkout our [Documentation](https://llama-stack.readthedocs.io/en/latest
     * Guide using `llama` CLI to work with Llama models (download, study prompts), and building/starting a Llama Stack distribution.
 * [Getting Started](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html)
     * Quick guide to start a Llama Stack server.
-    * [Jupyter notebook](./docs/getting_started.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
+    * [Jupyter notebook](./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb) to walk-through how to use simple text and vision inference llama_stack_client APIs
     * The complete Llama Stack lesson [Colab notebook](https://colab.research.google.com/drive/1dtVmxotBsI4cGZQNsJRYPrLiDeT0Wnwt) of the new [Llama 3.2 course on Deeplearning.ai](https://learn.deeplearning.ai/courses/introducing-multimodal-llama-3-2/lesson/8/llama-stack).
     * A [Zero-to-Hero Guide](https://github.com/meta-llama/llama-stack/tree/main/docs/zero_to_hero_guide) that guide you through all the key components of llama stack with code samples.
 * [Contributing](CONTRIBUTING.md)

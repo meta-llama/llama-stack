@@ -6,7 +6,13 @@
 
 from typing import List
 
-from llama_stack.distribution.datatypes import *  # noqa: F403
+from llama_stack.providers.datatypes import (
+    AdapterSpec,
+    Api,
+    InlineProviderSpec,
+    ProviderSpec,
+    remote_provider_spec,
+)
 
 
 def available_providers() -> List[ProviderSpec]:
@@ -18,6 +24,7 @@ def available_providers() -> List[ProviderSpec]:
                 "opentelemetry-sdk",
                 "opentelemetry-exporter-otlp-proto-http",
             ],
+            api_dependencies=[Api.datasetio],
             module="llama_stack.providers.inline.telemetry.meta_reference",
             config_class="llama_stack.providers.inline.telemetry.meta_reference.config.TelemetryConfig",
         ),

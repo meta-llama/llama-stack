@@ -17,6 +17,7 @@ from llama_stack.apis.memory_banks.memory_banks import MemoryBank
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
+from llama_stack.apis.tools import Tool
 
 
 @json_schema_type
@@ -28,6 +29,8 @@ class Api(Enum):
     datasetio = "datasetio"
     scoring = "scoring"
     eval = "eval"
+    post_training = "post_training"
+    tool_runtime = "tool_runtime"
 
     telemetry = "telemetry"
 
@@ -37,6 +40,7 @@ class Api(Enum):
     datasets = "datasets"
     scoring_functions = "scoring_functions"
     eval_tasks = "eval_tasks"
+    tool_groups = "tool_groups"
 
     # built-in API
     inspect = "inspect"
@@ -53,8 +57,6 @@ class ShieldsProtocolPrivate(Protocol):
 
 
 class MemoryBanksProtocolPrivate(Protocol):
-    async def list_memory_banks(self) -> List[MemoryBank]: ...
-
     async def register_memory_bank(self, memory_bank: MemoryBank) -> None: ...
 
     async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...
@@ -74,6 +76,12 @@ class ScoringFunctionsProtocolPrivate(Protocol):
 
 class EvalTasksProtocolPrivate(Protocol):
     async def register_eval_task(self, eval_task: EvalTask) -> None: ...
+
+
+class ToolsProtocolPrivate(Protocol):
+    async def register_tool(self, tool: Tool) -> None: ...
+
+    async def unregister_tool(self, tool_id: str) -> None: ...
 
 
 @json_schema_type
@@ -202,10 +210,13 @@ API responses, specify the adapter here.
         return self.adapter.provider_data_validator
 
 
-def remote_provider_spec(api: Api, adapter: AdapterSpec) -> RemoteProviderSpec:
+def remote_provider_spec(
+    api: Api, adapter: AdapterSpec, api_dependencies: Optional[List[Api]] = None
+) -> RemoteProviderSpec:
     return RemoteProviderSpec(
         api=api,
         provider_type=f"remote::{adapter.adapter_type}",
         config_class=adapter.config_class,
         adapter=adapter,
+        api_dependencies=api_dependencies or [],
     )

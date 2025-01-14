@@ -1,4 +1,14 @@
+---
+orphan: true
+---
 # Cerebras Distribution
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
 
 The `llamastack/distribution-cerebras` distribution consists of the following provider configurations.
 
@@ -9,13 +19,14 @@ The `llamastack/distribution-cerebras` distribution consists of the following pr
 | memory | `inline::meta-reference` |
 | safety | `inline::llama-guard` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 ### Environment Variables
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `CEREBRAS_API_KEY`: Cerebras API Key (default: ``)
 
 ### Models
@@ -23,7 +34,7 @@ The following environment variables can be configured:
 The following models are available by default:
 
 - `meta-llama/Llama-3.1-8B-Instruct (llama3.1-8b)`
-- `meta-llama/Llama-3.1-70B-Instruct (llama3.1-70b)`
+- `meta-llama/Llama-3.3-70B-Instruct (llama-3.3-70b)`
 
 
 ### Prerequisite: API Keys

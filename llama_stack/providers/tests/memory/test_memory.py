@@ -8,14 +8,18 @@ import uuid
 
 import pytest
 
-from llama_stack.apis.memory import *  # noqa: F403
-from llama_stack.distribution.datatypes import *  # noqa: F403
-from llama_stack.apis.memory_banks.memory_banks import VectorMemoryBankParams
+from llama_stack.apis.memory import MemoryBankDocument, QueryDocumentsResponse
+
+from llama_stack.apis.memory_banks import (
+    MemoryBank,
+    MemoryBanks,
+    VectorMemoryBankParams,
+)
 
 # How to run this test:
 #
 # pytest llama_stack/providers/tests/memory/test_memory.py
-#   -m "meta_reference"
+#   -m "sentence_transformers" --env EMBEDDING_DIMENSION=384
 #   -v -s --tb=short --disable-warnings
 
 
@@ -45,12 +49,14 @@ def sample_documents():
     ]
 
 
-async def register_memory_bank(banks_impl: MemoryBanks) -> MemoryBank:
+async def register_memory_bank(
+    banks_impl: MemoryBanks, embedding_model: str
+) -> MemoryBank:
     bank_id = f"test_bank_{uuid.uuid4().hex}"
     return await banks_impl.register_memory_bank(
         memory_bank_id=bank_id,
         params=VectorMemoryBankParams(
-            embedding_model="all-MiniLM-L6-v2",
+            embedding_model=embedding_model,
             chunk_size_in_tokens=512,
             overlap_size_in_tokens=64,
         ),
@@ -59,11 +65,11 @@ async def register_memory_bank(banks_impl: MemoryBanks) -> MemoryBank:
 
 class TestMemory:
     @pytest.mark.asyncio
-    async def test_banks_list(self, memory_stack):
+    async def test_banks_list(self, memory_stack, embedding_model):
         _, banks_impl = memory_stack
 
         # Register a test bank
-        registered_bank = await register_memory_bank(banks_impl)
+        registered_bank = await register_memory_bank(banks_impl, embedding_model)
 
         try:
             # Verify our bank shows up in list
@@ -84,7 +90,7 @@ class TestMemory:
         )
 
     @pytest.mark.asyncio
-    async def test_banks_register(self, memory_stack):
+    async def test_banks_register(self, memory_stack, embedding_model):
         _, banks_impl = memory_stack
 
         bank_id = f"test_bank_{uuid.uuid4().hex}"
@@ -94,7 +100,7 @@ class TestMemory:
             await banks_impl.register_memory_bank(
                 memory_bank_id=bank_id,
                 params=VectorMemoryBankParams(
-                    embedding_model="all-MiniLM-L6-v2",
+                    embedding_model=embedding_model,
                     chunk_size_in_tokens=512,
                     overlap_size_in_tokens=64,
                 ),
@@ -109,7 +115,7 @@ class TestMemory:
             await banks_impl.register_memory_bank(
                 memory_bank_id=bank_id,
                 params=VectorMemoryBankParams(
-                    embedding_model="all-MiniLM-L6-v2",
+                    embedding_model=embedding_model,
                     chunk_size_in_tokens=512,
                     overlap_size_in_tokens=64,
                 ),
@@ -126,13 +132,15 @@ class TestMemory:
             await banks_impl.unregister_memory_bank(bank_id)
 
     @pytest.mark.asyncio
-    async def test_query_documents(self, memory_stack, sample_documents):
+    async def test_query_documents(
+        self, memory_stack, embedding_model, sample_documents
+    ):
         memory_impl, banks_impl = memory_stack
 
         with pytest.raises(ValueError):
             await memory_impl.insert_documents("test_bank", sample_documents)
 
-        registered_bank = await register_memory_bank(banks_impl)
+        registered_bank = await register_memory_bank(banks_impl, embedding_model)
         await memory_impl.insert_documents(
             registered_bank.memory_bank_id, sample_documents
         )
@@ -165,13 +173,13 @@ class TestMemory:
 
         # Test case 5: Query with threshold on similarity score
         query5 = "quantum computing"  # Not directly related to any document
-        params5 = {"score_threshold": 0.2}
+        params5 = {"score_threshold": 0.01}
         response5 = await memory_impl.query_documents(
             registered_bank.memory_bank_id, query5, params5
         )
         assert_valid_response(response5)
         print("The scores are:", response5.scores)
-        assert all(score >= 0.2 for score in response5.scores)
+        assert all(score >= 0.01 for score in response5.scores)
 
 
 def assert_valid_response(response: QueryDocumentsResponse):

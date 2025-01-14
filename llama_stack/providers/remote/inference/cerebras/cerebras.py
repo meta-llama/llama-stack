@@ -4,19 +4,28 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List, Optional, Union
 
 from cerebras.cloud.sdk import AsyncCerebras
-
+from llama_models.datatypes import CoreModelId
 from llama_models.llama3.api.chat_format import ChatFormat
-
-from llama_models.llama3.api.datatypes import Message
 from llama_models.llama3.api.tokenizer import Tokenizer
 
-from llama_stack.apis.inference import *  # noqa: F403
-
-from llama_models.datatypes import CoreModelId
-
+from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.inference import (
+    ChatCompletionRequest,
+    CompletionRequest,
+    CompletionResponse,
+    EmbeddingsResponse,
+    Inference,
+    LogProbConfig,
+    Message,
+    ResponseFormat,
+    SamplingParams,
+    ToolChoice,
+    ToolDefinition,
+    ToolPromptFormat,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     build_model_alias,
     ModelRegistryHelper,
@@ -35,15 +44,14 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import CerebrasImplConfig
 
-
 model_aliases = [
     build_model_alias(
         "llama3.1-8b",
         CoreModelId.llama3_1_8b_instruct.value,
     ),
     build_model_alias(
-        "llama3.1-70b",
-        CoreModelId.llama3_1_70b_instruct.value,
+        "llama-3.3-70b",
+        CoreModelId.llama3_3_70b_instruct.value,
     ),
 ]
 
@@ -58,7 +66,8 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         self.formatter = ChatFormat(Tokenizer.get_instance())
 
         self.client = AsyncCerebras(
-            base_url=self.config.base_url, api_key=self.config.api_key
+            base_url=self.config.base_url,
+            api_key=self.config.api_key.get_secret_value(),
         )
 
     async def initialize(self) -> None:
@@ -70,7 +79,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def completion(
         self,
         model_id: str,
-        content: InterleavedTextMedia,
+        content: InterleavedContent,
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
@@ -95,14 +104,14 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def _nonstream_completion(
         self, request: CompletionRequest
     ) -> CompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         r = await self.client.completions.create(**params)
 
         return process_completion_response(r, self.formatter)
 
     async def _stream_completion(self, request: CompletionRequest) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
@@ -116,7 +125,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         sampling_params: Optional[SamplingParams] = SamplingParams(),
         tools: Optional[List[ToolDefinition]] = None,
         tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = ToolPromptFormat.json,
+        tool_prompt_format: Optional[ToolPromptFormat] = None,
         response_format: Optional[ResponseFormat] = None,
         stream: Optional[bool] = False,
         logprobs: Optional[LogProbConfig] = None,
@@ -142,7 +151,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def _nonstream_chat_completion(
         self, request: CompletionRequest
     ) -> CompletionResponse:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         r = await self.client.completions.create(**params)
 
@@ -151,7 +160,7 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def _stream_chat_completion(
         self, request: CompletionRequest
     ) -> AsyncGenerator:
-        params = self._get_params(request)
+        params = await self._get_params(request)
 
         stream = await self.client.completions.create(**params)
 
@@ -160,19 +169,19 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
         ):
             yield chunk
 
-    def _get_params(
+    async def _get_params(
         self, request: Union[ChatCompletionRequest, CompletionRequest]
     ) -> dict:
         if request.sampling_params and request.sampling_params.top_k:
             raise ValueError("`top_k` not supported by Cerebras")
 
         prompt = ""
-        if type(request) == ChatCompletionRequest:
-            prompt = chat_completion_request_to_prompt(
+        if isinstance(request, ChatCompletionRequest):
+            prompt = await chat_completion_request_to_prompt(
                 request, self.get_llama_model(request.model), self.formatter
             )
-        elif type(request) == CompletionRequest:
-            prompt = completion_request_to_prompt(request, self.formatter)
+        elif isinstance(request, CompletionRequest):
+            prompt = await completion_request_to_prompt(request, self.formatter)
         else:
             raise ValueError(f"Unknown request type {type(request)}")
 
@@ -186,6 +195,6 @@ class CerebrasInferenceAdapter(ModelRegistryHelper, Inference):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[InterleavedTextMedia],
+        contents: List[InterleavedContent],
     ) -> EmbeddingsResponse:
         raise NotImplementedError()

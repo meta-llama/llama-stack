@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import threading
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -17,6 +17,22 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 
+from llama_stack.apis.telemetry import (
+    Event,
+    MetricEvent,
+    QueryCondition,
+    SpanEndPayload,
+    SpanStartPayload,
+    SpanStatus,
+    SpanWithStatus,
+    StructuredLogEvent,
+    Telemetry,
+    Trace,
+    UnstructuredLogEvent,
+)
+
+from llama_stack.distribution.datatypes import Api
+
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
@@ -24,9 +40,8 @@ from llama_stack.providers.inline.telemetry.meta_reference.console_span_processo
 from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor import (
     SQLiteSpanProcessor,
 )
+from llama_stack.providers.utils.telemetry.dataset_mixin import TelemetryDatasetMixin
 from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
-
-from llama_stack.apis.telemetry import *  # noqa: F403
 
 from .config import TelemetryConfig, TelemetrySink
 
@@ -54,9 +69,10 @@ def is_tracing_enabled(tracer):
         return span.is_recording()
 
 
-class TelemetryAdapter(Telemetry):
-    def __init__(self, config: TelemetryConfig) -> None:
+class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
+    def __init__(self, config: TelemetryConfig, deps: Dict[str, Any]) -> None:
         self.config = config
+        self.datasetio_api = deps[Api.datasetio]
 
         resource = Resource.create(
             {
@@ -66,7 +82,7 @@ class TelemetryAdapter(Telemetry):
 
         provider = TracerProvider(resource=resource)
         trace.set_tracer_provider(provider)
-        if TelemetrySink.JAEGER in self.config.sinks:
+        if TelemetrySink.OTEL in self.config.sinks:
             otlp_exporter = OTLPSpanExporter(
                 endpoint=self.config.otel_endpoint,
             )
@@ -96,8 +112,6 @@ class TelemetryAdapter(Telemetry):
 
     async def shutdown(self) -> None:
         trace.get_tracer_provider().force_flush()
-        trace.get_tracer_provider().shutdown()
-        metrics.get_meter_provider().shutdown()
 
     async def log_event(self, event: Event, ttl_seconds: int = 604800) -> None:
         if isinstance(event, UnstructuredLogEvent):
@@ -239,8 +253,8 @@ class TelemetryAdapter(Telemetry):
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> SpanWithChildren:
-        return await self.trace_store.get_materialized_span(
+    ) -> Dict[str, SpanWithStatus]:
+        return await self.trace_store.get_span_tree(
             span_id=span_id,
             attributes_to_return=attributes_to_return,
             max_depth=max_depth,

@@ -15,10 +15,14 @@ The `llamastack/distribution-meta-reference-gpu` distribution consists of the fo
 | API | Provider(s) |
 |-----|-------------|
 | agents | `inline::meta-reference` |
+| datasetio | `remote::huggingface`, `inline::localfs` |
+| eval | `inline::meta-reference` |
 | inference | `inline::meta-reference` |
 | memory | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 | safety | `inline::llama-guard` |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::memory-runtime` |
 
 
 Note that you need access to nvidia GPUs to run this distribution. This distribution is not compatible with CPU-only machines or machines with AMD GPUs.
@@ -27,7 +31,7 @@ Note that you need access to nvidia GPUs to run this distribution. This distribu
 
 The following environment variables can be configured:
 
-- `LLAMASTACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
+- `LLAMA_STACK_PORT`: Port for the Llama Stack distribution server (default: `5001`)
 - `INFERENCE_MODEL`: Inference model loaded into the Meta Reference server (default: `meta-llama/Llama-3.2-3B-Instruct`)
 - `INFERENCE_CHECKPOINT_DIR`: Directory containing the Meta Reference model checkpoint (default: `null`)
 - `SAFETY_MODEL`: Name of the safety (Llama-Guard) model to use (default: `meta-llama/Llama-Guard-3-1B`)
@@ -57,6 +61,7 @@ LLAMA_STACK_PORT=5001
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
@@ -68,6 +73,7 @@ If you are using Llama Stack Safety / Shield APIs, use:
 docker run \
   -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
   llamastack/distribution-meta-reference-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \

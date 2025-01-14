@@ -3,22 +3,27 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Optional
-
-import pandas
-from llama_models.llama3.api.datatypes import *  # noqa: F403
-
-from llama_stack.apis.datasetio import *  # noqa: F403
 import base64
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
+
+import pandas
+
+from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.datasetio import DatasetIO, PaginatedRowsResult
+from llama_stack.apis.datasets import Dataset
 
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_url
+from llama_stack.providers.utils.kvstore import kvstore_impl
 
 from .config import LocalFSDatasetIOConfig
+
+
+DATASETS_PREFIX = "localfs_datasets:"
 
 
 class BaseDataset(ABC):
@@ -85,8 +90,22 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self.config = config
         # local registry for keeping track of datasets within the provider
         self.dataset_infos = {}
+        self.kvstore = None
 
-    async def initialize(self) -> None: ...
+    async def initialize(self) -> None:
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        # Load existing datasets from kvstore
+        start_key = DATASETS_PREFIX
+        end_key = f"{DATASETS_PREFIX}\xff"
+        stored_datasets = await self.kvstore.range(start_key, end_key)
+
+        for dataset in stored_datasets:
+            dataset = Dataset.model_validate_json(dataset)
+            dataset_impl = PandasDataframeDataset(dataset)
+            self.dataset_infos[dataset.identifier] = DatasetInfo(
+                dataset_def=dataset,
+                dataset_impl=dataset_impl,
+            )
 
     async def shutdown(self) -> None: ...
 
@@ -94,6 +113,12 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         self,
         dataset: Dataset,
     ) -> None:
+        # Store in kvstore
+        key = f"{DATASETS_PREFIX}{dataset.identifier}"
+        await self.kvstore.set(
+            key=key,
+            value=dataset.json(),
+        )
         dataset_impl = PandasDataframeDataset(dataset)
         self.dataset_infos[dataset.identifier] = DatasetInfo(
             dataset_def=dataset,
@@ -101,6 +126,8 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         )
 
     async def unregister_dataset(self, dataset_id: str) -> None:
+        key = f"{DATASETS_PREFIX}{dataset_id}"
+        await self.kvstore.delete(key=key)
         del self.dataset_infos[dataset_id]
 
     async def get_rows_paginated(
