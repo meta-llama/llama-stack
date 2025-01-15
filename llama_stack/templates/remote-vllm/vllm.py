@@ -134,7 +134,7 @@ def get_distribution_template() -> DistributionTemplate:
                 "Inference model loaded into the vLLM server",
             ),
             "VLLM_URL": (
-                "http://host.docker.internal:5100}/v1",
+                "http://host.docker.internal:5100/v1",
                 "URL of the vLLM server with the main inference model",
             ),
             "MAX_TOKENS": (
