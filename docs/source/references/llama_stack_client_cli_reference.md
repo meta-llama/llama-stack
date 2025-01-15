@@ -200,10 +200,9 @@ Example eval_task_config.json:
         "type": "model",
         "model": "Llama3.1-405B-Instruct",
         "sampling_params": {
-            "strategy": "greedy",
-            "temperature": 0,
-            "top_p": 0.95,
-            "top_k": 0,
+            "strategy": {
+              "type": "greedy"
+            },
             "max_tokens": 0,
             "repetition_penalty": 1.0
         }

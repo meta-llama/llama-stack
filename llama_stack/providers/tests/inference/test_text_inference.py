@@ -32,6 +32,7 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.models import Model
+
 from .utils import group_chunks
 
 
@@ -476,7 +477,7 @@ class TestInference:
         last = grouped[ChatCompletionResponseEventType.progress][-1]
         # assert last.event.stop_reason == expected_stop_reason
         assert last.event.delta.parse_status == ToolCallParseStatus.succeeded
-        assert last.event.delta.content.type == "tool_call"
+        assert isinstance(last.event.delta.content, ToolCall)
 
         call = last.event.delta.content
         assert call.tool_name == "get_weather"

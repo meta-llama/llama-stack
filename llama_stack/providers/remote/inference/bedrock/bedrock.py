@@ -34,6 +34,7 @@ from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
+    get_sampling_strategy_options,
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
     process_chat_completion_response,
@@ -166,16 +167,13 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
     ) -> Dict:
         bedrock_model = request.model
 
-        inference_config = {}
-        param_mapping = {
-            "max_tokens": "max_gen_len",
-            "temperature": "temperature",
-            "top_p": "top_p",
-        }
+        sampling_params = request.sampling_params
+        options = get_sampling_strategy_options(sampling_params)
 
-        for k, v in param_mapping.items():
-            if getattr(request.sampling_params, k):
-                inference_config[v] = getattr(request.sampling_params, k)
+        if sampling_params.max_tokens:
+            options["max_gen_len"] = sampling_params.max_tokens
+        if sampling_params.repetition_penalty > 0:
+            options["repetition_penalty"] = sampling_params.repetition_penalty
 
         prompt = await chat_completion_request_to_prompt(
             request, self.get_llama_model(request.model), self.formatter
@@ -185,7 +183,7 @@ class BedrockInferenceAdapter(ModelRegistryHelper, Inference):
             "body": json.dumps(
                 {
                     "prompt": prompt,
-                    **inference_config,
+                    **options,
                 }
             ),
         }

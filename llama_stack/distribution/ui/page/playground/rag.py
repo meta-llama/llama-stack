@@ -118,13 +118,20 @@ def rag_chat_page():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+    if temperature > 0.0:
+        strategy = {
+            "type": "top_p",
+            "temperature": temperature,
+            "top_p": top_p,
+        }
+    else:
+        strategy = {"type": "greedy"}
+
     agent_config = AgentConfig(
         model=selected_model,
         instructions=system_prompt,
         sampling_params={
-            "strategy": "greedy",
-            "temperature": temperature,
-            "top_p": top_p,
+            "strategy": strategy,
         },
         tools=[
             {
