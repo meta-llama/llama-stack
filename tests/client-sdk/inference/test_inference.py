@@ -39,6 +39,7 @@ def text_model_id(llama_stack_client):
         for model in llama_stack_client.models.list().data
         if model.identifier.startswith("meta-llama") and "405" not in model.identifier
     ]
+    print(available_models)
     assert len(available_models) > 0
     return available_models[0]
 
