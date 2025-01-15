@@ -146,8 +146,12 @@ class MetaReferenceEvalImpl(
             # check if there's a memory retrieval step and extract the context
             memory_rag_context = None
             for step in final_event.turn.steps:
-                if step.step_type == StepType.memory_retrieval.value:
-                    memory_rag_context = " ".join(x.text for x in step.inserted_context)
+                if step.step_type == StepType.tool_execution.value:
+                    for i, tool_response in enumerate(step.tool_responses):
+                        if tool_response.tool_name == "query_memory":
+                            memory_rag_context = " ".join(
+                                x.text for x in tool_response.content
+                            )
 
             agent_generation = {}
             agent_generation[ColumnName.generated_answer.value] = (
