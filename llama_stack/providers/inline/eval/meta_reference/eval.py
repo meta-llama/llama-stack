@@ -16,6 +16,9 @@ from llama_stack.apis.scoring import Scoring
 from llama_stack.distribution.datatypes import Api
 from llama_stack.providers.datatypes import EvalTasksProtocolPrivate
 
+from llama_stack.providers.inline.agents.meta_reference.agent_instance import (
+    MEMORY_QUERY_TOOL,
+)
 from llama_stack.providers.utils.common.data_schema_validator import (
     ColumnName,
     get_valid_schemas,
@@ -147,8 +150,8 @@ class MetaReferenceEvalImpl(
             memory_rag_context = None
             for step in final_event.turn.steps:
                 if step.step_type == StepType.tool_execution.value:
-                    for i, tool_response in enumerate(step.tool_responses):
-                        if tool_response.tool_name == "query_memory":
+                    for tool_response in step.tool_responses:
+                        if tool_response.tool_name == MEMORY_QUERY_TOOL:
                             memory_rag_context = " ".join(
                                 x.text for x in tool_response.content
                             )
