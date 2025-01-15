@@ -20,7 +20,7 @@
     "openapi": "3.1.0",
     "info": {
         "title": "Llama Stack Specification",
-        "version": "alpha",
+        "version": "v1",
         "description": "This is the specification of the Llama Stack that provides\n                a set of endpoints and their corresponding interfaces that are tailored to\n                best leverage Llama Models."
     },
     "servers": [
@@ -29,7 +29,7 @@
         }
     ],
     "paths": {
-        "/alpha/datasetio/append-rows": {
+        "/v1/datasetio/append-rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -71,7 +71,7 @@
                 }
             }
         },
-        "/alpha/batch-inference/chat-completion": {
+        "/v1/batch-inference/chat-completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -120,7 +120,7 @@
                 }
             }
         },
-        "/alpha/batch-inference/completion": {
+        "/v1/batch-inference/completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -169,7 +169,7 @@
                 }
             }
         },
-        "/alpha/post-training/job/cancel": {
+        "/v1/post-training/job/cancel": {
             "post": {
                 "responses": {
                     "200": {
@@ -211,7 +211,7 @@
                 }
             }
         },
-        "/alpha/inference/chat-completion": {
+        "/v1/inference/chat-completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -267,7 +267,7 @@
                 }
             }
         },
-        "/alpha/inference/completion": {
+        "/v1/inference/completion": {
             "post": {
                 "responses": {
                     "200": {
@@ -323,7 +323,7 @@
                 }
             }
         },
-        "/alpha/agents/create": {
+        "/v1/agents/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -372,7 +372,7 @@
                 }
             }
         },
-        "/alpha/agents/session/create": {
+        "/v1/agents/session/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -421,7 +421,7 @@
                 }
             }
         },
-        "/alpha/agents/turn/create": {
+        "/v1/agents/turn/create": {
             "post": {
                 "responses": {
                     "200": {
@@ -477,7 +477,7 @@
                 }
             }
         },
-        "/alpha/agents/delete": {
+        "/v1/agents/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -519,7 +519,7 @@
                 }
             }
         },
-        "/alpha/agents/session/delete": {
+        "/v1/agents/session/delete": {
             "post": {
                 "responses": {
                     "200": {
@@ -561,7 +561,7 @@
                 }
             }
         },
-        "/alpha/inference/embeddings": {
+        "/v1/inference/embeddings": {
             "post": {
                 "responses": {
                     "200": {
@@ -610,7 +610,7 @@
                 }
             }
         },
-        "/alpha/eval/evaluate-rows": {
+        "/v1/eval/evaluate-rows": {
             "post": {
                 "responses": {
                     "200": {
@@ -659,7 +659,7 @@
                 }
             }
         },
-        "/alpha/agents/session/get": {
+        "/v1/agents/session/get": {
             "post": {
                 "responses": {
                     "200": {
@@ -724,7 +724,7 @@
                 }
             }
         },
-        "/alpha/agents/step/get": {
+        "/v1/agents/step/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -795,7 +795,7 @@
                 ]
             }
         },
-        "/alpha/agents/turn/get": {
+        "/v1/agents/turn/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -858,7 +858,7 @@
                 ]
             }
         },
-        "/alpha/datasets/get": {
+        "/v1/datasets/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -912,7 +912,7 @@
                 ]
             }
         },
-        "/alpha/eval-tasks/get": {
+        "/v1/eval-tasks/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -966,7 +966,7 @@
                 ]
             }
         },
-        "/alpha/memory-banks/get": {
+        "/v1/memory-banks/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -976,20 +976,7 @@
                                 "schema": {
                                     "oneOf": [
                                         {
-                                            "oneOf": [
-                                                {
-                                                    "$ref": "#/components/schemas/VectorMemoryBank"
-                                                },
-                                                {
-                                                    "$ref": "#/components/schemas/KeyValueMemoryBank"
-                                                },
-                                                {
-                                                    "$ref": "#/components/schemas/KeywordMemoryBank"
-                                                },
-                                                {
-                                                    "$ref": "#/components/schemas/GraphMemoryBank"
-                                                }
-                                            ]
+                                            "$ref": "#/components/schemas/MemoryBank"
                                         },
                                         {
                                             "type": "null"
@@ -1033,7 +1020,7 @@
                 ]
             }
         },
-        "/alpha/models/get": {
+        "/v1/models/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1087,7 +1074,7 @@
                 ]
             }
         },
-        "/alpha/datasetio/get-rows-paginated": {
+        "/v1/datasetio/get-rows-paginated": {
             "get": {
                 "responses": {
                     "200": {
@@ -1158,7 +1145,7 @@
                 ]
             }
         },
-        "/alpha/scoring-functions/get": {
+        "/v1/scoring-functions/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1212,7 +1199,7 @@
                 ]
             }
         },
-        "/alpha/shields/get": {
+        "/v1/shields/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1266,7 +1253,7 @@
                 ]
             }
         },
-        "/alpha/telemetry/get-span-tree": {
+        "/v1/telemetry/get-span-tree": {
             "post": {
                 "responses": {
                     "200": {
@@ -1334,7 +1321,7 @@
                 }
             }
         },
-        "/alpha/tools/get": {
+        "/v1/tools/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1381,7 +1368,7 @@
                 ]
             }
         },
-        "/alpha/toolgroups/get": {
+        "/v1/toolgroups/get": {
             "get": {
                 "responses": {
                     "200": {
@@ -1428,7 +1415,7 @@
                 ]
             }
         },
-        "/alpha/post-training/job/artifacts": {
+        "/v1/post-training/job/artifacts": {
             "get": {
                 "responses": {
                     "200": {
@@ -1482,7 +1469,7 @@
                 ]
             }
         },
-        "/alpha/post-training/job/status": {
+        "/v1/post-training/job/status": {
             "get": {
                 "responses": {
                     "200": {
@@ -1536,7 +1523,7 @@
                 ]
             }
         },
-        "/alpha/post-training/jobs": {
+        "/v1/post-training/jobs": {
             "get": {
                 "responses": {
                     "200": {
@@ -1575,7 +1562,7 @@
                 ]
             }
         },
-        "/alpha/health": {
+        "/v1/health": {
             "get": {
                 "responses": {
                     "200": {
@@ -1614,7 +1601,7 @@
                 ]
             }
         },
-        "/alpha/memory/insert": {
+        "/v1/memory/insert": {
             "post": {
                 "responses": {
                     "200": {
@@ -1656,7 +1643,7 @@
                 }
             }
         },
-        "/alpha/tool-runtime/invoke": {
+        "/v1/tool-runtime/invoke": {
             "post": {
                 "responses": {
                     "200": {
@@ -1706,7 +1693,7 @@
                 }
             }
         },
-        "/alpha/eval/job/cancel": {
+        "/v1/eval/job/cancel": {
             "post": {
                 "responses": {
                     "200": {
@@ -1748,7 +1735,7 @@
                 }
             }
         },
-        "/alpha/eval/job/result": {
+        "/v1/eval/job/result": {
             "get": {
                 "responses": {
                     "200": {
@@ -1803,7 +1790,7 @@
                 ]
             }
         },
-        "/alpha/eval/job/status": {
+        "/v1/eval/job/status": {
             "get": {
                 "responses": {
                     "200": {
@@ -1865,7 +1852,7 @@
                 ]
             }
         },
-        "/alpha/datasets/list": {
+        "/v1/datasets/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -1904,7 +1891,7 @@
                 ]
             }
         },
-        "/alpha/eval-tasks/list": {
+        "/v1/eval-tasks/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -1943,7 +1930,7 @@
                 ]
             }
         },
-        "/alpha/memory-banks/list": {
+        "/v1/memory-banks/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -1951,20 +1938,7 @@
                         "content": {
                             "application/jsonl": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/KeyValueMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/KeywordMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/GraphMemoryBank"
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/MemoryBank"
                                 }
                             }
                         }
@@ -1995,7 +1969,7 @@
                 ]
             }
         },
-        "/alpha/models/list": {
+        "/v1/models/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2034,7 +2008,7 @@
                 ]
             }
         },
-        "/alpha/providers/list": {
+        "/v1/providers/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2076,7 +2050,7 @@
                 ]
             }
         },
-        "/alpha/routes/list": {
+        "/v1/routes/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2121,7 +2095,7 @@
                 ]
             }
         },
-        "/alpha/tool-runtime/list-tools": {
+        "/v1/tool-runtime/list-tools": {
             "post": {
                 "responses": {
                     "200": {
@@ -2178,7 +2152,7 @@
                 }
             }
         },
-        "/alpha/scoring-functions/list": {
+        "/v1/scoring-functions/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2217,7 +2191,7 @@
                 ]
             }
         },
-        "/alpha/shields/list": {
+        "/v1/shields/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2256,7 +2230,7 @@
                 ]
             }
         },
-        "/alpha/toolgroups/list": {
+        "/v1/toolgroups/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2296,7 +2270,7 @@
                 ]
             }
         },
-        "/alpha/tools/list": {
+        "/v1/tools/list": {
             "get": {
                 "responses": {
                     "200": {
@@ -2344,7 +2318,7 @@
                 ]
             }
         },
-        "/alpha/telemetry/log-event": {
+        "/v1/telemetry/log-event": {
             "post": {
                 "responses": {
                     "200": {
@@ -2386,7 +2360,7 @@
                 }
             }
         },
-        "/alpha/post-training/preference-optimize": {
+        "/v1/post-training/preference-optimize": {
             "post": {
                 "responses": {
                     "200": {
@@ -2435,7 +2409,7 @@
                 }
             }
         },
-        "/alpha/memory/query": {
+        "/v1/memory/query": {
             "post": {
                 "responses": {
                     "200": {
@@ -2484,7 +2458,7 @@
                 }
             }
         },
-        "/alpha/telemetry/query-spans": {
+        "/v1/telemetry/query-spans": {
             "post": {
                 "responses": {
                     "200": {
@@ -2533,7 +2507,7 @@
                 }
             }
         },
-        "/alpha/telemetry/query-traces": {
+        "/v1/telemetry/query-traces": {
             "post": {
                 "responses": {
                     "200": {
@@ -2582,7 +2556,7 @@
                 }
             }
         },
-        "/alpha/datasets/register": {
+        "/v1/datasets/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2624,7 +2598,7 @@
                 }
             }
         },
-        "/alpha/eval-tasks/register": {
+        "/v1/eval-tasks/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2666,9 +2640,33 @@
                 }
             }
         },
-        "/alpha/memory-banks/register": {
+        "/v1/memory-banks/register": {
             "post": {
-                "responses": {},
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/VectorMemoryBank"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/KeyValueMemoryBank"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/KeywordMemoryBank"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/GraphMemoryBank"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
                 "tags": [
                     "MemoryBanks"
                 ],
@@ -2704,7 +2702,7 @@
                 }
             }
         },
-        "/alpha/models/register": {
+        "/v1/models/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2753,7 +2751,7 @@
                 }
             }
         },
-        "/alpha/scoring-functions/register": {
+        "/v1/scoring-functions/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2795,7 +2793,7 @@
                 }
             }
         },
-        "/alpha/shields/register": {
+        "/v1/shields/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2844,7 +2842,7 @@
                 }
             }
         },
-        "/alpha/toolgroups/register": {
+        "/v1/toolgroups/register": {
             "post": {
                 "responses": {
                     "200": {
@@ -2887,7 +2885,7 @@
                 }
             }
         },
-        "/alpha/eval/run-eval": {
+        "/v1/eval/run-eval": {
             "post": {
                 "responses": {
                     "200": {
@@ -2936,7 +2934,7 @@
                 }
             }
         },
-        "/alpha/safety/run-shield": {
+        "/v1/safety/run-shield": {
             "post": {
                 "responses": {
                     "200": {
@@ -2985,7 +2983,7 @@
                 }
             }
         },
-        "/alpha/telemetry/save-spans-to-dataset": {
+        "/v1/telemetry/save-spans-to-dataset": {
             "post": {
                 "responses": {
                     "200": {
@@ -3027,7 +3025,7 @@
                 }
             }
         },
-        "/alpha/scoring/score": {
+        "/v1/scoring/score": {
             "post": {
                 "responses": {
                     "200": {
@@ -3076,7 +3074,7 @@
                 }
             }
         },
-        "/alpha/scoring/score-batch": {
+        "/v1/scoring/score-batch": {
             "post": {
                 "responses": {
                     "200": {
@@ -3125,7 +3123,7 @@
                 }
             }
         },
-        "/alpha/post-training/supervised-fine-tune": {
+        "/v1/post-training/supervised-fine-tune": {
             "post": {
                 "responses": {
                     "200": {
@@ -3174,7 +3172,7 @@
                 }
             }
         },
-        "/alpha/synthetic-data-generation/generate": {
+        "/v1/synthetic-data-generation/generate": {
             "post": {
                 "responses": {
                     "200": {
@@ -3223,7 +3221,7 @@
                 }
             }
         },
-        "/alpha/datasets/unregister": {
+        "/v1/datasets/unregister": {
             "post": {
                 "responses": {
                     "200": {
@@ -3265,7 +3263,7 @@
                 }
             }
         },
-        "/alpha/memory-banks/unregister": {
+        "/v1/memory-banks/unregister": {
             "post": {
                 "responses": {
                     "200": {
@@ -3307,7 +3305,7 @@
                 }
             }
         },
-        "/alpha/models/unregister": {
+        "/v1/models/unregister": {
             "post": {
                 "responses": {
                     "200": {
@@ -3349,7 +3347,7 @@
                 }
             }
         },
-        "/alpha/toolgroups/unregister": {
+        "/v1/toolgroups/unregister": {
             "post": {
                 "responses": {
                     "200": {
@@ -3392,7 +3390,7 @@
                 }
             }
         },
-        "/alpha/version": {
+        "/v1/version": {
             "get": {
                 "responses": {
                     "200": {
@@ -3514,20 +3512,6 @@
                     "tool_calls"
                 ]
             },
-            "GreedySamplingStrategy": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "greedy",
-                        "default": "greedy"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
-                ]
-            },
             "ImageContentItem": {
                 "type": "object",
                 "properties": {
@@ -3595,17 +3579,20 @@
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/GreedySamplingStrategy"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TopPSamplingStrategy"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TopKSamplingStrategy"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/SamplingStrategy",
+                        "default": "greedy"
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "default": 0.0
+                    },
+                    "top_p": {
+                        "type": "number",
+                        "default": 0.95
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "default": 0
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -3619,6 +3606,14 @@
                 "additionalProperties": false,
                 "required": [
                     "strategy"
+                ]
+            },
+            "SamplingStrategy": {
+                "type": "string",
+                "enum": [
+                    "greedy",
+                    "top_p",
+                    "top_k"
                 ]
             },
             "StopReason": {
@@ -3872,45 +3867,6 @@
                     "call_id",
                     "tool_name",
                     "content"
-                ]
-            },
-            "TopKSamplingStrategy": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "top_k",
-                        "default": "top_k"
-                    },
-                    "top_k": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "top_k"
-                ]
-            },
-            "TopPSamplingStrategy": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "top_p",
-                        "default": "top_p"
-                    },
-                    "temperature": {
-                        "type": "number"
-                    },
-                    "top_p": {
-                        "type": "number",
-                        "default": 0.95
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type"
                 ]
             },
             "URL": {
@@ -4270,45 +4226,51 @@
             "ContentDelta": {
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "text",
-                                "default": "text"
-                            },
-                            "text": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "text"
-                        ]
+                        "$ref": "#/components/schemas/TextDelta"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "image",
-                                "default": "image"
-                            },
-                            "data": {
-                                "type": "string",
-                                "contentEncoding": "base64"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "data"
-                        ]
+                        "$ref": "#/components/schemas/ImageDelta"
                     },
                     {
                         "$ref": "#/components/schemas/ToolCallDelta"
                     }
+                ]
+            },
+            "ImageDelta": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "image",
+                        "default": "image"
+                    },
+                    "data": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "data"
+                ]
+            },
+            "TextDelta": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text",
+                        "default": "text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
                 ]
             },
             "TokenLogProbs": {
@@ -5847,6 +5809,22 @@
                     "memory_bank_type"
                 ]
             },
+            "MemoryBank": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/VectorMemoryBank"
+                    },
+                    {
+                        "$ref": "#/components/schemas/KeyValueMemoryBank"
+                    },
+                    {
+                        "$ref": "#/components/schemas/KeywordMemoryBank"
+                    },
+                    {
+                        "$ref": "#/components/schemas/GraphMemoryBank"
+                    }
+                ]
+            },
             "Session": {
                 "type": "object",
                 "properties": {
@@ -5867,20 +5845,7 @@
                         "format": "date-time"
                     },
                     "memory_bank": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/VectorMemoryBank"
-                            },
-                            {
-                                "$ref": "#/components/schemas/KeyValueMemoryBank"
-                            },
-                            {
-                                "$ref": "#/components/schemas/KeywordMemoryBank"
-                            },
-                            {
-                                "$ref": "#/components/schemas/GraphMemoryBank"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/MemoryBank"
                     }
                 },
                 "additionalProperties": false,
@@ -7303,6 +7268,9 @@
                     "shuffle": {
                         "type": "boolean"
                     },
+                    "data_format": {
+                        "$ref": "#/components/schemas/DatasetFormat"
+                    },
                     "validation_dataset_id": {
                         "type": "string"
                     },
@@ -7319,7 +7287,15 @@
                 "required": [
                     "dataset_id",
                     "batch_size",
-                    "shuffle"
+                    "shuffle",
+                    "data_format"
+                ]
+            },
+            "DatasetFormat": {
+                "type": "string",
+                "enum": [
+                    "instruct",
+                    "dialog"
                 ]
             },
             "EfficiencyConfig": {
@@ -8870,6 +8846,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
         },
         {
+            "name": "DatasetFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DatasetFormat\" />"
+        },
+        {
             "name": "DatasetIO"
         },
         {
@@ -8930,16 +8910,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBankParams\" />"
         },
         {
-            "name": "GreedySamplingStrategy",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GreedySamplingStrategy\" />"
-        },
-        {
             "name": "HealthInfo",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/HealthInfo\" />"
         },
         {
             "name": "ImageContentItem",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageContentItem\" />"
+        },
+        {
+            "name": "ImageDelta",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageDelta\" />"
         },
         {
             "name": "Inference"
@@ -9017,6 +8997,10 @@
         },
         {
             "name": "Memory"
+        },
+        {
+            "name": "MemoryBank",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/MemoryBank\" />"
         },
         {
             "name": "MemoryBankDocument",
@@ -9183,6 +9167,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingParams\" />"
         },
         {
+            "name": "SamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingStrategy\" />"
+        },
+        {
             "name": "SaveSpansToDatasetRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SaveSpansToDatasetRequest\" />"
         },
@@ -9286,6 +9274,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TextContentItem\" />"
         },
         {
+            "name": "TextDelta",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TextDelta\" />"
+        },
+        {
             "name": "TokenLogProbs",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TokenLogProbs\" />"
         },
@@ -9358,14 +9350,6 @@
         },
         {
             "name": "ToolRuntime"
-        },
-        {
-            "name": "TopKSamplingStrategy",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TopKSamplingStrategy\" />"
-        },
-        {
-            "name": "TopPSamplingStrategy",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TopPSamplingStrategy\" />"
         },
         {
             "name": "Trace",
@@ -9494,6 +9478,7 @@
                 "DPOAlignmentConfig",
                 "DataConfig",
                 "Dataset",
+                "DatasetFormat",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
                 "EfficiencyConfig",
@@ -9506,9 +9491,9 @@
                 "GetSpanTreeRequest",
                 "GraphMemoryBank",
                 "GraphMemoryBankParams",
-                "GreedySamplingStrategy",
                 "HealthInfo",
                 "ImageContentItem",
+                "ImageDelta",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "InterleavedContent",
@@ -9526,6 +9511,7 @@
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
+                "MemoryBank",
                 "MemoryBankDocument",
                 "MemoryRetrievalStep",
                 "Message",
@@ -9564,6 +9550,7 @@
                 "RunShieldResponse",
                 "SafetyViolation",
                 "SamplingParams",
+                "SamplingStrategy",
                 "SaveSpansToDatasetRequest",
                 "ScoreBatchRequest",
                 "ScoreBatchResponse",
@@ -9586,6 +9573,7 @@
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
                 "TextContentItem",
+                "TextDelta",
                 "TokenLogProbs",
                 "Tool",
                 "ToolCall",
@@ -9603,8 +9591,6 @@
                 "ToolPromptFormat",
                 "ToolResponse",
                 "ToolResponseMessage",
-                "TopKSamplingStrategy",
-                "TopPSamplingStrategy",
                 "Trace",
                 "TrainingConfig",
                 "Turn",

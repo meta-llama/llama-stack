@@ -15,7 +15,7 @@ from typing import (
     Union,
 )
 
-from llama_models.schema_utils import json_schema_type, webmethod
+from llama_models.schema_utils import json_schema_type, register_schema, webmethod
 
 from pydantic import BaseModel, Field
 
@@ -113,15 +113,18 @@ class GraphMemoryBank(MemoryBankResourceMixin):
     memory_bank_type: Literal[MemoryBankType.graph.value] = MemoryBankType.graph.value
 
 
-MemoryBank = Annotated[
-    Union[
-        VectorMemoryBank,
-        KeyValueMemoryBank,
-        KeywordMemoryBank,
-        GraphMemoryBank,
+MemoryBank = register_schema(
+    Annotated[
+        Union[
+            VectorMemoryBank,
+            KeyValueMemoryBank,
+            KeywordMemoryBank,
+            GraphMemoryBank,
+        ],
+        Field(discriminator="memory_bank_type"),
     ],
-    Field(discriminator="memory_bank_type"),
-]
+    name="MemoryBank",
+)
 
 
 class MemoryBankInput(BaseModel):

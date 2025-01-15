@@ -570,31 +570,8 @@ components:
       type: object
     ContentDelta:
       oneOf:
-      - additionalProperties: false
-        properties:
-          text:
-            type: string
-          type:
-            const: text
-            default: text
-            type: string
-        required:
-        - type
-        - text
-        type: object
-      - additionalProperties: false
-        properties:
-          data:
-            contentEncoding: base64
-            type: string
-          type:
-            const: image
-            default: image
-            type: string
-        required:
-        - type
-        - data
-        type: object
+      - $ref: '#/components/schemas/TextDelta'
+      - $ref: '#/components/schemas/ImageDelta'
       - $ref: '#/components/schemas/ToolCallDelta'
     CreateAgentRequest:
       additionalProperties: false
@@ -680,6 +657,8 @@ components:
       properties:
         batch_size:
           type: integer
+        data_format:
+          $ref: '#/components/schemas/DatasetFormat'
         dataset_id:
           type: string
         packed:
@@ -696,6 +675,7 @@ components:
       - dataset_id
       - batch_size
       - shuffle
+      - data_format
       type: object
     Dataset:
       additionalProperties: false
@@ -735,6 +715,11 @@ components:
       - url
       - metadata
       type: object
+    DatasetFormat:
+      enum:
+      - instruct
+      - dialog
+      type: string
     DeleteAgentsRequest:
       additionalProperties: false
       properties:
@@ -937,16 +922,6 @@ components:
       required:
       - memory_bank_type
       type: object
-    GreedySamplingStrategy:
-      additionalProperties: false
-      properties:
-        type:
-          const: greedy
-          default: greedy
-          type: string
-      required:
-      - type
-      type: object
     HealthInfo:
       additionalProperties: false
       properties:
@@ -969,6 +944,20 @@ components:
           $ref: '#/components/schemas/URL'
       required:
       - type
+      type: object
+    ImageDelta:
+      additionalProperties: false
+      properties:
+        data:
+          contentEncoding: base64
+          type: string
+        type:
+          const: image
+          default: image
+          type: string
+      required:
+      - type
+      - data
       type: object
     InferenceStep:
       additionalProperties: false
@@ -1219,6 +1208,12 @@ components:
       - rank
       - alpha
       type: object
+    MemoryBank:
+      oneOf:
+      - $ref: '#/components/schemas/VectorMemoryBank'
+      - $ref: '#/components/schemas/KeyValueMemoryBank'
+      - $ref: '#/components/schemas/KeywordMemoryBank'
+      - $ref: '#/components/schemas/GraphMemoryBank'
     MemoryBankDocument:
       additionalProperties: false
       properties:
@@ -2074,13 +2069,26 @@ components:
           default: 1.0
           type: number
         strategy:
-          oneOf:
-          - $ref: '#/components/schemas/GreedySamplingStrategy'
-          - $ref: '#/components/schemas/TopPSamplingStrategy'
-          - $ref: '#/components/schemas/TopKSamplingStrategy'
+          $ref: '#/components/schemas/SamplingStrategy'
+          default: greedy
+        temperature:
+          default: 0.0
+          type: number
+        top_k:
+          default: 0
+          type: integer
+        top_p:
+          default: 0.95
+          type: number
       required:
       - strategy
       type: object
+    SamplingStrategy:
+      enum:
+      - greedy
+      - top_p
+      - top_k
+      type: string
     SaveSpansToDatasetRequest:
       additionalProperties: false
       properties:
@@ -2245,11 +2253,7 @@ components:
       additionalProperties: false
       properties:
         memory_bank:
-          oneOf:
-          - $ref: '#/components/schemas/VectorMemoryBank'
-          - $ref: '#/components/schemas/KeyValueMemoryBank'
-          - $ref: '#/components/schemas/KeywordMemoryBank'
-          - $ref: '#/components/schemas/GraphMemoryBank'
+          $ref: '#/components/schemas/MemoryBank'
         session_id:
           type: string
         session_name:
@@ -2573,6 +2577,19 @@ components:
       - content
       type: object
     TextContentItem:
+      additionalProperties: false
+      properties:
+        text:
+          type: string
+        type:
+          const: text
+          default: text
+          type: string
+      required:
+      - type
+      - text
+      type: object
+    TextDelta:
       additionalProperties: false
       properties:
         text:
@@ -2928,34 +2945,6 @@ components:
       - tool_name
       - content
       type: object
-    TopKSamplingStrategy:
-      additionalProperties: false
-      properties:
-        top_k:
-          type: integer
-        type:
-          const: top_k
-          default: top_k
-          type: string
-      required:
-      - type
-      - top_k
-      type: object
-    TopPSamplingStrategy:
-      additionalProperties: false
-      properties:
-        temperature:
-          type: number
-        top_p:
-          default: 0.95
-          type: number
-        type:
-          const: top_p
-          default: top_p
-          type: string
-      required:
-      - type
-      type: object
     Trace:
       additionalProperties: false
       properties:
@@ -3223,11 +3212,11 @@ info:
     \           a set of endpoints and their corresponding interfaces that are tailored\
     \ to\n                best leverage Llama Models."
   title: Llama Stack Specification
-  version: alpha
+  version: v1
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
-  /alpha/agents/create:
+  /v1/agents/create:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3259,7 +3248,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/agents/delete:
+  /v1/agents/delete:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3287,7 +3276,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/agents/session/create:
+  /v1/agents/session/create:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3319,7 +3308,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/agents/session/delete:
+  /v1/agents/session/delete:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3347,7 +3336,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/agents/session/get:
+  /v1/agents/session/get:
     post:
       parameters:
       - in: query
@@ -3389,7 +3378,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/agents/step/get:
+  /v1/agents/step/get:
     get:
       parameters:
       - in: query
@@ -3435,7 +3424,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/agents/turn/create:
+  /v1/agents/turn/create:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3470,7 +3459,7 @@ paths:
             streamed agent turn completion response.
       tags:
       - Agents
-  /alpha/agents/turn/get:
+  /v1/agents/turn/get:
     get:
       parameters:
       - in: query
@@ -3511,7 +3500,7 @@ paths:
           description: OK
       tags:
       - Agents
-  /alpha/batch-inference/chat-completion:
+  /v1/batch-inference/chat-completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3543,7 +3532,7 @@ paths:
           description: OK
       tags:
       - BatchInference (Coming Soon)
-  /alpha/batch-inference/completion:
+  /v1/batch-inference/completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3575,7 +3564,7 @@ paths:
           description: OK
       tags:
       - BatchInference (Coming Soon)
-  /alpha/datasetio/append-rows:
+  /v1/datasetio/append-rows:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3603,7 +3592,7 @@ paths:
           description: OK
       tags:
       - DatasetIO
-  /alpha/datasetio/get-rows-paginated:
+  /v1/datasetio/get-rows-paginated:
     get:
       parameters:
       - in: query
@@ -3649,7 +3638,7 @@ paths:
           description: OK
       tags:
       - DatasetIO
-  /alpha/datasets/get:
+  /v1/datasets/get:
     get:
       parameters:
       - in: query
@@ -3682,7 +3671,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /alpha/datasets/list:
+  /v1/datasets/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3708,7 +3697,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /alpha/datasets/register:
+  /v1/datasets/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3736,7 +3725,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /alpha/datasets/unregister:
+  /v1/datasets/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3764,7 +3753,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /alpha/eval-tasks/get:
+  /v1/eval-tasks/get:
     get:
       parameters:
       - in: query
@@ -3797,7 +3786,7 @@ paths:
           description: OK
       tags:
       - EvalTasks
-  /alpha/eval-tasks/list:
+  /v1/eval-tasks/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3823,7 +3812,7 @@ paths:
           description: OK
       tags:
       - EvalTasks
-  /alpha/eval-tasks/register:
+  /v1/eval-tasks/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3851,7 +3840,7 @@ paths:
           description: OK
       tags:
       - EvalTasks
-  /alpha/eval/evaluate-rows:
+  /v1/eval/evaluate-rows:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3883,7 +3872,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /alpha/eval/job/cancel:
+  /v1/eval/job/cancel:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3911,7 +3900,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /alpha/eval/job/result:
+  /v1/eval/job/result:
     get:
       parameters:
       - in: query
@@ -3947,7 +3936,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /alpha/eval/job/status:
+  /v1/eval/job/status:
     get:
       parameters:
       - in: query
@@ -3985,7 +3974,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /alpha/eval/run-eval:
+  /v1/eval/run-eval:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4017,7 +4006,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /alpha/health:
+  /v1/health:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4043,7 +4032,7 @@ paths:
           description: OK
       tags:
       - Inspect
-  /alpha/inference/chat-completion:
+  /v1/inference/chat-completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4077,7 +4066,7 @@ paths:
           description: Chat completion response. **OR** SSE-stream of these events.
       tags:
       - Inference
-  /alpha/inference/completion:
+  /v1/inference/completion:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4111,7 +4100,7 @@ paths:
           description: Completion response. **OR** streamed completion response.
       tags:
       - Inference
-  /alpha/inference/embeddings:
+  /v1/inference/embeddings:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4143,7 +4132,7 @@ paths:
           description: OK
       tags:
       - Inference
-  /alpha/memory-banks/get:
+  /v1/memory-banks/get:
     get:
       parameters:
       - in: query
@@ -4171,16 +4160,12 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - oneOf:
-                  - $ref: '#/components/schemas/VectorMemoryBank'
-                  - $ref: '#/components/schemas/KeyValueMemoryBank'
-                  - $ref: '#/components/schemas/KeywordMemoryBank'
-                  - $ref: '#/components/schemas/GraphMemoryBank'
+                - $ref: '#/components/schemas/MemoryBank'
                 - type: 'null'
           description: OK
       tags:
       - MemoryBanks
-  /alpha/memory-banks/list:
+  /v1/memory-banks/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4202,15 +4187,11 @@ paths:
           content:
             application/jsonl:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/VectorMemoryBank'
-                - $ref: '#/components/schemas/KeyValueMemoryBank'
-                - $ref: '#/components/schemas/KeywordMemoryBank'
-                - $ref: '#/components/schemas/GraphMemoryBank'
+                $ref: '#/components/schemas/MemoryBank'
           description: OK
       tags:
       - MemoryBanks
-  /alpha/memory-banks/register:
+  /v1/memory-banks/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4233,10 +4214,20 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterMemoryBankRequest'
         required: true
-      responses: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/VectorMemoryBank'
+                - $ref: '#/components/schemas/KeyValueMemoryBank'
+                - $ref: '#/components/schemas/KeywordMemoryBank'
+                - $ref: '#/components/schemas/GraphMemoryBank'
+          description: ''
       tags:
       - MemoryBanks
-  /alpha/memory-banks/unregister:
+  /v1/memory-banks/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4264,7 +4255,7 @@ paths:
           description: OK
       tags:
       - MemoryBanks
-  /alpha/memory/insert:
+  /v1/memory/insert:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4292,7 +4283,7 @@ paths:
           description: OK
       tags:
       - Memory
-  /alpha/memory/query:
+  /v1/memory/query:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4324,7 +4315,7 @@ paths:
           description: OK
       tags:
       - Memory
-  /alpha/models/get:
+  /v1/models/get:
     get:
       parameters:
       - in: query
@@ -4357,7 +4348,7 @@ paths:
           description: OK
       tags:
       - Models
-  /alpha/models/list:
+  /v1/models/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4383,7 +4374,7 @@ paths:
           description: OK
       tags:
       - Models
-  /alpha/models/register:
+  /v1/models/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4415,7 +4406,7 @@ paths:
           description: OK
       tags:
       - Models
-  /alpha/models/unregister:
+  /v1/models/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4443,7 +4434,7 @@ paths:
           description: OK
       tags:
       - Models
-  /alpha/post-training/job/artifacts:
+  /v1/post-training/job/artifacts:
     get:
       parameters:
       - in: query
@@ -4476,7 +4467,7 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/post-training/job/cancel:
+  /v1/post-training/job/cancel:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4504,7 +4495,7 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/post-training/job/status:
+  /v1/post-training/job/status:
     get:
       parameters:
       - in: query
@@ -4537,7 +4528,7 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/post-training/jobs:
+  /v1/post-training/jobs:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4563,7 +4554,7 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/post-training/preference-optimize:
+  /v1/post-training/preference-optimize:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4595,7 +4586,7 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/post-training/supervised-fine-tune:
+  /v1/post-training/supervised-fine-tune:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4627,7 +4618,7 @@ paths:
           description: OK
       tags:
       - PostTraining (Coming Soon)
-  /alpha/providers/list:
+  /v1/providers/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4655,7 +4646,7 @@ paths:
           description: OK
       tags:
       - Inspect
-  /alpha/routes/list:
+  /v1/routes/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4685,7 +4676,7 @@ paths:
           description: OK
       tags:
       - Inspect
-  /alpha/safety/run-shield:
+  /v1/safety/run-shield:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4717,7 +4708,7 @@ paths:
           description: OK
       tags:
       - Safety
-  /alpha/scoring-functions/get:
+  /v1/scoring-functions/get:
     get:
       parameters:
       - in: query
@@ -4750,7 +4741,7 @@ paths:
           description: OK
       tags:
       - ScoringFunctions
-  /alpha/scoring-functions/list:
+  /v1/scoring-functions/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4776,7 +4767,7 @@ paths:
           description: OK
       tags:
       - ScoringFunctions
-  /alpha/scoring-functions/register:
+  /v1/scoring-functions/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4804,7 +4795,7 @@ paths:
           description: OK
       tags:
       - ScoringFunctions
-  /alpha/scoring/score:
+  /v1/scoring/score:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4836,7 +4827,7 @@ paths:
           description: OK
       tags:
       - Scoring
-  /alpha/scoring/score-batch:
+  /v1/scoring/score-batch:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4868,7 +4859,7 @@ paths:
           description: OK
       tags:
       - Scoring
-  /alpha/shields/get:
+  /v1/shields/get:
     get:
       parameters:
       - in: query
@@ -4901,7 +4892,7 @@ paths:
           description: OK
       tags:
       - Shields
-  /alpha/shields/list:
+  /v1/shields/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4927,7 +4918,7 @@ paths:
           description: OK
       tags:
       - Shields
-  /alpha/shields/register:
+  /v1/shields/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4959,7 +4950,7 @@ paths:
           description: OK
       tags:
       - Shields
-  /alpha/synthetic-data-generation/generate:
+  /v1/synthetic-data-generation/generate:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4991,7 +4982,7 @@ paths:
           description: OK
       tags:
       - SyntheticDataGeneration (Coming Soon)
-  /alpha/telemetry/get-span-tree:
+  /v1/telemetry/get-span-tree:
     post:
       parameters:
       - in: query
@@ -5035,7 +5026,7 @@ paths:
           description: OK
       tags:
       - Telemetry
-  /alpha/telemetry/log-event:
+  /v1/telemetry/log-event:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5063,7 +5054,7 @@ paths:
           description: OK
       tags:
       - Telemetry
-  /alpha/telemetry/query-spans:
+  /v1/telemetry/query-spans:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5095,7 +5086,7 @@ paths:
           description: OK
       tags:
       - Telemetry
-  /alpha/telemetry/query-traces:
+  /v1/telemetry/query-traces:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5127,7 +5118,7 @@ paths:
           description: OK
       tags:
       - Telemetry
-  /alpha/telemetry/save-spans-to-dataset:
+  /v1/telemetry/save-spans-to-dataset:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5155,7 +5146,7 @@ paths:
           description: OK
       tags:
       - Telemetry
-  /alpha/tool-runtime/invoke:
+  /v1/tool-runtime/invoke:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5188,7 +5179,7 @@ paths:
       summary: Run a tool with the given arguments
       tags:
       - ToolRuntime
-  /alpha/tool-runtime/list-tools:
+  /v1/tool-runtime/list-tools:
     post:
       parameters:
       - in: query
@@ -5225,7 +5216,7 @@ paths:
           description: OK
       tags:
       - ToolRuntime
-  /alpha/toolgroups/get:
+  /v1/toolgroups/get:
     get:
       parameters:
       - in: query
@@ -5256,7 +5247,7 @@ paths:
           description: OK
       tags:
       - ToolGroups
-  /alpha/toolgroups/list:
+  /v1/toolgroups/list:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5283,7 +5274,7 @@ paths:
       summary: List tool groups with optional provider
       tags:
       - ToolGroups
-  /alpha/toolgroups/register:
+  /v1/toolgroups/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5312,7 +5303,7 @@ paths:
       summary: Register a tool group
       tags:
       - ToolGroups
-  /alpha/toolgroups/unregister:
+  /v1/toolgroups/unregister:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5341,7 +5332,7 @@ paths:
       summary: Unregister a tool group
       tags:
       - ToolGroups
-  /alpha/tools/get:
+  /v1/tools/get:
     get:
       parameters:
       - in: query
@@ -5372,7 +5363,7 @@ paths:
           description: OK
       tags:
       - ToolGroups
-  /alpha/tools/list:
+  /v1/tools/list:
     get:
       parameters:
       - in: query
@@ -5404,7 +5395,7 @@ paths:
       summary: List tools with optional tool group
       tags:
       - ToolGroups
-  /alpha/version:
+  /v1/version:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5573,6 +5564,8 @@ tags:
   name: DataConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/Dataset" />
   name: Dataset
+- description: <SchemaDefinition schemaRef="#/components/schemas/DatasetFormat" />
+  name: DatasetFormat
 - name: DatasetIO
 - name: Datasets
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
@@ -5612,14 +5605,13 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankParams"
     />
   name: GraphMemoryBankParams
-- description: <SchemaDefinition schemaRef="#/components/schemas/GreedySamplingStrategy"
-    />
-  name: GreedySamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
   name: HealthInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/ImageContentItem"
     />
   name: ImageContentItem
+- description: <SchemaDefinition schemaRef="#/components/schemas/ImageDelta" />
+  name: ImageDelta
 - name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
@@ -5670,6 +5662,8 @@ tags:
     />
   name: LoraFinetuningConfig
 - name: Memory
+- description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBank" />
+  name: MemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/MemoryBankDocument"
     />
   name: MemoryBankDocument
@@ -5781,6 +5775,9 @@ tags:
   name: SafetyViolation
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams" />
   name: SamplingParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/SamplingStrategy"
+    />
+  name: SamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/SaveSpansToDatasetRequest"
     />
   name: SaveSpansToDatasetRequest
@@ -5849,6 +5846,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/TextContentItem"
     />
   name: TextContentItem
+- description: <SchemaDefinition schemaRef="#/components/schemas/TextDelta" />
+  name: TextDelta
 - description: <SchemaDefinition schemaRef="#/components/schemas/TokenLogProbs" />
   name: TokenLogProbs
 - description: <SchemaDefinition schemaRef="#/components/schemas/Tool" />
@@ -5899,12 +5898,6 @@ tags:
     />
   name: ToolResponseMessage
 - name: ToolRuntime
-- description: <SchemaDefinition schemaRef="#/components/schemas/TopKSamplingStrategy"
-    />
-  name: TopKSamplingStrategy
-- description: <SchemaDefinition schemaRef="#/components/schemas/TopPSamplingStrategy"
-    />
-  name: TopPSamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
@@ -6009,6 +6002,7 @@ x-tagGroups:
   - DPOAlignmentConfig
   - DataConfig
   - Dataset
+  - DatasetFormat
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
   - EfficiencyConfig
@@ -6021,9 +6015,9 @@ x-tagGroups:
   - GetSpanTreeRequest
   - GraphMemoryBank
   - GraphMemoryBankParams
-  - GreedySamplingStrategy
   - HealthInfo
   - ImageContentItem
+  - ImageDelta
   - InferenceStep
   - InsertDocumentsRequest
   - InterleavedContent
@@ -6041,6 +6035,7 @@ x-tagGroups:
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
+  - MemoryBank
   - MemoryBankDocument
   - MemoryRetrievalStep
   - Message
@@ -6079,6 +6074,7 @@ x-tagGroups:
   - RunShieldResponse
   - SafetyViolation
   - SamplingParams
+  - SamplingStrategy
   - SaveSpansToDatasetRequest
   - ScoreBatchRequest
   - ScoreBatchResponse
@@ -6101,6 +6097,7 @@ x-tagGroups:
   - SyntheticDataGenerationResponse
   - SystemMessage
   - TextContentItem
+  - TextDelta
   - TokenLogProbs
   - Tool
   - ToolCall
@@ -6118,8 +6115,6 @@ x-tagGroups:
   - ToolPromptFormat
   - ToolResponse
   - ToolResponseMessage
-  - TopKSamplingStrategy
-  - TopPSamplingStrategy
   - Trace
   - TrainingConfig
   - Turn

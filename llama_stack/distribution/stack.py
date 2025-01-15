@@ -40,8 +40,6 @@ from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
 
-LLAMA_STACK_API_VERSION = "alpha"
-
 
 class LlamaStack(
     MemoryBanks,

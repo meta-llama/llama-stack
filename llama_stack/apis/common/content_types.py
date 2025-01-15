@@ -64,11 +64,13 @@ InterleavedContent = register_schema(
 )
 
 
+@json_schema_type
 class TextDelta(BaseModel):
     type: Literal["text"] = "text"
     text: str
 
 
+@json_schema_type
 class ImageDelta(BaseModel):
     type: Literal["image"] = "image"
     data: bytes
