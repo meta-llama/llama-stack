@@ -71,7 +71,18 @@ SUPPORTED_MODELS = {
 
 class Report:
 
-    def __init__(self, _config):
+    def __init__(self, output_path):
+
+        valid_file_format = (
+            output_path.split(".")[1] in ["md", "markdown"]
+            if len(output_path.split(".")) == 2
+            else False
+        )
+        if not valid_file_format:
+            raise ValueError(
+                f"Invalid output file {output_path}. Markdown file is required"
+            )
+        self.output_path = output_path
         self.test_data = defaultdict(dict)
         self.inference_tests = defaultdict(dict)
 
@@ -108,6 +119,11 @@ class Report:
 
         rows = []
         for model in all_registered_models():
+            if (
+                "Instruct" not in model.core_model_id.value
+                and "Guard" not in model.core_model_id.value
+            ):
+                continue
             row = f"| {model.core_model_id.value} |"
             for k in SUPPORTED_MODELS.keys():
                 if model.core_model_id.value in SUPPORTED_MODELS[k]:
@@ -149,7 +165,7 @@ class Report:
             report.extend(test_table)
             report.append("\n")
 
-        output_file = Path("pytest_report.md")
+        output_file = Path(self.output_path)
         output_file.write_text("\n".join(report))
         print(f"\n Report generated: {output_file.absolute()}")
 
