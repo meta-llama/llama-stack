@@ -278,12 +278,6 @@ class TestConvertChatCompletionRequest:
             },
         ]
 
-    def _dummy_chat_completion_request(self):
-        return ChatCompletionRequest(
-            model="Llama-3.2-3B",
-            messages=[UserMessage(content="Hello World")],
-        )
-
 
 class TestConvertNonStreamChatCompletionResponse:
     def test_returns_response(self):
@@ -419,19 +413,19 @@ class TestConvertStreamChatCompletionResponse:
         iter = converted.__aiter__()
         chunk = await iter.__anext__()
         assert chunk.event.event_type == ChatCompletionResponseEventType.start
-        assert chunk.event.delta == "Hello "
+        assert chunk.event.delta.text == "Hello "
 
         chunk = await iter.__anext__()
         assert chunk.event.event_type == ChatCompletionResponseEventType.progress
-        assert chunk.event.delta == "World "
+        assert chunk.event.delta.text == "World "
 
         chunk = await iter.__anext__()
         assert chunk.event.event_type == ChatCompletionResponseEventType.progress
-        assert chunk.event.delta == " !"
+        assert chunk.event.delta.text == " !"
 
         chunk = await iter.__anext__()
         assert chunk.event.event_type == ChatCompletionResponseEventType.complete
-        assert chunk.event.delta == ""
+        assert chunk.event.delta.text == ""
         assert chunk.event.stop_reason == StopReason.end_of_turn
 
         with pytest.raises(StopAsyncIteration):
