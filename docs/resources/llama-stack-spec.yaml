@@ -584,19 +584,14 @@ components:
     CreateAgentSessionRequest:
       additionalProperties: false
       properties:
-        agent_id:
-          type: string
         session_name:
           type: string
       required:
-      - agent_id
       - session_name
       type: object
     CreateAgentTurnRequest:
       additionalProperties: false
       properties:
-        agent_id:
-          type: string
         documents:
           items:
             additionalProperties: false
@@ -622,8 +617,6 @@ components:
             - $ref: '#/components/schemas/UserMessage'
             - $ref: '#/components/schemas/ToolResponseMessage'
           type: array
-        session_id:
-          type: string
         stream:
           type: boolean
         toolgroups:
@@ -631,8 +624,6 @@ components:
             $ref: '#/components/schemas/AgentTool'
           type: array
       required:
-      - agent_id
-      - session_id
       - messages
       type: object
     DPOAlignmentConfig:
@@ -720,25 +711,6 @@ components:
       - instruct
       - dialog
       type: string
-    DeleteAgentsRequest:
-      additionalProperties: false
-      properties:
-        agent_id:
-          type: string
-      required:
-      - agent_id
-      type: object
-    DeleteAgentsSessionRequest:
-      additionalProperties: false
-      properties:
-        agent_id:
-          type: string
-        session_id:
-          type: string
-      required:
-      - agent_id
-      - session_id
-      type: object
     EfficiencyConfig:
       additionalProperties: false
       properties:
@@ -872,22 +844,6 @@ components:
       - scoring_functions
       - task_config
       type: object
-    GetAgentsSessionRequest:
-      additionalProperties: false
-      properties:
-        turn_ids:
-          items:
-            type: string
-          type: array
-      type: object
-    GetSpanTreeRequest:
-      additionalProperties: false
-      properties:
-        attributes_to_return:
-          items:
-            type: string
-          type: array
-      type: object
     GraphMemoryBank:
       additionalProperties: false
       properties:
@@ -921,6 +877,16 @@ components:
           type: string
       required:
       - memory_bank_type
+      type: object
+    GreedySamplingStrategy:
+      additionalProperties: false
+      properties:
+        type:
+          const: greedy
+          default: greedy
+          type: string
+      required:
+      - type
       type: object
     HealthInfo:
       additionalProperties: false
@@ -1045,8 +1011,8 @@ components:
         task_id:
           type: string
       required:
-      - task_id
       - job_id
+      - task_id
       type: object
     JobStatus:
       enum:
@@ -1146,11 +1112,111 @@ components:
       - type
       - judge_model
       type: object
-    ListRuntimeToolsRequest:
+    ListDatasetsResponse:
       additionalProperties: false
       properties:
-        mcp_endpoint:
-          $ref: '#/components/schemas/URL'
+        data:
+          items:
+            $ref: '#/components/schemas/Dataset'
+          type: array
+      required:
+      - data
+      type: object
+    ListEvalTasksResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/EvalTask'
+          type: array
+      required:
+      - data
+      type: object
+    ListMemoryBanksResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/MemoryBank'
+          type: array
+      required:
+      - data
+      type: object
+    ListModelsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Model'
+          type: array
+      required:
+      - data
+      type: object
+    ListPostTrainingJobsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            additionalProperties: false
+            properties:
+              job_uuid:
+                type: string
+            required:
+            - job_uuid
+            type: object
+          type: array
+      required:
+      - data
+      type: object
+    ListProvidersResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ProviderInfo'
+          type: array
+      required:
+      - data
+      type: object
+    ListScoringFunctionsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ScoringFn'
+          type: array
+      required:
+      - data
+      type: object
+    ListShieldsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Shield'
+          type: array
+      required:
+      - data
+      type: object
+    ListToolGroupsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ToolGroup'
+          type: array
+      required:
+      - data
+      type: object
+    ListToolsResponse:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/Tool'
+          type: array
+      required:
+      - data
       type: object
     LogEventRequest:
       additionalProperties: false
@@ -1715,6 +1781,20 @@ components:
       - chunks
       - scores
       type: object
+    QuerySpanTreeRequest:
+      additionalProperties: false
+      properties:
+        attributes_to_return:
+          items:
+            type: string
+          type: array
+        max_depth:
+          type: integer
+        span_id:
+          type: string
+      required:
+      - span_id
+      type: object
     QuerySpansRequest:
       additionalProperties: false
       properties:
@@ -2069,26 +2149,13 @@ components:
           default: 1.0
           type: number
         strategy:
-          $ref: '#/components/schemas/SamplingStrategy'
-          default: greedy
-        temperature:
-          default: 0.0
-          type: number
-        top_k:
-          default: 0
-          type: integer
-        top_p:
-          default: 0.95
-          type: number
+          oneOf:
+          - $ref: '#/components/schemas/GreedySamplingStrategy'
+          - $ref: '#/components/schemas/TopPSamplingStrategy'
+          - $ref: '#/components/schemas/TopKSamplingStrategy'
       required:
       - strategy
       type: object
-    SamplingStrategy:
-      enum:
-      - greedy
-      - top_p
-      - top_k
-      type: string
     SaveSpansToDatasetRequest:
       additionalProperties: false
       properties:
@@ -2945,6 +3012,34 @@ components:
       - tool_name
       - content
       type: object
+    TopKSamplingStrategy:
+      additionalProperties: false
+      properties:
+        top_k:
+          type: integer
+        type:
+          const: top_k
+          default: top_k
+          type: string
+      required:
+      - type
+      - top_k
+      type: object
+    TopPSamplingStrategy:
+      additionalProperties: false
+      properties:
+        temperature:
+          type: number
+        top_p:
+          default: 0.95
+          type: number
+        type:
+          const: top_p
+          default: top_p
+          type: string
+      required:
+      - type
+      type: object
     Trace:
       additionalProperties: false
       properties:
@@ -3056,38 +3151,6 @@ components:
           type: string
       required:
       - uri
-      type: object
-    UnregisterDatasetRequest:
-      additionalProperties: false
-      properties:
-        dataset_id:
-          type: string
-      required:
-      - dataset_id
-      type: object
-    UnregisterMemoryBankRequest:
-      additionalProperties: false
-      properties:
-        memory_bank_id:
-          type: string
-      required:
-      - memory_bank_id
-      type: object
-    UnregisterModelRequest:
-      additionalProperties: false
-      properties:
-        model_id:
-          type: string
-      required:
-      - model_id
-      type: object
-    UnregisterToolGroupRequest:
-      additionalProperties: false
-      properties:
-        tool_group_id:
-          type: string
-      required:
-      - tool_group_id
       type: object
     UnstructuredLogEvent:
       additionalProperties: false
@@ -3216,7 +3279,7 @@ info:
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 openapi: 3.1.0
 paths:
-  /v1/agents/create:
+  /v1/agents:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3248,9 +3311,14 @@ paths:
           description: OK
       tags:
       - Agents
-  /v1/agents/delete:
-    post:
+  /v1/agents/{agent_id}:
+    delete:
       parameters:
+      - in: path
+        name: agent_id
+        required: true
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -3265,20 +3333,19 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteAgentsRequest'
-        required: true
       responses:
         '200':
           description: OK
       tags:
       - Agents
-  /v1/agents/session/create:
+  /v1/agents/{agent_id}/session:
     post:
       parameters:
+      - in: path
+        name: agent_id
+        required: true
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -3308,9 +3375,19 @@ paths:
           description: OK
       tags:
       - Agents
-  /v1/agents/session/delete:
-    post:
+  /v1/agents/{agent_id}/session/{session_id}:
+    delete:
       parameters:
+      - in: path
+        name: session_id
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: agent_id
+        required: true
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -3325,30 +3402,30 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteAgentsSessionRequest'
-        required: true
       responses:
         '200':
           description: OK
       tags:
       - Agents
-  /v1/agents/session/get:
-    post:
+    get:
       parameters:
-      - in: query
+      - in: path
+        name: session_id
+        required: true
+        schema:
+          type: string
+      - in: path
         name: agent_id
         required: true
         schema:
           type: string
       - in: query
-        name: session_id
-        required: true
+        name: turn_ids
+        required: false
         schema:
-          type: string
+          items:
+            type: string
+          type: array
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -3363,12 +3440,6 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetAgentsSessionRequest'
-        required: true
       responses:
         '200':
           content:
@@ -3378,55 +3449,19 @@ paths:
           description: OK
       tags:
       - Agents
-  /v1/agents/step/get:
-    get:
+  /v1/agents/{agent_id}/session/{session_id}/turn:
+    post:
       parameters:
-      - in: query
+      - in: path
         name: agent_id
         required: true
         schema:
           type: string
-      - in: query
+      - in: path
         name: session_id
         required: true
         schema:
           type: string
-      - in: query
-        name: turn_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: step_id
-        required: true
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentStepResponse'
-          description: OK
-      tags:
-      - Agents
-  /v1/agents/turn/create:
-    post:
-      parameters:
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -3459,20 +3494,20 @@ paths:
             streamed agent turn completion response.
       tags:
       - Agents
-  /v1/agents/turn/get:
+  /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}:
     get:
       parameters:
-      - in: query
+      - in: path
         name: agent_id
         required: true
         schema:
           type: string
-      - in: query
+      - in: path
         name: session_id
         required: true
         schema:
           type: string
-      - in: query
+      - in: path
         name: turn_id
         required: true
         schema:
@@ -3497,6 +3532,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Turn'
+          description: OK
+      tags:
+      - Agents
+  /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}:
+    get:
+      parameters:
+      - in: path
+        name: agent_id
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: session_id
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: turn_id
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: step_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStepResponse'
           description: OK
       tags:
       - Agents
@@ -3564,35 +3645,7 @@ paths:
           description: OK
       tags:
       - BatchInference (Coming Soon)
-  /v1/datasetio/append-rows:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppendRowsRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - DatasetIO
-  /v1/datasetio/get-rows-paginated:
+  /v1/datasetio/rows:
     get:
       parameters:
       - in: query
@@ -3638,10 +3691,116 @@ paths:
           description: OK
       tags:
       - DatasetIO
-  /v1/datasets/get:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppendRowsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - DatasetIO
+  /v1/datasets:
     get:
       parameters:
-      - in: query
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDatasetsResponse'
+          description: OK
+      tags:
+      - Datasets
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDatasetRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Datasets
+  /v1/datasets/{dataset_id}:
+    delete:
+      parameters:
+      - in: path
+        name: dataset_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+      tags:
+      - Datasets
+    get:
+      parameters:
+      - in: path
         name: dataset_id
         required: true
         schema:
@@ -3671,7 +3830,7 @@ paths:
           description: OK
       tags:
       - Datasets
-  /v1/datasets/list:
+  /v1/eval-tasks:
     get:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3691,13 +3850,12 @@ paths:
       responses:
         '200':
           content:
-            application/jsonl:
+            application/json:
               schema:
-                $ref: '#/components/schemas/Dataset'
+                $ref: '#/components/schemas/ListEvalTasksResponse'
           description: OK
       tags:
-      - Datasets
-  /v1/datasets/register:
+      - EvalTasks
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3718,46 +3876,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterDatasetRequest'
+              $ref: '#/components/schemas/RegisterEvalTaskRequest'
         required: true
       responses:
         '200':
           description: OK
       tags:
-      - Datasets
-  /v1/datasets/unregister:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UnregisterDatasetRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-      tags:
-      - Datasets
-  /v1/eval-tasks/get:
+      - EvalTasks
+  /v1/eval-tasks/{eval_task_id}:
     get:
       parameters:
-      - in: query
-        name: name
+      - in: path
+        name: eval_task_id
         required: true
         schema:
           type: string
@@ -3783,60 +3913,6 @@ paths:
                 oneOf:
                 - $ref: '#/components/schemas/EvalTask'
                 - type: 'null'
-          description: OK
-      tags:
-      - EvalTasks
-  /v1/eval-tasks/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/EvalTask'
-          description: OK
-      tags:
-      - EvalTasks
-  /v1/eval-tasks/register:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterEvalTaskRequest'
-        required: true
-      responses:
-        '200':
           description: OK
       tags:
       - EvalTasks
@@ -3872,7 +3948,7 @@ paths:
           description: OK
       tags:
       - Eval
-  /v1/eval/job/cancel:
+  /v1/eval/jobs/cancel:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -3900,52 +3976,16 @@ paths:
           description: OK
       tags:
       - Eval
-  /v1/eval/job/result:
+  /v1/eval/jobs/{job_id}:
     get:
       parameters:
-      - in: query
-        name: task_id
-        required: true
-        schema:
-          type: string
-      - in: query
+      - in: path
         name: job_id
         required: true
         schema:
           type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluateResponse'
-          description: OK
-      tags:
-      - Eval
-  /v1/eval/job/status:
-    get:
-      parameters:
       - in: query
         name: task_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: job_id
         required: true
         schema:
           type: string
@@ -3974,7 +4014,43 @@ paths:
           description: OK
       tags:
       - Eval
-  /v1/eval/run-eval:
+  /v1/eval/jobs/{job_id}/result:
+    get:
+      parameters:
+      - in: path
+        name: job_id
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: task_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+          description: OK
+      tags:
+      - Eval
+  /v1/eval/run:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4132,14 +4208,9 @@ paths:
           description: OK
       tags:
       - Inference
-  /v1/memory-banks/get:
+  /v1/memory-banks:
     get:
       parameters:
-      - in: query
-        name: memory_bank_id
-        required: true
-        schema:
-          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -4159,39 +4230,10 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/MemoryBank'
-                - type: 'null'
+                $ref: '#/components/schemas/ListMemoryBanksResponse'
           description: OK
       tags:
       - MemoryBanks
-  /v1/memory-banks/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/MemoryBank'
-          description: OK
-      tags:
-      - MemoryBanks
-  /v1/memory-banks/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4227,9 +4269,14 @@ paths:
           description: ''
       tags:
       - MemoryBanks
-  /v1/memory-banks/unregister:
-    post:
+  /v1/memory-banks/{memory_bank_id}:
+    delete:
       parameters:
+      - in: path
+        name: memory_bank_id
+        required: true
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -4244,14 +4291,40 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UnregisterMemoryBankRequest'
-        required: true
       responses:
         '200':
+          description: OK
+      tags:
+      - MemoryBanks
+    get:
+      parameters:
+      - in: path
+        name: memory_bank_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/MemoryBank'
+                - type: 'null'
           description: OK
       tags:
       - MemoryBanks
@@ -4315,14 +4388,9 @@ paths:
           description: OK
       tags:
       - Memory
-  /v1/models/get:
+  /v1/models:
     get:
       parameters:
-      - in: query
-        name: identifier
-        required: true
-        schema:
-          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -4342,39 +4410,10 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/Model'
-                - type: 'null'
+                $ref: '#/components/schemas/ListModelsResponse'
           description: OK
       tags:
       - Models
-  /v1/models/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Model'
-          description: OK
-      tags:
-      - Models
-  /v1/models/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4406,9 +4445,14 @@ paths:
           description: OK
       tags:
       - Models
-  /v1/models/unregister:
-    post:
+  /v1/models/{model_id}:
+    delete:
       parameters:
+      - in: path
+        name: model_id
+        required: true
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -4423,14 +4467,40 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UnregisterModelRequest'
-        required: true
       responses:
         '200':
+          description: OK
+      tags:
+      - Models
+    get:
+      parameters:
+      - in: path
+        name: model_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/Model'
+                - type: 'null'
           description: OK
       tags:
       - Models
@@ -4548,9 +4618,9 @@ paths:
       responses:
         '200':
           content:
-            application/jsonl:
+            application/json:
               schema:
-                $ref: '#/components/schemas/PostTrainingJob'
+                $ref: '#/components/schemas/ListPostTrainingJobsResponse'
           description: OK
       tags:
       - PostTraining (Coming Soon)
@@ -4640,9 +4710,7 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties:
-                  $ref: '#/components/schemas/ProviderInfo'
-                type: object
+                $ref: '#/components/schemas/ListProvidersResponse'
           description: OK
       tags:
       - Inspect
@@ -4708,10 +4776,63 @@ paths:
           description: OK
       tags:
       - Safety
-  /v1/scoring-functions/get:
+  /v1/scoring-functions:
     get:
       parameters:
-      - in: query
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListScoringFunctionsResponse'
+          description: OK
+      tags:
+      - ScoringFunctions
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterScoringFunctionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+      tags:
+      - ScoringFunctions
+  /v1/scoring-functions/{scoring_fn_id}:
+    get:
+      parameters:
+      - in: path
         name: scoring_fn_id
         required: true
         schema:
@@ -4738,60 +4859,6 @@ paths:
                 oneOf:
                 - $ref: '#/components/schemas/ScoringFn'
                 - type: 'null'
-          description: OK
-      tags:
-      - ScoringFunctions
-  /v1/scoring-functions/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/ScoringFn'
-          description: OK
-      tags:
-      - ScoringFunctions
-  /v1/scoring-functions/register:
-    post:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterScoringFunctionRequest'
-        required: true
-      responses:
-        '200':
           description: OK
       tags:
       - ScoringFunctions
@@ -4859,14 +4926,9 @@ paths:
           description: OK
       tags:
       - Scoring
-  /v1/shields/get:
+  /v1/shields:
     get:
       parameters:
-      - in: query
-        name: identifier
-        required: true
-        schema:
-          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -4886,39 +4948,10 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/Shield'
-                - type: 'null'
+                $ref: '#/components/schemas/ListShieldsResponse'
           description: OK
       tags:
       - Shields
-  /v1/shields/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Shield'
-          description: OK
-      tags:
-      - Shields
-  /v1/shields/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -4947,6 +4980,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Shield'
+          description: OK
+      tags:
+      - Shields
+  /v1/shields/{identifier}:
+    get:
+      parameters:
+      - in: path
+        name: identifier
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/Shield'
+                - type: 'null'
           description: OK
       tags:
       - Shields
@@ -4982,50 +5048,6 @@ paths:
           description: OK
       tags:
       - SyntheticDataGeneration (Coming Soon)
-  /v1/telemetry/get-span-tree:
-    post:
-      parameters:
-      - in: query
-        name: span_id
-        required: true
-        schema:
-          type: string
-      - in: query
-        name: max_depth
-        required: false
-        schema:
-          type: integer
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetSpanTreeRequest'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                additionalProperties:
-                  $ref: '#/components/schemas/SpanWithStatus'
-                type: object
-          description: OK
-      tags:
-      - Telemetry
   /v1/telemetry/log-event:
     post:
       parameters:
@@ -5051,6 +5073,40 @@ paths:
         required: true
       responses:
         '200':
+          description: OK
+      tags:
+      - Telemetry
+  /v1/telemetry/query-span-tree:
+    post:
+      parameters:
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuerySpanTreeRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  $ref: '#/components/schemas/SpanWithStatus'
+                type: object
           description: OK
       tags:
       - Telemetry
@@ -5180,13 +5236,18 @@ paths:
       tags:
       - ToolRuntime
   /v1/tool-runtime/list-tools:
-    post:
+    get:
       parameters:
       - in: query
         name: tool_group_id
         required: false
         schema:
           type: string
+      - in: query
+        name: mcp_endpoint
+        required: false
+        schema:
+          $ref: '#/components/schemas/URL'
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -5201,12 +5262,6 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ListRuntimeToolsRequest'
-        required: true
       responses:
         '200':
           content:
@@ -5216,14 +5271,9 @@ paths:
           description: OK
       tags:
       - ToolRuntime
-  /v1/toolgroups/get:
+  /v1/toolgroups:
     get:
       parameters:
-      - in: query
-        name: toolgroup_id
-        required: true
-        schema:
-          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -5243,38 +5293,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ToolGroup'
-          description: OK
-      tags:
-      - ToolGroups
-  /v1/toolgroups/list:
-    get:
-      parameters:
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/ToolGroup'
+                $ref: '#/components/schemas/ListToolGroupsResponse'
           description: OK
       summary: List tool groups with optional provider
       tags:
       - ToolGroups
-  /v1/toolgroups/register:
     post:
       parameters:
       - description: JSON-encoded provider data which will be made available to the
@@ -5303,9 +5326,14 @@ paths:
       summary: Register a tool group
       tags:
       - ToolGroups
-  /v1/toolgroups/unregister:
-    post:
+  /v1/toolgroups/{toolgroup_id}:
+    delete:
       parameters:
+      - in: path
+        name: toolgroup_id
+        required: true
+        schema:
+          type: string
       - description: JSON-encoded provider data which will be made available to the
           adapter servicing the API
         in: header
@@ -5320,22 +5348,78 @@ paths:
         required: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UnregisterToolGroupRequest'
-        required: true
       responses:
         '200':
           description: OK
       summary: Unregister a tool group
       tags:
       - ToolGroups
-  /v1/tools/get:
+    get:
+      parameters:
+      - in: path
+        name: toolgroup_id
+        required: true
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolGroup'
+          description: OK
+      tags:
+      - ToolGroups
+  /v1/tools:
     get:
       parameters:
       - in: query
+        name: toolgroup_id
+        required: false
+        schema:
+          type: string
+      - description: JSON-encoded provider data which will be made available to the
+          adapter servicing the API
+        in: header
+        name: X-LlamaStack-Provider-Data
+        required: false
+        schema:
+          type: string
+      - description: Version of the client making the request. This is used to ensure
+          that the client and server are compatible.
+        in: header
+        name: X-LlamaStack-Client-Version
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListToolsResponse'
+          description: OK
+      summary: List tools with optional tool group
+      tags:
+      - ToolGroups
+  /v1/tools/{tool_name}:
+    get:
+      parameters:
+      - in: path
         name: tool_name
         required: true
         schema:
@@ -5361,38 +5445,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Tool'
           description: OK
-      tags:
-      - ToolGroups
-  /v1/tools/list:
-    get:
-      parameters:
-      - in: query
-        name: tool_group_id
-        required: false
-        schema:
-          type: string
-      - description: JSON-encoded provider data which will be made available to the
-          adapter servicing the API
-        in: header
-        name: X-LlamaStack-Provider-Data
-        required: false
-        schema:
-          type: string
-      - description: Version of the client making the request. This is used to ensure
-          that the client and server are compatible.
-        in: header
-        name: X-LlamaStack-Client-Version
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/jsonl:
-              schema:
-                $ref: '#/components/schemas/Tool'
-          description: OK
-      summary: List tools with optional tool group
       tags:
       - ToolGroups
   /v1/version:
@@ -5568,12 +5620,6 @@ tags:
   name: DatasetFormat
 - name: DatasetIO
 - name: Datasets
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
-    />
-  name: DeleteAgentsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsSessionRequest"
-    />
-  name: DeleteAgentsSessionRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/EfficiencyConfig"
     />
   name: EfficiencyConfig
@@ -5593,18 +5639,15 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/EvaluateRowsRequest"
     />
   name: EvaluateRowsRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/GetAgentsSessionRequest"
-    />
-  name: GetAgentsSessionRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/GetSpanTreeRequest"
-    />
-  name: GetSpanTreeRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBank"
     />
   name: GraphMemoryBank
 - description: <SchemaDefinition schemaRef="#/components/schemas/GraphMemoryBankParams"
     />
   name: GraphMemoryBankParams
+- description: <SchemaDefinition schemaRef="#/components/schemas/GreedySamplingStrategy"
+    />
+  name: GreedySamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/HealthInfo" />
   name: HealthInfo
 - description: <SchemaDefinition schemaRef="#/components/schemas/ImageContentItem"
@@ -5650,9 +5693,36 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/LLMAsJudgeScoringFnParams"
     />
   name: LLMAsJudgeScoringFnParams
-- description: <SchemaDefinition schemaRef="#/components/schemas/ListRuntimeToolsRequest"
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListDatasetsResponse"
     />
-  name: ListRuntimeToolsRequest
+  name: ListDatasetsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListEvalTasksResponse"
+    />
+  name: ListEvalTasksResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListMemoryBanksResponse"
+    />
+  name: ListMemoryBanksResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListModelsResponse"
+    />
+  name: ListModelsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListPostTrainingJobsResponse"
+    />
+  name: ListPostTrainingJobsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListProvidersResponse"
+    />
+  name: ListProvidersResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListScoringFunctionsResponse"
+    />
+  name: ListScoringFunctionsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListShieldsResponse"
+    />
+  name: ListShieldsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListToolGroupsResponse"
+    />
+  name: ListToolGroupsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/ListToolsResponse"
+    />
+  name: ListToolsResponse
 - description: <SchemaDefinition schemaRef="#/components/schemas/LogEventRequest"
     />
   name: LogEventRequest
@@ -5727,6 +5797,9 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/QueryDocumentsResponse"
     />
   name: QueryDocumentsResponse
+- description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpanTreeRequest"
+    />
+  name: QuerySpanTreeRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/QuerySpansRequest"
     />
   name: QuerySpansRequest
@@ -5775,9 +5848,6 @@ tags:
   name: SafetyViolation
 - description: <SchemaDefinition schemaRef="#/components/schemas/SamplingParams" />
   name: SamplingParams
-- description: <SchemaDefinition schemaRef="#/components/schemas/SamplingStrategy"
-    />
-  name: SamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/SaveSpansToDatasetRequest"
     />
   name: SaveSpansToDatasetRequest
@@ -5898,6 +5968,12 @@ tags:
     />
   name: ToolResponseMessage
 - name: ToolRuntime
+- description: <SchemaDefinition schemaRef="#/components/schemas/TopKSamplingStrategy"
+    />
+  name: TopKSamplingStrategy
+- description: <SchemaDefinition schemaRef="#/components/schemas/TopPSamplingStrategy"
+    />
+  name: TopPSamplingStrategy
 - description: <SchemaDefinition schemaRef="#/components/schemas/Trace" />
   name: Trace
 - description: <SchemaDefinition schemaRef="#/components/schemas/TrainingConfig" />
@@ -5909,18 +5985,6 @@ tags:
   name: Turn
 - description: <SchemaDefinition schemaRef="#/components/schemas/URL" />
   name: URL
-- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterDatasetRequest"
-    />
-  name: UnregisterDatasetRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterMemoryBankRequest"
-    />
-  name: UnregisterMemoryBankRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterModelRequest"
-    />
-  name: UnregisterModelRequest
-- description: <SchemaDefinition schemaRef="#/components/schemas/UnregisterToolGroupRequest"
-    />
-  name: UnregisterToolGroupRequest
 - description: <SchemaDefinition schemaRef="#/components/schemas/UnstructuredLogEvent"
     />
   name: UnstructuredLogEvent
@@ -6003,18 +6067,15 @@ x-tagGroups:
   - DataConfig
   - Dataset
   - DatasetFormat
-  - DeleteAgentsRequest
-  - DeleteAgentsSessionRequest
   - EfficiencyConfig
   - EmbeddingsRequest
   - EmbeddingsResponse
   - EvalTask
   - EvaluateResponse
   - EvaluateRowsRequest
-  - GetAgentsSessionRequest
-  - GetSpanTreeRequest
   - GraphMemoryBank
   - GraphMemoryBankParams
+  - GreedySamplingStrategy
   - HealthInfo
   - ImageContentItem
   - ImageDelta
@@ -6031,7 +6092,16 @@ x-tagGroups:
   - KeywordMemoryBank
   - KeywordMemoryBankParams
   - LLMAsJudgeScoringFnParams
-  - ListRuntimeToolsRequest
+  - ListDatasetsResponse
+  - ListEvalTasksResponse
+  - ListMemoryBanksResponse
+  - ListModelsResponse
+  - ListPostTrainingJobsResponse
+  - ListProvidersResponse
+  - ListScoringFunctionsResponse
+  - ListShieldsResponse
+  - ListToolGroupsResponse
+  - ListToolsResponse
   - LogEventRequest
   - LogSeverity
   - LoraFinetuningConfig
@@ -6057,6 +6127,7 @@ x-tagGroups:
   - QueryConditionOp
   - QueryDocumentsRequest
   - QueryDocumentsResponse
+  - QuerySpanTreeRequest
   - QuerySpansRequest
   - QueryTracesRequest
   - RegexParserScoringFnParams
@@ -6074,7 +6145,6 @@ x-tagGroups:
   - RunShieldResponse
   - SafetyViolation
   - SamplingParams
-  - SamplingStrategy
   - SaveSpansToDatasetRequest
   - ScoreBatchRequest
   - ScoreBatchResponse
@@ -6115,14 +6185,12 @@ x-tagGroups:
   - ToolPromptFormat
   - ToolResponse
   - ToolResponseMessage
+  - TopKSamplingStrategy
+  - TopPSamplingStrategy
   - Trace
   - TrainingConfig
   - Turn
   - URL
-  - UnregisterDatasetRequest
-  - UnregisterMemoryBankRequest
-  - UnregisterModelRequest
-  - UnregisterToolGroupRequest
   - UnstructuredLogEvent
   - UserMessage
   - VectorMemoryBank

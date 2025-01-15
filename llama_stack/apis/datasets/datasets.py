@@ -7,11 +7,9 @@
 from typing import Any, Dict, List, Literal, Optional, Protocol
 
 from llama_models.schema_utils import json_schema_type, webmethod
-
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.common.content_types import URL
-
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
 
@@ -44,8 +42,12 @@ class DatasetInput(CommonDatasetFields, BaseModel):
     provider_dataset_id: Optional[str] = None
 
 
+class ListDatasetsResponse(BaseModel):
+    data: List[Dataset]
+
+
 class Datasets(Protocol):
-    @webmethod(route="/datasets/register", method="POST")
+    @webmethod(route="/datasets", method="POST")
     async def register_dataset(
         self,
         dataset_id: str,
@@ -56,16 +58,16 @@ class Datasets(Protocol):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None: ...
 
-    @webmethod(route="/datasets/get", method="GET")
+    @webmethod(route="/datasets/{dataset_id}", method="GET")
     async def get_dataset(
         self,
         dataset_id: str,
     ) -> Optional[Dataset]: ...
 
-    @webmethod(route="/datasets/list", method="GET")
-    async def list_datasets(self) -> List[Dataset]: ...
+    @webmethod(route="/datasets", method="GET")
+    async def list_datasets(self) -> ListDatasetsResponse: ...
 
-    @webmethod(route="/datasets/unregister", method="POST")
+    @webmethod(route="/datasets/{dataset_id}", method="DELETE")
     async def unregister_dataset(
         self,
         dataset_id: str,

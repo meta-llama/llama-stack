@@ -624,6 +624,10 @@ class ChatAgent(ShieldRunnerMixin):
                             step_type=StepType.tool_execution.value,
                             step_id=step_id,
                             tool_call=tool_call,
+                            delta=ToolCallDelta(
+                                parse_status=ToolCallParseStatus.in_progress,
+                                content=tool_call,
+                            ),
                         )
                     )
                 )
@@ -735,8 +739,8 @@ class ChatAgent(ShieldRunnerMixin):
         for toolgroup_name in agent_config_toolgroups:
             if toolgroup_name not in toolgroups_for_turn_set:
                 continue
-            tools = await self.tool_groups_api.list_tools(tool_group_id=toolgroup_name)
-            for tool_def in tools:
+            tools = await self.tool_groups_api.list_tools(toolgroup_id=toolgroup_name)
+            for tool_def in tools.data:
                 if (
                     toolgroup_name.startswith("builtin")
                     and toolgroup_name != MEMORY_GROUP

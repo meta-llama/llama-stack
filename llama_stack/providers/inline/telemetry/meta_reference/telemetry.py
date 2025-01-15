@@ -249,7 +249,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             order_by=order_by,
         )
 
-    async def get_span_tree(
+    async def query_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,

@@ -21,7 +21,6 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from llama_stack.apis.common.type_system import ParamType
-
 from llama_stack.apis.resource import Resource, ResourceType
 
 
@@ -129,15 +128,21 @@ class ScoringFnInput(CommonScoringFnFields, BaseModel):
     provider_scoring_fn_id: Optional[str] = None
 
 
+class ListScoringFunctionsResponse(BaseModel):
+    data: List[ScoringFn]
+
+
 @runtime_checkable
 class ScoringFunctions(Protocol):
-    @webmethod(route="/scoring-functions/list", method="GET")
-    async def list_scoring_functions(self) -> List[ScoringFn]: ...
+    @webmethod(route="/scoring-functions", method="GET")
+    async def list_scoring_functions(self) -> ListScoringFunctionsResponse: ...
 
-    @webmethod(route="/scoring-functions/get", method="GET")
-    async def get_scoring_function(self, scoring_fn_id: str) -> Optional[ScoringFn]: ...
+    @webmethod(route="/scoring-functions/{scoring_fn_id}", method="GET")
+    async def get_scoring_function(
+        self, scoring_fn_id: str, /
+    ) -> Optional[ScoringFn]: ...
 
-    @webmethod(route="/scoring-functions/register", method="POST")
+    @webmethod(route="/scoring-functions", method="POST")
     async def register_scoring_function(
         self,
         scoring_fn_id: str,

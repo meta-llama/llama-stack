@@ -16,7 +16,6 @@ from typing import (
 )
 
 from llama_models.schema_utils import json_schema_type, register_schema, webmethod
-
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.resource import Resource, ResourceType
@@ -133,16 +132,23 @@ class MemoryBankInput(BaseModel):
     provider_memory_bank_id: Optional[str] = None
 
 
+class ListMemoryBanksResponse(BaseModel):
+    data: List[MemoryBank]
+
+
 @runtime_checkable
 @trace_protocol
 class MemoryBanks(Protocol):
-    @webmethod(route="/memory-banks/list", method="GET")
-    async def list_memory_banks(self) -> List[MemoryBank]: ...
+    @webmethod(route="/memory-banks", method="GET")
+    async def list_memory_banks(self) -> ListMemoryBanksResponse: ...
 
-    @webmethod(route="/memory-banks/get", method="GET")
-    async def get_memory_bank(self, memory_bank_id: str) -> Optional[MemoryBank]: ...
+    @webmethod(route="/memory-banks/{memory_bank_id}", method="GET")
+    async def get_memory_bank(
+        self,
+        memory_bank_id: str,
+    ) -> Optional[MemoryBank]: ...
 
-    @webmethod(route="/memory-banks/register", method="POST")
+    @webmethod(route="/memory-banks", method="POST")
     async def register_memory_bank(
         self,
         memory_bank_id: str,
@@ -151,5 +157,5 @@ class MemoryBanks(Protocol):
         provider_memory_bank_id: Optional[str] = None,
     ) -> MemoryBank: ...
 
-    @webmethod(route="/memory-banks/unregister", method="POST")
+    @webmethod(route="/memory-banks/{memory_bank_id}", method="DELETE")
     async def unregister_memory_bank(self, memory_bank_id: str) -> None: ...

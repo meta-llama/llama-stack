@@ -185,8 +185,8 @@ class Telemetry(Protocol):
         order_by: Optional[List[str]] = None,
     ) -> List[Trace]: ...
 
-    @webmethod(route="/telemetry/get-span-tree", method="POST")
-    async def get_span_tree(
+    @webmethod(route="/telemetry/query-span-tree", method="POST")
+    async def query_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,

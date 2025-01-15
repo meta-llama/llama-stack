@@ -29,7 +29,76 @@
         }
     ],
     "paths": {
-        "/v1/datasetio/append-rows": {
+        "/v1/datasetio/rows": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedRowsResult"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "DatasetIO"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "rows_in_page",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_token",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter_condition",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
             "post": {
                 "responses": {
                     "200": {
@@ -323,7 +392,7 @@
                 }
             }
         },
-        "/v1/agents/create": {
+        "/v1/agents": {
             "post": {
                 "responses": {
                     "200": {
@@ -372,7 +441,7 @@
                 }
             }
         },
-        "/v1/agents/session/create": {
+        "/v1/agents/{agent_id}/session": {
             "post": {
                 "responses": {
                     "200": {
@@ -390,6 +459,14 @@
                     "Agents"
                 ],
                 "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -421,7 +498,7 @@
                 }
             }
         },
-        "/v1/agents/turn/create": {
+        "/v1/agents/{agent_id}/session/{session_id}/turn": {
             "post": {
                 "responses": {
                     "200": {
@@ -446,6 +523,22 @@
                     "Agents"
                 ],
                 "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -477,8 +570,8 @@
                 }
             }
         },
-        "/v1/agents/delete": {
-            "post": {
+        "/v1/agents/{agent_id}": {
+            "delete": {
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -488,6 +581,14 @@
                     "Agents"
                 ],
                 "parameters": [
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -506,30 +607,54 @@
                             "type": "string"
                         }
                     }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteAgentsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
+                ]
             }
         },
-        "/v1/agents/session/delete": {
-            "post": {
+        "/v1/agents/{agent_id}/session/{session_id}": {
+            "get": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Session"
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
                     "Agents"
                 ],
                 "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "turn_ids",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -548,17 +673,53 @@
                             "type": "string"
                         }
                     }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Agents"
                 ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeleteAgentsSessionRequest"
-                            }
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     },
-                    "required": true
-                }
+                    {
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/v1/inference/embeddings": {
@@ -659,72 +820,7 @@
                 }
             }
         },
-        "/v1/agents/session/get": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Session"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Agents"
-                ],
-                "parameters": [
-                    {
-                        "name": "agent_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "session_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GetAgentsSessionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/agents/step/get": {
+        "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/step/{step_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -744,7 +840,7 @@
                 "parameters": [
                     {
                         "name": "agent_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -752,7 +848,7 @@
                     },
                     {
                         "name": "session_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -760,7 +856,7 @@
                     },
                     {
                         "name": "turn_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -768,7 +864,7 @@
                     },
                     {
                         "name": "step_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -795,7 +891,7 @@
                 ]
             }
         },
-        "/v1/agents/turn/get": {
+        "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -815,7 +911,7 @@
                 "parameters": [
                     {
                         "name": "agent_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -823,7 +919,7 @@
                     },
                     {
                         "name": "session_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -831,7 +927,7 @@
                     },
                     {
                         "name": "turn_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -858,7 +954,7 @@
                 ]
             }
         },
-        "/v1/datasets/get": {
+        "/v1/datasets/{dataset_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -885,7 +981,45 @@
                 "parameters": [
                     {
                         "name": "dataset_id",
-                        "in": "query",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -912,7 +1046,7 @@
                 ]
             }
         },
-        "/v1/eval-tasks/get": {
+        "/v1/eval-tasks/{eval_task_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -938,8 +1072,8 @@
                 ],
                 "parameters": [
                     {
-                        "name": "name",
-                        "in": "query",
+                        "name": "eval_task_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -966,7 +1100,7 @@
                 ]
             }
         },
-        "/v1/memory-banks/get": {
+        "/v1/memory-banks/{memory_bank_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -993,7 +1127,45 @@
                 "parameters": [
                     {
                         "name": "memory_bank_id",
-                        "in": "query",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "memory_bank_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1020,7 +1192,7 @@
                 ]
             }
         },
-        "/v1/models/get": {
+        "/v1/models/{model_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1046,8 +1218,8 @@
                 ],
                 "parameters": [
                     {
-                        "name": "identifier",
-                        "in": "query",
+                        "name": "model_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1072,54 +1244,21 @@
                         }
                     }
                 ]
-            }
-        },
-        "/v1/datasetio/get-rows-paginated": {
-            "get": {
+            },
+            "delete": {
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaginatedRowsResult"
-                                }
-                            }
-                        }
+                        "description": "OK"
                     }
                 },
                 "tags": [
-                    "DatasetIO"
+                    "Models"
                 ],
                 "parameters": [
                     {
-                        "name": "dataset_id",
-                        "in": "query",
+                        "name": "model_id",
+                        "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "rows_in_page",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page_token",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "filter_condition",
-                        "in": "query",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1145,7 +1284,7 @@
                 ]
             }
         },
-        "/v1/scoring-functions/get": {
+        "/v1/scoring-functions/{scoring_fn_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1172,7 +1311,7 @@
                 "parameters": [
                     {
                         "name": "scoring_fn_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1199,7 +1338,7 @@
                 ]
             }
         },
-        "/v1/shields/get": {
+        "/v1/shields/{identifier}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1226,7 +1365,7 @@
                 "parameters": [
                     {
                         "name": "identifier",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1253,75 +1392,7 @@
                 ]
             }
         },
-        "/v1/telemetry/get-span-tree": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "$ref": "#/components/schemas/SpanWithStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [
-                    {
-                        "name": "span_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "max_depth",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/GetSpanTreeRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/tools/get": {
+        "/v1/tools/{tool_name}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1341,7 +1412,7 @@
                 "parameters": [
                     {
                         "name": "tool_name",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1368,7 +1439,7 @@
                 ]
             }
         },
-        "/v1/toolgroups/get": {
+        "/v1/toolgroups/{toolgroup_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1388,7 +1459,46 @@
                 "parameters": [
                     {
                         "name": "toolgroup_id",
-                        "in": "query",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "Unregister a tool group",
+                "parameters": [
+                    {
+                        "name": "toolgroup_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1529,9 +1639,9 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostTrainingJob"
+                                    "$ref": "#/components/schemas/ListPostTrainingJobsResponse"
                                 }
                             }
                         }
@@ -1693,7 +1803,7 @@
                 }
             }
         },
-        "/v1/eval/job/cancel": {
+        "/v1/eval/jobs/cancel": {
             "post": {
                 "responses": {
                     "200": {
@@ -1735,7 +1845,7 @@
                 }
             }
         },
-        "/v1/eval/job/result": {
+        "/v1/eval/jobs/{job_id}/result": {
             "get": {
                 "responses": {
                     "200": {
@@ -1754,15 +1864,15 @@
                 ],
                 "parameters": [
                     {
-                        "name": "task_id",
-                        "in": "query",
+                        "name": "job_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "job_id",
+                        "name": "task_id",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1790,7 +1900,7 @@
                 ]
             }
         },
-        "/v1/eval/job/status": {
+        "/v1/eval/jobs/{job_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1816,15 +1926,15 @@
                 ],
                 "parameters": [
                     {
-                        "name": "task_id",
-                        "in": "query",
+                        "name": "job_id",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "job_id",
+                        "name": "task_id",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1852,15 +1962,15 @@
                 ]
             }
         },
-        "/v1/datasets/list": {
+        "/v1/datasets": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Dataset"
+                                    "$ref": "#/components/schemas/ListDatasetsResponse"
                                 }
                             }
                         }
@@ -1889,17 +1999,57 @@
                         }
                     }
                 ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Datasets"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterDatasetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
-        "/v1/eval-tasks/list": {
+        "/v1/eval-tasks": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EvalTask"
+                                    "$ref": "#/components/schemas/ListEvalTasksResponse"
                                 }
                             }
                         }
@@ -1928,17 +2078,57 @@
                         }
                     }
                 ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "EvalTasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
-        "/v1/memory-banks/list": {
+        "/v1/memory-banks": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/MemoryBank"
+                                    "$ref": "#/components/schemas/ListMemoryBanksResponse"
                                 }
                             }
                         }
@@ -1967,15 +2157,112 @@
                         }
                     }
                 ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/VectorMemoryBank"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/KeyValueMemoryBank"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/KeywordMemoryBank"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/GraphMemoryBank"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "MemoryBanks"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterMemoryBankRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
-        "/v1/models/list": {
+        "/v1/models": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListModelsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Models"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Model"
                                 }
@@ -2005,7 +2292,17 @@
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterModelRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/v1/providers/list": {
@@ -2016,10 +2313,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "$ref": "#/components/schemas/ProviderInfo"
-                                    }
+                                    "$ref": "#/components/schemas/ListProvidersResponse"
                                 }
                             }
                         }
@@ -2096,7 +2390,7 @@
             }
         },
         "/v1/tool-runtime/list-tools": {
-            "post": {
+            "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2122,6 +2416,14 @@
                         }
                     },
                     {
+                        "name": "mcp_endpoint",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/URL"
+                        }
+                    },
+                    {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
                         "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
@@ -2139,28 +2441,18 @@
                             "type": "string"
                         }
                     }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ListRuntimeToolsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
+                ]
             }
         },
-        "/v1/scoring-functions/list": {
+        "/v1/scoring-functions": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ScoringFn"
+                                    "$ref": "#/components/schemas/ListScoringFunctionsResponse"
                                 }
                             }
                         }
@@ -2189,15 +2481,92 @@
                         }
                     }
                 ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ScoringFunctions"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterScoringFunctionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
-        "/v1/shields/list": {
+        "/v1/shields": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListShieldsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Shields"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Shield"
                                 }
@@ -2227,18 +2596,28 @@
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterShieldRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
-        "/v1/toolgroups/list": {
+        "/v1/toolgroups": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ToolGroup"
+                                    "$ref": "#/components/schemas/ListToolGroupsResponse"
                                 }
                             }
                         }
@@ -2268,17 +2647,58 @@
                         }
                     }
                 ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "summary": "Register a tool group",
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterToolGroupRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
-        "/v1/tools/list": {
+        "/v1/tools": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Tool"
+                                    "$ref": "#/components/schemas/ListToolsResponse"
                                 }
                             }
                         }
@@ -2290,7 +2710,7 @@
                 "summary": "List tools with optional tool group",
                 "parameters": [
                     {
-                        "name": "tool_group_id",
+                        "name": "toolgroup_id",
                         "in": "query",
                         "required": false,
                         "schema": {
@@ -2458,6 +2878,58 @@
                 }
             }
         },
+        "/v1/telemetry/query-span-tree": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/SpanWithStatus"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QuerySpanTreeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/telemetry/query-spans": {
             "post": {
                 "responses": {
@@ -2556,336 +3028,7 @@
                 }
             }
         },
-        "/v1/datasets/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Datasets"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/eval-tasks/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "EvalTasks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterEvalTaskRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/memory-banks/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/VectorMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/KeyValueMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/KeywordMemoryBank"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/GraphMemoryBank"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterMemoryBankRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/models/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Model"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Models"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterModelRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/scoring-functions/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "ScoringFunctions"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterScoringFunctionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/shields/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Shield"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Shields"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterShieldRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/toolgroups/register": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "ToolGroups"
-                ],
-                "summary": "Register a tool group",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterToolGroupRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/eval/run-eval": {
+        "/v1/eval/run": {
             "post": {
                 "responses": {
                     "200": {
@@ -3221,175 +3364,6 @@
                 }
             }
         },
-        "/v1/datasets/unregister": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Datasets"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UnregisterDatasetRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/memory-banks/unregister": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "MemoryBanks"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UnregisterMemoryBankRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/models/unregister": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "Models"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UnregisterModelRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/toolgroups/unregister": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "tags": [
-                    "ToolGroups"
-                ],
-                "summary": "Unregister a tool group",
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UnregisterToolGroupRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/version": {
             "get": {
                 "responses": {
@@ -3512,6 +3486,20 @@
                     "tool_calls"
                 ]
             },
+            "GreedySamplingStrategy": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "greedy",
+                        "default": "greedy"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ]
+            },
             "ImageContentItem": {
                 "type": "object",
                 "properties": {
@@ -3579,20 +3567,17 @@
                 "type": "object",
                 "properties": {
                     "strategy": {
-                        "$ref": "#/components/schemas/SamplingStrategy",
-                        "default": "greedy"
-                    },
-                    "temperature": {
-                        "type": "number",
-                        "default": 0.0
-                    },
-                    "top_p": {
-                        "type": "number",
-                        "default": 0.95
-                    },
-                    "top_k": {
-                        "type": "integer",
-                        "default": 0
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/GreedySamplingStrategy"
+                            },
+                            {
+                                "$ref": "#/components/schemas/TopPSamplingStrategy"
+                            },
+                            {
+                                "$ref": "#/components/schemas/TopKSamplingStrategy"
+                            }
+                        ]
                     },
                     "max_tokens": {
                         "type": "integer",
@@ -3606,14 +3591,6 @@
                 "additionalProperties": false,
                 "required": [
                     "strategy"
-                ]
-            },
-            "SamplingStrategy": {
-                "type": "string",
-                "enum": [
-                    "greedy",
-                    "top_p",
-                    "top_k"
                 ]
             },
             "StopReason": {
@@ -3867,6 +3844,45 @@
                     "call_id",
                     "tool_name",
                     "content"
+                ]
+            },
+            "TopKSamplingStrategy": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "top_k",
+                        "default": "top_k"
+                    },
+                    "top_k": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "top_k"
+                ]
+            },
+            "TopPSamplingStrategy": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "top_p",
+                        "default": "top_p"
+                    },
+                    "temperature": {
+                        "type": "number"
+                    },
+                    "top_p": {
+                        "type": "number",
+                        "default": 0.95
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
                 ]
             },
             "URL": {
@@ -4631,16 +4647,12 @@
             "CreateAgentSessionRequest": {
                 "type": "object",
                 "properties": {
-                    "agent_id": {
-                        "type": "string"
-                    },
                     "session_name": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "agent_id",
                     "session_name"
                 ]
             },
@@ -4659,12 +4671,6 @@
             "CreateAgentTurnRequest": {
                 "type": "object",
                 "properties": {
-                    "agent_id": {
-                        "type": "string"
-                    },
-                    "session_id": {
-                        "type": "string"
-                    },
                     "messages": {
                         "type": "array",
                         "items": {
@@ -4725,8 +4731,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "agent_id",
-                    "session_id",
                     "messages"
                 ]
             },
@@ -5266,34 +5270,6 @@
                     "error"
                 ]
             },
-            "DeleteAgentsRequest": {
-                "type": "object",
-                "properties": {
-                    "agent_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "agent_id"
-                ]
-            },
-            "DeleteAgentsSessionRequest": {
-                "type": "object",
-                "properties": {
-                    "agent_id": {
-                        "type": "string"
-                    },
-                    "session_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "agent_id",
-                    "session_id"
-                ]
-            },
             "EmbeddingsRequest": {
                 "type": "object",
                 "properties": {
@@ -5700,18 +5676,6 @@
                     "score_rows",
                     "aggregated_results"
                 ]
-            },
-            "GetAgentsSessionRequest": {
-                "type": "object",
-                "properties": {
-                    "turn_ids": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false
             },
             "GraphMemoryBank": {
                 "type": "object",
@@ -6431,85 +6395,6 @@
                 ],
                 "title": "A safety shield resource that can be used to check content"
             },
-            "GetSpanTreeRequest": {
-                "type": "object",
-                "properties": {
-                    "attributes_to_return": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false
-            },
-            "SpanStatus": {
-                "type": "string",
-                "enum": [
-                    "ok",
-                    "error"
-                ]
-            },
-            "SpanWithStatus": {
-                "type": "object",
-                "properties": {
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "parent_span_id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "start_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "end_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/SpanStatus"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "span_id",
-                    "trace_id",
-                    "name",
-                    "start_time"
-                ]
-            },
             "Tool": {
                 "type": "object",
                 "properties": {
@@ -6735,16 +6620,28 @@
                 ],
                 "title": "Status of a finetuning job."
             },
-            "PostTrainingJob": {
+            "ListPostTrainingJobsResponse": {
                 "type": "object",
                 "properties": {
-                    "job_uuid": {
-                        "type": "string"
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "job_uuid": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "job_uuid"
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "job_uuid"
+                    "data"
                 ]
             },
             "HealthInfo": {
@@ -6901,17 +6798,77 @@
             "JobCancelRequest": {
                 "type": "object",
                 "properties": {
-                    "task_id": {
+                    "job_id": {
                         "type": "string"
                     },
-                    "job_id": {
+                    "task_id": {
                         "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task_id",
-                    "job_id"
+                    "job_id",
+                    "task_id"
+                ]
+            },
+            "ListDatasetsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Dataset"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "ListEvalTasksResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EvalTask"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "ListMemoryBanksResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MemoryBank"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "ListModelsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Model"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
                 ]
             },
             "ProviderInfo": {
@@ -6928,6 +6885,21 @@
                 "required": [
                     "provider_id",
                     "provider_type"
+                ]
+            },
+            "ListProvidersResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProviderInfo"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
                 ]
             },
             "RouteInfo": {
@@ -6953,14 +6925,65 @@
                     "provider_types"
                 ]
             },
-            "ListRuntimeToolsRequest": {
+            "ListScoringFunctionsResponse": {
                 "type": "object",
                 "properties": {
-                    "mcp_endpoint": {
-                        "$ref": "#/components/schemas/URL"
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ScoringFn"
+                        }
                     }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "ListShieldsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Shield"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "ListToolGroupsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ToolGroup"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
+            "ListToolsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Tool"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
             },
             "LogSeverity": {
                 "type": "string",
@@ -7081,6 +7104,13 @@
                 "required": [
                     "type",
                     "name"
+                ]
+            },
+            "SpanStatus": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "error"
                 ]
             },
             "StructuredLogEvent": {
@@ -7467,6 +7497,18 @@
                     "logger_config"
                 ]
             },
+            "PostTrainingJob": {
+                "type": "object",
+                "properties": {
+                    "job_uuid": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "job_uuid"
+                ]
+            },
             "QueryDocumentsRequest": {
                 "type": "object",
                 "properties": {
@@ -7545,6 +7587,87 @@
                 "required": [
                     "chunks",
                     "scores"
+                ]
+            },
+            "QuerySpanTreeRequest": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "attributes_to_return": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "max_depth": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "span_id"
+                ]
+            },
+            "SpanWithStatus": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SpanStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "span_id",
+                    "trace_id",
+                    "name",
+                    "start_time"
                 ]
             },
             "QueryCondition": {
@@ -8606,54 +8729,6 @@
                 ],
                 "title": "Response from the synthetic data generation. Batch of (prompt, response, score) tuples that pass the threshold."
             },
-            "UnregisterDatasetRequest": {
-                "type": "object",
-                "properties": {
-                    "dataset_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "dataset_id"
-                ]
-            },
-            "UnregisterMemoryBankRequest": {
-                "type": "object",
-                "properties": {
-                    "memory_bank_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "memory_bank_id"
-                ]
-            },
-            "UnregisterModelRequest": {
-                "type": "object",
-                "properties": {
-                    "model_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "model_id"
-                ]
-            },
-            "UnregisterToolGroupRequest": {
-                "type": "object",
-                "properties": {
-                    "tool_group_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "tool_group_id"
-                ]
-            },
             "VersionInfo": {
                 "type": "object",
                 "properties": {
@@ -8856,14 +8931,6 @@
             "name": "Datasets"
         },
         {
-            "name": "DeleteAgentsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsRequest\" />"
-        },
-        {
-            "name": "DeleteAgentsSessionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DeleteAgentsSessionRequest\" />"
-        },
-        {
             "name": "EfficiencyConfig",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EfficiencyConfig\" />"
         },
@@ -8894,20 +8961,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/EvaluateRowsRequest\" />"
         },
         {
-            "name": "GetAgentsSessionRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetAgentsSessionRequest\" />"
-        },
-        {
-            "name": "GetSpanTreeRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetSpanTreeRequest\" />"
-        },
-        {
             "name": "GraphMemoryBank",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBank\" />"
         },
         {
             "name": "GraphMemoryBankParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GraphMemoryBankParams\" />"
+        },
+        {
+            "name": "GreedySamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GreedySamplingStrategy\" />"
         },
         {
             "name": "HealthInfo",
@@ -8980,8 +9043,44 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/LLMAsJudgeScoringFnParams\" />"
         },
         {
-            "name": "ListRuntimeToolsRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListRuntimeToolsRequest\" />"
+            "name": "ListDatasetsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListDatasetsResponse\" />"
+        },
+        {
+            "name": "ListEvalTasksResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListEvalTasksResponse\" />"
+        },
+        {
+            "name": "ListMemoryBanksResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListMemoryBanksResponse\" />"
+        },
+        {
+            "name": "ListModelsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListModelsResponse\" />"
+        },
+        {
+            "name": "ListPostTrainingJobsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListPostTrainingJobsResponse\" />"
+        },
+        {
+            "name": "ListProvidersResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListProvidersResponse\" />"
+        },
+        {
+            "name": "ListScoringFunctionsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListScoringFunctionsResponse\" />"
+        },
+        {
+            "name": "ListShieldsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListShieldsResponse\" />"
+        },
+        {
+            "name": "ListToolGroupsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListToolGroupsResponse\" />"
+        },
+        {
+            "name": "ListToolsResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListToolsResponse\" />"
         },
         {
             "name": "LogEventRequest",
@@ -9096,6 +9195,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
         },
         {
+            "name": "QuerySpanTreeRequest",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpanTreeRequest\" />"
+        },
+        {
             "name": "QuerySpansRequest",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpansRequest\" />"
         },
@@ -9165,10 +9268,6 @@
         {
             "name": "SamplingParams",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingParams\" />"
-        },
-        {
-            "name": "SamplingStrategy",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SamplingStrategy\" />"
         },
         {
             "name": "SaveSpansToDatasetRequest",
@@ -9352,6 +9451,14 @@
             "name": "ToolRuntime"
         },
         {
+            "name": "TopKSamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TopKSamplingStrategy\" />"
+        },
+        {
+            "name": "TopPSamplingStrategy",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TopPSamplingStrategy\" />"
+        },
+        {
             "name": "Trace",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Trace\" />"
         },
@@ -9366,22 +9473,6 @@
         {
             "name": "URL",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/URL\" />"
-        },
-        {
-            "name": "UnregisterDatasetRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterDatasetRequest\" />"
-        },
-        {
-            "name": "UnregisterMemoryBankRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterMemoryBankRequest\" />"
-        },
-        {
-            "name": "UnregisterModelRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterModelRequest\" />"
-        },
-        {
-            "name": "UnregisterToolGroupRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UnregisterToolGroupRequest\" />"
         },
         {
             "name": "UnstructuredLogEvent",
@@ -9479,18 +9570,15 @@
                 "DataConfig",
                 "Dataset",
                 "DatasetFormat",
-                "DeleteAgentsRequest",
-                "DeleteAgentsSessionRequest",
                 "EfficiencyConfig",
                 "EmbeddingsRequest",
                 "EmbeddingsResponse",
                 "EvalTask",
                 "EvaluateResponse",
                 "EvaluateRowsRequest",
-                "GetAgentsSessionRequest",
-                "GetSpanTreeRequest",
                 "GraphMemoryBank",
                 "GraphMemoryBankParams",
+                "GreedySamplingStrategy",
                 "HealthInfo",
                 "ImageContentItem",
                 "ImageDelta",
@@ -9507,7 +9595,16 @@
                 "KeywordMemoryBank",
                 "KeywordMemoryBankParams",
                 "LLMAsJudgeScoringFnParams",
-                "ListRuntimeToolsRequest",
+                "ListDatasetsResponse",
+                "ListEvalTasksResponse",
+                "ListMemoryBanksResponse",
+                "ListModelsResponse",
+                "ListPostTrainingJobsResponse",
+                "ListProvidersResponse",
+                "ListScoringFunctionsResponse",
+                "ListShieldsResponse",
+                "ListToolGroupsResponse",
+                "ListToolsResponse",
                 "LogEventRequest",
                 "LogSeverity",
                 "LoraFinetuningConfig",
@@ -9533,6 +9630,7 @@
                 "QueryConditionOp",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
+                "QuerySpanTreeRequest",
                 "QuerySpansRequest",
                 "QueryTracesRequest",
                 "RegexParserScoringFnParams",
@@ -9550,7 +9648,6 @@
                 "RunShieldResponse",
                 "SafetyViolation",
                 "SamplingParams",
-                "SamplingStrategy",
                 "SaveSpansToDatasetRequest",
                 "ScoreBatchRequest",
                 "ScoreBatchResponse",
@@ -9591,14 +9688,12 @@
                 "ToolPromptFormat",
                 "ToolResponse",
                 "ToolResponseMessage",
+                "TopKSamplingStrategy",
+                "TopPSamplingStrategy",
                 "Trace",
                 "TrainingConfig",
                 "Turn",
                 "URL",
-                "UnregisterDatasetRequest",
-                "UnregisterMemoryBankRequest",
-                "UnregisterModelRequest",
-                "UnregisterToolGroupRequest",
                 "UnstructuredLogEvent",
                 "UserMessage",
                 "VectorMemoryBank",

@@ -93,7 +93,11 @@ async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
             await method(**obj.model_dump())
 
         method = getattr(impls[api], list_method)
-        for obj in await method():
+        response = await method()
+
+        objects_to_process = response.data if hasattr(response, "data") else response
+
+        for obj in objects_to_process:
             log.info(
                 f"{rsrc.capitalize()}: {colored(obj.identifier, 'white', attrs=['bold'])} served by {colored(obj.provider_id, 'white', attrs=['bold'])}",
             )

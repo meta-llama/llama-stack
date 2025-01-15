@@ -223,5 +223,5 @@ class MetaReferenceAgentsImpl(Agents):
     async def delete_agents_session(self, agent_id: str, session_id: str) -> None:
         await self.persistence_store.delete(f"session:{agent_id}:{session_id}")
 
-    async def delete_agents(self, agent_id: str) -> None:
+    async def delete_agent(self, agent_id: str) -> None:
         await self.persistence_store.delete(f"agent:{agent_id}")

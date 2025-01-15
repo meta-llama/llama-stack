@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.shields import Shield
-
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 
 
@@ -49,7 +48,7 @@ class ShieldStore(Protocol):
 class Safety(Protocol):
     shield_store: ShieldStore
 
-    @webmethod(route="/safety/run-shield")
+    @webmethod(route="/safety/run-shield", method="POST")
     async def run_shield(
         self,
         shield_id: str,

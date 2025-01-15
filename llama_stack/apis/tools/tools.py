@@ -74,13 +74,21 @@ class ToolInvocationResult(BaseModel):
 
 class ToolStore(Protocol):
     def get_tool(self, tool_name: str) -> Tool: ...
-    def get_tool_group(self, tool_group_id: str) -> ToolGroup: ...
+    def get_tool_group(self, toolgroup_id: str) -> ToolGroup: ...
+
+
+class ListToolGroupsResponse(BaseModel):
+    data: List[ToolGroup]
+
+
+class ListToolsResponse(BaseModel):
+    data: List[Tool]
 
 
 @runtime_checkable
 @trace_protocol
 class ToolGroups(Protocol):
-    @webmethod(route="/toolgroups/register", method="POST")
+    @webmethod(route="/toolgroups", method="POST")
     async def register_tool_group(
         self,
         toolgroup_id: str,
@@ -91,27 +99,33 @@ class ToolGroups(Protocol):
         """Register a tool group"""
         ...
 
-    @webmethod(route="/toolgroups/get", method="GET")
+    @webmethod(route="/toolgroups/{toolgroup_id}", method="GET")
     async def get_tool_group(
         self,
         toolgroup_id: str,
     ) -> ToolGroup: ...
 
-    @webmethod(route="/toolgroups/list", method="GET")
-    async def list_tool_groups(self) -> List[ToolGroup]:
+    @webmethod(route="/toolgroups", method="GET")
+    async def list_tool_groups(self) -> ListToolGroupsResponse:
         """List tool groups with optional provider"""
         ...
 
-    @webmethod(route="/tools/list", method="GET")
-    async def list_tools(self, tool_group_id: Optional[str] = None) -> List[Tool]:
+    @webmethod(route="/tools", method="GET")
+    async def list_tools(self, toolgroup_id: Optional[str] = None) -> ListToolsResponse:
         """List tools with optional tool group"""
         ...
 
-    @webmethod(route="/tools/get", method="GET")
-    async def get_tool(self, tool_name: str) -> Tool: ...
+    @webmethod(route="/tools/{tool_name}", method="GET")
+    async def get_tool(
+        self,
+        tool_name: str,
+    ) -> Tool: ...
 
-    @webmethod(route="/toolgroups/unregister", method="POST")
-    async def unregister_tool_group(self, tool_group_id: str) -> None:
+    @webmethod(route="/toolgroups/{toolgroup_id}", method="DELETE")
+    async def unregister_toolgroup(
+        self,
+        toolgroup_id: str,
+    ) -> None:
         """Unregister a tool group"""
         ...
 
