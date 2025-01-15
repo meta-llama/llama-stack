@@ -587,9 +587,6 @@ class LoraFinetuningSingleDevice:
         gc.collect()
         torch.cuda.empty_cache()
 
-        print("Allocated:", torch.cuda.memory_allocated() / 1e6, "MB")
-        print("Reserved: ", torch.cuda.memory_reserved() / 1e6, "MB")
-
         return (memory_stats, checkpoints)
 
     async def validation(self) -> Tuple[float, float]:
