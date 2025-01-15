@@ -114,7 +114,6 @@ EOF
 else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
-    echo "Installing fastapi libcst"
     add_to_docker << EOF
 RUN pip install fastapi libcst
 EOF
