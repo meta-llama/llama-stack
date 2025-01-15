@@ -6,7 +6,6 @@
 
 import os
 from collections import defaultdict
-
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -21,6 +20,8 @@ from llama_stack.distribution.datatypes import Provider
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 from .env import get_env_or_fail
+
+from .test_config_helper import try_load_config_file_cached
 
 
 class ProviderFixture(BaseModel):
