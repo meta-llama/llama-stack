@@ -6,8 +6,7 @@
 
 import pytest
 
-from llama_stack.apis.inference import EmbeddingsResponse
-from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.inference import EmbeddingsResponse, ModelType
 
 
 # How to run this test:
