@@ -30,7 +30,7 @@ def data_url_from_image(file_path):
 
 @pytest.fixture(scope="session")
 def available_shields(llama_stack_client):
-    return [shield.identifier for shield in llama_stack_client.shields.list()]
+    return [shield.identifier for shield in llama_stack_client.shields.list().data]
 
 
 @pytest.fixture(scope="session")
@@ -54,7 +54,7 @@ def code_scanner_shield_id(available_shields):
 @pytest.fixture(scope="session")
 def model_providers(llama_stack_client):
     return set(
-        [x.provider_id for x in llama_stack_client.providers.list()["inference"]]
+        [x["provider_id"] for x in llama_stack_client.providers.list().inference]
     )
 
 
