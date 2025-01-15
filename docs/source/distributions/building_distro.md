@@ -293,6 +293,26 @@ llama stack build --list-templates
 |                              |   "inference": [                       |                                                                             |
 |                              |     "remote::cerebras"                 |                                                                             |
 |                              |   ],                                   |                                                                             |
+|                              |   "memory": [                          |                                                                             |
+|                              |     "inline::faiss",                   |                                                                             |
+|                              |     "remote::chromadb",                |                                                                             |
+|                              |     "remote::pgvector"                 |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "safety": [                          |                                                                             |
+|                              |     "inline::llama-guard"              |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "agents": [                          |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ],                                   |                                                                             |
+|                              |   "telemetry": [                       |                                                                             |
+|                              |     "inline::meta-reference"           |                                                                             |
+|                              |   ]                                    |                                                                             |
+|                              | }                                      |                                                                             |
++------------------------------+----------------------------------------+-----------------------------------------------------------------------------+
+| cerebras                     | {                                      | Use SambaNova.ai for running LLM inference                                  |
+|                              |   "inference": [                       |                                                                             |
+|                              |     "remote::sambanova"                |                                                                             |
+|                              |   ],                                   |                                                                             |
 |                              |   "safety": [                          |                                                                             |
 |                              |     "inline::llama-guard"              |                                                                             |
 |                              |   ],                                   |                                                                             |

@@ -42,6 +42,7 @@ A number of "adapters" are available for some popular Inference and Memory (Vect
 |  Fireworks  |  Hosted  | Y  | Y  |  Y  |    |   |
 |  AWS Bedrock  |  Hosted  |    |  Y  |    | Y  | |
 |  Together  |  Hosted  |  Y  |  Y  |   | Y  |  |
+|  SambaNova  |  Hosted  |    |  Y  |   |   |  |
 |  Ollama  | Single Node   |    |  Y  |    |   |
 |  TGI  |  Hosted and Single Node  |    |  Y  |    |   |
 |  [NVIDIA NIM](https://build.nvidia.com/nim?filters=nimType%3Anim_type_run_anywhere&q=llama)  |  Hosted and Single Node  |    |  Y  |    |   |

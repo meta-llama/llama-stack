@@ -1,0 +1,19 @@
+version: '2'
+name: sambanova
+distribution_spec:
+  description: Use SambaNova.AI for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::sambanova
+    memory:
+    - inline::faiss
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda

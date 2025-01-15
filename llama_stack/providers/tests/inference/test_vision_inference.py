@@ -57,6 +57,7 @@ class TestVisionModelInference:
             "remote::fireworks",
             "remote::ollama",
             "remote::vllm",
+            "remote::sambanova",
         ):
             pytest.skip(
                 "Other inference providers don't support vision chat completion() yet"
@@ -96,6 +97,7 @@ class TestVisionModelInference:
             "remote::fireworks",
             "remote::ollama",
             "remote::vllm",
+            "remote::sambanova",
         ):
             pytest.skip(
                 "Other inference providers don't support vision chat completion() yet"
@@ -143,7 +145,7 @@ class TestVisionModelInference:
             assert len(grouped[ChatCompletionResponseEventType.complete]) == 1
 
             content = "".join(
-                chunk.event.delta
+                chunk.event.delta.text
                 for chunk in grouped[ChatCompletionResponseEventType.progress]
             )
             for expected_string in expected_strings:
