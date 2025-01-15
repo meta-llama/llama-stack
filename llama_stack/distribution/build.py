@@ -6,6 +6,7 @@
 
 import importlib.resources
 import logging
+import sys
 from enum import Enum
 
 from pathlib import Path
@@ -20,7 +21,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 
 from llama_stack.distribution.utils.config_dirs import BUILDS_BASE_DIR
 
-from llama_stack.distribution.utils.exec import run_with_pty
+from llama_stack.distribution.utils.exec import run_command, run_with_pty
 from llama_stack.providers.datatypes import Api
 
 log = logging.getLogger(__name__)
@@ -102,7 +103,10 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
     print()
 
 
-def build_image(build_config: BuildConfig, build_file_path: Path):
+def build_image(
+    build_config: BuildConfig,
+    build_file_path: Path,
+):
     docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
 
     normal_deps, special_deps = get_provider_dependencies(
@@ -144,7 +148,12 @@ def build_image(build_config: BuildConfig, build_file_path: Path):
     if special_deps:
         args.append("#".join(special_deps))
 
-    return_code = run_with_pty(args)
+    is_terminal = sys.stdin.isatty()
+    if is_terminal:
+        return_code = run_with_pty(args)
+    else:
+        return_code = run_command(args)
+
     if return_code != 0:
         log.error(
             f"Failed to build target {build_config.name} with return code {return_code}",

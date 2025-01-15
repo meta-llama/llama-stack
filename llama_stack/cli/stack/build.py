@@ -107,7 +107,8 @@ class StackBuild(Subcommand):
                             f"Please specify a image-type (docker | conda | venv) for {args.template}"
                         )
                     self._run_stack_build_command_from_build_config(
-                        build_config, template_name=args.template
+                        build_config,
+                        template_name=args.template,
                     )
                     return
 
@@ -261,7 +262,9 @@ class StackBuild(Subcommand):
         )
 
     def _run_stack_build_command_from_build_config(
-        self, build_config: BuildConfig, template_name: Optional[str] = None
+        self,
+        build_config: BuildConfig,
+        template_name: Optional[str] = None,
     ) -> None:
         import json
         import os
