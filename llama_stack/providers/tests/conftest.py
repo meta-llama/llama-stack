@@ -13,11 +13,11 @@ import pytest
 import yaml
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
-from termcolor import colored
 
 from llama_stack.distribution.datatypes import Provider
 from llama_stack.providers.datatypes import RemoteProviderConfig
+from pydantic import BaseModel, Field
+from termcolor import colored
 
 from .env import get_env_or_fail
 
@@ -265,14 +265,9 @@ def pytest_collection_modifyitems(session, config, items):
         return
 
     required_tests = defaultdict(set)
-    for api_test_config in [
-        test_config.inference,
-        test_config.memory,
-        test_config.agents,
-    ]:
-        if api_test_config is None:
-            continue
-        for test in api_test_config.tests:
+    test_configs = [test_config.inference, test_config.memory, test_config.agent]
+    for test_config in test_configs:
+        for test in test_config.tests:
             arr = test.split("::")
             if len(arr) != 2:
                 raise ValueError(f"Invalid format for test name {test}")
