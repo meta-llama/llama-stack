@@ -18,10 +18,10 @@ class APITestConfig(BaseModel):
 
     class Fixtures(BaseModel):
         # provider fixtures can be either a mark or a dictionary of api -> providers
-        provider_fixtures: List[Dict[str, str]]
+        provider_fixtures: List[Dict[str, str]] = Field(default_factory=list)
         inference_models: List[str] = Field(default_factory=list)
-        safety_shield: Optional[str]
-        embedding_model: Optional[str]
+        safety_shield: Optional[str] = Field(default_factory=None)
+        embedding_model: Optional[str] = Field(default_factory=None)
 
     fixtures: Fixtures
     tests: List[str] = Field(default_factory=list)
@@ -32,8 +32,8 @@ class APITestConfig(BaseModel):
 class TestConfig(BaseModel):
 
     inference: APITestConfig
-    agent: APITestConfig
-    memory: APITestConfig
+    agent: Optional[APITestConfig] = Field(default=None)
+    memory: Optional[APITestConfig] = Field(default=None)
 
 
 CONFIG_CACHE = None

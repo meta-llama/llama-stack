@@ -72,11 +72,15 @@ def pytest_generate_tests(metafunc):
     test_config = try_load_config_file_cached(metafunc.config.getoption("config"))
     provider_fixtures_config = (
         test_config.memory.fixtures.provider_fixtures
-        if test_config is not None
+        if test_config is not None and test_config.memory is not None
         else None
     )
-    custom_fixtures = get_provider_fixtures_from_config(
-        provider_fixtures_config, DEFAULT_PROVIDER_COMBINATIONS
+    custom_fixtures = (
+        get_provider_fixtures_from_config(
+            provider_fixtures_config, DEFAULT_PROVIDER_COMBINATIONS
+        )
+        if provider_fixtures_config is not None
+        else None
     )
     if "embedding_model" in metafunc.fixturenames:
         model = metafunc.config.getoption("--embedding-model")

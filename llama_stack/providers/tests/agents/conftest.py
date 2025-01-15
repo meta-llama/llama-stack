@@ -92,7 +92,7 @@ def pytest_generate_tests(metafunc):
         config_override_safety_shield,
         custom_provider_fixtures,
     ) = (None, None, None)
-    if test_config is not None:
+    if test_config is not None and test_config.agent is not None:
         config_override_inference_models = test_config.agent.fixtures.inference_models
         config_override_safety_shield = test_config.agent.fixtures.safety_shield
         custom_provider_fixtures = get_provider_fixtures_from_config(
