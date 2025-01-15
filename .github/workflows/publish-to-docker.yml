@@ -1,14 +1,12 @@
 name: Docker Build and Publish
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       version:
         description: 'TestPyPI or PyPI version to build (e.g., 0.0.63.dev20250114)'
         required: true
         type: string
-        default: '0.1.0'
 
 jobs:
   build-and-push:
