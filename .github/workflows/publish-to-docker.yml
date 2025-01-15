@@ -34,7 +34,7 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            echo "VERSION=0.0.63.dev20250113" >> $GITHUB_OUTPUT
+            echo "VERSION=0.0.63.dev20250114" >> $GITHUB_OUTPUT
           else
             echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
           fi
