@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import pytest
 
-from llama_stack.apis.common.job_types import JobStatus
+from llama_stack.apis.common.type_system import JobStatus
 from llama_stack.apis.post_training import (
     Checkpoint,
     DataConfig,
