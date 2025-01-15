@@ -5,12 +5,12 @@
 # the root directory of this source tree.
 
 import os
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
 
-import yaml
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from termcolor import colored
@@ -19,6 +19,8 @@ from llama_stack.distribution.datatypes import Provider
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 from .env import get_env_or_fail
+
+from .test_config_helper import try_load_config_file_cached
 
 
 class ProviderFixture(BaseModel):
@@ -180,34 +182,26 @@ def pytest_itemcollected(item):
 
 
 def pytest_collection_modifyitems(session, config, items):
-    if config.getoption("--config") is None:
+    test_config = try_load_config_file_cached(config.getoption("--config"))
+    if test_config is None:
         return
-    file_name = config.getoption("--config")
-    config_file_path = Path(__file__).parent / file_name
-    if not config_file_path.exists():
-        raise ValueError(
-            f"Test config {file_name} was specified but not found. Please make sure it exists in the llama_stack/providers/tests directory."
-        )
 
-    required_tests = dict()
-    inference_providers = set()
-    with open(config_file_path, "r") as config_file:
-        test_config = yaml.safe_load(config_file)
-        for test in test_config["tests"]:
-            required_tests[Path(__file__).parent / test["path"]] = set(
-                test["functions"]
-            )
-        inference_providers = set(test_config["inference_fixtures"])
+    required_tests = defaultdict(set)
+    test_configs = [test_config.inference, test_config.memory, test_config.agent]
+    for test_config in test_configs:
+        for test in test_config.tests:
+            arr = test.split("::")
+            if len(arr) != 2:
+                raise ValueError(f"Invalid format for test name {test}")
+            test_path, func_name = arr
+            required_tests[Path(__file__).parent / test_path].add(func_name)
 
     new_items, deselected_items = [], []
     for item in items:
-        if item.fspath in required_tests:
-            func_name = getattr(item, "originalname", item.name)
-            if func_name in required_tests[item.fspath]:
-                inference = item.callspec.params.get("inference_stack")
-                if inference in inference_providers:
-                    new_items.append(item)
-                    continue
+        func_name = getattr(item, "originalname", item.name)
+        if func_name in required_tests[item.fspath]:
+            new_items.append(item)
+            continue
         deselected_items.append(item)
 
     items[:] = new_items
