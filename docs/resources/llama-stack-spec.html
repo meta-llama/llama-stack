@@ -4228,45 +4228,51 @@
             "ContentDelta": {
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "text",
-                                "default": "text"
-                            },
-                            "text": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "text"
-                        ]
+                        "$ref": "#/components/schemas/TextDelta"
                     },
                     {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "image",
-                                "default": "image"
-                            },
-                            "data": {
-                                "type": "string",
-                                "contentEncoding": "base64"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "type",
-                            "data"
-                        ]
+                        "$ref": "#/components/schemas/ImageDelta"
                     },
                     {
                         "$ref": "#/components/schemas/ToolCallDelta"
                     }
+                ]
+            },
+            "ImageDelta": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "image",
+                        "default": "image"
+                    },
+                    "data": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "data"
+                ]
+            },
+            "TextDelta": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text",
+                        "default": "text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
                 ]
             },
             "TokenLogProbs": {
@@ -7261,6 +7267,9 @@
                     "shuffle": {
                         "type": "boolean"
                     },
+                    "data_format": {
+                        "$ref": "#/components/schemas/DatasetFormat"
+                    },
                     "validation_dataset_id": {
                         "type": "string"
                     },
@@ -7277,7 +7286,15 @@
                 "required": [
                     "dataset_id",
                     "batch_size",
-                    "shuffle"
+                    "shuffle",
+                    "data_format"
+                ]
+            },
+            "DatasetFormat": {
+                "type": "string",
+                "enum": [
+                    "instruct",
+                    "dialog"
                 ]
             },
             "EfficiencyConfig": {
@@ -8828,6 +8845,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Dataset\" />"
         },
         {
+            "name": "DatasetFormat",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DatasetFormat\" />"
+        },
+        {
             "name": "DatasetIO"
         },
         {
@@ -8894,6 +8915,10 @@
         {
             "name": "ImageContentItem",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageContentItem\" />"
+        },
+        {
+            "name": "ImageDelta",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ImageDelta\" />"
         },
         {
             "name": "Inference"
@@ -9244,6 +9269,10 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TextContentItem\" />"
         },
         {
+            "name": "TextDelta",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TextDelta\" />"
+        },
+        {
             "name": "TokenLogProbs",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TokenLogProbs\" />"
         },
@@ -9444,6 +9473,7 @@
                 "DPOAlignmentConfig",
                 "DataConfig",
                 "Dataset",
+                "DatasetFormat",
                 "DeleteAgentsRequest",
                 "DeleteAgentsSessionRequest",
                 "EfficiencyConfig",
@@ -9458,6 +9488,7 @@
                 "GraphMemoryBankParams",
                 "HealthInfo",
                 "ImageContentItem",
+                "ImageDelta",
                 "InferenceStep",
                 "InsertDocumentsRequest",
                 "InterleavedContent",
@@ -9536,6 +9567,7 @@
                 "SyntheticDataGenerationResponse",
                 "SystemMessage",
                 "TextContentItem",
+                "TextDelta",
                 "TokenLogProbs",
                 "Tool",
                 "ToolCall",

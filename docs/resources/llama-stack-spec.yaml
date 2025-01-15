@@ -570,31 +570,8 @@ components:
       type: object
     ContentDelta:
       oneOf:
-      - additionalProperties: false
-        properties:
-          text:
-            type: string
-          type:
-            const: text
-            default: text
-            type: string
-        required:
-        - type
-        - text
-        type: object
-      - additionalProperties: false
-        properties:
-          data:
-            contentEncoding: base64
-            type: string
-          type:
-            const: image
-            default: image
-            type: string
-        required:
-        - type
-        - data
-        type: object
+      - $ref: '#/components/schemas/TextDelta'
+      - $ref: '#/components/schemas/ImageDelta'
       - $ref: '#/components/schemas/ToolCallDelta'
     CreateAgentRequest:
       additionalProperties: false
@@ -680,6 +657,8 @@ components:
       properties:
         batch_size:
           type: integer
+        data_format:
+          $ref: '#/components/schemas/DatasetFormat'
         dataset_id:
           type: string
         packed:
@@ -696,6 +675,7 @@ components:
       - dataset_id
       - batch_size
       - shuffle
+      - data_format
       type: object
     Dataset:
       additionalProperties: false
@@ -735,6 +715,11 @@ components:
       - url
       - metadata
       type: object
+    DatasetFormat:
+      enum:
+      - instruct
+      - dialog
+      type: string
     DeleteAgentsRequest:
       additionalProperties: false
       properties:
@@ -959,6 +944,20 @@ components:
           $ref: '#/components/schemas/URL'
       required:
       - type
+      type: object
+    ImageDelta:
+      additionalProperties: false
+      properties:
+        data:
+          contentEncoding: base64
+          type: string
+        type:
+          const: image
+          default: image
+          type: string
+      required:
+      - type
+      - data
       type: object
     InferenceStep:
       additionalProperties: false
@@ -2576,6 +2575,19 @@ components:
       - content
       type: object
     TextContentItem:
+      additionalProperties: false
+      properties:
+        text:
+          type: string
+        type:
+          const: text
+          default: text
+          type: string
+      required:
+      - type
+      - text
+      type: object
+    TextDelta:
       additionalProperties: false
       properties:
         text:
@@ -5548,6 +5560,8 @@ tags:
   name: DataConfig
 - description: <SchemaDefinition schemaRef="#/components/schemas/Dataset" />
   name: Dataset
+- description: <SchemaDefinition schemaRef="#/components/schemas/DatasetFormat" />
+  name: DatasetFormat
 - name: DatasetIO
 - name: Datasets
 - description: <SchemaDefinition schemaRef="#/components/schemas/DeleteAgentsRequest"
@@ -5592,6 +5606,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/ImageContentItem"
     />
   name: ImageContentItem
+- description: <SchemaDefinition schemaRef="#/components/schemas/ImageDelta" />
+  name: ImageDelta
 - name: Inference
 - description: <SchemaDefinition schemaRef="#/components/schemas/InferenceStep" />
   name: InferenceStep
@@ -5824,6 +5840,8 @@ tags:
 - description: <SchemaDefinition schemaRef="#/components/schemas/TextContentItem"
     />
   name: TextContentItem
+- description: <SchemaDefinition schemaRef="#/components/schemas/TextDelta" />
+  name: TextDelta
 - description: <SchemaDefinition schemaRef="#/components/schemas/TokenLogProbs" />
   name: TokenLogProbs
 - description: <SchemaDefinition schemaRef="#/components/schemas/Tool" />
@@ -5978,6 +5996,7 @@ x-tagGroups:
   - DPOAlignmentConfig
   - DataConfig
   - Dataset
+  - DatasetFormat
   - DeleteAgentsRequest
   - DeleteAgentsSessionRequest
   - EfficiencyConfig
@@ -5992,6 +6011,7 @@ x-tagGroups:
   - GraphMemoryBankParams
   - HealthInfo
   - ImageContentItem
+  - ImageDelta
   - InferenceStep
   - InsertDocumentsRequest
   - InterleavedContent
@@ -6070,6 +6090,7 @@ x-tagGroups:
   - SyntheticDataGenerationResponse
   - SystemMessage
   - TextContentItem
+  - TextDelta
   - TokenLogProbs
   - Tool
   - ToolCall
