@@ -1,7 +1,14 @@
 name: Docker Build and Publish
 
 on:
-  push
+  push:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'TestPyPI or PyPI version to build (e.g., 0.0.63.dev20250114)'
+        required: true
+        type: string
+        default: '0.1.0'
 
 jobs:
   build-and-push:
@@ -23,16 +30,72 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "VERSION=0.0.63.dev20250113" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check package version availability
+        run: |
+            # Function to check if version exists in a repository
+            check_version() {
+                local repo=$1
+                local status_code=$(curl -s -o /dev/null -w "%{http_code}" "https://$repo.org/pypi/llama-stack/${{ inputs.version }}")
+                return $([ "$status_code" -eq 200 ])
+            }
+
+            # Check TestPyPI first, then PyPI
+            if check_version "test.pypi"; then
+                echo "Version ${{ steps.version.outputs.version }} found in TestPyPI"
+                echo "PYPI_SOURCE=testpypi" >> $GITHUB_ENV
+            elif check_version "pypi"; then
+                echo "Version ${{ steps.version.outputs.version }} found in PyPI"
+                echo "PYPI_SOURCE=pypi" >> $GITHUB_ENV
+            else
+                echo "Error: Version ${{ steps.version.outputs.version }} not found in either TestPyPI or PyPI"
+                exit 1
+            fi
+
       - name: Install llama-stack
         run: |
-            pip install -e .
+            if [ "${{ github.event_name }}" = "push" ]; then
+                pip install -e .
+            else
+                if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple llama-stack==${{ steps.version.outputs.version }}
+                else
+                    pip install llama-stack==${{ steps.version.outputs.version }}
+                fi
+            fi
 
       - name: Build docker image
         run: |
-          TEST_PYPI_VERSION=0.0.63.dev20250114 llama stack build --template ollama --image-type docker
+          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          for template in "${TEMPLATES[@]}"; do
+            if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                TEST_PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type docker
+            else
+                PYPI_VERSION=${{ steps.version.outputs.version }} llama stack build --template $template --image-type docker
+            fi
+          done
+
+      - name: List docker images
+        run: |
           docker images
 
       - name: Push to dockerhub
         run: |
-          docker tag distribution-ollama:test-0.0.63.dev20250114 llamastack/distribution-ollama:test-0.0.63.dev20250114
-          docker push llamastack/distribution-ollama:test-0.0.63.dev20250114
+          TEMPLATES=("ollama" "bedrock" "remote-vllm" "fireworks" "together" "tgi" "meta-reference-gpu")
+          for template in "${TEMPLATES[@]}"; do
+            if [ "$PYPI_SOURCE" = "testpypi" ]; then
+                docker tag distribution-$template:test-${{ steps.version.outputs.version }} llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:test-${{ steps.version.outputs.version }}
+            else
+                docker tag distribution-$template:${{ steps.version.outputs.version }} llamastack/distribution-$template:${{ steps.version.outputs.version }}
+                docker push llamastack/distribution-$template:${{ steps.version.outputs.version }}
+            fi
+          done
