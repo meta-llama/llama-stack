@@ -267,7 +267,6 @@ class LlamaGuardShield:
                 event.event_type == ChatCompletionResponseEventType.progress
                 and event.delta.type == "text"
             ):
-                assert isinstance(event.delta.text, str)
                 content += event.delta.text
 
         content = content.strip()
