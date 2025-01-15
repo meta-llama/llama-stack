@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import gc
 import logging
 import os
 import time
@@ -579,6 +580,12 @@ class LoraFinetuningSingleDevice:
                 )
                 checkpoint.training_metrics = training_metrics
             checkpoints.append(checkpoint)
+
+        # clean up the memory after training finishes
+        self._model.to("cpu")
+        del self._model
+        gc.collect()
+        torch.cuda.empty_cache()
 
         return (memory_stats, checkpoints)
 
