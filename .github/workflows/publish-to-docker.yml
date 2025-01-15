@@ -44,7 +44,7 @@ jobs:
             # Function to check if version exists in a repository
             check_version() {
                 local repo=$1
-                local status_code=$(curl -s -o /dev/null -w "%{http_code}" "https://$repo.org/pypi/llama-stack/${{ steps.version.outputs.version }}")
+                local status_code=$(curl -s -o /dev/null -w "%{http_code}" "https://$repo.org/project/llama-stack/${{ steps.version.outputs.version }}")
                 return $([ "$status_code" -eq 200 ])
             }
 
