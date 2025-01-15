@@ -189,6 +189,8 @@ def pytest_collection_modifyitems(session, config, items):
     required_tests = defaultdict(set)
     test_configs = [test_config.inference, test_config.memory, test_config.agent]
     for test_config in test_configs:
+        if test_config is None:
+            continue
         for test in test_config.tests:
             arr = test.split("::")
             if len(arr) != 2:
