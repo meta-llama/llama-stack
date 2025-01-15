@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 from llama_models.datatypes import CoreModelId
 from llama_models.sku_list import all_registered_models
+from pytest import ExitCode
 
 from pytest_html.basereport import _process_outcome
 
@@ -71,11 +72,22 @@ SUPPORTED_MODELS = {
 
 class Report:
 
-    def __init__(self, _config):
+    def __init__(self, output_path):
+
+        valid_file_format = (
+            output_path.split(".")[1] in ["md", "markdown"]
+            if len(output_path.split(".")) == 2
+            else False
+        )
+        if not valid_file_format:
+            raise ValueError(
+                f"Invalid output file {output_path}. Markdown file is required"
+            )
+        self.output_path = output_path
         self.test_data = defaultdict(dict)
         self.inference_tests = defaultdict(dict)
 
-    @pytest.hookimpl(tryfirst=True)
+    @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
         # This hook is called in several phases, including setup, call and teardown
         # The test is considered failed / error if any of the outcomes is not "Passed"
@@ -91,7 +103,9 @@ class Report:
             self.test_data[report.nodeid] = data
 
     @pytest.hookimpl
-    def pytest_sessionfinish(self, session):
+    def pytest_sessionfinish(self, session, exitstatus):
+        if exitstatus <= ExitCode.INTERRUPTED:
+            return
         report = []
         report.append("# Llama Stack Integration Test Results Report")
         report.append("\n## Summary")
@@ -108,6 +122,11 @@ class Report:
 
         rows = []
         for model in all_registered_models():
+            if (
+                "Instruct" not in model.core_model_id.value
+                and "Guard" not in model.core_model_id.value
+            ):
+                continue
             row = f"| {model.core_model_id.value} |"
             for k in SUPPORTED_MODELS.keys():
                 if model.core_model_id.value in SUPPORTED_MODELS[k]:
@@ -149,7 +168,7 @@ class Report:
             report.extend(test_table)
             report.append("\n")
 
-        output_file = Path("pytest_report.md")
+        output_file = Path(self.output_path)
         output_file.write_text("\n".join(report))
         print(f"\n Report generated: {output_file.absolute()}")
 
