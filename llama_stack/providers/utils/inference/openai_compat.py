@@ -74,7 +74,8 @@ def get_sampling_options(params: SamplingParams) -> dict:
     options = {}
     if params:
         options.update(get_sampling_strategy_options(params))
-        options["max_tokens"] = params.max_tokens
+        if params.max_tokens:
+            options["max_tokens"] = params.max_tokens
 
         if params.repetition_penalty is not None and params.repetition_penalty != 1.0:
             options["repeat_penalty"] = params.repetition_penalty
