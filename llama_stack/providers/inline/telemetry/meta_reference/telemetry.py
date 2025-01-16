@@ -259,7 +259,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     async def get_span(self, trace_id: str, span_id: str) -> Span:
         return await self.trace_store.get_span(trace_id, span_id)
 
-    async def query_span_tree(
+    async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,

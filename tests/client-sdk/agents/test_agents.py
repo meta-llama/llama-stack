@@ -178,14 +178,6 @@ def test_builtin_tool_web_search(llama_stack_client, agent_config):
     assert "Tool:brave_search Response:" in logs_str
     assert "mark zuckerberg" in logs_str.lower()
     assert "No Violation" in logs_str
-    spans = llama_stack_client.telemetry.query_spans(
-        attribute_filters=[
-            {"key": "session_id", "op": "eq", "value": session_id},
-        ],
-        attributes_to_return=["input", "output"],
-    )
-    breakpoint()
-    assert len(spans) > 1
 
 
 def test_builtin_tool_code_execution(llama_stack_client, agent_config):

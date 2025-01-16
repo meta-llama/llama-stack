@@ -174,6 +174,8 @@ class SQLiteTraceStore(TraceStore):
             conn.row_factory = aiosqlite.Row
             async with conn.execute(query, (trace_id,)) as cursor:
                 row = await cursor.fetchone()
+                if row is None:
+                    raise ValueError(f"Trace {trace_id} not found")
                 return Trace(**row)
 
     async def get_span(self, trace_id: str, span_id: str) -> Span:
@@ -182,4 +184,6 @@ class SQLiteTraceStore(TraceStore):
             conn.row_factory = aiosqlite.Row
             async with conn.execute(query, (trace_id, span_id)) as cursor:
                 row = await cursor.fetchone()
+                if row is None:
+                    raise ValueError(f"Span {span_id} not found")
                 return Span(**row)

@@ -49,17 +49,17 @@ class TelemetryDatasetMixin:
         attributes_to_return: List[str],
         max_depth: Optional[int] = None,
     ) -> QuerySpansResponse:
-        traces = await self.query_traces(attribute_filters=attribute_filters).data
+        traces = await self.query_traces(attribute_filters=attribute_filters)
         spans = []
 
-        for trace in traces:
-            spans_by_id = await self.query_span_tree(
+        for trace in traces.data:
+            spans_by_id_resp = await self.get_span_tree(
                 span_id=trace.root_span_id,
                 attributes_to_return=attributes_to_return,
                 max_depth=max_depth,
             )
 
-            for span in spans_by_id.values():
+            for span in spans_by_id_resp.data.values():
                 if span.attributes and all(
                     attr in span.attributes and span.attributes[attr] is not None
                     for attr in attributes_to_return
@@ -76,4 +76,4 @@ class TelemetryDatasetMixin:
                         )
                     )
 
-        return spans
+        return QuerySpansResponse(data=spans)

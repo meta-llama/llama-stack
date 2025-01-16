@@ -204,7 +204,7 @@ class Telemetry(Protocol):
     async def get_span(self, trace_id: str, span_id: str) -> Span: ...
 
     @webmethod(route="/telemetry/spans/{span_id}/tree", method="GET")
-    async def query_span_tree(
+    async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
