@@ -24,6 +24,7 @@ from llama_stack.providers.remote.inference.groq import GroqConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.providers.remote.inference.tgi import TGIImplConfig
+from llama_stack.providers.remote.inference.portkey import PortkeyImplConfig
 from llama_stack.providers.remote.inference.together import TogetherImplConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.tests.resolver import construct_stack_for_test
@@ -83,6 +84,21 @@ def inference_cerebras() -> ProviderFixture:
             )
         ],
     )
+
+@pytest.fixture(scope="session")
+def inference_cerebras() -> ProviderFixture:
+    return ProviderFixture(
+        providers=[
+            Provider(
+                provider_id="portkey",
+                provider_type="remote::portkey",
+                config=CerebrasImplConfig(
+                    api_key=get_env_or_fail("PORTKEY_API_KEY"),
+                ).model_dump(),
+            )
+        ],
+    )
+
 
 
 @pytest.fixture(scope="session")

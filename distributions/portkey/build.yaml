@@ -1,0 +1,17 @@
+version: '2'
+name: portkey
+distribution_spec:
+  description: Use Portkey for running LLM inference
+  docker_image: null
+  providers:
+    inference:
+    - remote::portkey
+    safety:
+    - inline::llama-guard
+    memory:
+    - inline::meta-reference
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+image_type: conda
