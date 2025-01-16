@@ -49,7 +49,7 @@ class TelemetryDatasetMixin:
         attributes_to_return: List[str],
         max_depth: Optional[int] = None,
     ) -> QuerySpansResponse:
-        traces = await self.query_traces(attribute_filters=attribute_filters)
+        traces = await self.query_traces(attribute_filters=attribute_filters).data
         spans = []
 
         for trace in traces:
