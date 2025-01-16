@@ -9,8 +9,7 @@ import pytest
 from llama_stack.apis.agents import AgentConfig, Turn
 from llama_stack.apis.inference import SamplingParams, UserMessage
 from llama_stack.providers.datatypes import Api
-from llama_stack.providers.utils.kvstore import kvstore_impl
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
+from llama_stack.providers.utils.kvstore import kvstore_impl, SqliteKVStoreConfig
 
 from .fixtures import pick_inference_model
 
