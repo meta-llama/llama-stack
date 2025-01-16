@@ -69,12 +69,12 @@ jobs:
           echo "Repository root: ${{ github.workspace }}"
           echo "Branch: ${{ github.ref }}"
           echo "List of tests"
-          pytest ${{ github.workspace }}/llama_stack/providers/tests/ -k "fireworks and together" --config=ci_test_config.yaml
+          pytest ${{ github.workspace }}/llama_stack/providers/tests/ -k "fireworks and together" --config=github_ci_test_config.yaml
 
-      - name: Upload pytest test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest_report.md
-          path: pytest_report.md
-        # Use always() to always run this step to publish test results when there are test failures
-        if: ${{ always() }}
+      # - name: Upload pytest test results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: pytest_report.md
+      #     path: pytest_report.md
+      #   # Use always() to always run this step to publish test results when there are test failures
+      #   if: ${{ always() }}
