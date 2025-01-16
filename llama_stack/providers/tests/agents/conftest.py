@@ -6,10 +6,15 @@
 
 import pytest
 
-from ..conftest import get_provider_fixture_overrides
+from ..conftest import (
+    get_provider_fixture_overrides,
+    get_provider_fixture_overrides_from_test_config,
+    get_test_config_for_api,
+)
 from ..inference.fixtures import INFERENCE_FIXTURES
 from ..memory.fixtures import MEMORY_FIXTURES
 from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
+
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
 from .fixtures import AGENTS_FIXTURES
 
@@ -81,23 +86,15 @@ def pytest_configure(config):
         )
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--inference-model",
-        action="store",
-        default="meta-llama/Llama-3.2-3B-Instruct",
-        help="Specify the inference model to use for testing",
-    )
-    parser.addoption(
-        "--safety-shield",
-        action="store",
-        default="meta-llama/Llama-Guard-3-1B",
-        help="Specify the safety shield to use for testing",
-    )
-
-
 def pytest_generate_tests(metafunc):
-    shield_id = metafunc.config.getoption("--safety-shield")
+    test_config = get_test_config_for_api(metafunc.config, "agents")
+    shield_id = getattr(
+        test_config, "safety_shield", None
+    ) or metafunc.config.getoption("--safety-shield")
+    inference_models = getattr(test_config, "inference_models", None) or [
+        metafunc.config.getoption("--inference-model")
+    ]
+
     if "safety_shield" in metafunc.fixturenames:
         metafunc.parametrize(
             "safety_shield",
@@ -105,8 +102,7 @@ def pytest_generate_tests(metafunc):
             indirect=True,
         )
     if "inference_model" in metafunc.fixturenames:
-        inference_model = metafunc.config.getoption("--inference-model")
-        models = set({inference_model})
+        models = set(inference_models)
         if safety_model := safety_model_from_shield(shield_id):
             models.add(safety_model)
 
@@ -124,7 +120,10 @@ def pytest_generate_tests(metafunc):
             "tool_runtime": TOOL_RUNTIME_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides(metafunc.config, available_fixtures)
+            get_provider_fixture_overrides_from_test_config(
+                metafunc.config, "agents", DEFAULT_PROVIDER_COMBINATIONS
+            )
+            or get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("agents_stack", combinations, indirect=True)

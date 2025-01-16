@@ -10,6 +10,8 @@ We use `pytest` and all of its dynamism to enable the features needed. Specifica
 
 - We use `pytest_configure` to make sure we dynamically add appropriate marks based on the fixtures we make.
 
+- We use `pytest_collection_modifyitems` to filter tests based on the test config (if specified).
+
 ## Common options
 
 All tests support a `--providers` option which can be a string of the form `api1=provider_fixture1,api2=provider_fixture2`. So, when testing safety (which need inference and safety APIs) you can use `--providers inference=together,safety=meta_reference` to use these fixtures in concert.
@@ -73,3 +75,15 @@ If you wanted to test a remotely hosted stack, you can use `-m remote` as follow
 pytest -s -m remote llama_stack/providers/tests/agents/test_agents.py \
   --env REMOTE_STACK_URL=<...>
 ```
+
+## Test Config
+If you want to run a test suite with a custom set of tests and parametrizations, you can define a YAML test config under llama_stack/providers/tests/ folder and pass the filename through `--config` option as follows:
+
+```
+pytest llama_stack/providers/tests/ --config=ci_test_config.yaml
+```
+
+### Test config format
+Currently, we support test config on inference, agents and memory api tests.
+
+Example format of test config can be found in ci_test_config.yaml.
