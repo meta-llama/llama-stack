@@ -46,7 +46,7 @@ class OpenAICompatCompletionChoiceDelta(BaseModel):
     content: str
 
 
-class OpenAILogprobs(BaseModel):
+class OpenAICompatLogprobs(BaseModel):
     text_offset: Optional[List[int]] = None
 
     token_logprobs: Optional[List[float]] = None
@@ -60,7 +60,7 @@ class OpenAICompatCompletionChoice(BaseModel):
     finish_reason: Optional[str] = None
     text: Optional[str] = None
     delta: Optional[OpenAICompatCompletionChoiceDelta] = None
-    logprobs: Optional[OpenAILogprobs] = None
+    logprobs: Optional[OpenAICompatLogprobs] = None
 
 
 class OpenAICompatCompletionResponse(BaseModel):
@@ -117,7 +117,7 @@ def get_stop_reason(finish_reason: str) -> StopReason:
 
 
 def convert_openai_completion_logprobs(
-    logprobs: Optional[OpenAILogprobs],
+    logprobs: Optional[OpenAICompatLogprobs],
 ) -> Optional[List[TokenLogProbs]]:
     if not logprobs:
         return None
