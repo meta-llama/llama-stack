@@ -12,18 +12,18 @@ on:
   #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
-  trigger-client-and-models-build:
-    name: Trigger llama-stack-client and llama-models build
-    runs-on: ubuntu-latest
+  # trigger-client-and-models-build:
+  #   name: Trigger llama-stack-client and llama-models build
+  #   runs-on: ubuntu-latest
   #   outputs:
   #     version: ${{ steps.version.outputs.version }}
   #     client_run_id: ${{ steps.trigger-client.outputs.workflow_id }}
   #     model_run_id: ${{ steps.trigger-models.outputs.workflow_id }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-  #   - name: Get date
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #     with:
+  #       persist-credentials: false
+  # #   - name: Get date
   #     id: date
   #     run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
   #   - name: Compute version based on dispatch event
@@ -196,11 +196,14 @@ jobs:
 
   test-published-package:
     name: Test published package
-    needs:
+    # needs:
       # - publish-to-testpypi
-      - trigger-client-and-models-build
+      # - trigger-client-and-models-build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
     - name: Install the package
       run: |
         max_attempts=6
