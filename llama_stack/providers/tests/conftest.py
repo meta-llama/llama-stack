@@ -49,15 +49,10 @@ class TestConfig(BaseModel):
     memory: Optional[APITestConfig] = Field(default=None)
 
 
-CONFIG_CACHE = None
-
-
 def try_load_config_file_cached(config):
     config_file = config.getoption("--config")
     if config_file is None:
         return None
-    if CONFIG_CACHE is not None:
-        return CONFIG_CACHE
 
     config_file_path = Path(__file__).parent / config_file
     if not config_file_path.exists():
