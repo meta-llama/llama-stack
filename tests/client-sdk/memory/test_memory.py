@@ -7,16 +7,15 @@
 import random
 
 import pytest
-from llama_stack.apis.memory import MemoryBankDocument
 
+from llama_stack.apis.memory import MemoryBankDocument
 from llama_stack_client.types.memory_insert_params import Document
 
 
 @pytest.fixture(scope="function")
 def empty_memory_bank_registry(llama_stack_client):
     memory_banks = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     for memory_bank_id in memory_banks:
         llama_stack_client.memory_banks.unregister(memory_bank_id=memory_bank_id)
@@ -36,8 +35,7 @@ def single_entry_memory_bank_registry(llama_stack_client, empty_memory_bank_regi
         provider_id="faiss",
     )
     memory_banks = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     return memory_banks
 
@@ -106,8 +104,7 @@ def test_memory_bank_retrieve(llama_stack_client, empty_memory_bank_registry):
 
 def test_memory_bank_list(llama_stack_client, empty_memory_bank_registry):
     memory_banks_after_register = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     assert len(memory_banks_after_register) == 0
 
@@ -127,16 +124,14 @@ def test_memory_bank_register(llama_stack_client, empty_memory_bank_registry):
     )
 
     memory_banks_after_register = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     assert memory_banks_after_register == [memory_bank_id]
 
 
 def test_memory_bank_unregister(llama_stack_client, single_entry_memory_bank_registry):
     memory_banks = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     assert len(memory_banks) == 1
 
@@ -144,8 +139,7 @@ def test_memory_bank_unregister(llama_stack_client, single_entry_memory_bank_reg
     llama_stack_client.memory_banks.unregister(memory_bank_id=memory_bank_id)
 
     memory_banks = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     assert len(memory_banks) == 0
 
@@ -201,10 +195,10 @@ def test_memory_bank_insert_inline_and_query(
 def test_memory_bank_insert_from_url_and_query(
     llama_stack_client, empty_memory_bank_registry
 ):
-    providers = llama_stack_client.providers.list().memory
+    providers = [p for p in llama_stack_client.providers.list() if p.api == "memory"]
     assert len(providers) > 0
 
-    memory_provider_id = providers[0]["provider_id"]
+    memory_provider_id = providers[0].provider_id
     memory_bank_id = "test_bank"
 
     llama_stack_client.memory_banks.register(
@@ -220,8 +214,7 @@ def test_memory_bank_insert_from_url_and_query(
 
     # list to check memory bank is successfully registered
     available_memory_banks = [
-        memory_bank.identifier
-        for memory_bank in llama_stack_client.memory_banks.list().data
+        memory_bank.identifier for memory_bank in llama_stack_client.memory_banks.list()
     ]
     assert memory_bank_id in available_memory_banks
 

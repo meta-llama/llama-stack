@@ -5,9 +5,7 @@
 # the root directory of this source tree.
 
 import pytest
-
 from pydantic import BaseModel
-
 
 PROVIDER_TOOL_PROMPT_FORMAT = {
     "remote::ollama": "python_list",
@@ -28,15 +26,16 @@ def provider_tool_format(inference_provider_type):
 @pytest.fixture(scope="session")
 def inference_provider_type(llama_stack_client):
     providers = llama_stack_client.providers.list()
-    assert len(providers.inference) > 0
-    return providers.inference[0]["provider_type"]
+    inference_providers = [p for p in providers if p.api == "inference"]
+    assert len(inference_providers) > 0, "No inference providers found"
+    return inference_providers[0].provider_type
 
 
 @pytest.fixture(scope="session")
 def text_model_id(llama_stack_client):
     available_models = [
         model.identifier
-        for model in llama_stack_client.models.list().data
+        for model in llama_stack_client.models.list()
         if model.identifier.startswith("meta-llama") and "405" not in model.identifier
     ]
     assert len(available_models) > 0
@@ -47,7 +46,7 @@ def text_model_id(llama_stack_client):
 def vision_model_id(llama_stack_client):
     available_models = [
         model.identifier
-        for model in llama_stack_client.models.list().data
+        for model in llama_stack_client.models.list()
         if "vision" in model.identifier.lower()
     ]
     if len(available_models) == 0:
