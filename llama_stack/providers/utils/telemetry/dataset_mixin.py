@@ -53,7 +53,7 @@ class TelemetryDatasetMixin:
         spans = []
 
         for trace in traces:
-            spans_by_id = await self.get_span_tree(
+            spans_by_id = await self.query_span_tree(
                 span_id=trace.root_span_id,
                 attributes_to_return=attributes_to_return,
                 max_depth=max_depth,
