@@ -15,6 +15,7 @@ from llama_models.llama3.api.datatypes import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
+from openai.types.completion_choice import Logprobs as OpenAILogprobs
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
@@ -34,6 +35,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     Message,
+    TokenLogProbs,
 )
 
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -104,6 +106,14 @@ def get_stop_reason(finish_reason: str) -> StopReason:
     return StopReason.out_of_tokens
 
 
+def convert_openai_completion_logprobs(
+    logprobs: Optional[OpenAILogprobs],
+) -> Optional[List[TokenLogProbs]]:
+    if not logprobs:
+        return None
+    return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
+
+
 def process_completion_response(
     response: OpenAICompatCompletionResponse, formatter: ChatFormat
 ) -> CompletionResponse:
@@ -113,16 +123,19 @@ def process_completion_response(
         return CompletionResponse(
             stop_reason=StopReason.end_of_turn,
             content=choice.text[: -len("<|eot_id|>")],
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
     # drop suffix <eom_id> if present and return stop reason as end of message
     if choice.text.endswith("<|eom_id|>"):
         return CompletionResponse(
             stop_reason=StopReason.end_of_message,
             content=choice.text[: -len("<|eom_id|>")],
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
     return CompletionResponse(
         stop_reason=get_stop_reason(choice.finish_reason),
         content=choice.text,
+        logprobs=convert_openai_completion_logprobs(choice.logprobs),
     )
 
 
