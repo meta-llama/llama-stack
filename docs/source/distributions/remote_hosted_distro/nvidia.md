@@ -26,7 +26,15 @@ The following environment variables can be configured:
 
 The following models are available by default:
 
-- `${env.INFERENCE_MODEL} (None)`
+- `meta-llama/Llama-3-8B-Instruct (meta/llama3-8b-instruct)`
+- `meta-llama/Llama-3-70B-Instruct (meta/llama3-70b-instruct)`
+- `meta-llama/Llama-3.1-8B-Instruct (meta/llama-3.1-8b-instruct)`
+- `meta-llama/Llama-3.1-70B-Instruct (meta/llama-3.1-70b-instruct)`
+- `meta-llama/Llama-3.1-405B-Instruct-FP8 (meta/llama-3.1-405b-instruct)`
+- `meta-llama/Llama-3.2-1B-Instruct (meta/llama-3.2-1b-instruct)`
+- `meta-llama/Llama-3.2-3B-Instruct (meta/llama-3.2-3b-instruct)`
+- `meta-llama/Llama-3.2-11B-Vision-Instruct (meta/llama-3.2-11b-vision-instruct)`
+- `meta-llama/Llama-3.2-90B-Vision-Instruct (meta/llama-3.2-90b-vision-instruct)`
 
 
 ### Prerequisite: API Keys
@@ -61,5 +69,5 @@ llama stack build --template nvidia --image-type conda
 llama stack run ./run.yaml \
   --port 5001 \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
-  --env INFERENCE=$INFERENCE_MODEL
+  --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```

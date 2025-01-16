@@ -279,7 +279,6 @@ def convert_chat_completion_request(
             nvext.update(top_k=strategy.top_k)
         elif isinstance(strategy, GreedySamplingStrategy):
             nvext.update(top_k=-1)
-            payload.update(temperature=strategy.temperature)
         else:
             raise ValueError(f"Unsupported sampling strategy: {strategy}")
 
