@@ -74,14 +74,14 @@ class EvaluateResponse(BaseModel):
 
 
 class Eval(Protocol):
-    @webmethod(route="/eval/run", method="POST")
+    @webmethod(route="/eval/tasks/{task_id}/jobs", method="POST")
     async def run_eval(
         self,
         task_id: str,
         task_config: EvalTaskConfig,
     ) -> Job: ...
 
-    @webmethod(route="/eval/evaluate-rows", method="POST")
+    @webmethod(route="/eval/tasks/{task_id}/evaluations", method="POST")
     async def evaluate_rows(
         self,
         task_id: str,
@@ -90,11 +90,11 @@ class Eval(Protocol):
         task_config: EvalTaskConfig,
     ) -> EvaluateResponse: ...
 
-    @webmethod(route="/eval/jobs/{job_id}", method="GET")
-    async def job_status(self, job_id: str, task_id: str) -> Optional[JobStatus]: ...
+    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="GET")
+    async def job_status(self, task_id: str, job_id: str) -> Optional[JobStatus]: ...
 
-    @webmethod(route="/eval/jobs/cancel", method="POST")
-    async def job_cancel(self, job_id: str, task_id: str) -> None: ...
+    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}", method="DELETE")
+    async def job_cancel(self, task_id: str, job_id: str) -> None: ...
 
-    @webmethod(route="/eval/jobs/{job_id}/result", method="GET")
+    @webmethod(route="/eval/tasks/{task_id}/jobs/{job_id}/result", method="GET")
     async def job_result(self, job_id: str, task_id: str) -> EvaluateResponse: ...
