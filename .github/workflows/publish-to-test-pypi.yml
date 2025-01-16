@@ -196,9 +196,9 @@ jobs:
 
   test-published-package:
     name: Test published package
-    needs:
-      - publish-to-testpypi
-      - trigger-client-and-models-build
+    # needs:
+      # - publish-to-testpypi
+      # - trigger-client-and-models-build
     runs-on: ubuntu-latest
     steps:
     - name: Install the package
