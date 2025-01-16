@@ -6,7 +6,7 @@
 
 import pytest
 
-from ..conftest import get_provider_fixture_overrides, try_load_config_file_cached
+from ..conftest import get_provider_fixture_overrides, get_test_config_for_api
 from .fixtures import INFERENCE_FIXTURES
 
 
@@ -42,43 +42,43 @@ VISION_MODEL_PARAMS = [
 
 
 def pytest_generate_tests(metafunc):
-    test_config = try_load_config_file_cached(metafunc.config)
+    test_config = get_test_config_for_api(metafunc.config, "inference")
+
     if "inference_model" in metafunc.fixturenames:
         cls_name = metafunc.cls.__name__
-        if test_config is not None:
-            params = []
-            for model in test_config.inference.fixtures.inference_models:
-                if ("Vision" in cls_name and "Vision" in model) or (
-                    "Vision" not in cls_name and "Vision" not in model
-                ):
-                    params.append(pytest.param(model, id=model))
-        else:
+        params = []
+        inference_models = getattr(test_config, "inference_models", [])
+        for model in inference_models:
+            if ("Vision" in cls_name and "Vision" in model) or (
+                "Vision" not in cls_name and "Vision" not in model
+            ):
+                params.append(pytest.param(model, id=model))
+
+        if not params:
             model = metafunc.config.getoption("--inference-model")
-            if model:
-                params = [pytest.param(model, id="")]
-            else:
-                if "Vision" in cls_name:
-                    params = VISION_MODEL_PARAMS
-                else:
-                    params = MODEL_PARAMS
+            params = [pytest.param(model, id="")]
+
         metafunc.parametrize(
             "inference_model",
             params,
             indirect=True,
         )
     if "inference_stack" in metafunc.fixturenames:
-        if test_config is not None:
-            fixtures = [
-                (f.get("inference") or f.get("default_fixture_param_id"))
-                for f in test_config.inference.fixtures.provider_fixtures
-            ]
-        elif filtered_stacks := get_provider_fixture_overrides(
+        fixtures = INFERENCE_FIXTURES
+        if filtered_stacks := get_provider_fixture_overrides(
             metafunc.config,
             {
                 "inference": INFERENCE_FIXTURES,
             },
         ):
             fixtures = [stack.values[0]["inference"] for stack in filtered_stacks]
-        else:
-            fixtures = INFERENCE_FIXTURES
+        if test_config:
+            if custom_fixtures := [
+                (
+                    scenario.fixture_combo_id
+                    or scenario.provider_fixtures.get("inference")
+                )
+                for scenario in test_config.scenarios
+            ]:
+                fixtures = custom_fixtures
         metafunc.parametrize("inference_stack", fixtures, indirect=True)

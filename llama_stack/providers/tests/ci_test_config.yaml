@@ -8,52 +8,48 @@ inference:
   - inference/test_text_inference.py::test_chat_completion_with_tool_calling
   - inference/test_text_inference.py::test_chat_completion_with_tool_calling_streaming
 
-  fixtures:
-   provider_fixtures:
-    - inference: ollama
-    - default_fixture_param_id: fireworks
-    - inference: together
+  scenarios:
+  - provider_fixtures:
+      inference: ollama
+  - fixture_combo_id: fireworks
+  - provider_fixtures:
+      inference: together
     # - inference: tgi
     # - inference: vllm_remote
-   inference_models:
-    - meta-llama/Llama-3.1-8B-Instruct
-    - meta-llama/Llama-3.2-11B-Vision-Instruct
 
-   safety_shield: ~
-   embedding_model: ~
+  inference_models:
+  - meta-llama/Llama-3.1-8B-Instruct
+  - meta-llama/Llama-3.2-11B-Vision-Instruct
 
 
-agent:
+agents:
   tests:
    - agents/test_agents.py::test_agent_turns_with_safety
    - agents/test_agents.py::test_rag_agent
 
-  fixtures:
-    provider_fixtures:
-    - default_fixture_param_id: ollama
-    - default_fixture_param_id: together
-    - default_fixture_param_id: fireworks
+  scenarios:
+  - fixture_combo_id: ollama
+  - fixture_combo_id: together
+  - fixture_combo_id: fireworks
 
-    safety_shield: ~
-    embedding_model: ~
+  inference_models:
+  - meta-llama/Llama-3.2-1B-Instruct
 
-    inference_models:
-    - meta-llama/Llama-3.2-1B-Instruct
+  safety_shield: meta-llama/Llama-Guard-3-1B
 
 
 memory:
   tests:
    - memory/test_memory.py::test_query_documents
 
-  fixtures:
-    provider_fixtures:
-    - default_fixture_param_id: ollama
-    - inference: sentence_transformers
+  scenarios:
+  - fixture_combo_id: ollama
+  - provider_fixtures:
+      inference: sentence_transformers
       memory: faiss
-    - default_fixture_param_id: chroma
+  - fixture_combo_id: chroma
 
-    inference_models:
-    - meta-llama/Llama-3.2-1B-Instruct
+  inference_models:
+  - meta-llama/Llama-3.2-1B-Instruct
 
-    safety_shield: ~
-    embedding_model: ~
+  embedding_model: all-MiniLM-L6-v2
