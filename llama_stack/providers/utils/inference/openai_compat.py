@@ -178,6 +178,7 @@ async def process_completion_stream_response(
         yield CompletionResponseStreamChunk(
             delta=text,
             stop_reason=stop_reason,
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
         if finish_reason:
             if finish_reason in ["stop", "eos", "eos_token"]:
