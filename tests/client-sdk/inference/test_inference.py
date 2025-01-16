@@ -39,7 +39,6 @@ def text_model_id(llama_stack_client):
         for model in llama_stack_client.models.list().data
         if model.identifier.startswith("meta-llama") and "405" not in model.identifier
     ]
-    print(available_models)
     assert len(available_models) > 0
     return available_models[0]
 
@@ -268,10 +267,6 @@ def test_text_chat_completion_with_tool_calling_and_streaming(
         stream=True,
     )
     tool_invocation_content = extract_tool_invocation_content(response)
-    print(
-        "!!!!tool_invocation_content",
-        tool_invocation_content,
-    )
     assert tool_invocation_content == "[get_weather, {'location': 'San Francisco, CA'}]"
 
 
