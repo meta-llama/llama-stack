@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, Dict, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
@@ -34,6 +34,7 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     Message,
+    TokenLogProbs,
 )
 
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -45,10 +46,21 @@ class OpenAICompatCompletionChoiceDelta(BaseModel):
     content: str
 
 
+class OpenAICompatLogprobs(BaseModel):
+    text_offset: Optional[List[int]] = None
+
+    token_logprobs: Optional[List[float]] = None
+
+    tokens: Optional[List[str]] = None
+
+    top_logprobs: Optional[List[Dict[str, float]]] = None
+
+
 class OpenAICompatCompletionChoice(BaseModel):
     finish_reason: Optional[str] = None
     text: Optional[str] = None
     delta: Optional[OpenAICompatCompletionChoiceDelta] = None
+    logprobs: Optional[OpenAICompatLogprobs] = None
 
 
 class OpenAICompatCompletionResponse(BaseModel):
@@ -104,6 +116,14 @@ def get_stop_reason(finish_reason: str) -> StopReason:
     return StopReason.out_of_tokens
 
 
+def convert_openai_completion_logprobs(
+    logprobs: Optional[OpenAICompatLogprobs],
+) -> Optional[List[TokenLogProbs]]:
+    if not logprobs:
+        return None
+    return [TokenLogProbs(logprobs_by_token=x) for x in logprobs.top_logprobs]
+
+
 def process_completion_response(
     response: OpenAICompatCompletionResponse, formatter: ChatFormat
 ) -> CompletionResponse:
@@ -113,16 +133,19 @@ def process_completion_response(
         return CompletionResponse(
             stop_reason=StopReason.end_of_turn,
             content=choice.text[: -len("<|eot_id|>")],
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
     # drop suffix <eom_id> if present and return stop reason as end of message
     if choice.text.endswith("<|eom_id|>"):
         return CompletionResponse(
             stop_reason=StopReason.end_of_message,
             content=choice.text[: -len("<|eom_id|>")],
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
     return CompletionResponse(
         stop_reason=get_stop_reason(choice.finish_reason),
         content=choice.text,
+        logprobs=convert_openai_completion_logprobs(choice.logprobs),
     )
 
 
@@ -165,6 +188,7 @@ async def process_completion_stream_response(
         yield CompletionResponseStreamChunk(
             delta=text,
             stop_reason=stop_reason,
+            logprobs=convert_openai_completion_logprobs(choice.logprobs),
         )
         if finish_reason:
             if finish_reason in ["stop", "eos", "eos_token"]:

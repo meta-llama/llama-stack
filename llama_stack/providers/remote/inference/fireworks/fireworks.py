@@ -168,7 +168,10 @@ class FireworksInferenceAdapter(
             yield chunk
 
     def _build_options(
-        self, sampling_params: Optional[SamplingParams], fmt: ResponseFormat
+        self,
+        sampling_params: Optional[SamplingParams],
+        fmt: ResponseFormat,
+        logprobs: Optional[LogProbConfig],
     ) -> dict:
         options = get_sampling_options(sampling_params)
         options.setdefault("max_tokens", 512)
@@ -186,6 +189,11 @@ class FireworksInferenceAdapter(
                 }
             else:
                 raise ValueError(f"Unknown response format {fmt.type}")
+
+        if logprobs and logprobs.top_k:
+            options["logprobs"] = logprobs.top_k
+            if options["logprobs"] <= 0 or options["logprobs"] >= 5:
+                raise ValueError("Required range: 0 < top_k < 5")
 
         return options
 
@@ -280,7 +288,9 @@ class FireworksInferenceAdapter(
             "model": request.model,
             **input_dict,
             "stream": request.stream,
-            **self._build_options(request.sampling_params, request.response_format),
+            **self._build_options(
+                request.sampling_params, request.response_format, request.logprobs
+            ),
         }
 
     async def embeddings(
