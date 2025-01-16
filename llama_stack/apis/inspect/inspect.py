@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 @json_schema_type
 class ProviderInfo(BaseModel):
+    api: str
     provider_id: str
     provider_type: str
 

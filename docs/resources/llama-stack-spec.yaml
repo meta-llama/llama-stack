@@ -1678,11 +1678,14 @@ components:
     ProviderInfo:
       additionalProperties: false
       properties:
+        api:
+          type: string
         provider_id:
           type: string
         provider_type:
           type: string
       required:
+      - api
       - provider_id
       - provider_type
       type: object

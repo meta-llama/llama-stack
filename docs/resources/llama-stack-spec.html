@@ -7196,6 +7196,9 @@
             "ProviderInfo": {
                 "type": "object",
                 "properties": {
+                    "api": {
+                        "type": "string"
+                    },
                     "provider_id": {
                         "type": "string"
                     },
@@ -7205,6 +7208,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
+                    "api",
                     "provider_id",
                     "provider_type"
                 ]

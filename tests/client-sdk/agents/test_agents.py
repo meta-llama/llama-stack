@@ -83,13 +83,13 @@ class TestClientTool(ClientTool):
 def agent_config(llama_stack_client):
     available_models = [
         model.identifier
-        for model in llama_stack_client.models.list().data
+        for model in llama_stack_client.models.list()
         if model.identifier.startswith("meta-llama") and "405" not in model.identifier
     ]
     model_id = available_models[0]
     print(f"Using model: {model_id}")
     available_shields = [
-        shield.identifier for shield in llama_stack_client.shields.list().data
+        shield.identifier for shield in llama_stack_client.shields.list()
     ]
     available_shields = available_shields[:1]
     print(f"Using shield: {available_shields}")
