@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, Dict, List, Optional
 
 from llama_models.llama3.api.chat_format import ChatFormat
 
@@ -15,7 +15,6 @@ from llama_models.llama3.api.datatypes import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
-from openai.types.completion_choice import Logprobs as OpenAILogprobs
 from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
@@ -47,10 +46,21 @@ class OpenAICompatCompletionChoiceDelta(BaseModel):
     content: str
 
 
+class OpenAILogprobs(BaseModel):
+    text_offset: Optional[List[int]] = None
+
+    token_logprobs: Optional[List[float]] = None
+
+    tokens: Optional[List[str]] = None
+
+    top_logprobs: Optional[List[Dict[str, float]]] = None
+
+
 class OpenAICompatCompletionChoice(BaseModel):
     finish_reason: Optional[str] = None
     text: Optional[str] = None
     delta: Optional[OpenAICompatCompletionChoiceDelta] = None
+    logprobs: Optional[OpenAILogprobs] = None
 
 
 class OpenAICompatCompletionResponse(BaseModel):
