@@ -10,7 +10,7 @@ import sys
 from enum import Enum
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 from termcolor import cprint
@@ -106,6 +106,8 @@ def print_pip_install_help(providers: Dict[str, List[Provider]]):
 def build_image(
     build_config: BuildConfig,
     build_file_path: Path,
+    image_name: str,
+    template_name: Optional[str] = None,
 ):
     docker_image = build_config.distribution_spec.docker_image or "python:3.10-slim"
 
@@ -115,32 +117,34 @@ def build_image(
     normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == ImageType.docker.value:
-        script = (
+        script = str(
             importlib.resources.files("llama_stack") / "distribution/build_container.sh"
         )
         args = [
             script,
-            build_config.name,
+            image_name,
             docker_image,
             str(build_file_path),
             str(BUILDS_BASE_DIR / ImageType.docker.value),
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.conda.value:
-        script = (
+        script = str(
             importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh"
         )
         args = [
             script,
-            build_config.name,
+            str(image_name),
             str(build_file_path),
             " ".join(normal_deps),
         ]
     elif build_config.image_type == ImageType.venv.value:
-        script = importlib.resources.files("llama_stack") / "distribution/build_venv.sh"
+        script = str(
+            importlib.resources.files("llama_stack") / "distribution/build_venv.sh"
+        )
         args = [
             script,
-            build_config.name,
+            str(image_name),
             str(build_file_path),
             " ".join(normal_deps),
         ]
@@ -156,7 +160,7 @@ def build_image(
 
     if return_code != 0:
         log.error(
-            f"Failed to build target {build_config.name} with return code {return_code}",
+            f"Failed to build target {image_name} with return code {return_code}",
         )
 
     return return_code

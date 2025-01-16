@@ -131,10 +131,6 @@ this could be just a hash
         default=None,
         description="Reference to the docker image if this package refers to a container",
     )
-    conda_env: Optional[str] = Field(
-        default=None,
-        description="Reference to the conda environment if this package refers to a conda environment",
-    )
     apis: List[str] = Field(
         default_factory=list,
         description="""
@@ -166,7 +162,7 @@ a default SQLite store will be used.""",
 
 class BuildConfig(BaseModel):
     version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
-    name: str
+
     distribution_spec: DistributionSpec = Field(
         description="The distribution spec to build including API providers. "
     )
