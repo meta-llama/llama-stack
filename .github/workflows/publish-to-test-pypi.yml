@@ -200,6 +200,9 @@ jobs:
       # - publish-to-testpypi
       # - trigger-client-and-models-build
     runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
     steps:
     - uses: actions/checkout@v4
       with:
