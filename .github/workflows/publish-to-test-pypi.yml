@@ -238,6 +238,7 @@ jobs:
     - name: Test Notebook
       run: |
         pip install pytest nbval
+        llama stack build --template fireworks --image-type venv
         pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb
 
     # TODO: add trigger for integration test workflow & docker builds
