@@ -5,12 +5,16 @@
 # the root directory of this source tree.
 
 import os
+from collections import defaultdict
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
+import yaml
+
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from termcolor import colored
 
 from llama_stack.distribution.datatypes import Provider
@@ -22,6 +26,83 @@ from .env import get_env_or_fail
 class ProviderFixture(BaseModel):
     providers: List[Provider]
     provider_data: Optional[Dict[str, Any]] = None
+
+
+class TestScenario(BaseModel):
+    # provider fixtures can be either a mark or a dictionary of api -> providers
+    provider_fixtures: Dict[str, str] = Field(default_factory=dict)
+    fixture_combo_id: Optional[str] = None
+
+
+class APITestConfig(BaseModel):
+    scenarios: List[TestScenario] = Field(default_factory=list)
+    inference_models: List[str] = Field(default_factory=list)
+
+    # test name format should be <relative_path.py>::<test_name>
+    tests: List[str] = Field(default_factory=list)
+
+
+class MemoryApiTestConfig(APITestConfig):
+    embedding_model: Optional[str] = Field(default_factory=None)
+
+
+class AgentsApiTestConfig(APITestConfig):
+    safety_shield: Optional[str] = Field(default_factory=None)
+
+
+class TestConfig(BaseModel):
+    inference: Optional[APITestConfig] = None
+    agents: Optional[AgentsApiTestConfig] = None
+    memory: Optional[MemoryApiTestConfig] = None
+
+
+def get_test_config_from_config_file(metafunc_config):
+    config_file = metafunc_config.getoption("--config")
+    if config_file is None:
+        return None
+
+    config_file_path = Path(__file__).parent / config_file
+    if not config_file_path.exists():
+        raise ValueError(
+            f"Test config {config_file} was specified but not found. Please make sure it exists in the llama_stack/providers/tests directory."
+        )
+    with open(config_file_path, "r") as config_file:
+        config = yaml.safe_load(config_file)
+        return TestConfig(**config)
+
+
+def get_test_config_for_api(metafunc_config, api):
+    test_config = get_test_config_from_config_file(metafunc_config)
+    if test_config is None:
+        return None
+    return getattr(test_config, api)
+
+
+def get_provider_fixture_overrides_from_test_config(
+    metafunc_config, api, default_provider_fixture_combinations
+):
+    api_config = get_test_config_for_api(metafunc_config, api)
+    if api_config is None:
+        return None
+
+    fixture_combo_ids = set()
+    custom_provider_fixture_combos = []
+    for scenario in api_config.scenarios:
+        if scenario.fixture_combo_id:
+            fixture_combo_ids.add(scenario.fixture_combo_id)
+        else:
+            custom_provider_fixture_combos.append(
+                pytest.param(
+                    scenario.provider_fixtures,
+                    id=scenario.provider_fixtures.get("inference") or "",
+                )
+            )
+
+    if len(fixture_combo_ids) > 0:
+        for default_fixture in default_provider_fixture_combinations:
+            if default_fixture.id in fixture_combo_ids:
+                custom_provider_fixture_combos.append(default_fixture)
+    return custom_provider_fixture_combos
 
 
 def remote_stack_fixture() -> ProviderFixture:
@@ -69,9 +150,38 @@ def pytest_addoption(parser):
             "Example: --providers inference=ollama,safety=meta-reference"
         ),
     )
+    parser.addoption(
+        "--config",
+        action="store",
+        help="Set test config file (supported format: YAML), e.g. --config=test_config.yml",
+    )
     """Add custom command line options"""
     parser.addoption(
         "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
+    )
+    parser.addoption(
+        "--inference-model",
+        action="store",
+        default="meta-llama/Llama-3.2-3B-Instruct",
+        help="Specify the inference model to use for testing",
+    )
+    parser.addoption(
+        "--safety-shield",
+        action="store",
+        default="meta-llama/Llama-Guard-3-1B",
+        help="Specify the safety shield to use for testing",
+    )
+    parser.addoption(
+        "--embedding-model",
+        action="store",
+        default=None,
+        help="Specify the embedding model to use for testing",
+    )
+    parser.addoption(
+        "--judge-model",
+        action="store",
+        default="meta-llama/Llama-3.1-8B-Instruct",
+        help="Specify the judge model to use for testing",
     )
 
 
@@ -146,6 +256,38 @@ def pytest_itemcollected(item):
     if marks:
         marks = colored(",".join(marks), "yellow")
         item.name = f"{item.name}[{marks}]"
+
+
+def pytest_collection_modifyitems(session, config, items):
+    test_config = get_test_config_from_config_file(config)
+    if test_config is None:
+        return
+
+    required_tests = defaultdict(set)
+    for api_test_config in [
+        test_config.inference,
+        test_config.memory,
+        test_config.agents,
+    ]:
+        if api_test_config is None:
+            continue
+        for test in api_test_config.tests:
+            arr = test.split("::")
+            if len(arr) != 2:
+                raise ValueError(f"Invalid format for test name {test}")
+            test_path, func_name = arr
+            required_tests[Path(__file__).parent / test_path].add(func_name)
+
+    new_items, deselected_items = [], []
+    for item in items:
+        func_name = getattr(item, "originalname", item.name)
+        if func_name in required_tests[item.fspath]:
+            new_items.append(item)
+            continue
+        deselected_items.append(item)
+
+    items[:] = new_items
+    config.hook.pytest_deselected(items=deselected_items)
 
 
 pytest_plugins = [

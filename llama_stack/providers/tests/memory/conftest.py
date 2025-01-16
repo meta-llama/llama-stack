@@ -6,7 +6,11 @@
 
 import pytest
 
-from ..conftest import get_provider_fixture_overrides
+from ..conftest import (
+    get_provider_fixture_overrides,
+    get_provider_fixture_overrides_from_test_config,
+    get_test_config_for_api,
+)
 
 from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import MEMORY_FIXTURES
@@ -56,15 +60,6 @@ DEFAULT_PROVIDER_COMBINATIONS = [
 ]
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--embedding-model",
-        action="store",
-        default=None,
-        help="Specify the embedding model to use for testing",
-    )
-
-
 def pytest_configure(config):
     for fixture_name in MEMORY_FIXTURES:
         config.addinivalue_line(
@@ -74,8 +69,11 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
+    test_config = get_test_config_for_api(metafunc.config, "memory")
     if "embedding_model" in metafunc.fixturenames:
-        model = metafunc.config.getoption("--embedding-model")
+        model = getattr(test_config, "embedding_model", None)
+        # Fall back to the default if not specified by the config file
+        model = model or metafunc.config.getoption("--embedding-model")
         if model:
             params = [pytest.param(model, id="")]
         else:
@@ -89,7 +87,10 @@ def pytest_generate_tests(metafunc):
             "memory": MEMORY_FIXTURES,
         }
         combinations = (
-            get_provider_fixture_overrides(metafunc.config, available_fixtures)
+            get_provider_fixture_overrides_from_test_config(
+                metafunc.config, "memory", DEFAULT_PROVIDER_COMBINATIONS
+            )
+            or get_provider_fixture_overrides(metafunc.config, available_fixtures)
             or DEFAULT_PROVIDER_COMBINATIONS
         )
         metafunc.parametrize("memory_stack", combinations, indirect=True)
