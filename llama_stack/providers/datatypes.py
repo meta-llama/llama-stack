@@ -96,6 +96,9 @@ class ProviderSpec(BaseModel):
         default_factory=list,
         description="Higher-level API surfaces may depend on other providers to provide their functionality",
     )
+    optional_api_dependencies: List[Api] = Field(
+        default_factory=list,
+    )
     deprecation_warning: Optional[str] = Field(
         default=None,
         description="If this provider is deprecated, specify the warning message here",

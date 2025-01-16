@@ -229,6 +229,9 @@ async def resolve_impls(
     inner_impls_by_provider_id = {f"inner-{x.value}": {} for x in router_apis}
     for api_str, provider in sorted_providers:
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
+        for a in provider.spec.optional_api_dependencies:
+            if a in impls:
+                deps[a] = impls[a]
 
         inner_impls = {}
         if isinstance(provider.spec, RoutingTableProviderSpec):
