@@ -1,5 +1,4 @@
 version: '2'
-name: tgi
 distribution_spec:
   description: Use (an external) TGI server for running LLM inference
   providers:

@@ -1,5 +1,4 @@
 version: '2'
-name: bedrock
 distribution_spec:
   description: Use AWS Bedrock for running LLM inference and safety
   providers:

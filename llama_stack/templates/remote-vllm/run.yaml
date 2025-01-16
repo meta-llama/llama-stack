@@ -1,6 +1,5 @@
 version: '2'
 image_name: remote-vllm
-conda_env: remote-vllm
 apis:
 - agents
 - inference

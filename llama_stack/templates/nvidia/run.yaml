@@ -1,6 +1,5 @@
 version: '2'
 image_name: nvidia
-conda_env: nvidia
 apis:
 - agents
 - datasetio

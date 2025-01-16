@@ -1,5 +1,4 @@
 version: '2'
-name: ollama
 distribution_spec:
   description: Use (an external) Ollama server for running LLM inference
   providers:

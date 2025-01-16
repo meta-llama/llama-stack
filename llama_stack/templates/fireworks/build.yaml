@@ -1,5 +1,4 @@
 version: '2'
-name: fireworks
 distribution_spec:
   description: Use Fireworks.AI for running LLM inference
   providers:

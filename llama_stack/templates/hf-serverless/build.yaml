@@ -1,5 +1,4 @@
 version: '2'
-name: hf-serverless
 distribution_spec:
   description: Use (an external) Hugging Face Inference Endpoint for running LLM inference
   providers:

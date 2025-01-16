@@ -1,5 +1,4 @@
 version: '2'
-name: remote-vllm
 distribution_spec:
   description: Use (an external) vLLM server for running LLM inference
   providers:

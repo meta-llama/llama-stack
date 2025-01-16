@@ -1,6 +1,5 @@
 version: '2'
 image_name: meta-reference-quantized-gpu
-conda_env: meta-reference-quantized-gpu
 apis:
 - agents
 - datasetio
