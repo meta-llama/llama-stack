@@ -1,14 +1,15 @@
 name: Publish Python 🐍 distribution 📦 to TestPyPI
 
 on:
-  workflow_dispatch:  # Keep manual trigger
-    inputs:
-      version:
-        description: 'Version number (e.g. 0.0.63.dev20250111)'
-        required: true
-        type: string
-  schedule:
-    - cron: "0 0 * * *"  # Run every day at midnight
+  push:
+  # workflow_dispatch:  # Keep manual trigger
+  #   inputs:
+  #     version:
+  #       description: 'Version number (e.g. 0.0.63.dev20250111)'
+  #       required: true
+  #       type: string
+  # schedule:
+  #   - cron: "0 0 * * *"  # Run every day at midnight
 
 jobs:
   trigger-client-and-models-build:
@@ -199,7 +200,13 @@ jobs:
       - publish-to-testpypi
       - trigger-client-and-models-build
     runs-on: ubuntu-latest
+    env:
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY }}
     steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
     - name: Install the package
       run: |
         max_attempts=6
@@ -228,5 +235,9 @@ jobs:
         llama stack list-apis
         llama stack list-providers inference
         llama stack list-providers telemetry
+    - name: Test Notebook
+      run: |
+        pip install pytest nbval
+        pytest -v -s --nbval-lax ./docs/notebooks/Llama_Stack_Building_AI_Applications.ipynb
 
     # TODO: add trigger for integration test workflow & docker builds
