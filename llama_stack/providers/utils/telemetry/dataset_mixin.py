@@ -7,7 +7,7 @@
 from typing import List, Optional
 
 from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.apis.telemetry import QueryCondition, Span
+from llama_stack.apis.telemetry import QueryCondition, QuerySpansResponse, Span
 
 
 class TelemetryDatasetMixin:
@@ -48,7 +48,7 @@ class TelemetryDatasetMixin:
         attribute_filters: List[QueryCondition],
         attributes_to_return: List[str],
         max_depth: Optional[int] = None,
-    ) -> List[Span]:
+    ) -> QuerySpansResponse:
         traces = await self.query_traces(attribute_filters=attribute_filters)
         spans = []
 
