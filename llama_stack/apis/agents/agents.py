@@ -170,6 +170,7 @@ class AgentConfig(AgentConfigCommon):
     model: str
     instructions: str
     enable_session_persistence: bool
+    response_format: Optional[ResponseFormat] = None
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
