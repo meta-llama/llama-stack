@@ -6,8 +6,11 @@
 
 from pathlib import Path
 
+from llama_models.sku_list import all_registered_models
+
 from llama_stack.distribution.datatypes import ModelInput, Provider
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
+from llama_stack.providers.remote.inference.nvidia.nvidia import _MODEL_ALIASES
 
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -36,10 +39,21 @@ def get_distribution_template() -> DistributionTemplate:
         config=NVIDIAConfig.sample_run_config(),
     )
 
-    inference_model = ModelInput(
-        model_id="${env.INFERENCE_MODEL}",
-        provider_id="nvidia",
-    )
+    # inference_model = ModelInput(
+    #     model_id="${env.INFERENCE_MODEL}",
+    #     provider_id="nvidia",
+    # )
+    core_model_to_hf_repo = {
+        m.descriptor(): m.huggingface_repo for m in all_registered_models()
+    }
+    default_models = [
+        ModelInput(
+            model_id=core_model_to_hf_repo[m.llama_model],
+            provider_model_id=m.provider_model_id,
+            provider_id="nvidia",
+        )
+        for m in _MODEL_ALIASES
+    ]
 
     return DistributionTemplate(
         name="nvidia",
@@ -48,13 +62,13 @@ def get_distribution_template() -> DistributionTemplate:
         docker_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
-        default_models=[inference_model],
+        default_models=default_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
                 },
-                default_models=[inference_model],
+                default_models=default_models,
             ),
         },
         run_config_env_vars={
