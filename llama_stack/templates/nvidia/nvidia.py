@@ -39,10 +39,6 @@ def get_distribution_template() -> DistributionTemplate:
         config=NVIDIAConfig.sample_run_config(),
     )
 
-    # inference_model = ModelInput(
-    #     model_id="${env.INFERENCE_MODEL}",
-    #     provider_id="nvidia",
-    # )
     core_model_to_hf_repo = {
         m.descriptor(): m.huggingface_repo for m in all_registered_models()
     }
