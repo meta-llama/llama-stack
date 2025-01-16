@@ -21,6 +21,7 @@ from llama_stack.distribution.datatypes import Provider
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 from .env import get_env_or_fail
+from .report import Report
 
 
 class ProviderFixture(BaseModel):
@@ -140,6 +141,9 @@ def pytest_configure(config):
         key, value = env_var.split("=", 1)
         os.environ[key] = value
 
+    if config.getoption("--output") is not None:
+        config.pluginmanager.register(Report(config.getoption("--output")))
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -154,6 +158,11 @@ def pytest_addoption(parser):
         "--config",
         action="store",
         help="Set test config file (supported format: YAML), e.g. --config=test_config.yml",
+    )
+    parser.addoption(
+        "--output",
+        action="store",
+        help="Set output file for test report, e.g. --output=pytest_report.md",
     )
     """Add custom command line options"""
     parser.addoption(
