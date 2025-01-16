@@ -5,10 +5,12 @@
 # the root directory of this source tree.
 
 import os
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
+
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from termcolor import colored
@@ -17,6 +19,8 @@ from llama_stack.distribution.datatypes import Provider
 from llama_stack.providers.datatypes import RemoteProviderConfig
 
 from .env import get_env_or_fail
+
+from .test_config_helper import try_load_config_file_cached
 
 
 class ProviderFixture(BaseModel):
@@ -69,9 +73,38 @@ def pytest_addoption(parser):
             "Example: --providers inference=ollama,safety=meta-reference"
         ),
     )
+    parser.addoption(
+        "--config",
+        action="store",
+        help="Set test config file (supported format: YAML), e.g. --config=test_config.yml",
+    )
     """Add custom command line options"""
     parser.addoption(
         "--env", action="append", help="Set environment variables, e.g. --env KEY=value"
+    )
+    parser.addoption(
+        "--inference-model",
+        action="store",
+        default="meta-llama/Llama-3.2-3B-Instruct",
+        help="Specify the inference model to use for testing",
+    )
+    parser.addoption(
+        "--safety-shield",
+        action="store",
+        default="meta-llama/Llama-Guard-3-1B",
+        help="Specify the safety shield to use for testing",
+    )
+    parser.addoption(
+        "--embedding-model",
+        action="store",
+        default=None,
+        help="Specify the embedding model to use for testing",
+    )
+    parser.addoption(
+        "--judge-model",
+        action="store",
+        default="meta-llama/Llama-3.1-8B-Instruct",
+        help="Specify the judge model to use for testing",
     )
 
 
@@ -146,6 +179,35 @@ def pytest_itemcollected(item):
     if marks:
         marks = colored(",".join(marks), "yellow")
         item.name = f"{item.name}[{marks}]"
+
+
+def pytest_collection_modifyitems(session, config, items):
+    test_config = try_load_config_file_cached(config.getoption("--config"))
+    if test_config is None:
+        return
+
+    required_tests = defaultdict(set)
+    test_configs = [test_config.inference, test_config.memory, test_config.agent]
+    for test_config in test_configs:
+        if test_config is None:
+            continue
+        for test in test_config.tests:
+            arr = test.split("::")
+            if len(arr) != 2:
+                raise ValueError(f"Invalid format for test name {test}")
+            test_path, func_name = arr
+            required_tests[Path(__file__).parent / test_path].add(func_name)
+
+    new_items, deselected_items = [], []
+    for item in items:
+        func_name = getattr(item, "originalname", item.name)
+        if func_name in required_tests[item.fspath]:
+            new_items.append(item)
+            continue
+        deselected_items.append(item)
+
+    items[:] = new_items
+    config.hook.pytest_deselected(items=deselected_items)
 
 
 pytest_plugins = [

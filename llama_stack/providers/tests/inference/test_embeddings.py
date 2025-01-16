@@ -9,6 +9,7 @@ import pytest
 from llama_stack.apis.inference import EmbeddingsResponse
 from llama_stack.apis.models import ModelType
 
+
 # How to run this test:
 # pytest -v -s llama_stack/providers/tests/inference/test_embeddings.py
 
