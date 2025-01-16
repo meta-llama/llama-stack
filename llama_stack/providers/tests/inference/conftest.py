@@ -6,8 +6,7 @@
 
 import pytest
 
-from ..conftest import get_provider_fixture_overrides
-from ..test_config_helper import try_load_config_file_cached
+from ..conftest import get_provider_fixture_overrides, try_load_config_file_cached
 from .fixtures import INFERENCE_FIXTURES
 
 
@@ -43,7 +42,7 @@ VISION_MODEL_PARAMS = [
 
 
 def pytest_generate_tests(metafunc):
-    test_config = try_load_config_file_cached(metafunc.config.getoption("config"))
+    test_config = try_load_config_file_cached(metafunc.config)
     if "inference_model" in metafunc.fixturenames:
         cls_name = metafunc.cls.__name__
         if test_config is not None:

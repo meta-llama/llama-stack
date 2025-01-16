@@ -6,14 +6,15 @@
 
 import pytest
 
-from ..conftest import get_provider_fixture_overrides
-from ..inference.fixtures import INFERENCE_FIXTURES
-from ..memory.fixtures import MEMORY_FIXTURES
-from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
-from ..test_config_helper import (
+from ..conftest import (
+    get_provider_fixture_overrides,
     get_provider_fixtures_from_config,
     try_load_config_file_cached,
 )
+from ..inference.fixtures import INFERENCE_FIXTURES
+from ..memory.fixtures import MEMORY_FIXTURES
+from ..safety.fixtures import SAFETY_FIXTURES, safety_model_from_shield
+
 from ..tools.fixtures import TOOL_RUNTIME_FIXTURES
 from .fixtures import AGENTS_FIXTURES
 
@@ -86,7 +87,7 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
-    test_config = try_load_config_file_cached(metafunc.config.getoption("config"))
+    test_config = try_load_config_file_cached(metafunc.config)
     (
         config_override_inference_models,
         config_override_safety_shield,

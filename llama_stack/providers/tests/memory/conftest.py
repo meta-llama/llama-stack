@@ -6,13 +6,13 @@
 
 import pytest
 
-from ..conftest import get_provider_fixture_overrides
-
-from ..inference.fixtures import INFERENCE_FIXTURES
-from ..test_config_helper import (
+from ..conftest import (
+    get_provider_fixture_overrides,
     get_provider_fixtures_from_config,
     try_load_config_file_cached,
 )
+
+from ..inference.fixtures import INFERENCE_FIXTURES
 from .fixtures import MEMORY_FIXTURES
 
 
@@ -69,7 +69,7 @@ def pytest_configure(config):
 
 
 def pytest_generate_tests(metafunc):
-    test_config = try_load_config_file_cached(metafunc.config.getoption("config"))
+    test_config = try_load_config_file_cached(metafunc.config)
     provider_fixtures_config = (
         test_config.memory.fixtures.provider_fixtures
         if test_config is not None and test_config.memory is not None

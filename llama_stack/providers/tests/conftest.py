@@ -6,13 +6,15 @@
 
 import os
 from collections import defaultdict
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
+import yaml
 
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from termcolor import colored
 
 from llama_stack.distribution.datatypes import Provider
@@ -20,12 +22,72 @@ from llama_stack.providers.datatypes import RemoteProviderConfig
 
 from .env import get_env_or_fail
 
-from .test_config_helper import try_load_config_file_cached
-
 
 class ProviderFixture(BaseModel):
     providers: List[Provider]
     provider_data: Optional[Dict[str, Any]] = None
+
+
+class Fixtures(BaseModel):
+    # provider fixtures can be either a mark or a dictionary of api -> providers
+    provider_fixtures: List[Dict[str, str]] = Field(default_factory=list)
+    inference_models: List[str] = Field(default_factory=list)
+    safety_shield: Optional[str] = Field(default_factory=None)
+    embedding_model: Optional[str] = Field(default_factory=None)
+
+
+class APITestConfig(BaseModel):
+    fixtures: Fixtures
+
+    # test name format should be <relative_path.py>::<test_name>
+    tests: List[str] = Field(default_factory=list)
+
+
+class TestConfig(BaseModel):
+    inference: APITestConfig
+    agent: Optional[APITestConfig] = Field(default=None)
+    memory: Optional[APITestConfig] = Field(default=None)
+
+
+CONFIG_CACHE = None
+
+
+def try_load_config_file_cached(config):
+    config_file = config.getoption("--config")
+    if config_file is None:
+        return None
+    if CONFIG_CACHE is not None:
+        return CONFIG_CACHE
+
+    config_file_path = Path(__file__).parent / config_file
+    if not config_file_path.exists():
+        raise ValueError(
+            f"Test config {config_file} was specified but not found. Please make sure it exists in the llama_stack/providers/tests directory."
+        )
+    with open(config_file_path, "r") as config_file:
+        config = yaml.safe_load(config_file)
+        return TestConfig(**config)
+
+
+def get_provider_fixtures_from_config(
+    provider_fixtures_config, default_fixture_combination
+):
+    custom_fixtures = []
+    selected_default_param_id = set()
+    for fixture_config in provider_fixtures_config:
+        if "default_fixture_param_id" in fixture_config:
+            selected_default_param_id.add(fixture_config["default_fixture_param_id"])
+        else:
+            custom_fixtures.append(
+                pytest.param(fixture_config, id=fixture_config.get("inference") or "")
+            )
+
+    if len(selected_default_param_id) > 0:
+        for default_fixture in default_fixture_combination:
+            if default_fixture.id in selected_default_param_id:
+                custom_fixtures.append(default_fixture)
+
+    return custom_fixtures
 
 
 def remote_stack_fixture() -> ProviderFixture:
@@ -182,7 +244,7 @@ def pytest_itemcollected(item):
 
 
 def pytest_collection_modifyitems(session, config, items):
-    test_config = try_load_config_file_cached(config.getoption("--config"))
+    test_config = try_load_config_file_cached(config)
     if test_config is None:
         return
 
