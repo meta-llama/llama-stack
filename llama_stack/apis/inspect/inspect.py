@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict, List, Protocol, runtime_checkable
+from typing import List, Protocol, runtime_checkable
 
 from llama_models.schema_utils import json_schema_type, webmethod
 from pydantic import BaseModel
@@ -38,13 +38,17 @@ class ListProvidersResponse(BaseModel):
     data: List[ProviderInfo]
 
 
+class ListRoutesResponse(BaseModel):
+    data: List[RouteInfo]
+
+
 @runtime_checkable
 class Inspect(Protocol):
-    @webmethod(route="/providers/list", method="GET")
+    @webmethod(route="/inspect/providers", method="GET")
     async def list_providers(self) -> ListProvidersResponse: ...
 
-    @webmethod(route="/routes/list", method="GET")
-    async def list_routes(self) -> Dict[str, List[RouteInfo]]: ...
+    @webmethod(route="/inspect/routes", method="GET")
+    async def list_routes(self) -> ListRoutesResponse: ...
 
     @webmethod(route="/health", method="GET")
     async def health(self) -> HealthInfo: ...
