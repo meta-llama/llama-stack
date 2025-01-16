@@ -51,13 +51,13 @@ class AgentsApiTestConfig(APITestConfig):
 
 
 class TestConfig(BaseModel):
-    inference: APITestConfig = Field(default=None)
-    agents: AgentsApiTestConfig = Field(default=None)
-    memory: MemoryApiTestConfig = Field(default=None)
+    inference: Optional[APITestConfig] = None
+    agents: Optional[AgentsApiTestConfig] = None
+    memory: Optional[MemoryApiTestConfig] = None
 
 
-def get_test_config_from_config_file(config):
-    config_file = config.getoption("--config")
+def get_test_config_from_config_file(metafunc_config):
+    config_file = metafunc_config.getoption("--config")
     if config_file is None:
         return None
 
@@ -71,17 +71,17 @@ def get_test_config_from_config_file(config):
         return TestConfig(**config)
 
 
-def get_test_config_for_api(config, api):
-    test_config = get_test_config_from_config_file(config)
+def get_test_config_for_api(metafunc_config, api):
+    test_config = get_test_config_from_config_file(metafunc_config)
     if test_config is None:
         return None
     return getattr(test_config, api)
 
 
 def get_provider_fixture_overrides_from_test_config(
-    config, api, default_provider_fixture_combination
+    metafunc_config, api, default_provider_fixture_combinations
 ):
-    api_config = get_test_config_for_api(config, api)
+    api_config = get_test_config_for_api(metafunc_config, api)
     if api_config is None:
         return None
 
@@ -99,7 +99,7 @@ def get_provider_fixture_overrides_from_test_config(
             )
 
     if len(fixture_combo_ids) > 0:
-        for default_fixture in default_provider_fixture_combination:
+        for default_fixture in default_provider_fixture_combinations:
             if default_fixture.id in fixture_combo_ids:
                 custom_provider_fixture_combos.append(default_fixture)
     return custom_provider_fixture_combos
