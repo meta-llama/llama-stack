@@ -34,8 +34,8 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--port",
             type=int,
-            help="Port to run the server on. Defaults to 5000",
-            default=int(os.getenv("LLAMA_STACK_PORT", 5000)),
+            help="Port to run the server on. Defaults to 8321",
+            default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         )
         self.parser.add_argument(
             "--image-name",

@@ -23,8 +23,8 @@ subcommands:
 ```bash
 $ llama-stack-client configure
 > Enter the host name of the Llama Stack distribution server: localhost
-> Enter the port number of the Llama Stack distribution server: 5000
-Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:5000
+> Enter the port number of the Llama Stack distribution server: 8321
+Done! You can now use the Llama Stack Client CLI with endpoint http://localhost:8321
 ```
 
 ### `llama-stack-client providers list`

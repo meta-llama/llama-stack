@@ -139,7 +139,7 @@ Querying Traces for a agent session
 The client SDK is not updated to support the new telemetry API. It will be updated soon. You can manually query traces using the following curl command:
 
 ``` bash
- curl -X POST 'http://localhost:5000/alpha/telemetry/query-traces' \
+ curl -X POST 'http://localhost:8321/alpha/telemetry/query-traces' \
 -H 'Content-Type: application/json' \
 -d '{
   "attribute_filters": [
@@ -167,7 +167,7 @@ The client SDK is not updated to support the new telemetry API. It will be updat
 Querying spans for a specifc root span id
 
 ``` bash
-curl -X POST 'http://localhost:5000/alpha/telemetry/get-span-tree' \
+curl -X POST 'http://localhost:8321/alpha/telemetry/get-span-tree' \
 -H 'Content-Type: application/json' \
 -d '{ "span_id" : "6cceb4b48a156913", "max_depth": 2 }'
 
@@ -207,7 +207,7 @@ curl -X POST 'http://localhost:5000/alpha/telemetry/get-span-tree' \
 ## Example: Save Spans to Dataset
 Save all spans for a specific agent session to a dataset.
 ``` bash
-curl -X POST 'http://localhost:5000/alpha/telemetry/save-spans-to-dataset' \
+curl -X POST 'http://localhost:8321/alpha/telemetry/save-spans-to-dataset' \
 -H 'Content-Type: application/json' \
 -d '{
     "attribute_filters": [
@@ -225,7 +225,7 @@ curl -X POST 'http://localhost:5000/alpha/telemetry/save-spans-to-dataset' \
 
 Save all spans for a specific agent turn to a dataset.
 ```bash
-curl -X POST 'http://localhost:5000/alpha/telemetry/save-spans-to-dataset' \
+curl -X POST 'http://localhost:8321/alpha/telemetry/save-spans-to-dataset' \
 -H 'Content-Type: application/json' \
 -d '{
     "attribute_filters": [

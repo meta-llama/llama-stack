@@ -27,7 +27,7 @@ If you don't want to run inference on-device, then you can connect to any hosted
 ```swift
 import LlamaStackClient
 
-let agents = RemoteAgents(url: URL(string: "http://localhost:5000")!)
+let agents = RemoteAgents(url: URL(string: "http://localhost:8321")!)
 let request = Components.Schemas.CreateAgentTurnRequest(
         agent_id: agentId,
         messages: [

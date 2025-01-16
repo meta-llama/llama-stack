@@ -6,7 +6,7 @@ services:
       - ~/.llama:/root/.llama
       - ./run.yaml:/root/llamastack-run-cerebras.yaml
     ports:
-      - "5000:5000"
+      - "8321:8321"
     entrypoint: bash -c "python -m llama_stack.distribution.server.server --yaml_config /root/llamastack-run-cerebras.yaml"
     deploy:
       restart_policy:

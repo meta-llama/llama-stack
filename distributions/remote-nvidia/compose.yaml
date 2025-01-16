@@ -6,7 +6,7 @@ services:
       - ~/.llama:/root/.llama
       - ./run.yaml:/root/llamastack-run-nvidia.yaml
     ports:
-      - "5000:5000"
+      - "8321:8321"
     environment:
       - INFERENCE_MODEL=${INFERENCE_MODEL:-Llama3.1-8B-Instruct}
       - NVIDIA_API_KEY=${NVIDIA_API_KEY:-}
