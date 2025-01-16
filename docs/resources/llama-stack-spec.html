@@ -771,7 +771,7 @@
                 }
             }
         },
-        "/v1/eval/evaluate-rows": {
+        "/v1/eval/tasks/{task_id}/evaluations": {
             "post": {
                 "responses": {
                     "200": {
@@ -789,6 +789,14 @@
                     "Eval"
                 ],
                 "parameters": [
+                    {
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -1392,6 +1400,127 @@
                 ]
             }
         },
+        "/v1/telemetry/traces/{trace_id}/spans/{span_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Span"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "trace_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "span_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/telemetry/spans/{span_id}/tree": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QuerySpanTreeResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "span_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attributes_to_return",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "max_depth",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/tools/{tool_name}": {
             "get": {
                 "responses": {
@@ -1498,6 +1627,53 @@
                 "parameters": [
                     {
                         "name": "toolgroup_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/telemetry/traces/{trace_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Trace"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Telemetry"
+                ],
+                "parameters": [
+                    {
+                        "name": "trace_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -1803,17 +1979,47 @@
                 }
             }
         },
-        "/v1/eval/jobs/cancel": {
-            "post": {
+        "/v1/eval/tasks/{task_id}/jobs/{job_id}": {
+            "get": {
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/JobStatus"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
                     }
                 },
                 "tags": [
                     "Eval"
                 ],
                 "parameters": [
+                    {
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -1832,20 +2038,56 @@
                             "type": "string"
                         }
                     }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "tags": [
+                    "Eval"
                 ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/JobCancelRequest"
-                            }
+                "parameters": [
+                    {
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     },
-                    "required": true
-                }
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Provider-Data",
+                        "in": "header",
+                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-LlamaStack-Client-Version",
+                        "in": "header",
+                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
-        "/v1/eval/jobs/{job_id}/result": {
+        "/v1/eval/tasks/{task_id}/jobs/{job_id}/result": {
             "get": {
                 "responses": {
                     "200": {
@@ -1873,69 +2115,7 @@
                     },
                     {
                         "name": "task_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/v1/eval/jobs/{job_id}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/JobStatus"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Eval"
-                ],
-                "parameters": [
-                    {
-                        "name": "job_id",
                         "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "task_id",
-                        "in": "query",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2305,7 +2485,7 @@
                 }
             }
         },
-        "/v1/providers/list": {
+        "/v1/inspect/providers": {
             "get": {
                 "responses": {
                     "200": {
@@ -2344,7 +2524,7 @@
                 ]
             }
         },
-        "/v1/routes/list": {
+        "/v1/inspect/routes": {
             "get": {
                 "responses": {
                     "200": {
@@ -2352,13 +2532,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "type": "array",
-                                        "items": {
-                                            "$ref": "#/components/schemas/RouteInfo"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/ListRoutesResponse"
                                 }
                             }
                         }
@@ -2738,7 +2912,7 @@
                 ]
             }
         },
-        "/v1/telemetry/log-event": {
+        "/v1/telemetry/events": {
             "post": {
                 "responses": {
                     "200": {
@@ -2878,18 +3052,15 @@
                 }
             }
         },
-        "/v1/telemetry/query-span-tree": {
-            "post": {
+        "/v1/telemetry/spans": {
+            "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "$ref": "#/components/schemas/SpanWithStatus"
-                                    }
+                                    "$ref": "#/components/schemas/QuerySpansResponse"
                                 }
                             }
                         }
@@ -2899,6 +3070,36 @@
                     "Telemetry"
                 ],
                 "parameters": [
+                    {
+                        "name": "attribute_filters",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/QueryCondition"
+                            }
+                        }
+                    },
+                    {
+                        "name": "attributes_to_return",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "max_depth",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -2917,28 +3118,18 @@
                             "type": "string"
                         }
                     }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/QuerySpanTreeRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
+                ]
             }
         },
-        "/v1/telemetry/query-spans": {
-            "post": {
+        "/v1/telemetry/traces": {
+            "get": {
                 "responses": {
                     "200": {
                         "description": "OK",
                         "content": {
-                            "application/jsonl": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Span"
+                                    "$ref": "#/components/schemas/QueryTracesResponse"
                                 }
                             }
                         }
@@ -2948,6 +3139,44 @@
                     "Telemetry"
                 ],
                 "parameters": [
+                    {
+                        "name": "attribute_filters",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/QueryCondition"
+                            }
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -2966,69 +3195,10 @@
                             "type": "string"
                         }
                     }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/QuerySpansRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
+                ]
             }
         },
-        "/v1/telemetry/query-traces": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/jsonl": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Trace"
-                                }
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "Telemetry"
-                ],
-                "parameters": [
-                    {
-                        "name": "X-LlamaStack-Provider-Data",
-                        "in": "header",
-                        "description": "JSON-encoded provider data which will be made available to the adapter servicing the API",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "X-LlamaStack-Client-Version",
-                        "in": "header",
-                        "description": "Version of the client making the request. This is used to ensure that the client and server are compatible.",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/QueryTracesRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
-        "/v1/eval/run": {
+        "/v1/eval/tasks/{task_id}/jobs": {
             "post": {
                 "responses": {
                     "200": {
@@ -3046,6 +3216,14 @@
                     "Eval"
                 ],
                 "parameters": [
+                    {
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "X-LlamaStack-Provider-Data",
                         "in": "header",
@@ -3126,7 +3304,7 @@
                 }
             }
         },
-        "/v1/telemetry/save-spans-to-dataset": {
+        "/v1/telemetry/spans/export": {
             "post": {
                 "responses": {
                     "200": {
@@ -5514,9 +5692,6 @@
             "EvaluateRowsRequest": {
                 "type": "object",
                 "properties": {
-                    "task_id": {
-                        "type": "string"
-                    },
                     "input_rows": {
                         "type": "array",
                         "items": {
@@ -5564,7 +5739,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task_id",
                     "input_rows",
                     "scoring_functions",
                     "task_config"
@@ -6395,6 +6569,145 @@
                 ],
                 "title": "A safety shield resource that can be used to check content"
             },
+            "Span": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "span_id",
+                    "trace_id",
+                    "name",
+                    "start_time"
+                ]
+            },
+            "SpanStatus": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "error"
+                ]
+            },
+            "SpanWithStatus": {
+                "type": "object",
+                "properties": {
+                    "span_id": {
+                        "type": "string"
+                    },
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "parent_span_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SpanStatus"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "span_id",
+                    "trace_id",
+                    "name",
+                    "start_time"
+                ]
+            },
+            "QuerySpanTreeResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/SpanWithStatus"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
+                ]
+            },
             "Tool": {
                 "type": "object",
                 "properties": {
@@ -6525,6 +6838,31 @@
                     "provider_resource_id",
                     "provider_id",
                     "type"
+                ]
+            },
+            "Trace": {
+                "type": "object",
+                "properties": {
+                    "trace_id": {
+                        "type": "string"
+                    },
+                    "root_span_id": {
+                        "type": "string"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "trace_id",
+                    "root_span_id",
+                    "start_time"
                 ]
             },
             "Checkpoint": {
@@ -6795,22 +7133,6 @@
                     "content"
                 ]
             },
-            "JobCancelRequest": {
-                "type": "object",
-                "properties": {
-                    "job_id": {
-                        "type": "string"
-                    },
-                    "task_id": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "job_id",
-                    "task_id"
-                ]
-            },
             "ListDatasetsResponse": {
                 "type": "object",
                 "properties": {
@@ -6923,6 +7245,21 @@
                     "route",
                     "method",
                     "provider_types"
+                ]
+            },
+            "ListRoutesResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RouteInfo"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data"
                 ]
             },
             "ListScoringFunctionsResponse": {
@@ -7104,13 +7441,6 @@
                 "required": [
                     "type",
                     "name"
-                ]
-            },
-            "SpanStatus": {
-                "type": "string",
-                "enum": [
-                    "ok",
-                    "error"
                 ]
             },
             "StructuredLogEvent": {
@@ -7589,87 +7919,6 @@
                     "scores"
                 ]
             },
-            "QuerySpanTreeRequest": {
-                "type": "object",
-                "properties": {
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "attributes_to_return": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "max_depth": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "span_id"
-                ]
-            },
-            "SpanWithStatus": {
-                "type": "object",
-                "properties": {
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "parent_span_id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "start_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "end_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        }
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/SpanStatus"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "span_id",
-                    "trace_id",
-                    "name",
-                    "start_time"
-                ]
-            },
             "QueryCondition": {
                 "type": "object",
                 "properties": {
@@ -7718,135 +7967,34 @@
                     "lt"
                 ]
             },
-            "QuerySpansRequest": {
+            "QuerySpansResponse": {
                 "type": "object",
                 "properties": {
-                    "attribute_filters": {
+                    "data": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/QueryCondition"
+                            "$ref": "#/components/schemas/Span"
                         }
-                    },
-                    "attributes_to_return": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "max_depth": {
-                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "attribute_filters",
-                    "attributes_to_return"
+                    "data"
                 ]
             },
-            "Span": {
+            "QueryTracesResponse": {
                 "type": "object",
                 "properties": {
-                    "span_id": {
-                        "type": "string"
-                    },
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "parent_span_id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "start_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "end_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Trace"
                         }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "span_id",
-                    "trace_id",
-                    "name",
-                    "start_time"
-                ]
-            },
-            "QueryTracesRequest": {
-                "type": "object",
-                "properties": {
-                    "attribute_filters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/QueryCondition"
-                        }
-                    },
-                    "limit": {
-                        "type": "integer"
-                    },
-                    "offset": {
-                        "type": "integer"
-                    },
-                    "order_by": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "additionalProperties": false
-            },
-            "Trace": {
-                "type": "object",
-                "properties": {
-                    "trace_id": {
-                        "type": "string"
-                    },
-                    "root_span_id": {
-                        "type": "string"
-                    },
-                    "start_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "end_time": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "trace_id",
-                    "root_span_id",
-                    "start_time"
+                    "data"
                 ]
             },
             "RegisterDatasetRequest": {
@@ -8234,9 +8382,6 @@
             "RunEvalRequest": {
                 "type": "object",
                 "properties": {
-                    "task_id": {
-                        "type": "string"
-                    },
                     "task_config": {
                         "oneOf": [
                             {
@@ -8250,7 +8395,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "task_id",
                     "task_config"
                 ]
             },
@@ -9015,10 +9159,6 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/Job\" />"
         },
         {
-            "name": "JobCancelRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobCancelRequest\" />"
-        },
-        {
             "name": "JobStatus",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/JobStatus\" />"
         },
@@ -9065,6 +9205,10 @@
         {
             "name": "ListProvidersResponse",
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListProvidersResponse\" />"
+        },
+        {
+            "name": "ListRoutesResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ListRoutesResponse\" />"
         },
         {
             "name": "ListScoringFunctionsResponse",
@@ -9195,16 +9339,16 @@
             "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryDocumentsResponse\" />"
         },
         {
-            "name": "QuerySpanTreeRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpanTreeRequest\" />"
+            "name": "QuerySpanTreeResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpanTreeResponse\" />"
         },
         {
-            "name": "QuerySpansRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpansRequest\" />"
+            "name": "QuerySpansResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QuerySpansResponse\" />"
         },
         {
-            "name": "QueryTracesRequest",
-            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryTracesRequest\" />"
+            "name": "QueryTracesResponse",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/QueryTracesResponse\" />"
         },
         {
             "name": "RegexParserScoringFnParams",
@@ -9588,7 +9732,6 @@
                 "InterleavedContentItem",
                 "InvokeToolRequest",
                 "Job",
-                "JobCancelRequest",
                 "JobStatus",
                 "KeyValueMemoryBank",
                 "KeyValueMemoryBankParams",
@@ -9601,6 +9744,7 @@
                 "ListModelsResponse",
                 "ListPostTrainingJobsResponse",
                 "ListProvidersResponse",
+                "ListRoutesResponse",
                 "ListScoringFunctionsResponse",
                 "ListShieldsResponse",
                 "ListToolGroupsResponse",
@@ -9630,9 +9774,9 @@
                 "QueryConditionOp",
                 "QueryDocumentsRequest",
                 "QueryDocumentsResponse",
-                "QuerySpanTreeRequest",
-                "QuerySpansRequest",
-                "QueryTracesRequest",
+                "QuerySpanTreeResponse",
+                "QuerySpansResponse",
+                "QueryTracesResponse",
                 "RegexParserScoringFnParams",
                 "RegisterDatasetRequest",
                 "RegisterEvalTaskRequest",

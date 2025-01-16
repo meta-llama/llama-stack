@@ -21,10 +21,12 @@ from llama_stack.apis.telemetry import (
     Event,
     MetricEvent,
     QueryCondition,
+    QuerySpanTreeResponse,
+    QueryTracesResponse,
+    Span,
     SpanEndPayload,
     SpanStartPayload,
     SpanStatus,
-    SpanWithStatus,
     StructuredLogEvent,
     Telemetry,
     Trace,
@@ -241,22 +243,32 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         limit: Optional[int] = 100,
         offset: Optional[int] = 0,
         order_by: Optional[List[str]] = None,
-    ) -> List[Trace]:
-        return await self.trace_store.query_traces(
-            attribute_filters=attribute_filters,
-            limit=limit,
-            offset=offset,
-            order_by=order_by,
+    ) -> QueryTracesResponse:
+        return QueryTracesResponse(
+            data=await self.trace_store.query_traces(
+                attribute_filters=attribute_filters,
+                limit=limit,
+                offset=offset,
+                order_by=order_by,
+            )
         )
 
-    async def query_span_tree(
+    async def get_trace(self, trace_id: str) -> Trace:
+        return await self.trace_store.get_trace(trace_id)
+
+    async def get_span(self, trace_id: str, span_id: str) -> Span:
+        return await self.trace_store.get_span(trace_id, span_id)
+
+    async def get_span_tree(
         self,
         span_id: str,
         attributes_to_return: Optional[List[str]] = None,
         max_depth: Optional[int] = None,
-    ) -> Dict[str, SpanWithStatus]:
-        return await self.trace_store.get_span_tree(
-            span_id=span_id,
-            attributes_to_return=attributes_to_return,
-            max_depth=max_depth,
+    ) -> QuerySpanTreeResponse:
+        return QuerySpanTreeResponse(
+            data=await self.trace_store.get_span_tree(
+                span_id=span_id,
+                attributes_to_return=attributes_to_return,
+                max_depth=max_depth,
+            )
         )
