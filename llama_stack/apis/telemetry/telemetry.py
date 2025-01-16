@@ -197,6 +197,12 @@ class Telemetry(Protocol):
         order_by: Optional[List[str]] = None,
     ) -> QueryTracesResponse: ...
 
+    @webmethod(route="/telemetry/traces/{trace_id}", method="GET")
+    async def get_trace(self, trace_id: str) -> Trace: ...
+
+    @webmethod(route="/telemetry/traces/{trace_id}/spans/{span_id}", method="GET")
+    async def get_span(self, trace_id: str, span_id: str) -> Span: ...
+
     @webmethod(route="/telemetry/spans/{span_id}/tree", method="GET")
     async def query_span_tree(
         self,

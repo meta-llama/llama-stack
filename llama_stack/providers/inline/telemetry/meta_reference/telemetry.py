@@ -23,11 +23,13 @@ from llama_stack.apis.telemetry import (
     QueryCondition,
     QuerySpanTreeResponse,
     QueryTracesResponse,
+    Span,
     SpanEndPayload,
     SpanStartPayload,
     SpanStatus,
     StructuredLogEvent,
     Telemetry,
+    Trace,
     UnstructuredLogEvent,
 )
 from llama_stack.distribution.datatypes import Api
@@ -250,6 +252,12 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 order_by=order_by,
             )
         )
+
+    async def get_trace(self, trace_id: str) -> Trace:
+        return await self.trace_store.get_trace(trace_id)
+
+    async def get_span(self, trace_id: str, span_id: str) -> Span:
+        return await self.trace_store.get_span(trace_id, span_id)
 
     async def query_span_tree(
         self,

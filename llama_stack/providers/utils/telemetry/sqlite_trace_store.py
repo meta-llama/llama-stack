@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Protocol
 
 import aiosqlite
 
-from llama_stack.apis.telemetry import QueryCondition, SpanWithStatus, Trace
+from llama_stack.apis.telemetry import QueryCondition, Span, SpanWithStatus, Trace
 
 
 class TraceStore(Protocol):
@@ -167,3 +167,19 @@ class SQLiteTraceStore(TraceStore):
                     spans_by_id[span.span_id] = span
 
                 return spans_by_id
+
+    async def get_trace(self, trace_id: str) -> Trace:
+        query = "SELECT * FROM traces WHERE trace_id = ?"
+        async with aiosqlite.connect(self.conn_string) as conn:
+            conn.row_factory = aiosqlite.Row
+            async with conn.execute(query, (trace_id,)) as cursor:
+                row = await cursor.fetchone()
+                return Trace(**row)
+
+    async def get_span(self, trace_id: str, span_id: str) -> Span:
+        query = "SELECT * FROM spans WHERE trace_id = ? AND span_id = ?"
+        async with aiosqlite.connect(self.conn_string) as conn:
+            conn.row_factory = aiosqlite.Row
+            async with conn.execute(query, (trace_id, span_id)) as cursor:
+                row = await cursor.fetchone()
+                return Span(**row)
