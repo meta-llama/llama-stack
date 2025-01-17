@@ -270,7 +270,7 @@ def topological_sort(
                 deps.append(dep)
 
         for dep in deps:
-            if dep not in visited:
+            if dep not in visited and dep in providers_with_specs:
                 dfs((dep, providers_with_specs[dep]), visited, stack)
 
         stack.append(api_str)
