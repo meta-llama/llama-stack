@@ -98,7 +98,7 @@ def agent_config(llama_stack_client):
         instructions="You are a helpful assistant",
         sampling_params={
             "strategy": {
-                "type": "greedy",
+                "type": "top_p",
                 "temperature": 1.0,
                 "top_p": 0.9,
             },
