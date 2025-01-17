@@ -10,12 +10,12 @@ from llama_models.llama3.api.chat_format import ChatFormat
 
 from llama_models.datatypes import (
     GreedySamplingStrategy,
-)
-from llama_models.llama3.api.datatypes import (
-    SamplingParams,
-    StopReason,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
+    SamplingParams,
+)
+from llama_models.llama3.api.datatypes import (
+    StopReason,
 )
 from pydantic import BaseModel
 
