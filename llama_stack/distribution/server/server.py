@@ -342,7 +342,8 @@ def main():
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(TracingMiddleware)
-    app.add_middleware(ClientVersionMiddleware)
+    if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
+        app.add_middleware(ClientVersionMiddleware)
 
     try:
         impls = asyncio.run(construct_stack(config))
