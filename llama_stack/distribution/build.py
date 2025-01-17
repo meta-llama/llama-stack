@@ -109,7 +109,9 @@ def build_image(
     image_name: str,
     template_name: Optional[str] = None,
 ):
-    container_image = build_config.distribution_spec.container_image or "python:3.10-slim"
+    container_image = (
+        build_config.distribution_spec.container_image or "python:3.10-slim"
+    )
 
     normal_deps, special_deps = get_provider_dependencies(
         build_config.distribution_spec.providers
