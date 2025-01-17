@@ -377,13 +377,6 @@ class TestInference:
         sample_tool_definition,
     ):
         inference_impl, _ = inference_stack
-        provider = inference_impl.routing_table.get_provider_impl(inference_model)
-        if (
-            provider.__provider_spec__.provider_type == "remote::groq"
-            and "Llama-3.2" in inference_model
-        ):
-            # TODO(aidand): Remove this skip once Groq's tool calling for Llama3.2 works better
-            pytest.skip("Groq's tool calling for Llama3.2 doesn't work very well")
 
         messages = sample_messages + [
             UserMessage(
