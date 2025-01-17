@@ -44,14 +44,21 @@ def rag_chat_page():
                 ]
 
                 providers = llama_stack_api.client.providers.list()
+                memory_provider = None
+
+                for x in providers:
+                    if x.api == "memory":
+                        memory_provider = x.provider_id
+
                 llama_stack_api.client.memory_banks.register(
                     memory_bank_id=memory_bank_name,  # Use the user-provided name
                     params={
+                        "memory_bank_type": "vector",
                         "embedding_model": "all-MiniLM-L6-v2",
                         "chunk_size_in_tokens": 512,
                         "overlap_size_in_tokens": 64,
                     },
-                    provider_id=providers["memory"][0].provider_id,
+                    provider_id=memory_provider,
                 )
 
                 # insert documents using the custom bank name
@@ -69,9 +76,6 @@ def rag_chat_page():
             "Select Memory Banks",
             memory_banks,
         )
-        memory_bank_configs = [
-            {"bank_id": bank_id, "type": "vector"} for bank_id in selected_memory_banks
-        ]
 
         available_models = llama_stack_api.client.models.list()
         available_models = [
@@ -133,14 +137,13 @@ def rag_chat_page():
         sampling_params={
             "strategy": strategy,
         },
-        tools=[
-            {
-                "type": "memory",
-                "memory_bank_configs": memory_bank_configs,
-                "query_generator_config": {"type": "default", "sep": " "},
-                "max_tokens_in_context": 4096,
-                "max_chunks": 10,
-            }
+        toolgroups=[
+            dict(
+                name="builtin::memory",
+                args={
+                    "memory_bank_ids": [bank_id for bank_id in selected_memory_banks],
+                },
+            )
         ],
         tool_choice="auto",
         tool_prompt_format="json",
@@ -179,7 +182,7 @@ def rag_chat_page():
             retrieval_response = ""
             for log in EventLogger().log(response):
                 log.print()
-                if log.role == "memory_retrieval":
+                if log.role == "tool_execution":
                     retrieval_response += log.content.replace("====", "").strip()
                     retrieval_message_placeholder.info(retrieval_response)
                 else:
