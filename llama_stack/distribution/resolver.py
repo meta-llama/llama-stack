@@ -145,7 +145,9 @@ async def resolve_impls(
                 log.warning(
                     f"Provider `{provider.provider_type}` for API `{api}` is deprecated and will be removed in a future release: {p.deprecation_warning}",
                 )
-            p.deps__ = [a.value for a in p.api_dependencies]
+            p.deps__ = [a.value for a in p.api_dependencies] + [
+                a.value for a in p.optional_api_dependencies
+            ]
             spec = ProviderWithSpec(
                 spec=p,
                 **(provider.model_dump()),
