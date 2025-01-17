@@ -32,12 +32,6 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/cerebras}/faiss_store.db
-  - provider_id: chromadb
-    provider_type: remote::chromadb
-    config: {}
-  - provider_id: pgvector
-    provider_type: remote::pgvector
-    config: {}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
